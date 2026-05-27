@@ -174,7 +174,40 @@ export async function takeRegressionScreenshot(
 
   if (!options?.skipStabilityWait) {
     await page.evaluate(() => document.fonts.ready)
-    await page.waitForLoadState("load")
+    if (options?.elementToScreenshot) {
+      const images = await options.elementToScreenshot.locator("img").all()
+      await Promise.all(
+        images.map((img) =>
+          img
+            .evaluate((el: HTMLImageElement) =>
+              el.complete
+                ? undefined
+                : new Promise<void>((resolve) => {
+                    const timer = setTimeout(resolve, 5000)
+                    el.addEventListener(
+                      "load",
+                      () => {
+                        clearTimeout(timer)
+                        resolve()
+                      },
+                      { once: true },
+                    )
+                    el.addEventListener(
+                      "error",
+                      () => {
+                        clearTimeout(timer)
+                        resolve()
+                      },
+                      { once: true },
+                    )
+                  }),
+            )
+            .catch(() => {}),
+        ),
+      )
+    } else {
+      await page.waitForLoadState("load")
+    }
     await page.evaluate(
       () =>
         new Promise<void>((resolve) =>
@@ -281,10 +314,10 @@ export async function getH1Screenshots(
 
   const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
 
-  // Do all expensive waits once upfront instead of per-section.
+  // Pause media once upfront. Per-section image waits are handled by
+  // takeRegressionScreenshot (scoped to the section, 5s timeout per image).
   await pauseMediaElements(page)
   await page.evaluate(() => document.fonts.ready)
-  await page.waitForLoadState("load")
 
   await page.evaluate(() => {
     for (const sel of ["#navbar", ".skip-to-content"]) {
@@ -305,7 +338,6 @@ export async function getH1Screenshots(
       elementToScreenshot: h1Span,
       skipMediaPause: true,
       skipDOMIsolation: true,
-      skipStabilityWait: true,
     })
   }
 }
