@@ -127,6 +127,44 @@ export interface RegressionScreenshotOptions {
   preserveSiblings?: boolean
 }
 
+async function waitForImagesInElement(scope: Locator): Promise<void> {
+  const images = await scope.locator("img").all()
+  await Promise.all(
+    images.map((img) =>
+      img
+        .evaluate((el: HTMLImageElement) =>
+          el.complete
+            ? undefined
+            : new Promise<void>((resolve) => {
+                const timer = setTimeout(resolve, 5000)
+                const done = (): void => {
+                  clearTimeout(timer)
+                  resolve()
+                }
+                el.addEventListener("load", done, { once: true })
+                el.addEventListener("error", done, { once: true })
+              }),
+        )
+        .catch(() => {}),
+    ),
+  )
+}
+
+async function waitForVisualStability(page: Page, scope?: Locator): Promise<void> {
+  await page.evaluate(() => document.fonts.ready)
+  if (scope) {
+    await waitForImagesInElement(scope)
+  } else {
+    await page.waitForLoadState("load")
+  }
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  )
+}
+
 /**
  * Takes a regression screenshot of a page or a specific element with given options.
  *
@@ -173,47 +211,7 @@ export async function takeRegressionScreenshot(
   void _elementOpt // prevent unused variable lint error
 
   if (!options?.skipStabilityWait) {
-    await page.evaluate(() => document.fonts.ready)
-    if (options?.elementToScreenshot) {
-      const images = await options.elementToScreenshot.locator("img").all()
-      await Promise.all(
-        images.map((img) =>
-          img
-            .evaluate((el: HTMLImageElement) =>
-              el.complete
-                ? undefined
-                : new Promise<void>((resolve) => {
-                    const timer = setTimeout(resolve, 5000)
-                    el.addEventListener(
-                      "load",
-                      () => {
-                        clearTimeout(timer)
-                        resolve()
-                      },
-                      { once: true },
-                    )
-                    el.addEventListener(
-                      "error",
-                      () => {
-                        clearTimeout(timer)
-                        resolve()
-                      },
-                      { once: true },
-                    )
-                  }),
-            )
-            .catch(() => {}),
-        ),
-      )
-    } else {
-      await page.waitForLoadState("load")
-    }
-    await page.evaluate(
-      () =>
-        new Promise<void>((resolve) =>
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-        ),
-    )
+    await waitForVisualStability(page, options?.elementToScreenshot)
   }
 
   const screenshotOptions = {
