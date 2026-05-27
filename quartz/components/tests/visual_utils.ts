@@ -122,6 +122,8 @@ export interface RegressionScreenshotOptions {
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
   skipMediaPause?: boolean
+  skipDOMIsolation?: boolean
+  skipStabilityWait?: boolean
   preserveSiblings?: boolean
 }
 
@@ -170,16 +172,49 @@ export async function takeRegressionScreenshot(
   // skipcq: JS-0098
   void _elementOpt // prevent unused variable lint error
 
-  // Wait until the page is visually stable before snapshotting: fonts must be
-  // resolved (FOIT/FOUT causes layout shift, and Safari has been observed to
-  // capture an empty frame mid-swap) and a double rAF flushes any pending
-  // layout/paint from earlier mutations (e.g. setViewportSize, media pause).
-  await page.evaluate(async () => {
-    await document.fonts.ready
-    await new Promise<void>((resolve) =>
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+  if (!options?.skipStabilityWait) {
+    await page.evaluate(() => document.fonts.ready)
+    if (options?.elementToScreenshot) {
+      const images = await options.elementToScreenshot.locator("img").all()
+      await Promise.all(
+        images.map((img) =>
+          img
+            .evaluate((el: HTMLImageElement) =>
+              el.complete
+                ? undefined
+                : new Promise<void>((resolve) => {
+                    const timer = setTimeout(resolve, 5000)
+                    el.addEventListener(
+                      "load",
+                      () => {
+                        clearTimeout(timer)
+                        resolve()
+                      },
+                      { once: true },
+                    )
+                    el.addEventListener(
+                      "error",
+                      () => {
+                        clearTimeout(timer)
+                        resolve()
+                      },
+                      { once: true },
+                    )
+                  }),
+            )
+            .catch(() => {}),
+        ),
+      )
+    } else {
+      await page.waitForLoadState("load")
+    }
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
     )
-  })
+  }
 
   const screenshotOptions = {
     animations: "disabled" as const,
@@ -190,7 +225,7 @@ export async function takeRegressionScreenshot(
 
   let screenshotBuffer: Buffer
   const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
-  if (options?.elementToScreenshot) {
+  if (options?.elementToScreenshot && !options.skipDOMIsolation) {
     const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
     await performDOMIsolation(elementToIsolate, options.preserveSiblings ?? false)
 
@@ -199,6 +234,8 @@ export async function takeRegressionScreenshot(
     } finally {
       await restoreDOMFromIsolation(page)
     }
+  } else if (options?.elementToScreenshot) {
+    screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
   } else {
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
@@ -277,13 +314,19 @@ export async function getH1Screenshots(
 
   const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
 
-  // Pause all media once upfront so individual screenshots can skip it.
-  // This avoids paying the per-element fallback timeout N times in the loop.
+  // Pause media once upfront. Per-section image waits are handled by
+  // takeRegressionScreenshot (scoped to the section, 5s timeout per image).
   await pauseMediaElements(page)
+  await page.evaluate(() => document.fonts.ready)
+
+  await page.evaluate(() => {
+    for (const sel of ["#navbar", ".skip-to-content"]) {
+      const el = document.querySelector<HTMLElement>(sel)
+      if (el) el.style.display = "none"
+    }
+  })
 
   for (const h1Span of h1Spans) {
-    // Use JS scrollIntoView instead of Playwright's scrollIntoViewIfNeeded,
-    // which can time out in WebKit when the element never becomes "stable".
     await h1Span.evaluate((el) => el.scrollIntoView({ block: "center" }))
 
     const h1Header = h1Span.locator("h1").first()
@@ -294,6 +337,7 @@ export async function getH1Screenshots(
     await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
       elementToScreenshot: h1Span,
       skipMediaPause: true,
+      skipDOMIsolation: true,
     })
   }
 }
