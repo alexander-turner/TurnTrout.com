@@ -5,13 +5,14 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
 from scripts import generate_visual_gallery as gvg
 
 
-def _png(path: Path, payload: bytes = b"\x89PNG\r\n\x1a\n") -> None:
+def _png(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(payload)
+    Image.new("RGB", (4, 4), "red").save(path)
 
 
 def test_collect_tiles_pairs_expected_actual_diff(tmp_path: Path) -> None:
@@ -79,21 +80,24 @@ def test_collect_tiles_keeps_distinct_parents(tmp_path: Path) -> None:
 def test_render_html_includes_all_tiles(tmp_path: Path) -> None:
     tiles = [
         gvg.Tile(
-            label="alpha", expected="a-e.png", actual="a-a.png", diff="a-d.png"
+            label="alpha",
+            expected="a-e.avif",
+            actual="a-a.avif",
+            diff="a-d.avif",
         ),
-        gvg.Tile(label="beta", expected=None, actual="b-a.png", diff=None),
+        gvg.Tile(label="beta", expected=None, actual="b-a.avif", diff=None),
     ]
     page = gvg.render_html(tiles)
 
     assert "2 failing screenshots" in page
     assert "alpha" in page and "beta" in page
-    assert "gallery-images/a-e.png" in page
+    assert "gallery-images/a-e.avif" in page
     assert "not captured" in page  # placeholder for missing files
     assert 'href="report.html"' in page  # link to Playwright report
 
 
 def test_render_html_singular_count() -> None:
-    page = gvg.render_html([gvg.Tile("only", None, "x.png", None)])
+    page = gvg.render_html([gvg.Tile("only", None, "x.avif", None)])
     assert "1 failing screenshot " in page  # no plural "s"
 
 
@@ -160,7 +164,7 @@ def test_main_writes_index_and_gallery(tmp_path: Path) -> None:
     assert (report / "index.html").exists()
     assert (report / "gallery.html").exists()
     assert (report / "report.html").read_text(encoding="utf-8") == "ORIGINAL"
-    assert (report / "gallery-images" / "spec__shot-actual.png").exists()
+    assert (report / "gallery-images" / "spec__shot-actual.avif").exists()
     # Playwright report existed → header link to it is rendered.
     assert 'href="report.html"' in (report / "index.html").read_text(
         encoding="utf-8"
@@ -213,8 +217,7 @@ def test_cli_with_approve_flags(
     report.mkdir()
     # Approve button only renders when there's at least one failing tile, so
     # plant a minimal *-actual.png the gallery generator can pick up.
-    (traces / "shard").mkdir(parents=True)
-    (traces / "shard" / "img-actual.png").write_bytes(b"")
+    _png(traces / "shard" / "img-actual.png")
 
     monkeypatch.setattr(
         sys,
@@ -255,7 +258,7 @@ def test_cli_wrong_arg_count(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_render_html_omits_approve_without_config() -> None:
     """No ApproveConfig → no approve UI rendered."""
-    page = gvg.render_html([gvg.Tile("t", None, "a.png", None)])
+    page = gvg.render_html([gvg.Tile("t", None, "a.avif", None)])
     assert "approve-btn" not in page
     assert "__APPROVE_CFG__" not in page
 
@@ -263,7 +266,7 @@ def test_render_html_omits_approve_without_config() -> None:
 def test_render_html_includes_approve_with_config() -> None:
     """ApproveConfig + at least one tile → approve button + config script."""
     page = gvg.render_html(
-        [gvg.Tile("t", None, "a.png", None)],
+        [gvg.Tile("t", None, "a.avif", None)],
         approve=gvg.ApproveConfig(run_id="123"),
     )
     assert 'id="approve-btn"' in page
