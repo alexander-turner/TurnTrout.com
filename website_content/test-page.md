@@ -783,6 +783,10 @@ function loseTheGame(numTimes: number): void {
 This is a plain code block without a language specified.
 ```
 
+```plaintext
+This block has an intentionally long line so the soft-wrap toggle has something to chew on: lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+```
+
 # Formatting
 
 - Normal

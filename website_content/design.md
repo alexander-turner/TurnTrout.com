@@ -169,7 +169,7 @@ Light-background images look good in light mode. Dark-background images look goo
 
 <span class="populate-markdown-inversion-demo"></span>
 
-For images, I pre-compute perfectly inverted variants at build time. The browser determines which image to show. Videos only use the SVG filter. 
+For images, I pre-compute perfectly inverted variants at build time. The browser determines which image to show. Videos only use the SVG filter.
 
 ### Deciding when to invert
 
@@ -197,7 +197,7 @@ Quartz offers basic optimizations, such as [lazy loading](https://developer.mozi
 
 EB Garamond Regular 8pt takes 260KB as an `otf` file but compresses to 80KB under [the newer `woff2` format.](https://www.w3.org/TR/WOFF2/) In all, the font footprint shrinks from 1.5MB to about 609KB for most pages. I toyed around with manual [font subsetting](https://fonts.google.com/knowledge/glossary/subsetting) but it seemed too hard to predict which characters my site _never_ uses.
 
-Therefore, I use [my optimized fork of `subfont`](/open-source#faster-font-subsetting) to subset each font across my entire website, dropping unused OpenType tables and font features the CSS never references. 
+Therefore, I use [my optimized fork of `subfont`](/open-source#faster-font-subsetting) to subset each font across my entire website, dropping unused OpenType tables and font features the CSS never references.
 
 <span class="populate-markdown-font-stats"></span>
 
@@ -577,7 +577,7 @@ I modified the italic fonts to replace sloped punctuation glyphs with their upri
 | Single quotes |  <span class="italic-old">_‘Hello world’_</span>  |     _‘Hello world’_      |
 |    Apostrophe |      <span class="italic-old">_don’t_</span>      |         _don’t_          |
 
-I also equalized the heights of parentheses, brackets, and braces. As time folded forward, my fonts became quite customized. I built a reproducible font patching pipeline which starts with [Harish's EB Garamond](#i-paid-someone-to-tweak-eb-garamond) and iteratively modifies the font. 
+I also equalized the heights of parentheses, brackets, and braces. As time folded forward, my fonts became quite customized. I built a reproducible font patching pipeline which starts with [Harish's EB Garamond](#i-paid-someone-to-tweak-eb-garamond) and iteratively modifies the font.
 
 # Website features
 
@@ -787,6 +787,9 @@ Metadata
 : Every page has an HTML description and [tags](/all-tags) (if appropriate), along with a table of contents which (on desktop) highlights the current section. I track original publication date and display when each was page was last modified by a `git push` to the `main` branch. I also support "sequences" of blog posts:
 
   <div class="sequence-links" style="border: 2px var(--midground-faint) solid; padding-right: .5rem; padding-top: 1rem; border-radius: 5px;"><div class="sequence-title" style="text-align:center;"><div class="admonition-title-inner"><b>Sequence:</b> <a href="/posts#shard-theory" class="internal">Shard Theory</a></div></div><div class="sequence-nav" style="display:flex;justify-content:center;"><div class="prev-post sequence-links-postNavigation" style="text-align:right;"><p><b>Previous</b><br><a href="/reward-is-not-the-optimization-target" class="internal">Reward Is Not the Optimization Target</a></p></div><div class="sequence-links-divider"></div><div class="next-post sequence-links-postNavigation" style="text-align:left;"><p><b>Next</b><br><a href="/understanding-and-avoiding-value-drift" class="internal">Understanding and Avoiding Value Drift</a></p></div></div></div> <figcaption>The sequence metadata for my post on <a href="./shard-theory" class="internal alias" data-slug="shard-theory">shard theory.</a></figcaption>
+
+Soft-wrap toggle on code blocks
+: Long lines in fenced code blocks default to horizontal scroll, which is great for actual source code but punishing for transcript dumps - LLM completions and chat logs disappear off the right edge after a few words. A second button next to the copy icon flips a `.soft-wrap` class on every `<pre>`, switching the block to wrapped lines with hanging indents that align under the line-number gutter. The preference rides along in `localStorage`, so once a reader turns wrapping on it stays on across pages.
 
 Spoilers hide text until clicked
 : I made a Markdown plugin which lets me specify spoilers by starting the line with `>!`. The results are unobtrusive but pleasant:

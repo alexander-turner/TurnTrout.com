@@ -9,6 +9,9 @@ import accurateInvertScript from "./scripts/accurateInvert.inline"
 import clipboardScript from "./scripts/clipboard.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
+import codeWrapScript from "./scripts/code-wrap.inline"
+// @ts-expect-error Not a module but a script
+// skipcq: JS-W1028
 import elvishToggleScript from "./scripts/elvish-toggle.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
@@ -104,6 +107,7 @@ const PageShell: QuartzComponent = ({ children }: QuartzComponentProps) => {
 
 PageShell.afterDOMLoaded = [
   clipboardScript,
+  codeWrapScript,
   elvishToggleScript,
   smallCapsCopyScript,
   scrollIndicatorScript,

@@ -1,20 +1,41 @@
 @use "../../styles/variables.scss" as *;
 
+// Clipboard button outer footprint: svg(16) + 2×svg-margin($base-margin/2)
+// + 2×border(1) = $base-margin + 18px. Offset the wrap button by that plus
+// a $base-margin gap so the two buttons sit side-by-side at the top right.
+$code-button-width: calc(18px + #{$base-margin});
+
 pre {
   position: relative;
 
   & > code {
     overflow: auto;
   }
+
+  &.soft-wrap {
+    white-space: pre-wrap;
+
+    & > code {
+      overflow: visible;
+      white-space: pre-wrap;
+
+      & > [data-line] {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+    }
+  }
 }
 
 pre:hover > .clipboard-button,
+pre:hover > .code-wrap-button,
+pre > .code-wrap-button[aria-pressed="true"],
 .punctilio-output-wrapper:hover > .clipboard-button {
   opacity: 1;
   transition: opacity $transition-duration-quick;
 }
 
-.clipboard-button {
+%code-block-button {
   display: flex;
   position: absolute;
   z-index: $z-raised;
@@ -26,7 +47,6 @@ pre:hover > .clipboard-button,
   border-radius: $border-radius;
   opacity: 0;
   transition: $transition-duration-quick;
-  right: 0;
 
   & > svg {
     fill: var(--midground);
@@ -42,5 +62,26 @@ pre:hover > .clipboard-button,
 
   &:focus:not(:focus-visible) {
     outline: 0;
+  }
+}
+
+.clipboard-button {
+  @extend %code-block-button;
+
+  right: 0;
+}
+
+.code-wrap-button {
+  @extend %code-block-button;
+
+  right: $code-button-width;
+
+  &[aria-pressed="true"] {
+    border-color: var(--blue);
+
+    & > svg {
+      fill: var(--blue);
+      filter: none;
+    }
   }
 }
