@@ -29,7 +29,6 @@ pre {
 
 pre:hover > .clipboard-button,
 pre:hover > .code-wrap-button,
-pre > .code-wrap-button[aria-pressed="true"],
 .punctilio-output-wrapper:hover > .clipboard-button {
   opacity: 1;
   transition: opacity $transition-duration-quick;
