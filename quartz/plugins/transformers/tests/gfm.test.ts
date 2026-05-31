@@ -5,6 +5,7 @@ import { h } from "hastscript"
 import type { BuildCtx } from "../../../util/ctx"
 
 import { QuartzConfig } from "../../../util/ctx"
+import { isFootnoteListItem } from "../fixFootnotes"
 import {
   adoptPrecedingSiblingAsDt,
   appendArrowToFootnoteListItemVisitor,
@@ -12,7 +13,6 @@ import {
   findFootnoteBackArrow,
   GitHubFlavoredMarkdown,
   htmlAccessibilityPlugin,
-  isFootnoteListItem,
   isValidDlStructure,
   maybeSpliceAndAppendBackArrow,
   optimizeMermaidSvgs,

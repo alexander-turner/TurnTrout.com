@@ -226,16 +226,10 @@ export function setupCopyButton(
         () => {
           button.blur()
           button.innerHTML = svgCheck
-          animate(
-            2000,
-            () => {
-              // No per-frame updates needed, only completion callback to restore button state
-            },
-            () => {
-              button.innerHTML = svgCopy
-              button.style.borderColor = ""
-            },
-          )
+          setTimeout(() => {
+            button.innerHTML = svgCopy
+            button.style.borderColor = ""
+          }, 2000)
         },
         (error) => console.error(error),
       )

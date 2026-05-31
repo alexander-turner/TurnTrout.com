@@ -1,25 +1,35 @@
-function setupMobileTocClickDelegation(): void {
+let tocAbortController: AbortController | null = null
+
+function setupMobileTocClickDelegation(signal: AbortSignal): void {
   const mobileToc = document.getElementById("toc-content-mobile")
   if (!mobileToc) return
 
-  mobileToc.addEventListener("click", (e: MouseEvent) => {
-    const target = e.target as HTMLElement
-    if (target.tagName === "LI") {
-      const link = target.querySelector<HTMLAnchorElement>(":scope > a")
-      if (link) link.click()
-    }
-  })
+  mobileToc.addEventListener(
+    "click",
+    (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (target.tagName === "LI") {
+        const link = target.querySelector<HTMLAnchorElement>(":scope > a")
+        if (link) link.click()
+      }
+    },
+    { signal },
+  )
 }
 
-function setupTocTitleScrollToTop(): void {
+function setupTocTitleScrollToTop(signal: AbortSignal): void {
   const tocTitleButton = document.querySelector("#toc-title button")
   if (!tocTitleButton) return
 
-  tocTitleButton.addEventListener("click", () => {
-    const url = new URL(window.location.pathname, window.location.origin)
-    window.spaNavigate(url)
-    window.scrollTo({ top: 0, behavior: "instant" })
-  })
+  tocTitleButton.addEventListener(
+    "click",
+    () => {
+      const url = new URL(window.location.pathname, window.location.origin)
+      window.spaNavigate(url)
+      window.scrollTo({ top: 0, behavior: "instant" })
+    },
+    { signal },
+  )
 }
 
 function setupTocActiveHighlighting(): void {
@@ -89,7 +99,11 @@ function setupTocActiveHighlighting(): void {
 }
 
 document.addEventListener("nav", () => {
-  setupMobileTocClickDelegation()
-  setupTocTitleScrollToTop()
+  tocAbortController?.abort()
+  tocAbortController = new AbortController()
+  const { signal } = tocAbortController
+
+  setupMobileTocClickDelegation(signal)
+  setupTocTitleScrollToTop(signal)
   setupTocActiveHighlighting()
 })

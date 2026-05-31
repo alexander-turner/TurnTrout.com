@@ -7,11 +7,18 @@ import { beforeEach, describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
 
 import { BuildCtx } from "../../../util/ctx"
-import { insertOrnamentNode, maybeInsertOrnament, ornamentNode, TroutOrnamentHr } from "../trout_hr"
+import {
+  createOrnamentNode,
+  insertOrnamentNode,
+  maybeInsertOrnament,
+  TroutOrnamentHr,
+} from "../trout_hr"
 
-describe("ornamentNode", () => {
+const ornamentNode = createOrnamentNode()
+
+describe("createOrnamentNode", () => {
   it("should have role='separator' for accessibility", () => {
-    expect(ornamentNode.properties.role).toBe("separator")
+    expect(createOrnamentNode().properties.role).toBe("separator")
   })
 })
 

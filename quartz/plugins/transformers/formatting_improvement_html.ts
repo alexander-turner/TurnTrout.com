@@ -17,7 +17,6 @@ import type { ElementMaybeWithParent } from "./utils"
 import {
   charsToMoveIntoLinkFromRight,
   hatTipPlaceholder,
-  HEADING_TAGS,
   LEFT_SINGLE_QUOTE,
   markerChar,
   NBSP,
@@ -25,6 +24,7 @@ import {
   STRIP_BOUNDARY_TAGS,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
+import { isHeading } from "./favicons"
 import { fractionRegex, hasAncestor, hasClass, isCode, replaceRegex, urlRegex } from "./utils"
 
 /**
@@ -339,10 +339,6 @@ export function formatArrows(tree: Root): void {
       "span.right-arrow",
     )
   })
-}
-
-function isHeading(node: Element): boolean {
-  return HEADING_TAGS.has(node.tagName)
 }
 
 // Display-heading elements: text that's styled like a heading and wraps
