@@ -5,7 +5,6 @@ import { h } from "hastscript"
 import type { BuildCtx } from "../../../util/ctx"
 
 import { QuartzConfig } from "../../../util/ctx"
-import { isFootnoteListItem } from "../fixFootnotes"
 import {
   adoptPrecedingSiblingAsDt,
   appendArrowToFootnoteListItemVisitor,
@@ -502,31 +501,6 @@ describe("GitHubFlavoredMarkdown plugin", () => {
   })
 })
 
-describe("isFootnoteListItem function", () => {
-  it.each([
-    [
-      "footnote list item with id fn-1",
-      () => h("li", { id: "user-content-fn-1" }, ["Footnote text"]),
-      true,
-    ],
-    [
-      "footnote list item with id fn-42",
-      () => h("li", { id: "user-content-fn-42" }, ["Footnote text"]),
-      true,
-    ],
-    ["non-footnote list item", () => h("li", ["Regular list item"]), false],
-    ["list item with wrong id", () => h("li", { id: "some-other-id" }, ["List item"]), false],
-    [
-      "non-list element with footnote id",
-      () => h("p", { id: "user-content-fn-1" }, ["Not a list item"]),
-      false,
-    ],
-    ["list item without id", () => h("li", ["List item without id"]), false],
-  ])("should handle %s", (_desc: string, createElement: () => Element, expected: boolean) => {
-    expect(isFootnoteListItem(createElement())).toBe(expected)
-  })
-})
-
 describe("findFootnoteBackArrow function", () => {
   test("should find back arrow in footnote", () => {
     const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
@@ -604,13 +578,6 @@ describe("findFootnoteBackArrow function", () => {
 })
 
 describe("gfmVisitor function", () => {
-  test("should handle undefined node gracefully", () => {
-    // Should not throw an error when called with undefined
-    expect(() => {
-      appendArrowToFootnoteListItemVisitor(undefined as unknown as Element)
-    }).not.toThrow()
-  })
-
   test("should process footnote with back arrow", () => {
     const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
     const footnoteItem = h("li", { id: "user-content-fn-1" }, [

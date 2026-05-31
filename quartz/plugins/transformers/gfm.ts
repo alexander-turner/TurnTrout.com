@@ -64,7 +64,7 @@ export function findFootnoteBackArrow(footnoteNode: Element): Element | null {
 
 // See footnoteBacklinkPlugin for usage
 export function appendArrowToFootnoteListItemVisitor(node: Element) {
-  if (node && isFootnoteListItem(node)) {
+  if (isFootnoteListItem(node)) {
     const backArrow = findFootnoteBackArrow(node)
     if (backArrow) {
       maybeSpliceAndAppendBackArrow(node, backArrow)

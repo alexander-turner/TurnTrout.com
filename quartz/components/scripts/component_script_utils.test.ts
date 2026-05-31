@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import {
-  animate,
   debounce,
   registerEscapeHandler,
   removeAllChildren,
@@ -381,129 +380,6 @@ describe("removeAllChildren", () => {
   })
 })
 
-describe("animate", () => {
-  beforeEach(() => {
-    global.cancelAnimationFrame = jest.fn()
-  })
-
-  it("should call onFrame with progress values from 0 to 1", () => {
-    const onFrame = jest.fn()
-    const duration = 100
-    const startTime = performance.now()
-
-    animate(duration, onFrame)
-
-    // Simulate first frame at start
-    jest.advanceTimersByTime(frameTime)
-    expect(onFrame).toHaveBeenCalledWith(0)
-
-    // Simulate middle frame at 50ms
-    jest.setSystemTime(startTime + 50)
-    jest.advanceTimersByTime(frameTime)
-    expect(onFrame).toHaveBeenCalledWith(0.5)
-
-    // Simulate final frame after duration
-    jest.setSystemTime(startTime + 100)
-    jest.advanceTimersByTime(frameTime)
-    expect(onFrame).toHaveBeenLastCalledWith(1)
-  })
-
-  it("should call onComplete when animation finishes", () => {
-    const onComplete = jest.fn()
-    const duration = 100
-    const startTime = performance.now()
-
-    animate(
-      duration,
-      () => {
-        // Empty update callback - testing only the completion callback behavior
-      },
-      onComplete,
-    )
-
-    // Advance to just after duration and trigger the callback
-    jest.setSystemTime(startTime + 100)
-    jest.advanceTimersByTime(frameTime)
-    // Run any pending timers to ensure the rAF callback executes
-    jest.runAllTimers()
-    expect(onComplete).toHaveBeenCalledTimes(1)
-  })
-
-  it("should cancel animation when cleanup is called", () => {
-    const onFrame = jest.fn()
-    const onComplete = jest.fn()
-    const duration = 100
-
-    const cleanup = animate(duration, onFrame, onComplete)
-
-    cleanup()
-
-    jest.advanceTimersByTime(100)
-    expect(global.cancelAnimationFrame).toHaveBeenCalled()
-    expect(onComplete).not.toHaveBeenCalled()
-  })
-
-  it("should not call onComplete if animation is cancelled", () => {
-    const onComplete = jest.fn()
-    const duration = 100
-
-    const cleanup = animate(
-      duration,
-      () => {
-        // Empty update callback - testing animation cancellation behavior
-      },
-      onComplete,
-    )
-
-    // Cancel halfway through
-    jest.advanceTimersByTime(50)
-    cleanup()
-
-    // Advance past duration
-    jest.advanceTimersByTime(50)
-    expect(onComplete).not.toHaveBeenCalled()
-  })
-
-  it("should handle zero duration", () => {
-    const onFrame = jest.fn()
-    const onComplete = jest.fn()
-
-    animate(0, onFrame, onComplete)
-
-    // Simulate first frame and run the callback
-    jest.advanceTimersByTime(frameTime)
-    jest.runAllTimers()
-    expect(onFrame).toHaveBeenCalledWith(1)
-    expect(onComplete).toHaveBeenCalled()
-  })
-
-  it("should handle zero duration cleanup function", () => {
-    const onFrame = jest.fn()
-    const onComplete = jest.fn()
-
-    const cleanup = animate(0, onFrame, onComplete)
-
-    // Try to clean up after zero duration - should work but do nothing
-    cleanup()
-
-    expect(onFrame).toHaveBeenCalledWith(1)
-    expect(onComplete).toHaveBeenCalled()
-  })
-
-  it("should handle negative duration", () => {
-    const onFrame = jest.fn()
-    const onComplete = jest.fn()
-
-    const cleanup = animate(-10, onFrame, onComplete)
-
-    expect(onFrame).toHaveBeenCalledWith(1)
-    expect(onComplete).toHaveBeenCalled()
-
-    // Cleanup should still work
-    cleanup()
-  })
-})
-
 describe("setupCopyButton", () => {
   let button: HTMLButtonElement
   let mockClipboard: { writeText: jest.Mock }
@@ -533,7 +409,7 @@ describe("setupCopyButton", () => {
     button.click()
     await Promise.resolve()
 
-    // Advance past the 2000ms animate duration
+    // Advance past the 2000ms setTimeout delay
     jest.advanceTimersByTime(2000 + frameTime)
     expect(button.innerHTML).toBe(svgCopy)
   })
