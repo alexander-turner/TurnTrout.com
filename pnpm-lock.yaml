@@ -12,6 +12,7 @@ overrides:
   d3-color@<3.1.0: '>=3.1.0'
   form-data@<2.5.4: '>=2.5.4'
   '@tootallnate/once@<2.0.1': '>=2.0.1'
+  tmp@<0.2.6: '>=0.2.6'
 
 packageExtensionsChecksum: sha256-tQX/LTBtNWpzo5W3RVqiDvcaT/zH+onXhfh82N75Neo=
 
@@ -8772,8 +8773,8 @@ packages:
     resolution: {integrity: sha512-WMi/OQ2axVTf/ykqCQgXiIct+mSQDFdH2fkwhPwgEwvJ1kSzZRiinb0zF2Xb8u4+OqPChmyI6MEu4EezNJz+FQ==}
     hasBin: true
 
-  tmp@0.2.4:
-    resolution: {integrity: sha512-UdiSoX6ypifLmrfQ/XfiawN6hkjSBpCjhKxxZcWlUUmoXLaCKQU0bx4HF/tdDK2uzRuchf1txGvrWBzYREssoQ==}
+  tmp@0.2.7:
+    resolution: {integrity: sha512-e0votIpp4Uo2AJYSzVHV6xCcawuiez3DzqDAbrTc3YxBkplN6e+dM13ZeIcZnDg/QpSuU2zfZ3rzwY8ukEnaXw==}
     engines: {node: '>=14.14'}
 
   tmpl@1.0.5:
@@ -17863,7 +17864,7 @@ snapshots:
       open: 7.4.2
       semver: 7.7.4
       slash: 2.0.0
-      tmp: 0.2.4
+      tmp: 0.2.7
       yaml: 2.8.3
 
   path-browserify@1.0.1: {}
@@ -19965,7 +19966,7 @@ snapshots:
     dependencies:
       tldts-core: 6.1.86
 
-  tmp@0.2.4: {}
+  tmp@0.2.7: {}
 
   tmpl@1.0.5: {}
 
