@@ -11,6 +11,7 @@ import smartypants from "remark-smartypants"
 import { visit } from "unist-util-visit"
 
 import { QuartzTransformerPlugin } from "../types"
+import { isFootnoteListItem } from "./fixFootnotes"
 import { spliceAndWrapLastChars } from "./utils"
 
 export interface Options {
@@ -21,17 +22,6 @@ export interface Options {
 const defaultOptions: Options = {
   enableSmartyPants: true,
   linkHeadings: true,
-}
-
-/**
- * Checks if an element is a footnote list item.
- *
- * Footnotes are rendered as `<li>` elements with IDs that start with "user-content-fn".
- */
-export function isFootnoteListItem(node: Element): boolean {
-  return (
-    node?.tagName === "li" && Boolean(node.properties?.id?.toString().startsWith("user-content-fn"))
-  )
 }
 
 /**
@@ -437,13 +427,10 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
 const slugger = new GithubSlugger()
 
 /** Normalizes heading text before slugging: converts apostrophes, slashes, dashes, and `&` to `-`. */
-export function preprocessSlug(headerText: string): string {
-  const charsToConvert = ["'", "’", "/", "&", "—", "‘"]
+const slugCharsToConvertRegex = /['‘’/&—]/g
 
-  let protoSlug = headerText
-  for (const char of charsToConvert) {
-    protoSlug = protoSlug.replaceAll(new RegExp(char, "g"), "-")
-  }
+export function preprocessSlug(headerText: string): string {
+  let protoSlug = headerText.replaceAll(slugCharsToConvertRegex, "-")
 
   // Remove consecutive hyphens
   protoSlug = protoSlug.replaceAll(/-+/g, "-")

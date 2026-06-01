@@ -156,60 +156,6 @@ export const svgCheck =
   '<svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true"><path fill-rule="evenodd" fill="rgb(63, 185, 80)" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg>'
 
 /**
- * Helper function to handle requestAnimationFrame-based animations
- * @param duration Duration of the animation in milliseconds
- * @param onFrame Callback function called on each animation frame with progress (0 to 1)
- * @param onComplete Optional callback function called when animation completes
- * @returns Cleanup function to cancel the animation
- */
-export function animate(
-  duration: number,
-  onFrame: (progress: number) => void,
-  onComplete?: () => void,
-): () => void {
-  if (duration <= 0) {
-    onFrame(1)
-    onComplete?.()
-    return () => undefined
-  }
-
-  let start: number | null = null
-  let rafId: number | null = null
-
-  /**
-   * Internal frame callback that executes on each animation frame.
-   * Calculates progress, calls the user's onFrame callback, and handles
-   * animation continuation or completion.
-   *
-   * @param timestamp - Current timestamp from requestAnimationFrame
-   */
-  const frame = (timestamp: number) => {
-    if (!start) start = timestamp
-    const elapsed = timestamp - start
-    const progress = Math.min(elapsed / duration, 1)
-
-    onFrame(progress)
-
-    if (progress < 1) {
-      rafId = requestAnimationFrame(frame)
-    } else {
-      onComplete?.()
-    }
-  }
-
-  rafId = requestAnimationFrame(frame)
-
-  // Return cleanup function
-  return () => {
-    /* istanbul ignore next -- defensive null check for rAF cleanup */
-    if (rafId !== null) {
-      cancelAnimationFrame(rafId)
-      rafId = null
-    }
-  }
-}
-
-/**
  * Sets up a clipboard copy button with icon swap animation.
  * Shared between code block copy buttons and the punctilio demo.
  */
@@ -226,16 +172,10 @@ export function setupCopyButton(
         () => {
           button.blur()
           button.innerHTML = svgCheck
-          animate(
-            2000,
-            () => {
-              // No per-frame updates needed, only completion callback to restore button state
-            },
-            () => {
-              button.innerHTML = svgCopy
-              button.style.borderColor = ""
-            },
-          )
+          setTimeout(() => {
+            button.innerHTML = svgCopy
+            button.style.borderColor = ""
+          }, 2000)
         },
         (error) => console.error(error),
       )

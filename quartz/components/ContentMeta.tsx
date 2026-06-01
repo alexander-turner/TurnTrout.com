@@ -38,7 +38,12 @@ export function RenderPublicationInfo(
 
   const originalUrl = frontmatter?.original_url
   if (typeof originalUrl === "string") {
-    const url = new URL(originalUrl)
+    let url: URL
+    try {
+      url = new URL(originalUrl)
+    } catch {
+      throw new Error(`Invalid original_url in frontmatter: ${originalUrl}`)
+    }
 
     return (
       <span className="publication-str">
@@ -142,7 +147,12 @@ export const renderLinkpostInfo = (fileData: QuartzPluginData): JSX.Element | nu
   const linkpostUrl = fileData.frontmatter?.["lw-linkpost-url"]
   if (typeof linkpostUrl !== "string") return null
 
-  const url = new URL(linkpostUrl)
+  let url: URL
+  try {
+    url = new URL(linkpostUrl)
+  } catch {
+    throw new Error(`Invalid lw-linkpost-url in frontmatter: ${linkpostUrl}`)
+  }
   const displayText = url.hostname.replace(/^(?:https?:\/\/)?(?:www\.)?/, "")
 
   return (

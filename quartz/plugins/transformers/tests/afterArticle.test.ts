@@ -5,7 +5,9 @@ import { h } from "hastscript"
 import { VFile } from "vfile"
 
 import { BuildCtx } from "../../../util/ctx"
-import { ornamentNode } from "../trout_hr"
+import { createOrnamentNode } from "../trout_hr"
+
+const ornamentNode = createOrnamentNode()
 
 jest.mock("../sequenceLinks", () => ({
   createSequenceLinksComponent: jest.fn(() => null),
