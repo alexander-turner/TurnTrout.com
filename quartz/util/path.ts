@@ -209,7 +209,12 @@ const _rebaseHastElement = (
  * skipHref suppresses href rebasing for the element itself (used for heading
  * autolink anchors that must keep their bare #slug so they resolve on the host page).
  */
-function _rebaseTree(el: HastElement, curBase: FullSlug, newBase: FullSlug, skipHref = false): void {
+function _rebaseTree(
+  el: HastElement,
+  curBase: FullSlug,
+  newBase: FullSlug,
+  skipHref = false,
+): void {
   _rebaseHastElement(el, "src", curBase, newBase)
   if (!skipHref) {
     _rebaseHastElement(el, "href", curBase, newBase)

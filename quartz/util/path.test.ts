@@ -110,11 +110,9 @@ describe("normalizeHastElement", () => {
   it.each(["h1", "h2", "h3", "h4", "h5", "h6"])(
     "does not rebase the rehype-autolink-headings wrapper anchor in transcluded %s",
     (tag) => {
-      const input = h(tag, { id: "my-section" }, [
-        h("a", { href: "#my-section" }, "My Section"),
-      ])
+      const input = h(tag, { id: "my-section" }, [h("a", { href: "#my-section" }, "My Section")])
       const result = normalizeHastElement(input, baseSlug, newSlug)
-      const anchor = (result.children[0] as Element)
+      const anchor = result.children[0] as Element
       expect(anchor.properties?.href).toBe("#my-section")
     },
   )
@@ -122,9 +120,7 @@ describe("normalizeHastElement", () => {
   it("still rebases non-autolink anchor-only hrefs inside headings to the source page", () => {
     // A user-authored link like [note](#footnote) inside a heading should still
     // rebase to the source page, since #footnote is defined there not on the host.
-    const input = h("h2", { id: "my-section" }, [
-      h("a", { href: "#footnote" }, "note"),
-    ])
+    const input = h("h2", { id: "my-section" }, [h("a", { href: "#footnote" }, "note")])
     const result = normalizeHastElement(input, baseSlug, newSlug)
     const anchor = result.children[0] as Element
     expect(anchor.properties?.href).toBe("../other/page#footnote")
