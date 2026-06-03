@@ -206,21 +206,28 @@ const _rebaseHastElement = (
 
 /**
  * Rebases all links in a HAST element tree (mutates in place).
+ * skipHref suppresses href rebasing for the element itself (used for heading
+ * autolink anchors that must keep their bare #slug so they resolve on the host page).
  */
-function _rebaseTree(el: HastElement, curBase: FullSlug, newBase: FullSlug): void {
+function _rebaseTree(el: HastElement, curBase: FullSlug, newBase: FullSlug, skipHref = false): void {
   _rebaseHastElement(el, "src", curBase, newBase)
-  _rebaseHastElement(el, "href", curBase, newBase)
-  // Heading ids belong to the source page's slug namespace; carrying them
-  // into a transcluded copy yields duplicate ids on the host page when the
-  // host happens to define the same slug. The heading's inner anchor is
-  // already rebased to point back to the original.
-  if (HEADING_TAGS.has(el.tagName) && el.properties?.id) {
-    delete el.properties.id
+  if (!skipHref) {
+    _rebaseHastElement(el, "href", curBase, newBase)
   }
+  const isHeading = HEADING_TAGS.has(el.tagName)
+  const headingId = isHeading ? String(el.properties?.id ?? "") : ""
   if (el.children) {
     for (const child of el.children) {
       if ((child as HastElement).type === "element") {
-        _rebaseTree(child as HastElement, curBase, newBase)
+        const childEl = child as HastElement
+        // The rehype-autolink-headings wrapper has href="#headingId" and is a
+        // direct <a> child of its heading. Keep it pointing to the host page
+        // (don't rebase) so in-page anchor navigation works after transclusion.
+        const isAutolinkWrapper =
+          isHeading &&
+          childEl.tagName === "a" &&
+          String(childEl.properties?.href ?? "") === `#${headingId}`
+        _rebaseTree(childEl, curBase, newBase, isAutolinkWrapper)
       }
     }
   }
