@@ -77,6 +77,7 @@ const getNextTheme = (): Theme => {
  */
 export const rotateTheme = () => {
   const nextTheme = getNextTheme()
+  // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
   void handleThemeUpdate(nextTheme)
 }
 

@@ -216,6 +216,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log("Critical SCSS generated successfully!")
   })().catch((err) => {
     console.error(err)
-    process.exit(1)
+    process.exitCode = 1
   })
 }

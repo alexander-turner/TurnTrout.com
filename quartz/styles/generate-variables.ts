@@ -145,6 +145,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log("SCSS variables and palette generated successfully!")
   })().catch((err) => {
     console.error(err)
-    process.exit(1)
+    process.exitCode = 1
   })
 }
