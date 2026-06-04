@@ -379,6 +379,7 @@ pre {
   border-radius: $border-radius;
   overflow-x: auto;
   position: relative;
+  white-space: pre-wrap;
 
   &:has(> code.mermaid) {
     border: none;
@@ -409,6 +410,8 @@ pre {
       padding-left: calc(5 * $base-margin);
       padding-right: calc(2 * $base-margin);
       text-wrap: pretty;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
       box-sizing: border-box;
       border-left: 3px solid transparent;
 
