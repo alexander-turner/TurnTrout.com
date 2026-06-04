@@ -9,19 +9,6 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    paths:
-      - "quartz/**"
-      - "!quartz/**/*.spec.ts"
-      - "!quartz/**/*.test.ts"
-      - "!quartz/**/*.test.tsx"
-      - "!quartz/**/tests/**"
-      - "website_content/**"
-      - "config/quartz/**"
-      - "config/constants.json"
-      - "config/pa11y/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
 
 permissions:
   actions: read
@@ -43,7 +30,21 @@ jobs:
       - id: gate
         uses: ./.github/actions/ci-gate
         with:
-          run-labels: "ci:full-tests,ci:run-a11y"
+          force-labels: "ci:full-tests,ci:run-a11y"
+          filters: |
+            relevant:
+              - "quartz/**"
+              - "!quartz/**/*.spec.ts"
+              - "!quartz/**/*.test.ts"
+              - "!quartz/**/*.test.tsx"
+              - "!quartz/**/tests/**"
+              - "website_content/**"
+              - "config/quartz/**"
+              - "config/constants.json"
+              - "config/pa11y/**"
+              - "package.json"
+              - "pnpm-lock.yaml"
+              - ".github/actions/**"
 
   a11y-build:
     needs: should-run
@@ -97,8 +98,8 @@ jobs:
     steps:
       - name: Check results
         run: |
-          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
-            echo "Tests were skipped (no label)"
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
+            echo "Tests were skipped (no relevant changes or filtered actor)"
             exit 0
           fi
           if [[ "${{ needs.a11y-test.result }}" != "success" ]]; then

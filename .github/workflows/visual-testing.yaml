@@ -9,16 +9,6 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    paths:
-      - "quartz/**"
-      - "website_content/**"
-      - "config/quartz/**"
-      - "config/constants.json"
-      - "config/playwright/**"
-      - "tests/visual-baselines/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
 
 permissions:
   actions: read
@@ -46,7 +36,18 @@ jobs:
       - id: gate
         uses: ./.github/actions/ci-gate
         with:
-          run-labels: "ci:full-tests,ci:run-visual"
+          force-labels: "ci:full-tests,ci:run-visual"
+          filters: |
+            relevant:
+              - "quartz/**"
+              - "website_content/**"
+              - "config/quartz/**"
+              - "config/constants.json"
+              - "config/playwright/**"
+              - "tests/visual-baselines/**"
+              - "package.json"
+              - "pnpm-lock.yaml"
+              - ".github/actions/**"
 
   build:
     name: visual-testing-build

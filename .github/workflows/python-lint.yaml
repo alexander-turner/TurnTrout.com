@@ -8,13 +8,6 @@ on:
   push:
     branches: ["main", "dev"]
   pull_request:
-    paths:
-      - "scripts/**/*.py"
-      - "**/pyproject.toml"
-      - "**/uv.lock"
-      - ".pylintrc"
-      - ".github/workflows/python-lint.yaml"
-      - ".github/actions/**"
 
 permissions:
   actions: read
