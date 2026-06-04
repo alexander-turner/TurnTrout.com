@@ -238,7 +238,9 @@ function _rebaseTree(
         // The rehype-autolink-headings wrapper matches href="#oldId". Point it
         // at the prefixed id so it scrolls to the heading on the host page.
         const isAutolinkWrapper =
-          isHeading && childEl.tagName === "a" && String(childEl.properties?.href ?? "") === `#${oldId}`
+          isHeading &&
+          childEl.tagName === "a" &&
+          String(childEl.properties?.href ?? "") === `#${oldId}`
         if (isAutolinkWrapper) {
           childEl.properties.href = `#${newId}`
         }
