@@ -207,7 +207,7 @@ const _rebaseHastElement = (
 /**
  * Rebases all links in a HAST element tree (mutates in place).
  * skipHref suppresses href rebasing for the element itself (used for heading
- * autolink anchors that must keep their bare #slug so they resolve on the host page).
+ * autolink anchors whose href has already been updated to the prefixed id).
  */
 function _rebaseTree(
   el: HastElement,
@@ -220,18 +220,28 @@ function _rebaseTree(
     _rebaseHastElement(el, "href", curBase, newBase)
   }
   const isHeading = HEADING_TAGS.has(el.tagName)
-  const headingId = isHeading ? String(el.properties?.id ?? "") : ""
+  const oldId = isHeading && el.properties?.id ? String(el.properties.id) : ""
+
+  if (oldId) {
+    // Prefix the id with the source-page slug (slashes → hyphens) so it stays
+    // unique on the host page even if the same slug exists there.
+    const prefix = newBase.replaceAll("/", "-")
+    el.properties.id = `${prefix}-${oldId}`
+  }
+
+  const newId = isHeading && el.properties?.id ? String(el.properties.id) : ""
+
   if (el.children) {
     for (const child of el.children) {
       if ((child as HastElement).type === "element") {
         const childEl = child as HastElement
-        // The rehype-autolink-headings wrapper has href="#headingId" and is a
-        // direct <a> child of its heading. Keep it pointing to the host page
-        // (don't rebase) so in-page anchor navigation works after transclusion.
+        // The rehype-autolink-headings wrapper matches href="#oldId". Point it
+        // at the prefixed id so it scrolls to the heading on the host page.
         const isAutolinkWrapper =
-          isHeading &&
-          childEl.tagName === "a" &&
-          String(childEl.properties?.href ?? "") === `#${headingId}`
+          isHeading && childEl.tagName === "a" && String(childEl.properties?.href ?? "") === `#${oldId}`
+        if (isAutolinkWrapper) {
+          childEl.properties.href = `#${newId}`
+        }
         _rebaseTree(childEl, curBase, newBase, isAutolinkWrapper)
       }
     }

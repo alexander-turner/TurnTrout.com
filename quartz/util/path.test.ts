@@ -85,20 +85,21 @@ describe("normalizeHastElement", () => {
     expect(child.properties?.href).toBe(expected)
   })
 
+  // newSlug = "other/page" → prefix = "other-page"
   it.each(["h1", "h2", "h3", "h4", "h5", "h6"])(
-    "preserves id on transcluded %s so in-page anchors work on the host page",
+    "prefixes id on transcluded %s with source-page slug to avoid host collisions",
     (tag) => {
       const input = h(tag, { id: "pre-commit" }, "pre-commit")
       const result = normalizeHastElement(input, baseSlug, newSlug)
-      expect(result.properties?.id).toBe("pre-commit")
+      expect(result.properties?.id).toBe("other-page-pre-commit")
     },
   )
 
-  it("preserves ids from headings nested inside transcluded content", () => {
+  it("prefixes ids from headings nested inside transcluded content", () => {
     const input = h("section", [h("h3", { id: "pre-commit" }, "pre-commit")])
     const result = normalizeHastElement(input, baseSlug, newSlug)
     const heading = result.children[0] as Element
-    expect(heading.properties?.id).toBe("pre-commit")
+    expect(heading.properties?.id).toBe("other-page-pre-commit")
   })
 
   it("preserves ids on non-heading transcluded elements", () => {
@@ -108,12 +109,12 @@ describe("normalizeHastElement", () => {
   })
 
   it.each(["h1", "h2", "h3", "h4", "h5", "h6"])(
-    "does not rebase the rehype-autolink-headings wrapper anchor in transcluded %s",
+    "updates the rehype-autolink-headings wrapper href to the prefixed id in transcluded %s",
     (tag) => {
       const input = h(tag, { id: "my-section" }, [h("a", { href: "#my-section" }, "My Section")])
       const result = normalizeHastElement(input, baseSlug, newSlug)
       const anchor = result.children[0] as Element
-      expect(anchor.properties?.href).toBe("#my-section")
+      expect(anchor.properties?.href).toBe("#other-page-my-section")
     },
   )
 
