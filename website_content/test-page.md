@@ -789,6 +789,12 @@ This is a plain code block without a language specified.
 This block has an intentionally long line so the default soft-wrap has something to chew on: lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua, ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 ```
 
+```plaintext
+This block has short lines.
+Each line fits easily on screen.
+No wrapping needed here.
+```
+
 # Formatting
 
 - Normal
