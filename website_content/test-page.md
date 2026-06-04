@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-05-25
+date_updated: 2026-06-04
 createBibtex: true
 ---
 
@@ -754,6 +754,8 @@ Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 [^spam8]: Make sure we hit double-digit footnotes to test formatting.
 
 # Code blocks
+
+Inline code ligature kerning: `$var` must be interpolated into `#{$var}`. See also `===`, `!==`, `=>`, and `custom-property-no-missing-interpolation`.
 
 ```json
 "lint-staged": {
