@@ -1162,6 +1162,5 @@ Weekly security scan
 Template sync
 : A [daily workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/template-sync.yaml) diffs local automation files against the [template repo](https://github.com/alexander-turner/claude-automation-template), copies new files, and opens a PR.
 
-# Acknowledgments
-
-Thanks to [Boyd Kane](https://github.com/beyarkay) for [his pull request](https://github.com/alexander-turner/TurnTrout.com/pull/1404) prompting the soft-wrapping of long lines in code blocks.
+> [!thanks]
+> [Boyd Kane](https://github.com/beyarkay) made [a pull request](https://github.com/alexander-turner/TurnTrout.com/pull/1404) to wrap long lines in `pre` blocks.
