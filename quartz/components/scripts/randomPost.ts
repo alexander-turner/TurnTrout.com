@@ -30,7 +30,7 @@ export function setupRandomPostLink(): void {
     const current = document.body.dataset.slug ?? ""
     const candidates = posts.filter((s) => s !== current)
     const slug = candidates[Math.floor(Math.random() * candidates.length)]
-    const url = new URL("/" + slug, location.origin)
+    const url = new URL(`/${slug}`, location.origin)
     if (window.spaNavigate) {
       window.spaNavigate(url)
     } else {

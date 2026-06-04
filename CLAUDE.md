@@ -114,6 +114,7 @@ After pushing, monitor CI until pass or fail. The PostToolUse hook polls GitHu
 ## DeepSource issues
 
 - The `deepsource` CLI is authenticated by the SessionStart hook.
+- **Any DeepSource alert that arrives while you hold a PR subscription is itself an actionable event—always fix it, never just acknowledge it.** A `<github-webhook-activity>` event mentioning DeepSource, a `DeepSource: <analyzer>` check-run flipping to failed/neutral, or a DeepSource bot review comment all mean the same thing: run `deepsource issues --pr <N> --output json`, fix every finding it returns, push, and update your status checklist—before replying. This holds even when the alert lands on a PR whose original task was something else; an open DeepSource finding blocks the PR regardless of why you opened it. Do not defer to "a later pass," do not assume it will self-resolve, and do not unsubscribe to make the alert stop.
 - **DeepSource findings are not optional. If `deepsource issues --pr <N> --output json` returns a non-empty list, you MUST fix every issue before the task is done—even MINOR severity, even in files that came in from a parent branch via merge. Listing or summarizing the findings is not a substitute for fixing them.** This is the most common failure mode: surfacing the list and then stopping. Don’t.
 - **Run the CLI three times per PR, every time:**
   1. **Right after pushing the first commit** — `deepsource issues --pr <N> --output json`. Fix everything it returns, then push the fix commit.

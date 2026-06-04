@@ -70,7 +70,7 @@ function setupTocActiveHighlighting(): void {
     threshold: 0,
   }
 
-  window.tocObserver = new IntersectionObserver((entries) => {
+  const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         visibleSections.add(entry.target.id)
@@ -88,8 +88,9 @@ function setupTocActiveHighlighting(): void {
       }
     }
   }, observerOptions)
+  window.tocObserver = observer
 
-  sections.forEach((section) => window.tocObserver!.observe(section))
+  sections.forEach((section) => observer.observe(section))
 
   const hash = window.location.hash.slice(1)
   const firstSectionId = sections[0]?.id

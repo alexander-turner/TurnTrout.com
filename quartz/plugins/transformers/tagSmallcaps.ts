@@ -57,8 +57,8 @@ const boundaryAllowAcronyms = escapedAllowAcronyms
 export const smallCapsSeparators = "-'’"
 const upperCapsChars = "A-Z\\u00C0-\\u00DC" // A-Z and À-Ü
 // Word boundary that prevents mixing upper- and lowercase neighbors
-const beforeWordBoundary = `(?<![\\w\\u00C0-\\u00DC\\u00E0-\\u00FC])`
-const afterWordBoundary = `(?![\\w\\u00C0-\\u00DC\\u00E0-\\u00FC])`
+const beforeWordBoundary = "(?<![\\w\\u00C0-\\u00DC\\u00E0-\\u00FC])"
+const afterWordBoundary = "(?![\\w\\u00C0-\\u00DC\\u00E0-\\u00FC])"
 
 // Pattern for acronyms with at least 3 uppercase letters (with digits/separators allowed between them)
 // Use explicit alternations to ensure we actually capture 3+ uppercase letters, not just look ahead for them

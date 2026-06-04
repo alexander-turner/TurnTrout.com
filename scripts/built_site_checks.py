@@ -928,6 +928,43 @@ def _img_invert_issue(
     )
 
 
+def _img_invert_issues(
+    src: str,
+    img: Tag,
+    invert_labels: Mapping[str, InvertLabel],
+) -> list[str]:
+    """Validate one eligible ``<img>`` against the invert labels."""
+    issues: list[str] = []
+    issue = _img_invert_issue(src, img, invert_labels)
+    if issue is not None:
+        issues.append(issue)
+    tokens = _class_tokens(img)
+    needs_picture = (
+        INVERT_CLASS in tokens or FORCE_HSL_INVERT_CLASS in tokens
+    ) and src.lower().endswith(INVERT_IMG_EXTENSIONS)
+    if needs_picture and (img.parent is None or img.parent.name != "picture"):
+        issues.append(
+            f"<img> {src} has invert class but is not inside <picture>"
+        )
+    return issues
+
+
+def _video_invert_issue(
+    video: Tag,
+    invert_labels: Mapping[str, InvertLabel],
+) -> str | None:
+    """Validate one inline looping ``<video>`` against the invert labels."""
+    src = _canonical_inline_video_source(video)
+    if src is None or _is_excluded_segment(src):
+        return None
+    return _invert_issue_string(
+        "video",
+        src,
+        INVERT_CLASS in _class_tokens(video),
+        invert_labels.get(src),
+    )
+
+
 def check_invert_labels(
     soup: BeautifulSoup,
     invert_labels: Mapping[str, InvertLabel] | None,
@@ -952,29 +989,9 @@ def check_invert_labels(
             continue
         if _is_excluded_segment(src):
             continue
-        issue = _img_invert_issue(src, img, invert_labels)
-        if issue is not None:
-            issues.append(issue)
-        tokens = _class_tokens(img)
-        needs_picture = (
-            INVERT_CLASS in tokens or FORCE_HSL_INVERT_CLASS in tokens
-        ) and src.lower().endswith(INVERT_IMG_EXTENSIONS)
-        if needs_picture and (
-            img.parent is None or img.parent.name != "picture"
-        ):
-            issues.append(
-                f"<img> {src} has invert class but is not inside <picture>"
-            )
+        issues.extend(_img_invert_issues(src, img, invert_labels))
     for video in _tags_only(soup.find_all("video")):
-        src = _canonical_inline_video_source(video)
-        if src is None or _is_excluded_segment(src):
-            continue
-        issue = _invert_issue_string(
-            "video",
-            src,
-            INVERT_CLASS in _class_tokens(video),
-            invert_labels.get(src),
-        )
+        issue = _video_invert_issue(video, invert_labels)
         if issue is not None:
             issues.append(issue)
     return issues

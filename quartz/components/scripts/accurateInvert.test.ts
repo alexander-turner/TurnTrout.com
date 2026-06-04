@@ -30,19 +30,6 @@ const mockSystemDark = (dark: boolean): void => {
   })
 }
 
-/** Build a `<picture><source><img></picture>` matching the build-time
- * output of `wrapInDarkModePicture`. */
-const makePictureWrappedImg = (src = "https://x/img.avif"): HTMLImageElement => {
-  const picture = document.createElement("picture")
-  const source = document.createElement("source")
-  source.media = "(prefers-color-scheme: dark)"
-  source.srcset = src.replace(/(\.\w+)$/, "-inverted$1")
-  picture.appendChild(source)
-  const img = makeLoadedImg(src)
-  picture.appendChild(img)
-  return img
-}
-
 const makeLoadedImg = (
   src = "https://x/img.avif",
   className = "invert-in-dark-mode",
@@ -57,16 +44,37 @@ const makeLoadedImg = (
   return img
 }
 
+/** Build a `<picture><source><img></picture>` matching the build-time
+ * output of `wrapInDarkModePicture`. */
+const makePictureWrappedImg = (src = "https://x/img.avif"): HTMLImageElement => {
+  const picture = document.createElement("picture")
+  const source = document.createElement("source")
+  source.media = "(prefers-color-scheme: dark)"
+  source.srcset = src.replace(/(\.\w+)$/, "-inverted$1")
+  picture.appendChild(source)
+  const img = makeLoadedImg(src)
+  picture.appendChild(img)
+  return img
+}
+
 const dispatchSwapLoad = (img: HTMLImageElement): void => {
   Object.defineProperty(img, "currentSrc", { value: img.src, configurable: true })
   img.dispatchEvent(new Event("load"))
 }
 
-const getSourceSrcset = (img: HTMLImageElement): string =>
-  img.parentElement!.querySelector("source")!.srcset
+/** Resolve the `<source>` sibling of a picture-wrapped `<img>`, asserting it exists. */
+const querySource = (img: HTMLImageElement): HTMLSourceElement => {
+  const source = img.parentElement?.querySelector("source")
+  if (!source) {
+    throw new Error("expected a <source> sibling inside <picture>")
+  }
+  return source
+}
+
+const getSourceSrcset = (img: HTMLImageElement): string => querySource(img).srcset
 
 const getSourceMedia = (img: HTMLImageElement): string | null =>
-  img.parentElement!.querySelector("source")!.getAttribute("media")
+  querySource(img).getAttribute("media")
 
 const finishPendingPictureSwaps = (): void => {
   for (const img of document.querySelectorAll<HTMLImageElement>("picture > img")) {
@@ -272,14 +280,14 @@ describe("handleLoadEvent", () => {
 
 describe("invertDecodedImages", () => {
   it("inverts all eligible decoded imgs under root", () => {
-    const a = makePictureWrappedImg("https://x/a.avif")
-    const b = makePictureWrappedImg("https://x/b.avif")
-    document.body.append(a.parentElement as HTMLElement, b.parentElement as HTMLElement)
+    const imgA = makePictureWrappedImg("https://x/a.avif")
+    const imgB = makePictureWrappedImg("https://x/b.avif")
+    document.body.append(imgA.parentElement as HTMLElement, imgB.parentElement as HTMLElement)
     invertDecodedImages()
 
     finishPendingPictureSwaps()
-    expect(a.dataset["invertProcessed"]).toBe("1")
-    expect(b.dataset["invertProcessed"]).toBe("1")
+    expect(imgA.dataset["invertProcessed"]).toBe("1")
+    expect(imgB.dataset["invertProcessed"]).toBe("1")
   })
 
   it("skips imgs that haven't decoded yet", () => {
@@ -294,17 +302,17 @@ describe("invertDecodedImages", () => {
 
 describe("revertAllInverted", () => {
   it("uninverts every processed img under root", () => {
-    const a = makePictureWrappedImg("https://x/a.avif")
-    const b = makePictureWrappedImg("https://x/b.avif")
-    document.body.append(a.parentElement as HTMLElement, b.parentElement as HTMLElement)
+    const imgA = makePictureWrappedImg("https://x/a.avif")
+    const imgB = makePictureWrappedImg("https://x/b.avif")
+    document.body.append(imgA.parentElement as HTMLElement, imgB.parentElement as HTMLElement)
     invertDecodedImages()
 
     finishPendingPictureSwaps()
     revertAllInverted()
-    expect(a.src).toBe("https://x/a.avif")
-    expect(b.src).toBe("https://x/b.avif")
-    expect(a.dataset["invertProcessed"]).toBeUndefined()
-    expect(b.dataset["invertProcessed"]).toBeUndefined()
+    expect(imgA.src).toBe("https://x/a.avif")
+    expect(imgB.src).toBe("https://x/b.avif")
+    expect(imgA.dataset["invertProcessed"]).toBeUndefined()
+    expect(imgB.dataset["invertProcessed"]).toBeUndefined()
   })
 
   it("leaves force-hsl-invert images alone", () => {
@@ -357,7 +365,7 @@ describe("syncPictureSources", () => {
     mockSystemDark(false)
     setTheme("light")
     const img = makePictureWrappedImg("https://x/nosrc.avif")
-    img.parentElement!.querySelector("source")!.remove()
+    querySource(img).remove()
     document.body.appendChild(img.parentElement as HTMLElement)
     expect(() => syncPictureSources()).not.toThrow()
   })
@@ -377,7 +385,7 @@ describe("syncPictureSources", () => {
     setTheme("dark")
     const img = makePictureWrappedImg("https://x/a.avif")
     document.body.appendChild(img.parentElement as HTMLElement)
-    const source = img.parentElement!.querySelector("source")!
+    const source = querySource(img)
     source.removeAttribute("media")
     syncPictureSources()
     expect(getSourceMedia(img)).toBe("(prefers-color-scheme: dark)")

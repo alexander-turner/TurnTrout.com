@@ -81,10 +81,10 @@ async function performDOMIsolation(
         targetElement.parentElement.setAttribute(parentAttr, "")
       }
 
-      let selector = `body *:not(:has([${attr}]))` + `:not([${attr}])` + `:not([${attr}] *)`
+      let selector = `body *:not(:has([${attr}])):not([${attr}]):not([${attr}] *)`
 
       if (preserveSiblings) {
-        selector += `:not([${parentAttr}] > *)` + `:not([${parentAttr}] > * *)`
+        selector += `:not([${parentAttr}] > *):not([${parentAttr}] > * *)`
       }
 
       const style = document.createElement("style")
@@ -145,7 +145,7 @@ async function waitForImagesInElement(scope: Locator): Promise<void> {
                 el.addEventListener("error", done, { once: true })
               }),
         )
-        .catch(() => {}),
+        .catch(() => undefined),
     ),
   )
 }

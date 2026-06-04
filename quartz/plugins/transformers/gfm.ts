@@ -427,7 +427,7 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
 const slugger = new GithubSlugger()
 
 /** Normalizes heading text before slugging: converts apostrophes, slashes, dashes, and `&` to `-`. */
-const slugCharsToConvertRegex = /['‘’/&—]/g
+const slugCharsToConvertRegex = /['‘’/&—]/gu
 
 export function preprocessSlug(headerText: string): string {
   let protoSlug = headerText.replaceAll(slugCharsToConvertRegex, "-")

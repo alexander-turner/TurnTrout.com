@@ -83,6 +83,7 @@ export function revertImage(img: HTMLImageElement): boolean {
 export function handleLoadEvent(event: Event): void {
   const target = event.target
   if (target instanceof HTMLImageElement && target.matches(INVERT_SELECTOR)) {
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
     void invertImage(target)
   }
 }
@@ -91,6 +92,7 @@ export function invertDecodedImages(root: Document | Element = document): void {
   const images = root.querySelectorAll<HTMLImageElement>(INVERT_SELECTOR)
   for (const img of images) {
     if (img.complete && img.naturalWidth > 0) {
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
       void invertImage(img)
     }
   }
