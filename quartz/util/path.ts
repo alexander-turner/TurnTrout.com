@@ -206,21 +206,45 @@ const _rebaseHastElement = (
 
 /**
  * Rebases all links in a HAST element tree (mutates in place).
+ * skipHref suppresses href rebasing for the element itself (used for heading
+ * autolink anchors whose href has already been updated to the prefixed id).
  */
-function _rebaseTree(el: HastElement, curBase: FullSlug, newBase: FullSlug): void {
+function _rebaseTree(
+  el: HastElement,
+  curBase: FullSlug,
+  newBase: FullSlug,
+  skipHref = false,
+): void {
   _rebaseHastElement(el, "src", curBase, newBase)
-  _rebaseHastElement(el, "href", curBase, newBase)
-  // Heading ids belong to the source page's slug namespace; carrying them
-  // into a transcluded copy yields duplicate ids on the host page when the
-  // host happens to define the same slug. The heading's inner anchor is
-  // already rebased to point back to the original.
-  if (HEADING_TAGS.has(el.tagName) && el.properties?.id) {
-    delete el.properties.id
+  if (!skipHref) {
+    _rebaseHastElement(el, "href", curBase, newBase)
   }
+  const isHeading = HEADING_TAGS.has(el.tagName)
+  const oldId = isHeading && el.properties?.id ? String(el.properties.id) : ""
+
+  if (oldId) {
+    // Prefix the id with the source-page slug (slashes → hyphens) so it stays
+    // unique on the host page even if the same slug exists there.
+    const prefix = newBase.replaceAll("/", "-")
+    el.properties.id = `${prefix}-${oldId}`
+  }
+
+  const newId = isHeading && el.properties?.id ? String(el.properties.id) : ""
+
   if (el.children) {
     for (const child of el.children) {
       if ((child as HastElement).type === "element") {
-        _rebaseTree(child as HastElement, curBase, newBase)
+        const childEl = child as HastElement
+        // The rehype-autolink-headings wrapper matches href="#oldId". Point it
+        // at the prefixed id so it scrolls to the heading on the host page.
+        const isAutolinkWrapper =
+          isHeading &&
+          childEl.tagName === "a" &&
+          String(childEl.properties?.href ?? "") === `#${oldId}`
+        if (isAutolinkWrapper) {
+          childEl.properties.href = `#${newId}`
+        }
+        _rebaseTree(childEl, curBase, newBase, isAutolinkWrapper)
       }
     }
   }
