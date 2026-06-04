@@ -28,9 +28,13 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Final
 from urllib.parse import unquote, urlparse
-from xml.etree import ElementTree as ET
+
+# Stdlib ElementTree is used only to register XML namespaces and serialize
+# our own build-time SVGs; untrusted parsing is delegated to defusedxml.
+from xml.etree import ElementTree as ET  # skipcq: BAN-B405
 
 import numpy as np
+from defusedxml.ElementTree import parse as parse_svg
 from PIL import Image
 
 try:
@@ -191,7 +195,7 @@ def invert_css_colors(css: str) -> str:
 def invert_svg_file(src: Path, dst: Path) -> None:
     ET.register_namespace("", "http://www.w3.org/2000/svg")
     ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
-    tree = ET.parse(src)  # noqa: S314
+    tree = parse_svg(src)
     for el in tree.iter():
         for attr in _SVG_COLOR_ATTRS:
             val = el.get(attr)

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Final
 
@@ -337,7 +338,7 @@ def build_all(output_dir: Path) -> bool:
 
 def main() -> None:
     """Build fonts and optionally install them."""
-    output_dir = Path("/tmp/build_fonts_output")
+    output_dir = Path(tempfile.mkdtemp(prefix="build_fonts_"))
     all_match = build_all(output_dir)
 
     if all_match:
