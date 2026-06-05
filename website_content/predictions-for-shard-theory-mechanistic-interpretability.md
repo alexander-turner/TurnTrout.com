@@ -77,7 +77,7 @@ Also: _Try not to update on this work being shared to begin with._ When reading 
 
 The architecture looks like this:
 
-<span class="populate-markdown-network-architecture"></span>
+<span class="populate-markdown-cheese-network-architecture"></span>
 
 For more background on training and architecture and task set, see [the original paper](https://arxiv.org/abs/2105.14111).
 

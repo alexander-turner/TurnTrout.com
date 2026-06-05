@@ -90,7 +90,7 @@ Figure: We humans see a nice, zoomed-in, high-resolution maze. The network sees 
 
 Each 64x64 RGB observation is processed by a deeply convolutional (15 conv layers!) network, without memory (i.e. no recurrent state):
 
-<span class="populate-markdown-network-architecture"></span>
+<span class="populate-markdown-cheese-network-architecture"></span>
 
 Code: For more background on training and architecture and task set, see [the original paper](https://arxiv.org/abs/2105.14111) and [the model training repo](https://github.com/jbkjr/train-procgen-pytorch).
 

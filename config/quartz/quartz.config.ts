@@ -103,8 +103,8 @@ const config: QuartzConfig = {
           "inversion-demo": {
             filePath: "website_content/partials/inversion-demo.md",
           },
-          "network-architecture": {
-            filePath: "website_content/partials/network-architecture.md",
+          "cheese-network-architecture": {
+            filePath: "website_content/partials/cheese-network-architecture.md",
           },
         },
       }),
