@@ -103,6 +103,9 @@ const config: QuartzConfig = {
           "inversion-demo": {
             filePath: "website_content/partials/inversion-demo.md",
           },
+          "network-architecture": {
+            filePath: "website_content/partials/network-architecture.md",
+          },
         },
       }),
       CreatedModifiedDate(),

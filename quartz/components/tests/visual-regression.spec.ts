@@ -270,6 +270,25 @@ test.describe("Unique content around the site", () => {
       })
     })
   }
+
+  test("Network architecture Mermaid diagrams (screenshot)", async ({ page }, testInfo) => {
+    await gotoPage(page, "http://localhost:8080/network-architecture-fixture")
+    await page.locator("body").waitFor({ state: "visible" })
+
+    const diagrams = page.locator('svg[id*="mermaid"]')
+    await expect(diagrams).toHaveCount(2)
+
+    const names = ["architecture-blocks", "architecture-forward-pass"]
+    for (const [index, name] of names.entries()) {
+      const diagram = diagrams.nth(index)
+      await diagram.scrollIntoViewIfNeeded()
+      await expect(diagram).toBeVisible()
+
+      await takeRegressionScreenshot(page, testInfo, `network-${name}`, {
+        elementToScreenshot: diagram,
+      })
+    }
+  })
 })
 
 test.describe("Table of contents", () => {
