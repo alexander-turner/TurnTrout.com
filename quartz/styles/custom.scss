@@ -828,7 +828,12 @@ img.emoji {
   }
 
   & .cluster-label {
+    font-size: 1.2em;
     text-decoration: underline; // Bolding makes the width too small
+
+    & div {
+      text-align: center; // Keep the enlarged title centered over its box
+    }
   }
 }
 
@@ -860,15 +865,6 @@ svg[id*="mermaid"] {
   & .edgeLabel {
     color: var(--foreground) !important;
     fill: var(--foreground) !important;
-  }
-
-  & .cluster-label {
-    font-size: 1.2em !important;
-    font-weight: 600;
-
-    & div {
-      text-align: center !important;
-    }
   }
 }
 

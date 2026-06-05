@@ -271,24 +271,30 @@ test.describe("Unique content around the site", () => {
     })
   }
 
-  test("Network architecture Mermaid diagrams (screenshot)", async ({ page }, testInfo) => {
-    await gotoPage(page, "http://localhost:8080/network-architecture-fixture")
-    await page.locator("body").waitFor({ state: "visible" })
+  for (const theme of LIGHT_THEMES) {
+    test(`Network architecture Mermaid diagrams in ${theme} mode (screenshot)`, async ({
+      page,
+    }, testInfo) => {
+      await gotoPage(page, "http://localhost:8080/network-architecture-fixture")
+      await setTheme(page, theme)
+      // Fonts drive Mermaid label metrics; wait so the layout is stable.
+      await page.evaluate(() => document.fonts.ready)
 
-    const diagrams = page.locator('svg[id*="mermaid"]')
-    await expect(diagrams).toHaveCount(2)
+      const diagrams = page.locator('svg[id*="mermaid"]')
+      await expect(diagrams).toHaveCount(2)
 
-    const names = ["architecture-blocks", "architecture-forward-pass"]
-    for (const [index, name] of names.entries()) {
-      const diagram = diagrams.nth(index)
-      await diagram.scrollIntoViewIfNeeded()
-      await expect(diagram).toBeVisible()
+      const names = ["architecture-blocks", "architecture-forward-pass"]
+      for (const [index, name] of names.entries()) {
+        const diagram = diagrams.nth(index)
+        await diagram.scrollIntoViewIfNeeded()
+        await expect(diagram).toBeVisible()
 
-      await takeRegressionScreenshot(page, testInfo, `network-${name}`, {
-        elementToScreenshot: diagram,
-      })
-    }
-  })
+        await takeRegressionScreenshot(page, testInfo, `network-${name}-${theme}`, {
+          elementToScreenshot: diagram,
+        })
+      }
+    })
+  }
 })
 
 test.describe("Table of contents", () => {
