@@ -43,7 +43,7 @@ original_url: https://www.lesswrong.com/posts/gRp6FAWcQiCWkouN5/maze-solving-age
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/lteqnk5fbayr0jixir5z.jpg
 description: Adding a "top-right vector" makes a maze-solver go to the top-right. We show composition with other vectors, like the "cheese vector."
-date_updated: 2026-04-20
+date_updated: 2026-06-05
 card_image_alt: Vector fields showing effects of interventions. The cheese vector makes the agent ignore the cheese. The top-right vector attracts the agent to the top-right corner. Applying both at once combines the effects!
 createBibtex: true
 ---
@@ -119,6 +119,7 @@ If you don't know what these mean, read this section. If you understand, then sk
 > ```mermaid
 > graph TD
 >     subgraph ImpalaBlock[Impala block]
+>         direction TB
 >         IB_X[x] --> IB_Conv[Conv]
 >         IB_Conv --> IB_MaxPool[MaxPool2D]
 >         IB_MaxPool --> IB_Res1[Residual block]:::green
@@ -126,6 +127,7 @@ If you don't know what these mean, read this section. If you understand, then sk
 >     end
 > 
 >     subgraph ResidualBlock[Residual block]
+>         direction TB
 >         RB_X[x] --> RB_ReLU1[ReLU]
 >         RB_ReLU1 --> RB_Conv1[Conv]
 >         RB_Conv1 --> RB_ReLU2[ReLU]
@@ -138,6 +140,7 @@ If you don't know what these mean, read this section. If you understand, then sk
 > ```mermaid
 > graph TD
 >   subgraph OverallGraph["Forward pass"]
+>     direction TB
 >     Input --> Impala1
 >           Impala1["Impala<sub>1</sub>"] --> Impala2:::green
 >           Impala2["Impala<sub>2</sub>"] --> Impala3

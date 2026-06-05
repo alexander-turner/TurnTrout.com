@@ -48,7 +48,7 @@ original_url: https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-an
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/dc4zupnie9hr2hm7tfnx.jpg
 description: A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.
-date_updated: 2026-04-20
+date_updated: 2026-06-05
 card_image_alt: An illustration of a cute gray mouse whose body is composed of glowing, crystalline yellow cheese shards. This visually represents an AI agent with "cheese subshards" as its motivational components.
 createBibtex: true
 ---
@@ -90,39 +90,7 @@ Figure: We humans see a nice, zoomed-in, high-resolution maze. The network sees 
 
 Each 64x64 RGB observation is processed by a deeply convolutional (15 conv layers!) network, without memory (i.e. no recurrent state):
 
-```mermaid
-graph TD
-    subgraph ImpalaBlock[Impala block]
-        IB_X[x] --> IB_Conv[Conv]
-        IB_Conv --> IB_MaxPool[MaxPool2D]
-        IB_MaxPool --> IB_Res1[Residual block]
-        IB_Res1 --> IB_Res2[Residual block]
-    end
-
-    subgraph ResidualBlock[Residual block]
-        RB_X[x] --> RB_ReLU1[ReLU]
-        RB_ReLU1 --> RB_Conv1[Conv]
-        RB_Conv1 --> RB_ReLU2[ReLU]
-        RB_ReLU2 --> RB_Conv2[Conv]
-        RB_X --> RB_Add[Residual add]
-        RB_Conv2 --> RB_Add
-    end
-```
-
-```mermaid
-graph TD
-  subgraph OverallGraph["Forward pass"]
-    Input --> Impala1
-          Impala1["Impala<sub>1</sub>"] --> Impala2
-          Impala2["Impala<sub>2</sub>"] --> Impala3
-          Impala3["Impala<sub>3</sub>"] --> ReLU1
-          ReLU1["ReLU"] --> Flatten
-          Flatten --> Linear
-          Linear --> ReLU2
-          ReLU2["ReLU"] --> PolicyHead[Policy head, linear]
-          ReLU2 --> ValueHead[Value head, linear]
-  end
-```
+<span class="populate-markdown-cheese-network-architecture"></span>
 
 Code: For more background on training and architecture and task set, see [the original paper](https://arxiv.org/abs/2105.14111) and [the model training repo](https://github.com/jbkjr/train-procgen-pytorch).
 
@@ -309,6 +277,7 @@ In the real network, there are a lot more than two activations. Our results invo
 > ```mermaid
 > graph TD
 >     subgraph ImpalaBlock[Impala block]
+>         direction TB
 >         IB_X[x] --> IB_Conv[Conv]
 >         IB_Conv --> IB_MaxPool[MaxPool2D]
 >         IB_MaxPool --> IB_Res1[Residual block]:::green
@@ -316,6 +285,7 @@ In the real network, there are a lot more than two activations. Our results invo
 >     end
 >
 >     subgraph ResidualBlock[Residual block]
+>         direction TB
 >         RB_X[x] --> RB_ReLU1[ReLU]
 >         RB_ReLU1 --> RB_Conv1[Conv]
 >         RB_Conv1 --> RB_ReLU2[ReLU]
@@ -328,6 +298,7 @@ In the real network, there are a lot more than two activations. Our results invo
 > ```mermaid
 > graph TD
 >   subgraph OverallGraph["Forward pass"]
+>     direction TB
 >     Input --> Impala1
 >           Impala1["Impala<sub>1</sub>"] --> Impala2:::green
 >           Impala2["Impala<sub>2</sub>"] --> Impala3
@@ -497,6 +468,7 @@ To understand in mechanistic detail what's happening here, it's time to learn a 
 > ```mermaid
 > graph TD
 >     subgraph ImpalaBlock[Impala block]
+>         direction TB
 >         IB_X[x] --> IB_Conv[Conv]
 >         IB_Conv --> IB_MaxPool[MaxPool2D]
 >         IB_MaxPool --> IB_Res1[Residual block]:::green
@@ -504,6 +476,7 @@ To understand in mechanistic detail what's happening here, it's time to learn a 
 >     end
 >
 >     subgraph ResidualBlock[Residual block]
+>         direction TB
 >         RB_X[x] --> RB_ReLU1[ReLU]
 >         RB_ReLU1 --> RB_Conv1[Conv]
 >         RB_Conv1 --> RB_ReLU2[ReLU]
@@ -516,6 +489,7 @@ To understand in mechanistic detail what's happening here, it's time to learn a 
 > ```mermaid
 > graph TD
 >   subgraph OverallGraph["Forward pass"]
+>     direction TB
 >     Input --> Impala1
 >           Impala1["Impala<sub>1</sub>"] --> Impala2:::green
 >           Impala2["Impala<sub>2</sub>"] --> Impala3

@@ -828,7 +828,12 @@ img.emoji {
   }
 
   & .cluster-label {
+    font-size: 1.2em;
     text-decoration: underline; // Bolding makes the width too small
+
+    & div {
+      text-align: center; // Keep the enlarged title centered over its box
+    }
   }
 }
 
