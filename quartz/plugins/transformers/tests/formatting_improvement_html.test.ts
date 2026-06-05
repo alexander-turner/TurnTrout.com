@@ -34,6 +34,7 @@ import {
   l_pRegex,
   massTransformText,
   moveQuotesBeforeLink,
+  preventEmDashLineStart,
   rearrangeLinkPunctuation,
   replaceFractions,
   spacesAroundSlashes,
@@ -747,36 +748,34 @@ describe("HTMLFormattingImprovement", () => {
       expect(stripWordJoiner(normalizeNbsp(processedHtml))).toBe(expected)
     })
 
-    describe("em dashes cannot start a wrapped line", () => {
-      const WJ = WORD_JOINER
-
+    describe("preventEmDashLineStart", () => {
       it.each([
-        // Glue a word joiner before an em dash that has preceding content.
-        ["<p>plan -- result</p>", `<p>plan${WJ}—result</p>`],
-        // Boundary case: the em dash starts a text node after a sibling element.
-        // The joiner still lands immediately before the dash.
-        ["<p>not simply <em>accept</em> -- but</p>", `<p>not simply <em>accept</em>${WJ}—but</p>`],
-        ["<p>Hi <code>ABC</code> -- file</p>", `<p>Hi <code>ABC</code>${WJ}—file</p>`],
-      ])("inserts a word joiner: %s", (input: string, expected: string) => {
-        expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
+        ["plan—result", `plan${WORD_JOINER}—result`], // preceded by a letter
+        ["a—b—c", `a${WORD_JOINER}—b${WORD_JOINER}—c`], // every interior dash
+        [`x${markerChar}—y`, `x${markerChar}${WORD_JOINER}—y`], // element boundary counts as text
+        ["—Author", "—Author"], // start of string: untouched
+        ["foo — bar", "foo — bar"], // whitespace before: untouched
+        [`plan${WORD_JOINER}—result`, `plan${WORD_JOINER}—result`], // already glued: idempotent
+      ])("%s", (input: string, expected: string) => {
+        expect(preventEmDashLineStart(input)).toBe(expected)
       })
+    })
 
-      it.each([
-        // Attribution dash at the start of a paragraph has no preceding glyph,
-        // so it must stay free of a joiner.
-        ["<blockquote><p>-- Orwell</p></blockquote>", "<blockquote><p>— Orwell</p></blockquote>"],
-      ])("leaves line-leading dashes untouched: %s", (input: string, expected: string) => {
-        const out = normalizeNbsp(testHtmlFormattingImprovement(input))
-        expect(out).not.toContain(WJ)
-        expect(out).toBe(expected)
-      })
-
-      it("is idempotent", () => {
-        const once = testHtmlFormattingImprovement("<p>plan -- result</p>")
-        const twice = testHtmlFormattingImprovement(once)
-        expect(twice).toBe(once)
-        expect((twice.match(new RegExp(WJ, "gu")) ?? []).length).toBe(1)
-      })
+    it.each([
+      ["<p>plan -- result</p>", `<p>plan${WORD_JOINER}—result</p>`],
+      // The em dash starts a text node after a sibling element; the joiner still
+      // lands immediately before the dash.
+      [
+        "<p>not simply <em>accept</em> -- but</p>",
+        `<p>not simply <em>accept</em>${WORD_JOINER}—but</p>`,
+      ],
+      ["<p>Hi <code>ABC</code> -- file</p>", `<p>Hi <code>ABC</code>${WORD_JOINER}—file</p>`],
+      // The dash leads an inner element but trails outer content.
+      ["<p>a<em>—b</em></p>", `<p>a<em>${WORD_JOINER}—b</em></p>`],
+      // Attribution dash at paragraph start has no preceding glyph: untouched.
+      ["<blockquote><p>-- Orwell</p></blockquote>", "<blockquote><p>— Orwell</p></blockquote>"],
+    ])("em dashes never start a wrapped line: %s", (input: string, expected: string) => {
+      expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
     })
   })
 
