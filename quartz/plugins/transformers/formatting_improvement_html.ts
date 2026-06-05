@@ -1,7 +1,14 @@
 import type { Element, ElementContent, Parent, Root, Text } from "hast"
 
 import { h } from "hastscript"
-import { hyphenReplace, nbspTransform, niceQuotes, primeMarks, symbolTransform } from "punctilio"
+import {
+  emDashWordJoiner,
+  hyphenReplace,
+  nbspTransform,
+  niceQuotes,
+  primeMarks,
+  symbolTransform,
+} from "punctilio"
 import {
   collectTransformableElements,
   getTextContent,
@@ -22,7 +29,6 @@ import {
   NBSP,
   RIGHT_SINGLE_QUOTE,
   STRIP_BOUNDARY_TAGS,
-  WORD_JOINER,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { isHeading } from "./favicons"
@@ -141,21 +147,10 @@ export function spacesAroundSlashes(text: string): string {
   return text.replace(htPlaceholderRegex, "h/t")
 }
 
-// U+2014 can break before or after (Unicode line-break class B2), so a wrapped
-// line can start with a lonely "—". A word joiner in front keeps the dash bound
-// to the preceding text while still allowing a break after it. The lookbehind
-// skips dashes that are line-leading (preceded by whitespace or start of string)
-// or already glued (preceded by a word joiner); an element-boundary marker
-// counts as preceding text.
-const emDashWordJoinerRegex = new RegExp(`(?<=[^\\s${WORD_JOINER}])—`, "gu")
-
-/**
- * Glue a word joiner before em dashes so they can never be the first glyph on a
- * wrapped line.
- */
-export function preventEmDashLineStart(text: string): string {
-  return text.replace(emDashWordJoinerRegex, `${WORD_JOINER}—`)
-}
+// Glue a word joiner before em dashes so they can never be the first glyph on a
+// wrapped line (U+2014 has line-break class B2, allowing a break on either side).
+// Marker-aware so it respects element boundaries.
+const emDashWordJoinerWrapper = (text: string) => emDashWordJoiner(text, { separator: markerChar })
 
 /**
  * Strip whitespace adjacent to the inside boundary of an inline element.
@@ -835,7 +830,7 @@ export const improveFormatting = (
         }
 
         // Runs after dash conversion; marker-aware so it sees element boundaries.
-        transformElement(elt, preventEmDashLineStart, toSkip, markerChar, false)
+        transformElement(elt, emDashWordJoinerWrapper, toSkip, markerChar, false)
 
         // Don't replace slashes in fractions, but give breathing room
         // to others

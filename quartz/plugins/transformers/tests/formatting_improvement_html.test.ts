@@ -34,7 +34,6 @@ import {
   l_pRegex,
   massTransformText,
   moveQuotesBeforeLink,
-  preventEmDashLineStart,
   rearrangeLinkPunctuation,
   replaceFractions,
   spacesAroundSlashes,
@@ -746,19 +745,6 @@ describe("HTMLFormattingImprovement", () => {
     ])("handling hyphenation in the DOM", (input: string, expected: string) => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(stripWordJoiner(normalizeNbsp(processedHtml))).toBe(expected)
-    })
-
-    describe("preventEmDashLineStart", () => {
-      it.each([
-        ["plan—result", `plan${WORD_JOINER}—result`], // preceded by a letter
-        ["a—b—c", `a${WORD_JOINER}—b${WORD_JOINER}—c`], // every interior dash
-        [`x${markerChar}—y`, `x${markerChar}${WORD_JOINER}—y`], // element boundary counts as text
-        ["—Author", "—Author"], // start of string: untouched
-        ["foo — bar", "foo — bar"], // whitespace before: untouched
-        [`plan${WORD_JOINER}—result`, `plan${WORD_JOINER}—result`], // already glued: idempotent
-      ])("%s", (input: string, expected: string) => {
-        expect(preventEmDashLineStart(input)).toBe(expected)
-      })
     })
 
     it.each([
