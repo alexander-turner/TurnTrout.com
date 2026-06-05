@@ -225,6 +225,16 @@ def _should_skip_paragraph(p: Tag) -> bool:
     )
 
 
+_INVISIBLE_CHARS = (ZERO_WIDTH_SPACE, ZERO_WIDTH_NBSP, WORD_JOINER)
+
+
+def strip_invisible_chars(text: str) -> str:
+    """Remove zero-width / joiner characters that carry no visible spacing."""
+    for char in _INVISIBLE_CHARS:
+        text = text.replace(char, "")
+    return text
+
+
 def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
     """
     Get cleaned text from a paragraph for punctuation checking.
@@ -246,10 +256,7 @@ def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
         TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH
     )
     # Strip zero-width spaces and other invisible characters
-    text = text.replace(ZERO_WIDTH_SPACE, "")
-    text = text.replace(ZERO_WIDTH_NBSP, "")
-    text = text.replace(WORD_JOINER, "")
-    return text.strip()
+    return strip_invisible_chars(text).strip()
 
 
 def check_top_level_paragraphs_end_with_punctuation(
@@ -2260,7 +2267,13 @@ def check_spacing(
     sibling = (
         element.previous_sibling if prefix == "before" else element.next_sibling
     )
-    if not isinstance(sibling, NavigableString) or not sibling.strip():
+    if not isinstance(sibling, NavigableString):
+        return []
+    # Ignore zero-width joiners (e.g. the word joiner glued before em dashes):
+    # they carry no visible spacing, so the check must look past them to the
+    # real adjacent glyph.
+    sibling_text = strip_invisible_chars(str(sibling))
+    if not sibling_text.strip():
         return []
 
     # Properly escape characters for regex pattern
@@ -2272,7 +2285,7 @@ def check_spacing(
         else rf"^{ok_regex_chars}.*$"
     )
 
-    if not re.search(ok_regex_expr, sibling, flags=re.MULTILINE):
+    if not re.search(ok_regex_expr, sibling_text, flags=re.MULTILINE):
         preview = f"<{element.name}>{element.get_text()}</{element.name}>"
         if prefix == "before":
             preview = f"{sibling.get_text()}{preview}"
