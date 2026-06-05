@@ -22,6 +22,7 @@ import {
   NBSP,
   RIGHT_SINGLE_QUOTE,
   STRIP_BOUNDARY_TAGS,
+  WORD_JOINER,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { isHeading } from "./favicons"
@@ -138,6 +139,28 @@ export function spacesAroundSlashes(text: string): string {
 
   // Restore the h/t occurrences
   return text.replace(htPlaceholderRegex, "h/t")
+}
+
+const EM_DASH = "—"
+
+// U+2014 has Unicode line-break class B2 (break opportunity before AND after),
+// so an unspaced "word—word" can wrap to leave "—word" at the start of a line.
+// A word joiner glued in front of the dash removes the break-before opportunity
+// while preserving the break-after. The lookbehind fires when the dash is
+// immediately preceded by anything other than whitespace or an existing word
+// joiner — that includes the element-boundary marker, so a dash glued to a
+// preceding inline element (including skipped ones like <code>) is still
+// protected. A dash with nothing (or only whitespace) before it — a genuine
+// line-leading "— Author" attribution — is left untouched, and already-glued
+// dashes are skipped, keeping the transform idempotent.
+const emDashWordJoinerRegex = new RegExp(`(?<=[^\\s${WORD_JOINER}])${EM_DASH}`, "gu")
+
+/**
+ * Glue a word joiner before em dashes so they can never be the first glyph on a
+ * wrapped line.
+ */
+export function preventEmDashLineStart(text: string): string {
+  return text.replace(emDashWordJoinerRegex, `${WORD_JOINER}${EM_DASH}`)
 }
 
 /**
@@ -816,6 +839,11 @@ export const improveFormatting = (
         for (const transform of activeUncheckedTransformers) {
           transformElement(elt, transform, toSkip, markerChar, false)
         }
+
+        // Marker-aware so it runs after dash conversion and sees element
+        // boundaries — keeps it out of meta descriptions / TOC text, which
+        // don't need invisible joiners.
+        transformElement(elt, preventEmDashLineStart, toSkip, markerChar, false)
 
         // Don't replace slashes in fractions, but give breathing room
         // to others

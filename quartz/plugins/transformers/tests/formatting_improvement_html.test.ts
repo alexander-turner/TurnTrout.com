@@ -23,6 +23,7 @@ import {
   normalizeNbsp,
   RIGHT_DOUBLE_QUOTE,
   RIGHT_SINGLE_QUOTE,
+  WORD_JOINER,
 } from "../../../components/constants"
 import {
   applyTextTransforms,
@@ -43,6 +44,10 @@ import {
 import { FRACTION_SKIP_TAGS, SKIP_CLASSES, SKIP_TAGS, toSkip } from "../formatting_improvement_html"
 
 const MULTIPLICATION = "\u00D7" // ×
+
+// Drop the invisible word joiner that `preventEmDashLineStart` glues before
+// em dashes, so assertions can compare against human-readable expected output.
+const stripWordJoiner = (s: string) => s.replaceAll(WORD_JOINER, "")
 
 function testHtmlFormattingImprovement(
   inputHTML: string,
@@ -119,7 +124,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
     ])("should handle HTML inputs", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(normalizeNbsp(processedHtml)).toBe(expected)
+      expect(stripWordJoiner(normalizeNbsp(processedHtml))).toBe(expected)
     })
 
     it.each([['<p><br>"Unicorn"<br></p>', "<p><br>“Unicorn”<br></p>"]])(
@@ -739,7 +744,39 @@ describe("HTMLFormattingImprovement", () => {
       ],
     ])("handling hyphenation in the DOM", (input: string, expected: string) => {
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(normalizeNbsp(processedHtml)).toBe(expected)
+      expect(stripWordJoiner(normalizeNbsp(processedHtml))).toBe(expected)
+    })
+
+    describe("em dashes cannot start a wrapped line", () => {
+      const WJ = WORD_JOINER
+
+      it.each([
+        // Glue a word joiner before an em dash that has preceding content.
+        ["<p>plan -- result</p>", `<p>plan${WJ}—result</p>`],
+        // Boundary case: the em dash starts a text node after a sibling element.
+        // The joiner still lands immediately before the dash.
+        ["<p>not simply <em>accept</em> -- but</p>", `<p>not simply <em>accept</em>${WJ}—but</p>`],
+        ["<p>Hi <code>ABC</code> -- file</p>", `<p>Hi <code>ABC</code>${WJ}—file</p>`],
+      ])("inserts a word joiner: %s", (input: string, expected: string) => {
+        expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
+      })
+
+      it.each([
+        // Attribution dash at the start of a paragraph has no preceding glyph,
+        // so it must stay free of a joiner.
+        ["<blockquote><p>-- Orwell</p></blockquote>", "<blockquote><p>— Orwell</p></blockquote>"],
+      ])("leaves line-leading dashes untouched: %s", (input: string, expected: string) => {
+        const out = normalizeNbsp(testHtmlFormattingImprovement(input))
+        expect(out).not.toContain(WJ)
+        expect(out).toBe(expected)
+      })
+
+      it("is idempotent", () => {
+        const once = testHtmlFormattingImprovement("<p>plan -- result</p>")
+        const twice = testHtmlFormattingImprovement(once)
+        expect(twice).toBe(once)
+        expect((twice.match(new RegExp(WJ, "gu")) ?? []).length).toBe(1)
+      })
     })
   })
 
@@ -782,7 +819,7 @@ describe("HTMLFormattingImprovement", () => {
       // After stripInlineBoundaryWhitespace runs first, the <em> has no leading
       // space, so em-dash conversion produces the unspaced "—despite" form.
       const out = testHtmlFormattingImprovement("<p>I think that -<em> despite</em></p>")
-      expect(normalizeNbsp(out)).toBe("<p>I think that—<em>despite</em></p>")
+      expect(stripWordJoiner(normalizeNbsp(out))).toBe("<p>I think that—<em>despite</em></p>")
     })
   })
 
