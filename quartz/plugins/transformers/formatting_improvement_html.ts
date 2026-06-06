@@ -2,7 +2,7 @@ import type { Element, ElementContent, Parent, Root, Text } from "hast"
 
 import { h } from "hastscript"
 import {
-  emDashWordJoiner,
+  dashWordJoiner,
   hyphenReplace,
   nbspTransform,
   niceQuotes,
@@ -146,11 +146,6 @@ export function spacesAroundSlashes(text: string): string {
   // Restore the h/t occurrences
   return text.replace(htPlaceholderRegex, "h/t")
 }
-
-// Glue a word joiner before em dashes so they can never be the first glyph on a
-// wrapped line (U+2014 has line-break class B2, allowing a break on either side).
-// Marker-aware so it respects element boundaries.
-const emDashWordJoinerWrapper = (text: string) => emDashWordJoiner(text, { separator: markerChar })
 
 /**
  * Strip whitespace adjacent to the inside boundary of an inline element.
@@ -829,8 +824,10 @@ export const improveFormatting = (
           transformElement(elt, transform, toSkip, markerChar, false)
         }
 
-        // Runs after dash conversion; marker-aware so it sees element boundaries.
-        transformElement(elt, emDashWordJoinerWrapper, toSkip, markerChar, false)
+        // Glue a word joiner before em/en dashes so they can never be the first
+        // glyph on a wrapped line. Runs after dash conversion; the marker char
+        // counts as preceding content, so element boundaries are respected.
+        transformElement(elt, dashWordJoiner, toSkip, markerChar, false)
 
         // Don't replace slashes in fractions, but give breathing room
         // to others

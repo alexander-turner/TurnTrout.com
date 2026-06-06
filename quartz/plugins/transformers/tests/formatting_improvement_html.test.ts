@@ -858,7 +858,7 @@ describe("HTMLFormattingImprovement", () => {
       "should replace hyphens with en dashes in number ranges: %s (end-to-end)",
       (input, expected) => {
         const processedHtml = testHtmlFormattingImprovement(`<p>${input}</p>`)
-        expect(normalizeNbsp(processedHtml)).toBe(`<p>${expected}</p>`)
+        expect(stripWordJoiner(normalizeNbsp(processedHtml))).toBe(`<p>${expected}</p>`)
       },
     )
   })
@@ -1623,7 +1623,7 @@ describe("Date Range", () => {
     const input = "<p>Revenue from Jan-Mar exceeded Apr-Jun.</p>"
     const expected = "<p>Revenue from Jan–Mar exceeded Apr–Jun.</p>"
     const processedHtml = testHtmlFormattingImprovement(input)
-    expect(normalizeNbsp(processedHtml)).toBe(expected)
+    expect(stripWordJoiner(normalizeNbsp(processedHtml))).toBe(expected)
   })
 })
 
