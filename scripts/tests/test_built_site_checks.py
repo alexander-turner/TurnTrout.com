@@ -1946,6 +1946,33 @@ def test_check_spacing_after_branch():
     assert result == expected
 
 
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        (f"{WORD_JOINER}—x", "—x"),
+        (f"a{ZERO_WIDTH_SPACE}{ZERO_WIDTH_NBSP}b", "ab"),
+        ("no invisibles", "no invisibles"),
+    ],
+)
+def test_strip_invisible_chars(text, expected):
+    assert built_site_checks.strip_invisible_chars(text) == expected
+
+
+def test_check_spacing_ignores_word_joiner_before_em_dash():
+    """A word joiner glued before an em dash must not read as a missing
+    space."""
+    soup = BeautifulSoup(
+        f"<p><em>values</em>{WORD_JOINER}—it is</p>", "html.parser"
+    )
+    em_element = soup.find("em")
+    assert isinstance(em_element, Tag)
+
+    result = built_site_checks.check_spacing(
+        em_element, built_site_checks.ALLOWED_ELT_FOLLOWING_CHARS, "after"
+    )
+    assert result == []
+
+
 _MAX_DESCRIPTION_LENGTH = built_site_checks.MAX_DESCRIPTION_LENGTH
 _MIN_DESCRIPTION_LENGTH = built_site_checks.MIN_DESCRIPTION_LENGTH
 

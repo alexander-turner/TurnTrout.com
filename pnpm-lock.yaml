@@ -155,8 +155,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: 3.11.2
-        version: 3.11.2(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5)
+        specifier: 3.13.0
+        version: 3.13.0(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5)
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -7548,8 +7548,8 @@ packages:
   pumpify@2.0.1:
     resolution: {integrity: sha512-m7KOje7jZxrmutanlkS1daj1dS6z6BgslzOXmcSEpIlCxM3VJH7lG5QLeck/6hgF6F4crFf01UtQmNsJfweTAw==}
 
-  punctilio@3.11.2:
-    resolution: {integrity: sha512-jgnXoVhtGJdck4dM9tvKbAGaW+jhAiIATtgg57Li5FwyZZN6rTAjUhk0M3n7H41kYUYh8MqyUnpG/7cHVSBM3A==}
+  punctilio@3.13.0:
+    resolution: {integrity: sha512-m+aLYfSNZY6Yfw0jldjrItuybWKZJwiKNMkr8qwr3rzI5Oq3HwZ4oobU79idYVfR1LFD9WRdT1sQN0bxWLWNBQ==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -18311,7 +18311,7 @@ snapshots:
       inherits: 2.0.4
       pump: 3.0.4
 
-  punctilio@3.11.2(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5):
+  punctilio@3.13.0(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5):
     dependencies:
       commander: 14.0.3
       cosmiconfig: 9.0.1(typescript@6.0.3)

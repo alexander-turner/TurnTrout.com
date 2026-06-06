@@ -1,7 +1,14 @@
 import type { Element, ElementContent, Parent, Root, Text } from "hast"
 
 import { h } from "hastscript"
-import { hyphenReplace, nbspTransform, niceQuotes, primeMarks, symbolTransform } from "punctilio"
+import {
+  dashWordJoiner,
+  hyphenReplace,
+  nbspTransform,
+  niceQuotes,
+  primeMarks,
+  symbolTransform,
+} from "punctilio"
 import {
   collectTransformableElements,
   getTextContent,
@@ -816,6 +823,11 @@ export const improveFormatting = (
         for (const transform of activeUncheckedTransformers) {
           transformElement(elt, transform, toSkip, markerChar, false)
         }
+
+        // Glue a word joiner before em/en dashes so they can never be the first
+        // glyph on a wrapped line. Runs after dash conversion; the marker char
+        // counts as preceding content, so element boundaries are respected.
+        transformElement(elt, dashWordJoiner, toSkip, markerChar, false)
 
         // Don't replace slashes in fractions, but give breathing room
         // to others

@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-06-04
+date_updated: 2026-06-06
 no_dropcap: false
 createBibtex: true
 ---
@@ -535,6 +535,9 @@ No hyphenated text wrapping
 
 Balanced text wrapping
 : I use [`text-wrap: balance`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap) to balance line lengths in headings, captions, and subtitles. I use `text-wrap: pretty` for body text, which lets the browser optimize line-break positions to reduce orphans. `punctilio`'s non-breaking spaces set hard constraints on which words must stay together, while `text-wrap` optimizes the remaining break points.
+
+No line-leading em or en dashes
+: An em dash (—) or en dash (–) can break onto a new line from _either_ side, so a wrapped line could start with a lonely dash. `punctilio` glues a [word joiner](https://en.wikipedia.org/wiki/Word_joiner) in front of every such dash, which keeps the dash bound to the text before it while still letting the line break _after_ the dash.
 
 Fractions
 : I chose slanted fractions in order to slightly increase the height of the numerals in the numerator and denominator. People are 2/3 water, but "01/01/2000" should not be rendered as a fraction.
