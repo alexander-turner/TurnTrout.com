@@ -1,5 +1,6 @@
 """Utility functions for scripts/ directory."""
 
+import copy
 import functools
 import io
 import json
@@ -138,9 +139,13 @@ def http_session(
 
 
 def load_shared_constants() -> dict:
-    """Load shared constants from config/constants.json."""
-    with open(_CONSTANTS_JSON_PATH, encoding="utf-8") as f:
-        return json.load(f)
+    """
+    Return the shared constants from config/constants.json.
+
+    The file is read once at import into ``_CONSTANTS``; callers receive an
+    independent deep copy so mutating the result cannot corrupt the cache.
+    """
+    return copy.deepcopy(_CONSTANTS)
 
 
 _executable_cache: dict[str, str] = {}
@@ -392,9 +397,12 @@ def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
     with file_path.open("r", encoding="utf-8") as f:
         content = f.read()
 
-    # Split frontmatter and content
+    # Frontmatter is a leading YAML block fenced by `---` lines. Require the
+    # opening fence at the very start of the file so a `---` horizontal rule in
+    # the body is never mistaken for a delimiter — which would otherwise drop
+    # everything before it.
     parts = content.split("---", 2)
-    if len(parts) < 3:
+    if not content.startswith("---\n") or len(parts) < 3:
         if verbose:
             print(f"Skipping {file_path}: No valid frontmatter found")
         return {}, ""
