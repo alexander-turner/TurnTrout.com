@@ -1281,57 +1281,36 @@ def test_error_exit_prints_to_stderr_and_exits(capsys):
     assert "boom" in captured.err
 
 
-def test_split_yaml_ignores_body_horizontal_rules(tmp_path: Path):
-    """
-    A frontmatter-less file with `---` body rules must not be truncated.
-
-    Without a leading fence the file has no frontmatter, so the interior `---`
-    rules must not be mistaken for delimiters that drop the body before them.
-    """
-    file_path = tmp_path / "rules.md"
-    file_path.write_text(
+@pytest.mark.parametrize(
+    "text",
+    [
+        # `---` rules in the body of a frontmatter-less file
         "# Title\n\nIntro.\n\n---\n\nMiddle.\n\n---\n\nEnd.\n",
-        encoding="utf-8",
-    )
+        # leading rule longer than three dashes (not an opening fence)
+        "----------\n\nBody after a horizontal rule.\n",
+        # opening fence with no closing fence
+        "---\ntitle: x\n",
+    ],
+)
+def test_split_yaml_without_valid_frontmatter(tmp_path: Path, text: str):
+    """Files lacking a leading `---` fence yield empty metadata and content."""
+    file_path = tmp_path / "file.md"
+    file_path.write_text(text, encoding="utf-8")
 
-    metadata, content = script_utils.split_yaml(file_path)
-    assert metadata == {}
-    assert content == ""
-
-
-def test_split_yaml_ignores_leading_horizontal_rule(tmp_path: Path):
-    """A leading rule longer than three dashes is not a frontmatter fence."""
-    file_path = tmp_path / "leading_rule.md"
-    file_path.write_text(
-        "----------\n\nBody after a horizontal rule.\n", encoding="utf-8"
-    )
-
-    metadata, content = script_utils.split_yaml(file_path)
-    assert metadata == {}
-    assert content == ""
-
-
-def test_split_yaml_requires_closing_fence(tmp_path: Path):
-    """A leading fence with no closing `---` is not valid frontmatter."""
-    file_path = tmp_path / "unclosed.md"
-    file_path.write_text("---\ntitle: x\n", encoding="utf-8")
-
-    metadata, content = script_utils.split_yaml(file_path)
-    assert metadata == {}
-    assert content == ""
+    assert script_utils.split_yaml(file_path) == ({}, "")
 
 
 def test_split_yaml_parses_leading_frontmatter(tmp_path: Path):
-    """A well-formed leading frontmatter block is parsed and body preserved."""
+    """Leading frontmatter parses; a `---` rule in the body is preserved."""
     file_path = create_markdown_file(
         tmp_path / "valid.md",
         frontmatter={"title": "Hello"},
-        content="Body text.",
+        content="Before.\n\n---\n\nAfter.",
     )
 
     metadata, content = script_utils.split_yaml(file_path)
-    assert metadata["title"] == "Hello"
-    assert content == "\nBody text."
+    assert metadata == {"title": "Hello"}
+    assert content == "\nBefore.\n\n---\n\nAfter."
 
 
 def test_load_shared_constants_returns_independent_copy():

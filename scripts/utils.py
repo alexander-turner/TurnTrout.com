@@ -397,10 +397,9 @@ def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
     with file_path.open("r", encoding="utf-8") as f:
         content = f.read()
 
-    # Frontmatter is a leading YAML block fenced by `---` lines. Require the
-    # opening fence at the very start of the file so a `---` horizontal rule in
-    # the body is never mistaken for a delimiter — which would otherwise drop
-    # everything before it.
+    # Frontmatter is a leading YAML block fenced by `---` lines: an opening
+    # `---\n` at the very start of the file and a closing `---` after it. A
+    # `---` rule elsewhere in the body is content, not a delimiter.
     parts = content.split("---", 2)
     if not content.startswith("---\n") or len(parts) < 3:
         if verbose:
