@@ -433,6 +433,40 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
 }
 
 /**
+ * Intercepts in-app link clicks and performs SPA navigation, falling back to a
+ * full page load if navigation fails.
+ */
+async function handleClickNavigation(event: Event): Promise<void> {
+  // Use getNavigationOpts to check for valid local links ignoring modifiers/targets
+  const opts = getNavigationOpts(event)
+  if (
+    !opts ||
+    !opts.url ||
+    event.defaultPrevented ||
+    (event as MouseEvent).ctrlKey ||
+    (event as MouseEvent).metaKey
+  ) {
+    return // Let browser handle normal links, external links, or modified clicks
+  }
+
+  event.preventDefault() // Prevent default link behavior
+
+  const targetUrl = opts.url
+  const currentUrl = new URL(window.location.toString())
+  const shouldFetch =
+    targetUrl.pathname !== currentUrl.pathname || targetUrl.search !== currentUrl.search
+
+  try {
+    console.debug(`[Router] Click navigation to ${opts.url.toString()}`)
+    await navigate(opts.url, { scroll: opts.scroll, fetch: shouldFetch })
+  } catch (e) {
+    console.error("Click navigation error:", e)
+    // Fallback to standard navigation if spa navigation fails
+    window.location.assign(opts.url)
+  }
+}
+
+/**
  * Creates and configures the router instance
  * - Sets up click event listeners for link interception
  * - Handles browser back/forward navigation (popstate)
@@ -450,38 +484,16 @@ function createRouter() {
       { passive: true },
     )
 
-    document.addEventListener("click", async (event) => {
-      // Use getNavigationOpts to check for valid local links ignoring modifiers/targets
-      const opts = getNavigationOpts(event)
-      if (
-        !opts ||
-        !opts.url ||
-        event.defaultPrevented ||
-        (event as MouseEvent).ctrlKey ||
-        (event as MouseEvent).metaKey
-      ) {
-        return // Let browser handle normal links, external links, or modified clicks
-      }
-
-      event.preventDefault() // Prevent default link behavior
-
-      const targetUrl = opts.url
-      const currentUrl = new URL(window.location.toString())
-      const shouldFetch =
-        targetUrl.pathname !== currentUrl.pathname || targetUrl.search !== currentUrl.search
-
-      try {
-        console.debug(`[Router] Click navigation to ${opts.url.toString()}`)
-        await navigate(opts.url, { scroll: opts.scroll, fetch: shouldFetch })
-      } catch (e) {
-        console.error("Click navigation error:", e)
-        // Fallback to standard navigation if spa navigation fails
-        window.location.assign(opts.url)
-      }
+    document.addEventListener("click", (event) => {
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+      void handleClickNavigation(event)
     })
 
     // Listener for back/forward navigation
-    window.addEventListener("popstate", handlePopstate)
+    window.addEventListener("popstate", (event) => {
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+      void handlePopstate(event)
+    })
 
     window.__routerInitialized = true
   }

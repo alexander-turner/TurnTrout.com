@@ -27,6 +27,7 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Final
 
 from scripts import built_site_checks
 
@@ -110,21 +111,46 @@ def collect_unknown_words(public_dir: Path) -> list[UnknownWord]:
     return list(out.values())
 
 
+_VALID_ACTIONS: Final[frozenset[str]] = frozenset({"add", "defer"})
+
+
 def _parse_decisions(text: str) -> list[Decision]:
-    """Extract decisions from the model's JSON response."""
+    """
+    Extract decisions from the model's JSON response.
+
+    Validates the response shape explicitly: a malformed payload (missing
+    ``decisions`` list, an item that isn't an object, or one lacking the
+    required ``word``/``action`` keys or carrying an unknown ``action``)
+    raises ``ValueError`` rather than silently dropping entries.
+    """
     match = re.search(r"\{[\s\S]*\}", text)
     if not match:
         raise ValueError(f"No JSON object in model response: {text!r}")
     data = json.loads(match.group(0))
-    return [
-        Decision(
-            word=item["word"],
-            action=item["action"],
-            reason=item.get("reason", ""),
+    decisions = data.get("decisions")
+    if not isinstance(decisions, list):
+        raise ValueError(f"Model response missing a 'decisions' list: {text!r}")
+
+    parsed: list[Decision] = []
+    for item in decisions:
+        if not isinstance(item, dict) or "word" not in item:
+            raise ValueError(
+                f"Malformed decision item (needs 'word'): {item!r}"
+            )
+        action = item.get("action")
+        if action not in _VALID_ACTIONS:
+            raise ValueError(
+                f"Decision for {item['word']!r} has invalid action "
+                f"{action!r}; expected one of {sorted(_VALID_ACTIONS)}"
+            )
+        parsed.append(
+            Decision(
+                word=item["word"],
+                action=action,
+                reason=item.get("reason", ""),
+            )
         )
-        for item in data.get("decisions", [])
-        if item.get("action") in ("add", "defer")
-    ]
+    return parsed
 
 
 def classify(

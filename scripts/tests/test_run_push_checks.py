@@ -610,15 +610,14 @@ def test_get_formatter_steps():
     test_root = Path("/test/root")
     steps = run_push_checks.get_formatter_steps(test_root)
 
-    # Ruff check has --fix so the step is an autofixer, not a blocking
-    # check. We deliberately do NOT run `ruff format` here — black runs
-    # via lint-staged in the pre-commit hook and the two formatters fight.
+    # Ruff check has --fix so the step is an autofixer, not a blocking check.
     ruff_lint = _step_by_name(steps, "Linting Python")
     assert "--fix" in ruff_lint.command
     assert "format" not in ruff_lint.command
-    assert not any(
-        s.command[:4] == ["uv", "run", "ruff", "format"] for s in steps
-    )
+
+    # `ruff format` is the sole Python formatter (it replaced the
+    # autoflake/isort/autopep8/black stack).
+    assert any(s.command[:4] == ["uv", "run", "ruff", "format"] for s in steps)
 
     eslint_step = _step_by_name(steps, "Linting TypeScript")
     assert "--fix" in eslint_step.command
@@ -668,6 +667,7 @@ _AUTOFIX_LINT_NAMES = frozenset(
 )
 _AUTOFIX_FORMAT_NAMES = frozenset(
     {
+        "Formatting Python",
         "Formatting Python docstrings",
         "Formatting SCSS",
         "Formatting TypeScript",

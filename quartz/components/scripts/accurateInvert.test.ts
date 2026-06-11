@@ -273,8 +273,10 @@ describe("handleLoadEvent", () => {
   })
 
   it("ignores non-eligible targets", () => {
-    handleLoadEvent({ target: document.createElement("div") } as unknown as Event)
-    handleLoadEvent({ target: null } as unknown as Event)
+    expect(() => {
+      handleLoadEvent({ target: document.createElement("div") } as unknown as Event)
+      handleLoadEvent({ target: null } as unknown as Event)
+    }).not.toThrow()
   })
 })
 
@@ -479,7 +481,7 @@ describe("prepareForThemeChange", () => {
 
   it("is a no-op when no images need swapping", async () => {
     await prepareForThemeChange(true)
-    await prepareForThemeChange(false)
+    await expect(prepareForThemeChange(false)).resolves.toBeUndefined()
   })
 })
 

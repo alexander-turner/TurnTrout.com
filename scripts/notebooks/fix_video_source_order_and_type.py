@@ -33,7 +33,7 @@ DESIRED_MP4_TYPE = "video/mp4; codecs=hvc1"
 # skipcq: PY-R1000 (one-off script)
 def _process_video_content(
     video_content: str,
-) -> tuple[str, bool]:  # noqa: PY-R1000
+) -> tuple[str, bool]:
     """
     Processes the inner content of a video tag.
 

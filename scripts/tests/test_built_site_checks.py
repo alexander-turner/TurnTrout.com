@@ -6098,9 +6098,9 @@ def test_check_html_tags_in_text(html, expected):
 
     # Check that each expected substring is in the results
     for expected_msg in expected:
-        assert any(
-            expected_msg in issue for issue in result
-        ), f"Expected '{expected_msg}' not found in results: {result}"
+        assert any(expected_msg in issue for issue in result), (
+            f"Expected '{expected_msg}' not found in results: {result}"
+        )
 
 
 def test_check_html_tags_in_text_real_world_katex():
@@ -6246,9 +6246,9 @@ def test_check_top_level_paragraphs_end_with_punctuation_valid_chars(
     issues = built_site_checks.check_top_level_paragraphs_end_with_punctuation(
         soup
     )
-    assert (
-        issues == []
-    ), f"Character {char} should be valid but got issues: {issues}"
+    assert issues == [], (
+        f"Character {char} should be valid but got issues: {issues}"
+    )
 
 
 @pytest.mark.parametrize(
@@ -6263,9 +6263,9 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
     issues = built_site_checks.check_top_level_paragraphs_end_with_punctuation(
         soup
     )
-    assert (
-        issues == []
-    ), f"Character {char} should be trimmed, allowing valid punctuation before it"
+    assert issues == [], (
+        f"Character {char} should be trimmed, allowing valid punctuation before it"
+    )
 
 
 @pytest.mark.parametrize(
@@ -6848,9 +6848,7 @@ def test_check_invert_labels_inverted_variants(
         ),
         # Reviewed invert=True on one source but class absent on the <video>.
         (
-            "<video autoplay loop muted>"
-            '<source src="https://x/a.mp4">'
-            "</video>",
+            '<video autoplay loop muted><source src="https://x/a.mp4"></video>',
             {"https://x/a.mp4": _reviewed(True)},
             [
                 _class_mismatch_msg(

@@ -57,19 +57,19 @@ def is_file_modified(file_path: Path, commit_range: str | None = None) -> bool:
 
     Returns:
         bool: True if file was modified, False otherwise
+
+    Raises:
+        RuntimeError: If a git command fails — surfacing the failure rather
+            than silently treating the file as unmodified.
     """
+    git_executable = script_utils.find_executable("git")
+    range_to_check = _determine_commit_range(commit_range)
+
     try:
-        # Get the relative path from git root
-        git_executable = script_utils.find_executable("git")
         git_root = subprocess.check_output(
             [git_executable, "rev-parse", "--show-toplevel"], text=True
         ).strip()
         rel_path = file_path.resolve().relative_to(Path(git_root))
-
-        # Determine commit range to check
-        range_to_check = _determine_commit_range(commit_range)
-
-        # Check if file changed in the range
         result = subprocess.check_output(
             [
                 git_executable,
@@ -80,11 +80,12 @@ def is_file_modified(file_path: Path, commit_range: str | None = None) -> bool:
             ],
             text=True,
         ).strip()
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(
+            f"Could not check git status for {file_path}: {exc}"
+        ) from exc
 
-        return bool(result)
-    except subprocess.CalledProcessError:
-        print(f"Warning: Could not check git status for {file_path}")
-        return False
+    return bool(result)
 
 
 def maybe_convert_to_date(

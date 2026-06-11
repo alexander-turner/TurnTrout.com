@@ -108,9 +108,10 @@ jobs:
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
 
+      # Critical log: surface upload failures (don't swallow with
+      # continue-on-error) so a missing log is visible on the shard.
       - name: Upload Playwright logs
         if: always()
-        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-log-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -215,9 +216,10 @@ jobs:
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
 
+      # Critical log: surface upload failures (don't swallow with
+      # continue-on-error) so a missing log is visible on the shard.
       - name: Upload Playwright logs
         if: always()
-        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-log-macos-shard-${{ env.SANITIZED_SHARD }}
