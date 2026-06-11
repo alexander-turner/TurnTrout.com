@@ -380,6 +380,29 @@ class TestCreateStrippedDirectory:
         assert nested_out.endswith(" world")
         assert not (output / "ignored.txt").exists()
 
+    def test_excludes_gitignored_content(
+        self, git_initialized_dir: dict[str, object]
+    ):
+        root = git_initialized_dir["root"]
+        assert isinstance(root, Path)
+        source = root / "website_content"
+        (source / "drafts").mkdir(parents=True)
+        (root / ".gitignore").write_text(
+            "website_content/drafts\n*test.md\n", encoding="utf-8"
+        )
+        (source / "published.md").write_text("Hello", encoding="utf-8")
+        (source / "drafts" / "secret.md").write_text(
+            "Draft text", encoding="utf-8"
+        )
+        (source / "scratch.test.md").write_text("Scratch", encoding="utf-8")
+
+        output = root / "output"
+        strip_for_spellcheck.create_stripped_directory(source, output)
+
+        assert (output / "published.md").exists()
+        assert not (output / "drafts" / "secret.md").exists()
+        assert not (output / "scratch.test.md").exists()
+
     def test_creates_temp_dir_when_no_output(self, tmp_path: Path):
         source = tmp_path / "source"
         source.mkdir()
