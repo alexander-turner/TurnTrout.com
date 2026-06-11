@@ -371,12 +371,30 @@ def test_is_file_modified_no_changes(test_file, mock_git_commands):
 
 
 def test_is_file_modified_git_error(test_file, mock_git_commands):
-    """Test handling of git command errors."""
-    with patch(
-        "subprocess.check_output",
-        side_effect=mock_git_commands(raise_error=True),
+    """A failing git command surfaces loudly rather than degrading to False."""
+    with (
+        patch(
+            "subprocess.check_output",
+            side_effect=mock_git_commands(raise_error=True),
+        ),
+        pytest.raises(subprocess.CalledProcessError),
     ):
-        assert update_lib.is_file_modified(test_file) is False
+        update_lib.is_file_modified(test_file)
+
+
+def test_is_file_modified_diff_error_raises(test_file, mock_git_root):
+    """A failing `git diff` surfaces as RuntimeError, not a silent False."""
+
+    def _mock_git(*args, **kwargs) -> str:
+        if "rev-parse" in args[0]:
+            return f"{mock_git_root}\n"
+        raise subprocess.CalledProcessError(1, "git diff")
+
+    with (
+        patch("subprocess.check_output", side_effect=_mock_git),
+        pytest.raises(RuntimeError, match="Could not check git status"),
+    ):
+        update_lib.is_file_modified(test_file)
 
 
 def test_is_file_modified_invalid_path(mock_git_commands):
@@ -648,9 +666,9 @@ def test_main_default_content_dir(mock_datetime, mock_git):
     # Check that glob was called with the right path and pattern
     assert len(glob_calls) == 1, "Path.glob was not called"
     called_path, pattern = glob_calls[0]
-    assert (
-        str(called_path) == "website_content"
-    ), f"Expected path 'website_content', got '{called_path}'"
+    assert str(called_path) == "website_content", (
+        f"Expected path 'website_content', got '{called_path}'"
+    )
     assert pattern == "*.md", f"Expected pattern '*.md', got '{pattern}'"
 
 

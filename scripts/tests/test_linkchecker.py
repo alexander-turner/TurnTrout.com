@@ -154,21 +154,21 @@ def html_linkchecker_result(test_server_and_files) -> object:
 
 
 def test_invalid_port_error(html_linkchecker_result):
-    assert (
-        "Internal linkchecker: 1" in html_linkchecker_result.stderr
-    ), "URL error not found in output"
-    assert (
-        html_linkchecker_result.returncode != 0
-    ), "Linkchecker script should have failed"
+    assert "Internal linkchecker: 1" in html_linkchecker_result.stderr, (
+        "URL error not found in output"
+    )
+    assert html_linkchecker_result.returncode != 0, (
+        "Linkchecker script should have failed"
+    )
 
 
 def test_invalid_asset_error(html_linkchecker_result):
-    assert (
-        "External linkchecker: 1" in html_linkchecker_result.stderr
-    ), "Invalid asset error not found in output"
-    assert (
-        html_linkchecker_result.returncode != 0
-    ), "Linkchecker script should have failed"
+    assert "External linkchecker: 1" in html_linkchecker_result.stderr, (
+        "Invalid asset error not found in output"
+    )
+    assert html_linkchecker_result.returncode != 0, (
+        "Linkchecker script should have failed"
+    )
 
 
 if __name__ == "__main__":

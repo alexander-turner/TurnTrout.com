@@ -111,9 +111,9 @@ class TestHarmonizeBrackets:
         for name in _SQUARE_BRACKET_GLYPHS:
             glyph = glyf[name]
             assert glyph.yMax == paren.yMax, f"{name} yMax"
-            assert (
-                glyph.yMin == original_y_mins[name]
-            ), f"{name} yMin should stay at original"
+            assert glyph.yMin == original_y_mins[name], (
+                f"{name} yMin should stay at original"
+            )
 
     @pytest.mark.parametrize(
         "font_fixture,expected_paren_y_max",
@@ -243,9 +243,9 @@ class TestKerning:
                 continue
             for pvr in subtable.PairSet[i].PairValueRecord:
                 if pvr.SecondGlyph in desc_set:
-                    assert (
-                        pvr.Value1.XAdvance == _OPEN_DESCENDER_KERN
-                    ), f"{src}->{pvr.SecondGlyph}"
+                    assert pvr.Value1.XAdvance == _OPEN_DESCENDER_KERN, (
+                        f"{src}->{pvr.SecondGlyph}"
+                    )
 
     def test_close_descender_kern_values(self, upstream_08: TTFont) -> None:
         _add_kerning(upstream_08, _get_f_glyphs(upstream_08))
@@ -257,9 +257,9 @@ class TestKerning:
                 continue
             for pvr in subtable.PairSet[i].PairValueRecord:
                 if pvr.SecondGlyph in close_set:
-                    assert (
-                        pvr.Value1.XAdvance == _CLOSE_DESCENDER_KERN[src]
-                    ), f"{src}->{pvr.SecondGlyph}"
+                    assert pvr.Value1.XAdvance == _CLOSE_DESCENDER_KERN[src], (
+                        f"{src}->{pvr.SecondGlyph}"
+                    )
 
     def test_kern_feature_in_all_scripts(self, upstream_08: TTFont) -> None:
         _add_kerning(upstream_08, _get_f_glyphs(upstream_08))
@@ -303,9 +303,9 @@ class TestTableEquivalence:
         committed = TTFont(_FONT_DIR / filename)
 
         for tag in self._table_tags(built) | self._table_tags(committed):
-            assert built.getTableData(tag) == committed.getTableData(
-                tag
-            ), f"Table {tag} differs"
+            assert built.getTableData(tag) == committed.getTableData(tag), (
+                f"Table {tag} differs"
+            )
 
 
 class TestBuildAll:
@@ -389,7 +389,7 @@ def _assert_no_nonzero_kern(
                 if pvr.SecondGlyph in targets:
                     xadv = pvr.Value1.XAdvance if pvr.Value1 else 0
                     assert xadv == 0, (
-                        f"Existing kern {glyph}+{pvr.SecondGlyph}" f" = {xadv}"
+                        f"Existing kern {glyph}+{pvr.SecondGlyph} = {xadv}"
                     )
     elif subtable.Format == 2:
         cd1 = subtable.ClassDef1.classDefs
@@ -402,5 +402,5 @@ def _assert_no_nonzero_kern(
                 if rec.Value1:
                     xadv = rec.Value1.XAdvance
                     assert xadv == 0, (
-                        f"Existing kern {f_name}+{t_name}" f" = {xadv}"
+                        f"Existing kern {f_name}+{t_name} = {xadv}"
                     )

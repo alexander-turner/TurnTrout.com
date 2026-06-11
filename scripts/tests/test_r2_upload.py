@@ -82,9 +82,12 @@ def test_media_setup(
     mock_repo.ignored = MagicMock(return_value=False)
     monkeypatch.setattr("git.Repo", lambda *args, **kwargs: mock_repo)
 
-    yield tmp_path, dirs["static"] / "test.jpg", dirs[
-        "website_content"
-    ], md_files
+    yield (
+        tmp_path,
+        dirs["static"] / "test.jpg",
+        dirs["website_content"],
+        md_files,
+    )
 
     shutil.rmtree(tmp_path)
 
@@ -294,9 +297,9 @@ def test_upload_and_move(
     # Check if the file is moved to the correct location with preserved structure
     expected_moved_path = move_to_dir / test_image.relative_to(mock_git_root)
 
-    assert (
-        expected_moved_path.exists()
-    ), f"Expected moved file does not exist: {expected_moved_path}"
+    assert expected_moved_path.exists(), (
+        f"Expected moved file does not exist: {expected_moved_path}"
+    )
     assert not test_image.exists(), f"Original file still exists: {test_image}"
 
     # Check if rclone was called with the correct arguments
@@ -394,9 +397,9 @@ def test_main_upload_all_custom_filetypes(
             for call in mock_rclone.call_args_list
             if call[0][0][1] == "copyto"
         )
-        assert (
-            copyto_count == 2
-        ), f"Expected 2 'copyto' calls, but got {copyto_count}"
+        assert copyto_count == 2, (
+            f"Expected 2 'copyto' calls, but got {copyto_count}"
+        )
 
 
 def test_preserve_path_structure(mock_git_root: Path, tmp_path: Path):
