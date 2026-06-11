@@ -2,14 +2,13 @@ import { describe, expect, it } from "@jest/globals"
 import { type Element, type ElementContent, type Parent, type Root, type Text } from "hast"
 import { toHtml as hastToHtml } from "hast-util-to-html"
 import { h } from "hastscript"
-import { symbolTransform } from "punctilio"
+import { buildProseView, type ProseView, symbolTransform } from "punctilio"
 import {
   assertSmartQuotesMatch,
-  collectTransformableElements,
+  collectProseBlocks,
   flattenTextNodes,
   getFirstTextNode,
   getTextContent,
-  transformElement,
 } from "punctilio/rehype"
 import { rehype } from "rehype"
 import { VFile } from "vfile"
@@ -18,7 +17,6 @@ import {
   charsToMoveIntoLinkFromRight,
   LEFT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
-  markerChar,
   NBSP,
   normalizeNbsp,
   RIGHT_DOUBLE_QUOTE,
@@ -72,6 +70,18 @@ function testHtmlFormattingImprovement(
   processor.use(() => stripInlineBoundaryWhitespace)
 
   return processor.processSync(inputHTML).toString()
+}
+
+/**
+ * Runs a view-accepting pass over prose split across the given text nodes
+ * (simulating element boundaries) and returns the nodes' resulting values.
+ */
+function applyPassToNodes(pass: (view: ProseView) => void, values: string[]): string[] {
+  const nodes = values.map((value) => ({ value }))
+  const view = buildProseView(nodes)
+  pass(view)
+  view.commit()
+  return nodes.map((node) => node.value)
 }
 
 describe("HTMLFormattingImprovement", () => {
@@ -314,48 +324,48 @@ describe("HTMLFormattingImprovement", () => {
     })
   })
 
-  describe("spacesAroundSlashes marker invariance", () => {
-    it("spacesAroundSlashes is invariant with marker after colon (no space)", () => {
-      const textWithMarker = `:${markerChar}/`
-      const textWithoutMarker = ":/"
-
-      const transformedWithMarker = spacesAroundSlashes(textWithMarker)
-      const transformedWithoutMarker = spacesAroundSlashes(textWithoutMarker)
-      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
-
-      expect(strippedResult).toBe(transformedWithoutMarker)
+  describe("spacesAroundSlashes element-boundary behavior", () => {
+    it("does not pad a slash that ends the prose right after a boundary", () => {
+      // "<code>:</code>/" style: nothing follows the slash, so no padding.
+      expect(applyPassToNodes(spacesAroundSlashes, [":", "/"])).toEqual([":", "/"])
     })
 
-    it("spacesAroundSlashes keeps captured space outside the marker when one is present", () => {
-      // The captured space sits on the outside of the marker, so it belongs
-      // to a sibling text node. The transform preserves its position and
-      // glues an NBSP to "/" instead of moving the space across the boundary.
-      const textWithMarker = `: ${markerChar}/ ,`
-      const transformed = spacesAroundSlashes(textWithMarker)
-      expect(transformed).toBe(`: ${markerChar}${NBSP}/ ,`)
+    it("keeps a sibling node's space in place and glues an NBSP to the slash", () => {
+      // The space before the boundary belongs to a sibling text node. It must
+      // stay there; the NBSP is glued onto the slash's own node instead.
+      expect(applyPassToNodes(spacesAroundSlashes, [": ", "/ ,"])).toEqual([
+        ": ",
+        `${NBSP}/ ,`,
+      ])
     })
 
-    it("spacesAroundSlashes preserves outer space with marker before slash and no space after", () => {
-      const textWithMarker = `at : ${markerChar}/,`
-      const transformed = spacesAroundSlashes(textWithMarker)
-      expect(transformed).toBe(`at : ${markerChar}${NBSP}/${NBSP},`)
+    it("pads both sides of a boundary-adjacent slash with no spaces of its own", () => {
+      expect(applyPassToNodes(spacesAroundSlashes, ["at : ", "/,"])).toEqual([
+        "at : ",
+        `${NBSP}/${NBSP},`,
+      ])
     })
 
-    it("symbolTransform is invariant with colon-slash pattern", () => {
-      const textWithMarker = `: ${markerChar}/ ,`
-      const textWithoutMarker = ": / ,"
+    it("does not treat h/t as a hat-tip when a boundary splits it", () => {
+      // "<em>h</em>/t": the h sits in another node, so the slash is spaced.
+      expect(applyPassToNodes(spacesAroundSlashes, ["h", "/t"])).toEqual([
+        "h",
+        `${NBSP}/${NBSP}t`,
+      ])
+      // "<em>h/</em>t": the t sits in another node.
+      expect(applyPassToNodes(spacesAroundSlashes, ["h/", "t"])).toEqual([`h${NBSP}/${NBSP}`, "t"])
+    })
 
-      const transformedWithMarker = symbolTransform(textWithMarker, {
-        separator: markerChar,
-        includeArrows: false,
-      })
-      const transformedWithoutMarker = symbolTransform(textWithoutMarker, {
-        separator: markerChar,
-        includeArrows: false,
-      })
-      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
+    it("leaves a same-node double slash unspaced", () => {
+      expect(spacesAroundSlashes("a//b")).toBe("a//b")
+    })
 
-      expect(strippedResult).toBe(transformedWithoutMarker)
+    it("symbolTransform leaves the colon-slash pattern intact across a boundary", () => {
+      expect(
+        applyPassToNodes((view) => {
+          symbolTransform(view, { includeArrows: false })
+        }, [": ", "/ ,"]),
+      ).toEqual([": ", "/ ,"])
     })
   })
 
@@ -400,18 +410,10 @@ describe("HTMLFormattingImprovement", () => {
       expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
 
-    it("timeTransform is marker-invariant with footnote followed by Am", () => {
-      // From CI failure: "<sup>15</sup> Am I" flattens to "15" + marker + " Am I"
-      // Both should transform to "15 a.m. I" for invariance
-      const textWithMarker = `15${markerChar} Am I`
-      const textWithoutMarker = "15 Am I"
-
-      const transformedWithMarker = timeTransform(textWithMarker)
-      const transformedWithoutMarker = timeTransform(textWithoutMarker)
-      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
-
-      expect(strippedResult).toBe(transformedWithoutMarker)
-      expect(strippedResult).toBe("15 a.m. I")
+    it("timeTransform sees through an element boundary after the digit", () => {
+      // "<sup>15</sup> Am I" splits into "15" | " Am I"; the digit in the
+      // sibling node still anchors the lookbehind.
+      expect(applyPassToNodes(timeTransform, ["15", " Am I"])).toEqual(["15", " a.m. I"])
     })
   })
 
@@ -502,107 +504,26 @@ describe("HTMLFormattingImprovement", () => {
       expect(result).toBe(expected)
     })
 
-    describe("Marker invariance for e.g. and i.e. transforms", () => {
-      // Test that the marker-aware word boundary patterns work correctly
-      // when markers are present between word characters
-      it("should be marker-invariant for 'e.g.' at start of text", () => {
-        const textWithMarker = `${markerChar}e.g. test`
-        const textWithoutMarker = "e.g. test"
-
-        const transformedWithMarker = massTransformText(textWithMarker)
-        const transformedWithoutMarker = massTransformText(textWithoutMarker)
-        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
-
-        expect(strippedResult).toBe(transformedWithoutMarker)
-        expect(strippedResult).toBe("e.g. test")
-      })
-
-      it("should be marker-invariant for 'i.e.' at start of text", () => {
-        const textWithMarker = `${markerChar}i.e. test`
-        const textWithoutMarker = "i.e. test"
-
-        const transformedWithMarker = massTransformText(textWithMarker)
-        const transformedWithoutMarker = massTransformText(textWithoutMarker)
-        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
-
-        expect(strippedResult).toBe(transformedWithoutMarker)
-        expect(strippedResult).toBe("i.e. test")
-      })
-
-      it("should be marker-invariant for 'eg' followed by marker", () => {
-        const textWithMarker = `eg${markerChar} test`
-        const textWithoutMarker = "eg test"
-
-        const transformedWithMarker = massTransformText(textWithMarker)
-        const transformedWithoutMarker = massTransformText(textWithoutMarker)
-        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
-
-        expect(strippedResult).toBe(transformedWithoutMarker)
-        expect(strippedResult).toBe("e.g. test")
-      })
-
-      it("should be marker-invariant for 'ie.' followed by marker", () => {
-        // Test "ie." (with period) followed by marker
-        const textWithMarker = `ie.${markerChar} test`
-        const textWithoutMarker = "ie. test"
-
-        const transformedWithMarker = massTransformText(textWithMarker)
-        const transformedWithoutMarker = massTransformText(textWithoutMarker)
-        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
-
-        expect(strippedResult).toBe(transformedWithoutMarker)
-        expect(strippedResult).toBe("i.e. test")
-      })
-
-      it("should not transform 'eg' in middle of word with marker (e.g., 'regex')", () => {
-        const textWithMarker = `reg${markerChar}ex`
-        const textWithoutMarker = "regex"
-
-        const transformedWithMarker = massTransformText(textWithMarker)
-        const transformedWithoutMarker = massTransformText(textWithoutMarker)
-        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
-
-        expect(transformedWithoutMarker).toBe("RegEx")
-        expect(strippedResult).toBe("regex")
-      })
-
-      it("should not transform 'ie' in middle of word with marker (e.g., 'piece')", () => {
-        // Pattern: "p" + "ie" + marker + "ce" - marker between 'ie' and 'ce'
-        const textWithMarker = `pie${markerChar}ce`
-        const textWithoutMarker = "piece"
-
-        const transformedWithMarker = massTransformText(textWithMarker)
-        const transformedWithoutMarker = massTransformText(textWithoutMarker)
-        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
-
-        expect(strippedResult).toBe(transformedWithoutMarker)
-        expect(strippedResult).toBe("piece")
-      })
-
-      it("should handle 'e.g.,' with marker between elements", () => {
-        // Simulates: "<em>e.g.</em>, test" which becomes "e.g." + marker + ", test"
-        const textWithMarker = `e.g.${markerChar}, test`
-        const textWithoutMarker = "e.g., test"
-
-        const transformedWithMarker = massTransformText(textWithMarker)
-        const transformedWithoutMarker = massTransformText(textWithoutMarker)
-        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
-
-        expect(strippedResult).toBe(transformedWithoutMarker)
-        expect(strippedResult).toBe("e.g. test")
-      })
-
-      it("should handle 'i.e.,' with marker between elements", () => {
-        // Simulates: "<em>i.e.</em>, test" which becomes "i.e." + marker + ", test"
-        const textWithMarker = `i.e.${markerChar}, test`
-        const textWithoutMarker = "i.e., test"
-
-        const transformedWithMarker = massTransformText(textWithMarker)
-        const transformedWithoutMarker = massTransformText(textWithoutMarker)
-        const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
-
-        expect(strippedResult).toBe(transformedWithoutMarker)
-        expect(strippedResult).toBe("i.e. test")
+    describe("Element-boundary behavior for e.g. and i.e. transforms", () => {
+      it.each([
+        // Already-canonical abbreviation after a leading empty node stays put
+        [["", "e.g. test"], ["", "e.g. test"]],
+        [["", "i.e. test"], ["", "i.e. test"]],
+        // Abbreviation ends at a boundary: normalized within its own node
+        [["eg", " test"], ["e.g.", " test"]],
+        [["ie.", " test"], ["i.e.", " test"]],
+        // Boundaries inside words must not create false matches
+        [["reg", "ex"], ["reg", "ex"]],
+        [["pie", "ce"], ["pie", "ce"]],
+        // "<em>e.g.</em>, test": the trailing comma in the sibling node is
+        // absorbed, leaving the abbreviation in its own node
+        [["e.g.", ", test"], ["e.g.", " test"]],
+        [["i.e.", ", test"], ["i.e.", " test"]],
+        // A boundary inside the abbreviation (not before a trailing comma)
+        // rejects the match
+        [["e.g", ". test"], ["e.g", ". test"]],
+      ])("normalizes %j to %j across boundaries", (input, expected) => {
+        expect(applyPassToNodes(massTransformText, input)).toEqual(expected)
       })
     })
 
@@ -805,31 +726,6 @@ describe("HTMLFormattingImprovement", () => {
       // space, so em-dash conversion produces the unspaced "—despite" form.
       const out = testHtmlFormattingImprovement("<p>I think that -<em> despite</em></p>")
       expect(stripWordJoiner(normalizeNbsp(out))).toBe("<p>I think that—<em>despite</em></p>")
-    })
-  })
-
-  describe("transformParagraph", () => {
-    function _getParagraphNode(numChildren: number, value = "Hello, world!"): Element {
-      return h(
-        "p",
-        {},
-        Array.from({ length: numChildren }, () => ({
-          type: "text",
-          value,
-        })),
-      )
-    }
-
-    const capitalize = (str: string) => str.toUpperCase()
-    it.each([
-      ["r231o dsa;", 1],
-      ["hi", 3],
-    ])("should capitalize while respecting the marker", (before: string, numChildren: number) => {
-      const node = _getParagraphNode(numChildren, before)
-      transformElement(node, capitalize, () => false, markerChar)
-
-      const targetNode = _getParagraphNode(numChildren, capitalize(before))
-      expect(node).toEqual(targetNode)
     })
   })
 
@@ -1627,7 +1523,7 @@ describe("Date Range", () => {
   })
 })
 
-describe("collectTransformableElements", () => {
+describe("collectProseBlocks", () => {
   const el = (tag: string, children: (string | Element)[] = []): Element => h(tag, {}, children)
 
   const processNode = (c: ElementContent) => {
@@ -1665,7 +1561,7 @@ describe("collectTransformableElements", () => {
     ],
     ["empty element", el("div"), []],
   ])("collects elements from %s", (_, input, expected) => {
-    const result = collectTransformableElements(input, toSkip)
+    const result = collectProseBlocks(input, { skipTags: [], shouldSkip: toSkip })
     expect(result.map((node) => [node.tagName, node.children.map(processNode)])).toEqual(expected)
   })
 })
@@ -1966,31 +1862,6 @@ describe("replaceFractions", () => {
       expect(processedHtml).not.toContain('<span class="fraction">')
       expect(processedHtml).toContain("1/2")
     })
-  })
-})
-
-describe("transformElement error conditions", () => {
-  it("should not throw when node has no children", () => {
-    const nodeWithoutChildren = h("div") as Element
-    nodeWithoutChildren.children = undefined as unknown as Element["children"]
-
-    const transform = (text: string) => text.toUpperCase()
-
-    expect(() => {
-      transformElement(nodeWithoutChildren, transform, () => false, markerChar)
-    }).not.toThrow()
-  })
-
-  it("should throw error when transformation alters number of text nodes", () => {
-    const node = h("p", "hello world")
-
-    // This transform will split the text, altering the number of fragments
-    const transform = (text: string): string =>
-      text.replace("hello", `hello${markerChar}extra${markerChar}`)
-
-    expect(() => {
-      transformElement(node, transform, () => false, markerChar)
-    }).toThrow("Transformation altered the number of text nodes")
   })
 })
 
