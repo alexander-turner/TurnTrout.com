@@ -513,19 +513,19 @@ describe("showSearch", () => {
   })
 
   it("should make the search container active and focus the search bar", () => {
-    showSearch(container, searchBar)
+    void showSearch(container, searchBar)
     expect(container.classList.contains("active")).toBe(true)
     expect(document.activeElement).toBe(searchBar)
   })
 
   it("should set the z-index of the navbar", () => {
-    showSearch(container, searchBar)
+    void showSearch(container, searchBar)
     expect(navbar.style.zIndex).toBe("1")
   })
 
   it("should lock body scroll by setting overflow hidden", () => {
     expect(document.body.style.overflow).toBe("")
-    showSearch(container, searchBar)
+    void showSearch(container, searchBar)
     expect(document.body.style.overflow).toBe("hidden")
   })
 

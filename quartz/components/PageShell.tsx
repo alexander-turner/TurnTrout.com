@@ -19,6 +19,9 @@ import scrollIndicatorScript from "./scripts/scroll-indicator.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import smallCapsCopyScript from "./scripts/smallcaps-copy.inline"
+// @ts-expect-error Not a module but a script
+// skipcq: JS-W1028
+import spoilerScript from "./scripts/spoiler.inline"
 import clipboardStyle from "./styles/clipboard.scss"
 import {
   type QuartzComponent,
@@ -108,6 +111,7 @@ PageShell.afterDOMLoaded = [
   smallCapsCopyScript,
   scrollIndicatorScript,
   punctilioDemoScript,
+  spoilerScript,
 ]
 // Runs synchronously in `<head>` before any `<img>` is parsed — required so
 // the capture-phase `load` listener catches every img load before first paint.

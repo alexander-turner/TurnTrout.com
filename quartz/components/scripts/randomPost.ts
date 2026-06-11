@@ -15,26 +15,30 @@ export function isPost(slug: string): boolean {
   return !EXCLUDED_SLUG_PREFIXES.some((prefix) => slug.startsWith(prefix))
 }
 
+async function handleRandomPostClick(e: MouseEvent): Promise<void> {
+  const btn = (e.target as HTMLElement).closest("#random-post-link")
+  if (!btn) return
+  e.preventDefault()
+  const data = await getContentIndex()
+  if (!data) return
+  const posts = Object.keys(data).filter(isPost)
+  if (posts.length <= 1) {
+    console.error("[randomPost] Not enough posts:", posts.length)
+    return
+  }
+  const current = document.body.dataset.slug ?? ""
+  const candidates = posts.filter((s) => s !== current)
+  const slug = candidates[Math.floor(Math.random() * candidates.length)]
+  const url = new URL(`/${slug}`, location.origin)
+  if (window.spaNavigate) {
+    void window.spaNavigate(url)
+  } else {
+    location.assign(url)
+  }
+}
+
 export function setupRandomPostLink(): void {
-  document.addEventListener("click", async (e: MouseEvent) => {
-    const btn = (e.target as HTMLElement).closest("#random-post-link")
-    if (!btn) return
-    e.preventDefault()
-    const data = await getContentIndex()
-    if (!data) return
-    const posts = Object.keys(data).filter(isPost)
-    if (posts.length <= 1) {
-      console.error("[randomPost] Not enough posts:", posts.length)
-      return
-    }
-    const current = document.body.dataset.slug ?? ""
-    const candidates = posts.filter((s) => s !== current)
-    const slug = candidates[Math.floor(Math.random() * candidates.length)]
-    const url = new URL(`/${slug}`, location.origin)
-    if (window.spaNavigate) {
-      window.spaNavigate(url)
-    } else {
-      location.assign(url)
-    }
+  document.addEventListener("click", (e: MouseEvent) => {
+    void handleRandomPostClick(e)
   })
 }

@@ -92,7 +92,7 @@ export const rotateTheme = () => {
 function setupDarkMode() {
   const savedTheme = localStorage.getItem(savedThemeKey)
   const theme = savedTheme || "auto"
-  handleThemeUpdate(theme as Theme)
+  void handleThemeUpdate(theme as Theme)
 
   const toggle = document.querySelector("#theme-toggle") as HTMLButtonElement
   if (toggle) {

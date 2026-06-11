@@ -31,10 +31,10 @@ const improveFootnoteFormatting = (text: string) => {
 
 // Regular expression for edit/note patterns
 const editPattern =
-  /^\s*(?<emph1>[*_]*)(?:edit|eta|note),?\s*\(?(?<date>\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\)?(?<emph2>[*_]*:[*_]*) (?<text>.*)/gim
+  /^\s*[*_]*(?:edit|eta|note),?\s*\(?(?<date>\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\)?[*_]*:[*_]* (?<text>.*)/gim
 const editAdmonitionPattern = "\n> [!info] Edited on $<date>\n>\n> $<text>"
 
-const editPatternNoDate = /^\s*(?<emph1>[*_]*)(?:edit|eta)(?<emph2>[*_]*:[*_]*) (?<text>.*)/gim
+const editPatternNoDate = /^\s*[*_]*(?:edit|eta)[*_]*:[*_]* (?<text>.*)/gim
 const editAdmonitionPatternNoDate = "\n> [!info] Edited after posting\n>\n> $<text>"
 
 /**
@@ -136,7 +136,7 @@ const concentrateEmphasisAroundLinks = (text: string): string => {
  * @returns The text with all formatting improvements applied.
  */
 export const formattingImprovement = (text: string) => {
-  const yamlHeaderMatch = text.match(/^\s*---\n(?<yaml>.*?)\n---\n/s)
+  const yamlHeaderMatch = text.match(/^\s*---\n.*?\n---\n/s)
   let yamlHeader = ""
   let content = text
 

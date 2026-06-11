@@ -25,10 +25,11 @@ let linkListenerController: AbortController | null = null
 // When true, the next popover created by mouseEnterHandler will be pinned
 // (persist until explicitly closed via X or Escape). Set by click handlers.
 let nextPopoverPinned = false
-// Generation counter to detect stale async calls to mouseEnterHandler.
-// Incremented synchronously at call start; checked after await to bail
-// out if a newer call has started.
-let popoverGeneration = 0
+// Aborted to cancel in-flight async popover creation. A fresh controller is
+// installed synchronously at the start of each mouseEnterHandler call (and on
+// nav), so a stale call's signal is already aborted by the time its fetch
+// resolves and it discards its result.
+let popoverFetchController: AbortController | null = null
 
 /**
  * Handles the mouse enter event for link elements
@@ -43,7 +44,11 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   // don't share or leak the pinned flag across popovers.
   const shouldPin = nextPopoverPinned
   nextPopoverPinned = false
-  const thisGeneration = ++popoverGeneration
+  // Abort any previous in-flight creation so its stale result is discarded,
+  // then install a fresh controller for this call.
+  popoverFetchController?.abort()
+  popoverFetchController = new AbortController()
+  const { signal } = popoverFetchController
 
   const thisUrl = new URL(document.location.href)
   thisUrl.hash = ""
@@ -63,7 +68,7 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
 
   // A newer call to mouseEnterHandler started while we were fetching —
   // discard this stale popover so we don't end up with duplicates.
-  if (thisGeneration !== popoverGeneration) {
+  if (signal.aborted) {
     return
   }
 
@@ -175,7 +180,7 @@ document.addEventListener("nav", () => {
   }
   // Invalidate any in-flight async mouseEnterHandler calls so they
   // discard their result instead of creating an orphaned popover.
-  popoverGeneration++
+  popoverFetchController?.abort()
 
   // Mark that the mouse hasn't moved yet since this navigation.
   // Safari fires spurious mouseenter events after DOM morphing under a
@@ -267,7 +272,7 @@ document.addEventListener("nav", () => {
           if (activePopoverRemover) {
             activePopoverRemover()
           }
-          mouseEnterHandler.call(link) // Show the new popover
+          void mouseEnterHandler.call(link) // Show the new popover
           pendingPopoverTimer = null
         }, popoverRemovalDelayMs)
       }
@@ -309,7 +314,7 @@ document.addEventListener("nav", () => {
             activePopoverRemover()
           }
           nextPopoverPinned = true
-          mouseEnterHandler.call(link)
+          void mouseEnterHandler.call(link)
         },
         { signal },
       )

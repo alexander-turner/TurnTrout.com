@@ -504,7 +504,7 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
               () => {
                 const time = target === "start" ? 0 : media.duration
                 if (Number.isFinite(time)) {
-                  seekAndWait(time).then(resolve)
+                  void seekAndWait(time).then(resolve)
                 } else {
                   resolve()
                 }

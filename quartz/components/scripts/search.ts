@@ -347,8 +347,8 @@ export const matchTextNodes = (node: Node, term: string) => {
  * matching, and handles show/hide/clear operations.
  */
 export class PreviewManager {
-  private container: HTMLDivElement
-  private inner: HTMLElement
+  private readonly container: HTMLDivElement
+  private readonly inner: HTMLElement
   private currentSlug: FullSlug | null = null
 
   constructor(container: HTMLDivElement) {
@@ -857,7 +857,7 @@ function onNav(e: CustomEventMap["nav"]) {
   // Start fetching content index in the background (cached for later use
   // by initializeSearch). Don't block handler registration on the fetch —
   // data is only needed when the user actually performs a search.
-  getContentIndex()
+  void getContentIndex()
 
   results = document.createElement("div")
   const container = document.getElementById("search-container")
@@ -885,7 +885,9 @@ function onNav(e: CustomEventMap["nav"]) {
   addListener(
     document,
     "keydown",
-    (e: Event) => shortcutHandler(e as KeyboardEvent, container, searchBar),
+    (e: Event) => {
+      void shortcutHandler(e as KeyboardEvent, container, searchBar)
+    },
     listeners,
   )
   addListener(
@@ -1240,7 +1242,7 @@ export function navigateWithSearchTerm(href: string, searchTerm: string) {
   }
 
   hideSearch(null)
-  window.spaNavigate(new URL(href), { searchTerm })
+  void window.spaNavigate(new URL(href), { searchTerm })
 }
 
 /**

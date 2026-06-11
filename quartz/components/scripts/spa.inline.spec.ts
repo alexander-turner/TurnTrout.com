@@ -791,14 +791,14 @@ test.describe("Fetch & Redirect Handling", () => {
     const targetContent = "Redirect Target Content"
 
     await page.route(`**${sourcePath}`, (route) => {
-      route.fulfill({
+      void route.fulfill({
         status: 200,
         contentType: "text/html",
         body: `<html><head><meta http-equiv="refresh" content="0; url=${targetPath}"></head><body>Redirecting...</body></html>`,
       })
     })
     await page.route(`**${targetPath}`, (route) => {
-      route.fulfill({
+      void route.fulfill({
         status: 200,
         contentType: "text/html",
         body: `<html><head><title>Target Page</title></head><body><h1>${targetContent}</h1></body></html>`,
@@ -856,7 +856,7 @@ test.describe("Network Behavior", () => {
     // Intercept requests for the same page.
     await page.route(`**/${testingPageSlug}`, (route) => {
       requestMade = true
-      route.continue()
+      void route.continue()
     })
 
     // Create an anchor and a link pointing to it

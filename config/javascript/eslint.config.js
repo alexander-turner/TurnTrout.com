@@ -8,7 +8,16 @@ import pluginReact from "eslint-plugin-react"
 import reactHooks from "eslint-plugin-react-hooks"
 import regexpPlugin from "eslint-plugin-regexp"
 import globals from "globals"
-import { configs as tseslintConfigs } from "typescript-eslint"
+import { configs as tseslintConfigs, parser as tseslintParser } from "typescript-eslint"
+
+// Backward-compat re-exports (`export ... from`) are banned project-wide to
+// keep call sites importing from the canonical module, EXCEPT for the three
+// plugin barrel files, which legitimately use the pattern as a registry.
+const noReexportSyntax = {
+  selector: "ExportNamedDeclaration[source]",
+  message:
+    "Do not add backward-compat re-exports (`export ... from`); import from the canonical module at the call site.",
+}
 
 export default [
   // Global rules and plugins
@@ -75,6 +84,46 @@ export default [
     },
   },
 
+  // Ban backward-compat re-exports everywhere.
+  {
+    rules: {
+      "no-restricted-syntax": ["error", noReexportSyntax],
+    },
+  },
+
+  // Plugin barrel files use `export ... from` as a legitimate registry pattern.
+  {
+    files: [
+      "quartz/plugins/transformers/index.ts",
+      "quartz/plugins/filters/index.ts",
+      "quartz/plugins/emitters/index.ts",
+    ],
+    rules: {
+      "no-restricted-syntax": "off",
+    },
+  },
+
+  // Type-aware rules for our TypeScript sources. Requires the parser to load
+  // the project so type information is available.
+  {
+    files: ["quartz/**/*.ts", "quartz/**/*.tsx"],
+    ignores: ["**/*.min.ts", "**/*.min.d.ts"],
+    languageOptions: {
+      parser: tseslintParser,
+      parserOptions: {
+        project: "./config/typescript/tsconfig.json",
+        // This config lives in config/javascript/; the tsconfig project path is
+        // relative to the repo root, two levels up.
+        tsconfigRootDir: `${import.meta.dirname}/../..`,
+      },
+    },
+    rules: {
+      "@typescript-eslint/prefer-readonly": "error",
+      "@typescript-eslint/no-floating-promises": "error",
+      "@typescript-eslint/no-misused-promises": "error",
+    },
+  },
+
   // Disable rules for test/spec files:
   // - react-hooks: Playwright's `use()` triggers false positives
   // - require-await: mock methods often need async signatures
@@ -119,6 +168,8 @@ export default [
     },
     rules: {
       ...jestPlugin.configs["flat/recommended"].rules,
+      // Custom assertion helpers that wrap `expect` internally.
+      "jest/expect-expect": ["warn", { assertFunctionNames: ["expect", "expectRevealed"] }],
     },
   },
 
@@ -127,6 +178,7 @@ export default [
     ignores: [
       "website_content/",
       "**/htmlcov/",
+      "**/coverage/",
       "public/",
       "backstop/",
       "**/*!*",

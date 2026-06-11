@@ -274,7 +274,7 @@ class AssetProcessor {
           !isSvgRemote &&
           (contentType?.startsWith("video/") || contentType?.startsWith("image/"))
         ) {
-          response.body?.cancel()
+          void response.body?.cancel()
           return await AssetProcessor.getAssetDimensionsFfprobe(assetSrc)
         }
 

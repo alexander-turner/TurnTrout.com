@@ -183,9 +183,9 @@ async function startServing(
 
   const buildFromEntry = argv.fastRebuild ? partialRebuildFromEntrypoint : rebuildFromEntrypoint
   watcher
-    .on("add", (fp) => buildFromEntry(fp, "add", clientRefresh, buildData))
-    .on("change", (fp) => buildFromEntry(fp, "change", clientRefresh, buildData))
-    .on("unlink", (fp) => buildFromEntry(fp, "delete", clientRefresh, buildData))
+    .on("add", (fp) => void buildFromEntry(fp, "add", clientRefresh, buildData))
+    .on("change", (fp) => void buildFromEntry(fp, "change", clientRefresh, buildData))
+    .on("unlink", (fp) => void buildFromEntry(fp, "delete", clientRefresh, buildData))
 
   return async () => {
     await watcher.close()
@@ -358,22 +358,26 @@ async function partialRebuildFromEntrypoint(
 
     // CLEANUP
     const destinationsToDelete = new Set<FilePath>()
+    // remove from cache
     for (const file of toRemove) {
-      // remove from cache
       contentMap.delete(file)
-      Object.values(dependencies).forEach((depGraph) => {
-        // remove the node from dependency graphs
-        depGraph?.removeNode(file)
-        // remove any orphan nodes. eg if a.md is deleted, a.html is orphaned and should be removed
-        const orphanNodes = depGraph?.removeOrphanNodes()
-        orphanNodes?.forEach((node) => {
-          // only delete files that are in the output directory
-          if (node.startsWith(argv.output)) {
-            destinationsToDelete.add(node)
-          }
-        })
-      })
     }
+    // Iterate each dependency graph once, removing every deleted file's node,
+    // then collecting orphans. eg if a.md is deleted, a.html is orphaned and
+    // should be removed.
+    Object.values(dependencies).forEach((depGraph) => {
+      if (!depGraph) return
+      for (const file of toRemove) {
+        depGraph.removeNode(file)
+      }
+      const orphanNodes = depGraph.removeOrphanNodes()
+      orphanNodes.forEach((node) => {
+        // only delete files that are in the output directory
+        if (node.startsWith(argv.output)) {
+          destinationsToDelete.add(node)
+        }
+      })
+    })
     await rimraf([...destinationsToDelete])
 
     console.log(chalk.green(`Done rebuilding in ${perf.timeSince()} 🔔`))

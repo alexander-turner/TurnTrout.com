@@ -2138,7 +2138,7 @@ describe("improveFormatting function with options", () => {
     mockFile.data = {}
 
     // Transform should work with default options (including first letter processing)
-    transformer(tree, mockFile, () => {
+    void transformer(tree, mockFile, () => {
       /* noop */
     })
 
