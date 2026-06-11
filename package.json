@@ -67,18 +67,6 @@
     "node": ">=22"
   },
   "packageManager": "pnpm@10.23.0",
-  "pnpm": {
-    "overrides": {
-      "brace-expansion@>=5.0.0 <5.0.6": ">=5.0.6",
-      "qs@>=6.11.1 <=6.15.1": ">=6.15.2",
-      "minimatch@<3.1.4": ">=3.1.4",
-      "underscore@<1.13.8": ">=1.13.8",
-      "d3-color@<3.1.0": ">=3.1.0",
-      "form-data@<2.5.4": ">=2.5.4",
-      "@tootallnate/once@<2.0.1": ">=2.0.1",
-      "tmp@<0.2.6": ">=0.2.6"
-    }
-  },
   "keywords": [
     "site generator",
     "ssg",
