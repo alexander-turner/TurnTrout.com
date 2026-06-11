@@ -272,6 +272,7 @@ document.addEventListener("nav", () => {
           if (activePopoverRemover) {
             activePopoverRemover()
           }
+          // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
           void mouseEnterHandler.call(link) // Show the new popover
           pendingPopoverTimer = null
         }, popoverRemovalDelayMs)
@@ -314,6 +315,7 @@ document.addEventListener("nav", () => {
             activePopoverRemover()
           }
           nextPopoverPinned = true
+          // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
           void mouseEnterHandler.call(link)
         },
         { signal },

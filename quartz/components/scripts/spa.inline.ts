@@ -485,11 +485,13 @@ function createRouter() {
     )
 
     document.addEventListener("click", (event) => {
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
       void handleClickNavigation(event)
     })
 
     // Listener for back/forward navigation
     window.addEventListener("popstate", (event) => {
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
       void handlePopstate(event)
     })
 

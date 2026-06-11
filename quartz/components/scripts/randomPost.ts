@@ -31,6 +31,7 @@ async function handleRandomPostClick(e: MouseEvent): Promise<void> {
   const slug = candidates[Math.floor(Math.random() * candidates.length)]
   const url = new URL(`/${slug}`, location.origin)
   if (window.spaNavigate) {
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
     void window.spaNavigate(url)
   } else {
     location.assign(url)
@@ -39,6 +40,7 @@ async function handleRandomPostClick(e: MouseEvent): Promise<void> {
 
 export function setupRandomPostLink(): void {
   document.addEventListener("click", (e: MouseEvent) => {
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
     void handleRandomPostClick(e)
   })
 }

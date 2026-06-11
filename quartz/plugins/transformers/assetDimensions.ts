@@ -274,6 +274,7 @@ class AssetProcessor {
           !isSvgRemote &&
           (contentType?.startsWith("video/") || contentType?.startsWith("image/"))
         ) {
+          // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
           void response.body?.cancel()
           return await AssetProcessor.getAssetDimensionsFfprobe(assetSrc)
         }

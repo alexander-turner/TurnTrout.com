@@ -857,6 +857,7 @@ function onNav(e: CustomEventMap["nav"]) {
   // Start fetching content index in the background (cached for later use
   // by initializeSearch). Don't block handler registration on the fetch —
   // data is only needed when the user actually performs a search.
+  // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
   void getContentIndex()
 
   results = document.createElement("div")
@@ -886,6 +887,7 @@ function onNav(e: CustomEventMap["nav"]) {
     document,
     "keydown",
     (e: Event) => {
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
       void shortcutHandler(e as KeyboardEvent, container, searchBar)
     },
     listeners,
@@ -1242,6 +1244,7 @@ export function navigateWithSearchTerm(href: string, searchTerm: string) {
   }
 
   hideSearch(null)
+  // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
   void window.spaNavigate(new URL(href), { searchTerm })
 }
 

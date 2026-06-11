@@ -504,6 +504,7 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
               () => {
                 const time = target === "start" ? 0 : media.duration
                 if (Number.isFinite(time)) {
+                  // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
                   void seekAndWait(time).then(resolve)
                 } else {
                   resolve()

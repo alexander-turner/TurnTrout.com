@@ -92,6 +92,7 @@ export const rotateTheme = () => {
 function setupDarkMode() {
   const savedTheme = localStorage.getItem(savedThemeKey)
   const theme = savedTheme || "auto"
+  // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
   void handleThemeUpdate(theme as Theme)
 
   const toggle = document.querySelector("#theme-toggle") as HTMLButtonElement

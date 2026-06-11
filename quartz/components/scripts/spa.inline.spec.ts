@@ -791,6 +791,7 @@ test.describe("Fetch & Redirect Handling", () => {
     const targetContent = "Redirect Target Content"
 
     await page.route(`**${sourcePath}`, (route) => {
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
       void route.fulfill({
         status: 200,
         contentType: "text/html",
@@ -798,6 +799,7 @@ test.describe("Fetch & Redirect Handling", () => {
       })
     })
     await page.route(`**${targetPath}`, (route) => {
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
       void route.fulfill({
         status: 200,
         contentType: "text/html",
@@ -856,6 +858,7 @@ test.describe("Network Behavior", () => {
     // Intercept requests for the same page.
     await page.route(`**/${testingPageSlug}`, (route) => {
       requestMade = true
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
       void route.continue()
     })
 

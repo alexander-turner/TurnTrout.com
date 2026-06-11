@@ -183,8 +183,11 @@ async function startServing(
 
   const buildFromEntry = argv.fastRebuild ? partialRebuildFromEntrypoint : rebuildFromEntrypoint
   watcher
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
     .on("add", (fp) => void buildFromEntry(fp, "add", clientRefresh, buildData))
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
     .on("change", (fp) => void buildFromEntry(fp, "change", clientRefresh, buildData))
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
     .on("unlink", (fp) => void buildFromEntry(fp, "delete", clientRefresh, buildData))
 
   return async () => {

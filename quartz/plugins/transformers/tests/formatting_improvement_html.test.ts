@@ -2138,6 +2138,7 @@ describe("improveFormatting function with options", () => {
     mockFile.data = {}
 
     // Transform should work with default options (including first letter processing)
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
     void transformer(tree, mockFile, () => {
       /* noop */
     })

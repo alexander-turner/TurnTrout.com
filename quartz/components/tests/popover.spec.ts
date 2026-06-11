@@ -386,6 +386,7 @@ test("In-flight popover fetch does not create orphaned popover after navigation"
       releasePopoverFetch = release
     })
     let firstRequest = true
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
     void page.route("**/popover-fixture", async (route) => {
       if (firstRequest) {
         firstRequest = false
