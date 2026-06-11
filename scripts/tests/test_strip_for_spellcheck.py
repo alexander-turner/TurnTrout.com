@@ -153,9 +153,9 @@ def test_is_quote_callout_start(line: str, expected: bool):
 def test_strip_quote_blocks(text: str, expected: str):
     result = strip_for_spellcheck.strip_quote_blocks(text)
     assert result == expected
-    assert result.count("\n") == text.count(
-        "\n"
-    ), "Line count must be preserved"
+    assert result.count("\n") == text.count("\n"), (
+        "Line count must be preserved"
+    )
 
 
 def _blank_inner_spans(text: str, spans: list[tuple[int, int]]) -> str:
@@ -219,9 +219,9 @@ def test_strip_math(text: str, blanks: list[tuple[int, int]]):
     expected = _blank_inner_spans(text, blanks)
     result = strip_for_spellcheck.strip_math(text)
     assert result == expected
-    assert result.count("\n") == text.count(
-        "\n"
-    ), "Line count must be preserved"
+    assert result.count("\n") == text.count("\n"), (
+        "Line count must be preserved"
+    )
     assert len(result) == len(text), "Length must be preserved"
 
 
@@ -320,9 +320,9 @@ def test_strip_callout_markers(text: str, expected: str):
     result = strip_for_spellcheck.strip_callout_markers(text)
     assert result == expected
     assert len(result) == len(text), "Length must be preserved"
-    assert result.count("\n") == text.count(
-        "\n"
-    ), "Line count must be preserved"
+    assert result.count("\n") == text.count("\n"), (
+        "Line count must be preserved"
+    )
 
 
 def test_strip_for_lint_blanks_non_quote_callout_marker():

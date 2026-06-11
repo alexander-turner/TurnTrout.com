@@ -420,38 +420,30 @@ describe("getFaviconCounts", () => {
     expect(counts.get("mail")).toBe(5)
   })
 
-  it("should return empty map when file does not exist", async () => {
-    jest.spyOn(fs.promises, "access").mockRejectedValue(new Error("ENOENT"))
+  it("should return empty map when file does not exist (ENOENT)", async () => {
+    const err: NodeJS.ErrnoException = Object.assign(new Error("ENOENT"), { code: "ENOENT" })
+    jest.spyOn(fs.promises, "readFile").mockRejectedValue(err)
 
     const counts = await getFaviconCounts()
 
     expect(counts.size).toBe(0)
   })
 
-  it("should handle invalid JSON content gracefully", async () => {
-    jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.resolve())
+  it("should throw on invalid JSON content (fail loudly on corruption)", async () => {
     jest.spyOn(fs.promises, "readFile").mockResolvedValue("invalid json {]")
 
-    const counts = await getFaviconCounts()
-
-    expect(counts.size).toBe(0)
+    await expect(getFaviconCounts()).rejects.toThrow()
   })
 
-  it("should handle read errors gracefully", async () => {
-    jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.resolve())
+  it("should throw on non-ENOENT read errors", async () => {
     jest.spyOn(fs.promises, "readFile").mockRejectedValue(new Error("Read error"))
 
-    const counts = await getFaviconCounts()
-
-    expect(counts.size).toBe(0)
+    await expect(getFaviconCounts()).rejects.toThrow("Read error")
   })
 
-  it("should return empty map when file is empty", async () => {
-    jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.resolve())
+  it("should throw when the file is empty (malformed JSON)", async () => {
     jest.spyOn(fs.promises, "readFile").mockResolvedValue("")
 
-    const counts = await getFaviconCounts()
-
-    expect(counts.size).toBe(0)
+    await expect(getFaviconCounts()).rejects.toThrow()
   })
 })

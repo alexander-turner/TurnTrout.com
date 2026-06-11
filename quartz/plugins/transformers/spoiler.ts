@@ -10,16 +10,6 @@ type InlineNode = Text | Element
 const SPOILER_REGEX = /^!\s*(?<spoilerText>.*)/
 
 /**
- * Generate inline JavaScript to toggle a spoiler from the container element.
- * Toggles class on the container and updates aria-expanded on the overlay child.
- * @param className - The CSS class name to toggle on the container
- * @returns JavaScript code as a string for the onclick handler
- */
-function toggleSpoilerJs(className: string): string {
-  return `this.classList.toggle('${className}');var r=this.classList.contains('${className}');this.querySelector('.spoiler-overlay').setAttribute('aria-expanded',r);this.querySelector('.spoiler-overlay').setAttribute('aria-hidden',r);this.querySelector('.spoiler-content').setAttribute('aria-hidden',!r)`
-}
-
-/**
  * Extract spoiler text from a string.
  */
 export function matchSpoilerText(text: string): string | null {
@@ -29,18 +19,17 @@ export function matchSpoilerText(text: string): string | null {
 
 /**
  * Create a spoiler container element with overlay and content.
- * The container has onclick for toggling (works even after overlay becomes pointer-events:none).
- * The overlay has role="button" and keyboard handlers for accessibility, but no onclick
- * (clicks on the overlay bubble to the container's onclick handler).
+ * Toggling is handled by the delegated listeners in `spoiler.inline.ts`,
+ * which react to clicks anywhere in the container and to Enter/Space on the
+ * overlay; no inline event handlers are emitted.
  * @param content - The content to hide behind the spoiler (string or array of elements)
- * @returns A div element with spoiler-container class and click handler
+ * @returns A div element with spoiler-container class
  */
 export function createSpoilerNode(content: string | Element[]): Element {
   return h(
     "div",
     {
       className: ["spoiler-container"],
-      onclick: toggleSpoilerJs("revealed"),
     },
     [
       h("span", {
@@ -49,8 +38,6 @@ export function createSpoilerNode(content: string | Element[]): Element {
         tabindex: 0,
         ariaExpanded: "false",
         ariaLabel: "Spoiler (click or press Enter to reveal)",
-        onkeydown:
-          "if(event.key==='Enter'||event.key===' '){event.preventDefault();this.parentElement.click()}",
       }),
       h("span", { className: ["spoiler-content"], ariaHidden: "true" }, content),
     ],

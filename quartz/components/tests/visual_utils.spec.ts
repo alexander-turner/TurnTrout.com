@@ -576,7 +576,8 @@ test.describe("pauseMediaElements", () => {
     `)
     // Mock media sources to prevent actual loading/errors
     await page.route("**/*.{mp4,mp3}", (route) => {
-      route.fulfill({ status: 200, contentType: "video/mp4", body: Buffer.from("") })
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+      void route.fulfill({ status: 200, contentType: "video/mp4", body: Buffer.from("") })
     })
   })
 
@@ -616,7 +617,8 @@ test.describe("pauseMediaElements", () => {
 
     // Mock the audio file
     await page.route("**/test.mp3", (route) => {
-      route.fulfill({ status: 200, contentType: "audio/mpeg", body: Buffer.from("") })
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+      void route.fulfill({ status: 200, contentType: "audio/mpeg", body: Buffer.from("") })
     })
 
     const audio = page.locator("#audio-with-duration")
@@ -651,7 +653,8 @@ test.describe("pauseMediaElements", () => {
 
     // Mock the audio file
     await page.route("**/loading.mp3", (route) => {
-      route.fulfill({ status: 200, contentType: "audio/mpeg", body: Buffer.from("") })
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+      void route.fulfill({ status: 200, contentType: "audio/mpeg", body: Buffer.from("") })
     })
 
     const audio = page.locator("#audio-loading")

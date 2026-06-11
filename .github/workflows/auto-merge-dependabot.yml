@@ -3,6 +3,9 @@ name: Auto-merge Dependabot PRs
 # fork-like context and need write permissions. This is safe as long as
 # no step checks out or executes PR code.
 on:
+  # zizmor: ignore[dangerous-triggers] pull_request_target is required so
+  # Dependabot PRs (fork-like context) get write permissions; safe because no
+  # step checks out or executes PR code — only metadata + gh pr commands run.
   pull_request_target:
     types: [opened]
 
@@ -14,7 +17,10 @@ jobs:
   auto-merge:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    if: github.actor == 'dependabot[bot]'
+    # On pull_request_target the actor is the PR author; dependabot[bot] cannot
+    # be spoofed by an external contributor, and the job only enables auto-merge
+    # (no PR code is run).
+    if: github.actor == 'dependabot[bot]' # zizmor: ignore[bot-conditions]
     steps:
       - name: Fetch Dependabot metadata
         id: metadata

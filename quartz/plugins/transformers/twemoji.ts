@@ -73,7 +73,7 @@ export function replaceEmoji(content: string): string {
  */
 export function createNodes(twemojiContent: string): (Text | Element)[] {
   const newNodes: (Text | Element)[] = []
-  const parts = twemojiContent.split(/<img.*?>/g)
+  const parts = twemojiContent.split(/<img.*?>/)
   const imgRegex = /<img.*?>/g
   const matches: string[] = []
   let match: RegExpExecArray | null

@@ -56,7 +56,9 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Install subfont fork at ${{ inputs.fork_ref }}
-        run: pnpm add -g github:alexander-turner/subfont#${{ inputs.fork_ref }}
+        env:
+          FORK_REF: ${{ inputs.fork_ref }}
+        run: pnpm add -g "github:alexander-turner/subfont#${FORK_REF}"
 
       - name: Record installed subfont SHA
         run: |
@@ -89,17 +91,23 @@ jobs:
 
       - name: Write summary
         if: always()
+        env:
+          FORK_REF: ${{ inputs.fork_ref }}
+          INSTALLED: ${{ steps.record.outputs.installed }}
+          SUBFONT_OUTCOME: ${{ steps.subfont.outcome }}
+          ELAPSED_SECONDS: ${{ steps.subfont.outputs.elapsed_seconds || 'n/a (step did not complete)' }}
+          SITE_COMMIT: ${{ github.sha }}
         run: |
           {
-            echo "## Subfont bisect — \`${{ inputs.fork_ref }}\`"
+            echo "## Subfont bisect — \`${FORK_REF}\`"
             echo ""
             echo "| Field | Value |"
             echo "|---|---|"
-            echo "| Fork ref (input) | \`${{ inputs.fork_ref }}\` |"
-            echo "| Installed | \`${{ steps.record.outputs.installed }}\` |"
-            echo "| Subfont step result | ${{ steps.subfont.outcome }} |"
-            echo "| Elapsed (seconds) | ${{ steps.subfont.outputs.elapsed_seconds || 'n/a (step did not complete)' }} |"
-            echo "| Site commit | \`${{ github.sha }}\` |"
+            echo "| Fork ref (input) | \`${FORK_REF}\` |"
+            echo "| Installed | \`${INSTALLED}\` |"
+            echo "| Subfont step result | ${SUBFONT_OUTCOME} |"
+            echo "| Elapsed (seconds) | ${ELAPSED_SECONDS} |"
+            echo "| Site commit | \`${SITE_COMMIT}\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload subfont log

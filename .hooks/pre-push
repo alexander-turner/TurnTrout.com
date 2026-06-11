@@ -53,8 +53,28 @@ stash_and_exit() {
 
 cd "$GIT_ROOT"
 
+if ! command -v uv >/dev/null 2>&1; then
+  echo "ERROR: 'uv' was not found on PATH." >&2
+  echo "The pre-push checks run via 'uv'. Install it (https://docs.astral.sh/uv/)" >&2
+  echo "or add it to PATH, then retry the push. To bypass once: 'git push --no-verify'." >&2
+  exit 1
+fi
+
 if [ "$RESUME" != "true" ]; then
   PUSHED_CHANGES=$(stash_and_exit)
 fi
 
+# Temporarily disable `set -e` so we can capture the exact exit status and
+# print the resume hint before propagating the failure.
+set +e
 uv run python "$GIT_ROOT/scripts/run_push_checks.py" $RESUME_FLAG
+_checks_status=$?
+set -e
+
+if [ "$_checks_status" -ne 0 ]; then
+  echo "" >&2
+  echo "Pre-push checks failed. After fixing the issue, resume from the failed" >&2
+  echo "step (skipping the checks that already passed) with:" >&2
+  echo "    RESUME=true git push" >&2
+  exit "$_checks_status"
+fi

@@ -49,9 +49,9 @@ def test_avif_size_reduction(temp_dir: Path, image_ext: str):
     avif_file = input_file.with_suffix(".avif")
     avif_size = avif_file.stat().st_size
 
-    assert (
-        avif_size < original_size
-    ), f"AVIF ({avif_file}) size ({avif_size}) not less than original {image_ext.upper()} ({original_size} {input_file})"
+    assert avif_size < original_size, (
+        f"AVIF ({avif_file}) size ({avif_size}) not less than original {image_ext.upper()} ({original_size} {input_file})"
+    )
 
 
 def test_convert_avif_fails_with_non_existent_file(temp_dir: Path):
@@ -242,9 +242,9 @@ def test_convert_gif_mp4_codec_is_hevc(temp_dir: Path):
             text=True,
             check=True,
         )
-        assert (
-            result.stdout.strip() == "hevc"
-        ), f"Output video codec is not HEVC, got: {result.stdout.strip()}"
+        assert result.stdout.strip() == "hevc", (
+            f"Output video codec is not HEVC, got: {result.stdout.strip()}"
+        )
     except subprocess.CalledProcessError as e:
         pytest.fail(f"Error checking MP4 file codec: {e.stderr}")
 
@@ -308,9 +308,9 @@ def test_convert_gif_output_has_no_audio(temp_dir: Path):
     for suffix in [".mp4", ".webm"]:
         output_file = input_file.with_suffix(suffix)
         assert output_file.exists(), f"{suffix} file not created from GIF"
-        assert not _has_audio_stream(
-            output_file
-        ), f"{suffix} output from GIF should not have audio"
+        assert not _has_audio_stream(output_file), (
+            f"{suffix} output from GIF should not have audio"
+        )
 
 
 @requires_ffmpeg
@@ -324,9 +324,9 @@ def test_convert_video_output_has_audio(temp_dir: Path):
     for suffix in [".mp4", ".webm"]:
         output_file = input_file.with_suffix(suffix)
         assert output_file.exists(), f"{suffix} file not created from video"
-        assert _has_audio_stream(
-            output_file
-        ), f"{suffix} output from video should have audio"
+        assert _has_audio_stream(output_file), (
+            f"{suffix} output from video should have audio"
+        )
 
 
 def _get_frame_rate(file_path: Path) -> float:
@@ -373,9 +373,9 @@ def test_avif_preserves_color_profile(temp_dir: Path, input_file_ext: str):
         check=True,
     )
 
-    assert (
-        "Colorspace: sRGB" in result.stdout
-    ), "AVIF file should have sRGB colorspace"
+    assert "Colorspace: sRGB" in result.stdout, (
+        "AVIF file should have sRGB colorspace"
+    )
 
 
 def test_png_input_has_transparency(temp_dir: Path):
@@ -394,9 +394,9 @@ def test_png_input_has_transparency(temp_dir: Path):
         text=True,
         check=True,
     )
-    assert (
-        "alpha: 8-bit" in pre_result.stdout.lower()
-    ), "Input PNG file should have transparency before conversion"
+    assert "alpha: 8-bit" in pre_result.stdout.lower(), (
+        "Input PNG file should have transparency before conversion"
+    )
 
 
 def test_avif_output_preserves_transparency(temp_dir: Path):
@@ -420,9 +420,9 @@ def test_avif_output_preserves_transparency(temp_dir: Path):
         text=True,
         check=True,
     )
-    assert (
-        "alpha: 8-bit" in post_result.stdout.lower()
-    ), "AVIF file should preserve transparency"
+    assert "alpha: 8-bit" in post_result.stdout.lower(), (
+        "AVIF file should preserve transparency"
+    )
 
 
 @pytest.mark.parametrize("input_file_ext", compress.ALLOWED_IMAGE_EXTENSIONS)
@@ -444,9 +444,9 @@ def test_avif_quality_affects_file_size(temp_dir: Path, input_file_ext: str):
     compress.image(input_file, quality=10)
     low_quality_size = input_file.with_suffix(".avif").stat().st_size
 
-    assert (
-        high_quality_size > low_quality_size
-    ), f"Higher quality ({high_quality_size}B) should be larger than lower quality ({low_quality_size}B)"
+    assert high_quality_size > low_quality_size, (
+        f"Higher quality ({high_quality_size}B) should be larger than lower quality ({low_quality_size}B)"
+    )
 
 
 @requires_exiftool
@@ -465,9 +465,9 @@ def test_avif_format_chroma(temp_dir: Path):
         text=True,
         check=True,
     )
-    assert re.search(
-        r"Chroma Format\s*:\s*YUV 4:2:0", result.stdout
-    ), "AVIF should use YUV 4:2:0"
+    assert re.search(r"Chroma Format\s*:\s*YUV 4:2:0", result.stdout), (
+        "AVIF should use YUV 4:2:0"
+    )
 
 
 def test_avif_format_pixel_depth(temp_dir: Path):
@@ -487,9 +487,9 @@ def test_avif_format_pixel_depth(temp_dir: Path):
         text=True,
         check=True,
     )
-    assert (
-        result.stdout.strip() == "8"
-    ), f"AVIF should have 8-bit depth, got {result.stdout.strip()!r}"
+    assert result.stdout.strip() == "8", (
+        f"AVIF should have 8-bit depth, got {result.stdout.strip()!r}"
+    )
 
 
 @pytest.mark.parametrize(
@@ -591,10 +591,14 @@ def test_check_if_hevc_codec(
     input_file = temp_dir / f"test_{test_id}.mp4"
     input_file.touch()
 
-    def mock_check_output(*args: object, **kwargs: object) -> str:
-        return mock_output
+    def mock_run(
+        *args: object, **kwargs: object
+    ) -> subprocess.CompletedProcess:
+        return subprocess.CompletedProcess(
+            args=args[0], returncode=0, stdout=mock_output, stderr=""
+        )
 
-    monkeypatch.setattr(subprocess, "check_output", mock_check_output)
+    monkeypatch.setattr(subprocess, "run", mock_run)
     assert compress._check_if_hevc_codec(input_file) is expected_result
 
 
@@ -603,14 +607,14 @@ def test_check_if_hevc_codec_ffprobe_error(temp_dir: Path, monkeypatch):
     input_file = temp_dir / "test_error.mp4"
     input_file.touch()
 
-    def mock_check_output(*args: object, **kwargs: object) -> None:
+    def mock_run(*args: object, **kwargs: object) -> None:
         raise subprocess.CalledProcessError(
             cmd=list(args[0]),  # type: ignore[call-overload]
             returncode=1,
             stderr="ffprobe error",
         )
 
-    monkeypatch.setattr(subprocess, "check_output", mock_check_output)
+    monkeypatch.setattr(subprocess, "run", mock_run)
     with pytest.raises(subprocess.CalledProcessError):
         compress._check_if_hevc_codec(input_file)
 
@@ -631,14 +635,14 @@ def test_video_preserves_framerate(
 
     # TODO `create_test_video` framerate isn't reliable for GIFs
     if input_video_ext != ".gif":
-        assert input_fps == pytest.approx(
-            framerate, rel=0.05
-        ), f"Input FPS {input_fps} does not match expected FPS {framerate}"
+        assert input_fps == pytest.approx(framerate, rel=0.05), (
+            f"Input FPS {input_fps} does not match expected FPS {framerate}"
+        )
 
     for output_video_ext in [".webm", ".mp4"]:
         output_file = input_file.with_suffix(output_video_ext)
         output_fps = _get_frame_rate(output_file)
 
-        assert output_fps == pytest.approx(
-            input_fps, rel=0.05
-        ), f"Output FPS {output_fps} does not match expected FPS {input_fps}"
+        assert output_fps == pytest.approx(input_fps, rel=0.05), (
+            f"Output FPS {output_fps} does not match expected FPS {input_fps}"
+        )

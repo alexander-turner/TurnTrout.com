@@ -58,12 +58,14 @@ jobs:
             --config-file config/python/mypy.ini \
             scripts/*.py
 
-      - name: Run docformatter check
-        run: |
-          uv run python -m docformatter \
-            --check \
-            --config config/python/pyproject.toml \
-            scripts/*.py
+      # Ruff is the formatter/linter authority (config in pyproject.toml's
+      # [tool.ruff]). Run via `uvx` (ephemeral, version-pinned) since it isn't
+      # a locked project dependency.
+      - name: Run ruff format check
+        run: uvx ruff@0.15.8 format --check --config pyproject.toml scripts/
+
+      - name: Run ruff check
+        run: uvx ruff@0.15.8 check --config pyproject.toml scripts/
 
       - name: Run pylint
         run: |

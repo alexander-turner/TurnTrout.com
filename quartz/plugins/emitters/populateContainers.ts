@@ -7,7 +7,7 @@ import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { render } from "preact-render-to-string"
 import { quote } from "shell-quote"
-import { CONTINUE, EXIT, visit } from "unist-util-visit"
+import { visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
 import { renderPostStatistics } from "../../components/ContentMeta"
@@ -36,19 +36,30 @@ const {
 const logger = createWinstonLogger("populateContainers")
 
 /**
+ * Collects every element in the HAST tree matching a predicate.
+ * @param tree - The root HAST node to search
+ * @param predicate - Returns true for elements that should be collected
+ * @returns Array of matching elements in document order
+ */
+export const findElements = (tree: Root, predicate: (node: Element) => boolean): Element[] => {
+  const found: Element[] = []
+  visit(tree, "element", (node) => {
+    if (predicate(node)) {
+      found.push(node)
+    }
+  })
+  return found
+}
+
+/**
  * Finds an element in the HAST tree by its ID attribute.
  * @param root - The root HAST node to search
  * @param id - The ID to search for
  * @returns The element with the matching ID, or null if not found
  */
 export const findElementById = (root: Root, id: string): Element | null => {
-  let found: Element | null = null
-  visit(root, "element", (node) => {
-    if (node.properties?.id !== id) return CONTINUE
-    found = node
-    return EXIT
-  })
-  return found
+  const matches = findElements(root, (node) => node.properties?.id === id)
+  return matches[0] ?? null
 }
 
 /**
@@ -58,13 +69,7 @@ export const findElementById = (root: Root, id: string): Element | null => {
  * @returns Array of elements with the matching class name
  */
 export const findElementsByClass = (root: Root, className: string): Element[] => {
-  const found: Element[] = []
-  visit(root, "element", (node) => {
-    if (hasClass(node, className)) {
-      found.push(node)
-    }
-  })
-  return found
+  return findElements(root, (node) => hasClass(node, className))
 }
 
 /**

@@ -58,34 +58,31 @@ export function normalizePathForCounting(faviconPath: string): string {
 /**
  * Reads favicon counts from the faviconCountsFile and returns them as a ReadonlyMap.
  *
- * @returns A ReadonlyMap of favicon path to count, or empty Map if file doesn't exist or can't be read.
+ * A missing file (ENOENT) is a normal, expected state and yields an empty Map.
+ * A malformed/corrupt file throws so the corruption fails loudly rather than
+ * silently degrading to an empty count map.
+ *
+ * @returns A ReadonlyMap of favicon path to count, or empty Map if the file doesn't exist.
  */
 export async function readFaviconCounts(): Promise<ReadonlyMap<string, number>> {
+  let data: string
   try {
-    await fs.promises.access(faviconCountsFile, fs.constants.F_OK)
+    data = await fs.promises.readFile(faviconCountsFile, "utf8")
   } catch (error) {
     const code = (error as NodeJS.ErrnoException).code
     if (code === "ENOENT") {
       logger.warn(`Favicon counts file not found at ${faviconCountsFile}`)
-    } else {
-      logger.error(`Cannot access favicon counts file at ${faviconCountsFile}: ${error}`)
+      return new Map<string, number>()
     }
-    return new Map<string, number>()
+    throw error
   }
 
   const countMap = new Map<string, number>()
-
-  try {
-    const data = await fs.promises.readFile(faviconCountsFile, "utf8")
-    const countsArray = JSON.parse(data) as Array<[string, number]>
-    for (const [faviconPath, count] of countsArray) {
-      if (faviconPath && typeof count === "number" && !isNaN(count)) {
-        countMap.set(faviconPath, count)
-      }
+  const countsArray = JSON.parse(data) as Array<[string, number]>
+  for (const [faviconPath, count] of countsArray) {
+    if (faviconPath && typeof count === "number" && !isNaN(count)) {
+      countMap.set(faviconPath, count)
     }
-  } catch (error) {
-    logger.error(`Error reading or parsing favicon counts file: ${error}`)
-    return new Map<string, number>()
   }
 
   return countMap
