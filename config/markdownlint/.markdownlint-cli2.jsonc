@@ -1,5 +1,0 @@
-{
-  "config": {
-    "extends": ".markdownlint.jsonc",
-  },
-}
