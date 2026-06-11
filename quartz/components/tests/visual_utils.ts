@@ -65,90 +65,55 @@ export function getScreenshotName(testInfo: TestInfo, screenshotSuffix: string):
   )
 }
 
-// Type for restoration data stored on window
-interface IsolationRestoreData {
-  element: Element
-  originalDisplay: string
-}
+const ISOLATION_STYLE_ID = "__dom-isolation-style"
+const ISOLATION_ATTR = "data-dom-isolate"
+const ISOLATION_PARENT_ATTR = "data-dom-isolate-parent"
 
-declare global {
-  interface Window {
-    __elementsToRestoreData?: IsolationRestoreData[]
-  }
-}
-
-/**
- * Isolates a DOM element by hiding all other elements on the page.
- * @param elementLocator - The Playwright locator for the element to isolate.
- */
 async function performDOMIsolation(
   elementLocator: Locator,
   preserveSiblings: boolean,
 ): Promise<void> {
-  await elementLocator.evaluate((targetElement, preserveSiblings) => {
-    const elementsToKeep = new Set<Element>()
+  await elementLocator.evaluate(
+    (targetElement, { preserveSiblings, attr, parentAttr, styleId }) => {
+      targetElement.setAttribute(attr, "")
 
-    // Add target element and all its descendants
-    elementsToKeep.add(targetElement)
-    const descendants = targetElement.querySelectorAll("*")
-    descendants.forEach((descendant) => elementsToKeep.add(descendant))
-
-    // Preserve siblings of the target element (and their descendants) to maintain local layout context
-    if (preserveSiblings && targetElement.parentElement) {
-      const siblings = Array.from(targetElement.parentElement.children)
-      for (const sibling of siblings) {
-        if (sibling === targetElement) continue
-        elementsToKeep.add(sibling)
-        sibling.querySelectorAll("*").forEach((desc) => elementsToKeep.add(desc))
+      if (preserveSiblings && targetElement.parentElement) {
+        targetElement.parentElement.setAttribute(parentAttr, "")
       }
-    }
 
-    // Add all ancestors up to document root
-    let current: Element | null = targetElement.parentElement
-    while (current) {
-      elementsToKeep.add(current)
-      current = current.parentElement
-    }
+      let selector = `body *:not(:has([${attr}])):not([${attr}]):not([${attr}] *)`
 
-    // Hide elements that are not in our keep set by setting display: none
-    // Store original display values for restoration on window object
-    const hiddenElements: Array<{ element: Element; originalDisplay: string }> = []
-    const allElements = Array.from(document.querySelectorAll("*"))
-
-    for (const element of allElements) {
-      if (!elementsToKeep.has(element)) {
-        const htmlElement = element as HTMLElement
-        const originalDisplay = htmlElement.style.display
-        hiddenElements.push({ element, originalDisplay })
-        htmlElement.style.display = "none"
+      if (preserveSiblings) {
+        selector += `:not([${parentAttr}] > *):not([${parentAttr}] > * *)`
       }
-    }
 
-    // Store restoration data on window for later access
-    window.__elementsToRestoreData = hiddenElements
-  }, preserveSiblings)
+      const style = document.createElement("style")
+      style.id = styleId
+      style.textContent = `${selector} { display: none !important; }`
+      document.head.appendChild(style)
+    },
+    {
+      preserveSiblings,
+      attr: ISOLATION_ATTR,
+      parentAttr: ISOLATION_PARENT_ATTR,
+      styleId: ISOLATION_STYLE_ID,
+    },
+  )
 }
 
-/**
- * Restores DOM elements that were previously hidden for isolation purposes.
- * @param page - The Playwright Page instance on which to restore the DOM.
- * @returns A promise that resolves once the DOM restoration is complete.
- */
 async function restoreDOMFromIsolation(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    const hiddenElements = window.__elementsToRestoreData
-    if (hiddenElements) {
-      for (const { element, originalDisplay } of hiddenElements) {
-        const htmlElement = element as HTMLElement
-        if (originalDisplay) {
-          htmlElement.style.display = originalDisplay
-        } else {
-          htmlElement.style.removeProperty("display")
-        }
-      }
-      delete window.__elementsToRestoreData
-    }
-  })
+  await page.evaluate(
+    ({ styleId, attr, parentAttr }) => {
+      document.getElementById(styleId)?.remove()
+      document.querySelector(`[${attr}]`)?.removeAttribute(attr)
+      document.querySelector(`[${parentAttr}]`)?.removeAttribute(parentAttr)
+    },
+    {
+      styleId: ISOLATION_STYLE_ID,
+      attr: ISOLATION_ATTR,
+      parentAttr: ISOLATION_PARENT_ATTR,
+    },
+  )
 }
 
 export interface RegressionScreenshotOptions {
@@ -157,7 +122,47 @@ export interface RegressionScreenshotOptions {
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
   skipMediaPause?: boolean
+  skipDOMIsolation?: boolean
+  skipStabilityWait?: boolean
   preserveSiblings?: boolean
+}
+
+async function waitForImagesInElement(scope: Locator): Promise<void> {
+  const images = await scope.locator("img").all()
+  await Promise.all(
+    images.map((img) =>
+      img
+        .evaluate((el: HTMLImageElement) =>
+          el.complete
+            ? undefined
+            : new Promise<void>((resolve) => {
+                const timer = setTimeout(resolve, 5000)
+                const done = (): void => {
+                  clearTimeout(timer)
+                  resolve()
+                }
+                el.addEventListener("load", done, { once: true })
+                el.addEventListener("error", done, { once: true })
+              }),
+        )
+        .catch(() => undefined),
+    ),
+  )
+}
+
+async function waitForVisualStability(page: Page, scope?: Locator): Promise<void> {
+  await page.evaluate(() => document.fonts.ready)
+  if (scope) {
+    await waitForImagesInElement(scope)
+  } else {
+    await page.waitForLoadState("load")
+  }
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  )
 }
 
 /**
@@ -205,16 +210,9 @@ export async function takeRegressionScreenshot(
   // skipcq: JS-0098
   void _elementOpt // prevent unused variable lint error
 
-  // Wait until the page is visually stable before snapshotting: fonts must be
-  // resolved (FOIT/FOUT causes layout shift, and Safari has been observed to
-  // capture an empty frame mid-swap) and a double rAF flushes any pending
-  // layout/paint from earlier mutations (e.g. setViewportSize, media pause).
-  await page.evaluate(async () => {
-    await document.fonts.ready
-    await new Promise<void>((resolve) =>
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-    )
-  })
+  if (!options?.skipStabilityWait) {
+    await waitForVisualStability(page, options?.elementToScreenshot)
+  }
 
   const screenshotOptions = {
     animations: "disabled" as const,
@@ -225,21 +223,17 @@ export async function takeRegressionScreenshot(
 
   let screenshotBuffer: Buffer
   const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
-  if (options?.elementToScreenshot) {
-    // Temporarily isolate element to prevent position shifts from unrelated content changes
+  if (options?.elementToScreenshot && !options.skipDOMIsolation) {
     const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
     await performDOMIsolation(elementToIsolate, options.preserveSiblings ?? false)
-    // skipcq: JS-0098
-    const restoreDOM = async (): Promise<void> => {
-      await restoreDOMFromIsolation(page)
-    }
 
     try {
       screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
     } finally {
-      // Always restore the DOM state
-      await restoreDOM()
+      await restoreDOMFromIsolation(page)
     }
+  } else if (options?.elementToScreenshot) {
+    screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
   } else {
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
@@ -318,13 +312,19 @@ export async function getH1Screenshots(
 
   const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
 
-  // Pause all media once upfront so individual screenshots can skip it.
-  // This avoids paying the per-element fallback timeout N times in the loop.
+  // Pause media once upfront. Per-section image waits are handled by
+  // takeRegressionScreenshot (scoped to the section, 5s timeout per image).
   await pauseMediaElements(page)
+  await page.evaluate(() => document.fonts.ready)
+
+  await page.evaluate(() => {
+    for (const sel of ["#navbar", ".skip-to-content"]) {
+      const el = document.querySelector<HTMLElement>(sel)
+      if (el) el.style.display = "none"
+    }
+  })
 
   for (const h1Span of h1Spans) {
-    // Use JS scrollIntoView instead of Playwright's scrollIntoViewIfNeeded,
-    // which can time out in WebKit when the element never becomes "stable".
     await h1Span.evaluate((el) => el.scrollIntoView({ block: "center" }))
 
     const h1Header = h1Span.locator("h1").first()
@@ -335,6 +335,7 @@ export async function getH1Screenshots(
     await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
       elementToScreenshot: h1Span,
       skipMediaPause: true,
+      skipDOMIsolation: true,
     })
   }
 }

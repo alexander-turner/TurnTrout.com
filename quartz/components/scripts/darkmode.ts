@@ -1,4 +1,5 @@
 import { savedThemeKey } from "../constants"
+import { prepareForThemeChange } from "./accurateInvert"
 
 export type Theme = "light" | "dark" | "auto"
 
@@ -36,11 +37,15 @@ function setThemeClassOnRoot(theme: Theme) {
 
 /* istanbul ignore next: localStorage API, tested in darkmode.spec.ts */
 /**
- * Updates the theme state and related UI elements
- * @param theme - The theme state to apply
+ * Updates the theme state and related UI elements.
+ * Swaps invert-labeled image srcs and waits for decode before
+ * flipping `data-theme`, so CSS filters and new pixels land in
+ * the same paint frame.
  */
-export function handleThemeUpdate(theme: Theme): void {
+export async function handleThemeUpdate(theme: Theme): Promise<void> {
   localStorage.setItem(savedThemeKey, theme)
+  const themeToApply = theme === "auto" ? getSystemTheme() : theme
+  await prepareForThemeChange(themeToApply === "dark")
   setThemeClassOnRoot(theme)
   updateThemeLabel(theme)
 }
@@ -72,7 +77,8 @@ const getNextTheme = (): Theme => {
  */
 export const rotateTheme = () => {
   const nextTheme = getNextTheme()
-  handleThemeUpdate(nextTheme)
+  // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+  void handleThemeUpdate(nextTheme)
 }
 
 /* istanbul ignore next: localStorage API, tested in darkmode.spec.ts */

@@ -1811,6 +1811,17 @@ _TAGS_TO_CHECK = built_site_checks._TAGS_TO_CHECK_FOR_MISSING_ASSETS
             "<img src='/asset_staging/image.jpg'>",
             [],
         ),
+        # Cache-busting version param stripped during comparison
+        (
+            "![](image.avif)\n<video src='video.mp4'>",
+            "<img src='image.avif?v=1'><video src='video.mp4?v=1'>",
+            [],
+        ),
+        (
+            "![](image.avif?width=200)",
+            "<img src='image.avif?width=200&v=1'>",
+            [],
+        ),
     ],
 )
 def test_check_markdown_assets_in_html(
@@ -1933,6 +1944,33 @@ def test_check_spacing_after_branch():
 
     expected = ["Missing space after: <a>link</a>missing_space"]
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        (f"{WORD_JOINER}—x", "—x"),
+        (f"a{ZERO_WIDTH_SPACE}{ZERO_WIDTH_NBSP}b", "ab"),
+        ("no invisibles", "no invisibles"),
+    ],
+)
+def test_strip_invisible_chars(text, expected):
+    assert built_site_checks.strip_invisible_chars(text) == expected
+
+
+def test_check_spacing_ignores_word_joiner_before_em_dash():
+    """A word joiner glued before an em dash must not read as a missing
+    space."""
+    soup = BeautifulSoup(
+        f"<p><em>values</em>{WORD_JOINER}—it is</p>", "html.parser"
+    )
+    em_element = soup.find("em")
+    assert isinstance(em_element, Tag)
+
+    result = built_site_checks.check_spacing(
+        em_element, built_site_checks.ALLOWED_ELT_FOLLOWING_CHARS, "after"
+    )
+    assert result == []
 
 
 _MAX_DESCRIPTION_LENGTH = built_site_checks.MAX_DESCRIPTION_LENGTH
@@ -4013,11 +4051,13 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.write_text("""---
+    md_file_path.write_text(
+        """---
 title: Test Title
 description: Test Description
 ---
-# Content here""")
+# Content here"""
+    )
     assert md_file_path.is_file()
 
     with (

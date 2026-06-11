@@ -5,7 +5,7 @@
 import { beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import { type ContentDetails } from "../../plugins/vfile"
-import { EXCLUDED_SLUG_PREFIXES, EXCLUDED_SLUGS, isPost, randomPostScript } from "./randomPost"
+import { EXCLUDED_SLUG_PREFIXES, EXCLUDED_SLUGS, isPost, setupRandomPostLink } from "./randomPost"
 
 const cd = (content: string): ContentDetails => ({
   title: content,
@@ -68,10 +68,9 @@ describe("isPost", () => {
   )
 })
 
-describe("randomPostScript (inline)", () => {
-  // Evaluate the inline script once — it uses event delegation on document
+describe("setupRandomPostLink", () => {
   beforeAll(() => {
-    new Function(randomPostScript)()
+    setupRandomPostLink()
   })
 
   beforeEach(() => {
@@ -144,13 +143,39 @@ describe("randomPostScript (inline)", () => {
     },
   )
 
-  it("script includes location.assign fallback when spaNavigate is unavailable", () => {
-    // Verify the inline script contains the spaNavigate → location.assign fallback.
-    // jsdom locks down window.location, so we verify via the script string instead.
-    expect(randomPostScript).toContain("window.spaNavigate")
-    expect(randomPostScript).toContain("location.assign")
-    expect(randomPostScript).toMatch(
-      /spaNavigate\s*\?\s*window\.spaNavigate\(.*\)\s*:\s*location\.assign/,
-    )
+  it("does not navigate when getContentIndex returns null", async () => {
+    global.getContentIndex = jest
+      .fn<() => Promise<Record<string, ContentDetails>>>()
+      .mockResolvedValue(null as unknown as Record<string, ContentDetails>)
+
+    const slug = await clickRandomAndGetSlug()
+    expect(slug).toBeNull()
+  })
+
+  it("navigates when dataset.slug is undefined", async () => {
+    delete document.body.dataset.slug
+
+    const slug = await clickRandomAndGetSlug()
+    expect(VALID_POST_SLUGS).toContain(slug)
+  })
+
+  it("falls back to location.assign when spaNavigate is unavailable", async () => {
+    const assignMock = jest.fn<(url: string | URL) => void>()
+    Object.defineProperty(window, "location", {
+      value: { ...window.location, origin: "http://localhost", assign: assignMock },
+      writable: true,
+    })
+    // @ts-expect-error -- testing the fallback when spaNavigate is absent
+    delete window.spaNavigate
+
+    mockIndex({ "post-a": cd("a"), "post-b": cd("b") })
+    document.body.dataset.slug = "post-a"
+
+    const link = document.getElementById("random-post-link")
+    link?.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(assignMock).toHaveBeenCalledTimes(1)
+    expect((assignMock.mock.calls[0][0] as URL).pathname).toBe("/post-b")
   })
 })

@@ -67,6 +67,18 @@
     "node": ">=22"
   },
   "packageManager": "pnpm@10.23.0",
+  "pnpm": {
+    "overrides": {
+      "brace-expansion@>=5.0.0 <5.0.6": ">=5.0.6",
+      "qs@>=6.11.1 <=6.15.1": ">=6.15.2",
+      "minimatch@<3.1.4": ">=3.1.4",
+      "underscore@<1.13.8": ">=1.13.8",
+      "d3-color@<3.1.0": ">=3.1.0",
+      "form-data@<2.5.4": ">=2.5.4",
+      "@tootallnate/once@<2.0.1": ">=2.0.1",
+      "tmp@<0.2.6": ">=0.2.6"
+    }
+  },
   "keywords": [
     "site generator",
     "ssg",
@@ -115,12 +127,13 @@
     "mdast-util-to-hast": "13.2.1",
     "micromorph": "0.4.5",
     "mime-types": "3.0.2",
+    "p-retry": "8.0.0",
     "play-sound": "1.1.6",
     "preact-render-to-string": "6.7.0",
     "pretty-bytes": "7.1.0",
     "pretty-time": "1.1.0",
     "psl": "1.15.0",
-    "punctilio": "3.11.2",
+    "punctilio": "3.13.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "reading-time": "1.5.0",

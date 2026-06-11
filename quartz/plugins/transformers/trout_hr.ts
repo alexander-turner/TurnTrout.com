@@ -10,17 +10,19 @@ export const troutContainerId = "trout-ornament-container"
 
 import { h } from "hastscript"
 
-export const ornamentNode: Element = h("div", { id: troutContainerId, role: "separator" }, [
-  h("span", { class: "no-select", "aria-hidden": "true" }, "☙"),
-  h("img", {
-    src: specialFaviconPaths.turntrout,
-    alt: "",
-    class: "no-select",
-    loading: "lazy",
-    "aria-hidden": "true",
-  }),
-  h("span", { class: "no-select", "aria-hidden": "true" }, "❧"),
-])
+export function createOrnamentNode(): Element {
+  return h("div", { id: troutContainerId, role: "separator" }, [
+    h("span", { class: "no-select", "aria-hidden": "true" }, "☙"),
+    h("img", {
+      src: specialFaviconPaths.turntrout,
+      alt: "",
+      class: "no-select",
+      loading: "lazy",
+      "aria-hidden": "true",
+    }),
+    h("span", { class: "no-select", "aria-hidden": "true" }, "❧"),
+  ])
+}
 
 /**
  * Attempts to insert an ornament node before a heading that starts with "Appendix" or before footnotes.
@@ -44,7 +46,7 @@ export function maybeInsertOrnament(
 
     // Check direct text children
     if (node.children[0]?.type === "text" && startsWithAppendix(node.children[0].value)) {
-      parent.children.splice(index, 0, ornamentNode)
+      parent.children.splice(index, 0, createOrnamentNode())
       return true
     }
 
@@ -56,7 +58,7 @@ export function maybeInsertOrnament(
       const anchorStartsWithAppendix =
         anchorText?.type === "text" && startsWithAppendix(anchorText.value)
       if (anchorStartsWithAppendix) {
-        parent.children.splice(index, 0, ornamentNode)
+        parent.children.splice(index, 0, createOrnamentNode())
         return true
       }
     }
@@ -91,7 +93,7 @@ export function maybeInsertOrnament(
     }
 
     // If it is, insert the ornament node before the footnotes section
-    parent.children.splice(index, 0, ornamentNode)
+    parent.children.splice(index, 0, createOrnamentNode())
     return true // Indicate that the ornament was inserted
   }
   return false // Indicate that no ornament was inserted
@@ -117,7 +119,7 @@ export function insertOrnamentNode(tree: Root): void {
       tree.children.pop()
     }
     // Add the ornament node
-    tree.children.push(ornamentNode)
+    tree.children.push(createOrnamentNode())
   }
 }
 

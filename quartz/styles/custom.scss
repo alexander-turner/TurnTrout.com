@@ -828,7 +828,12 @@ img.emoji {
   }
 
   & .cluster-label {
+    font-size: 1.2em;
     text-decoration: underline; // Bolding makes the width too small
+
+    & div {
+      text-align: center; // Keep the enlarged title centered over its box
+    }
   }
 }
 
@@ -1004,6 +1009,7 @@ figure#goose-terminal {
 }
 
 pre,
+code,
 figure#goose-terminal {
   // Ligatures can mess up spacing, esp in Firefox for "===" in FiraCode VF
   font-variant-ligatures: none;

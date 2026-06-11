@@ -146,6 +146,12 @@ describe("InvertInDarkMode", () => {
       expect(unlabeled.properties?.className).toBeUndefined()
     })
 
+    it("matches labels when src has cache-busting version param", () => {
+      const img = h("img", { src: "https://x/a.avif?v=1" }) as Element
+      applyLabelsToTree(tree(img), new Map([["https://x/a.avif", true]]))
+      expect(img.properties?.className).toEqual([invertInDarkModeClass])
+    })
+
     it("ignores non-img and src-less elements", () => {
       const div = h("div", { src: "https://x/a.avif" }) as Element
       const noSrc = h("img", {}) as Element

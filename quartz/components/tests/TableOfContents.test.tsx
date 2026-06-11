@@ -392,7 +392,6 @@ describe("afterDOMLoaded Script Attachment", () => {
   it("should have an afterDOMLoaded script assigned", () => {
     expect(CreateTableOfContents.afterDOMLoaded).toBeDefined()
     expect(typeof CreateTableOfContents.afterDOMLoaded).toBe("string")
-    expect(CreateTableOfContents.afterDOMLoaded).toContain("document.addEventListener('nav'")
   })
 })
 

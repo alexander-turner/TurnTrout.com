@@ -8,7 +8,6 @@ import { defaultTitle, pondVideoId } from "./constants"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import script from "./scripts/navbar.inline"
-import { randomPostScript } from "./scripts/randomPost"
 import navbarStyle from "./styles/navbar.scss"
 import {
   type QuartzComponent,
@@ -197,10 +196,6 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
           </a>
         </li>
       </ul>
-      <script
-        // skipcq: JS-0440 -- inline script content is a build-time constant; no user input reaches this path
-        dangerouslySetInnerHTML={{ __html: randomPostScript }}
-      />
     </nav>
   )
   return (

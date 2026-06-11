@@ -26,14 +26,19 @@ uv_install_if_missing() {
 }
 
 # Install a command via webi if missing
-# Downloads the installer to a temp file first (avoid piping curl to sh directly)
+# $1 = command name, $2 = optional webi package specifier (e.g. tool@version)
+# Hardened: HTTPS-only, shebang validation, version pinning via $2
 webi_install_if_missing() {
-	local cmd="$1"
+	local cmd="$1" pkg="${2:-$1}"
 	if ! command -v "$cmd" &>/dev/null; then
 		local installer
 		installer=$(mktemp "${TMPDIR:-/tmp}/webi-${cmd}-XXXXXX.sh")
-		if curl -fsSL "https://webi.sh/$cmd" -o "$installer" 2>/dev/null; then
-			sh "$installer" >/dev/null 2>&1 || warn "Failed to install $cmd"
+		if curl --proto '=https' -fsSL "https://webi.sh/$pkg" -o "$installer" 2>/dev/null; then
+			if head -n 1 "$installer" | grep -q '^#!'; then
+				sh "$installer" >/dev/null 2>&1 || warn "Failed to install $cmd"
+			else
+				warn "Installer for $cmd is not a shell script (missing shebang) — skipping"
+			fi
 		else
 			warn "Failed to download installer for $cmd"
 		fi
@@ -54,10 +59,10 @@ fi
 # Tool installation (optional - warn on failure)
 #######################################
 
-# Install tools quietly — only warn on failure
-webi_install_if_missing shfmt
-webi_install_if_missing gh
-webi_install_if_missing jq
+# Install tools quietly — only warn on failure (versions pinned for supply-chain safety)
+webi_install_if_missing shfmt shfmt@3
+webi_install_if_missing gh gh@2
+webi_install_if_missing jq jq@1.7
 uv_install_if_missing alt-text-llm
 if is_root; then
 	# Map: command-to-probe -> apt package name. ffmpeg/imagemagick are

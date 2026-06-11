@@ -143,9 +143,15 @@ export function addCrossOriginToImages(tree: Root): void {
   })
 }
 
+function stripCacheVersion(url: string): string {
+  return url.replace(/[?&]v=\d+$/, "")
+}
+
 export function applyLabelsToTree(tree: Root, labels: InvertLabelMap): void {
   visit(tree, "element", (node: Element, index, parent) => {
-    const hasLabel = eligibleSources(node).some((src) => labels.get(src) === true)
+    const hasLabel = eligibleSources(node).some(
+      (src) => labels.get(stripCacheVersion(src)) === true,
+    )
     const hasForceClass = classTokens(node.properties?.className).includes(forceHslInvertClass)
     if (!hasLabel && !hasForceClass) return
     if (hasLabel) addInvertClass(node)

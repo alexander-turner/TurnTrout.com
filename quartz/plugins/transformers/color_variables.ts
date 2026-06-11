@@ -37,17 +37,31 @@ const colorMapping: Readonly<Record<string, string>> = {
 
 const placeholderRestoreRegex = /___VAR_PLACEHOLDER_(?<index>\d+)___/g
 
+function compileColorPatterns(
+  mapping: Readonly<Record<string, string>>,
+): readonly { regex: RegExp; variable: string }[] {
+  return Object.entries(mapping).map(([color, variable]) => ({
+    regex: new RegExp(`\\b${color}\\b`, "gi"),
+    variable,
+  }))
+}
+
+const defaultCompiledPatterns = compileColorPatterns(colorMapping)
+
 /**
  * Transforms a CSS style string by replacing color values with corresponding CSS variables.
  *
  * @param style - The CSS style string to transform.
- * @param colorMapping - An object mapping color values to CSS variable names.
+ * @param mapping - An object mapping color values to CSS variable names.
  * @returns The transformed CSS style string with color values replaced by CSS variables.
  */
 export const transformStyle = (
   style: string,
-  colorMapping: Readonly<Record<string, string>>,
+  mapping: Readonly<Record<string, string>>,
 ): string => {
+  const patterns =
+    mapping === colorMapping ? defaultCompiledPatterns : compileColorPatterns(mapping)
+
   // Extract all var() expressions to protect them from transformation
   const varExpressions: string[] = []
   const placeholder = "___VAR_PLACEHOLDER_"
@@ -58,8 +72,8 @@ export const transformStyle = (
   })
 
   // Transform colors in the remaining style string
-  for (const [color, variable] of Object.entries(colorMapping)) {
-    newStyle = newStyle.replace(new RegExp(`\\b${color}\\b`, "gi"), variable)
+  for (const { regex, variable } of patterns) {
+    newStyle = newStyle.replace(regex, variable)
   }
 
   // Restore var() expressions

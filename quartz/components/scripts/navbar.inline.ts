@@ -1,6 +1,7 @@
 import { autoplayStorageKey, pondVideoId, sessionStoragePondVideoKey } from "../constants"
 import { setupDarkMode } from "./darkmode"
 import { setupHamburgerMenu } from "./hamburgerMenu"
+import { setupRandomPostLink } from "./randomPost"
 import { setupScrollHandler } from "./scrollHandler"
 import { setupSearch } from "./search"
 
@@ -133,18 +134,21 @@ function setupPondVideo(): void {
     videoElement.addEventListener("canplay", restoreOnce, { once: true, signal })
 
     // Safari/WebKit may not eagerly load video metadata after a full page reload
-    // when autoplay is disabled, despite preload="auto". Explicitly kick off
-    // loading so the metadata events above will fire. Skip when the browser
-    // is already loading: calling load() mid-source-selection (Firefox post-
-    // refresh, still iterating hvc1→webm fallbacks) aborts the in-progress
-    // chain and the second pond.mov attempt fails without falling through to
-    // pond.webm — leaving readyState at 0 and stranding currentTime at 0.
-    if (
-      savedTime &&
-      !autoplayEnabled &&
-      videoElement.networkState !== HTMLMediaElement.NETWORK_LOADING
-    ) {
-      videoElement.load()
+    // when autoplay is disabled, despite preload="auto". Explicitly call load()
+    // so the metadata events above will fire. However, calling load() while
+    // Firefox is mid-source-selection (iterating hvc1→webm fallbacks) aborts the
+    // chain. Defer the kick briefly so Firefox can finish source selection
+    // naturally, while still unblocking Safari's stalled loader.
+    if (savedTime && !autoplayEnabled) {
+      if (videoElement.networkState !== HTMLMediaElement.NETWORK_LOADING) {
+        videoElement.load()
+      } else {
+        setTimeout(() => {
+          if (!restored && videoElement.readyState < 1) {
+            videoElement.load()
+          }
+        }, 200)
+      }
     }
   }
 
@@ -174,6 +178,7 @@ setupSearch()
 setupScrollHandler()
 setupPondVideo()
 setupAutoplayToggle()
+setupRandomPostLink()
 
 // The pond `<video>` and its listeners survive SPA navigation — see the
 // video-container reconciliation in spa.inline.ts — so setupPondVideo runs

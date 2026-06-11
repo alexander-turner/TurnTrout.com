@@ -36,9 +36,16 @@ for file in "$@"; do
   # Only validate SKILL.md entrypoints; skip supporting files
   [[ "$grandparent" != "skills" || "$basename_file" != "SKILL.md" ]] && continue
 
-  # Check for YAML frontmatter
+  # Check for YAML frontmatter opening delimiter
   if ! head -1 "$file" | grep -q '^---$'; then
     echo "ERROR: $file missing YAML frontmatter (must start with ---)" >&2
+    errors=$((errors + 1))
+    continue
+  fi
+
+  # Check for YAML frontmatter closing delimiter
+  if ! awk '/^---$/{n++} END{exit (n<2)}' "$file"; then
+    echo "ERROR: $file missing closing '---' YAML frontmatter delimiter" >&2
     errors=$((errors + 1))
     continue
   fi

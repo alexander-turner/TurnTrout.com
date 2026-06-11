@@ -83,6 +83,7 @@ export function revertImage(img: HTMLImageElement): boolean {
 export function handleLoadEvent(event: Event): void {
   const target = event.target
   if (target instanceof HTMLImageElement && target.matches(INVERT_SELECTOR)) {
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
     void invertImage(target)
   }
 }
@@ -91,6 +92,7 @@ export function invertDecodedImages(root: Document | Element = document): void {
   const images = root.querySelectorAll<HTMLImageElement>(INVERT_SELECTOR)
   for (const img of images) {
     if (img.complete && img.naturalWidth > 0) {
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
       void invertImage(img)
     }
   }
@@ -106,9 +108,14 @@ export function revertAllInverted(root: Document | Element = document): void {
 /** Ensure every `<picture>` `<source>` serves the correct variant for the
  *  active theme. When the manual toggle disagrees with the system
  *  `prefers-color-scheme`, also strips or restores the `media` attribute
- *  so the browser can't override via the native media query. */
-export function syncPictureSources(root: Document | Element = document): void {
-  const dark = isDarkMode()
+ *  so the browser can't override via the native media query.
+ *  @param darkOverride — pass explicitly when called before `data-theme`
+ *  is set (i.e. from `prepareForThemeChange`). */
+export function syncPictureSources(
+  root: Document | Element = document,
+  darkOverride?: boolean,
+): void {
+  const dark = darkOverride ?? isDarkMode()
   const systemIsDark = window.matchMedia(DARK_MEDIA).matches
   const disagrees = dark !== systemIsDark
 
@@ -125,7 +132,39 @@ export function syncPictureSources(root: Document | Element = document): void {
   }
 }
 
+/** When the user clicks the theme toggle, prepareForThemeChange swaps
+ *  images before data-theme flips. The MutationObserver still fires
+ *  onThemeChange afterward — this flag tells it the swap already happened. */
+let preparedThisToggle = false
+
+/** Swap image srcs and wait for decode before the CSS theme change.
+ *  Called by darkmode.ts before setting `data-theme` so that decoded
+ *  pixels and CSS filters land in the same paint — no flash. */
+export async function prepareForThemeChange(dark: boolean): Promise<void> {
+  const decodes: Promise<void>[] = []
+  if (dark) {
+    for (const img of document.querySelectorAll<HTMLImageElement>(INVERT_SELECTOR)) {
+      if (img.complete && img.naturalWidth > 0 && !img.dataset["invertProcessed"]) {
+        if (isInsidePicture(img)) invertPictureSrc(img)
+        decodes.push(img.decode().catch(() => undefined))
+      }
+    }
+  } else {
+    for (const img of document.querySelectorAll<HTMLImageElement>(REVERTABLE_SELECTOR)) {
+      revertImage(img)
+      decodes.push(img.decode().catch(() => undefined))
+    }
+  }
+  await Promise.all(decodes)
+  syncPictureSources(document, dark)
+  preparedThisToggle = true
+}
+
 export function onThemeChange(): void {
+  if (preparedThisToggle) {
+    preparedThisToggle = false
+    return
+  }
   if (isDarkMode()) {
     invertDecodedImages()
   } else {

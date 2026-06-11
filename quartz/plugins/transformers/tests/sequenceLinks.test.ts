@@ -13,7 +13,9 @@ import {
   renderPreviousPost,
   renderSequenceTitle,
 } from "../sequenceLinks"
-import { ornamentNode } from "../trout_hr"
+import { createOrnamentNode } from "../trout_hr"
+
+const ornamentNode = createOrnamentNode()
 
 describe("renderSequenceTitle", () => {
   it.each([

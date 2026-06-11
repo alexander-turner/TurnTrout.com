@@ -8,12 +8,6 @@ on:
   push:
     branches: ["main", "dev"]
   pull_request:
-    paths:
-      - "scripts/**/*.py"
-      - "**/pyproject.toml"
-      - "**/uv.lock"
-      - ".github/workflows/python-tests.yaml"
-      - ".github/actions/**"
 
 permissions:
   actions: read

@@ -225,6 +225,16 @@ def _should_skip_paragraph(p: Tag) -> bool:
     )
 
 
+_INVISIBLE_CHARS = (ZERO_WIDTH_SPACE, ZERO_WIDTH_NBSP, WORD_JOINER)
+
+
+def strip_invisible_chars(text: str) -> str:
+    """Remove zero-width / joiner characters that carry no visible spacing."""
+    for char in _INVISIBLE_CHARS:
+        text = text.replace(char, "")
+    return text
+
+
 def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
     """
     Get cleaned text from a paragraph for punctuation checking.
@@ -246,10 +256,7 @@ def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
         TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH
     )
     # Strip zero-width spaces and other invisible characters
-    text = text.replace(ZERO_WIDTH_SPACE, "")
-    text = text.replace(ZERO_WIDTH_NBSP, "")
-    text = text.replace(WORD_JOINER, "")
-    return text.strip()
+    return strip_invisible_chars(text).strip()
 
 
 def check_top_level_paragraphs_end_with_punctuation(
@@ -928,6 +935,43 @@ def _img_invert_issue(
     )
 
 
+def _img_invert_issues(
+    src: str,
+    img: Tag,
+    invert_labels: Mapping[str, InvertLabel],
+) -> list[str]:
+    """Validate one eligible ``<img>`` against the invert labels."""
+    issues: list[str] = []
+    issue = _img_invert_issue(src, img, invert_labels)
+    if issue is not None:
+        issues.append(issue)
+    tokens = _class_tokens(img)
+    needs_picture = (
+        INVERT_CLASS in tokens or FORCE_HSL_INVERT_CLASS in tokens
+    ) and src.lower().endswith(INVERT_IMG_EXTENSIONS)
+    if needs_picture and (img.parent is None or img.parent.name != "picture"):
+        issues.append(
+            f"<img> {src} has invert class but is not inside <picture>"
+        )
+    return issues
+
+
+def _video_invert_issue(
+    video: Tag,
+    invert_labels: Mapping[str, InvertLabel],
+) -> str | None:
+    """Validate one inline looping ``<video>`` against the invert labels."""
+    src = _canonical_inline_video_source(video)
+    if src is None or _is_excluded_segment(src):
+        return None
+    return _invert_issue_string(
+        "video",
+        src,
+        INVERT_CLASS in _class_tokens(video),
+        invert_labels.get(src),
+    )
+
+
 def check_invert_labels(
     soup: BeautifulSoup,
     invert_labels: Mapping[str, InvertLabel] | None,
@@ -952,29 +996,9 @@ def check_invert_labels(
             continue
         if _is_excluded_segment(src):
             continue
-        issue = _img_invert_issue(src, img, invert_labels)
-        if issue is not None:
-            issues.append(issue)
-        tokens = _class_tokens(img)
-        needs_picture = (
-            INVERT_CLASS in tokens or FORCE_HSL_INVERT_CLASS in tokens
-        ) and src.lower().endswith(INVERT_IMG_EXTENSIONS)
-        if needs_picture and (
-            img.parent is None or img.parent.name != "picture"
-        ):
-            issues.append(
-                f"<img> {src} has invert class but is not inside <picture>"
-            )
+        issues.extend(_img_invert_issues(src, img, invert_labels))
     for video in _tags_only(soup.find_all("video")):
-        src = _canonical_inline_video_source(video)
-        if src is None or _is_excluded_segment(src):
-            continue
-        issue = _invert_issue_string(
-            "video",
-            src,
-            INVERT_CLASS in _class_tokens(video),
-            invert_labels.get(src),
-        )
+        issue = _video_invert_issue(video, invert_labels)
         if issue is not None:
             issues.append(issue)
     return issues
@@ -2165,6 +2189,7 @@ def _strip_path(path_str: str) -> str:
 
 
 _TAGS_TO_CHECK_FOR_MISSING_ASSETS = ("img", "video", "svg", "audio", "source")
+_CACHE_VERSION_RE = re.compile(r"[?&]v=\d+$")
 
 
 def get_md_asset_counts(md_path: Path) -> Counter[str]:
@@ -2216,7 +2241,7 @@ def check_markdown_assets_in_html(
     for tag in _TAGS_TO_CHECK_FOR_MISSING_ASSETS:
         for element in _tags_only(soup.find_all(tag)):
             if src := element.get("src"):
-                src_str = str(src)
+                src_str = _CACHE_VERSION_RE.sub("", str(src))
                 canonical = _original_src_for_inverted(src_str) or src_str
                 html_asset_counts[_strip_path(canonical)] += 1
 
@@ -2242,7 +2267,13 @@ def check_spacing(
     sibling = (
         element.previous_sibling if prefix == "before" else element.next_sibling
     )
-    if not isinstance(sibling, NavigableString) or not sibling.strip():
+    if not isinstance(sibling, NavigableString):
+        return []
+    # Ignore zero-width joiners (e.g. the word joiner glued before em dashes):
+    # they carry no visible spacing, so the check must look past them to the
+    # real adjacent glyph.
+    sibling_text = strip_invisible_chars(str(sibling))
+    if not sibling_text.strip():
         return []
 
     # Properly escape characters for regex pattern
@@ -2254,7 +2285,7 @@ def check_spacing(
         else rf"^{ok_regex_chars}.*$"
     )
 
-    if not re.search(ok_regex_expr, sibling, flags=re.MULTILINE):
+    if not re.search(ok_regex_expr, sibling_text, flags=re.MULTILINE):
         preview = f"<{element.name}>{element.get_text()}</{element.name}>"
         if prefix == "before":
             preview = f"{sibling.get_text()}{preview}"

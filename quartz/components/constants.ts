@@ -67,6 +67,7 @@ export const {
   rightSingleQuote: RIGHT_SINGLE_QUOTE,
   leftDoubleQuote: LEFT_DOUBLE_QUOTE,
   rightDoubleQuote: RIGHT_DOUBLE_QUOTE,
+  wordJoiner: WORD_JOINER,
 } = constantsJson.unicodeTypography
 
 /**

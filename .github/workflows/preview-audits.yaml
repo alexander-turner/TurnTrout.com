@@ -9,26 +9,6 @@ on:
   push:
     branches: ["main", "dev"]
   pull_request:
-    paths:
-      - "quartz/**"
-      - "!quartz/**/*.spec.ts"
-      - "!quartz/**/*.test.ts"
-      - "!quartz/**/*.test.tsx"
-      - "!quartz/**/tests/**"
-      # Console-clean spec runs against the preview URL in this workflow,
-      # so changes to it must still trigger a run despite the broad
-      # spec/tests exclusions above.
-      - "quartz/components/tests/console-clean.spec.ts"
-      - "website_content/**"
-      - "config/quartz/**"
-      - "config/constants.json"
-      - "config/playwright/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
-      - ".github/lighthouse-*.json"
-      - ".github/workflows/preview-audits.yaml"
-      - ".github/workflows/build-site.yaml"
 
 permissions:
   actions: read
@@ -52,7 +32,28 @@ jobs:
       - id: gate
         uses: ./.github/actions/ci-gate
         with:
-          run-labels: "ci:full-tests,ci:run-lighthouse"
+          force-labels: "ci:full-tests,ci:run-lighthouse"
+          filters: |
+            relevant:
+              - "quartz/**"
+              - "!quartz/**/*.spec.ts"
+              - "!quartz/**/*.test.ts"
+              - "!quartz/**/*.test.tsx"
+              - "!quartz/**/tests/**"
+              # Console-clean spec runs against the preview URL in this
+              # workflow, so changes to it must still trigger a run despite the
+              # broad spec/tests exclusions above.
+              - "quartz/components/tests/console-clean.spec.ts"
+              - "website_content/**"
+              - "config/quartz/**"
+              - "config/constants.json"
+              - "config/playwright/**"
+              - "package.json"
+              - "pnpm-lock.yaml"
+              - ".github/actions/**"
+              - ".github/lighthouse-*.json"
+              - ".github/workflows/preview-audits.yaml"
+              - ".github/workflows/build-site.yaml"
 
   build:
     needs: should-run

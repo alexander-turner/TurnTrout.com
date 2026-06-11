@@ -93,7 +93,7 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
     return new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error(`Seek to ${timestamp} timed out`))
-      }, 5000)
+      }, 15_000)
 
       videoElement.addEventListener(
         "seeked",

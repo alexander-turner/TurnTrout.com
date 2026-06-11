@@ -28,10 +28,11 @@ from __future__ import annotations
 import argparse
 import html
 import json
-import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+from PIL import Image
 
 ACTUAL_SUFFIX = "-actual.png"
 EXPECTED_SUFFIX = "-expected.png"
@@ -186,11 +187,13 @@ class ApproveConfig:
 
 
 def _copy_if_exists(src: Path, dest_dir: Path, dest_name: str) -> str | None:
-    """Copy src into dest_dir as dest_name; return the copied filename."""
+    """Convert src PNG to AVIF in dest_dir; return the AVIF filename."""
     if not src.exists():
         return None
-    shutil.copy(src, dest_dir / dest_name)
-    return dest_name
+    avif_name = Path(dest_name).with_suffix(".avif").name
+    with Image.open(src) as img:
+        img.save(dest_dir / avif_name, "AVIF", quality=50, speed=6)
+    return avif_name
 
 
 def collect_tiles(traces_dir: Path, images_dir: Path) -> list[Tile]:

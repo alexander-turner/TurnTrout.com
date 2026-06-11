@@ -42,7 +42,7 @@ date_published: 2023-03-01
 original_url: https://www.lesswrong.com/posts/JusJcepE2qohiC3hm/predictions-for-shard-theory-mechanistic-interpretability
 skip_import: true
 description: Predictions about a cheese-finding AI model's internal workings, before the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖
-date_updated: 2026-04-20
+date_updated: 2026-06-05
 createBibtex: true
 ---
 
@@ -77,39 +77,7 @@ Also: _Try not to update on this work being shared to begin with._ When reading 
 
 The architecture looks like this:
 
-```mermaid
-graph TD
-    subgraph ImpalaBlock[Impala block]
-        IB_X[x] --> IB_Conv[Conv]
-        IB_Conv --> IB_MaxPool[MaxPool2D]
-        IB_MaxPool --> IB_Res1[Residual block]
-        IB_Res1 --> IB_Res2[Residual block]
-    end
-
-    subgraph ResidualBlock[Residual block]
-        RB_X[x] --> RB_ReLU1[ReLU]
-        RB_ReLU1 --> RB_Conv1[Conv]
-        RB_Conv1 --> RB_ReLU2[ReLU]
-        RB_ReLU2 --> RB_Conv2[Conv]
-        RB_X --> RB_Add[Residual add]
-        RB_Conv2 --> RB_Add
-    end
-```
-
-```mermaid
-graph TD
-  subgraph OverallGraph["Forward pass"]
-    Input --> Impala1
-          Impala1["Impala<sub>1</sub>"] --> Impala2
-          Impala2["Impala<sub>2</sub>"] --> Impala3
-          Impala3["Impala<sub>3</sub>"] --> ReLU1
-          ReLU1["ReLU"] --> Flatten
-          Flatten --> Linear
-          Linear --> ReLU2
-          ReLU2["ReLU"] --> PolicyHead[Policy head, linear]
-          ReLU2 --> ValueHead[Value head, linear]
-  end
-```
+<span class="populate-markdown-cheese-network-architecture"></span>
 
 For more background on training and architecture and task set, see [the original paper](https://arxiv.org/abs/2105.14111).
 

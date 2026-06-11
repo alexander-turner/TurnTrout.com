@@ -85,25 +85,45 @@ describe("normalizeHastElement", () => {
     expect(child.properties?.href).toBe(expected)
   })
 
+  // newSlug = "other/page" → prefix = "other-page"
   it.each(["h1", "h2", "h3", "h4", "h5", "h6"])(
-    "strips id from transcluded %s so it can't collide with host-page slugs",
+    "prefixes id on transcluded %s with source-page slug to avoid host collisions",
     (tag) => {
       const input = h(tag, { id: "pre-commit" }, "pre-commit")
       const result = normalizeHastElement(input, baseSlug, newSlug)
-      expect(result.properties?.id).toBeUndefined()
+      expect(result.properties?.id).toBe("other-page-pre-commit")
     },
   )
 
-  it("strips ids from headings nested inside transcluded content", () => {
+  it("prefixes ids from headings nested inside transcluded content", () => {
     const input = h("section", [h("h3", { id: "pre-commit" }, "pre-commit")])
     const result = normalizeHastElement(input, baseSlug, newSlug)
     const heading = result.children[0] as Element
-    expect(heading.properties?.id).toBeUndefined()
+    expect(heading.properties?.id).toBe("other-page-pre-commit")
   })
 
   it("preserves ids on non-heading transcluded elements", () => {
     const input = h("p", { id: "footnote-1" }, "body")
     const result = normalizeHastElement(input, baseSlug, newSlug)
     expect(result.properties?.id).toBe("footnote-1")
+  })
+
+  it.each(["h1", "h2", "h3", "h4", "h5", "h6"])(
+    "updates the rehype-autolink-headings wrapper href to the prefixed id in transcluded %s",
+    (tag) => {
+      const input = h(tag, { id: "my-section" }, [h("a", { href: "#my-section" }, "My Section")])
+      const result = normalizeHastElement(input, baseSlug, newSlug)
+      const anchor = result.children[0] as Element
+      expect(anchor.properties?.href).toBe("#other-page-my-section")
+    },
+  )
+
+  it("still rebases non-autolink anchor-only hrefs inside headings to the source page", () => {
+    // A user-authored link like [note](#footnote) inside a heading should still
+    // rebase to the source page, since #footnote is defined there not on the host.
+    const input = h("h2", { id: "my-section" }, [h("a", { href: "#footnote" }, "note")])
+    const result = normalizeHastElement(input, baseSlug, newSlug)
+    const anchor = result.children[0] as Element
+    expect(anchor.properties?.href).toBe("../other/page#footnote")
   })
 })
