@@ -33,7 +33,7 @@ describe("rehype-custom-spoiler", () => {
     expect(output).toMatch(/<span class="spoiler-content" aria-hidden="true">/)
     expect(output).toMatch(/<span class="spoiler-overlay"[^>]*><\/span>/)
     expect(output).not.toContain("<blockquote>")
-    expect(output).toMatch(/onclick="[^"]*"/)
+    expect(output).not.toContain("onclick=")
     expect(output).toContain('role="button"')
   })
 
@@ -63,7 +63,8 @@ describe("rehype-custom-spoiler", () => {
 
     expect(node.tagName).toBe("div")
     expect(node.properties?.className).toContain("spoiler-container")
-    expect(node.properties?.onClick).toBeDefined() // container has click handler
+    // Toggling is handled by delegated listeners, not inline handlers.
+    expect(node.properties?.onClick).toBeUndefined()
     expect(node.children).toHaveLength(2)
     expect((node.children[0] as Element).tagName).toBe("span")
     expect((node.children[0] as Element).properties?.className).toContain("spoiler-overlay")
@@ -71,19 +72,14 @@ describe("rehype-custom-spoiler", () => {
     expect((node.children[1] as Element).properties?.className).toContain("spoiler-content")
     expect((node.children[1] as Element).properties?.ariaHidden).toBe("true")
 
-    // Accessibility attributes are on the overlay (role, aria-*), click handler on container
+    // Accessibility attributes are on the overlay (role, aria-*); no inline handlers.
     const overlay = node.children[0] as Element
     expect(overlay.properties?.role).toBe("button")
     expect(overlay.properties?.tabIndex).toBe(0)
     expect(overlay.properties?.ariaExpanded).toBe("false")
     expect(overlay.properties?.ariaLabel).toContain("Spoiler")
-    expect(overlay.properties?.onKeyDown).toBeDefined()
-    expect(overlay.properties?.onClick).toBeUndefined() // onclick is on container, not overlay
-
-    // Container onclick toggles aria-hidden on spoiler-content
-    const containerOnClick = node.properties?.onClick as string
-    expect(containerOnClick).toContain("spoiler-content")
-    expect(containerOnClick).toContain("aria-hidden")
+    expect(overlay.properties?.onKeyDown).toBeUndefined()
+    expect(overlay.properties?.onClick).toBeUndefined()
   })
 
   describe("processParagraph function", () => {

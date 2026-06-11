@@ -13,9 +13,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     # Check if PR is from DeepSource and is a style fix
-    if: |
-      (github.actor == 'deepsource-autofix[bot]' || github.actor == 'deepsource-io') &&
-      startsWith(github.event.pull_request.title, 'style:')
+    # Gated on a plain `pull_request` trigger with read-only checkout; the job
+    # only enables auto-merge on style PRs and runs no PR code, so a spoofed
+    # actor cannot escalate.
+    if: (github.actor == 'deepsource-autofix[bot]' || github.actor == 'deepsource-io') && startsWith(github.event.pull_request.title, 'style:') # zizmor: ignore[bot-conditions]
     steps:
       - name: Enable auto-merge for DeepSource style PRs
         run: gh pr merge --auto --merge "$PR_URL"

@@ -64,6 +64,58 @@ _FFMPEG_COMMON_OUTPUT_ARGS: Final[list[str]] = [
     "error",
 ]
 
+# Even-dimension downscale + 8-bit planar pixel format, shared by the HEVC and
+# WebM encoders so both honor the same scaling/pixel-format contract.
+_FFMPEG_SCALE_PIX_FMT_ARGS: Final[list[str]] = [
+    "-vf",
+    "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+    "-pix_fmt",
+    _PIXEL_FORMAT_YUV420P,
+]
+
+# Stream-mapping for HEVC: copy the source audio track through untouched.
+_HEVC_AUDIO_ARGS: Final[list[str]] = [
+    "-map",
+    "0:v:0",
+    "-map",
+    "0:a?",
+    "-c:a",
+    "copy",
+]
+
+
+def _ffmpeg_audio_loop_args(is_gif: bool, audio_args: list[str]) -> list[str]:
+    """
+    Build the audio + GIF-loop suffix shared by both encoders.
+
+    GIF inputs have no audio and must loop forever (``-loop 0``); other
+    sources carry ``audio_args`` through and don't loop.
+    """
+    return [
+        *(["-an"] if is_gif else audio_args),
+        *(["-loop", "0"] if is_gif else []),
+    ]
+
+
+def _run_ffmpeg(
+    ffmpeg_cmd: list[str],
+    input_video_path: Path,
+    output_path: Path,
+) -> None:
+    """Run an ffmpeg command via a tempfile, then move it into place."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path: Path = Path(temp_dir) / output_path.name
+        subprocess.run(
+            ffmpeg_cmd + [str(temp_path)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+        )
+        shutil.move(temp_path, output_path)
+    print(
+        f"Successfully converted {input_video_path.name} to {output_path.name}"
+    )
+
 
 def _check_dependencies() -> None:  # pragma: no cover
     """Check if required command-line tools are installed."""
@@ -161,15 +213,6 @@ def _run_ffmpeg_hevc(
         return
 
     is_gif: bool = input_video_path.suffix.lower() == ".gif"
-    audio_args = [
-        "-map",
-        "0:v:0",
-        "-map",
-        "0:a?",
-        "-c:a",
-        "copy",
-    ]
-
     ffmpeg_cmd: list[str] = [
         "ffmpeg",
         "-i",
@@ -182,29 +225,14 @@ def _run_ffmpeg_hevc(
         "log-level=warning",  # Keep logging minimal for x265
         "-preset",
         "slower",
-        "-vf",
-        "scale=trunc(iw/2)*2:trunc(ih/2)*2",
-        "-pix_fmt",
-        _PIXEL_FORMAT_YUV420P,
+        *_FFMPEG_SCALE_PIX_FMT_ARGS,
         "-tag:v",
         _TAG_APPLE_COMPATIBILITY,
-        *(["-an"] if is_gif else audio_args),  # No audio for GIF output
-        *(["-loop", "0"] if is_gif else []),
+        *_ffmpeg_audio_loop_args(is_gif, _HEVC_AUDIO_ARGS),
         *_FFMPEG_COMMON_OUTPUT_ARGS,
     ]
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_path: Path = Path(temp_dir) / output_path.name
-        subprocess.run(
-            ffmpeg_cmd + [str(temp_path)],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.PIPE,
-        )
-        shutil.move(temp_path, output_path)
-    print(
-        f"Successfully converted {input_video_path.name} to {output_path.name}"
-    )
+    _run_ffmpeg(ffmpeg_cmd, input_video_path, output_path)
 
 
 _WEBM_AUDIO_ARGS: Final[list[str]] = [
@@ -244,10 +272,7 @@ def _run_ffmpeg_webm(
         str(quality),
         "-b:v",
         "0",
-        "-vf",
-        "scale=trunc(iw/2)*2:trunc(ih/2)*2",
-        "-pix_fmt",
-        _PIXEL_FORMAT_YUV420P,
+        *_FFMPEG_SCALE_PIX_FMT_ARGS,
         "-deadline",
         "good",
         "-cpu-used",
@@ -256,21 +281,11 @@ def _run_ffmpeg_webm(
         "1",
         "-auto-alt-ref",
         "1",
-        *(["-an"] if is_gif else _WEBM_AUDIO_ARGS),
-        *(["-loop", "0"] if is_gif else []),
+        *_ffmpeg_audio_loop_args(is_gif, _WEBM_AUDIO_ARGS),
         *_FFMPEG_COMMON_OUTPUT_ARGS,
     ]
 
-    subprocess.run(
-        ffmpeg_cmd + [str(output_path)],
-        check=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.PIPE,
-    )
-
-    print(
-        f"Successfully converted {input_video_path.name} to {output_path.name}"
-    )
+    _run_ffmpeg(ffmpeg_cmd, input_video_path, output_path)
 
 
 _CMD_TO_CHECK_CODEC: tuple[str, ...] = (
@@ -289,10 +304,15 @@ _CMD_TO_CHECK_CODEC: tuple[str, ...] = (
 def _check_if_hevc_codec(video_path: Path) -> bool:
     """Checks if the video is already HEVC encoded."""
     args: tuple[str, ...] = _CMD_TO_CHECK_CODEC + (str(video_path),)
-    codec: str = subprocess.check_output(
-        args, universal_newlines=True, stderr=subprocess.PIPE
-    ).strip()
-    return codec == "hevc"
+    # subprocess.run with check=True surfaces ffprobe's stderr in the raised
+    # CalledProcessError; check_output discards it.
+    result = subprocess.run(
+        args,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip() == "hevc"
 
 
 def _parse_args() -> argparse.Namespace:  # pragma: no cover

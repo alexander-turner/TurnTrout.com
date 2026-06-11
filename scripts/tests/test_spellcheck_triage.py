@@ -65,13 +65,12 @@ def test_context_for_truncates_oversized_paragraph():
 # ---------- _parse_decisions ----------------------------------------------
 
 
-def test_parse_decisions_filters_invalid_actions():
+def test_parse_decisions_parses_valid_actions():
     text = json.dumps(
         {
             "decisions": [
                 {"word": "KaTeX", "action": "add", "reason": "Known."},
                 {"word": "xyzzy", "action": "defer", "reason": "Unclear."},
-                {"word": "bad", "action": "maybe"},  # filtered
             ]
         }
     )
@@ -91,6 +90,31 @@ def test_parse_decisions_tolerates_prose_around_json():
 def test_parse_decisions_raises_without_json():
     with pytest.raises(ValueError, match="No JSON object"):
         spellcheck_triage._parse_decisions("nothing json-shaped here")
+
+
+def test_parse_decisions_raises_on_invalid_action():
+    text = json.dumps({"decisions": [{"word": "bad", "action": "maybe"}]})
+    with pytest.raises(ValueError, match="invalid action"):
+        spellcheck_triage._parse_decisions(text)
+
+
+def test_parse_decisions_raises_on_missing_decisions_list():
+    text = json.dumps({"not_decisions": []})
+    with pytest.raises(ValueError, match="missing a 'decisions' list"):
+        spellcheck_triage._parse_decisions(text)
+
+
+@pytest.mark.parametrize(
+    "item",
+    [
+        {"action": "add"},  # missing "word"
+        "not-an-object",
+    ],
+)
+def test_parse_decisions_raises_on_malformed_item(item: object):
+    text = json.dumps({"decisions": [item]})
+    with pytest.raises(ValueError, match="Malformed decision item"):
+        spellcheck_triage._parse_decisions(text)
 
 
 # ---------- classify -------------------------------------------------------

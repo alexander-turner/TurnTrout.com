@@ -242,12 +242,18 @@ describe("findFaviconPath", () => {
 })
 
 describe("readFaviconCounts", () => {
-  it.each(["ENOENT", "EACCES"])("returns empty Map when access fails with %s", async (code) => {
-    const err: NodeJS.ErrnoException = Object.assign(new Error(code), { code })
-    jest.spyOn(fs.promises, "access").mockRejectedValue(err)
+  it("returns empty Map when the file is missing (ENOENT)", async () => {
+    const err: NodeJS.ErrnoException = Object.assign(new Error("ENOENT"), { code: "ENOENT" })
+    jest.spyOn(fs.promises, "readFile").mockRejectedValue(err)
     const result = await favicons.readFaviconCounts()
     expect(result).toBeInstanceOf(Map)
     expect(result.size).toBe(0)
+  })
+
+  it("throws when the file cannot be accessed for a non-ENOENT reason", async () => {
+    const err: NodeJS.ErrnoException = Object.assign(new Error("EACCES"), { code: "EACCES" })
+    jest.spyOn(fs.promises, "readFile").mockRejectedValue(err)
+    await expect(favicons.readFaviconCounts()).rejects.toThrow("EACCES")
   })
 
   it.each([
@@ -276,7 +282,6 @@ describe("readFaviconCounts", () => {
       "JSON with invalid entries (skipped)",
     ],
   ])("parses %s", async (fileContent, expectedMap) => {
-    jest.spyOn(fs.promises, "access").mockResolvedValue()
     jest.spyOn(fs.promises, "readFile").mockResolvedValue(fileContent)
     const result = await favicons.readFaviconCounts()
     expect(result.size).toBe(expectedMap.size)
@@ -285,18 +290,14 @@ describe("readFaviconCounts", () => {
     })
   })
 
-  it("returns empty Map when JSON parsing fails", async () => {
-    jest.spyOn(fs.promises, "access").mockResolvedValue()
+  it("throws when the file is malformed (JSON parse fails)", async () => {
     jest.spyOn(fs.promises, "readFile").mockResolvedValue("not json")
-    const result = await favicons.readFaviconCounts()
-    expect(result.size).toBe(0)
+    await expect(favicons.readFaviconCounts()).rejects.toThrow()
   })
 
-  it("returns empty Map when file read fails", async () => {
-    jest.spyOn(fs.promises, "access").mockResolvedValue()
+  it("throws when file read fails for a non-ENOENT reason", async () => {
     jest.spyOn(fs.promises, "readFile").mockRejectedValue(new Error("read failed"))
-    const result = await favicons.readFaviconCounts()
-    expect(result.size).toBe(0)
+    await expect(favicons.readFaviconCounts()).rejects.toThrow("read failed")
   })
 })
 

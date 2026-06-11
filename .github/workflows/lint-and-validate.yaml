@@ -231,6 +231,53 @@ jobs:
           fi
           echo "All action references are SHA-pinned"
 
+  # Static analysis of the workflows themselves: actionlint (syntax, shell,
+  # expression checks) and zizmor (security audit). Gates the PR — both must
+  # pass. zizmor runs at medium confidence so the Medium/High-confidence
+  # findings we fixed stay enforced, while the Low-confidence categories
+  # (artipacked on read-only checkouts, template-injection on internal
+  # needs/steps outputs that are not attacker-controllable) don't block. Any
+  # genuinely-intentional High-confidence finding is suppressed inline with a
+  # `# zizmor: ignore[<audit>]` comment plus a rationale at the call site.
+  workflow-lint:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.workflows == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+
+      - name: Install actionlint
+        env:
+          ACTIONLINT_VERSION: "1.7.12"
+          ACTIONLINT_SHA256: "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
+        run: |
+          set -euo pipefail
+          TARBALL="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          wget -q "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/${TARBALL}"
+          echo "${ACTIONLINT_SHA256}  ${TARBALL}" | sha256sum --check
+          tar -xzf "${TARBALL}" actionlint
+          sudo mv actionlint /usr/local/bin/
+
+      - name: Run actionlint
+        run: actionlint -color .github/workflows/*.yml .github/workflows/*.yaml
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v7
+
+      - name: Run zizmor
+        env:
+          # No GH token, so no online (network) audits; --persona regular keeps
+          # the default low-confidence noise filtered the same way locally.
+          ZIZMOR_VERSION: "1.25.2"
+        run: |
+          uvx "zizmor@${ZIZMOR_VERSION}" \
+            --offline \
+            --persona regular \
+            --min-confidence=medium \
+            .github/workflows/
+
   lint:
     needs: [update-dates, detect-changes, autofix]
     # Run if detect-changes found changes, and not a deepsource PR.
@@ -305,7 +352,7 @@ jobs:
         id: eslint
         if: needs.detect-changes.outputs.code == 'true'
         continue-on-error: true
-        run: pnpm eslint . --config config/javascript/eslint.config.js
+        run: pnpm eslint . --config config/javascript/eslint.config.js --max-warnings 0
 
       - name: Run Stylelint
         id: stylelint

@@ -22,8 +22,10 @@ from io import StringIO
 from pathlib import Path
 
 import google.generativeai as genai  # type: ignore
-from google.generativeai.types import HarmBlockThreshold  # type: ignore
-from google.generativeai.types import HarmCategory
+from google.generativeai.types import (
+    HarmBlockThreshold,  # type: ignore
+    HarmCategory,
+)
 from ruamel.yaml import YAML
 
 try:

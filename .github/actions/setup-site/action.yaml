@@ -55,7 +55,7 @@ runs:
 
     - name: Restore pnpm cache
       if: inputs.install-node-deps == 'true'
-      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ env.STORE_PATH }}
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -70,7 +70,7 @@ runs:
     - name: Cache node_modules
       if: inputs.install-node-deps == 'true'
       id: cache-node-modules
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: node_modules
         key: node-modules-${{ runner.os }}-sharp-${{ inputs.install-sharp }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -112,7 +112,7 @@ runs:
     - name: Cache .venv
       if: inputs.install-python == 'true'
       id: cache-venv
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: .venv
         key: venv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
@@ -125,7 +125,7 @@ runs:
     # ── Browsers ──────────────────────────────────────────────────────────────
     - name: Cache Playwright browsers
       if: inputs.cache-playwright == 'true'
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
         key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -134,7 +134,7 @@ runs:
 
     - name: Cache Puppeteer browsers
       if: inputs.cache-puppeteer == 'true' || inputs.install-puppeteer-chrome == 'true'
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ~/.cache/puppeteer
         key: puppeteer-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -148,7 +148,7 @@ runs:
     # the gate matches `install-system-deps`.
     - name: Restore apt package cache
       if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ~/apt-cache
         key: apt-cache-${{ runner.os }}-${{ hashFiles('.github/actions/setup-site/action.yaml') }}

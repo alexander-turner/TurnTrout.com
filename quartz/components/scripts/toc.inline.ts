@@ -25,7 +25,8 @@ function setupTocTitleScrollToTop(signal: AbortSignal): void {
     "click",
     () => {
       const url = new URL(window.location.pathname, window.location.origin)
-      window.spaNavigate(url)
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+      void window.spaNavigate(url)
       window.scrollTo({ top: 0, behavior: "instant" })
     },
     { signal },

@@ -444,13 +444,13 @@ def test_video_figure_caption_formatting(setup_test_env, initial_content):
         converted_content = f.read()
 
     expected_pattern = r"</video>\n\nFigure: This is a caption"
-    assert re.search(
-        expected_pattern, converted_content
-    ), f"Expected pattern not found in:\n{converted_content}"
+    assert re.search(expected_pattern, converted_content), (
+        f"Expected pattern not found in:\n{converted_content}"
+    )
 
-    assert (
-        "<br/>" not in converted_content
-    ), f"<br/> tag still present in:\n{converted_content}"
+    assert "<br/>" not in converted_content, (
+        f"<br/> tag still present in:\n{converted_content}"
+    )
 
 
 def test_asset_staging_path_conversion(setup_test_env):
@@ -769,9 +769,9 @@ def test_video_pattern_matching(
     # Check that each group captured exactly what we expect
     for group_name, expected_value in expected_groups.items():
         actual_value = match.group(group_name)
-        assert (
-            actual_value == expected_value
-        ), f"For {input_str}, group {group_name} captured '{actual_value}' but expected '{expected_value}'\npattern: {original_pattern}"
+        assert actual_value == expected_value, (
+            f"For {input_str}, group {group_name} captured '{actual_value}' but expected '{expected_value}'\npattern: {original_pattern}"
+        )
 
 
 @pytest.mark.parametrize("ext", compress.ALLOWED_VIDEO_EXTENSIONS)

@@ -1207,14 +1207,14 @@ def test_check_card_image(
 
         # Check that all expected error substrings are present
         for expected_error in expected_error_contains:
-            assert any(
-                expected_error in error for error in errors
-            ), f"Expected error containing '{expected_error}' not found in {errors}"
+            assert any(expected_error in error for error in errors), (
+                f"Expected error containing '{expected_error}' not found in {errors}"
+            )
 
         # Check that we have the right number of errors
-        assert len(errors) == len(
-            expected_error_contains
-        ), f"Expected {len(expected_error_contains)} errors, got {len(errors)}: {errors}"
+        assert len(errors) == len(expected_error_contains), (
+            f"Expected {len(expected_error_contains)} errors, got {len(errors)}: {errors}"
+        )
 
 
 def test_check_card_image_request_exception():
@@ -1879,9 +1879,9 @@ def test_slug_in_metadata(slug: str, metadata: dict, expected: bool):
         expected: Whether the slug is expected to be found in the metadata
     """
     result = source_file_checks._slug_in_metadata(slug, metadata)
-    assert (
-        result == expected
-    ), f"Expected {expected} but got {result} for slug '{slug}' in metadata {metadata}"
+    assert result == expected, (
+        f"Expected {expected} but got {result} for slug '{slug}' in metadata {metadata}"
+    )
 
 
 @pytest.mark.parametrize(
@@ -1921,9 +1921,9 @@ def test_validate_video_tag(video_tag: str, should_raise: bool):
         assert issues, f"Expected errors for tag: {video_tag}, but got none."
         assert "forbidden 'src' or 'type' attribute" in issues[0]
     else:
-        assert (
-            not issues
-        ), f"Expected no errors for tag: {video_tag}, but got: {issues}"
+        assert not issues, (
+            f"Expected no errors for tag: {video_tag}, but got: {issues}"
+        )
 
 
 @pytest.mark.parametrize(
