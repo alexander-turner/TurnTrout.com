@@ -333,10 +333,7 @@ describe("HTMLFormattingImprovement", () => {
     it("keeps a sibling node's space in place and glues an NBSP to the slash", () => {
       // The space before the boundary belongs to a sibling text node. It must
       // stay there; the NBSP is glued onto the slash's own node instead.
-      expect(applyPassToNodes(spacesAroundSlashes, [": ", "/ ,"])).toEqual([
-        ": ",
-        `${NBSP}/ ,`,
-      ])
+      expect(applyPassToNodes(spacesAroundSlashes, [": ", "/ ,"])).toEqual([": ", `${NBSP}/ ,`])
     })
 
     it("pads both sides of a boundary-adjacent slash with no spaces of its own", () => {
@@ -348,10 +345,7 @@ describe("HTMLFormattingImprovement", () => {
 
     it("does not treat h/t as a hat-tip when a boundary splits it", () => {
       // "<em>h</em>/t": the h sits in another node, so the slash is spaced.
-      expect(applyPassToNodes(spacesAroundSlashes, ["h", "/t"])).toEqual([
-        "h",
-        `${NBSP}/${NBSP}t`,
-      ])
+      expect(applyPassToNodes(spacesAroundSlashes, ["h", "/t"])).toEqual(["h", `${NBSP}/${NBSP}t`])
       // "<em>h/</em>t": the t sits in another node.
       expect(applyPassToNodes(spacesAroundSlashes, ["h/", "t"])).toEqual([`h${NBSP}/${NBSP}`, "t"])
     })
@@ -367,9 +361,12 @@ describe("HTMLFormattingImprovement", () => {
 
     it("symbolTransform leaves the colon-slash pattern intact across a boundary", () => {
       expect(
-        applyPassToNodes((view) => {
-          symbolTransform(view, { includeArrows: false })
-        }, [": ", "/ ,"]),
+        applyPassToNodes(
+          (view) => {
+            symbolTransform(view, { includeArrows: false })
+          },
+          [": ", "/ ,"],
+        ),
       ).toEqual([": ", "/ ,"])
     })
   })
@@ -512,21 +509,48 @@ describe("HTMLFormattingImprovement", () => {
     describe("Element-boundary behavior for e.g. and i.e. transforms", () => {
       it.each([
         // Already-canonical abbreviation after a leading empty node stays put
-        [["", "e.g. test"], ["", "e.g. test"]],
-        [["", "i.e. test"], ["", "i.e. test"]],
+        [
+          ["", "e.g. test"],
+          ["", "e.g. test"],
+        ],
+        [
+          ["", "i.e. test"],
+          ["", "i.e. test"],
+        ],
         // Abbreviation ends at a boundary: normalized within its own node
-        [["eg", " test"], ["e.g.", " test"]],
-        [["ie.", " test"], ["i.e.", " test"]],
+        [
+          ["eg", " test"],
+          ["e.g.", " test"],
+        ],
+        [
+          ["ie.", " test"],
+          ["i.e.", " test"],
+        ],
         // Boundaries inside words must not create false matches
-        [["reg", "ex"], ["reg", "ex"]],
-        [["pie", "ce"], ["pie", "ce"]],
+        [
+          ["reg", "ex"],
+          ["reg", "ex"],
+        ],
+        [
+          ["pie", "ce"],
+          ["pie", "ce"],
+        ],
         // "<em>e.g.</em>, test": the trailing comma in the sibling node is
         // absorbed, leaving the abbreviation in its own node
-        [["e.g.", ", test"], ["e.g.", " test"]],
-        [["i.e.", ", test"], ["i.e.", " test"]],
+        [
+          ["e.g.", ", test"],
+          ["e.g.", " test"],
+        ],
+        [
+          ["i.e.", ", test"],
+          ["i.e.", " test"],
+        ],
         // A boundary inside the abbreviation (not before a trailing comma)
         // rejects the match
-        [["e.g", ". test"], ["e.g", ". test"]],
+        [
+          ["e.g", ". test"],
+          ["e.g", ". test"],
+        ],
       ])("normalizes %j to %j across boundaries", (input, expected) => {
         expect(applyPassToNodes(massTransformText, input)).toEqual(expected)
       })

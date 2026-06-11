@@ -698,16 +698,14 @@ const afterAbbrevPattern = "\\.?,?(?=(?<=\\w)(?!\\w)|\\s|$)"
 // text node (e.g. "<em>e.g.</em>, test"), so a boundary directly before that
 // trailing comma is allowed; a boundary anywhere else in the match (inside
 // the abbreviation itself) rejects it.
-function allowBoundaryBeforeTrailingComma(
-  match: RegExpExecArray,
-  view: ProseView,
-): boolean {
+function allowBoundaryBeforeTrailingComma(match: RegExpExecArray, view: ProseView): boolean {
   if (!match[0].endsWith(",")) {
     return false
   }
   const commaIdx = match.index + match[0].length - 1
   return view.boundaries.every(
-    (boundary) => boundary <= match.index || boundary >= match.index + match[0].length || boundary === commaIdx,
+    (boundary) =>
+      boundary <= match.index || boundary >= match.index + match[0].length || boundary === commaIdx,
   )
 }
 
