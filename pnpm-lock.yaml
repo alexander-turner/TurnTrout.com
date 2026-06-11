@@ -42,7 +42,7 @@ overrides:
   immutable: 5.1.5
   underscore: 1.13.8
   serialize-javascript: 7.0.5
-  minimatch@<3.1.4: '>=3.1.4'
+  minimatch@<3.1.4: 3.1.4
   serve-handler>minimatch: 3.1.4
   postcss-url>minimatch: 3.1.4
   filelist>minimatch: 5.1.8
@@ -14308,7 +14308,7 @@ snapshots:
       hasown: 2.0.2
       jsx-ast-utils: 3.3.5
       language-tags: 1.0.9
-      minimatch: 3.1.5
+      minimatch: 3.1.4
       object.fromentries: 2.0.8
       safe-regex-test: 1.1.0
       string.prototype.includes: 2.0.1
@@ -14350,7 +14350,7 @@ snapshots:
       estraverse: 5.3.0
       hasown: 2.0.2
       jsx-ast-utils: 3.3.5
-      minimatch: 3.1.5
+      minimatch: 3.1.4
       object.entries: 1.1.9
       object.fromentries: 2.0.8
       object.values: 1.2.1
@@ -19936,7 +19936,7 @@ snapshots:
     dependencies:
       '@istanbuljs/schema': 0.1.6
       glob: 7.2.3
-      minimatch: 10.2.5
+      minimatch: 3.1.4
 
   text-decoder@1.2.7:
     dependencies:
