@@ -223,7 +223,7 @@ def _select_sections(
     outer = _sections(src, (args.anchor,))
     if args.drill >= len(outer):
         print(
-            f"section {args.drill} out of range (0..{len(outer)-1})",
+            f"section {args.drill} out of range (0..{len(outer) - 1})",
             file=sys.stderr,
         )
         return None
@@ -247,7 +247,7 @@ def _bisect_dom(args: argparse.Namespace, src: str, base_url: str) -> int:
     for i, (s, e) in enumerate(sections):
         out_path = args.serve_dir / f"{variant_prefix}_cut_{i}.html"
         out_path.write_text(
-            src[:s] + f"<!--cut [{i}] {e-s}B-->" + src[e:], encoding="utf-8"
+            src[:s] + f"<!--cut [{i}] {e - s}B-->" + src[e:], encoding="utf-8"
         )
         passes, times = _passes(
             f"{base_url}/{out_path.name}",
@@ -259,7 +259,7 @@ def _bisect_dom(args: argparse.Namespace, src: str, base_url: str) -> int:
         label = _label_for_cut(src, s, args.drill, args.anchor)
         print(
             f"  cut [{i:2d}] {label!r:50s} "
-            f"{passes}/{args.trials} pass, times={[round(t,1) for t in times]}{marker}"
+            f"{passes}/{args.trials} pass, times={[round(t, 1) for t in times]}{marker}"
         )
         out_path.unlink(missing_ok=True)
     return 0
@@ -288,7 +288,7 @@ def main() -> int:
         args.url, args.pa11y_config, args.timeout, args.trials
     )
     print(
-        f"baseline: {passes}/{args.trials} passes; times={[round(t,1) for t in times]}"
+        f"baseline: {passes}/{args.trials} passes; times={[round(t, 1) for t in times]}"
     )
 
     if args.bisect_css:
@@ -332,9 +332,9 @@ def _css_drop_variant(ctx: _CssBisectCtx, label: str, lo: int, hi: int) -> None:
             " ← drop unbreaks" if passes >= ctx.args.trials // 2 + 1 else ""
         )
         print(
-            f"  drop rules[{lo:4d}..{hi:4d}) ({hi-lo:4d}): "
+            f"  drop rules[{lo:4d}..{hi:4d}) ({hi - lo:4d}): "
             f"{passes}/{ctx.args.trials} pass, "
-            f"times={[round(t,1) for t in times]}{marker}"
+            f"times={[round(t, 1) for t in times]}{marker}"
         )
     finally:
         html_out.unlink(missing_ok=True)

@@ -351,9 +351,9 @@ def test_convert_to_jpeg_resizes_to_height_1200(
 
     assert "-resize" in args
     resize_idx = args.index("-resize")
-    assert (
-        args[resize_idx + 1] == "x1200"
-    ), f"Expected resize parameter 'x1200', got '{args[resize_idx + 1]}'"
+    assert args[resize_idx + 1] == "x1200", (
+        f"Expected resize parameter 'x1200', got '{args[resize_idx + 1]}'"
+    )
 
 
 def test_convert_to_jpeg_iterative_compression(jpeg_conversion_setup):

@@ -386,7 +386,8 @@ test("In-flight popover fetch does not create orphaned popover after navigation"
       releasePopoverFetch = release
     })
     let firstRequest = true
-    page.route("**/popover-fixture", async (route) => {
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+    void page.route("**/popover-fixture", async (route) => {
       if (firstRequest) {
         firstRequest = false
         resolve() // signal that the popover fetch has started
@@ -755,11 +756,11 @@ test.describe("Popover checkbox state preservation", () => {
   test("Popover preserves checkbox state", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/design")
 
-    const linkToTestPage = page.locator('a[href*="test-page"]').last()
-    await linkToTestPage.scrollIntoViewIfNeeded()
-    await expect(linkToTestPage).toBeVisible()
+    const testPageLink = page.locator('a[href*="test-page"]').last()
+    await testPageLink.scrollIntoViewIfNeeded()
+    await expect(testPageLink).toBeVisible()
 
-    await linkToTestPage.hover()
+    await testPageLink.hover()
     const popover = page.locator(".popover")
     await expect(popover).toBeVisible()
 

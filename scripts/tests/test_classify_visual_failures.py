@@ -362,7 +362,7 @@ def test_script_runs_as_subprocess_from_repo_root(tmp_path: Path) -> None:
         text=True,
         check=False,
     )
-    assert (
-        result.returncode == 0
-    ), f"Script crashed (stdout={result.stdout!r}, stderr={result.stderr!r})"
+    assert result.returncode == 0, (
+        f"Script crashed (stdout={result.stdout!r}, stderr={result.stderr!r})"
+    )
     assert "has_any_failures=false" in result.stdout

@@ -77,26 +77,17 @@ line-length = 80
 target-version = "py311"
 
 [tool.ruff.lint]
-# Default E + F, plus pyupgrade (UP) and return-statement (RET) — both are
-# largely autofixable and surface real modernization / dead-code issues.
-select = ["E", "F", "UP", "RET"]
-# Black is the authority on line length; it tolerates unsplittable long
-# lines (URLs, strings) that E501 would otherwise flag.
+# E + F (pycodestyle/pyflakes, incl. F401 unused-import removal), I (import
+# sorting, replacing isort), plus pyupgrade (UP) and return-statement (RET) —
+# all largely autofixable and surface real modernization / dead-code issues.
+select = ["E", "F", "I", "UP", "RET"]
+# The formatter is the authority on line length; it tolerates unsplittable
+# long lines (URLs, strings) that E501 would otherwise flag.
 ignore = ["E501"]
 
-[tool.black]
-line-length = 80
-target-version = ['py311']
-include = '\.pyw?$'
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-line_length = 80
+[tool.ruff.format]
+# Match the previous black configuration exactly (80-column lines).
+line-ending = "lf"
 
 [tool.pytest.ini_options]
 addopts = "--cov=scripts --cov-report=html -n auto"
@@ -112,15 +103,6 @@ wrap-descriptions = 80
 pre-summary-newline = true
 make-summary-multi-line = false
 black = true
-
-[tool.autoflake]
-exclude = ["node_modules/*"]
-remove-all-unused-imports = true
-remove-unused-variables = true
-
-[tool.autopep8]
-ignore = ["E402"]
-max_line_length = 80
 
 [tool.coverage.run]
 omit = ["scripts/tests/*", "scripts/__init__.py"]

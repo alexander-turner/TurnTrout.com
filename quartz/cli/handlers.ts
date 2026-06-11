@@ -270,7 +270,8 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
       const indexFp: string = path.posix.join(filepath, "index.html")
       if (fs.existsSync(path.posix.join(argv.output, indexFp))) {
         req.url = filepath
-        serve()
+        // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+        void serve()
         return
       }
 
@@ -290,7 +291,8 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
       }
       if (fs.existsSync(path.posix.join(argv.output, base))) {
         req.url = filepath
-        serve()
+        // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+        void serve()
         return
       }
 
@@ -301,7 +303,8 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
       }
     }
 
-    serve()
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+    void serve()
   })
 
   server.listen(argv.port)
@@ -328,12 +331,13 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
       "**/*.spec.ts",
       "**/*.spec.tsx",
     ],
-  }).on("all", async (_event, fp) => {
+  }).on("all", (_event, fp) => {
     if (fp.endsWith(".scss")) {
       cachedCriticalCSS = ""
       console.log(chalk.yellow("SCSS change detected, invalidating critical CSS cache."))
     }
-    await build(clientRefresh)
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+    void build(clientRefresh)
   })
 }
 

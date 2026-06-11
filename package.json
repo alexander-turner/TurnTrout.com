@@ -44,11 +44,8 @@
       "shellcheck"
     ],
     "*.py": [
-      "autoflake --in-place",
-      "isort",
-      "autopep8 --in-place",
-      "black",
-      "ruff check --fix"
+      "ruff check --fix",
+      "ruff format"
     ],
     "{*.md,.claude/**/*.md}": [
       "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",

@@ -10,11 +10,11 @@ on:
     branches: ["main", "dev"]
   pull_request:
 
+# Minimal default at the workflow level; the `deploy` job below elevates to
+# the id-token/pages writes that only the Cloudflare Pages deploy needs.
 permissions:
   actions: read
   contents: read
-  id-token: write
-  pages: write
 
 jobs:
   should-run:
@@ -64,6 +64,12 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 12
+    # Cloudflare Pages deploy needs OIDC + Pages writes; scoped here rather
+    # than at the workflow level so the audit jobs stay read-only.
+    permissions:
+      contents: read
+      id-token: write
+      pages: write
     outputs:
       deploy_url: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
     steps:
