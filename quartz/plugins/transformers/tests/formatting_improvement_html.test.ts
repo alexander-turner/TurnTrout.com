@@ -360,6 +360,11 @@ describe("HTMLFormattingImprovement", () => {
       expect(spacesAroundSlashes("a//b")).toBe("a//b")
     })
 
+    it("leaves form-control text untouched (non-prose elements)", () => {
+      const input = '<select><option value="1">Option 1</option></select>'
+      expect(testHtmlFormattingImprovement(input)).toBe(input)
+    })
+
     it("symbolTransform leaves the colon-slash pattern intact across a boundary", () => {
       expect(
         applyPassToNodes((view) => {

@@ -53,6 +53,12 @@ export const FRACTION_SKIP_TAGS = ["code", "pre", "a", "script", "style"] as con
  */
 export const SKIP_CLASSES = ["no-formatting", "elvish", "bad-handwriting"] as const
 
+/**
+ * Elements whose text is a literal value rather than prose (form-control
+ * labels, document metadata). Their text gets no typography transforms.
+ */
+export const NON_PROSE_TAGS: ReadonlySet<string> = new Set(["title", "button", "option", "output"])
+
 export function toSkip(node: Element): boolean {
   if (node.type === "element") {
     const elementNode = node as ElementMaybeWithParent
@@ -965,10 +971,12 @@ export const improveFormatting = (
 
       // skipTags is empty because toSkip already covers the site's skip list;
       // punctilio's default skip tags (kbd, var, samp, ...) must not apply.
+      // Form-control and metadata text (option labels, button captions) is a
+      // literal value, not prose — drop those blocks from the collection.
       const eltsToTransform = collectProseBlocks(node as Element, {
         skipTags: [],
         shouldSkip: toSkip,
-      })
+      }).filter((elt) => !NON_PROSE_TAGS.has(elt.tagName))
       eltsToTransform.forEach((elt) => {
         const passes: PassEntry[] = [
           ...checkedTextPasses,
