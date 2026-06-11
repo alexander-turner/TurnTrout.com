@@ -62,18 +62,14 @@ def is_file_modified(file_path: Path, commit_range: str | None = None) -> bool:
         RuntimeError: If a git command fails — surfacing the failure rather
             than silently treating the file as unmodified.
     """
-    # Get the relative path from git root
     git_executable = script_utils.find_executable("git")
-    git_root = subprocess.check_output(
-        [git_executable, "rev-parse", "--show-toplevel"], text=True
-    ).strip()
-    rel_path = file_path.resolve().relative_to(Path(git_root))
-
-    # Determine commit range to check
     range_to_check = _determine_commit_range(commit_range)
 
     try:
-        # Check if file changed in the range
+        git_root = subprocess.check_output(
+            [git_executable, "rev-parse", "--show-toplevel"], text=True
+        ).strip()
+        rel_path = file_path.resolve().relative_to(Path(git_root))
         result = subprocess.check_output(
             [
                 git_executable,

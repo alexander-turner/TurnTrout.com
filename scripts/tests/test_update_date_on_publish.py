@@ -377,7 +377,7 @@ def test_is_file_modified_git_error(test_file, mock_git_commands):
             "subprocess.check_output",
             side_effect=mock_git_commands(raise_error=True),
         ),
-        pytest.raises(subprocess.CalledProcessError),
+        pytest.raises(RuntimeError, match="Could not check git status"),
     ):
         update_lib.is_file_modified(test_file)
 
