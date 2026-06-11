@@ -19,15 +19,15 @@ overrides:
   lodash: 4.18.1
   brace-expansion@1: 1.1.13
   brace-expansion@2: 2.0.3
-  brace-expansion@4: 5.0.5
-  brace-expansion@5: 5.0.5
+  brace-expansion@4: 5.0.6
+  brace-expansion@5: 5.0.6
   postcss: 8.5.10
   undici: 6.24.0
   on-headers: 1.1.0
   diff: 9.0.0
-  tmp: 0.2.4
+  tmp: 0.2.6
   "@eslint/plugin-kit": 0.3.4
-  qs: 6.15.0
+  qs: 6.15.2
   mermaid: 11.15.0
   markdown-it: 14.1.1
   bn.js: 5.2.3
@@ -39,6 +39,7 @@ overrides:
   immutable: 5.1.5
   underscore: 1.13.8
   serialize-javascript: 7.0.5
+  minimatch@<3.1.4: 3.1.4
   serve-handler>minimatch: 3.1.4
   postcss-url>minimatch: 3.1.4
   filelist>minimatch: 5.1.8
