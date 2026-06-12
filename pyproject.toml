@@ -50,6 +50,8 @@ dependencies = [
     "flask>=3.0.0",
     "codespell>=2.3.0",
     "fonttools[woff]>=4.60.0",
+    "hypothesis>=6.155.2",
+    "mutmut>=3.6.0",
 ]
 
 [tool.codespell]
@@ -92,6 +94,9 @@ line-ending = "lf"
 [tool.pytest.ini_options]
 addopts = "--cov=scripts --cov-report=html -n auto"
 testpaths = ["scripts/tests"]
+# mutmut writes a partial copy of the tree to mutants/; its test copies must
+# not be collected when pytest is invoked on the real repo
+norecursedirs = ["mutants"]
 markers = [
     "allow_git_operations: mark test to allow real git operations (bypasses the prevent_real_git_operations fixture)",
     "requires_r2: mark test as requiring R2 credentials (skipped in CI without credentials)"
@@ -125,3 +130,14 @@ exclude_lines = [
 [tool.uv]
 # Make Python scripts executable via uv by default
 managed = true
+
+[tool.mutmut]
+source_paths = ["scripts/strip_for_spellcheck.py"]
+also_copy = ["scripts/__init__.py", "scripts/utils.py", "scripts/tests/", "config/"]
+# Clear the repo-wide addopts: coverage and xdist break mutmut's in-process
+# stats collector, and per-mutant runs don't need either.
+pytest_add_cli_args = ["-o", "addopts="]
+pytest_add_cli_args_test_selection = [
+    "scripts/tests/test_strip_for_spellcheck.py",
+    "scripts/tests/test_strip_for_spellcheck_properties.py",
+]

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/api/schema/stryker-core.json",
+  "packageManager": "pnpm",
+  "plugins": [
+    "@stryker-mutator/jest-runner"
+  ],
+  "testRunner": "jest",
+  "testRunnerNodeArgs": [
+    "--experimental-vm-modules",
+    "--no-warnings"
+  ],
+  "jest": {
+    "configFile": "config/javascript/jest.stryker.config.js",
+    "enableFindRelatedTests": false
+  },
+  "mutate": [
+    "quartz/util/path.ts",
+    "quartz/plugins/transformers/formatting_improvement_text.ts",
+    "quartz/plugins/transformers/formatting_improvement_html.ts"
+  ],
+  "checkers": [],
+  "ignorePatterns": [
+    ".husky",
+    ".hooks",
+    ".venv",
+    ".hypothesis",
+    ".pytest_cache",
+    ".logs",
+    ".github",
+    ".claude",
+    "/public",
+    "/website_content",
+    "/scripts",
+    "/tests",
+    "/cloudflare",
+    "/coverage",
+    "/htmlcov",
+    "/mutants",
+    "/prof",
+    "/reports"
+  ],
+  "reporters": [
+    "clear-text",
+    "json"
+  ],
+  "jsonReporter": {
+    "fileName": "reports/mutation/mutation.json"
+  },
+  "thresholds": {
+    "high": 90,
+    "low": 75,
+    "break": null
+  },
+  "tempDirName": ".stryker-tmp",
+  "concurrency": 4,
+  "timeoutMS": 20000,
+  "incremental": true,
+  "incrementalFile": "reports/stryker-incremental.json"
+}
