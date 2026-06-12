@@ -3,16 +3,15 @@
 import shutil
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 
-sys.path.append(str(Path(__file__).parent.parent))
+sys.path.append(str(Path(__file__).parent.parent.parent))
 
-if TYPE_CHECKING:
-    from .. import strip_for_spellcheck
-else:
-    import strip_for_spellcheck
+# Import via the package path so coverage tools (e.g. mutmut) attribute
+# these tests to the same module object as the rest of the suite.
+# pylint: disable=wrong-import-position
+from scripts import strip_for_spellcheck  # noqa: E402
 
 
 @pytest.mark.parametrize(
