@@ -979,7 +979,7 @@ I have thousands of JavaScript unit tests and hundreds of Python tests. I am _qu
 
 Example-based tests only check the cases I thought to write down. So I also use property-based testing ([`fast-check`](https://fast-check.dev/) for TypeScript, [Hypothesis](https://hypothesis.readthedocs.io/) for Python) to fuzz my text-processing code with thousands of generated inputs, asserting invariants like "stripping math from a post never changes its line numbers" or "the typography pipeline never leaks internal marker characters." The generators run from fixed seeds, so CI stays deterministic. This fuzzing catches real bugs: my abbreviation normalizer used to grow `i.e..` by one period on every build.
 
-But how do I know my tests would notice if the code broke? [Mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) ([Stryker](https://stryker-mutator.io/) for TypeScript, [`mutmut`](https://mutmut.readthedocs.io/) for Python) answers that by deliberately introducing small bugs --- flipping a comparison, deleting a regex flag --- and checking that at least one test fails. Surviving mutants point at assertions I forgot to write; I either add a test or mark the mutation as not worth testing.
+How do I know my tests would notice if the code broke? [Mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) ([Stryker](https://stryker-mutator.io/) for TypeScript, [`mutmut`](https://mutmut.readthedocs.io/) for Python) answers that by deliberately introducing small bugs --- flipping a comparison, deleting a regex flag --- and checking that at least one test fails. Surviving mutants point at assertions I forgot to write; I either add a test or mark the mutation as not worth testing.
 
 ### Simulating site interactions
 
