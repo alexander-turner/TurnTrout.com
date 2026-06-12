@@ -20,6 +20,10 @@ const PAGES_TO_CHECK: readonly string[] = [
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:8080"
 const ENV_LABEL = process.env.PLAYWRIGHT_BASE_URL ? "PREVIEW" : "LOCAL"
 
+// This spec asserts console cleanliness of the page as users receive it, so
+// every asset request must hit the real CDN.
+test.use({ stubCdnAssets: false })
+
 // Known-benign console output we don't want to fail on.
 //   - umami.{is,dev}: third-party analytics; can fail to load when CI lacks
 //     outbound network, when the user has an ad-blocker, or during transient

@@ -15,6 +15,10 @@ import {
 
 const { pondVideoId } = simpleConstants
 
+// These tests exercise real video playback (readyState, currentTime), which
+// requires the actual pond video bytes from the CDN.
+test.use({ stubCdnAssets: false })
+
 interface VideoElements {
   video: Locator
   autoplayToggle: Locator
