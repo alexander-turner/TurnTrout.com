@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test"
 
-import { expect, test } from "./fixtures"
+import { expect, routeCdnAssetStubs, test } from "./fixtures"
 import { gotoPage, reloadPage } from "./visual_utils"
 
 // Helper to get collapsible admonitions
@@ -211,6 +211,7 @@ test.describe("Collapsible admonition state persistence", () => {
 
     // Create a fresh context with localStorage pre-set BEFORE any navigation
     const context = await browser.newContext()
+    await routeCdnAssetStubs(context)
     const page = await context.newPage()
 
     // First, visit the page to get collapsible IDs
