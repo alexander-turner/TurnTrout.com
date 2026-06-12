@@ -204,11 +204,6 @@ test.describe("Collapsible admonition state persistence", () => {
   })
 
   test(TEST_MANAGES_OWN_CONTEXT, async ({ browser }) => {
-    // Two sequential loads of the heavy /test-page plus a reload make this the
-    // slowest test in the file on WebKit; triple the default timeout so a
-    // starved CI runner doesn't push it over the edge.
-    test.slow()
-
     // Create a fresh context with localStorage pre-set BEFORE any navigation
     const context = await browser.newContext()
     await routeCdnAssetStubs(context)
