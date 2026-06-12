@@ -6,11 +6,12 @@ import {
   type FilePath,
   type FullSlug,
   getAllSegmentPrefixes,
-  isFilePath,
+  getFullSlug,
   isFullSlug,
   isRelativeURL,
   isSimpleSlug,
   joinSegments,
+  normalizeRelativeURLs,
   pathToRoot,
   resolveRelative,
   simplifySlug,
@@ -19,6 +20,7 @@ import {
   splitAnchor,
   stripSlashes,
   transformInternalLink,
+  transformLink,
 } from "./path"
 
 // Deterministic runs: a fixed seed keeps CI reproducible (zero-flakiness policy).
@@ -41,21 +43,6 @@ const safeFilePath = fc
   .map(([segs, ext]) => (segs.join("/") + ext) as FilePath)
 
 describe("path utilities (property)", () => {
-  describe("type guards never throw (fuzz)", () => {
-    it("handles arbitrary unicode strings", () => {
-      fc.assert(
-        fc.property(fc.string({ unit: "binary" }), (s) => {
-          expect(() => {
-            isFilePath(s)
-            isFullSlug(s)
-            isSimpleSlug(s)
-            isRelativeURL(s)
-          }).not.toThrow()
-        }),
-      )
-    })
-  })
-
   describe("stripSlashes", () => {
     it("is the identity for strings without boundary slashes", () => {
       fc.assert(
@@ -319,6 +306,69 @@ describe("path utilities (property)", () => {
           expect(result).toBe(joinSegments(".", simplifySlug(target)))
         }),
       )
+    })
+  })
+  describe("mutation killers (examples)", () => {
+    // deterministic examples anchoring details the generators rarely hit
+    it.each([
+      ["a", true, true, false],
+      ["a/b", true, true, false],
+      ["a/b.png", true, false, false],
+      // ".a" counts as relative: the guard only requires a leading dot
+      [".a", false, false, true],
+      ["/a", false, false, false],
+      ["a/", false, true, false],
+      ["a b", false, false, false],
+      ["a#b", false, false, false],
+      ["a?b", false, false, false],
+      ["a&b", false, false, false],
+      ["a/index", true, false, false],
+      ["./a", false, false, true],
+      ["../a/b", false, false, true],
+      ["./a/index", false, false, false],
+      ["./a.md", false, false, false],
+      ["./a.html", false, false, false],
+    ])("classifies %j (full=%j, simple=%j, relative=%j)", (s, full, simple, relative) => {
+      expect(isFullSlug(s)).toBe(full)
+      expect(isSimpleSlug(s)).toBe(simple)
+      expect(isRelativeURL(s)).toBe(relative)
+    })
+
+    it("transformInternalLink resolves prefixes, folders, and anchors", () => {
+      expect(transformInternalLink("a/b")).toBe("./a/b")
+      expect(transformInternalLink("../a/b")).toBe("../a/b")
+      expect(transformInternalLink("./a/index.md")).toBe("./a/")
+      expect(transformInternalLink("a/b.md#Some Anchor")).toBe("./a/b#some-anchor")
+      expect(transformInternalLink("")).toBe(".")
+    })
+
+    it("transformLink honors each strategy", () => {
+      const allSlugs = ["x/unique", "y/z"] as FullSlug[]
+      expect(
+        transformLink("a/b" as FullSlug, "c/d", { strategy: "absolute", allSlugs }),
+      ).toBe("../c/d")
+      expect(
+        transformLink("a/b" as FullSlug, "unique", { strategy: "shortest", allSlugs }),
+      ).toBe("../x/unique")
+      expect(
+        transformLink("a/b" as FullSlug, "./c", { strategy: "relative", allSlugs }),
+      ).toBe("./c")
+      expect(
+        transformLink("a/b" as FullSlug, "c/index.md", { strategy: "absolute", allSlugs }),
+      ).toBe("../c/")
+    })
+
+    it("getFullSlug reads the body slug attribute", () => {
+      document.body.dataset.slug = "foo/bar"
+      expect(getFullSlug(window)).toBe("foo/bar")
+    })
+
+    it("normalizeRelativeURLs rebases relative hrefs and srcs", () => {
+      document.body.innerHTML =
+        '<a id="l" href="./x#frag">x</a><img id="i" src="../y">'
+      normalizeRelativeURLs(document, new URL("https://example.com/base/page"))
+      expect(document.getElementById("l")?.getAttribute("href")).toBe("/base/x#frag")
+      expect(document.getElementById("i")?.getAttribute("src")).toBe("/y")
     })
   })
 })

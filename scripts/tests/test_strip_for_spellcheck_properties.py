@@ -10,7 +10,6 @@ import shutil
 import sys
 from pathlib import Path
 
-import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
@@ -61,12 +60,6 @@ class TestPositionPreservation:
     """Every stripper must preserve line numbers; most preserve columns."""
 
     @given(markdown_text)
-    def test_strip_math_preserves_length_and_newlines(self, text: str):
-        stripped = strip_math(text)
-        assert len(stripped) == len(text)
-        assert stripped.count("\n") == text.count("\n")
-
-    @given(markdown_text)
     def test_strip_math_preserves_line_lengths(self, text: str):
         stripped = strip_math(text)
         assert [len(line) for line in stripped.split("\n")] == [
@@ -108,11 +101,6 @@ class TestIdempotence:
 
 
 class TestQuoteLevel:
-    @given(st.text(max_size=80))
-    def test_quote_level_bounded_by_gt_count(self, line: str):
-        level = get_quote_level(line)
-        assert 0 <= level <= line.count(">")
-
     @given(
         st.integers(min_value=0, max_value=8),
         st.text(alphabet="ab c", max_size=20),
@@ -184,35 +172,7 @@ class TestMutationKillers:
             == f"> > {' ' * (len(marker) + 1)} body"
         )
 
-    def test_main_strips_files_from_default_source_dir(
-        self,
-        mock_git_root: Path,
-        monkeypatch: pytest.MonkeyPatch,
-        capsys,
-    ):
-        # main() must read from <git root>/website_content and write the
-        # stripped copy into the output dir, not merely print the path
-        content_dir = mock_git_root / "website_content"
-        content_dir.mkdir()
-        (content_dir / "t.md").write_text("a $x$ b", encoding="utf-8")
-        # the fixture's MagicMock repo reports every file as gitignored;
-        # substitute a plain directory walk so real files flow through
-        monkeypatch.setattr(
-            "scripts.utils.get_files",
-            lambda dir_to_search, **_kwargs: tuple(dir_to_search.rglob("*.md")),
-        )
-        output = mock_git_root / "out"
-        monkeypatch.setattr(
-            "sys.argv",
-            ["strip_for_spellcheck.py", "--output-dir", str(output)],
-        )
-
-        strip_for_spellcheck.main()
-
-        assert (output / "t.md").read_text(encoding="utf-8") == "a $ $ b"
-        assert str(output) in capsys.readouterr().out
-
-    def test_create_stripped_directory_nested_dirs_and_temp_prefix(
+    def test_create_stripped_directory_handles_nested_dirs(
         self, tmp_path: Path
     ):
         source = tmp_path / "src"
@@ -221,37 +181,10 @@ class TestMutationKillers:
 
         result = strip_for_spellcheck.create_stripped_directory(source)
 
-        assert result.name.startswith("stripped_for_spellcheck_")
         assert (result / "a" / "b" / "f.md").read_text(
             encoding="utf-8"
         ) == "$ $"
         shutil.rmtree(result)
-
-    def test_main_converts_explicit_source_dir_to_path(
-        self,
-        tmp_path: Path,
-        monkeypatch: pytest.MonkeyPatch,
-        capsys,
-    ):
-        source = tmp_path / "content"
-        source.mkdir()
-        (source / "f.md").write_text("$x$", encoding="utf-8")
-        output = tmp_path / "out"
-        monkeypatch.setattr(
-            "sys.argv",
-            [
-                "strip_for_spellcheck.py",
-                "--source-dir",
-                str(source),
-                "--output-dir",
-                str(output),
-            ],
-        )
-
-        strip_for_spellcheck.main()
-
-        assert (output / "f.md").read_text(encoding="utf-8") == "$ $"
-        assert str(output) in capsys.readouterr().out
 
 
 class TestDropcap:

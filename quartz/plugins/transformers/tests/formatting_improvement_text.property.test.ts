@@ -3,11 +3,11 @@ import fc from "fast-check"
 
 import { NBSP } from "../../../components/constants"
 import {
-  applyTextTransforms,
   editAdmonition,
   formattingImprovement,
   noteAdmonition,
   spaceAdmonitions,
+  TextFormattingImprovement,
   wrapLeadingNumbers,
   wrapNumbersBeforeColon,
 } from "../formatting_improvement_text"
@@ -162,24 +162,34 @@ describe("formatting_improvement_text (property)", () => {
       )
     })
   })
-
-  describe("applyTextTransforms", () => {
-    it("with no transforms is the identity", () => {
-      fc.assert(
-        fc.property(fc.string({ unit: "binary" }), (text) => {
-          expect(applyTextTransforms(text, [])).toBe(text)
-        }),
-      )
+  describe("mutation killers", () => {
+    // deterministic examples for behavior the generators rarely hit;
+    // each anchors a detail that mutation testing showed was unverified
+    it("only treats leading --- blocks as frontmatter", () => {
+      const input = "intro\n---\na b\n---\nrest"
+      expect(formattingImprovement(input)).toBe(input)
     })
 
-    it("applies string patterns globally", () => {
-      fc.assert(
-        fc.property(fc.array(fc.constantFrom("a", "b", "c"), { maxLength: 20 }), (chars) => {
-          const text = chars.join("")
-          const result = applyTextTransforms(text, [["a", "x"]])
-          expect(result).toBe(text.replaceAll("a", "x"))
-        }),
-      )
+    it("protects frontmatter content from body transforms", () => {
+      const header = `---\ntitle: a${NBSP}b\n---\n`
+      expect(formattingImprovement(`${header}body`)).toBe(`${header}body`)
+      const indented = ` \n${header}`
+      expect(formattingImprovement(`${indented}body`)).toBe(`${indented}body`)
+    })
+
+    it("concentrates emphasis around every link, not just the first", () => {
+      const link = (label: string) => `*[${label}](https://example.com) *`
+      const result = formattingImprovement(`${link("a")} and ${link("b")}`)
+      expect(result).toBe("*[a](https://example.com)*  and *[b](https://example.com)* ")
+    })
+
+    it("only wraps heading numbers when the prefix is word-like", () => {
+      const input = "#a.b 3:"
+      expect(wrapNumbersBeforeColon(input)).toBe(input)
+    })
+
+    it("registers under its pipeline name", () => {
+      expect(TextFormattingImprovement().name).toBe("textFormattingImprovement")
     })
   })
 })
