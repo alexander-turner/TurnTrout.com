@@ -3,7 +3,7 @@ import { describe, expect, it } from "@jest/globals"
 import { type BuildCtx } from "../../util/ctx"
 import { type FilePath } from "../../util/path"
 import { defaultProcessedContent } from "../vfile"
-import { RemoveDrafts } from "./draft"
+import { isDraftPath, RemoveDrafts } from "./draft"
 
 const filter = RemoveDrafts()
 
@@ -46,5 +46,17 @@ describe("RemoveDrafts", () => {
     const content = defaultProcessedContent({})
     // With empty string, includes("drafts/") is false → publishes
     expect(filter.shouldPublish({} as BuildCtx, content)).toBe(true)
+  })
+})
+
+describe("isDraftPath", () => {
+  it.each([
+    ["website_content/drafts/wip.md", true],
+    ["some/nested/drafts/file.md", true],
+    ["website_content/posts/my-article.md", false],
+    ["website_content/drafts/templates/my-template.md", false],
+    ["", false],
+  ])("classifies %s as draft=%s", (filePath, expected) => {
+    expect(isDraftPath(filePath)).toBe(expected)
   })
 })
