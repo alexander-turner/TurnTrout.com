@@ -586,7 +586,10 @@ export const rearrangeLinkPunctuation = (
   }
 }
 
-const afterAbbrevPattern = `\\.?(?<abbrevMarker>${markerChar})?(?:,(?<commaMarker>${markerChar})?)?(?=${wbe}|\\s|${markerChar}|$)`
+// The trailing (?!\.) keeps the rewrite idempotent: without it, "i.e.." lets
+// the optional period backtrack to empty, the rewrite appends its own period,
+// and every pass grows the text by one dot.
+const afterAbbrevPattern = `\\.?(?<abbrevMarker>${markerChar})?(?:,(?<commaMarker>${markerChar})?)?(?!\\.)(?=${wbe}|\\s|${markerChar}|$)`
 const egRegex = new RegExp(`${wb}e\\.?g${afterAbbrevPattern}`, "gi")
 const ieRegex = new RegExp(`${wb}i\\.?e${afterAbbrevPattern}`, "gi")
 

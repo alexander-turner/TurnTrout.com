@@ -79,3 +79,9 @@ scripts/*.json
 AGENTS.md
 .gh-resolved
 .pnpm-store
+
+# Mutation & property testing artifacts
+.stryker-tmp/
+reports/
+mutants/
+.hypothesis/
