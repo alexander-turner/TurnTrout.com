@@ -975,6 +975,12 @@ I lint my Markdown links for probable errors. I found that I might mangle a Mark
 
 I have thousands of JavaScript unit tests and hundreds of Python tests. I am _quite thorough_ - these tests are my pride and joy. :) Writing tests is easy these days. I use [`cursor`](https://www.cursor.com/) - AI churns out dozens of high-coverage lines of test code in seconds, which I then skim for quality assurance. In fact, I use [`coverage.py`](https://github.com/nedbat/coveragepy) to ensure 100\% line coverage of my Python files. Using `jest`'s built in coverage tools, I require 100\% branch coverage of my TypeScript files. I also lint the JS tests using [`eslint-plugin-jest`](https://github.com/jest-community/eslint-plugin-jest).
 
+### Property-based testing and mutation testing
+
+Example-based tests only check the cases I thought to write down. So I also use property-based testing ([`fast-check`](https://fast-check.dev/) for TypeScript, [Hypothesis](https://hypothesis.readthedocs.io/) for Python) to fuzz my text-processing code with thousands of generated inputs, asserting invariants like "stripping math from a post never changes its line numbers" or "the typography pipeline never leaks internal marker characters." The generators run from fixed seeds, so CI stays deterministic. This fuzzing catches real bugs: my abbreviation normalizer used to grow `i.e..` by one period on every build.
+
+But how do I know my tests would notice if the code broke? [Mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) ([Stryker](https://stryker-mutator.io/) for TypeScript, [`mutmut`](https://mutmut.readthedocs.io/) for Python) answers that by deliberately introducing small bugs --- flipping a comparison, deleting a regex flag --- and checking that at least one test fails. Surviving mutants point at assertions I forgot to write; I either add a test or mark the mutation as not worth testing.
+
 ### Simulating site interactions
 
 Pure unit tests cannot test the end-to-end experience of my site, nor can they easily interact with a local server. [Playwright](https://playwright.dev/) lets me test dynamic features like search, spoiler blocks, and light / dark mode. I can also guard against bugs like [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) upon page load. What's more, I test these features across a range of browsers and viewport dimensions (mobile vs desktop). macOS WebKit runs Desktop Safari only, since Playwright's WebKit crashes on mobile device emulation on Apple Silicon.
