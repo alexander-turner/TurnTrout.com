@@ -1,9 +1,14 @@
 {
   "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-js/master/packages/api/schema/stryker-core.json",
   "packageManager": "pnpm",
-  "plugins": ["@stryker-mutator/jest-runner"],
+  "plugins": [
+    "@stryker-mutator/jest-runner"
+  ],
   "testRunner": "jest",
-  "testRunnerNodeArgs": ["--experimental-vm-modules", "--no-warnings"],
+  "testRunnerNodeArgs": [
+    "--experimental-vm-modules",
+    "--no-warnings"
+  ],
   "jest": {
     "configFile": "config/javascript/jest.stryker.config.js",
     "enableFindRelatedTests": false
@@ -34,7 +39,10 @@
     "/prof",
     "/reports"
   ],
-  "reporters": ["clear-text", "json"],
+  "reporters": [
+    "clear-text",
+    "json"
+  ],
   "jsonReporter": {
     "fileName": "reports/mutation/mutation.json"
   },
@@ -47,5 +55,6 @@
   "concurrency": 4,
   "timeoutMS": 20000,
   "incremental": true,
-  "incrementalFile": "reports/stryker-incremental.json"
+  "incrementalFile": "reports/stryker-incremental.json",
+  "ignoreStatic": true
 }
