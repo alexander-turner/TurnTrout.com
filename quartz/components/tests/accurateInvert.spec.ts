@@ -10,6 +10,12 @@ const TARGET_URL = "http://localhost:8080/avoiding-side-effects-in-complex-envir
 const EXPECTED_IMAGE_COUNT = 13
 const INVERTED_SUFFIX = "-inverted"
 
+// This spec asserts on the real dark-mode <picture> variant swap, which
+// depends on the browser resolving and decoding the actual CDN image
+// variants (img.complete / naturalWidth / currentSrc). Stubbed bytes break
+// that pipeline, so it needs real assets.
+test.use({ stubCdnAssets: false })
+
 test("dark→light theme toggle swaps invert-labeled imgs between original and inverted", async ({
   page,
 }) => {
