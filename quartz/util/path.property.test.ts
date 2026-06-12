@@ -344,15 +344,15 @@ describe("path utilities (property)", () => {
 
     it("transformLink honors each strategy", () => {
       const allSlugs = ["x/unique", "y/z"] as FullSlug[]
-      expect(
-        transformLink("a/b" as FullSlug, "c/d", { strategy: "absolute", allSlugs }),
-      ).toBe("../c/d")
-      expect(
-        transformLink("a/b" as FullSlug, "unique", { strategy: "shortest", allSlugs }),
-      ).toBe("../x/unique")
-      expect(
-        transformLink("a/b" as FullSlug, "./c", { strategy: "relative", allSlugs }),
-      ).toBe("./c")
+      expect(transformLink("a/b" as FullSlug, "c/d", { strategy: "absolute", allSlugs })).toBe(
+        "../c/d",
+      )
+      expect(transformLink("a/b" as FullSlug, "unique", { strategy: "shortest", allSlugs })).toBe(
+        "../x/unique",
+      )
+      expect(transformLink("a/b" as FullSlug, "./c", { strategy: "relative", allSlugs })).toBe(
+        "./c",
+      )
       expect(
         transformLink("a/b" as FullSlug, "c/index.md", { strategy: "absolute", allSlugs }),
       ).toBe("../c/")
@@ -364,8 +364,7 @@ describe("path utilities (property)", () => {
     })
 
     it("normalizeRelativeURLs rebases relative hrefs and srcs", () => {
-      document.body.innerHTML =
-        '<a id="l" href="./x#frag">x</a><img id="i" src="../y">'
+      document.body.innerHTML = '<a id="l" href="./x#frag">x</a><img id="i" src="../y">'
       normalizeRelativeURLs(document, new URL("https://example.com/base/page"))
       expect(document.getElementById("l")?.getAttribute("href")).toBe("/base/x#frag")
       expect(document.getElementById("i")?.getAttribute("src")).toBe("/y")
