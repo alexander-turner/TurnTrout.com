@@ -4,10 +4,11 @@ import { describe, expect, it, jest } from "@jest/globals"
 import { type Element } from "hast"
 import { h } from "hastscript"
 
-import { twemojiBaseUrl } from "../../../components/constants"
+import { NBSP, twemojiBaseUrl, WORD_JOINER } from "../../../components/constants"
 import {
   constructTwemojiUrl,
   createNodes,
+  glueEmojiToPrecedingText,
   ignoreMap,
   parseAttributes,
   processTree,
@@ -167,8 +168,53 @@ describe("Twemoji functions", () => {
       const content = "Hello ↩ 😀"
       const result = replaceEmojiConvertArrows(content)
       expect(result).toBe(
-        `Hello ⤴ <img class="emoji" draggable="false" alt="😀" src="${twemojiBaseUrl}1f600.svg"/>`,
+        `Hello ⤴${NBSP}${WORD_JOINER}<img class="emoji" draggable="false" alt="😀" src="${twemojiBaseUrl}1f600.svg"/>`,
       )
+    })
+  })
+
+  describe("glueEmojiToPrecedingText", () => {
+    const img = `<img class="emoji" draggable="false" alt="😀" src="${twemojiBaseUrl}1f600.svg"/>`
+    const img2 = `<img class="emoji" draggable="false" alt="👋" src="${twemojiBaseUrl}1f44b.svg"/>`
+
+    it.each([
+      {
+        description: "converts a preceding space to NBSP and inserts a word joiner",
+        input: `Hello ${img}`,
+        expected: `Hello${NBSP}${WORD_JOINER}${img}`,
+      },
+      {
+        description: "inserts a word joiner after a non-space character",
+        input: `Hello${img}`,
+        expected: `Hello${WORD_JOINER}${img}`,
+      },
+      {
+        description: "leaves a content-leading emoji untouched",
+        input: `${img} Hello`,
+        expected: `${img} Hello`,
+      },
+      {
+        description: "glues a leading emoji that follows a space",
+        input: ` ${img}`,
+        expected: `${NBSP}${WORD_JOINER}${img}`,
+      },
+      {
+        description: "glues each emoji when separated by a space",
+        input: `${img} ${img2}`,
+        expected: `${img}${NBSP}${WORD_JOINER}${img2}`,
+      },
+      {
+        description: "glues a second emoji adjacent to the first",
+        input: `${img}${img2}`,
+        expected: `${img}${WORD_JOINER}${img2}`,
+      },
+      {
+        description: "leaves content without emoji untouched",
+        input: "Hello world",
+        expected: "Hello world",
+      },
+    ])("$description", ({ input, expected }) => {
+      expect(glueEmojiToPrecedingText(input)).toBe(expected)
     })
   })
 
@@ -293,7 +339,10 @@ describe("processTree", () => {
 
     expect(result).toEqual({
       type: "root",
-      children: [{ type: "text", value: "Hello ⤴ " }, createEmoji("1f600.svg", "😀")],
+      children: [
+        { type: "text", value: `Hello ⤴${NBSP}${WORD_JOINER}` },
+        createEmoji("1f600.svg", "😀"),
+      ],
     })
   })
 

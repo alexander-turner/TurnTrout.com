@@ -8,8 +8,10 @@ import { visit } from "unist-util-visit"
 import {
   emojiReplacement,
   emojisToReplace,
+  NBSP,
   twemojiBaseUrl,
   twemojiIgnoreChars,
+  WORD_JOINER,
 } from "../../components/constants"
 import { twemoji } from "./modules/twemoji.min"
 
@@ -62,6 +64,31 @@ export function replaceEmoji(content: string): string {
   })
 
   return twemojiContent
+}
+
+// Matches each emoji <img> with an optional directly-preceding regular space.
+const emojiImgRegex = /(?<space> )?(?<img><img.*?>)/g
+
+/**
+ * Glues each emoji `<img>` to the preceding text so it can never be the first
+ * glyph on a wrapped line: a directly-preceding regular space becomes a
+ * non-breaking space and a word joiner is inserted right before the emoji.
+ * An emoji at the very start of the content can't strand itself, so it's left
+ * untouched (mirrors the line-leading exemption in `dashWordJoiner`).
+ *
+ * @param content - Twemoji-processed HTML containing emoji img tags
+ * @returns Content with emoji glued to their preceding text
+ */
+export function glueEmojiToPrecedingText(content: string): string {
+  return content.replace(emojiImgRegex, (...args) => {
+    const groups = args.at(-1) as { space?: string; img: string }
+    const offset = args.at(-3) as number
+    const { space, img } = groups
+    if (!space && offset === 0) {
+      return img
+    }
+    return `${space ? NBSP : ""}${WORD_JOINER}${img}`
+  })
 }
 
 /**
@@ -136,6 +163,7 @@ export function replaceEmojiConvertArrows(content: string): string {
   for (const { valueRegex, key } of ignoreRegexPairs) {
     twemojiContent = twemojiContent.replaceAll(valueRegex, key)
   }
+  twemojiContent = glueEmojiToPrecedingText(twemojiContent)
   return twemojiContent
 }
 
