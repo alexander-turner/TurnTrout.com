@@ -252,11 +252,12 @@ def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
         ):
             link.decompose()
 
-    text = p_copy.get_text(strip=True).rstrip(
-        TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH
-    )
-    # Strip zero-width spaces and other invisible characters
-    return strip_invisible_chars(text).strip()
+    # Strip invisible characters before trimming the presentational trailing
+    # characters: a word joiner glued before a trailing emoji can otherwise sit
+    # between a trim character (e.g. "↗") and the end, hiding it from rstrip.
+    text = strip_invisible_chars(p_copy.get_text(strip=True))
+    text = text.rstrip(TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH)
+    return text.strip()
 
 
 def check_top_level_paragraphs_end_with_punctuation(

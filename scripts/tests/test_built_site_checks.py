@@ -6269,6 +6269,29 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
 
 
 @pytest.mark.parametrize(
+    "char",
+    list(built_site_checks.TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH),
+)
+def test_check_top_level_paragraphs_trim_chars_before_word_joiner(char: str):
+    """
+    A word joiner after a trim character must not hide it from trimming.
+
+    The emoji-gluing transform inserts a word joiner before a trailing emoji,
+    which can land between a trim character (e.g. "↗") and the end of the
+    paragraph text.
+    """
+    wj = built_site_checks.WORD_JOINER
+    html = f"<article><p>Test text.{char}{wj}</p></article>"
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_top_level_paragraphs_end_with_punctuation(
+        soup
+    )
+    assert issues == [], (
+        f"Trailing word joiner after {char} should not hide it from trimming"
+    )
+
+
+@pytest.mark.parametrize(
     "html,expected_issues",
     [
         # Multiple paragraphs - all valid
