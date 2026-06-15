@@ -189,6 +189,8 @@ export default [
       "quartz/i18n/",
       "quartz/static/scripts/img-comparison-slider.js",
       ".venv/",
+      ".stryker-tmp/",
+      "mutants/",
     ],
   },
 

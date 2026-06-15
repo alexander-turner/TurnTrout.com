@@ -1258,6 +1258,7 @@ Stiennon
 Stone-Cech
 Strikethrough
 Strogatz's
+Stryker
 Styrene
 Styrene.
 Styrlyn
@@ -2489,6 +2490,7 @@ non-sequiturs
 non-stationarity
 nonmyopic
 nord-américain
+normalizer
 normatively
 normativity
 normativity.

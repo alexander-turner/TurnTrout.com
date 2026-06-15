@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test"
-
+import { expect, test } from "./fixtures"
 import { takeRegressionScreenshot } from "./visual_utils"
 
 const PUNCTILIO_URL = "http://localhost:8080/punctilio"

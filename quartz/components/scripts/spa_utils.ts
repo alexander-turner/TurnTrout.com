@@ -3,6 +3,7 @@ import {
   nodeTypeElement,
   scrollPositionKeyPrefix,
   scrollPositionMinThreshold,
+  scrollPositionTimestampKeyPrefix,
   SEARCH_MATCH_CLASS,
 } from "../constants"
 import { matchHTML } from "./search"
@@ -61,21 +62,26 @@ export const getNavigationOpts = ({
 }
 
 /**
- * Persists the current scroll position for the given pathname in localStorage.
- * Positions below {@link scrollPositionMinThreshold} (i.e. near the top) are
- * removed so returning readers scroll to the top rather than a tiny offset.
+ * Persists the current scroll position for the given pathname in localStorage,
+ * alongside a save timestamp so positions older than scrollPositionMaxAgeMs can
+ * be evicted when a returning reader loads the page. Positions below
+ * {@link scrollPositionMinThreshold} (i.e. near the top) are removed so
+ * returning readers scroll to the top rather than a tiny offset.
  */
 export function saveScrollToLocalStorage(pathname: string, scrollY: number): void {
   /* istanbul ignore next -- Storage is always defined in jsdom */
   if (typeof Storage === "undefined") return
 
   const key = `${scrollPositionKeyPrefix}${pathname}`
+  const timestampKey = `${scrollPositionTimestampKeyPrefix}${pathname}`
   if (scrollY < scrollPositionMinThreshold) {
     localStorage.removeItem(key)
+    localStorage.removeItem(timestampKey)
     return
   }
 
   localStorage.setItem(key, scrollY.toString())
+  localStorage.setItem(timestampKey, Date.now().toString())
 }
 
 /**

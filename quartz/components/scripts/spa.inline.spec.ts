@@ -11,7 +11,9 @@ import type { Page } from "@playwright/test"
 
 import {
   scrollPositionKeyPrefix,
+  scrollPositionMaxAgeMs,
   scrollPositionMinThreshold,
+  scrollPositionTimestampKeyPrefix,
   simpleConstants,
   testPageSlug,
   tightScrollTolerance,
@@ -598,6 +600,57 @@ test.describe("Cross-Session Scroll Persistence (localStorage)", () => {
     )
     const finalScroll = await handle.jsonValue()
     expect(finalScroll).toBeCloseTo(scrollPos, -1)
+
+    await newPage.close()
+  })
+
+  test("saves a timestamp alongside the scroll position", async ({ page }) => {
+    const scrollPos = 600
+    await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
+    await waitForHistoryState(page, scrollPos)
+
+    const pathname = new URL(page.url()).pathname
+    const timestampKey = `${scrollPositionTimestampKeyPrefix}${pathname}`
+    const before = Date.now()
+    const savedAt = await page.evaluate((k) => Number(localStorage.getItem(k)), timestampKey)
+    expect(savedAt).toBeGreaterThan(0)
+    expect(savedAt).toBeLessThanOrEqual(before)
+  })
+
+  test("evicts a stale scroll position older than the max age", async ({ page, context }) => {
+    const scrollPos = 800
+    const pathname = new URL(page.url()).pathname
+    const key = `${scrollPositionKeyPrefix}${pathname}`
+    const timestampKey = `${scrollPositionTimestampKeyPrefix}${pathname}`
+
+    // Simulate a position saved more than a week ago.
+    await page.evaluate(
+      ({ k, tk, v, savedAt }) => {
+        localStorage.setItem(k, v)
+        localStorage.setItem(tk, savedAt)
+      },
+      {
+        k: key,
+        tk: timestampKey,
+        v: scrollPos.toString(),
+        savedAt: (Date.now() - scrollPositionMaxAgeMs - 60_000).toString(),
+      },
+    )
+
+    const newPage = await context.newPage()
+    await gotoPage(newPage, page.url(), "domcontentloaded")
+
+    // The stale entry is evicted and the reader stays at the top of the page.
+    await newPage.waitForFunction(
+      ({ k, tolerance }) => localStorage.getItem(k) === null && window.scrollY <= tolerance,
+      { k: key, tolerance: tightScrollTolerance },
+      { timeout: 15_000 },
+    )
+    const timestampRemaining = await newPage.evaluate(
+      (tk) => localStorage.getItem(tk),
+      timestampKey,
+    )
+    expect(timestampRemaining).toBeNull()
 
     await newPage.close()
   })

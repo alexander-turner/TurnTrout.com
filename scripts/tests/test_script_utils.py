@@ -1307,3 +1307,50 @@ def test_error_exit_prints_to_stderr_and_exits(capsys):
     assert excinfo.value.code == 2
     captured = capsys.readouterr()
     assert "boom" in captured.err
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        # `---` rules in the body of a frontmatter-less file
+        "# Title\n\nIntro.\n\n---\n\nMiddle.\n\n---\n\nEnd.\n",
+        # leading rule longer than three dashes (not an opening fence)
+        "----------\n\nBody after a horizontal rule.\n",
+        # opening fence with no closing fence
+        "---\ntitle: x\n",
+    ],
+)
+def test_split_yaml_without_valid_frontmatter(tmp_path: Path, text: str):
+    """Files lacking a leading `---` fence yield empty metadata and content."""
+    file_path = tmp_path / "file.md"
+    file_path.write_text(text, encoding="utf-8")
+
+    assert script_utils.split_yaml(file_path) == ({}, "")
+
+
+def test_split_yaml_parses_leading_frontmatter(tmp_path: Path):
+    """Leading frontmatter parses; a `---` rule in the body is preserved."""
+    file_path = create_markdown_file(
+        tmp_path / "valid.md",
+        frontmatter={"title": "Hello"},
+        content="Before.\n\n---\n\nAfter.",
+    )
+
+    metadata, content = script_utils.split_yaml(file_path)
+    assert metadata == {"title": "Hello"}
+    assert content == "\nBefore.\n\n---\n\nAfter."
+
+
+def test_load_shared_constants_returns_independent_copy():
+    """Each call returns an equal but independently mutable deep copy."""
+    first = script_utils.load_shared_constants()
+    second = script_utils.load_shared_constants()
+    assert first == second
+    assert first is not second
+
+    first["__injected_top_level__"] = 123
+    first["unicodeTypography"]["__injected_nested__"] = "x"
+
+    fresh = script_utils.load_shared_constants()
+    assert "__injected_top_level__" not in fresh
+    assert "__injected_nested__" not in fresh["unicodeTypography"]

@@ -107,7 +107,10 @@ const config = {
     "\\.inline$": "<rootDir>/quartz/components/scripts/__mocks__/inlineScriptMock.ts",
   },
   testMatch: ["**/__tests__/**/*.ts", "**/?(*.)+(test).ts(x|)"],
-  testPathIgnorePatterns: ["/node_modules/", "<rootDir>/public/"],
+  testPathIgnorePatterns: ["/node_modules/", "<rootDir>/public/", "<rootDir>/.stryker-tmp/"],
+  // Keep Stryker's sandbox copy of the repo out of jest-haste-map (duplicate
+  // package.json names otherwise collide during local runs)
+  modulePathIgnorePatterns: ["<rootDir>/.stryker-tmp/"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation

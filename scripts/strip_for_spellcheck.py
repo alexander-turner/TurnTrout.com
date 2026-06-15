@@ -201,21 +201,37 @@ def create_stripped_directory(
         Path to the output directory containing stripped files.
     """
     if output_dir is None:
+        # pragma: no mutate start
         output_dir = Path(tempfile.mkdtemp(prefix="stripped_for_spellcheck_"))
+        # pragma: no mutate end
 
-    for md_file in source_dir.rglob("*.md"):
+    # Resolve to an absolute path so git-ignore filtering (which compares
+    # against the repo root) and the `relative_to` below both work whether
+    # the caller passed a relative or absolute source directory.
+    source_dir = source_dir.resolve()
+
+    # Honor .gitignore so gitignored content (e.g. website_content/drafts,
+    # *test.md) is excluded from spellcheck and vale, matching the rest of
+    # the pre-push checks.
+    md_files = script_utils.get_files(
+        dir_to_search=source_dir,
+        filetypes_to_match=(".md",),
+        use_git_ignore=True,
+    )
+
+    for md_file in md_files:
         relative = md_file.relative_to(source_dir)
         output_file = output_dir / relative
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        text = md_file.read_text(encoding="utf-8")
+        text = md_file.read_text(encoding="utf-8")  # pragma: no mutate
         stripped = strip_for_lint(text)
-        output_file.write_text(stripped, encoding="utf-8")
+        output_file.write_text(stripped, encoding="utf-8")  # pragma: no mutate
 
     return output_dir
 
 
-def main() -> None:
+def main() -> None:  # pragma: no mutate block
     """Strip quote blocks and math from Markdown files."""
     parser = argparse.ArgumentParser(
         description=(

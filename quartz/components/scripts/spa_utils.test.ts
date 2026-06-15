@@ -5,7 +5,11 @@
 
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
-import { scrollPositionKeyPrefix, scrollPositionMinThreshold } from "../constants"
+import {
+  scrollPositionKeyPrefix,
+  scrollPositionMinThreshold,
+  scrollPositionTimestampKeyPrefix,
+} from "../constants"
 import {
   extractMetaRefreshUrl,
   getNavigationOpts,
@@ -106,6 +110,7 @@ describe("getNavigationOpts", () => {
 
 describe("saveScrollToLocalStorage", () => {
   const key = `${scrollPositionKeyPrefix}/page`
+  const timestampKey = `${scrollPositionTimestampKeyPrefix}/page`
 
   beforeEach(() => {
     localStorage.clear()
@@ -123,6 +128,22 @@ describe("saveScrollToLocalStorage", () => {
     if (_label.includes("removes")) localStorage.setItem(key, "500")
     saveScrollToLocalStorage("/page", scrollY)
     expect(localStorage.getItem(key)).toBe(expected)
+  })
+
+  it("records a save timestamp when persisting above threshold", () => {
+    const before = Date.now()
+    saveScrollToLocalStorage("/page", scrollPositionMinThreshold + 100)
+    const savedAt = Number(localStorage.getItem(timestampKey))
+    expect(savedAt).toBeGreaterThanOrEqual(before)
+    expect(savedAt).toBeLessThanOrEqual(Date.now())
+  })
+
+  it("clears the timestamp when scrolling back below threshold", () => {
+    saveScrollToLocalStorage("/page", scrollPositionMinThreshold + 100)
+    expect(localStorage.getItem(timestampKey)).not.toBeNull()
+
+    saveScrollToLocalStorage("/page", scrollPositionMinThreshold - 1)
+    expect(localStorage.getItem(timestampKey)).toBeNull()
   })
 })
 

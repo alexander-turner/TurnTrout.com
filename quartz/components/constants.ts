@@ -51,6 +51,8 @@ export const {
   autoplayStorageKey,
   instantScrollRestoreKey,
   scrollPositionKeyPrefix,
+  scrollPositionTimestampKeyPrefix,
+  scrollPositionMaxAgeMs,
   scrollPositionMinThreshold,
   cdnBaseUrl,
   imageCacheVersion,
