@@ -3,6 +3,7 @@ import fs from "fs/promises"
 import { type Element, type Root } from "hast"
 import { h } from "hastscript"
 import path from "path"
+import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 import { VFile } from "vfile"
 
@@ -72,10 +73,36 @@ export async function loadRelatedPosts(
   return parseRelatedPosts(raw, filePath)
 }
 
-/** Builds the "Similar links" block for a list of related posts. */
+/**
+ * Inserts `block` immediately after the `.after-article-components` wrapper
+ * (which contains the newsletter/email box). Falls back to after the ornament
+ * when that wrapper is absent (e.g. pages with subscription links suppressed).
+ */
+function insertAfterSubscriptionBlock(tree: Root, block: Element) {
+  let inserted = false
+  visit(tree, "element", (node: Element, index, parent: Element | null) => {
+    const cls = node.properties?.className
+    if (
+      index !== undefined &&
+      parent &&
+      Array.isArray(cls) &&
+      (cls as string[]).includes("after-article-components")
+    ) {
+      parent.children.splice(index + 1, 0, block)
+      inserted = true
+      return false
+    }
+    return true
+  })
+  if (!inserted) {
+    insertAfterOrnamentNode(tree, [block])
+  }
+}
+
+/** Builds the "Similar posts" block for a list of related posts. */
 export function buildRelatedPostsBlock(posts: readonly RelatedPost[]): Element {
   return h("div", { className: "related-posts" }, [
-    h("p", { className: "related-posts-title" }, "Similar links"),
+    h("p", { className: "related-posts-title" }, "Similar posts"),
     h(
       "ul",
       posts.map((post) =>
@@ -100,8 +127,8 @@ export function buildRelatedPostsBlock(posts: readonly RelatedPost[]): Element {
 }
 
 /**
- * Injects a gwern-style "Similar links" block after the trout ornament, listing
- * the precomputed top-N semantically-similar posts for the current article.
+ * Injects a gwern-style "Similar posts" block after the email/newsletter box,
+ * listing the precomputed top-N semantically-similar posts for the current article.
  *
  * Neighbors are read once per plugin instance from the committed
  * `related_posts.json` and shared across every page in the build. Articles
@@ -118,7 +145,7 @@ export const RelatedPosts: QuartzTransformerPlugin<{ filePath?: string } | undef
         if (!slug) return
         const posts = (await related()).get(slug)
         if (!posts || posts.length === 0) return
-        insertAfterOrnamentNode(tree, [buildRelatedPostsBlock(posts)])
+        insertAfterSubscriptionBlock(tree, buildRelatedPostsBlock(posts))
       },
     ],
   }

@@ -652,9 +652,9 @@ Many favicons are monochromatic to avoid chaos. However, some iconic brand logos
 
 I showcase all included favicons on [the test page](/test-page#external-links-with-favicons) to verify that the favicons look good after several kinds of characters.
 
-## Similar links
+## Similar posts
 
-Inspired by [`gwern.net`](https://gwern.net), each article ends with a short list of "similar links" — the handful of posts most related to what you just read. Relatedness is _semantic_ rather than tag-based: an offline script embeds each article once with a text-embedding model, then ranks every other article by cosine similarity. I cache those embeddings so I only pay to re-embed an article when its text actually changes, and the production build never touches the embedding API — it just reads a small precomputed table of neighbors. The upshot is a cheap, low-maintenance "if you liked this, read these" that surfaces connections I'd never have bothered to hand-link.
+Inspired by [`gwern.net`](https://gwern.net), each article ends with a short list of "similar posts" — the handful of posts most related to what you just read. Relatedness is _semantic_ rather than tag-based: an offline script embeds each article once with a text-embedding model, then ranks every other article by cosine similarity. I cache those embeddings so I only pay to re-embed an article when its text actually changes, and the production build never touches the embedding API — it just reads a small precomputed table of neighbors. The upshot is a cheap, low-maintenance "if you liked this, read these" that surfaces connections I'd never have bothered to hand-link.
 
 ## Admonitions encapsulate information
 

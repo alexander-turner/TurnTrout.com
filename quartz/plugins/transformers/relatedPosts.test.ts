@@ -25,7 +25,13 @@ const samplePosts: RelatedPost[] = [
 ]
 
 const treeWithOrnament = (): Root =>
-  h(null, [h("p", "body"), h("div", { id: troutContainerId })]) as Root
+  h(null, [
+    h("p", "body"),
+    h("div", { id: troutContainerId }),
+    h("div", { class: "after-article-components" }, [
+      h("div", { id: "subscription-and-contact" }),
+    ]),
+  ]) as Root
 
 const runTransform = async (
   plugin: QuartzTransformerPluginInstance,
@@ -123,7 +129,7 @@ describe("buildRelatedPostsBlock", () => {
     const block = buildRelatedPostsBlock(samplePosts)
 
     const [title] = elementsWithClass(block, "related-posts-title")
-    expect(title.children[0]).toMatchObject({ value: "Similar links" })
+    expect(title.children[0]).toMatchObject({ value: "Similar posts" })
 
     const links = elementsByTag(block, "a")
     expect(links.map((l) => l.properties?.href)).toEqual(["/first-post", "/alias/second"])
@@ -138,16 +144,37 @@ describe("buildRelatedPostsBlock", () => {
 })
 
 describe("RelatedPosts transformer", () => {
-  it("inserts the block after the ornament, reusing one read across pages", async () => {
+  it("inserts the block after the subscription box, reusing one read across pages", async () => {
     const filePath = await writeTempMap({ "post-a": samplePosts })
     const plugin = RelatedPosts({ filePath })
 
     const tree = await runTransform(plugin, treeWithOrnament(), "post-a")
     expect(elementsWithClass(tree, "related-post")).toHaveLength(2)
 
+    // Related-posts block must follow after-article-components in the root children.
+    const rootChildren = (tree.children as Element[]).filter((n) => n.type === "element")
+    const afterIdx = rootChildren.findIndex((n) =>
+      (n.properties?.className as string[] | undefined)?.includes("after-article-components"),
+    )
+    const relatedIdx = rootChildren.findIndex((n) =>
+      (n.properties?.className as string[] | undefined)?.includes("related-posts"),
+    )
+    expect(afterIdx).toBeGreaterThanOrEqual(0)
+    expect(relatedIdx).toBe(afterIdx + 1)
+
     // A second page through the same instance hits the memoized map (no re-read).
     const tree2 = await runTransform(plugin, treeWithOrnament(), "post-a")
     expect(elementsWithClass(tree2, "related-post")).toHaveLength(2)
+  })
+
+  it("falls back to after-ornament insertion when no after-article-components exists", async () => {
+    const filePath = await writeTempMap({ "post-a": samplePosts })
+    const ornamentOnlyTree = h(null, [
+      h("p", "body"),
+      h("div", { id: troutContainerId }),
+    ]) as Root
+    const tree = await runTransform(RelatedPosts({ filePath }), ornamentOnlyTree, "post-a")
+    expect(elementsWithClass(tree, "related-post")).toHaveLength(2)
   })
 
   it("leaves the tree unchanged for an unknown slug", async () => {
