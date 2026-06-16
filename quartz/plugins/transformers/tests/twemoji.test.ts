@@ -4,11 +4,10 @@ import { describe, expect, it, jest } from "@jest/globals"
 import { type Element } from "hast"
 import { h } from "hastscript"
 
-import { NBSP, twemojiBaseUrl, WORD_JOINER } from "../../../components/constants"
+import { NBSP, twemojiBaseUrl } from "../../../components/constants"
 import {
   constructTwemojiUrl,
   createNodes,
-  glueEmojiToPrecedingText,
   ignoreMap,
   parseAttributes,
   processTree,
@@ -16,6 +15,7 @@ import {
   replaceEmojiConvertArrows,
   Twemoji,
   TwemojiOptions,
+  wrapEmojiNodes,
 } from "../twemoji"
 
 interface CustomNode extends UnistNode {
@@ -168,53 +168,49 @@ describe("Twemoji functions", () => {
       const content = "Hello ↩ 😀"
       const result = replaceEmojiConvertArrows(content)
       expect(result).toBe(
-        `Hello ⤴${NBSP}${WORD_JOINER}<img class="emoji" draggable="false" alt="😀" src="${twemojiBaseUrl}1f600.svg"/>`,
+        `Hello ⤴ <img class="emoji" draggable="false" alt="😀" src="${twemojiBaseUrl}1f600.svg"/>`,
       )
     })
   })
 
-  describe("glueEmojiToPrecedingText", () => {
-    const img = `<img class="emoji" draggable="false" alt="😀" src="${twemojiBaseUrl}1f600.svg"/>`
-    const img2 = `<img class="emoji" draggable="false" alt="👋" src="${twemojiBaseUrl}1f44b.svg"/>`
+  describe("wrapEmojiNodes", () => {
+    const emojiImg = () => createEmoji("1f600.svg", "😀")
+    const emojiSpan = (glyph: string) =>
+      h("span.emoji-span", [{ type: "text", value: glyph }, emojiImg()])
 
-    it.each([
-      {
-        description: "converts a preceding space to NBSP and inserts a word joiner",
-        input: `Hello ${img}`,
-        expected: `Hello${NBSP}${WORD_JOINER}${img}`,
-      },
-      {
-        description: "inserts a word joiner after a non-space character",
-        input: `Hello${img}`,
-        expected: `Hello${WORD_JOINER}${img}`,
-      },
-      {
-        description: "leaves a content-leading emoji untouched",
-        input: `${img} Hello`,
-        expected: `${img} Hello`,
-      },
-      {
-        description: "glues a leading emoji that follows a space",
-        input: ` ${img}`,
-        expected: `${NBSP}${WORD_JOINER}${img}`,
-      },
-      {
-        description: "glues each emoji when separated by a space",
-        input: `${img} ${img2}`,
-        expected: `${img}${NBSP}${WORD_JOINER}${img2}`,
-      },
-      {
-        description: "glues a second emoji adjacent to the first",
-        input: `${img}${img2}`,
-        expected: `${img}${WORD_JOINER}${img2}`,
-      },
-      {
-        description: "leaves content without emoji untouched",
-        input: "Hello world",
-        expected: "Hello world",
-      },
-    ])("$description", ({ input, expected }) => {
-      expect(glueEmojiToPrecedingText(input)).toBe(expected)
+    it("wraps an emoji with its preceding character", () => {
+      const result = wrapEmojiNodes([{ type: "text", value: "Hi(" }, emojiImg()])
+      expect(result).toEqual([{ type: "text", value: "Hi" }, emojiSpan("(")])
+    })
+
+    it("converts a word's trailing space to a non-breaking space", () => {
+      const result = wrapEmojiNodes([{ type: "text", value: "Hi " }, emojiImg()])
+      expect(result).toEqual([{ type: "text", value: "Hi" }, emojiSpan(NBSP)])
+    })
+
+    it("drops a text node that becomes empty after pulling its only character", () => {
+      const result = wrapEmojiNodes([{ type: "text", value: "(" }, emojiImg()])
+      expect(result).toEqual([emojiSpan("(")])
+    })
+
+    it("leaves an emoji after a lone space breakable (emoji sequence)", () => {
+      const nodes = [{ type: "text", value: " " }, emojiImg()]
+      expect(wrapEmojiNodes(nodes as never)).toEqual(nodes)
+    })
+
+    it("leaves a leading emoji (no preceding glyph) bare", () => {
+      const result = wrapEmojiNodes([emojiImg(), { type: "text", value: " Hi" }])
+      expect(result).toEqual([emojiImg(), { type: "text", value: " Hi" }])
+    })
+
+    it("leaves an emoji preceding another emoji bare", () => {
+      const result = wrapEmojiNodes([emojiImg(), emojiImg()])
+      expect(result).toEqual([emojiImg(), emojiImg()])
+    })
+
+    it("leaves non-emoji nodes untouched", () => {
+      const nodes = [{ type: "text", value: "no emoji here" }]
+      expect(wrapEmojiNodes(nodes as never)).toEqual(nodes)
     })
   })
 
@@ -340,8 +336,8 @@ describe("processTree", () => {
     expect(result).toEqual({
       type: "root",
       children: [
-        { type: "text", value: `Hello ⤴${NBSP}${WORD_JOINER}` },
-        createEmoji("1f600.svg", "😀"),
+        { type: "text", value: "Hello ⤴" },
+        h("span.emoji-span", [{ type: "text", value: NBSP }, createEmoji("1f600.svg", "😀")]),
       ],
     })
   })

@@ -11,7 +11,6 @@ import {
   NBSP,
   twemojiBaseUrl,
   twemojiIgnoreChars,
-  WORD_JOINER,
 } from "../../components/constants"
 import { twemoji } from "./modules/twemoji.min"
 
@@ -66,31 +65,6 @@ export function replaceEmoji(content: string): string {
   return twemojiContent
 }
 
-// Matches each emoji <img> with an optional directly-preceding regular space.
-const emojiImgRegex = /(?<space> )?(?<img><img.*?>)/g
-
-/**
- * Glues each emoji `<img>` to the preceding text so it can never be the first
- * glyph on a wrapped line: a directly-preceding regular space becomes a
- * non-breaking space and a word joiner is inserted right before the emoji.
- * An emoji at the very start of the content can't strand itself, so it's left
- * untouched (mirrors the line-leading exemption in `dashWordJoiner`).
- *
- * @param content - Twemoji-processed HTML containing emoji img tags
- * @returns Content with emoji glued to their preceding text
- */
-export function glueEmojiToPrecedingText(content: string): string {
-  return content.replace(emojiImgRegex, (...args) => {
-    const groups = args.at(-1) as { space?: string; img: string }
-    const offset = args.at(-3) as number
-    const { space, img } = groups
-    if (!space && offset === 0) {
-      return img
-    }
-    return `${space ? NBSP : ""}${WORD_JOINER}${img}`
-  })
-}
-
 /**
  * Creates an array of text and element nodes from Twemoji-processed content.
  * Splits content by img tags and creates corresponding text nodes and img elements.
@@ -123,6 +97,43 @@ export function createNodes(twemojiContent: string): (Text | Element)[] {
   }
 
   return newNodes
+}
+
+/**
+ * Glues each emoji to its immediately-preceding glyph inside a `white-space:
+ * nowrap` span so a trailing emoji can never wrap alone to the next line. A
+ * character-level joiner does not suppress the soft-wrap opportunity an atomic
+ * inline `<img>` introduces at its own box boundary, so the glyph and the emoji
+ * must share one non-wrapping box (mirrors how favicons use `favicon-span`). A
+ * preceding regular space becomes a non-breaking space; an emoji with no
+ * preceding glyph (start of its run) can't strand itself and is left bare.
+ *
+ * @param nodes - Text and img nodes produced by `createNodes`
+ * @returns Nodes with each emoji wrapped together with its preceding glyph
+ */
+export function wrapEmojiNodes(nodes: (Text | Element)[]): (Text | Element)[] {
+  const wrapped: (Text | Element)[] = []
+  for (const node of nodes) {
+    const prev = wrapped[wrapped.length - 1]
+    const isEmojiImg = node.type === "element" && node.tagName === "img"
+    const lastChar = isEmojiImg && prev?.type === "text" ? prev.value.slice(-1) : ""
+    const remaining = prev?.type === "text" ? prev.value.slice(0, -1) : ""
+    // A lone leading space means the emoji follows another emoji/element, not a
+    // word; leave it breakable so emoji sequences still wrap. Glue only to real
+    // preceding text — a word or punctuation.
+    if (lastChar && !(lastChar === " " && remaining === "")) {
+      const glyph = lastChar === " " ? NBSP : lastChar
+      const prevText = prev as Text
+      prevText.value = remaining
+      if (remaining === "") {
+        wrapped.pop()
+      }
+      wrapped.push(h("span.emoji-span", [{ type: "text", value: glyph } as Text, node]))
+    } else {
+      wrapped.push(node)
+    }
+  }
+  return wrapped
 }
 
 // Characters to protect from twemoji processing by temporarily replacing with PUA characters
@@ -163,7 +174,6 @@ export function replaceEmojiConvertArrows(content: string): string {
   for (const { valueRegex, key } of ignoreRegexPairs) {
     twemojiContent = twemojiContent.replaceAll(valueRegex, key)
   }
-  twemojiContent = glueEmojiToPrecedingText(twemojiContent)
   return twemojiContent
 }
 
@@ -180,7 +190,7 @@ export function processTree(tree: Node): Node {
       const twemojiContent = replaceEmojiConvertArrows(node.value)
 
       if (twemojiContent !== node.value) {
-        const nodes = createNodes(twemojiContent)
+        const nodes = wrapEmojiNodes(createNodes(twemojiContent))
         parent.children = [
           ...parent.children.slice(0, _index),
           ...nodes,
