@@ -191,6 +191,16 @@ describe("rewriteArchivedLink", () => {
     expect(node.properties.href).toBe(href)
   })
 
+  it("leaves a dead entry with an empty archive_url untouched", () => {
+    const manifest = makeManifest({
+      "https://dead.example.com/gone": entry({ archive_url: "" }),
+    })
+    const node = anchor("https://dead.example.com/gone", ["external"])
+    expect(rewriteArchivedLink(node, manifest)).toBe(false)
+    expect(node.properties.href).toBe("https://dead.example.com/gone")
+    expect(node.properties["data-original-href"]).toBeUndefined()
+  })
+
   it("ignores anchors without a string href", () => {
     const node = anchor()
     expect(rewriteArchivedLink(node, makeManifest())).toBe(false)

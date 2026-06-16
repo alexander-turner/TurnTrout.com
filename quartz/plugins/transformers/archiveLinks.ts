@@ -106,7 +106,9 @@ export function rewriteArchivedLink(node: Element, manifest: ArchiveManifest): b
   }
 
   const entry = manifest.get(canonical)
-  if (!entry || !entry.dead) {
+  if (!entry || !entry.dead || !entry.archive_url) {
+    // A dead entry with an empty archive_url has no snapshot to point at;
+    // rewriting would set href="". Leave the (broken) live link in place.
     return false
   }
 
