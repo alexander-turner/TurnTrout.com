@@ -16,6 +16,7 @@ import {
   parseRelatedPosts,
   type RelatedPost,
   RelatedPosts,
+  similarPostsTocEntry,
 } from "./relatedPosts"
 import { troutContainerId } from "./trout_hr"
 
@@ -35,16 +36,18 @@ const runTransform = async (
   plugin: QuartzTransformerPluginInstance,
   tree: Root,
   slug?: string,
-): Promise<Root> => {
+  toc?: VFile["data"]["toc"],
+): Promise<{ tree: Root; file: VFile }> => {
   const htmlPlugins = plugin.htmlPlugins?.({} as never)
   if (!htmlPlugins) throw new Error("no html plugins")
   const file = new VFile({ value: "" })
   file.data.slug = slug as never
+  if (toc !== undefined) file.data.toc = toc
   for (const factory of htmlPlugins) {
     const makeTransform = factory as unknown as () => (t: Root, f: VFile) => Promise<void>
     await makeTransform()(tree, file)
   }
-  return tree
+  return { tree, file }
 }
 
 const writeTempMap = async (map: Record<string, RelatedPost[]>): Promise<string> => {
@@ -127,6 +130,8 @@ describe("buildRelatedPostsBlock", () => {
     const block = buildRelatedPostsBlock(samplePosts)
 
     const [title] = elementsWithClass(block, "related-posts-title")
+    expect(title.tagName).toBe("h1")
+    expect(title.properties?.id).toBe("similar-posts")
     expect(title.children[0]).toMatchObject({ value: "Similar posts" })
 
     const links = elementsByTag(block, "a")
@@ -146,7 +151,7 @@ describe("RelatedPosts transformer", () => {
     const filePath = await writeTempMap({ "post-a": samplePosts })
     const plugin = RelatedPosts({ filePath })
 
-    const tree = await runTransform(plugin, treeWithOrnament(), "post-a")
+    const { tree } = await runTransform(plugin, treeWithOrnament(), "post-a")
     expect(elementsWithClass(tree, "related-post")).toHaveLength(2)
 
     // Related-posts block must follow after-article-components in the root children.
@@ -161,25 +166,43 @@ describe("RelatedPosts transformer", () => {
     expect(relatedIdx).toBe(afterIdx + 1)
 
     // A second page through the same instance hits the memoized map (no re-read).
-    const tree2 = await runTransform(plugin, treeWithOrnament(), "post-a")
+    const { tree: tree2 } = await runTransform(plugin, treeWithOrnament(), "post-a")
     expect(elementsWithClass(tree2, "related-post")).toHaveLength(2)
+  })
+
+  it("appends the ToC entry when the file already has a toc", async () => {
+    const filePath = await writeTempMap({ "post-a": samplePosts })
+    const existingEntry = { depth: 0, text: "Introduction", slug: "introduction" }
+    const { file } = await runTransform(
+      RelatedPosts({ filePath }),
+      treeWithOrnament(),
+      "post-a",
+      [existingEntry],
+    )
+    expect(file.data.toc).toEqual([existingEntry, similarPostsTocEntry])
+  })
+
+  it("does not create a toc when the file has none", async () => {
+    const filePath = await writeTempMap({ "post-a": samplePosts })
+    const { file } = await runTransform(RelatedPosts({ filePath }), treeWithOrnament(), "post-a")
+    expect(file.data.toc).toBeUndefined()
   })
 
   it("falls back to after-ornament insertion when no after-article-components exists", async () => {
     const filePath = await writeTempMap({ "post-a": samplePosts })
     const ornamentOnlyTree = h(null, [h("p", "body"), h("div", { id: troutContainerId })]) as Root
-    const tree = await runTransform(RelatedPosts({ filePath }), ornamentOnlyTree, "post-a")
+    const { tree } = await runTransform(RelatedPosts({ filePath }), ornamentOnlyTree, "post-a")
     expect(elementsWithClass(tree, "related-post")).toHaveLength(2)
   })
 
   it("leaves the tree unchanged for an unknown slug", async () => {
     const filePath = await writeTempMap({ "post-a": samplePosts })
-    const tree = await runTransform(RelatedPosts({ filePath }), treeWithOrnament(), "other")
+    const { tree } = await runTransform(RelatedPosts({ filePath }), treeWithOrnament(), "other")
     expect(elementsWithClass(tree, "related-posts")).toHaveLength(0)
   })
 
   it("does nothing when the file has no slug", async () => {
-    const tree = await runTransform(RelatedPosts(), treeWithOrnament())
+    const { tree } = await runTransform(RelatedPosts(), treeWithOrnament())
     expect(elementsWithClass(tree, "related-posts")).toHaveLength(0)
   })
 })

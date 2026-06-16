@@ -9,6 +9,7 @@ import { VFile } from "vfile"
 
 import { formatTitle } from "../../components/component_utils"
 import { type QuartzTransformerPlugin } from "../types"
+import { type TocEntry } from "../vfile"
 import { insertAfterOrnamentNode } from "./afterArticle"
 import { applyTextTransforms } from "./formatting_improvement_html"
 
@@ -99,10 +100,19 @@ function insertAfterSubscriptionBlock(tree: Root, block: Element) {
   }
 }
 
+const SIMILAR_POSTS_HEADING = "Similar posts"
+const SIMILAR_POSTS_SLUG = "similar-posts"
+
+export const similarPostsTocEntry: TocEntry = {
+  depth: 0,
+  text: SIMILAR_POSTS_HEADING,
+  slug: SIMILAR_POSTS_SLUG,
+}
+
 /** Builds the "Similar posts" block for a list of related posts. */
 export function buildRelatedPostsBlock(posts: readonly RelatedPost[]): Element {
   return h("div", { className: "related-posts" }, [
-    h("p", { className: "related-posts-title" }, "Similar posts"),
+    h("h1", { id: SIMILAR_POSTS_SLUG, className: "related-posts-title" }, SIMILAR_POSTS_HEADING),
     h(
       "ul",
       posts.map((post) =>
@@ -146,6 +156,9 @@ export const RelatedPosts: QuartzTransformerPlugin<{ filePath?: string } | undef
         const posts = (await related()).get(slug)
         if (!posts || posts.length === 0) return
         insertAfterSubscriptionBlock(tree, buildRelatedPostsBlock(posts))
+        if (file.data.toc) {
+          file.data.toc = [...file.data.toc, similarPostsTocEntry]
+        }
       },
     ],
   }
