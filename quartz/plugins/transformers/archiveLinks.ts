@@ -30,19 +30,41 @@ export type ArchiveManifest = ReadonlyMap<string, ArchiveManifestEntry>
 
 /**
  * Canonical URL form shared with `scripts/archive_links.py`. The Python
- * extractor, the manifest key, and this transformer must agree exactly, so the
- * rule is fixed and mirrored by fixture tests on both sides: lowercase the
- * scheme (forced to `https`) and host, drop a single trailing `/`, drop the
- * `#fragment`, and keep the query.
+ * extractor, the manifest key, and this transformer must agree exactly, so both
+ * sides parse with plain string ops — deliberately NOT `new URL`, whose extra
+ * normalization (default-port stripping, IDN punycoding, percent-encoding)
+ * would silently diverge from Python's `urlsplit` and break key matching.
+ *
+ * Rule (mirrored by fixture tests on both sides): force `https`, lowercase the
+ * `host[:port]` and drop userinfo, drop a single trailing `/`, drop the
+ * `#fragment`, keep the query verbatim.
  */
 export function canonicalizeUrl(href: string): string {
-  const url = new URL(href)
-  const host = url.host.toLowerCase()
-  let pathname = url.pathname
+  const schemeMatch = /^[a-z][a-z0-9+.-]*:\/\//i.exec(href)
+  if (!schemeMatch) {
+    return href
+  }
+  const afterScheme = href.slice(schemeMatch[0].length)
+
+  const authorityEnd = afterScheme.search(/[/?#]/)
+  const authorityRaw = authorityEnd === -1 ? afterScheme : afterScheme.slice(0, authorityEnd)
+  const authority = authorityRaw.slice(authorityRaw.lastIndexOf("@") + 1).toLowerCase()
+
+  let rest = authorityEnd === -1 ? "" : afterScheme.slice(authorityEnd)
+  const hashIndex = rest.indexOf("#")
+  if (hashIndex !== -1) {
+    rest = rest.slice(0, hashIndex)
+  }
+  const queryIndex = rest.indexOf("?")
+  let pathname = queryIndex === -1 ? rest : rest.slice(0, queryIndex)
+  // A bare trailing "?" carries no query; drop it to match Python's urlsplit.
+  const rawQuery = queryIndex === -1 ? "" : rest.slice(queryIndex)
+  const query = rawQuery === "?" ? "" : rawQuery
   if (pathname.endsWith("/")) {
     pathname = pathname.slice(0, -1)
   }
-  return `https://${host}${pathname}${url.search}`
+
+  return `https://${authority}${pathname}${query}`
 }
 
 function parseManifest(raw: string, source: string): ArchiveManifest {

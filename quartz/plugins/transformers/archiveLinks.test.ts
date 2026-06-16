@@ -1,6 +1,6 @@
 import type { Element } from "hast"
 
-import { afterEach, beforeEach, describe, expect, it } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import fs from "fs/promises"
 import os from "os"
 import path from "path"
@@ -30,6 +30,8 @@ function entry(overrides: Partial<ArchiveManifestEntry> = {}): ArchiveManifestEn
 }
 
 describe("canonicalizeUrl", () => {
+  // These cases are mirrored verbatim in test_archive_links.py; both
+  // implementations must produce identical output for every row.
   it.each([
     ["https://example.com/", "https://example.com"],
     ["https://example.com", "https://example.com"],
@@ -41,8 +43,21 @@ describe("canonicalizeUrl", () => {
     ["https://example.com:8080/a/", "https://example.com:8080/a"],
     ["http://example.com/keep?x=1&y=2#z", "https://example.com/keep?x=1&y=2"],
     ["https://user:pw@example.com/a", "https://example.com/a"],
+    // Deliberately NOT normalized (would diverge from Python's urlsplit):
+    ["http://example.com:80/a", "https://example.com:80/a"],
+    ["https://example.com:443/a", "https://example.com:443/a"],
+    ["https://example.com/a b", "https://example.com/a b"],
+    ["https://example.com/café", "https://example.com/café"],
+    ["https://exämple.com/a", "https://exämple.com/a"],
+    ["https://en.wikipedia.org/wiki/Foo_(bar)", "https://en.wikipedia.org/wiki/Foo_(bar)"],
+    ["https://example.com/a;p=1", "https://example.com/a;p=1"],
+    ["https://example.com/a?", "https://example.com/a"],
   ])("canonicalizes %j to %j", (input, expected) => {
     expect(canonicalizeUrl(input)).toBe(expected)
+  })
+
+  it("returns a non-URL string unchanged", () => {
+    expect(canonicalizeUrl("not a url")).toBe("not a url")
   })
 })
 
@@ -213,7 +228,8 @@ describe("ArchiveLinks plugin", () => {
     return unified().use(rehypeParse, { fragment: true }).use(htmlPlugins).use(rehypeStringify)
   }
 
-  it("rewrites dead links and leaves live/internal links alone, reusing the cached manifest", async () => {
+  it("rewrites dead links and leaves live/internal links alone, reading the manifest once", async () => {
+    const readSpy = jest.spyOn(fs, "readFile")
     const processor = makeProcessor()
     const html =
       '<a href="https://dead.example.com/gone">dead</a>' +
@@ -226,9 +242,11 @@ describe("ArchiveLinks plugin", () => {
     expect(first).toContain('href="https://live.example.com/ok"')
     expect(first).toContain('href="/internal"')
 
-    // Second pass exercises the memoized manifest branch.
+    // Second pass must reuse the cached manifest, not re-read the file.
     const second = String(await processor.process({ value: html }))
     expect(second).toContain(`href="${entry().archive_url}"`)
+    expect(readSpy).toHaveBeenCalledTimes(1)
+    readSpy.mockRestore()
   })
 
   it("defaults to the committed manifest path when none is provided", () => {

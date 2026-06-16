@@ -86,8 +86,8 @@ jobs:
         run: |
           mkdir -p .archivebox
           cd .archivebox
-          archivebox init --setup --quick 2>/dev/null || archivebox init --setup
-        continue-on-error: true
+          # init is idempotent; --quick on first run, plain init when re-running.
+          archivebox init --setup --quick || archivebox init --setup
 
       - name: Archive new links and probe liveness
         env:
@@ -102,7 +102,9 @@ jobs:
       - name: Open PR with manifest changes
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # A PAT (not GITHUB_TOKEN) so the opened PR triggers the required
+          # status checks; GITHUB_TOKEN-authored PRs don't fire workflow runs.
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
           commit-message: "chore: refresh outbound link archive manifest"
           title: "chore: refresh outbound link archive manifest"
           body: |

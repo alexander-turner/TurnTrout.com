@@ -573,6 +573,7 @@ Here's a link to [another page](/shard-theory) with popover preview. [This same-
 
 Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons) Link to [`x.com`](https://x.com).
 
+<!-- Static visual fixture for `a.archived`: in production the ArchiveLinks transformer adds the class and rewrites the href; here it is hand-written so the baseline is deterministic. -->
 When an outbound link rots, the build rewrites it to a self-hosted archived copy and marks it like this: <a class="external archived" href="https://example.com/this-is-a-dead-link-demo" data-original-href="https://example.com/this-is-a-dead-link-demo">archived fallback link</a>.
 
 <div id="populate-favicon-container" class="no-favicon-span"></div>

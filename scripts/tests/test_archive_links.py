@@ -13,6 +13,8 @@ from .. import archive_links
 # --- canonicalize_url (mirrors archiveLinks.test.ts fixtures) ----------------
 
 
+# These cases are mirrored verbatim in archiveLinks.test.ts; both
+# implementations must produce identical output for every row.
 @pytest.mark.parametrize(
     ("url", "expected"),
     [
@@ -29,6 +31,19 @@ from .. import archive_links
             "https://example.com/keep?x=1&y=2",
         ),
         ("https://user:pw@example.com/a", "https://example.com/a"),
+        # Deliberately NOT normalized (would diverge from the WHATWG URL parser
+        # the TS side avoids): default ports, spaces, non-ASCII, IDN, params.
+        ("http://example.com:80/a", "https://example.com:80/a"),
+        ("https://example.com:443/a", "https://example.com:443/a"),
+        ("https://example.com/a b", "https://example.com/a b"),
+        ("https://example.com/café", "https://example.com/café"),
+        ("https://exämple.com/a", "https://exämple.com/a"),
+        (
+            "https://en.wikipedia.org/wiki/Foo_(bar)",
+            "https://en.wikipedia.org/wiki/Foo_(bar)",
+        ),
+        ("https://example.com/a;p=1", "https://example.com/a;p=1"),
+        ("https://example.com/a?", "https://example.com/a"),
     ],
 )
 def test_canonicalize_url(url: str, expected: str) -> None:
@@ -58,6 +73,22 @@ def test_find_external_links_extracts_and_excludes(tmp_path: Path) -> None:
         "https://third.com/c",
         "https://html.com/d",
         "https://punct.com/e",
+    }
+
+
+def test_find_external_links_balances_parens(tmp_path: Path) -> None:
+    md = tmp_path / "page.md"
+    # The closing ``)`` of a Markdown link is dropped, but a balanced ``)``
+    # inside the URL (Wikipedia-style) is kept — matching the rendered href the
+    # TS side canonicalizes.
+    md.write_text(
+        "[wiki](https://en.wikipedia.org/wiki/Foo_(bar)) and a bare "
+        "https://en.wikipedia.org/wiki/Baz_(qux).",
+        encoding="utf-8",
+    )
+    assert archive_links.find_external_links([md]) == {
+        "https://en.wikipedia.org/wiki/Foo_(bar)",
+        "https://en.wikipedia.org/wiki/Baz_(qux)",
     }
 
 
@@ -156,18 +187,6 @@ def test_snapshot_key_is_stable_sha256() -> None:
     )
 
 
-def test_r2_key_and_archive_url() -> None:
-    canonical = "https://example.com/a"
-    key = archive_links.snapshot_key(canonical)
-    assert archive_links.r2_key_for(canonical) == (
-        f"static/link-archive/{key}/singlefile.html"
-    )
-    assert archive_links.archive_url_for(canonical) == (
-        f"{archive_links.script_utils.CDN_BASE_URL}/static/link-archive/"
-        f"{key}/singlefile.html"
-    )
-
-
 def test_snapshot_dest_path(tmp_path: Path) -> None:
     canonical = "https://example.com/a"
     key = archive_links.snapshot_key(canonical)
@@ -250,12 +269,43 @@ def test_update_dead_state_alive_resets() -> None:
 
 
 @pytest.mark.parametrize("status", [403, 429, 500, 0])
-def test_update_dead_state_blocked_unchanged(status: int) -> None:
+def test_update_dead_state_transient_breaks_streak(status: int) -> None:
+    # A transient probe resets the consecutive-404 streak but does not mark a
+    # still-suspected link dead.
     entry = {**archive_links._new_entry(), "dead_strikes": 1, "dead": False}
     updated = archive_links.update_dead_state(entry, status)
-    assert updated["dead_strikes"] == 1
+    assert updated["dead_strikes"] == 0
     assert updated["dead"] is False
     assert updated["last_status"] == status
+
+
+def test_update_dead_state_interleaved_transient_never_dies() -> None:
+    # 404 -> 500 -> 404 is NOT two consecutive strikes, so the link must stay
+    # alive: a flaky 404 can never drive the destructive rewrite.
+    entry = archive_links._new_entry()
+    entry = archive_links.update_dead_state(entry, 404)
+    entry = archive_links.update_dead_state(entry, 500)
+    entry = archive_links.update_dead_state(entry, 404)
+    assert entry["dead_strikes"] == 1
+    assert entry["dead"] is False
+
+
+def test_update_dead_state_transient_keeps_confirmed_dead() -> None:
+    # Once confirmed dead, a transient probe must not revert the verdict (only a
+    # real 2xx/3xx recovery does).
+    entry = {**archive_links._new_entry(), "dead_strikes": 2, "dead": True}
+    updated = archive_links.update_dead_state(entry, 503)
+    assert updated["dead"] is True
+    assert updated["dead_strikes"] == 0
+
+
+def test_update_dead_state_dead_status_keeps_confirmed_dead() -> None:
+    # A confirmed-dead link whose streak was reset stays dead on a fresh 404
+    # even though the new strike count is below the threshold.
+    entry = {**archive_links._new_entry(), "dead_strikes": 0, "dead": True}
+    updated = archive_links.update_dead_state(entry, 404)
+    assert updated["dead_strikes"] == 1
+    assert updated["dead"] is True
 
 
 # --- archive_one -------------------------------------------------------------
@@ -293,7 +343,9 @@ def test_archive_one_raises_without_snapshot(
     monkeypatch.setattr(
         archive_links, "_run_archivebox_add", lambda *a, **k: None
     )
-    with pytest.raises(RuntimeError, match="no singlefile.html"):
+    with pytest.raises(
+        archive_links.SnapshotFailedError, match="no singlefile.html"
+    ):
         archive_links.archive_one("https://example.com/a", data_dir)
 
 
@@ -491,6 +543,28 @@ def test_run_archive_skips_failed_archive(
 
     # Failed archive → URL not added to the manifest.
     assert "https://new.example.com/page" not in manifest
+
+
+def test_run_archive_propagates_infra_failure(
+    tmp_path: Path, content_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # An R2/infra RuntimeError must fail the job loudly, not be swallowed as a
+    # per-URL skip (otherwise the run "archives nothing" but looks successful).
+    def infra_failure(canonical, *_a, **_k):
+        raise RuntimeError("Failed to upload snapshot to R2")
+
+    monkeypatch.setattr(archive_links, "archive_and_upload", infra_failure)
+    monkeypatch.setattr(archive_links, "probe_status", lambda url, session: 200)
+
+    with pytest.raises(RuntimeError, match="Failed to upload"):
+        archive_links.run_archive(
+            content_dir=content_dir,
+            manifest_path=tmp_path / "manifest.json",
+            denylist_path=tmp_path / "deny.json",
+            data_dir=tmp_path / "abox",
+            static_dir=tmp_path / "static",
+            session=MagicMock(),
+        )
 
 
 def test_run_archive_backfill_refreshes_existing(

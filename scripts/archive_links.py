@@ -34,7 +34,7 @@ import subprocess
 import sys
 from collections.abc import Iterable, Sequence
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 import requests
 
@@ -58,8 +58,6 @@ PROBE_TIMEOUT: int = 30
 DEFAULT_PARALLEL: int = 4
 DEFAULT_EXTRACTORS: str = "singlefile"
 SNAPSHOT_FILENAME: str = "singlefile.html"
-# R2 prefix (under ``quartz/``) where archived snapshots live.
-ARCHIVE_KEY_PREFIX: str = "static/link-archive"
 
 # Author's own hosts never get archived (internal links + the asset CDN, which
 # all sit under turntrout.com).
@@ -67,15 +65,21 @@ OWN_HOST_SUFFIX: str = "turntrout.com"
 
 _NOINDEX_META: str = '<meta name="robots" content="noindex">'
 _HEAD_OPEN_RE: re.Pattern[str] = re.compile(r"<head[^>]*>", re.IGNORECASE)
-# Matches any http(s) URL up to the first whitespace or delimiter that can't be
-# part of a URL in Markdown/HTML (``)``, ``]``, quotes, angle brackets, ``}``).
-_URL_RE: re.Pattern[str] = re.compile(r"https?://[^\s)\]\"'<>}\\]+")
+# Matches an http(s) URL up to whitespace or a delimiter that can't be part of a
+# URL in Markdown/HTML (``]``, quotes, angle brackets, ``}``). ``)`` is allowed
+# inside the match and balanced afterwards by :func:`_trim_url` so URLs like
+# ``…/Foo_(bar)`` survive while the closing ``)`` of ``[text](url)`` is dropped.
+_URL_RE: re.Pattern[str] = re.compile(r"https?://[^\s\]\"'<>}\\]+")
 # Trailing punctuation that is almost always sentence/markup, not part of a URL.
 _TRAILING_PUNCT: str = ".,;:!?"
 
 
 class LowQualitySnapshotError(RuntimeError):
     """Raised when an ArchiveBox snapshot is too small to be a real capture."""
+
+
+class SnapshotFailedError(RuntimeError):
+    """Raised when ArchiveBox produces no snapshot for a single URL."""
 
 
 # --- URL handling ------------------------------------------------------------
@@ -85,27 +89,38 @@ def canonicalize_url(url: str) -> str:
     """
     Return the canonical form of *url* used as the manifest key.
 
-    Mirrors ``canonicalizeUrl`` in ``archiveLinks.ts``: lowercase the scheme
-    (forced to ``https``) and host, drop a single trailing ``/``, drop the
-    ``#fragment``, and keep the query.
+    Mirrors ``canonicalizeUrl`` in ``archiveLinks.ts`` exactly. Both sides parse
+    with plain string ops (``urlsplit`` here, manual slicing in TS) rather than a
+    normalizing URL parser: force ``https``, lowercase the ``host[:port]`` and
+    drop userinfo, drop a single trailing ``/``, drop the ``#fragment``, keep the
+    query verbatim. We deliberately do **not** normalize ports, IDN, or
+    percent-encoding so the two languages can't silently disagree on the key.
     """
-    parsed = urlparse(url)
-    host = parsed.netloc.rsplit("@", 1)[-1].lower()
-    path = parsed.path
+    parts = urlsplit(url)
+    host = parts.netloc.rsplit("@", 1)[-1].lower()
+    path = parts.path
     if path.endswith("/"):
         path = path[:-1]
-    query = f"?{parsed.query}" if parsed.query else ""
+    query = f"?{parts.query}" if parts.query else ""
     return f"https://{host}{path}{query}"
 
 
 def _url_host(url: str) -> str:
     """Return the lowercase host (with port, without userinfo) of *url*."""
-    return urlparse(url).netloc.rsplit("@", 1)[-1].lower()
+    return urlsplit(url).netloc.rsplit("@", 1)[-1].lower()
 
 
-def _is_own_host(host: str) -> bool:
-    """Whether *host* belongs to the author (turntrout.com or a subdomain)."""
-    return host == OWN_HOST_SUFFIX or host.endswith(f".{OWN_HOST_SUFFIX}")
+def _host_matches(host: str, suffix: str) -> bool:
+    """Whether *host* equals *suffix* or is a subdomain of it."""
+    return host == suffix or host.endswith(f".{suffix}")
+
+
+def _trim_url(raw: str) -> str:
+    """Strip trailing sentence punctuation and unbalanced closing parens."""
+    trimmed = raw.rstrip(_TRAILING_PUNCT)
+    while trimmed.endswith(")") and trimmed.count("(") < trimmed.count(")"):
+        trimmed = trimmed[:-1]
+    return trimmed
 
 
 def find_external_links(markdown_files: Iterable[Path]) -> set[str]:
@@ -119,9 +134,9 @@ def find_external_links(markdown_files: Iterable[Path]) -> set[str]:
     for file in markdown_files:
         content = file.read_text(encoding="utf-8")
         for raw in _URL_RE.findall(content):
-            cleaned = raw.rstrip(_TRAILING_PUNCT)
+            cleaned = _trim_url(raw)
             host = _url_host(cleaned)
-            if not host or _is_own_host(host):
+            if not host or _host_matches(host, OWN_HOST_SUFFIX):
                 continue
             links.add(canonicalize_url(cleaned))
     return links
@@ -198,9 +213,7 @@ def load_denylist(path: Path) -> frozenset[str]:
 def is_denied(url: str, denied_hosts: frozenset[str]) -> bool:
     """Whether *url*'s host is on the deny-list (exact host or a subdomain)."""
     host = _url_host(url)
-    return any(
-        host == denied or host.endswith(f".{denied}") for denied in denied_hosts
-    )
+    return any(_host_matches(host, denied) for denied in denied_hosts)
 
 
 # --- Snapshot keys -----------------------------------------------------------
@@ -209,16 +222,6 @@ def is_denied(url: str, denied_hosts: frozenset[str]) -> bool:
 def snapshot_key(canonical_url: str) -> str:
     """Return the stable sha256 hex prefix for *canonical_url*'s snapshot."""
     return hashlib.sha256(canonical_url.encode("utf-8")).hexdigest()
-
-
-def r2_key_for(canonical_url: str) -> str:
-    """Return the R2 key (under ``quartz/``) for *canonical_url*'s snapshot."""
-    return f"{ARCHIVE_KEY_PREFIX}/{snapshot_key(canonical_url)}/{SNAPSHOT_FILENAME}"
-
-
-def archive_url_for(canonical_url: str) -> str:
-    """Return the public CDN URL for *canonical_url*'s archived snapshot."""
-    return f"{script_utils.CDN_BASE_URL}/{r2_key_for(canonical_url)}"
 
 
 def snapshot_dest_path(static_dir: Path, canonical_url: str) -> Path:
@@ -296,11 +299,17 @@ def update_dead_state(entry: dict, status: int) -> dict:
     """
     Return a copy of *entry* updated for a probe that returned *status*.
 
+    Death requires ``DEAD_STRIKE_THRESHOLD`` *consecutive* hard-gone probes, so
+    a flaky 404 sandwiched between healthy/transient probes can never drive the
+    destructive rewrite (the repo's zero-flakiness rule for irreversible
+    actions):
+
     - 404/410: increment the strike count; flip ``dead`` once it reaches the
-      threshold.
+      threshold. A confirmed ``dead`` verdict never reverts to ``False`` here.
     - 2xx/3xx: the link recovered — reset strikes and clear ``dead``.
     - anything else (403/429/5xx/timeout=0): blocked/transient — record the
-      status but leave ``dead`` and the strike count untouched.
+      status and reset the consecutive-strike streak, but keep a previously
+      confirmed ``dead`` verdict until a real recovery.
     """
     updated = dict(entry)
     updated["last_status"] = status
@@ -308,10 +317,13 @@ def update_dead_state(entry: dict, status: int) -> dict:
     if status in DEAD_STATUSES:
         strikes = updated.get("dead_strikes", 0) + 1
         updated["dead_strikes"] = strikes
-        updated["dead"] = strikes >= DEAD_STRIKE_THRESHOLD
+        if strikes >= DEAD_STRIKE_THRESHOLD:
+            updated["dead"] = True
     elif _is_alive_status(status):
         updated["dead_strikes"] = 0
         updated["dead"] = False
+    else:
+        updated["dead_strikes"] = 0
     return updated
 
 
@@ -348,8 +360,8 @@ def archive_one(
     Archive *canonical_url* with ArchiveBox and return its ``singlefile.html``.
 
     ArchiveBox writes snapshots into timestamped ``archive/<ts>/`` dirs, so we
-    diff the ``archive/`` directory before and after the add and pick the new
-    snapshot that produced a ``singlefile.html``.
+    diff the ``archive/`` directory before and after this single-URL add and
+    pick the new snapshot that produced a ``singlefile.html``.
     """
     archive_root = data_dir / "archive"
     before = set(archive_root.glob("*")) if archive_root.exists() else set()
@@ -362,7 +374,7 @@ def archive_one(
         if (directory / SNAPSHOT_FILENAME).is_file()
     ]
     if not new_snapshots:
-        raise RuntimeError(
+        raise SnapshotFailedError(
             f"ArchiveBox produced no {SNAPSHOT_FILENAME} for {canonical_url}"
         )
     newest = max(new_snapshots, key=lambda directory: directory.stat().st_mtime)
@@ -415,7 +427,8 @@ def archive_and_upload(
 
     Raises:
         LowQualitySnapshotError: If the capture is too small to be real.
-        RuntimeError: If ArchiveBox produced no snapshot or the upload failed.
+        SnapshotFailedError: If ArchiveBox produced no snapshot for the URL.
+        RuntimeError: If the R2 upload failed (infra error — fails loud).
     """
     snapshot = archive_one(canonical_url, data_dir, parallel, extractors)
     raw = snapshot.read_bytes()
@@ -477,7 +490,11 @@ def run_archive(  # pylint: disable=too-many-arguments,too-many-locals
             archive_url = archive_and_upload(
                 canonical, data_dir, static_dir, parallel, extractors
             )
-        except (LowQualitySnapshotError, RuntimeError) as exc:
+        except (LowQualitySnapshotError, SnapshotFailedError) as exc:
+            # Per-URL capture problems are expected (some sites block crawlers);
+            # skip them. Infra failures (e.g. R2 auth) raise other errors that
+            # propagate and fail the job loudly rather than silently archiving
+            # nothing.
             print(f"Skipping {canonical}: {exc}", file=sys.stderr)
             continue
         entry = manifest.get(canonical, _new_entry())
