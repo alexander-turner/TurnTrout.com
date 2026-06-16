@@ -43,6 +43,8 @@ Subtitle: MATS (starting with smallcaps).
 
 # Lists
 
+This sentence is a baseline-scoping probe: it sits in the Lists section, so only the Lists screenshots should change.
+
 > I am a block quote.
 >
 > - Block quotes can contain unordered lists
