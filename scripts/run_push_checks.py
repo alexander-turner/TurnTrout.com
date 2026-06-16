@@ -693,6 +693,21 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
             ],
             requires="rclone",
         ),
+        # Regenerate the related-posts neighbor map so every content page is
+        # covered. Embeds new/changed posts (within budget) via Voyage, syncs
+        # the vector cache on R2, and fails if the budget leaves a post
+        # uncovered. The auto-commit step folds the updated JSON into the push.
+        CheckStep(
+            name="Generating related posts",
+            command=[
+                "uv",
+                "run",
+                "python",
+                "scripts/generate_related_posts.py",
+            ],
+            cwd=str(git_root_path),
+            requires="rclone",
+        ),
         CheckStep(
             name="Labeling images for dark-mode inversion",
             command=[

@@ -761,6 +761,27 @@ def test_asset_step_uses_bash_and_requires_rclone():
     assert asset_step.requires == "rclone"
 
 
+def test_related_posts_step_invocation():
+    """The related-posts generator runs sequentially after asset upload and
+    needs rclone for the R2 vector-cache sync."""
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    step = _step_by_name(steps, "Generating related posts")
+    assert step.command == [
+        "uv",
+        "run",
+        "python",
+        "scripts/generate_related_posts.py",
+    ]
+    assert step.cwd == str(_TEST_ROOT)
+    assert step.requires == "rclone"
+    assert step.parallel_group is None
+    step_index = {s.name: i for i, s in enumerate(steps)}
+    assert (
+        step_index["Compressing and uploading local assets"]
+        < step_index["Generating related posts"]
+    )
+
+
 def test_alt_text_step_requires_alt_text_llm():
     steps = run_push_checks.get_check_steps(_TEST_ROOT)
     alt_step = _step_by_name(steps, "Scanning for images without alt text")

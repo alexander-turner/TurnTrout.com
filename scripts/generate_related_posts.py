@@ -284,6 +284,9 @@ class RunResult:
     embedded: int
     reused: int
     skipped_over_budget: int
+    uncovered: tuple[str, ...] = ()
+    """Permalinks of content articles left without a neighbor entry (e.g.
+    skipped because the per-run budget was exhausted)."""
 
 
 def _select_to_embed(
@@ -379,8 +382,14 @@ def generate(
         "Wrote %d permalinks to %s", len(neighbors), config.neighbors_path
     )
 
+    uncovered = tuple(
+        a.permalink for a in articles if a.permalink not in neighbors
+    )
     return RunResult(
-        embedded=len(to_embed), reused=reused, skipped_over_budget=skipped
+        embedded=len(to_embed),
+        reused=reused,
+        skipped_over_budget=skipped,
+        uncovered=uncovered,
     )
 
 
@@ -394,6 +403,14 @@ def main(argv: list[str] | None = None) -> int:
         "--dry-run",
         action="store_true",
         help="Report what would be embedded without calling the API or R2.",
+    )
+    parser.add_argument(
+        "--allow-incomplete",
+        action="store_true",
+        help=(
+            "Exit 0 even when the budget leaves some content article without a "
+            "neighbor entry. By default an incomplete run fails."
+        ),
     )
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -426,6 +443,16 @@ def main(argv: list[str] | None = None) -> int:
         result.reused,
         result.skipped_over_budget,
     )
+
+    if not args.dry_run and not args.allow_incomplete and result.uncovered:
+        logger.error(
+            "%d content article(s) have no neighbor entry: %s\n"
+            "Raise relatedPosts.maxNewEmbeddingsPerRun (or --budget) and "
+            "re-run, or pass --allow-incomplete to bypass.",
+            len(result.uncovered),
+            ", ".join(result.uncovered),
+        )
+        return 1
     return 0
 
 

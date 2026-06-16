@@ -318,6 +318,8 @@ class TestGenerate:
         )
         assert result.embedded == 1
         assert result.skipped_over_budget == 1
+        # The budget-skipped article has no embedding → reported as uncovered.
+        assert result.uncovered == ("b",)
         cache = grp.load_cache(cache_path)
         assert len(cache) == 1
         neighbors = json.loads(neighbors_path.read_text(encoding="utf-8"))
@@ -344,6 +346,7 @@ class TestGenerate:
             embed=lambda texts: pytest.fail("should not embed"),
         )
         assert result.embedded == 0
+        assert result.uncovered == ()  # the lone cached article is covered
         assert cache_path.stat().st_mtime_ns == before
 
     def test_default_embed_uses_embed_texts(
@@ -441,3 +444,32 @@ class TestMain:
         )
         assert grp.main([]) == 0
         assert events == ["download"]
+
+    def _stub_full_run(
+        self, monkeypatch: pytest.MonkeyPatch, uncovered: tuple[str, ...]
+    ) -> None:
+        monkeypatch.setenv("VOYAGE_API_KEY", "k")
+        monkeypatch.setattr(grp, "download_cache_from_r2", lambda p: None)
+        monkeypatch.setattr(grp, "upload_cache_to_r2", lambda p: None)
+        monkeypatch.setattr(
+            grp,
+            "generate",
+            lambda config, **kwargs: grp.RunResult(
+                embedded=1,
+                reused=0,
+                skipped_over_budget=len(uncovered),
+                uncovered=uncovered,
+            ),
+        )
+
+    def test_incomplete_run_fails_by_default(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        self._stub_full_run(monkeypatch, uncovered=("b", "c"))
+        assert grp.main([]) == 1
+
+    def test_allow_incomplete_passes(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        self._stub_full_run(monkeypatch, uncovered=("b",))
+        assert grp.main(["--allow-incomplete"]) == 0
