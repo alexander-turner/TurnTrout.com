@@ -69,14 +69,6 @@ const ISOLATION_STYLE_ID = "__dom-isolation-style"
 const ISOLATION_ATTR = "data-dom-isolate"
 const ISOLATION_PARENT_ATTR = "data-dom-isolate-parent"
 
-// Screenshot tests fetch real CDN assets (fixtures.ts exempts them from
-// stubbing), so image load+decode timing is a source of spurious diffs. Wait
-// up to this long per image for load to settle before screenshotting.
-const IMAGE_LOAD_TIMEOUT_MS = 8_000
-// Upper bound on the post-load decode() paint barrier so a decode that never
-// settles can't hang the test.
-const IMAGE_DECODE_TIMEOUT_MS = 3_000
-
 const MAX_DIFF_PIXEL_RATIO = 0.002
 // Absolute floor of allowed differing pixels. Playwright compares with
 // min(maxDiffPixels, area * maxDiffPixelRatio), so a single computed
@@ -147,38 +139,18 @@ async function waitForImagesInElement(scope: Locator): Promise<void> {
   await Promise.all(
     images.map((img) =>
       img
-        .evaluate(
-          async (el: HTMLImageElement, { loadTimeoutMs, decodeTimeoutMs }) => {
-            // Force eager loading so lazy images outside the viewport still
-            // load before we screenshot.
-            el.loading = "eager"
-
-            if (!el.complete) {
-              await new Promise<void>((resolve) => {
-                const timer = setTimeout(resolve, loadTimeoutMs)
+        .evaluate((el: HTMLImageElement) =>
+          el.complete
+            ? undefined
+            : new Promise<void>((resolve) => {
+                const timer = setTimeout(resolve, 5000)
                 const done = (): void => {
                   clearTimeout(timer)
                   resolve()
                 }
                 el.addEventListener("load", done, { once: true })
                 el.addEventListener("error", done, { once: true })
-              })
-            }
-
-            // For images that loaded, block until decoded so the screenshot
-            // captures a painted frame rather than the load→first-paint gap (a
-            // source of spurious diffs), bounded so a stuck decode can't hang
-            // the test. Some assets legitimately fail to render in some
-            // browsers (e.g. AVIF on older WebKit); we screenshot whatever is
-            // present rather than failing, matching the rest of the suite.
-            if (el.naturalWidth > 0) {
-              await Promise.race([
-                el.decode().catch(() => undefined),
-                new Promise<void>((resolve) => setTimeout(resolve, decodeTimeoutMs)),
-              ])
-            }
-          },
-          { loadTimeoutMs: IMAGE_LOAD_TIMEOUT_MS, decodeTimeoutMs: IMAGE_DECODE_TIMEOUT_MS },
+              }),
         )
         .catch(() => undefined),
     ),
