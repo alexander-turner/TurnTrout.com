@@ -143,45 +143,45 @@ async function waitForImagesInElement(scope: Locator): Promise<void> {
   const images = await scope.locator("img").all()
   await Promise.all(
     images.map((img) =>
-      img.evaluate(
-        (el: HTMLImageElement, timeoutMs) =>
-          new Promise<void>((resolve, reject) => {
-            const src = el.currentSrc || el.src || "(no src)"
-            // Force eager loading so lazy images outside the viewport still
-            // load before we screenshot.
-            el.loading = "eager"
+      img.evaluate(async (el: HTMLImageElement, timeoutMs) => {
+        const src = el.currentSrc || el.src || "(no src)"
+        // Force eager loading so lazy images outside the viewport still load
+        // before we screenshot.
+        el.loading = "eager"
 
+        if (!el.complete) {
+          await new Promise<void>((resolve, reject) => {
             const timer = setTimeout(
               () => reject(new Error(`Image did not load within ${timeoutMs}ms: ${src}`)),
               timeoutMs,
             )
-            const settleWhenLoaded = (): void => {
-              clearTimeout(timer)
-              if (el.naturalWidth === 0) {
-                reject(new Error(`Image failed to load: ${src}`))
-                return
-              }
-              // decode() guarantees the bytes are decoded and ready to paint,
-              // removing load→first-paint frame-timing jitter.
-              void el.decode().then(resolve, resolve)
-            }
+            el.addEventListener(
+              "load",
+              () => {
+                clearTimeout(timer)
+                resolve()
+              },
+              { once: true },
+            )
+            el.addEventListener(
+              "error",
+              () => {
+                clearTimeout(timer)
+                reject(new Error(`Image errored while loading: ${src}`))
+              },
+              { once: true },
+            )
+          })
+        }
 
-            if (el.complete) {
-              settleWhenLoaded()
-            } else {
-              el.addEventListener("load", settleWhenLoaded, { once: true })
-              el.addEventListener(
-                "error",
-                () => {
-                  clearTimeout(timer)
-                  reject(new Error(`Image errored while loading: ${src}`))
-                },
-                { once: true },
-              )
-            }
-          }),
-        IMAGE_LOAD_TIMEOUT_MS,
-      ),
+        if (el.naturalWidth === 0) {
+          throw new Error(`Image failed to load: ${src}`)
+        }
+
+        // decode() guarantees the bytes are decoded and ready to paint,
+        // removing load→first-paint frame-timing jitter.
+        await el.decode()
+      }, IMAGE_LOAD_TIMEOUT_MS),
     ),
   )
 }
