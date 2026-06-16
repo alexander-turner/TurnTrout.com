@@ -122,7 +122,6 @@ export interface RegressionScreenshotOptions {
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
   skipMediaPause?: boolean
-  skipDOMIsolation?: boolean
   skipStabilityWait?: boolean
   preserveSiblings?: boolean
 }
@@ -223,7 +222,7 @@ export async function takeRegressionScreenshot(
 
   let screenshotBuffer: Buffer
   const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
-  if (options?.elementToScreenshot && !options.skipDOMIsolation) {
+  if (options?.elementToScreenshot) {
     const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
     await performDOMIsolation(elementToIsolate, options.preserveSiblings ?? false)
 
@@ -232,8 +231,6 @@ export async function takeRegressionScreenshot(
     } finally {
       await restoreDOMFromIsolation(page)
     }
-  } else if (options?.elementToScreenshot) {
-    screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
   } else {
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
@@ -335,7 +332,6 @@ export async function getH1Screenshots(
     await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
       elementToScreenshot: h1Span,
       skipMediaPause: true,
-      skipDOMIsolation: true,
     })
   }
 }
