@@ -55,7 +55,6 @@ DEAD_STRIKE_THRESHOLD: int = 2
 MIN_SNAPSHOT_BYTES: int = 2048
 # Seconds to wait on a single liveness probe before recording it as blocked.
 PROBE_TIMEOUT: int = 30
-DEFAULT_PARALLEL: int = 4
 DEFAULT_EXTRACTORS: str = "singlefile"
 SNAPSHOT_FILENAME: str = "singlefile.html"
 
@@ -320,15 +319,16 @@ def update_dead_state(entry: dict, status: int) -> dict:
 def _run_archivebox_add(
     urls: Sequence[str],
     data_dir: Path,
-    parallel: int,
     extractors: str,
 ) -> None:  # pragma: no cover - thin subprocess wrapper, mocked in tests
+    # ArchiveBox 0.7.x `add` has no `--parallel` flag (parallelism is a global
+    # config concern); passing it aborts the command. We add one URL per call,
+    # so per-add parallelism would be a no-op anyway.
     archivebox = script_utils.find_executable("archivebox")
     subprocess.run(
         [
             archivebox,
             "add",
-            f"--parallel={parallel}",
             f"--extract={extractors}",
             *urls,
         ],
@@ -340,7 +340,6 @@ def _run_archivebox_add(
 def archive_one(
     canonical_url: str,
     data_dir: Path,
-    parallel: int = DEFAULT_PARALLEL,
     extractors: str = DEFAULT_EXTRACTORS,
 ) -> Path:
     """
@@ -350,15 +349,15 @@ def archive_one(
     diff the ``archive/`` directory before and after this single-URL add and
     pick the new snapshot that produced a ``singlefile.html``.
 
-    NOTE: the ArchiveBox subprocess (:func:`_run_archivebox_add`) is mocked in
-    the unit tests — high line coverage here does NOT mean the real
-    ArchiveBox-produces-``singlefile.html``-where-we-expect behavior is verified.
-    That is what the manual ``--backfill`` run validates before this writer is
-    trusted in CI; until then the scheduled workflow stays draft.
+    The unit tests mock :func:`_run_archivebox_add`, so the real
+    "ArchiveBox-produces-``singlefile.html``-where-we-expect" behavior is
+    covered instead by ``test_archive_one_produces_real_singlefile`` (the
+    ``requires_archivebox`` integration test), which captures a locally-served
+    page for real.
     """
     archive_root = data_dir / "archive"
     before = set(archive_root.glob("*")) if archive_root.exists() else set()
-    _run_archivebox_add([canonical_url], data_dir, parallel, extractors)
+    _run_archivebox_add([canonical_url], data_dir, extractors)
     after = set(archive_root.glob("*")) if archive_root.exists() else set()
 
     new_snapshots = [
@@ -410,7 +409,6 @@ def archive_and_upload(
     canonical_url: str,
     data_dir: Path,
     static_dir: Path,
-    parallel: int = DEFAULT_PARALLEL,
     extractors: str = DEFAULT_EXTRACTORS,
 ) -> str:
     """
@@ -423,7 +421,7 @@ def archive_and_upload(
         SnapshotFailedError: If ArchiveBox produced no snapshot for the URL.
         RuntimeError: If the R2 upload failed (infra error — fails loud).
     """
-    snapshot = archive_one(canonical_url, data_dir, parallel, extractors)
+    snapshot = archive_one(canonical_url, data_dir, extractors)
     raw = snapshot.read_bytes()
     if is_low_quality(raw):
         raise LowQualitySnapshotError(
@@ -448,7 +446,6 @@ def run_archive(  # pylint: disable=too-many-arguments,too-many-locals
     data_dir: Path,
     static_dir: Path,
     session: requests.Session,
-    parallel: int = DEFAULT_PARALLEL,
     extractors: str = DEFAULT_EXTRACTORS,
     backfill: bool = False,
     refresh: bool = False,
@@ -481,7 +478,7 @@ def run_archive(  # pylint: disable=too-many-arguments,too-many-locals
             continue
         try:
             archive_url = archive_and_upload(
-                canonical, data_dir, static_dir, parallel, extractors
+                canonical, data_dir, static_dir, extractors
             )
         except (LowQualitySnapshotError, SnapshotFailedError) as exc:
             # Per-URL capture problems are expected (some sites block crawlers);
@@ -525,12 +522,6 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--static-dir", type=Path, default=None, help="quartz/static dir"
     )
     parser.add_argument(
-        "--parallel",
-        type=int,
-        default=DEFAULT_PARALLEL,
-        help="ArchiveBox parallelism",
-    )
-    parser.add_argument(
         "--extract", default=DEFAULT_EXTRACTORS, help="ArchiveBox extractors"
     )
     parser.add_argument(
@@ -568,7 +559,6 @@ def main(argv: Sequence[str] | None = None) -> None:
         data_dir=data_dir,
         static_dir=static_dir,
         session=script_utils.http_session(),
-        parallel=args.parallel,
         extractors=args.extract,
         backfill=args.backfill,
         refresh=args.refresh,

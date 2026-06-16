@@ -1,7 +1,13 @@
 """Tests for scripts/archive_links.py."""
 
+import http.server
 import json
+import os
+import shutil
+import socketserver
 import subprocess
+import threading
+from collections.abc import Iterator
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -316,7 +322,7 @@ def test_archive_one_returns_new_snapshot(
     # Pre-existing snapshot that must be ignored (it is in ``before``).
     _make_snapshot(data_dir, "100")
 
-    def fake_add(urls, _data_dir, _parallel, _extractors):
+    def fake_add(urls, _data_dir, _extractors):
         _make_snapshot(data_dir, "200")
 
     monkeypatch.setattr(archive_links, "_run_archivebox_add", fake_add)
@@ -670,3 +676,89 @@ def test_main_run_mode_uses_defaults(
         manifest["https://new.example.com/page"]["archive_url"]
         == "https://cdn/x.html"
     )
+
+
+# --- Real ArchiveBox integration ---------------------------------------------
+#
+# The unit tests above mock `_run_archivebox_add`, so they prove the
+# orchestration but NOT that a real `archivebox add` writes `singlefile.html`
+# where `archive_one` looks. This test closes that gap by capturing a
+# locally-served fixture page for real.
+#
+# Requirements (provided by the dedicated CI job, mirrored locally):
+#   - `archivebox`, `single-file` (single-file-cli) and a Chromium on PATH.
+#   - The Chromium must report a "Chromium <version>" version string.
+#     ArchiveBox 0.7.x parses the major version out of `chrome --version`; the
+#     "Google Chrome for Testing" build (Playwright's default) reports a string
+#     ArchiveBox truncates to "Google Chrome for", which makes the singlefile
+#     extractor crash and silently produce no snapshot.
+#
+# Skipped wherever archivebox is absent (e.g. the default `python-tests` job),
+# so it only executes in the dedicated archivebox job or a local run.
+
+# Large enough that single-file's inlined output clears MIN_SNAPSHOT_BYTES.
+_FIXTURE_BODY: str = "<p>" + ("Lorem ipsum dolor sit amet. " * 80) + "</p>"
+_FIXTURE_HTML: str = (
+    "<!doctype html><html lang='en'><head><meta charset='utf-8'>"
+    "<title>Archive integration fixture</title></head><body>"
+    "<h1>Archive integration fixture</h1>"
+    + _FIXTURE_BODY * 6
+    + "</body></html>"
+)
+
+
+@pytest.fixture()
+def fixture_server() -> Iterator[str]:
+    """Serve a single sizable HTML page on an ephemeral localhost port."""
+
+    class _Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802 - http.server API
+            body = _FIXTURE_HTML.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *_args: object) -> None:
+            """Silence the default stderr request logging."""
+
+    with socketserver.TCPServer(("127.0.0.1", 0), _Handler) as httpd:
+        port = httpd.server_address[1]
+        thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+        thread.start()
+        try:
+            yield f"http://127.0.0.1:{port}/page.html"
+        finally:
+            httpd.shutdown()
+
+
+@pytest.mark.requires_archivebox
+@pytest.mark.allow_git_operations
+def test_archive_one_produces_real_singlefile(
+    tmp_path: Path, fixture_server: str
+) -> None:
+    """`archive_one` captures a live page into a usable `singlefile.html`."""
+    archivebox = shutil.which("archivebox")
+    if archivebox is None:
+        pytest.skip("archivebox is not installed")
+
+    data_dir = tmp_path / "archivebox"
+    data_dir.mkdir()
+    subprocess.run(
+        [archivebox, "init"], cwd=str(data_dir), check=True, env=os.environ
+    )
+
+    # `archive_one` archives whatever URL it is given; pass the reachable http
+    # fixture directly (canonicalization would force https, which the fixture
+    # server does not speak).
+    snapshot = archive_links.archive_one(fixture_server, data_dir)
+
+    assert snapshot.name == archive_links.SNAPSHOT_FILENAME
+    assert snapshot.is_file()
+    raw = snapshot.read_bytes()
+    assert not archive_links.is_low_quality(raw), (
+        f"snapshot is only {len(raw)} bytes; capture likely failed"
+    )
+    html = archive_links.inject_noindex(raw.decode("utf-8", errors="replace"))
+    assert archive_links._NOINDEX_META in html

@@ -238,23 +238,48 @@ result in `config/link_archive_manifest.json`.
 - **Deny-list** (`config/link_archive_denylist.json`) skips paywall/anti-bot/IP
   hosts; a min-size quality gate rejects login-wall captures.
 
-### Status: NOT YET VALIDATED end-to-end
+### Capture path: per-URL capture validated; full backfill still pending
 
-The ArchiveBox subprocess seam is mocked in tests, so 100% coverage does **not**
-prove real captures land where expected. Before trusting the scheduled job:
+The single-URL capture path is exercised for real by
+`test_archive_one_produces_real_singlefile` (the `requires_archivebox`
+integration test): it serves a fixture page, runs a real `archivebox add`, and
+asserts `archive_one` returns a `singlefile.html` that clears the size gate and
+carries the `noindex` meta. Run it locally (or in a dedicated job) with:
 
-1. Run the first full pass **locally** (needs ArchiveBox + `single-file-cli` +
-   Chromium + the R2 env vars): `uv run python scripts/archive_links.py
---backfill`. It is multi-hour and exceeds the 6h Action cap — hence local.
-2. Spot-check a few `singlefile.html` snapshots render standalone from R2.
-3. Commit the seed manifest via PR.
+```bash
+uv run pytest -m requires_archivebox scripts/tests/test_archive_links.py
+```
+
+Real-capture gotchas this surfaced (invisible to the mocked unit tests):
+
+- **ArchiveBox 0.7.x `add` has no `--parallel` flag** — passing it aborts the
+  command. We add one URL per call, so we don't pass it.
+- **Chromium must report a `Chromium <version>` version string.** ArchiveBox
+  parses the major version out of `chrome --version`; Playwright's "Google
+  Chrome for Testing" build reports a string ArchiveBox truncates to "Google
+  Chrome for", which makes the singlefile extractor crash and **silently**
+  produce no snapshot (the run prints "singlefile … 0 errors" but writes
+  nothing). Use a `chromium`-branded binary.
+- A minimal page inlines to ~1 KB, under `MIN_SNAPSHOT_BYTES` (2048); the
+  fixture must be sizable to clear the quality gate.
+
+Still pending before the scheduled job can be trusted:
+
+1. The workflow installs `archivebox` + `single-file-cli` but **no Chromium**;
+   `archivebox init --setup` would try to auto-install one. Add an explicit
+   Chromium install (a `chromium`-branded build) plus a smoke capture so an
+   upstream release or a wrong-branded browser can't silently break captures.
+2. Run the first full `--backfill` pass **locally** (needs the R2 env vars);
+   it is multi-hour and exceeds the 6h Action cap.
+3. Spot-check a few `singlefile.html` snapshots render standalone from R2, then
+   commit the seed manifest via PR.
 
 Only then promote `.github/workflows/archive-links.yaml` (weekly +
 `workflow_dispatch`) out of draft. It needs `ACCESS_KEY_ID_TURNTROUT_MEDIA` /
 `SECRET_ACCESS_TURNTROUT_MEDIA` / `S3_ENDPOINT_ID_TURNTROUT_MEDIA` secrets and a
 PR-creating token; it archives only the steady-state delta and opens a PR with
 the manifest diff (never pushes to `main`). Other flags: `--refresh`
-(re-archive), `--parallel N`.
+(re-archive).
 
 ## Lessons learned
 

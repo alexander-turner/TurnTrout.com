@@ -18,10 +18,6 @@ on:
   # Mon 06:00 UTC) once a local --backfill proves the capture path.
   workflow_dispatch:
     inputs:
-      parallel:
-        description: "ArchiveBox parallelism"
-        required: false
-        default: "4"
       refresh:
         description: "Re-archive links even if already archived"
         type: boolean
@@ -98,10 +94,9 @@ jobs:
           SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
           S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
           # Bound through env (not inlined into the script) to avoid template injection.
-          PARALLEL: ${{ github.event.inputs.parallel || '4' }}
           REFRESH: ${{ github.event.inputs.refresh }}
         run: |
-          args=(--parallel "$PARALLEL")
+          args=()
           if [ "$REFRESH" = "true" ]; then args+=(--refresh); fi
           uv run python scripts/archive_links.py "${args[@]}"
 
