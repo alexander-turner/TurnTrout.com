@@ -35,7 +35,7 @@ I use this page for <a href="/design#visual-regression-testing" id="first-link-t
 
 Text.
 
-This line of text verifies that adding content to a section only rebaselines that section's screenshot, not every section below it.
+This line of text verifies that adding content to a section only updates that section's screenshot, not every section below it.
 
 Subtitle: I am a subtitle with [a link](/test-page).
 
