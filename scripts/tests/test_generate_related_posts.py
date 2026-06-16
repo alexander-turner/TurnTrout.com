@@ -52,28 +52,6 @@ def _cache_entry(vec: list[float], text_hash: str, model: str = grp.MODEL):
     return {"embedding": vec, "text_hash": text_hash, "model": model}
 
 
-# --- slugify_path ------------------------------------------------------------
-
-
-class TestSlugifyPath:
-    @pytest.mark.parametrize(
-        ("raw", "expected"),
-        [
-            ("post.md", "post"),
-            ("post", "post"),
-            ("a b.md", "a-b"),
-            ("a&b.md", "a-and-b"),
-            ("a%b.md", "a-percentb"),
-            ("a?b#c.md", "abc"),
-            ("dir/post.md", "dir/post"),
-            ("folder/_index.md", "folder/index"),
-            ("trailing/.md", "trailing"),
-        ],
-    )
-    def test_slugify(self, raw: str, expected: str) -> None:
-        assert grp.slugify_path(raw) == expected
-
-
 # --- text helpers ------------------------------------------------------------
 
 
@@ -91,11 +69,10 @@ def test_text_hash_is_stable_and_input_sensitive() -> None:
 
 
 class TestGatherArticles:
-    def test_enumerates_sorted_by_slug(self, tmp_path: Path) -> None:
+    def test_enumerates_sorted_by_filename(self, tmp_path: Path) -> None:
         _write_md(tmp_path, "b-post.md", permalink="/b/")
         _write_md(tmp_path, "a-post.md", permalink="a")
         articles = grp.gather_articles(tmp_path)
-        assert [a.slug for a in articles] == ["a-post", "b-post"]
         assert articles[0].permalink == "a"
         assert articles[1].permalink == "b"  # stripped slashes
 
@@ -230,12 +207,11 @@ class TestEmbedTexts:
 # --- compute_neighbors -------------------------------------------------------
 
 
-def _article(slug: str) -> grp.Article:
+def _article(permalink: str) -> grp.Article:
     return grp.Article(
-        slug=slug,
-        permalink=slug,
-        title=slug.title(),
-        excerpt=f"about {slug}",
+        permalink=permalink,
+        title=permalink.title(),
+        excerpt=f"about {permalink}",
         embed_input="x",
         text_hash="h",
     )
@@ -289,7 +265,7 @@ class TestSelectToEmbed:
             "stale_model": _cache_entry([1.0], "h", model="old-model"),
         }
         selected = grp._select_to_embed(articles, cache, grp.MODEL)
-        assert {a.slug for a in selected} == {
+        assert {a.permalink for a in selected} == {
             "missing",
             "stale_hash",
             "stale_model",
@@ -355,7 +331,7 @@ class TestGenerate:
         (article,) = grp.gather_articles(content)
         cache_path = tmp_path / "cache.json"
         grp.save_cache(
-            {article.slug: _cache_entry([1.0, 0.0], article.text_hash)},
+            {article.permalink: _cache_entry([1.0, 0.0], article.text_hash)},
             cache_path,
         )
         before = cache_path.stat().st_mtime_ns

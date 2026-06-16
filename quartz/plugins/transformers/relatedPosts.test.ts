@@ -35,13 +35,13 @@ const treeWithOrnament = (): Root =>
 const runTransform = async (
   plugin: QuartzTransformerPluginInstance,
   tree: Root,
-  slug?: string,
+  permalink?: string,
   toc?: VFile["data"]["toc"],
 ): Promise<{ tree: Root; file: VFile }> => {
   const htmlPlugins = plugin.htmlPlugins?.({} as never)
   if (!htmlPlugins) throw new Error("no html plugins")
   const file = new VFile({ value: "" })
-  file.data.slug = slug as never
+  file.data.frontmatter = { permalink } as never
   if (toc !== undefined) file.data.toc = toc
   for (const factory of htmlPlugins) {
     const makeTransform = factory as unknown as () => (t: Root, f: VFile) => Promise<void>
@@ -192,13 +192,19 @@ describe("RelatedPosts transformer", () => {
     expect(elementsWithClass(tree, "related-post")).toHaveLength(2)
   })
 
-  it("leaves the tree unchanged for an unknown slug", async () => {
+  it("strips leading/trailing slashes from the permalink before lookup", async () => {
+    const filePath = await writeTempMap({ "post-a": samplePosts })
+    const { tree } = await runTransform(RelatedPosts({ filePath }), treeWithOrnament(), "/post-a/")
+    expect(elementsWithClass(tree, "related-post")).toHaveLength(2)
+  })
+
+  it("leaves the tree unchanged for an unknown permalink", async () => {
     const filePath = await writeTempMap({ "post-a": samplePosts })
     const { tree } = await runTransform(RelatedPosts({ filePath }), treeWithOrnament(), "other")
     expect(elementsWithClass(tree, "related-posts")).toHaveLength(0)
   })
 
-  it("does nothing when the file has no slug", async () => {
+  it("does nothing when the file has no permalink", async () => {
     const { tree } = await runTransform(RelatedPosts(), treeWithOrnament())
     expect(elementsWithClass(tree, "related-posts")).toHaveLength(0)
   })

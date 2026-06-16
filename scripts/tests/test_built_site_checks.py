@@ -4142,6 +4142,43 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
 
 
 @pytest.mark.parametrize(
+    ("html", "is_content_page", "expected"),
+    [
+        # Content page with the block: ok.
+        ('<div class="related-posts"></div>', True, []),
+        # Content page missing the block: flagged.
+        (
+            "<div>No similar posts</div>",
+            True,
+            ["Missing related-posts block (.related-posts) on a content page"],
+        ),
+        # Non-content page without the block: ok.
+        ("<div>No similar posts</div>", False, []),
+        # Non-content page that wrongly has the block: flagged.
+        (
+            '<div class="related-posts"></div>',
+            False,
+            [
+                "Unexpected related-posts block (.related-posts) on a "
+                "non-content page"
+            ],
+        ),
+    ],
+)
+def test_check_related_posts(
+    html: str, is_content_page: bool, expected: list[str]
+):
+    """Only content pages may carry a .related-posts block."""
+    soup = BeautifulSoup(html, "html.parser")
+    assert (
+        built_site_checks.check_related_posts(
+            soup, is_content_page=is_content_page
+        )
+        == expected
+    )
+
+
+@pytest.mark.parametrize(
     "filename, should_check_favicon",
     [
         ("about.html", True),

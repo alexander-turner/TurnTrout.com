@@ -25,7 +25,6 @@ from __future__ import annotations
 import argparse
 import logging
 import os
-import re
 import subprocess
 import sys
 import tempfile
@@ -68,43 +67,13 @@ TOP_N: Final[int] = int(_CONFIG["topN"])
 MAX_EMBED_CHARS: Final[int] = int(_CONFIG["maxEmbedChars"])
 
 
-# --- slug derivation ---------------------------------------------------------
-
-
-def slugify_path(relative_path: str) -> str:
-    """
-    Port of TS ``slugifyFilePath`` for markdown sources.
-
-    Mirrors ``quartz/util/path.ts`` so the keys here match the ``file.data.slug``
-    the build-time transformer reads: strip the ``.md`` extension, then per
-    ``/``-segment replace whitespace with ``-``, ``&``->``-and-``,
-    ``%``->``-percent``, and drop ``?``/``#``.
-    """
-    without_ext = (
-        relative_path[:-3] if relative_path.endswith(".md") else relative_path
-    )
-    segments = [
-        re.sub(r"\s", "-", seg)
-        .replace("&", "-and-")
-        .replace("%", "-percent")
-        .replace("?", "")
-        .replace("#", "")
-        for seg in without_ext.split("/")
-    ]
-    slug = "/".join(segments).rstrip("/")
-    if slug.endswith("_index"):
-        slug = slug[: -len("_index")] + "index"
-    return slug
-
-
 # --- article enumeration -----------------------------------------------------
 
 
 @dataclass(frozen=True)
 class Article:
-    """One enumerable, embeddable article."""
+    """One enumerable, embeddable article, identified by its ``permalink``."""
 
-    slug: str
     permalink: str
     title: str
     excerpt: str
@@ -127,7 +96,7 @@ def text_hash(text: str) -> str:
 
 def gather_articles(content_dir: Path = CONTENT_DIR) -> tuple[Article, ...]:
     """
-    Enumerate publishable top-level articles, sorted by slug.
+    Enumerate publishable top-level articles, sorted by permalink.
 
     Skips drafts and any file missing a ``title``, ``permalink``, or
     ``description`` (all three are required to render a link with an excerpt).
@@ -146,7 +115,6 @@ def gather_articles(content_dir: Path = CONTENT_DIR) -> tuple[Article, ...]:
         embed_input = build_embed_input(str(title), excerpt, body)
         articles.append(
             Article(
-                slug=slugify_path(md_path.name),
                 permalink=str(permalink).strip("/"),
                 title=str(title),
                 excerpt=excerpt,
@@ -169,7 +137,7 @@ class CacheEntry(TypedDict):
 
 
 def load_cache(path: Path) -> dict[str, CacheEntry]:
-    """Load the ``{slug: {embedding, text_hash, model}}`` cache (empty if
+    """Load the ``{permalink: {embedding, text_hash, model}}`` cache (empty if
     absent)."""
     data = script_utils.load_json_object(path)
     out: dict[str, CacheEntry] = {}
@@ -270,27 +238,28 @@ def compute_neighbors(
     top_n: int = TOP_N,
 ) -> dict[str, list[Neighbor]]:
     """
-    Top-``top_n`` cosine neighbors per slug, keyed by default slug.
+    Top-``top_n`` cosine neighbors per article, keyed by permalink.
 
-    Only slugs that have both an embedding and article metadata participate.
+    Only permalinks that have both an embedding and article metadata
+    participate.
     """
-    slugs = sorted(s for s in embeddings if s in articles)
-    result: dict[str, list[Neighbor]] = {s: [] for s in slugs}
-    if len(slugs) < 2:
+    permalinks = sorted(p for p in embeddings if p in articles)
+    result: dict[str, list[Neighbor]] = {p: [] for p in permalinks}
+    if len(permalinks) < 2:
         return result
 
-    matrix = np.array([embeddings[s] for s in slugs], dtype=float)
+    matrix = np.array([embeddings[p] for p in permalinks], dtype=float)
     norms = np.linalg.norm(matrix, axis=1, keepdims=True)
     normed = matrix / np.where(norms == 0, 1.0, norms)
     sims = normed @ normed.T
 
-    for i, slug in enumerate(slugs):
+    for i, permalink in enumerate(permalinks):
         neighbors: list[Neighbor] = []
         for j in np.argsort(-sims[i], kind="stable"):
             j_idx = int(j)
             if j_idx == i:
                 continue
-            other = articles[slugs[j_idx]]
+            other = articles[permalinks[j_idx]]
             neighbors.append(
                 Neighbor(
                     permalink=other.permalink,
@@ -301,7 +270,7 @@ def compute_neighbors(
             )
             if len(neighbors) >= top_n:
                 break
-        result[slug] = neighbors
+        result[permalink] = neighbors
     return result
 
 
@@ -324,7 +293,7 @@ def _select_to_embed(
     mismatch)."""
     stale: list[Article] = []
     for article in articles:
-        entry = cache.get(article.slug)
+        entry = cache.get(article.permalink)
         if (
             entry is None
             or entry["text_hash"] != article.text_hash
@@ -357,7 +326,7 @@ def _embed_and_cache(
     embed_fn = embed or (lambda texts: embed_texts(texts, model=config.model))
     vectors = embed_fn([a.embed_input for a in to_embed])
     for article, vector in zip(to_embed, vectors):
-        cache[article.slug] = CacheEntry(
+        cache[article.permalink] = CacheEntry(
             embedding=list(vector),
             text_hash=article.text_hash,
             model=config.model,
@@ -372,7 +341,7 @@ def generate(
 ) -> RunResult:
     """Embed new/changed articles (within budget) and write the neighbor map."""
     articles = gather_articles(config.content_dir)
-    by_slug = {a.slug: a for a in articles}
+    by_permalink = {a.permalink: a for a in articles}
 
     cache = load_cache(config.cache_path)
     stale = _select_to_embed(articles, cache, config.model)
@@ -391,22 +360,24 @@ def generate(
 
     if config.dry_run:
         for article in to_embed:
-            logger.info("  would embed: %s", article.slug)
+            logger.info("  would embed: %s", article.permalink)
         return RunResult(embedded=0, reused=reused, skipped_over_budget=skipped)
 
     if to_embed:
         _embed_and_cache(to_embed, cache, config, embed)
 
     embeddings = {
-        slug: entry["embedding"]
-        for slug, entry in cache.items()
-        if slug in by_slug and entry["model"] == config.model
+        permalink: entry["embedding"]
+        for permalink, entry in cache.items()
+        if permalink in by_permalink and entry["model"] == config.model
     }
-    neighbors = compute_neighbors(embeddings, by_slug, top_n=config.top_n)
+    neighbors = compute_neighbors(embeddings, by_permalink, top_n=config.top_n)
     script_utils.atomic_write_json(
         neighbors, config.neighbors_path, sort_keys=True
     )
-    logger.info("Wrote %d slugs to %s", len(neighbors), config.neighbors_path)
+    logger.info(
+        "Wrote %d permalinks to %s", len(neighbors), config.neighbors_path
+    )
 
     return RunResult(
         embedded=len(to_embed), reused=reused, skipped_over_budget=skipped

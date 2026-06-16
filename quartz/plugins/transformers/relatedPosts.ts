@@ -151,9 +151,12 @@ export const RelatedPosts: QuartzTransformerPlugin<{ filePath?: string } | undef
     name: "RelatedPosts",
     htmlPlugins: () => [
       () => async (tree: Root, file: VFile) => {
-        const slug = file.data.slug
-        if (!slug) return
-        const posts = (await related()).get(slug)
+        const permalink = file.data.frontmatter?.permalink as string | undefined
+        if (!permalink) return
+        // The neighbor map is keyed by permalink with leading/trailing slashes
+        // stripped (mirrors the generator's `str(permalink).strip("/")`).
+        const key = permalink.replace(/^\/+/, "").replace(/\/+$/, "")
+        const posts = (await related()).get(key)
         if (!posts || posts.length === 0) return
         insertAfterSubscriptionBlock(tree, buildRelatedPostsBlock(posts))
         if (file.data.toc) {
