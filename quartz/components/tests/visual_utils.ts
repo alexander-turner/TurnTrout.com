@@ -69,6 +69,19 @@ const ISOLATION_STYLE_ID = "__dom-isolation-style"
 const ISOLATION_ATTR = "data-dom-isolate"
 const ISOLATION_PARENT_ATTR = "data-dom-isolate-parent"
 
+// Screenshot tests fetch real CDN assets (fixtures.ts exempts them from
+// stubbing), so image load+decode timing is the dominant source of spurious
+// diffs. Wait this long per image before failing loudly.
+const IMAGE_LOAD_TIMEOUT_MS = 15_000
+
+const MAX_DIFF_PIXEL_RATIO = 0.002
+// Absolute floor of allowed differing pixels. Playwright compares with
+// min(maxDiffPixels, area * maxDiffPixelRatio), so a single computed
+// maxDiffPixels = max(floor, ceil(area * ratio)) yields a true floor: it only
+// relaxes very small isolated sections (a handful of antialiasing pixels) and
+// never masks structural diffs, which run to thousands of pixels.
+const MIN_DIFF_PIXELS = 100
+
 async function performDOMIsolation(
   elementLocator: Locator,
   preserveSiblings: boolean,
@@ -130,21 +143,45 @@ async function waitForImagesInElement(scope: Locator): Promise<void> {
   const images = await scope.locator("img").all()
   await Promise.all(
     images.map((img) =>
-      img
-        .evaluate((el: HTMLImageElement) =>
-          el.complete
-            ? undefined
-            : new Promise<void>((resolve) => {
-                const timer = setTimeout(resolve, 5000)
-                const done = (): void => {
+      img.evaluate(
+        (el: HTMLImageElement, timeoutMs) =>
+          new Promise<void>((resolve, reject) => {
+            const src = el.currentSrc || el.src || "(no src)"
+            // Force eager loading so lazy images outside the viewport still
+            // load before we screenshot.
+            el.loading = "eager"
+
+            const timer = setTimeout(
+              () => reject(new Error(`Image did not load within ${timeoutMs}ms: ${src}`)),
+              timeoutMs,
+            )
+            const settleWhenLoaded = (): void => {
+              clearTimeout(timer)
+              if (el.naturalWidth === 0) {
+                reject(new Error(`Image failed to load: ${src}`))
+                return
+              }
+              // decode() guarantees the bytes are decoded and ready to paint,
+              // removing load→first-paint frame-timing jitter.
+              void el.decode().then(resolve, resolve)
+            }
+
+            if (el.complete) {
+              settleWhenLoaded()
+            } else {
+              el.addEventListener("load", settleWhenLoaded, { once: true })
+              el.addEventListener(
+                "error",
+                () => {
                   clearTimeout(timer)
-                  resolve()
-                }
-                el.addEventListener("load", done, { once: true })
-                el.addEventListener("error", done, { once: true })
-              }),
-        )
-        .catch(() => undefined),
+                  reject(new Error(`Image errored while loading: ${src}`))
+                },
+                { once: true },
+              )
+            }
+          }),
+        IMAGE_LOAD_TIMEOUT_MS,
+      ),
     ),
   )
 }
@@ -235,12 +272,22 @@ export async function takeRegressionScreenshot(
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
 
+  // PNG IHDR stores width at byte offset 16 and height at 20. Using the
+  // captured buffer's own dimensions matches the area Playwright applies the
+  // ratio to (expected.width * expected.height when dimensions agree).
+  const pngWidth = screenshotBuffer.readUInt32BE(16)
+  const pngHeight = screenshotBuffer.readUInt32BE(20)
+  const maxDiffPixels = Math.max(
+    MIN_DIFF_PIXELS,
+    Math.ceil(pngWidth * pngHeight * MAX_DIFF_PIXEL_RATIO),
+  )
+
   // Array form skips Playwright's 60-char hash-truncation of the
   // attachment name, so approve-baselines can map attachments back to
   // baseline filenames for any name length.
   await expect
     .soft(screenshotBuffer, { message: screenshotName })
-    .toMatchSnapshot([screenshotName], { maxDiffPixelRatio: 0.002 })
+    .toMatchSnapshot([screenshotName], { maxDiffPixels })
 
   return screenshotBuffer
 }
