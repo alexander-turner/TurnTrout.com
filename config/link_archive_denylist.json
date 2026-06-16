@@ -1,0 +1,20 @@
+{
+  "_comment": "Hosts whose snapshots are never archived/rewritten: login/paywall walls, anti-bot, and IP-enforcing publishers (stock imagery, news). A dead link to one of these stays un-rewritten. Match is by registrable host suffix (see scripts/archive_links.py:is_denied).",
+  "hosts": [
+    "x.com",
+    "twitter.com",
+    "nytimes.com",
+    "wsj.com",
+    "ft.com",
+    "economist.com",
+    "bloomberg.com",
+    "newyorker.com",
+    "gettyimages.com",
+    "shutterstock.com",
+    "istockphoto.com",
+    "alamy.com",
+    "facebook.com",
+    "instagram.com",
+    "linkedin.com"
+  ]
+}

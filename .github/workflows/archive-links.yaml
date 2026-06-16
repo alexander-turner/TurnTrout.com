@@ -1,0 +1,127 @@
+name: Archive outbound links
+
+# Snapshots newly-added outbound links and re-probes liveness, then opens a PR
+# with the updated manifest. Runs off the push critical path. The first full
+# pass over ~1k+ links is run LOCALLY via `scripts/archive_links.py --backfill`
+# (it exceeds the job time cap); this job handles the steady-state delta.
+#
+# NOT YET VALIDATED: the ArchiveBox install/capture path has not been run
+# end-to-end. Keep `workflow_dispatch`-only (no `schedule:`) until a local
+# `--backfill` proves real captures land on R2. See .claude/dev-notes.md.
+
+concurrency:
+  group: archive-links
+  cancel-in-progress: false
+
+on:
+  # Manual only until validated. Add `schedule: [{cron: "0 6 * * 1"}]` (weekly,
+  # Mon 06:00 UTC) once a local --backfill proves the capture path.
+  workflow_dispatch:
+    inputs:
+      parallel:
+        description: "ArchiveBox parallelism"
+        required: false
+        default: "4"
+      refresh:
+        description: "Re-archive links even if already archived"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Pin ArchiveBox so an upstream release can't silently change capture behavior.
+env:
+  ARCHIVEBOX_VERSION: "0.7.2"
+
+jobs:
+  archive-links:
+    runs-on: ubuntu-24.04
+    # Stay well under the 6h job cap; the steady-state delta is small.
+    timeout-minutes: 300
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+        with:
+          install-node-deps: "true"
+          install-python: "true"
+          install-system-deps: "true"
+
+      - name: Install ArchiveBox and single-file
+        uses: ./.github/actions/retry-external
+        with:
+          max-attempts: "3"
+          timeout-minutes: "15"
+          command: |
+            uv pip install --system "archivebox==${ARCHIVEBOX_VERSION}"
+            npm install -g single-file-cli
+            archivebox version
+
+      - name: Configure rclone for R2
+        env:
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+        run: |
+          mkdir -p "$HOME/.config/rclone"
+          endpoint="$S3_ENDPOINT_ID_TURNTROUT_MEDIA"
+          case "$endpoint" in
+            *://*) ;;
+            *) endpoint="https://${endpoint}.r2.cloudflarestorage.com" ;;
+          esac
+          cat > "$HOME/.config/rclone/rclone.conf" <<EOF
+          [r2]
+          type = s3
+          provider = Cloudflare
+          access_key_id = ${ACCESS_KEY_ID_TURNTROUT_MEDIA}
+          secret_access_key = ${SECRET_ACCESS_TURNTROUT_MEDIA}
+          endpoint = ${endpoint}
+          no_check_bucket = true
+          EOF
+
+      - name: Initialize ArchiveBox data dir
+        run: |
+          mkdir -p .archivebox
+          cd .archivebox
+          # init is idempotent; --quick on first run, plain init when re-running.
+          archivebox init --setup --quick || archivebox init --setup
+
+      - name: Archive new links and probe liveness
+        env:
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+          # Bound through env (not inlined into the script) to avoid template injection.
+          PARALLEL: ${{ github.event.inputs.parallel || '4' }}
+          REFRESH: ${{ github.event.inputs.refresh }}
+        run: |
+          args=(--parallel "$PARALLEL")
+          if [ "$REFRESH" = "true" ]; then args+=(--refresh); fi
+          uv run python scripts/archive_links.py "${args[@]}"
+
+      - name: Open PR with manifest changes
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        with:
+          # A PAT (not GITHUB_TOKEN) so the opened PR triggers the required
+          # status checks; GITHUB_TOKEN-authored PRs don't fire workflow runs.
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          commit-message: "chore: refresh outbound link archive manifest"
+          title: "chore: refresh outbound link archive manifest"
+          body: |
+            Automated update of `config/link_archive_manifest.json` from the
+            scheduled archive-links job: newly-added outbound links were snapshotted
+            to R2 and every known link's liveness was re-probed.
+
+            Dead links (404/410 confirmed on >=2 consecutive runs) will be rewritten
+            to their archived copy at build time. Review the manifest diff before
+            merging.
+          branch: chore/archive-links-manifest
+          delete-branch: true
+          add-paths: config/link_archive_manifest.json
+          labels: automated

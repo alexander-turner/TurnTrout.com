@@ -220,6 +220,42 @@ Public-repo Actions are free, so we don’t tier coverage by event. Path-awarene
 - **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`, same mechanism.
 - **Post-merge**: `push: main` re-runs the full suite plus `deploy.yaml`. `deploy.yaml`’s `verify-test-results` job polls check-runs on the landed SHA, so deploy waits for those to pass before pushing to Cloudflare.
 
+## Outbound link archiving — writer (ArchiveBox + R2)
+
+`scripts/archive_links.py` is the writer half of the link-archive system (the
+build-time reader is `quartz/plugins/transformers/archiveLinks.ts`). It scans
+`website_content/` for outbound links, archives new ones via ArchiveBox
+(singlefile, `noindex` injected), syncs the snapshot to R2 under
+`static/link-archive/<sha256>/singlefile.html`, probes liveness, and records the
+result in `config/link_archive_manifest.json`.
+
+- **A link flips to `dead` only on 404/410 confirmed on N>=2 _consecutive_ runs**
+  (`DEAD_STRIKE_THRESHOLD`); any transient (403/429/5xx/timeout) resets the
+  streak, so a flaky probe can't drive the irreversible rewrite.
+- **Canonicalization** (`canonicalize_url`) uses the `ada-url` binding — the same
+  `ada` WHATWG parser Node's `new URL` uses — so manifest keys match the reader
+  byte-for-byte.
+- **Deny-list** (`config/link_archive_denylist.json`) skips paywall/anti-bot/IP
+  hosts; a min-size quality gate rejects login-wall captures.
+
+### Status: NOT YET VALIDATED end-to-end
+
+The ArchiveBox subprocess seam is mocked in tests, so 100% coverage does **not**
+prove real captures land where expected. Before trusting the scheduled job:
+
+1. Run the first full pass **locally** (needs ArchiveBox + `single-file-cli` +
+   Chromium + the R2 env vars): `uv run python scripts/archive_links.py
+--backfill`. It is multi-hour and exceeds the 6h Action cap — hence local.
+2. Spot-check a few `singlefile.html` snapshots render standalone from R2.
+3. Commit the seed manifest via PR.
+
+Only then promote `.github/workflows/archive-links.yaml` (weekly +
+`workflow_dispatch`) out of draft. It needs `ACCESS_KEY_ID_TURNTROUT_MEDIA` /
+`SECRET_ACCESS_TURNTROUT_MEDIA` / `S3_ENDPOINT_ID_TURNTROUT_MEDIA` secrets and a
+PR-creating token; it archives only the steady-state delta and opens a PR with
+the manifest diff (never pushes to `main`). Other flags: `--refresh`
+(re-archive), `--parallel N`.
+
 ## Lessons learned
 
 - When making interface array properties `readonly`, also update downstream function signatures to accept `readonly` arrays. `.map()`/`.filter()`/`.some()`/`.includes()` work on readonly; `.sort()`/`.push()` don’t—copy first: `[...arr].sort()`.
