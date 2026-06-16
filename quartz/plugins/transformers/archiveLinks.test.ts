@@ -46,12 +46,12 @@ describe("canonicalizeUrl", () => {
     ["https://example.com:8080/a/", "https://example.com:8080/a"],
     ["http://example.com/keep?x=1&y=2#z", "https://example.com/keep?x=1&y=2"],
     ["https://user:pw@example.com/a", "https://example.com/a"],
-    // Deliberately NOT normalized (would diverge from Python's urlsplit):
-    ["http://example.com:80/a", "https://example.com:80/a"],
-    ["https://example.com:443/a", "https://example.com:443/a"],
-    ["https://example.com/a b", "https://example.com/a b"],
-    ["https://example.com/café", "https://example.com/café"],
-    ["https://exämple.com/a", "https://exämple.com/a"],
+    // WHATWG normalization (identical on both sides because it's the same parser):
+    ["http://example.com:80/a", "https://example.com/a"],
+    ["https://example.com:443/a", "https://example.com/a"],
+    ["https://example.com/a b", "https://example.com/a%20b"],
+    ["https://example.com/café", "https://example.com/caf%C3%A9"],
+    ["https://exämple.com/a", "https://xn--exmple-cua.com/a"],
     ["https://en.wikipedia.org/wiki/Foo_(bar)", "https://en.wikipedia.org/wiki/Foo_(bar)"],
     ["https://example.com/a;p=1", "https://example.com/a;p=1"],
     ["https://example.com/a?", "https://example.com/a"],
@@ -59,8 +59,8 @@ describe("canonicalizeUrl", () => {
     expect(canonicalizeUrl(input)).toBe(expected)
   })
 
-  it("returns a non-URL string unchanged", () => {
-    expect(canonicalizeUrl("not a url")).toBe("not a url")
+  it("throws on an unparseable URL", () => {
+    expect(() => canonicalizeUrl("not a url")).toThrow()
   })
 })
 
@@ -200,6 +200,12 @@ describe("rewriteArchivedLink", () => {
   it("ignores anchors without a string href", () => {
     const node = anchor(undefined)
     expect(rewriteArchivedLink(node, makeManifest())).toBe(false)
+  })
+
+  it("leaves a malformed http href untouched instead of throwing", () => {
+    const node = anchor("http://")
+    expect(rewriteArchivedLink(node, makeManifest())).toBe(false)
+    expect(node.properties.href).toBe("http://")
   })
 })
 

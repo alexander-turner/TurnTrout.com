@@ -31,13 +31,12 @@ from .. import archive_links
             "https://example.com/keep?x=1&y=2",
         ),
         ("https://user:pw@example.com/a", "https://example.com/a"),
-        # Deliberately NOT normalized (would diverge from the WHATWG URL parser
-        # the TS side avoids): default ports, spaces, non-ASCII, IDN, params.
-        ("http://example.com:80/a", "https://example.com:80/a"),
-        ("https://example.com:443/a", "https://example.com:443/a"),
-        ("https://example.com/a b", "https://example.com/a b"),
-        ("https://example.com/café", "https://example.com/café"),
-        ("https://exämple.com/a", "https://exämple.com/a"),
+        # WHATWG normalization (identical on both sides — it's the same parser):
+        ("http://example.com:80/a", "https://example.com/a"),
+        ("https://example.com:443/a", "https://example.com/a"),
+        ("https://example.com/a b", "https://example.com/a%20b"),
+        ("https://example.com/café", "https://example.com/caf%C3%A9"),
+        ("https://exämple.com/a", "https://xn--exmple-cua.com/a"),
         (
             "https://en.wikipedia.org/wiki/Foo_(bar)",
             "https://en.wikipedia.org/wiki/Foo_(bar)",
@@ -48,6 +47,11 @@ from .. import archive_links
 )
 def test_canonicalize_url(url: str, expected: str) -> None:
     assert archive_links.canonicalize_url(url) == expected
+
+
+def test_canonicalize_url_raises_on_unparseable() -> None:
+    with pytest.raises(ValueError):
+        archive_links.canonicalize_url("not a url")
 
 
 # --- find_external_links -----------------------------------------------------
@@ -92,12 +96,11 @@ def test_find_external_links_balances_parens(tmp_path: Path) -> None:
     }
 
 
-def test_find_external_links_skips_schemeless_or_empty_host(
-    tmp_path: Path,
-) -> None:
+def test_find_external_links_skips_unparseable(tmp_path: Path) -> None:
     md = tmp_path / "page.md"
-    # ``https://`` with no host should not produce an entry.
-    md.write_text("broken https:// link", encoding="utf-8")
+    # A token that the URL regex captures but the WHATWG parser rejects (an
+    # unterminated IPv6 host) must be skipped, not raise.
+    md.write_text("broken https://[bad link", encoding="utf-8")
     assert archive_links.find_external_links([md]) == set()
 
 

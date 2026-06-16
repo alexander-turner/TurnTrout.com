@@ -230,9 +230,11 @@ goes dead. Liveness is resolved server-side and recorded in
 link's `href` to its archived copy at build time (no client JS).
 
 - **Shared canonicalization contract**: `canonicalize_url` (Python) and
-  `canonicalizeUrl` (TS) must agree exactly—lowercase scheme (forced `https`) +
-  host, drop a single trailing `/`, drop the `#fragment`, keep the query. They
-  share mirrored fixture tests; change both sides together or matching breaks.
+  `canonicalizeUrl` (TS) must agree exactly. Both parse with the same WHATWG URL
+  parser—Node's `new URL` and Python's `ada-url` binding share the identical
+  `ada` C++ implementation—then force `https`, drop a single trailing `/`, and
+  drop the `#fragment`. Same parser ⇒ byte-identical keys; mirrored fixture tests
+  guard it. Change both sides together.
 - **Dead only on hard-gone, N-strike confirmed**: a link flips to `dead` only on
   404/410 confirmed on `DEAD_STRIKE_THRESHOLD` (2) consecutive runs. 403/429/5xx
   and timeouts are transient/blocked and never trigger the destructive rewrite.

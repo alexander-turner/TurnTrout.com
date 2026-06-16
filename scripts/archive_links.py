@@ -34,9 +34,9 @@ import subprocess
 import sys
 from collections.abc import Iterable, Sequence
 from pathlib import Path
-from urllib.parse import urlsplit
 
 import requests
+from ada_url import URL
 
 try:
     from . import r2_upload
@@ -89,25 +89,27 @@ def canonicalize_url(url: str) -> str:
     """
     Return the canonical form of *url* used as the manifest key.
 
-    Mirrors ``canonicalizeUrl`` in ``archiveLinks.ts`` exactly. Both sides parse
-    with plain string ops (``urlsplit`` here, manual slicing in TS) rather than a
-    normalizing URL parser: force ``https``, lowercase the ``host[:port]`` and
-    drop userinfo, drop a single trailing ``/``, drop the ``#fragment``, keep the
-    query verbatim. We deliberately do **not** normalize ports, IDN, or
-    percent-encoding so the two languages can't silently disagree on the key.
+    Mirrors ``canonicalizeUrl`` in ``archiveLinks.ts`` exactly: both sides parse
+    with the same WHATWG URL parser (``ada`` — Node's ``new URL`` and this
+    ``ada-url`` binding share the identical C++ implementation), so the writer's
+    key and the reader's lookup can never disagree. On top of WHATWG
+    normalization (lowercased/punycoded host, default-port stripping,
+    percent-encoding) we force ``https``, drop a single trailing ``/``, and drop
+    the ``#fragment`` while keeping the query.
+
+    Raises:
+        ValueError: If *url* is not a parseable absolute URL.
     """
-    parts = urlsplit(url)
-    host = parts.netloc.rsplit("@", 1)[-1].lower()
-    path = parts.path
+    parsed = URL(url)
+    path = parsed.pathname
     if path.endswith("/"):
         path = path[:-1]
-    query = f"?{parts.query}" if parts.query else ""
-    return f"https://{host}{path}{query}"
+    return f"https://{parsed.host}{path}{parsed.search}"
 
 
 def _url_host(url: str) -> str:
-    """Return the lowercase host (with port, without userinfo) of *url*."""
-    return urlsplit(url).netloc.rsplit("@", 1)[-1].lower()
+    """Return the host of *url* (lowercased, punycoded, no port or userinfo)."""
+    return URL(url).hostname
 
 
 def _host_matches(host: str, suffix: str) -> bool:
@@ -135,10 +137,13 @@ def find_external_links(markdown_files: Iterable[Path]) -> set[str]:
         content = file.read_text(encoding="utf-8")
         for raw in _URL_RE.findall(content):
             cleaned = _trim_url(raw)
-            host = _url_host(cleaned)
-            if not host or _host_matches(host, OWN_HOST_SUFFIX):
+            try:
+                canonical = canonicalize_url(cleaned)
+            except ValueError:
+                continue  # e.g. a bare ``https://`` with no host
+            if _host_matches(_url_host(canonical), OWN_HOST_SUFFIX):
                 continue
-            links.add(canonicalize_url(cleaned))
+            links.add(canonical)
     return links
 
 

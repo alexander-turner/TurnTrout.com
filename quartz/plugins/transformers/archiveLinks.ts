@@ -29,42 +29,22 @@ export interface ArchiveManifestEntry {
 export type ArchiveManifest = ReadonlyMap<string, ArchiveManifestEntry>
 
 /**
- * Canonical URL form shared with `scripts/archive_links.py`. The Python
- * extractor, the manifest key, and this transformer must agree exactly, so both
- * sides parse with plain string ops — deliberately NOT `new URL`, whose extra
- * normalization (default-port stripping, IDN punycoding, percent-encoding)
- * would silently diverge from Python's `urlsplit` and break key matching.
+ * Canonical URL form shared with `scripts/archive_links.py`. Both sides parse
+ * with the same WHATWG URL parser (`ada` — Node's `new URL` and Python's
+ * `ada-url` binding share the identical C++ implementation), so the manifest key
+ * the Python writer emits and the key this reader looks up can never disagree.
+ * On top of WHATWG normalization we force `https`, drop a single trailing `/`,
+ * and drop the `#fragment` while keeping the query.
  *
- * Rule (mirrored by fixture tests on both sides): force `https`, lowercase the
- * `host[:port]` and drop userinfo, drop a single trailing `/`, drop the
- * `#fragment`, keep the query verbatim.
+ * @throws if `href` is not a parseable absolute URL.
  */
 export function canonicalizeUrl(href: string): string {
-  const schemeMatch = /^[a-z][a-z0-9+.-]*:\/\//i.exec(href)
-  if (!schemeMatch) {
-    return href
-  }
-  const afterScheme = href.slice(schemeMatch[0].length)
-
-  const authorityEnd = afterScheme.search(/[/?#]/)
-  const authorityRaw = authorityEnd === -1 ? afterScheme : afterScheme.slice(0, authorityEnd)
-  const authority = authorityRaw.slice(authorityRaw.lastIndexOf("@") + 1).toLowerCase()
-
-  let rest = authorityEnd === -1 ? "" : afterScheme.slice(authorityEnd)
-  const hashIndex = rest.indexOf("#")
-  if (hashIndex !== -1) {
-    rest = rest.slice(0, hashIndex)
-  }
-  const queryIndex = rest.indexOf("?")
-  let pathname = queryIndex === -1 ? rest : rest.slice(0, queryIndex)
-  // A bare trailing "?" carries no query; drop it to match Python's urlsplit.
-  const rawQuery = queryIndex === -1 ? "" : rest.slice(queryIndex)
-  const query = rawQuery === "?" ? "" : rawQuery
+  const url = new URL(href)
+  let pathname = url.pathname
   if (pathname.endsWith("/")) {
     pathname = pathname.slice(0, -1)
   }
-
-  return `https://${authority}${pathname}${query}`
+  return `https://${url.host}${pathname}${url.search}`
 }
 
 function parseManifest(raw: string, source: string): ArchiveManifest {
@@ -118,7 +98,16 @@ export function rewriteArchivedLink(node: Element, manifest: ArchiveManifest): b
     return false
   }
 
-  const entry = manifest.get(canonicalizeUrl(href))
+  let canonical: string
+  try {
+    canonical = canonicalizeUrl(href)
+  } catch {
+    // A malformed href can't be in the manifest; leave the link untouched
+    // rather than crashing the build.
+    return false
+  }
+
+  const entry = manifest.get(canonical)
   if (!entry || !entry.dead) {
     return false
   }
