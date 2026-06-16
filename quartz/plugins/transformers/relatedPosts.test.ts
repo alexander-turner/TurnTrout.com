@@ -28,9 +28,7 @@ const treeWithOrnament = (): Root =>
   h(null, [
     h("p", "body"),
     h("div", { id: troutContainerId }),
-    h("div", { class: "after-article-components" }, [
-      h("div", { id: "subscription-and-contact" }),
-    ]),
+    h("div", { class: "after-article-components" }, [h("div", { id: "subscription-and-contact" })]),
   ]) as Root
 
 const runTransform = async (
@@ -169,10 +167,7 @@ describe("RelatedPosts transformer", () => {
 
   it("falls back to after-ornament insertion when no after-article-components exists", async () => {
     const filePath = await writeTempMap({ "post-a": samplePosts })
-    const ornamentOnlyTree = h(null, [
-      h("p", "body"),
-      h("div", { id: troutContainerId }),
-    ]) as Root
+    const ornamentOnlyTree = h(null, [h("p", "body"), h("div", { id: troutContainerId })]) as Root
     const tree = await runTransform(RelatedPosts({ filePath }), ornamentOnlyTree, "post-a")
     expect(elementsWithClass(tree, "related-post")).toHaveLength(2)
   })
