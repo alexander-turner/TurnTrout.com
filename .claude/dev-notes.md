@@ -220,6 +220,45 @@ Public-repo Actions are free, so we don’t tier coverage by event. Path-awarene
 - **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`, same mechanism.
 - **Post-merge**: `push: main` re-runs the full suite plus `deploy.yaml`. `deploy.yaml`’s `verify-test-results` job polls check-runs on the landed SHA, so deploy waits for those to pass before pushing to Cloudflare.
 
+## Outbound link archiving
+
+Outbound external links rot over time. `scripts/archive_links.py` (Python writer)
+and `quartz/plugins/transformers/archiveLinks.ts` (TypeScript build-time reader)
+snapshot every outbound link to R2 and fall back to the archived copy when a link
+goes dead. Liveness is resolved server-side and recorded in
+`config/link_archive_manifest.json`; the transformer rewrites a confirmed-dead
+link's `href` to its archived copy at build time (no client JS).
+
+- **Shared canonicalization contract**: `canonicalize_url` (Python) and
+  `canonicalizeUrl` (TS) must agree exactly—lowercase scheme (forced `https`) +
+  host, drop a single trailing `/`, drop the `#fragment`, keep the query. They
+  share mirrored fixture tests; change both sides together or matching breaks.
+- **Dead only on hard-gone, N-strike confirmed**: a link flips to `dead` only on
+  404/410 confirmed on `DEAD_STRIKE_THRESHOLD` (2) consecutive runs. 403/429/5xx
+  and timeouts are transient/blocked and never trigger the destructive rewrite.
+- **Snapshot key**: `sha256(canonical_url)` → stable R2 prefix
+  `quartz/static/link-archive/<sha256>/singlefile.html`, served from
+  `assets.turntrout.com`. Re-archiving reuses the same key (dedup).
+- **Deny-list + `noindex`**: hosts in `config/link_archive_denylist.json`
+  (paywalls/anti-bot/IP-enforcers) are never archived/rewritten. Every snapshot
+  gets `<meta name="robots" content="noindex">` injected and an
+  `X-Robots-Tag: noindex` R2 header.
+
+### Running it
+
+- **First full pass (LOCAL only)**: `uv run python scripts/archive_links.py
+--backfill` over ~1k+ links takes hours and exceeds the 6h Action cap—run it
+  locally and commit the seed manifest via PR. Requires ArchiveBox +
+  `single-file-cli` + Chromium installed, and the R2 env vars
+  (`ACCESS_KEY_ID_TURNTROUT_MEDIA` / `SECRET_ACCESS_TURNTROUT_MEDIA` /
+  `S3_ENDPOINT_ID_TURNTROUT_MEDIA`) for the upload.
+- **Steady state (CI)**: `.github/workflows/archive-links.yaml` runs weekly +
+  `workflow_dispatch`, archives only new links, re-probes liveness, and opens a PR
+  with the manifest diff (never pushes to `main`). ArchiveBox is pinned via
+  `ARCHIVEBOX_VERSION`; bump deliberately and watch the next capture.
+- **Re-archive everything**: `--refresh`. **Merge sharded fragments**:
+  `--merge frag1.json frag2.json --manifest config/link_archive_manifest.json`.
+
 ## Lessons learned
 
 - When making interface array properties `readonly`, also update downstream function signatures to accept `readonly` arrays. `.map()`/`.filter()`/`.some()`/`.includes()` work on readonly; `.sort()`/`.push()` don’t—copy first: `[...arr].sort()`.
