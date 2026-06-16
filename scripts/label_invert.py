@@ -32,10 +32,8 @@ import argparse
 import io
 import json
 import logging
-import os
 import re
 import sys
-import tempfile
 import threading
 import webbrowser
 from collections.abc import Callable, Iterable, Mapping
@@ -133,28 +131,6 @@ class Label(TypedDict):
     reviewed: bool
 
 
-def _atomic_write_json(data: object, path: Path) -> None:
-    """
-    Atomically write ``data`` to ``path`` as pretty-printed JSON.
-
-    Creates parent directories as needed and uses ``os.replace`` for atomic
-    rename. Any failure deletes the partial tempfile before re-raising.
-    """
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp_name = tempfile.mkstemp(
-        prefix=path.name + ".", suffix=".tmp", dir=str(path.parent)
-    )
-    tmp = Path(tmp_name)
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as fh:
-            json.dump(data, fh, ensure_ascii=False, indent=2)
-            fh.write("\n")
-        os.replace(tmp, path)
-    except Exception:
-        tmp.unlink(missing_ok=True)
-        raise
-
-
 _REQUIRED_LABEL_KEYS: Final[frozenset[str]] = frozenset({"invert", "reviewed"})
 
 
@@ -166,11 +142,7 @@ def load_labels(path: Path = LABELS_JSON) -> dict[str, Label]:
     ``ValueError`` rather than defaulting silently, so a corrupted or partially-
     migrated file fails loudly.
     """
-    if not path.exists():
-        return {}
-    data = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(data, dict):
-        raise ValueError(f"{path} must contain a JSON object")
+    data = script_utils.load_json_object(path)
     out: dict[str, Label] = {}
     for key, value in data.items():
         if not isinstance(value, dict) or _REQUIRED_LABEL_KEYS - value.keys():
@@ -187,7 +159,7 @@ def load_labels(path: Path = LABELS_JSON) -> dict[str, Label]:
 def save_labels(labels: Mapping[str, Label], path: Path = LABELS_JSON) -> None:
     """Atomically write the labels JSON, sorted by URL."""
     sorted_labels = {k: dict(v) for k, v in sorted(labels.items())}
-    _atomic_write_json(sorted_labels, path)
+    script_utils.atomic_write_json(sorted_labels, path)
 
 
 def set_user_label(
@@ -292,11 +264,7 @@ def compute_luminance(image_bytes: bytes) -> float:
 
 def load_luminances(path: Path = LUMINANCE_JSON) -> dict[str, float]:
     """Load cached ``{url: luminance}`` (empty if missing)."""
-    if not path.exists():
-        return {}
-    data = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(data, dict):
-        raise ValueError(f"{path} must contain a JSON object")
+    data = script_utils.load_json_object(path)
     return {str(k): float(v) for k, v in data.items()}
 
 
@@ -304,7 +272,7 @@ def save_luminances(
     luminances: Mapping[str, float], path: Path = LUMINANCE_JSON
 ) -> None:
     """Atomically write the luminance cache, sorted by URL."""
-    _atomic_write_json(dict(sorted(luminances.items())), path)
+    script_utils.atomic_write_json(dict(sorted(luminances.items())), path)
 
 
 def ensure_luminances(

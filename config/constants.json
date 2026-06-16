@@ -173,5 +173,11 @@
     "rightGuillemet": "\u00BB",
     "germanOpenQuote": "\u201E"
   },
-  "stripBoundaryWhitespaceTags": ["em", "strong", "i", "b", "a", "u", "ins", "mark", "del", "s"]
+  "stripBoundaryWhitespaceTags": ["em", "strong", "i", "b", "a", "u", "ins", "mark", "del", "s"],
+  "relatedPosts": {
+    "model": "voyage-3",
+    "maxNewEmbeddingsPerRun": 50,
+    "topN": 5,
+    "maxEmbedChars": 8000
+  }
 }

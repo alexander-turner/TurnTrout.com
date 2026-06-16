@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from collections.abc import Callable, Collection
 from pathlib import Path
 from typing import NoReturn
@@ -146,6 +147,48 @@ def load_shared_constants() -> dict:
     independent deep copy so mutating the result cannot corrupt the cache.
     """
     return copy.deepcopy(_CONSTANTS)
+
+
+def load_json_object(path: Path) -> dict:
+    """
+    Load a top-level JSON object from *path* (empty dict if the file is absent).
+
+    Raises ``ValueError`` if the file's top-level JSON value is not an object,
+    so a corrupted cache fails loudly rather than defaulting silently.
+    """
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    return data
+
+
+def atomic_write_json(
+    data: object, path: Path, *, sort_keys: bool = False
+) -> None:
+    """
+    Atomically write *data* to *path* as pretty-printed JSON.
+
+    Creates parent directories as needed, writes to a tempfile, then
+    ``os.replace``s it into place. Any failure deletes the partial tempfile
+    before re-raising.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(
+        prefix=path.name + ".", suffix=".tmp", dir=str(path.parent)
+    )
+    tmp = Path(tmp_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(
+                data, fh, ensure_ascii=False, indent=2, sort_keys=sort_keys
+            )
+            fh.write("\n")
+        os.replace(tmp, path)
+    except Exception:
+        tmp.unlink(missing_ok=True)
+        raise
 
 
 _executable_cache: dict[str, str] = {}

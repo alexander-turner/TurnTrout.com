@@ -6,6 +6,7 @@
 @use "scroll-indicator";
 @use "print";
 @use "../components/styles/punctilioDemo";
+@use "../components/styles/relatedPosts";
 
 // Shared bottom-margin for the after-article box, the footnotes heading,
 // and the footnotes section itself, so the page-bottom rhythm stays balanced.
@@ -369,7 +370,8 @@ figure,
 }
 
 #article-title,
-.page-listing-title {
+.page-listing-title,
+.related-post > a {
   font-variant-numeric: lining-nums;
 }
 

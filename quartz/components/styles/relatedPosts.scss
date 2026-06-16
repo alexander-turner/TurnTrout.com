@@ -1,0 +1,26 @@
+@use "../../styles/variables.scss" as *;
+
+.related-posts {
+  margin-top: calc(2 * $base-margin);
+
+  .related-posts-title {
+    font-weight: bold;
+    margin-bottom: $base-margin;
+  }
+
+  ul {
+    list-style: none;
+    margin-top: 0;
+    padding-left: 0;
+  }
+
+  li.related-post {
+    margin-bottom: $base-margin;
+
+    .related-post-excerpt {
+      display: block;
+      color: var(--midground-strong);
+      font-size: 0.9em;
+    }
+  }
+}

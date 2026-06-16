@@ -24,6 +24,7 @@ dependencies = [
     "rich",
     "ruamel-yaml",
     "tqdm",
+    "voyageai",
     "validators",
     "types-defusedxml==0.7.0.20260504",
     "types-pyyaml==6.0.12.20260510",
