@@ -198,7 +198,7 @@ describe("rewriteArchivedLink", () => {
   })
 
   it("ignores anchors without a string href", () => {
-    const node = anchor(undefined)
+    const node = anchor()
     expect(rewriteArchivedLink(node, makeManifest())).toBe(false)
   })
 
