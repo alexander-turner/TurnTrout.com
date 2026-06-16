@@ -355,6 +355,21 @@ if [ -f "$PROJECT_DIR/package.json" ]; then
 			echo "export PATH=\"$PROJECT_DIR/node_modules/.bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
 		fi
 	fi
+
+	# Pre-install Playwright browsers so visual/interaction tests run immediately
+	# without a mid-session download prompt. `--with-deps` installs system libs on
+	# Linux (needed for WebKit). Non-fatal: visual tests can still be skipped if
+	# download fails.
+	if command -v npx &>/dev/null; then
+		if is_root; then
+			npx playwright install --with-deps chromium firefox webkit 2>/dev/null ||
+				warn "Failed to install Playwright browsers"
+		else
+			npx playwright install chromium firefox webkit 2>/dev/null &&
+				npx playwright install-deps webkit 2>/dev/null ||
+				warn "Failed to install Playwright browsers"
+		fi
+	fi
 fi
 
 if [ -f "$PROJECT_DIR/uv.lock" ] && command -v uv &>/dev/null; then
