@@ -173,12 +173,9 @@ describe("RelatedPosts transformer", () => {
   it("appends the ToC entry when the file already has a toc", async () => {
     const filePath = await writeTempMap({ "post-a": samplePosts })
     const existingEntry = { depth: 0, text: "Introduction", slug: "introduction" }
-    const { file } = await runTransform(
-      RelatedPosts({ filePath }),
-      treeWithOrnament(),
-      "post-a",
-      [existingEntry],
-    )
+    const { file } = await runTransform(RelatedPosts({ filePath }), treeWithOrnament(), "post-a", [
+      existingEntry,
+    ])
     expect(file.data.toc).toEqual([existingEntry, similarPostsTocEntry])
   })
 
