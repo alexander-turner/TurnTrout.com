@@ -8,6 +8,8 @@ import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
 import { unified } from "unified"
 
+import type { FullSlug } from "../../util/path"
+
 import {
   ARCHIVED_LINK_CLASS,
   ArchiveLinks,
@@ -17,6 +19,7 @@ import {
   loadArchiveManifest,
   rewriteArchivedLink,
 } from "./archiveLinks"
+import { CrawlLinks } from "./links"
 
 function entry(overrides: Partial<ArchiveManifestEntry> = {}): ArchiveManifestEntry {
   return {
@@ -252,5 +255,70 @@ describe("ArchiveLinks plugin", () => {
   it("defaults to the committed manifest path when none is provided", () => {
     const plugin = ArchiveLinks()
     expect(plugin.name).toBe("ArchiveLinks")
+  })
+})
+
+// The writer keys the manifest off the raw Markdown URL; the reader keys off
+// the href AFTER CrawlLinks has normalized it. This round-trip proves CrawlLinks
+// doesn't alter the canonical key, so a key the Python side emits from raw
+// Markdown still matches at build time.
+describe("ArchiveLinks after CrawlLinks (manifest-key round trip)", () => {
+  let dir: string
+
+  beforeEach(async () => {
+    dir = await fs.mkdtemp(path.join(os.tmpdir(), "archive-roundtrip-"))
+  })
+
+  afterEach(async () => {
+    await fs.rm(dir, { recursive: true, force: true })
+  })
+
+  it.each([
+    ["https://Dead.Example.com/Gone/", "https://dead.example.com/Gone"],
+    ["https://dead.example.com/p?a=1&b=2", "https://dead.example.com/p?a=1&b=2"],
+    ["https://dead.example.com/wiki/Foo_(bar)", "https://dead.example.com/wiki/Foo_(bar)"],
+  ])("rewrites %j (canonical key %j) after CrawlLinks", async (rawHref, expectedKey) => {
+    expect(canonicalizeUrl(rawHref)).toBe(expectedKey)
+
+    const archiveUrl = "https://assets.turntrout.com/link-archive/rt/singlefile.html"
+    const manifestFile = path.join(dir, "manifest.json")
+    await fs.writeFile(
+      manifestFile,
+      JSON.stringify({ [expectedKey]: entry({ archive_url: archiveUrl }) }),
+    )
+
+    const crawl = CrawlLinks({
+      lazyLoad: true,
+      prettyLinks: false,
+      openLinksInNewTab: false,
+      markdownLinkResolution: "shortest",
+    })
+    const archive = ArchiveLinks({ manifestPath: manifestFile })
+    const crawlCtx = { allSlugs: ["test-page"] as FullSlug[] } as Parameters<
+      NonNullable<ReturnType<typeof CrawlLinks>["htmlPlugins"]>
+    >[0]
+    const archiveCtx = {} as Parameters<
+      NonNullable<ReturnType<typeof ArchiveLinks>["htmlPlugins"]>
+    >[0]
+    const crawlPlugins = crawl.htmlPlugins?.(crawlCtx)
+    const archivePlugins = archive.htmlPlugins?.(archiveCtx)
+    if (!crawlPlugins || !archivePlugins) throw new Error("missing htmlPlugins")
+
+    const processor = unified()
+      .use(rehypeParse, { fragment: true })
+      .use(crawlPlugins)
+      .use(archivePlugins)
+      .use(rehypeStringify)
+
+    const result = String(
+      await processor.process({
+        value: `<a href="${rawHref}">x</a>`,
+        data: { slug: "test-page" as FullSlug },
+      }),
+    )
+    // The href becoming the archive URL is what proves CrawlLinks left the
+    // canonical key unchanged (the manifest is keyed off the raw URL).
+    expect(result).toContain(`href="${archiveUrl}"`)
+    expect(result).toContain(ARCHIVED_LINK_CLASS)
   })
 })
