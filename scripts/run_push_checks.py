@@ -382,7 +382,11 @@ def run_non_interactive_command(
     """
     stdout_lines: list[str] = []
     stderr_lines: list[str] = []
-    last_lines: deque[str] = deque(maxlen=5)
+    # Each reader thread gets its own deque: a single shared deque would be
+    # iterated by ``"\n".join(...)`` in one thread while the other appends,
+    # which raises "deque mutated during iteration".
+    stdout_last: deque[str] = deque(maxlen=5)
+    stderr_last: deque[str] = deque(maxlen=5)
     cmd = " ".join(step.command) if step.shell else step.command
 
     with subprocess.Popen(
@@ -395,11 +399,11 @@ def run_non_interactive_command(
     ) as process:
         stdout_thread = threading.Thread(
             target=stream_reader,
-            args=(process.stdout, stdout_lines, last_lines, progress, task_id),
+            args=(process.stdout, stdout_lines, stdout_last, progress, task_id),
         )
         stderr_thread = threading.Thread(
             target=stream_reader,
-            args=(process.stderr, stderr_lines, last_lines, progress, task_id),
+            args=(process.stderr, stderr_lines, stderr_last, progress, task_id),
         )
         # Start both threads before joining either to avoid deadlock:
         # if the subprocess fills the stderr pipe buffer while we're

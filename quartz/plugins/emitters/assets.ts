@@ -29,7 +29,9 @@ export const Assets: QuartzEmitterPlugin = () => {
       const graph = new DepGraph<FilePath>()
       const fps = await filesToCopy(argv, cfg)
       for (const fp of fps) {
-        const ext = path.extname(fp)
+        // Lowercase to match the extension `emit` writes, so the graph edge
+        // points at the file that is actually produced.
+        const ext = path.extname(fp).toLowerCase()
         const src = joinSegments(argv.directory, fp) as FilePath
         const name = (slugifyFilePath(fp as FilePath, true) + ext) as FilePath
         const dest = joinSegments(argv.output, name) as FilePath
