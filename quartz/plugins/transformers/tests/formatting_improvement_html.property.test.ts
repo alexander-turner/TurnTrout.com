@@ -1,9 +1,9 @@
-import type { ElementContent, Root, RootContent, Text } from "hast"
+import type { ElementContent, Root, Text } from "hast"
 
 import { describe, expect, it } from "@jest/globals"
 import fc from "fast-check"
 
-import { hatTipPlaceholder, markerChar, NBSP } from "../../../components/constants"
+import { NBSP } from "../../../components/constants"
 import {
   applyTextTransforms,
   improveFormatting,
@@ -39,7 +39,7 @@ describe("formatting_improvement_html text transforms (property)", () => {
     it("is the identity for slash-free text", () => {
       fc.assert(
         fc.property(
-          fc.string().filter((s) => !s.includes("/") && !s.includes(hatTipPlaceholder)),
+          fc.string().filter((s) => !s.includes("/")),
           (text) => {
             expect(spacesAroundSlashes(text)).toBe(text)
           },
@@ -223,25 +223,11 @@ describe("formatting_improvement_html text transforms (property)", () => {
       .array(element, { minLength: 1, maxLength: 4 })
       .map((children) => ({ type: "root", children }))
 
-    const collectText = (node: Root | RootContent, out: string[]): void => {
-      if (node.type === "text") {
-        out.push(node.value)
-      }
-      if ("children" in node) {
-        for (const child of node.children) {
-          collectText(child, out)
-        }
-      }
-    }
-
-    it("never throws and never leaks the internal marker character", () => {
+    it("never throws on arbitrary trees", () => {
       const transformer = improveFormatting() as (tree: Root) => void
       fc.assert(
         fc.property(fuzzRoot, (tree) => {
           expect(() => transformer(tree)).not.toThrow()
-          const texts: string[] = []
-          collectText(tree, texts)
-          expect(texts.join("")).not.toContain(markerChar)
         }),
         { numRuns: 150 },
       )

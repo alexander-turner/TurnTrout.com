@@ -200,8 +200,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: 3.13.0
-        version: 3.13.0(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5)
+        specifier: github:alexander-turner/punctilio#464d24fb574eb020a2c0b35367cb9316e860debf
+        version: https://codeload.github.com/alexander-turner/punctilio/tar.gz/464d24fb574eb020a2c0b35367cb9316e860debf(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5)
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -7716,9 +7716,10 @@ packages:
   pumpify@2.0.1:
     resolution: {integrity: sha512-m7KOje7jZxrmutanlkS1daj1dS6z6BgslzOXmcSEpIlCxM3VJH7lG5QLeck/6hgF6F4crFf01UtQmNsJfweTAw==}
 
-  punctilio@3.13.0:
-    resolution: {integrity: sha512-m+aLYfSNZY6Yfw0jldjrItuybWKZJwiKNMkr8qwr3rzI5Oq3HwZ4oobU79idYVfR1LFD9WRdT1sQN0bxWLWNBQ==}
-    engines: {node: '>=18.0.0'}
+  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/464d24fb574eb020a2c0b35367cb9316e860debf:
+    resolution: {tarball: https://codeload.github.com/alexander-turner/punctilio/tar.gz/464d24fb574eb020a2c0b35367cb9316e860debf}
+    version: 0.0.0-git
+    engines: {node: '>=20.0.0'}
     hasBin: true
     peerDependencies:
       prettier: ^3.0.0
@@ -16219,7 +16220,7 @@ snapshots:
 
   jest-message-util@29.7.0:
     dependencies:
-      '@babel/code-frame': 7.29.0
+      '@babel/code-frame': 7.29.7
       '@jest/types': 29.6.3
       '@types/stack-utils': 2.0.3
       chalk: 4.1.2
@@ -18217,7 +18218,7 @@ snapshots:
 
   parse-json@5.2.0:
     dependencies:
-      '@babel/code-frame': 7.29.0
+      '@babel/code-frame': 7.29.7
       error-ex: 1.3.4
       json-parse-even-better-errors: 2.3.1
       lines-and-columns: 1.2.4
@@ -18713,9 +18714,8 @@ snapshots:
       inherits: 2.0.4
       pump: 3.0.4
 
-  punctilio@3.13.0(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5):
+  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/464d24fb574eb020a2c0b35367cb9316e860debf(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5):
     dependencies:
-      commander: 14.0.3
       cosmiconfig: 9.0.1(typescript@6.0.3)
       escape-string-regexp: 5.0.0
       ignore: 7.0.5
