@@ -690,9 +690,10 @@ export const rearrangeLinkPunctuation = (
 }
 
 // The optional comma after the abbreviation is consumed and normalized away.
-// The lookahead requires a word-end boundary (a \b not followed by a word
-// character), whitespace, or end of prose after the match.
-const afterAbbrevPattern = "\\.?,?(?=(?<=\\w)(?!\\w)|\\s|$)"
+// (?!\.) keeps the rewrite idempotent: without it "i.e.." lets \.? backtrack
+// to ε, the lookahead fires at the first ".", and every pass appends a period.
+// The lookahead requires a word-end boundary, whitespace, or end of prose.
+const afterAbbrevPattern = "\\.?(?!\\.),?(?=(?<=\\w)(?!\\w)|\\s|$)"
 
 // Boundary decision: the comma being normalized away may live in a sibling
 // text node (e.g. "<em>e.g.</em>, test"), so a boundary directly before that
