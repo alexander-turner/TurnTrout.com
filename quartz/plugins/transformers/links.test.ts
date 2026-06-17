@@ -104,7 +104,11 @@ describe("CrawlLinks anchor processing", () => {
 
   it.each([
     ["bare domain", "example.com", 'href="https://example.com"'],
+    ["bare domain starting with http", "httpbin.org", 'href="https://httpbin.org"'],
     ["mailto", "mailto:test@example.com", 'href="mailto:test@example.com"'],
+    ["tel", "tel:+15551234", 'href="tel:+15551234"'],
+    ["data uri", "data:text/plain,hello", 'href="data:text/plain,hello"'],
+    ["host with port", "example.com:8080", 'href="https://example.com:8080"'],
     ["https", "https://example.com", 'href="https://example.com"'],
   ])("normalizes %s href correctly", async (_desc, href, expected) => {
     const result = await processHtml(`<a href="${href}">Link</a>`)

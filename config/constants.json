@@ -108,6 +108,8 @@
   "autoplayStorageKey": "pond-video-autoplay",
   "instantScrollRestoreKey": "instantScrollRestore",
   "scrollPositionKeyPrefix": "scroll:",
+  "scrollPositionTimestampKeyPrefix": "scroll-time:",
+  "scrollPositionMaxAgeMs": 604800000,
   "scrollPositionMinThreshold": 150,
   "cdnBaseUrl": "https://assets.turntrout.com",
   "imageCacheVersion": 1,

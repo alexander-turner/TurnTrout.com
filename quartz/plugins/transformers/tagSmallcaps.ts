@@ -341,9 +341,7 @@ export function processMatchedText(text: string, shouldCapitalize: boolean): str
 export function isInAllowList(matchText: string): boolean {
   return allowAcronyms.some(
     (acronym) =>
-      matchText === acronym ||
-      matchText.startsWith(`${acronym}s`) ||
-      matchText.startsWith(`${acronym}x`),
+      matchText === acronym || matchText === `${acronym}s` || matchText === `${acronym}x`,
   )
 }
 

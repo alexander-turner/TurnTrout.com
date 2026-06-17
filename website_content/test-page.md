@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-06-04
+date_updated: 2026-06-16
 createBibtex: true
 ---
 
@@ -35,11 +35,15 @@ I use this page for <a href="/design#visual-regression-testing" id="first-link-t
 
 Text.
 
+This line of text verifies that adding content to a section only updates that section's screenshot, not every section below it.
+
 Subtitle: I am a subtitle with [a link](/test-page).
 
 Subtitle: MATS (starting with smallcaps).
 
 # Lists
+
+This sentence is a baseline-scoping probe: it sits in the Lists section, so only the Lists screenshots should change.
 
 > I am a block quote.
 >
@@ -682,6 +686,12 @@ He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._ October 5th, 1
 # Emoji examples
 
 😀 😃 😄 😁 😆 😅 🤣 😂 🙂 🙃 😉 😊 😇 🥰 😍 🤩 😘 😗 ☺ 😚 😙 🥲
+
+## Emoji line wrapping
+
+Each emoji stays glued to its preceding character and never wraps alone to the start of a new line:
+
+(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿.
 
 ## Emoji comparison
 

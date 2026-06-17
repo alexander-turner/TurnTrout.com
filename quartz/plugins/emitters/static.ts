@@ -32,6 +32,10 @@ export function buildStaticScriptDefines(): Record<string, string> {
     AUTOPLAY_STORAGE_KEY: JSON.stringify(simpleConstants.autoplayStorageKey),
     INSTANT_SCROLL_RESTORE_KEY: JSON.stringify(simpleConstants.instantScrollRestoreKey),
     SCROLL_POSITION_KEY_PREFIX: JSON.stringify(simpleConstants.scrollPositionKeyPrefix),
+    SCROLL_POSITION_TIMESTAMP_KEY_PREFIX: JSON.stringify(
+      simpleConstants.scrollPositionTimestampKeyPrefix,
+    ),
+    SCROLL_POSITION_MAX_AGE_MS: JSON.stringify(simpleConstants.scrollPositionMaxAgeMs),
     DROPCAP_COLORS: JSON.stringify(simpleConstants.dropcapColors),
     COLOR_DROPCAP_PROBABILITY: JSON.stringify(simpleConstants.colorDropcapProbability),
   }

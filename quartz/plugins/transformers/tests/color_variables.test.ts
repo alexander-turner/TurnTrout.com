@@ -107,6 +107,46 @@ describe("transformStyle", () => {
     const result = transformStyle("--before-color: var(--dropcap-background-red);", fullMapping)
     expect(result).toBe("--before-color: var(--dropcap-background-red);")
   })
+
+  // Shiki emits inline hex colors (e.g. `color:#D73A49`); these must map to
+  // CSS variables despite starting with a non-word `#`.
+  it.each([
+    { input: "color:#D73A49;", expected: "color:var(--red);" },
+    { input: "color: #d73a49;", expected: "color: var(--red);" },
+    { input: "border: 1px solid #D73A49", expected: "border: 1px solid var(--red)" },
+    // Must not match inside a longer hex token.
+    { input: "color: #D73A4900;", expected: "color: #D73A4900;" },
+  ])("transforms hex color in $input", ({ input, expected }) => {
+    const result = transformStyle(input, { "#D73A49": "var(--red)" })
+    expect(result).toBe(expected)
+  })
+
+  // Shiki dual-theme uses --shiki-light/--shiki-dark custom properties with
+  // calibrated hex values; these must never be rewritten to CSS variables.
+  it("should preserve hex values in --shiki-light and --shiki-dark", () => {
+    const result = transformStyle("--shiki-light:#005CC5;--shiki-dark:#79B8FF", {
+      "#005CC5": "var(--blue)",
+      "#79B8FF": "var(--sky)",
+    })
+    expect(result).toBe("--shiki-light:#005CC5;--shiki-dark:#79B8FF")
+  })
+
+  it("should transform regular property but preserve custom property hex value", () => {
+    const result = transformStyle("--shiki-light:#D73A49;color:#D73A49;", {
+      "#D73A49": "var(--red)",
+    })
+    expect(result).toBe("--shiki-light:#D73A49;color:var(--red);")
+  })
+
+  it("should preserve color name in custom property value but transform regular property", () => {
+    const result = transformStyle("--my-color: red; color: red;", { red: "var(--red)" })
+    expect(result).toBe("--my-color: red; color: var(--red);")
+  })
+
+  it("should not create placeholder for empty custom property value", () => {
+    const result = transformStyle("--empty:;color:red;", { red: "var(--red)" })
+    expect(result).toBe("--empty:;color:var(--red);")
+  })
 })
 
 describe("transformElement", () => {

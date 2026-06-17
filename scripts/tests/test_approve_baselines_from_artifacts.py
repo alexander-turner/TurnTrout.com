@@ -65,6 +65,7 @@ def _make_blob_zip(
         ("trace", None),
         ("-actual.png", None),
         ("../escape-actual.png", None),
+        ("..-actual.png", None),
         ("nested/dir-actual.png", None),
         ("back\\slash-actual.png", None),
     ],

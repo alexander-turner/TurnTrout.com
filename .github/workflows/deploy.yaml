@@ -25,7 +25,11 @@ on:
 
 # Read-only default; each job below elevates only to the writes it needs
 # (Cloudflare OIDC/Pages deploys, PR preview comments, check-run reads).
+# `actions: read` is required by the reusable build-site.yaml workflow (its
+# jobs declare it); a reusable workflow's permissions cannot exceed the
+# caller's, so omitting it here makes the whole run fail at startup.
 permissions:
+  actions: read
   contents: read
 
 jobs:

@@ -173,6 +173,7 @@ export const TextFormattingImprovement: QuartzTransformerPlugin = () => {
     name: "textFormattingImprovement",
     textTransform(_ctx, src: string | Buffer) {
       // Convert Buffer to string if needed
+      // Stryker disable next-line ConditionalExpression,EqualityOperator: String#toString() is the identity, so forcing the toString branch is behaviorally equivalent
       const content = typeof src === "string" ? src : src.toString()
       return formattingImprovement(content)
     },
