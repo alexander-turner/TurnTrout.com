@@ -1096,6 +1096,8 @@ describe("isInAllowList", () => {
     ...allowAcronyms.filter((a) => a.toLowerCase() !== "mp4").map((a) => a.toLowerCase()),
     // Modified versions with 'ing' suffix
     ...allowAcronyms.map((a) => `${a}ing`),
+    // A trailing 's'/'x' must be the only extra char, not a prefix of more text
+    ...allowAcronyms.map((a) => `${a}ster`),
     // Random invalid cases
     "NOTINLIST",
     "NOTINLISTs",

@@ -65,7 +65,16 @@ def check_exists_on_r2(upload_target: str, verbose: bool = False) -> bool:
         error_msg = f"Failed to check existence of file in R2: {e}"
         raise RuntimeError(error_msg) from e
 
-    if key in result.stdout:
+    # ``rclone ls`` prints "<size> <path>" per line; match the path exactly so
+    # "static/a.png" doesn't spuriously match "static/a.png-backup" (or the
+    # size digits) via a naive substring test.
+    existing_keys = set()
+    for line in result.stdout.splitlines():
+        parts = line.split(maxsplit=1)
+        if len(parts) == 2:
+            existing_keys.add(parts[1])
+
+    if key in existing_keys:
         if verbose:
             print(f"File found in R2: {upload_target}")
         return True

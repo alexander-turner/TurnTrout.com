@@ -28,7 +28,7 @@ The above `ots` ([Open Timestamp](https://github.com/opentimestamps/opentimestam
 
 - Run `git config core.hooksPath .hooks` to use the repository’s hooks.
 
-[^python]: Python testing and type-checking are run locally and not on GitHub actions.
+[^python]: Python testing and type-checking run in CI (`.github/workflows/python-tests.yaml` and `python-lint.yaml`), not only locally.
 
 `turntrout.com` © 2024–2026 by Alexander Turner is licensed under CC BY-SA 4.0. Feel free to fork to use on your own website, but in addition to the licensing requirements of CC BY-SA 4.0:
 

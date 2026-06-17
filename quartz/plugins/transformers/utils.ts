@@ -66,10 +66,16 @@ export const replaceRegex = (
   // Find all non-overlapping matches in the node's text
   regex.lastIndex = 0 // Reset regex state before first pass with exec()
   while ((match = regex.exec(node.value)) !== null) {
+    // A zero-width match leaves lastIndex unchanged; nudge it forward so the
+    // loop terminates instead of spinning on the same empty match.
+    if (match[0].length === 0) {
+      regex.lastIndex++
+      continue
+    }
     /* istanbul ignore next -- exec() always advances past previous match on global regex */
     if (match.index >= lastMatchEnd) {
       matches.push(match)
-      lastMatchEnd = match.index + match[0]?.length
+      lastMatchEnd = match.index + match[0].length
     }
   }
 

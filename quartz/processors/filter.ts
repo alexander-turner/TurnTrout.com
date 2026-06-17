@@ -1,10 +1,12 @@
 import type { ProcessedContent } from "../plugins/vfile"
 import type { BuildCtx } from "../util/ctx"
 
+import { createWinstonLogger } from "../util/log"
 import { PerfTimer } from "../util/perf"
 
 export function filterContent(ctx: BuildCtx, content: ProcessedContent[]): ProcessedContent[] {
   const { cfg, argv } = ctx
+  const log = createWinstonLogger("filter")
   const perf = new PerfTimer()
   const initialLength = content.length
   for (const plugin of cfg.plugins.filters) {
@@ -21,6 +23,6 @@ export function filterContent(ctx: BuildCtx, content: ProcessedContent[]): Proce
     content = updatedContent
   }
 
-  console.log(`Filtered out ${initialLength - content.length} files in ${perf.timeSince()}`)
+  log.info(`Filtered out ${initialLength - content.length} files in ${perf.timeSince()}`)
   return content
 }

@@ -6,6 +6,9 @@ export const RemoveDrafts: QuartzFilterPlugin = () => ({
     // Use data.filePath which survives worker thread serialization.
     // Falls back to empty string if path is unknown — defaults to "publish".
     const filePath = vfile.data.filePath ?? vfile.path ?? ""
-    return !filePath.includes("drafts/") || filePath.includes("templates/")
+    // Match whole path segments so "old-drafts/" / "drafts.md" aren't treated
+    // as the "drafts" folder, and templates publish even inside drafts/.
+    const segments = filePath.split("/")
+    return !segments.includes("drafts") || segments.includes("templates")
   },
 })
