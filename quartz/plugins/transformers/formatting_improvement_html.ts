@@ -230,6 +230,7 @@ export function spacesAroundSlashes(input: string | ProseView): string | void {
   }
   applySlashSpacing(input)
   input.commit()
+  return undefined
 }
 
 /**
@@ -290,6 +291,7 @@ function symbolTransformNoArrows(input: string | ProseView): string | void {
     return symbolTransform(input, { includeArrows: false })
   }
   symbolTransform(input, { includeArrows: false })
+  return undefined
 }
 
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms.
