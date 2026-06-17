@@ -53,7 +53,7 @@ quartz/static/images/posts
 *.avif_original
 *.mp4_original
 website_content/asset_staging
-scripts/asset_queue.json
+asset_queue.json
 
 # Content
 website_content/drafts
@@ -79,3 +79,9 @@ scripts/*.json
 AGENTS.md
 .gh-resolved
 .pnpm-store
+
+# Mutation & property testing artifacts
+.stryker-tmp/
+reports/
+mutants/
+.hypothesis/

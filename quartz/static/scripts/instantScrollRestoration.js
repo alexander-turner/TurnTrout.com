@@ -1,4 +1,4 @@
-/* global INSTANT_SCROLL_RESTORE_KEY, SCROLL_POSITION_KEY_PREFIX -- injected at build time by Static emitter (see buildStaticScriptDefines) */
+/* global INSTANT_SCROLL_RESTORE_KEY, SCROLL_POSITION_KEY_PREFIX, SCROLL_POSITION_TIMESTAMP_KEY_PREFIX, SCROLL_POSITION_MAX_AGE_MS -- injected at build time by Static emitter (see buildStaticScriptDefines) */
 ;(function () {
   // Force manual scroll restoration across all browsers
   if ("scrollRestoration" in window.history) {
@@ -28,11 +28,24 @@
     }
   }
 
-  // Cross-session fallback: check localStorage for persisted scroll position
+  // Cross-session fallback: check localStorage for persisted scroll position.
+  // Positions older than SCROLL_POSITION_MAX_AGE_MS are stale—a reader returning
+  // a week later expects a fresh top-of-page view—so evict them instead of restoring.
   if (savedScroll === null && typeof Storage !== "undefined") {
-    const localScroll = localStorage.getItem(SCROLL_POSITION_KEY_PREFIX + location.pathname)
+    const scrollKey = SCROLL_POSITION_KEY_PREFIX + location.pathname
+    const timestampKey = SCROLL_POSITION_TIMESTAMP_KEY_PREFIX + location.pathname
+    const localScroll = localStorage.getItem(scrollKey)
     const parsed = localScroll ? parseInt(localScroll, 10) : NaN
-    if (!isNaN(parsed) && parsed > 0) {
+
+    const savedAtRaw = localStorage.getItem(timestampKey)
+    const savedAt = savedAtRaw ? parseInt(savedAtRaw, 10) : NaN
+    const isStale = !isNaN(savedAt) && Date.now() - savedAt > SCROLL_POSITION_MAX_AGE_MS
+
+    if (isStale) {
+      localStorage.removeItem(scrollKey)
+      localStorage.removeItem(timestampKey)
+      console.debug("[InstantScrollRestoration] Evicted stale localStorage scroll position")
+    } else if (!isNaN(parsed) && parsed > 0) {
       savedScroll = parsed
       console.debug(
         "[InstantScrollRestoration] Using localStorage cross-session fallback:",

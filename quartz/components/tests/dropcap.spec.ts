@@ -1,6 +1,5 @@
-import { expect, test } from "@playwright/test"
-
 import { colorDropcapProbability, DROPCAP_COLORS } from "../constants"
+import { expect, test } from "./fixtures"
 import { gotoPage, triggerAndWaitForSPANav } from "./visual_utils"
 
 const DROPCAP_URL = "http://localhost:8080/test-page"

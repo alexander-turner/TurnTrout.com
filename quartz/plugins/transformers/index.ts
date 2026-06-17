@@ -1,4 +1,5 @@
 export { AfterArticle } from "./afterArticle"
+export { ArchiveLinks } from "./archiveLinks"
 export { addAssetDimensionsFromSrc } from "./assetDimensions"
 export { AutoCode } from "./autoCode"
 export { Bibtex } from "./bibtex"

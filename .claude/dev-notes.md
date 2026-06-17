@@ -83,6 +83,36 @@ npx playwright test --config config/playwright/playwright.config.ts -g "test nam
 
 `pnpm check` (typecheck + prettier + stylelint) is cheap and worth running locally before pushing; the bulk test suites are not.
 
+## Mutation, property, and fuzz testing
+
+Property-based/fuzz tests live alongside the regular suites and run in CI like any other test:
+
+- TypeScript: `*.property.test.ts` files using **fast-check**. Each file pins `fc.configureGlobal({ seed: ... })` so runs are deterministic (zero-flakiness policy). Note: `fc.stringMatching` rejects `i`-flagged regexes, which conflicts with the `regexp/use-ignore-case` ESLint autofix—use `fc.string({ unit: fc.constantFrom(...chars) })` for mixed-case alphabets instead.
+- Python: `scripts/tests/test_*_properties.py` using **hypothesis** with a `derandomize=True` profile (also `database=None` + `suppress_health_check=[HealthCheck.differing_executors]` so mutmut can re-run them in-process).
+
+Mutation testing is run on demand, not in CI:
+
+```bash
+# TypeScript (Stryker; mutated files + reduced test set in the configs)
+NODE_OPTIONS="--experimental-vm-modules --no-warnings" \
+  pnpm exec stryker run config/javascript/stryker.config.json
+# report: reports/mutation/mutation.json + clear-text summary on stdout
+
+# Python (mutmut; config under [tool.mutmut] in pyproject.toml)
+rm -rf mutants && uv run mutmut run
+uv run mutmut results            # list survivors
+uv run mutmut show <mutant-id>   # diff of one mutant
+```
+
+Gotchas learned the hard way:
+
+- Stryker `ignorePatterns` use gitignore semantics: a bare `tests` entry excludes **every** `tests/` directory (including `quartz/plugins/transformers/tests/`), silently dropping those suites from the sandbox and reporting their mutants as "no coverage". Anchor root-level dirs with a leading slash (`/tests`).
+- Stryker needs `"plugins": ["@stryker-mutator/jest-runner"]` spelled out; with pnpm the default `@stryker-mutator/*` resolution fails in child processes.
+- The sandbox copy chokes on directory symlinks (`.husky -> .hooks`); keep them in `ignorePatterns`.
+- `config/javascript/jest.stryker.config.js` restricts `testMatch` to the suites covering the mutated modules and disables coverage thresholds—update it when adding mutation targets.
+- mutmut runs pytest from a `mutants/` copy of the tree: `also_copy` must include everything tests import (`scripts/tests/`, `scripts/utils.py`, `config/`), and `pytest_add_cli_args = ["-o", "addopts="]` clears the repo-wide `--cov`/`-n auto` addopts that break its in-process stats collector.
+- Expect a few semantically equivalent survivors (e.g. mutating a redundant `lstrip` whose effect the following loop already subsumes); document rather than chase them.
+
 ## Running Playwright tests locally
 
 ```bash
@@ -189,6 +219,20 @@ Public-repo Actions are free, so we don’t tier coverage by event. Path-awarene
 - **Required checks**: `playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`, `python-tests`, `python-lint`, `lint`, `Node.js CI / build`, lighthouse jobs. Each workflow always triggers on a PR and gates internally (see “How CI runs”), so every required context reports `success` or `skipped` on the same head SHA auto-merge waits on—none can hang uncreated.
 - **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`, same mechanism.
 - **Post-merge**: `push: main` re-runs the full suite plus `deploy.yaml`. `deploy.yaml`’s `verify-test-results` job polls check-runs on the landed SHA, so deploy waits for those to pass before pushing to Cloudflare.
+
+## Outbound link archiving (build-time fallback)
+
+`quartz/plugins/transformers/archiveLinks.ts` rewrites confirmed-dead outbound
+links to a self-hosted archived copy at build time (no client JS). It reads
+`config/link_archive_manifest.json` once per build; for each external `<a>` whose
+canonical href is in the manifest with `dead: true`, it swaps the `href` for the
+archived `archive_url`, adds an `archived` class, and records the original in
+`data-original-href`. Live/unknown links are untouched, so with the committed
+empty manifest the transformer is a no-op.
+
+The manifest is produced by a separate writer (ArchiveBox + R2), shipped in its
+own PR. Canonicalization uses the WHATWG `new URL` parser; the writer mirrors it
+with the same `ada` parser so the keys match.
 
 ## Lessons learned
 

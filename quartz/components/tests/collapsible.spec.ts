@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test"
 
-import { expect, test } from "./fixtures"
+import { expect, routeCdnAssetStubs, test } from "./fixtures"
 import { gotoPage, reloadPage } from "./visual_utils"
 
 // Helper to get collapsible admonitions
@@ -46,7 +46,17 @@ async function goBackToTestPage(page: Page): Promise<void> {
   await expect(page.locator('body[data-slug="test-page"]')).toBeAttached()
 }
 
-test.beforeEach(async ({ page }) => {
+// This test builds its own browser context and never touches the shared `page`
+// fixture, so the shared navigation below is pure overhead for it. Loading
+// `/test-page` is the most expensive operation in this file (12-20s on the
+// WebKit CI runner), and this test loads it twice on its own; skip the third,
+// unused load so the test stays within its time budget.
+const TEST_MANAGES_OWN_CONTEXT = "state is restored before first paint (no layout shift)"
+
+test.beforeEach(async ({ page }, testInfo) => {
+  if (testInfo.title === TEST_MANAGES_OWN_CONTEXT) {
+    return
+  }
   await gotoPage(page, "http://localhost:8080/test-page")
   await waitForCollapsibleIds(page)
 })
@@ -193,9 +203,10 @@ test.describe("Collapsible admonition state persistence", () => {
     expect(idsAfterNav).toEqual(initialIds)
   })
 
-  test("state is restored before first paint (no layout shift)", async ({ browser }) => {
+  test(TEST_MANAGES_OWN_CONTEXT, async ({ browser }) => {
     // Create a fresh context with localStorage pre-set BEFORE any navigation
     const context = await browser.newContext()
+    await routeCdnAssetStubs(context)
     const page = await context.newPage()
 
     // First, visit the page to get collapsible IDs
