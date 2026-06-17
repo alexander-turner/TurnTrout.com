@@ -107,6 +107,19 @@ describe("transformStyle", () => {
     const result = transformStyle("--before-color: var(--dropcap-background-red);", fullMapping)
     expect(result).toBe("--before-color: var(--dropcap-background-red);")
   })
+
+  // Shiki emits inline hex colors (e.g. `color:#D73A49`); these must map to
+  // CSS variables despite starting with a non-word `#`.
+  it.each([
+    { input: "color:#D73A49;", expected: "color:var(--red);" },
+    { input: "color: #d73a49;", expected: "color: var(--red);" },
+    { input: "border: 1px solid #D73A49", expected: "border: 1px solid var(--red)" },
+    // Must not match inside a longer hex token.
+    { input: "color: #D73A4900;", expected: "color: #D73A4900;" },
+  ])("transforms hex color in $input", ({ input, expected }) => {
+    const result = transformStyle(input, { "#D73A49": "var(--red)" })
+    expect(result).toBe(expected)
+  })
 })
 
 describe("transformElement", () => {

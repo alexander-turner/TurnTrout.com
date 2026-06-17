@@ -119,8 +119,9 @@ function processAnchor(
   if (isExternal) {
     classes.push("external")
 
-    // Ensure bare domains like "example.com" get a protocol
-    if (!dest.startsWith("http") && !dest.startsWith("mailto:")) {
+    // Ensure bare domains like "example.com" get a protocol, while leaving
+    // already-absolute URLs and scheme links (mailto:, tel:, data:, …) alone.
+    if (!isNonRewritableUrl(dest)) {
       dest = `https://${dest}` as RelativeURL
       node.properties.href = dest
     }

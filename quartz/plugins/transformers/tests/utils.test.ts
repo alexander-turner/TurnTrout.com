@@ -37,6 +37,24 @@ describe("replaceRegex", () => {
     ])
   })
 
+  it("terminates and makes no replacement for a zero-width-capable regex", () => {
+    const node = createNode("abc")
+    const parent: Parent = { type: "span", children: [node] }
+    // `x*` matches the empty string at every position; the loop must not hang.
+    const regex = /x*/g
+
+    const replaceFn = (): ReplaceFnResult => ({
+      before: "",
+      replacedMatch: "REPLACED",
+      after: "",
+    })
+
+    replaceRegex(node, 0, parent, regex, replaceFn, acceptAll)
+
+    // No non-empty match, so the node is left untouched.
+    expect(parent.children).toEqual([createNode("abc")])
+  })
+
   it("should handle multiple matches", () => {
     const node = createNode("apple banana apple")
     const parent: Parent = { type: "span", children: [node] }
