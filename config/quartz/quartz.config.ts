@@ -4,6 +4,7 @@ import {
   AfterArticle,
   AliasRedirects,
   AllTagsPage,
+  ArchiveLinks,
   Assets,
   AutoCode,
   Bibtex,
@@ -135,6 +136,9 @@ const config: QuartzConfig = {
       HTMLFormattingImprovement(),
       Latex(),
       CrawlLinks({ lazyLoad: true, markdownLinkResolution: "shortest" }),
+      // After CrawlLinks so it sees normalized https:// hrefs + the "external"
+      // class; swaps confirmed-dead outbound links for their archived copy.
+      ArchiveLinks(),
       rehypeCustomSpoiler(),
       TagSmallcaps(),
       AutoCode(),

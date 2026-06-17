@@ -683,6 +683,13 @@ img.emoji {
   vertical-align: -0.1em;
 }
 
+// Keeps an emoji glued to its preceding glyph so it never wraps alone to the
+// start of a new line (a joiner can't suppress the wrap opportunity an inline
+// img creates at its box boundary).
+.emoji-span {
+  white-space: nowrap;
+}
+
 .theme-emoji {
   width: 100px;
   max-width: 100px;

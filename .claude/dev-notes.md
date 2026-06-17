@@ -220,6 +220,20 @@ Public-repo Actions are free, so we don’t tier coverage by event. Path-awarene
 - **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`, same mechanism.
 - **Post-merge**: `push: main` re-runs the full suite plus `deploy.yaml`. `deploy.yaml`’s `verify-test-results` job polls check-runs on the landed SHA, so deploy waits for those to pass before pushing to Cloudflare.
 
+## Outbound link archiving (build-time fallback)
+
+`quartz/plugins/transformers/archiveLinks.ts` rewrites confirmed-dead outbound
+links to a self-hosted archived copy at build time (no client JS). It reads
+`config/link_archive_manifest.json` once per build; for each external `<a>` whose
+canonical href is in the manifest with `dead: true`, it swaps the `href` for the
+archived `archive_url`, adds an `archived` class, and records the original in
+`data-original-href`. Live/unknown links are untouched, so with the committed
+empty manifest the transformer is a no-op.
+
+The manifest is produced by a separate writer (ArchiveBox + R2), shipped in its
+own PR. Canonicalization uses the WHATWG `new URL` parser; the writer mirrors it
+with the same `ada` parser so the keys match.
+
 ## Lessons learned
 
 - When making interface array properties `readonly`, also update downstream function signatures to accept `readonly` arrays. `.map()`/`.filter()`/`.some()`/`.includes()` work on readonly; `.sort()`/`.push()` don’t—copy first: `[...arr].sort()`.

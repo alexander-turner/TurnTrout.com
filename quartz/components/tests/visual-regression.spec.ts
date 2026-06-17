@@ -1,13 +1,15 @@
+import { type TestInfo } from "@playwright/test"
 import { type Page } from "playwright"
 
 import { maxMobileWidth, minDesktopWidth } from "../../styles/variables"
-import { listTolerance, tightScrollTolerance } from "../constants"
+import { forceHslInvertClass, listTolerance, tightScrollTolerance } from "../constants"
 import { expect, test } from "./fixtures"
 import {
   getH1Screenshots,
   gotoPage,
   isDesktopViewport,
   isElementChecked,
+  isFirefox,
   moveMouseToSafePosition,
   reloadPage,
   setTheme,
@@ -91,10 +93,28 @@ async function setDummyContentMeta(page: Page) {
   })
 }
 
+/**
+ * The force-hsl-invert image is post-processed client-side via canvas
+ * (accurateInvert.ts) in both themes; its decode/processing timing is
+ * nondeterministic in Firefox, producing spurious diffs in the Images section.
+ * Hide it there (visibility:hidden preserves layout) so the section stays
+ * stable.
+ */
+async function hideForceHslInvertInFirefox(page: Page, testInfo: TestInfo): Promise<void> {
+  if (!isFirefox(testInfo)) return
+  await page.evaluate((cls) => {
+    document
+      .querySelectorAll<HTMLElement>(`img.${cls}`)
+      .forEach((img) => (img.style.visibility = "hidden"))
+  }, forceHslInvertClass)
+}
+
 test.describe("Test page sections", () => {
   THEMES.forEach((theme) => {
     test(`Normal page in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
+
+      await hideForceHslInvertInFirefox(page, testInfo)
 
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
     })
