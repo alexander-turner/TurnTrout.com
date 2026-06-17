@@ -263,15 +263,35 @@ Real-capture gotchas this surfaced (invisible to the mocked unit tests):
 - A minimal page inlines to ~1 KB, under `MIN_SNAPSHOT_BYTES` (2048); the
   fixture must be sizable to clear the quality gate.
 
+CI wiring for this:
+
+- `python-tests.yaml` has an `archivebox-integration` job that installs
+  ArchiveBox + single-file + a version-parseable Chromium and runs
+  `-m requires_archivebox` on PRs touching `scripts/**`, so the real capture
+  path is checked per-PR (the default `python-tests` job deselects the marker).
+- `archive-links.yaml` selects `google-chrome`/`chromium` (rejecting the "for
+  Testing" build), runs the same capture as a smoke test before the long run,
+  and pins `ARCHIVEBOX_VERSION` so an upstream release can't silently break it.
+
+### Linkchecker / manifest integrity
+
+A populated manifest rewrites dead links to
+`https://assets.turntrout.com/static/link-archive/<sha>/singlefile.html`.
+`scripts/linkchecker.fish` fetches every `assets.turntrout.com` link with
+`--check-extern`, so it now **ignores** the `static/link-archive/` prefix —
+otherwise each build would GET thousands of multi-hundred-KB snapshots and
+hammer R2. Their liveness is instead enforced by
+`scripts/check_link_archive_integrity.py` (HEADs every `archive_url`, fails on
+any non-200), run in the weekly archive job right after the manifest is written.
+`built_site_checks.py::check_media_asset_sources` only inspects media tags
+(`img`/`video`/`audio`/`source`/`svg`), not `<a>`, so rewritten anchors don't
+trip it.
+
 Still pending before the scheduled job can be trusted:
 
-1. The workflow installs `archivebox` + `single-file-cli` but **no Chromium**;
-   `archivebox init --setup` would try to auto-install one. Add an explicit
-   Chromium install (a `chromium`-branded build) plus a smoke capture so an
-   upstream release or a wrong-branded browser can't silently break captures.
-2. Run the first full `--backfill` pass **locally** (needs the R2 env vars);
+1. Run the first full `--backfill` pass **locally** (needs the R2 env vars);
    it is multi-hour and exceeds the 6h Action cap.
-3. Spot-check a few `singlefile.html` snapshots render standalone from R2, then
+2. Spot-check a few `singlefile.html` snapshots render standalone from R2, then
    commit the seed manifest via PR.
 
 Only then promote `.github/workflows/archive-links.yaml` (weekly +

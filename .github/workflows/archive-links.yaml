@@ -30,7 +30,9 @@ permissions:
 
 # Pin ArchiveBox so an upstream release can't silently change capture behavior.
 env:
-  ARCHIVEBOX_VERSION: "0.7.2"
+  ARCHIVEBOX_VERSION: "0.7.4"
+  # CI has no usable Chrome sandbox; this makes ArchiveBox pass --no-sandbox.
+  CHROME_SANDBOX: "False"
 
 jobs:
   archive-links:
@@ -59,6 +61,37 @@ jobs:
             npm install -g single-file-cli
             archivebox version
 
+      - name: Select a version-parseable Chromium for ArchiveBox
+        run: |
+          # ArchiveBox 0.7.x reads the major version from the first three words
+          # of `<chrome> --version`. The "Google Chrome for Testing" build
+          # (Playwright's default) reports a string that truncates to "Google
+          # Chrome for" — no number — so the singlefile extractor crashes and
+          # SILENTLY writes nothing. Google Chrome stable ("Google Chrome <v>")
+          # and distro Chromium ("Chromium <v>") both parse.
+          chrome="$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
+          if [ -z "$chrome" ]; then
+            echo "::error::No google-chrome/chromium binary found for ArchiveBox" >&2
+            exit 1
+          fi
+          ver="$("$chrome" --version || true)"
+          echo "Chromium for ArchiveBox: $chrome -> $ver"
+          case "$ver" in
+            "Google Chrome for Testing"*)
+              echo "::error::$chrome is a 'for Testing' build; ArchiveBox mis-parses its version" >&2
+              exit 1 ;;
+          esac
+          {
+            echo "CHROME_BINARY=$chrome"
+            echo "SINGLEFILE_BINARY=$(command -v single-file)"
+          } >> "$GITHUB_ENV"
+
+      - name: Smoke-test a real capture (version pin + chromium)
+        # Captures a tiny locally-served page for real and asserts a
+        # singlefile.html is produced — so a bad ArchiveBox release or a
+        # wrong-branded Chromium fails here, before the multi-hundred-link run.
+        run: uv run pytest -m requires_archivebox scripts/tests/test_archive_links.py
+
       - name: Configure rclone for R2
         env:
           ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
@@ -85,8 +118,10 @@ jobs:
         run: |
           mkdir -p .archivebox
           cd .archivebox
-          # init is idempotent; --quick on first run, plain init when re-running.
-          archivebox init --setup --quick || archivebox init --setup
+          # Plain init (no --setup): the binaries are already installed and
+          # pointed at via CHROME_BINARY/SINGLEFILE_BINARY, and --setup would
+          # try to auto-install a (mis-branded) Chromium and can hang.
+          archivebox init
 
       - name: Archive new links and probe liveness
         env:
@@ -99,6 +134,11 @@ jobs:
           args=()
           if [ "$REFRESH" = "true" ]; then args+=(--refresh); fi
           uv run python scripts/archive_links.py "${args[@]}"
+
+      - name: Verify every archived snapshot is live on R2
+        # Enforces the invariant the per-PR linkchecker no longer checks: every
+        # archive_url the reader could rewrite to must be a live R2 object.
+        run: uv run python scripts/check_link_archive_integrity.py
 
       - name: Open PR with manifest changes
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8

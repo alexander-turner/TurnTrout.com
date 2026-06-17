@@ -74,5 +74,64 @@ jobs:
       - name: Run pytest
         run: |
           uv run python -m pytest scripts \
-            -m "not requires_r2" \
+            -m "not requires_r2 and not requires_archivebox" \
+            --config-file config/python/pyproject.toml
+
+  archivebox-integration:
+    needs: detect-changes
+    if: >
+      !startsWith(github.head_ref, 'deepsource-') &&
+      needs.detect-changes.outputs.python == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # CI has no usable Chrome sandbox; this makes ArchiveBox pass --no-sandbox.
+    env:
+      CHROME_SANDBOX: "False"
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+        with:
+          install-node-deps: "false"
+          install-system-deps: "true"
+
+      - name: Install ArchiveBox and single-file
+        uses: ./.github/actions/retry-external
+        with:
+          max-attempts: "3"
+          timeout-minutes: "10"
+          command: |
+            # Keep in sync with ARCHIVEBOX_VERSION in archive-links.yaml.
+            uv pip install --system "archivebox==0.7.4"
+            npm install -g single-file-cli
+            archivebox version
+
+      - name: Select a version-parseable Chromium for ArchiveBox
+        run: |
+          # See archive-links.yaml: the "Google Chrome for Testing" build makes
+          # ArchiveBox's singlefile extractor silently produce nothing.
+          chrome="$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
+          if [ -z "$chrome" ]; then
+            echo "::error::No google-chrome/chromium binary found for ArchiveBox" >&2
+            exit 1
+          fi
+          ver="$("$chrome" --version || true)"
+          echo "Chromium for ArchiveBox: $chrome -> $ver"
+          case "$ver" in
+            "Google Chrome for Testing"*)
+              echo "::error::$chrome is a 'for Testing' build; ArchiveBox mis-parses its version" >&2
+              exit 1 ;;
+          esac
+          {
+            echo "CHROME_BINARY=$chrome"
+            echo "SINGLEFILE_BINARY=$(command -v single-file)"
+          } >> "$GITHUB_ENV"
+
+      - name: Run the real ArchiveBox capture test
+        run: |
+          uv run python -m pytest scripts \
+            -m requires_archivebox \
             --config-file config/python/pyproject.toml
