@@ -751,6 +751,7 @@ export function timeTransform(input: string | ProseView): string | void {
     return amPmPass(input)
   }
   amPmPass(input)
+  return
 }
 
 // Site-specific transforms (punctilio handles: !=, multiplication, ellipsis, math symbols, etc.)
@@ -799,6 +800,7 @@ export function massTransformText(input: string | ProseView): string | void {
   for (const pass of [...massTransformPasses, egPass, iePass]) {
     pass(input)
   }
+  return
 }
 
 // Per-element pipeline order mirrors checkedTextTransformers: the mass
