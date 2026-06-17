@@ -513,6 +513,22 @@ def test_check_exists_on_r2_substring_prefix_does_not_match():
         assert result is False
 
 
+def test_check_exists_on_r2_does_not_match_size_column():
+    """A key equal to the rclone size column is not mistaken for a path."""
+    with (
+        patch(
+            "scripts.r2_upload.script_utils.find_executable",
+            return_value="rclone",
+        ),
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="        9 file.txt\n"
+        )
+        result = r2_upload.check_exists_on_r2("r2:bucket/9")
+        assert result is False
+
+
 def test_check_exists_on_r2_file_not_exists():
     with (
         patch(

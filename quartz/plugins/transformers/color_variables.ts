@@ -44,8 +44,8 @@ function compileColorPatterns(
     const escaped = color.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
     // `\b` only delimits where the key edge is a word char; hex keys like
     // "#D73A49" start with `#` (non-word), so a leading `\b#…` could never
-    // match. All keys end in an alphanumeric, so a trailing `\b` is always
-    // valid; only the start boundary needs to vary.
+    // match. The current keys all end in an alphanumeric, so a trailing `\b`
+    // suffices; only the start boundary needs to vary.
     const startBoundary = /^\w/.test(color) ? "\\b" : "(?<![\\w#])"
     return {
       regex: new RegExp(`${startBoundary}${escaped}\\b`, "gi"),

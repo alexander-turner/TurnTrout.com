@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import math
-
 import pytest
 
 from scripts import optimize_ci_shards as opt
@@ -144,5 +142,3 @@ def test_module_constants_are_internally_consistent() -> None:
         == opt.PLAYWRIGHT_TESTS * opt.VIEWPORTS
     )
     assert opt.VISUAL_EXECUTIONS_PER_BROWSER == opt.VISUAL_TESTS * opt.VIEWPORTS
-    # math is imported and used by min_shards.
-    assert math.ceil(1.1) == 2
