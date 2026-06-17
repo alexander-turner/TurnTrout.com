@@ -17,7 +17,7 @@ Three stages: **Transform → Filter → Emit**.
 ### Python scripts (`scripts/`)
 
 - **Asset processing**: `convert_assets.py`, `compress.py`, `r2_upload.py`
-- **Validation**: `check_internal_links.py`, `source_file_checks.py`, `built_site_checks.py`, `scan_for_empty_alt.py`
+- **Validation**: `source_file_checks.py`, `built_site_checks.py`; internal links via `linkchecker.fish`
 - **Pre-push orchestration**: `run_push_checks.py`
 - **Alt-text**: handled by the PyPI package `alt-text-llm`.
 
