@@ -70,11 +70,21 @@ export const transformStyle = (
   const patterns =
     mapping === colorMapping ? defaultCompiledPatterns : compileColorPatterns(mapping)
 
-  // Extract all var() expressions to protect them from transformation
   const varExpressions: string[] = []
   const placeholder = "___VAR_PLACEHOLDER_"
 
-  let newStyle = style.replace(/var\([^)]+\)/gi, (match) => {
+  // Protect CSS custom property values before anything else. Shiki's dual-theme
+  // output uses --shiki-light/--shiki-dark with calibrated hex values; rewriting
+  // those to CSS variables breaks contrast. Doing this step first avoids nested
+  // placeholders when a custom property value also contains a var() expression.
+  let newStyle = style.replace(/(?<=--[\w-]+:)[^;]*/g, (match) => {
+    if (match.length === 0) return match
+    varExpressions.push(match)
+    return `${placeholder}${varExpressions.length - 1}___`
+  })
+
+  // Also protect var() expressions in regular properties from transformation.
+  newStyle = newStyle.replace(/var\([^)]+\)/gi, (match) => {
     varExpressions.push(match)
     return `${placeholder}${varExpressions.length - 1}___`
   })
