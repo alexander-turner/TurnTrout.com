@@ -72,6 +72,10 @@ def download_media(url: str, target_dir: Path) -> bool:
             url, stream=True, timeout=60, allow_redirects=True
         ) as response:
             response.raise_for_status()
+            # ``response.raw`` skips requests' automatic decompression; opt in
+            # so a ``Content-Encoding: gzip`` response is written decoded, not
+            # as still-compressed bytes.
+            response.raw.decode_content = True
             with open(target_path, "wb") as out_file:
                 shutil.copyfileobj(response.raw, out_file)
         return True

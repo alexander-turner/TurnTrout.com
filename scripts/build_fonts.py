@@ -352,6 +352,10 @@ def main() -> None:
             dst = _FONT_DIR / filename
             shutil.copy2(src, dst)
             print(f"Installed {dst}")
+    elif not all_match:
+        # Verify mode: signal drift so a CI invocation fails instead of
+        # silently passing on out-of-date committed fonts.
+        sys.exit(1)
 
 
 if __name__ == "__main__":

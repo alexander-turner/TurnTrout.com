@@ -6,6 +6,7 @@ import io
 import json
 import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -270,11 +271,17 @@ def get_files(
                 repo = git.Repo(root)
                 # Convert file paths to paths relative to the git root
                 relative_files = [file.relative_to(root) for file in files]
-                # Filter out ignored files
+                # ``repo.ignored`` shells out to ``git check-ignore``; pass all
+                # paths in one call instead of spawning a subprocess per file.
+                ignored = (
+                    frozenset(repo.ignored(*relative_files))
+                    if relative_files
+                    else frozenset()
+                )
                 files = [
                     file
                     for file, rel_file in zip(files, relative_files)
-                    if not repo.ignored(rel_file)
+                    if str(rel_file) not in ignored
                 ]
             except (
                 git.GitCommandError,
@@ -381,6 +388,11 @@ def error_exit(message: str, code: int = 1) -> NoReturn:
     sys.exit(code)
 
 
+# Closing frontmatter fence: a line containing only `---` (with optional
+# trailing spaces/tabs). Line-anchored so a `---` inside a value isn't matched.
+_CLOSING_FENCE_RE = re.compile(r"^---[ \t]*$", re.MULTILINE)
+
+
 def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
     """
     Split a markdown file into its YAML frontmatter and content.
@@ -398,16 +410,24 @@ def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
         content = f.read()
 
     # Frontmatter is a leading YAML block fenced by `---` lines: an opening
-    # `---\n` at the very start of the file and a closing `---` after it. A
-    # `---` rule elsewhere in the body is content, not a delimiter.
-    parts = content.split("---", 2)
-    if not content.startswith("---\n") or len(parts) < 3:
+    # `---\n` at the very start of the file and a closing `---` on its own
+    # line. The closing fence must be line-anchored so a `---` inside a YAML
+    # value (or a `---` rule in the body) isn't mistaken for the delimiter.
+    fence_match = (
+        _CLOSING_FENCE_RE.search(content, 4)
+        if content.startswith("---\n")
+        else None
+    )
+    if fence_match is None:
         if verbose:
             print(f"Skipping {file_path}: No valid frontmatter found")
         return {}, ""
 
+    front_matter_text = content[4 : fence_match.start()]
+    body = content[fence_match.end() :]
+
     try:
-        metadata = yaml.load(parts[1])
+        metadata = yaml.load(front_matter_text)
         # YAML front matter that's a scalar (string, number, null) parses
         # to a non-dict — coerce so callers can always rely on .get/.items.
         if not isinstance(metadata, dict):
@@ -416,7 +436,7 @@ def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
         print(f"Error parsing YAML in {file_path}: {str(e)}")
         return {}, ""
 
-    return metadata, parts[2]
+    return metadata, body
 
 
 def build_html_to_md_map(md_dir: Path) -> dict[str, Path]:
