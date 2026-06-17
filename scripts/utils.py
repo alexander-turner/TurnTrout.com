@@ -285,6 +285,8 @@ def get_files(
                 ]
             except (
                 git.GitCommandError,
+                git.InvalidGitRepositoryError,
+                git.NoSuchPathError,
                 ValueError,
                 RuntimeError,
                 subprocess.CalledProcessError,
