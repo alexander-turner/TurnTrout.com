@@ -212,8 +212,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: github:alexander-turner/punctilio#29a5bc7f8bf5bd7244d211816858467450a1fbe8
-        version: https://codeload.github.com/alexander-turner/punctilio/tar.gz/29a5bc7f8bf5bd7244d211816858467450a1fbe8(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5)
+        specifier: github:alexander-turner/punctilio#464d24fb574eb020a2c0b35367cb9316e860debf
+        version: https://codeload.github.com/alexander-turner/punctilio/tar.gz/464d24fb574eb020a2c0b35367cb9316e860debf(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5)
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -7945,8 +7945,8 @@ packages:
   pumpify@2.0.1:
     resolution: {integrity: sha512-m7KOje7jZxrmutanlkS1daj1dS6z6BgslzOXmcSEpIlCxM3VJH7lG5QLeck/6hgF6F4crFf01UtQmNsJfweTAw==}
 
-  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/29a5bc7f8bf5bd7244d211816858467450a1fbe8:
-    resolution: {tarball: https://codeload.github.com/alexander-turner/punctilio/tar.gz/29a5bc7f8bf5bd7244d211816858467450a1fbe8}
+  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/464d24fb574eb020a2c0b35367cb9316e860debf:
+    resolution: {tarball: https://codeload.github.com/alexander-turner/punctilio/tar.gz/464d24fb574eb020a2c0b35367cb9316e860debf}
     version: 0.0.0-git
     engines: {node: '>=20.0.0'}
     hasBin: true
@@ -13166,7 +13166,7 @@ snapshots:
 
   babel-plugin-istanbul@7.0.1:
     dependencies:
-      '@babel/helper-plugin-utils': 7.28.6
+      '@babel/helper-plugin-utils': 7.29.7
       '@istanbuljs/load-nyc-config': 1.1.0
       '@istanbuljs/schema': 0.1.6
       istanbul-lib-instrument: 6.0.3
@@ -19094,7 +19094,7 @@ snapshots:
       inherits: 2.0.4
       pump: 3.0.4
 
-  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/29a5bc7f8bf5bd7244d211816858467450a1fbe8(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5):
+  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/464d24fb574eb020a2c0b35367cb9316e860debf(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5):
     dependencies:
       cosmiconfig: 9.0.1(typescript@6.0.3)
       escape-string-regexp: 5.0.0
