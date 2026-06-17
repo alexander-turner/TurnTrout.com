@@ -20,6 +20,7 @@ import { type WebSocket, WebSocketServer } from "ws"
 
 import { generateCritical } from "../styles/generate-critical"
 import { generatePalette, generateScss, generateScssRecord } from "../styles/generate-variables"
+import { launchCriticalCssBrowser } from "./browser"
 // @ts-expect-error Importing from a JS file, no types
 import { cacheFile, fp } from "./constants.js"
 
@@ -425,13 +426,7 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
           waitForStatus: "networkidle0",
           renderWaitTime: 2000,
           puppeteer: {
-            args: [
-              "--no-sandbox",
-              "--disable-setuid-sandbox",
-              "--disable-dev-shm-usage",
-              "--disable-accelerated-2d-canvas",
-              "--disable-gpu",
-            ],
+            getBrowser: launchCriticalCssBrowser,
           },
         },
       })
