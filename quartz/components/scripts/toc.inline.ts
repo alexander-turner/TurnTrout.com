@@ -66,6 +66,31 @@ function setupTocActiveHighlighting(): void {
 
   const visibleSections = new Set<string>()
 
+  // Detection band is the top 30% of the viewport (matches rootMargin below).
+  const DETECTION_BAND_FRACTION = 0.3
+  const firstSectionId = sections[0]?.id
+
+  // When no heading sits in the detection band (e.g. on a fresh load scrolled
+  // partway down), fall back to the last heading scrolled above the band.
+  function getActiveSectionByScroll(): string {
+    const boundary = window.innerHeight * DETECTION_BAND_FRACTION
+    let active = ""
+    for (const section of sections) {
+      if (section.getBoundingClientRect().top > boundary) break
+      active = section.id
+    }
+    return active
+  }
+
+  function resolveActiveSection(): string {
+    if (visibleSections.size > 0) {
+      for (let i = sections.length - 1; i >= 0; i--) {
+        if (visibleSections.has(sections[i].id)) return sections[i].id
+      }
+    }
+    return getActiveSectionByScroll() || firstSectionId
+  }
+
   const observerOptions: IntersectionObserverInit = {
     rootMargin: "0px 0px -70% 0px",
     threshold: 0,
@@ -80,23 +105,17 @@ function setupTocActiveHighlighting(): void {
       }
     })
 
-    if (visibleSections.size > 0) {
-      for (let i = sections.length - 1; i >= 0; i--) {
-        if (visibleSections.has(sections[i].id)) {
-          updateActiveLink(sections[i].id)
-          return
-        }
-      }
-    }
+    updateActiveLink(resolveActiveSection())
   }, observerOptions)
   window.tocObserver = observer
 
   sections.forEach((section) => observer.observe(section))
 
   const hash = window.location.hash.slice(1)
-  const firstSectionId = sections[0]?.id
-  if (hash || firstSectionId) {
-    updateActiveLink(hash || firstSectionId)
+  if (hash) {
+    updateActiveLink(hash)
+  } else if (firstSectionId) {
+    updateActiveLink(resolveActiveSection())
   }
 }
 

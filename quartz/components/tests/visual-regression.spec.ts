@@ -460,6 +460,55 @@ test.describe("Table of contents", () => {
     const highlightText = page.locator("#table-of-contents .active").first()
     await expect(highlightText).not.toHaveText(initialHighlightText)
   })
+
+  test("Re-initializing while scrolled partway down highlights the passed heading", async ({
+    page,
+  }) => {
+    test.skip(!isDesktopViewport(page))
+
+    await page.waitForFunction(
+      () => document.querySelector("#table-of-contents .active") !== null,
+      { timeout: 15_000 },
+    )
+
+    // Simulate a hard refresh that lands mid-page: scroll down past several
+    // headings, then re-run the TOC setup the way a fresh `nav` dispatch would.
+    const { expectedSlug, firstSlug } = await page.evaluate(() => {
+      const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>("#toc-content a"))
+      const navSlugs = new Set(navLinks.map((l) => l.getAttribute("href")?.split("#")[1]))
+      const sections = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          "#center-content article h1, #center-content article h2",
+        ),
+      ).filter((s) => s.id && navSlugs.has(s.id))
+
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" })
+
+      // Mirror getActiveSectionByScroll: last heading scrolled above the band.
+      const boundary = window.innerHeight * 0.3
+      let expected = ""
+      for (const s of sections) {
+        if (s.getBoundingClientRect().top > boundary) break
+        expected = s.id
+      }
+
+      document.dispatchEvent(new CustomEvent("nav", { detail: { url: window.location.pathname } }))
+      return { expectedSlug: expected, firstSlug: sections[0]?.id ?? "" }
+    })
+
+    // The bug symptom: the first entry stays highlighted instead of the
+    // heading we've scrolled past. Guard that this case is meaningful.
+    expect(expectedSlug).not.toBe(firstSlug)
+
+    await page.waitForFunction(
+      (slug) => {
+        const active = document.querySelector("#table-of-contents .active")
+        return active?.getAttribute("href")?.split("#")[1] === slug
+      },
+      expectedSlug,
+      { timeout: 15_000 },
+    )
+  })
 })
 
 test.describe("Layout Breakpoints", () => {
