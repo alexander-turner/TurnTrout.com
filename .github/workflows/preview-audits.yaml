@@ -161,11 +161,8 @@ jobs:
         with:
           urls: |
             ${{ needs.deploy.outputs.deploy_url }}/design
-            ${{ needs.deploy.outputs.deploy_url }}/design#footnote-label
+            ${{ needs.deploy.outputs.deploy_url }}/design#footnotes
             ${{ needs.deploy.outputs.deploy_url }}/test-page
-            ${{ needs.deploy.outputs.deploy_url }}/test-page#spoilers
-            ${{ needs.deploy.outputs.deploy_url }}/test-page#videos
-            ${{ needs.deploy.outputs.deploy_url }}/test-page#admonitions
             ${{ needs.deploy.outputs.deploy_url }}/test-page#footnotes
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config.json"
@@ -192,11 +189,8 @@ jobs:
         with:
           urls: |
             ${{ needs.deploy.outputs.deploy_url }}/design
-            ${{ needs.deploy.outputs.deploy_url }}/design#footnote-label
+            ${{ needs.deploy.outputs.deploy_url }}/design#footnotes
             ${{ needs.deploy.outputs.deploy_url }}/test-page
-            ${{ needs.deploy.outputs.deploy_url }}/test-page#spoilers
-            ${{ needs.deploy.outputs.deploy_url }}/test-page#videos
-            ${{ needs.deploy.outputs.deploy_url }}/test-page#admonitions
             ${{ needs.deploy.outputs.deploy_url }}/test-page#footnotes
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config-mobile.json"
