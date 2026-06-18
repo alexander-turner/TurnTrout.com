@@ -923,6 +923,18 @@ describe("rearrangeLinkPunctuation", () => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
+
+    // The footnote back-arrow plugin runs first, splicing trailing text + arrow
+    // into a favicon-span. Punctuation left at the span's head must still move
+    // into the preceding link, otherwise the "." renders after the favicon.
+    it("should move punctuation from a favicon-span into the preceding link", () => {
+      const input =
+        '<p>I even self-host <a href="/alignment-tier-list">AI presidents discuss AI alignment agendas</a><span class="favicon-span">. <a class="data-footnote-backref">⤴</a></span></p>'
+      const expected =
+        '<p>I even self-host <a href="/alignment-tier-list">AI presidents discuss AI alignment agendas.</a><span class="favicon-span"> <a class="data-footnote-backref">⤴</a></span></p>'
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
+    })
   })
 
   describe("End-to-end HTML formatting improvement", () => {
