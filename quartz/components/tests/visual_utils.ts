@@ -347,6 +347,14 @@ export async function getH1Screenshots(
     const sanitizedH1Id = h1Id ? sanitize(h1Id) : null
     if (!sanitizedH1Id) throw new Error("H1 header has no id")
 
+    // Firefox image decode/load timing is nondeterministic in CI; hide images
+    // (visibility:hidden preserves layout) so section screenshots stay stable.
+    if (isFirefox(testInfo)) {
+      await h1Span.evaluate((el) => {
+        el.querySelectorAll<HTMLElement>("img").forEach((img) => (img.style.visibility = "hidden"))
+      })
+    }
+
     await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
       elementToScreenshot: h1Span,
       skipMediaPause: true,
