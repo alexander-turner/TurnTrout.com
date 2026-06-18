@@ -121,6 +121,13 @@ export const specialDomainMappings: ReadonlyArray<{ pattern: RegExp; to: string 
   })),
 ]
 
+// Desktop ToC active-heading detection: a heading counts as the current
+// section while it sits within the top `TOC_DETECTION_BAND_FRACTION` of the
+// viewport. `TOC_DETECTION_ROOT_MARGIN` derives the IntersectionObserver
+// margin from the same fraction so the two never drift apart.
+export const TOC_DETECTION_BAND_FRACTION = 0.3
+export const TOC_DETECTION_ROOT_MARGIN = `0px 0px -${(1 - TOC_DETECTION_BAND_FRACTION) * 100}% 0px`
+
 // External link attributes
 export const EXTERNAL_LINK_REL = "noopener noreferrer"
 
