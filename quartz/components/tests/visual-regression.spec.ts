@@ -461,7 +461,7 @@ test.describe("Table of contents", () => {
     await expect(highlightText).not.toHaveText(initialHighlightText)
   })
 
-  test("Re-initializing while scrolled partway down highlights the passed heading", async ({
+  test("Re-initializing while scrolled past the detection band highlights the passed heading", async ({
     page,
   }) => {
     test.skip(!isDesktopViewport(page))
@@ -471,9 +471,11 @@ test.describe("Table of contents", () => {
       { timeout: 15_000 },
     )
 
-    // Simulate a hard refresh that lands mid-page: scroll down past several
-    // headings, then re-run the TOC setup the way a fresh `nav` dispatch would.
-    const { expectedSlug, firstSlug } = await page.evaluate(() => {
+    // Reproduce a fresh load that lands below every heading: scroll past the
+    // detection band so no heading intersects it, then re-run the TOC setup
+    // the way a `nav` dispatch would. This exercises the scroll fallback, not
+    // the IntersectionObserver's visible-section branch.
+    const { expectedSlug, firstSlug, headingsInBand } = await page.evaluate(() => {
       const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>("#toc-content a"))
       const navSlugs = new Set(navLinks.map((l) => l.getAttribute("href")?.split("#")[1]))
       const sections = Array.from(
@@ -484,8 +486,14 @@ test.describe("Table of contents", () => {
 
       window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" })
 
-      // Mirror getActiveSectionByScroll: last heading scrolled above the band.
+      // Must match DETECTION_BAND_FRACTION in toc.inline.ts (rootMargin -70%).
       const boundary = window.innerHeight * 0.3
+      const headingsInBand = sections.filter((s) => {
+        const rect = s.getBoundingClientRect()
+        return rect.top < boundary && rect.bottom > 0
+      }).length
+
+      // Mirror getActiveSectionByScroll: last heading scrolled above the band.
       let expected = ""
       for (const s of sections) {
         if (s.getBoundingClientRect().top > boundary) break
@@ -493,11 +501,13 @@ test.describe("Table of contents", () => {
       }
 
       document.dispatchEvent(new CustomEvent("nav", { detail: { url: window.location.pathname } }))
-      return { expectedSlug: expected, firstSlug: sections[0]?.id ?? "" }
+      return { expectedSlug: expected, firstSlug: sections[0]?.id ?? "", headingsInBand }
     })
 
-    // The bug symptom: the first entry stays highlighted instead of the
-    // heading we've scrolled past. Guard that this case is meaningful.
+    // Guard that the scenario is meaningful: the fallback (not the observer)
+    // must drive the result, and the answer must differ from the first entry
+    // that the buggy code left stuck.
+    expect(headingsInBand).toBe(0)
     expect(expectedSlug).not.toBe(firstSlug)
 
     await page.waitForFunction(
