@@ -2,7 +2,12 @@ import { type TestInfo } from "@playwright/test"
 import { type Page } from "playwright"
 
 import { maxMobileWidth, minDesktopWidth } from "../../styles/variables"
-import { forceHslInvertClass, listTolerance, tightScrollTolerance } from "../constants"
+import {
+  forceHslInvertClass,
+  listTolerance,
+  tightScrollTolerance,
+  TOC_DETECTION_BAND_FRACTION,
+} from "../constants"
 import { expect, test } from "./fixtures"
 import {
   getH1Screenshots,
@@ -475,7 +480,7 @@ test.describe("Table of contents", () => {
     // detection band so no heading intersects it, then re-run the TOC setup
     // the way a `nav` dispatch would. This exercises the scroll fallback, not
     // the IntersectionObserver's visible-section branch.
-    const { expectedSlug, firstSlug, headingsInBand } = await page.evaluate(() => {
+    const { expectedSlug, firstSlug, headingsInBand } = await page.evaluate((bandFraction) => {
       const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>("#toc-content a"))
       const navSlugs = new Set(navLinks.map((l) => l.getAttribute("href")?.split("#")[1]))
       const sections = Array.from(
@@ -486,8 +491,7 @@ test.describe("Table of contents", () => {
 
       window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" })
 
-      // Must match DETECTION_BAND_FRACTION in toc.inline.ts (rootMargin -70%).
-      const boundary = window.innerHeight * 0.3
+      const boundary = window.innerHeight * bandFraction
       const headingsInBand = sections.filter((s) => {
         const rect = s.getBoundingClientRect()
         return rect.top < boundary && rect.bottom > 0
@@ -502,7 +506,7 @@ test.describe("Table of contents", () => {
 
       document.dispatchEvent(new CustomEvent("nav", { detail: { url: window.location.pathname } }))
       return { expectedSlug: expected, firstSlug: sections[0]?.id ?? "", headingsInBand }
-    })
+    }, TOC_DETECTION_BAND_FRACTION)
 
     // Guard that the scenario is meaningful: the fallback (not the observer)
     // must drive the result, and the answer must differ from the first entry

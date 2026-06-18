@@ -1,3 +1,5 @@
+import { TOC_DETECTION_BAND_FRACTION, TOC_DETECTION_ROOT_MARGIN } from "../constants"
+
 let tocAbortController: AbortController | null = null
 
 function setupMobileTocClickDelegation(signal: AbortSignal): void {
@@ -66,14 +68,12 @@ function setupTocActiveHighlighting(): void {
 
   const visibleSections = new Set<string>()
 
-  // Detection band is the top 30% of the viewport (matches rootMargin below).
-  const DETECTION_BAND_FRACTION = 0.3
   const firstSectionId = sections[0]?.id
 
   // When no heading sits in the detection band (e.g. on a fresh load scrolled
   // partway down), fall back to the last heading scrolled above the band.
   function getActiveSectionByScroll(): string {
-    const boundary = window.innerHeight * DETECTION_BAND_FRACTION
+    const boundary = window.innerHeight * TOC_DETECTION_BAND_FRACTION
     let active = ""
     for (const section of sections) {
       if (section.getBoundingClientRect().top > boundary) break
@@ -92,7 +92,7 @@ function setupTocActiveHighlighting(): void {
   }
 
   const observerOptions: IntersectionObserverInit = {
-    rootMargin: "0px 0px -70% 0px",
+    rootMargin: TOC_DETECTION_ROOT_MARGIN,
     threshold: 0,
   }
 
