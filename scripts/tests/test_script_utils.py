@@ -241,6 +241,56 @@ def test_get_files_gitignore(tmp_path, monkeypatch: pytest.MonkeyPatch):
     assert result[0] == md_file
 
 
+def test_get_files_gitignore_batches_check(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+):
+    """Ignored files are filtered with a single batched check-ignore call."""
+    repo = git.Repo.init(tmp_path)
+    (tmp_path / ".gitignore").write_text("ignored*.md\n")
+    keep = tmp_path / "keep.md"
+    for name in ("keep.md", "ignored1.md", "ignored2.md"):
+        (tmp_path / name).write_text("content")
+    repo.index.add([".gitignore"])
+    repo.index.commit("Initial commit")
+
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda starting_dir=None: tmp_path
+    )
+
+    calls = 0
+    original_ignored = git.Repo.ignored
+
+    def counting_ignored(self, *paths):
+        nonlocal calls
+        calls += 1
+        return original_ignored(self, *paths)
+
+    monkeypatch.setattr(git.Repo, "ignored", counting_ignored)
+
+    result = script_utils.get_files(dir_to_search=tmp_path)
+
+    assert set(result) == {keep}
+    # One subprocess for all paths, not one per file.
+    assert calls == 1
+
+
+def test_get_files_gitignore_no_matches(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+):
+    """Git filtering with no matching files returns an empty tuple."""
+    repo = git.Repo.init(tmp_path)
+    (tmp_path / "notes.txt").write_text("not markdown")
+    repo.index.add(["notes.txt"])
+    repo.index.commit("Initial commit")
+
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda starting_dir=None: tmp_path
+    )
+
+    # No `.md` files exist, so there are no paths to batch-check.
+    assert script_utils.get_files(dir_to_search=tmp_path) == ()
+
+
 def test_get_files_ignore_dirs(tmp_path):
     """Test that specified directories are ignored."""
     # Create test directory structure
@@ -1339,6 +1389,20 @@ def test_split_yaml_parses_leading_frontmatter(tmp_path: Path):
     metadata, content = script_utils.split_yaml(file_path)
     assert metadata == {"title": "Hello"}
     assert content == "\nBefore.\n\n---\n\nAfter."
+
+
+def test_split_yaml_preserves_dashes_inside_value(tmp_path: Path):
+    """A `---` inside a frontmatter value is not treated as the closing
+    fence."""
+    file_path = tmp_path / "dashes.md"
+    file_path.write_text(
+        "---\ntitle: foo --- bar\ndate: 2024\n---\nBody.\n",
+        encoding="utf-8",
+    )
+
+    metadata, content = script_utils.split_yaml(file_path)
+    assert metadata == {"title": "foo --- bar", "date": 2024}
+    assert content == "\nBody.\n"
 
 
 def test_load_shared_constants_returns_independent_copy():

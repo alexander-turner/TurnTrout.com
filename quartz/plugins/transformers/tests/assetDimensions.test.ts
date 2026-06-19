@@ -890,6 +890,28 @@ describe("Asset Dimensions Plugin", () => {
       expect(fetchSpy).not.toHaveBeenCalled()
     })
 
+    it("should expose --natural-width on videos so float-right figures reserve a definite width", async () => {
+      const videoUrl = "https://assets.turntrout.com/video.mp4"
+      const currentDimensionsCache: AssetDimensionMap = { [videoUrl]: mockFetchedVideoDims }
+      const node = h("video", { src: videoUrl }) as Element
+
+      await assetProcessor.processAsset({ node, src: videoUrl }, currentDimensionsCache)
+
+      expect(node.properties?.style).toBe(
+        `aspect-ratio: ${mockVideoWidth} / ${mockVideoHeight}; --natural-width: ${mockVideoWidth}px;`,
+      )
+    })
+
+    it("should not expose --natural-width on images", async () => {
+      const cachedDims = { width: 300, height: 200 }
+      const currentDimensionsCache: AssetDimensionMap = { [imageUrl]: cachedDims }
+      const node = h("img", { src: imageUrl }) as Element
+
+      await assetProcessor.processAsset({ node, src: imageUrl }, currentDimensionsCache)
+
+      expect(node.properties?.style).not.toContain("--natural-width")
+    })
+
     it("should fetch, apply, and cache dimensions for image not in cache", async () => {
       mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" }, "OK", true)
 

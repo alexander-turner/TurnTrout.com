@@ -17,7 +17,7 @@ Three stages: **Transform → Filter → Emit**.
 ### Python scripts (`scripts/`)
 
 - **Asset processing**: `convert_assets.py`, `compress.py`, `r2_upload.py`
-- **Validation**: `check_internal_links.py`, `source_file_checks.py`, `built_site_checks.py`, `scan_for_empty_alt.py`
+- **Validation**: `source_file_checks.py`, `built_site_checks.py`; internal links via `linkchecker.fish`
 - **Pre-push orchestration**: `run_push_checks.py`
 - **Alt-text**: handled by the PyPI package `alt-text-llm`.
 
@@ -219,6 +219,20 @@ Public-repo Actions are free, so we don’t tier coverage by event. Path-awarene
 - **Required checks**: `playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`, `python-tests`, `python-lint`, `lint`, `Node.js CI / build`, lighthouse jobs. Each workflow always triggers on a PR and gates internally (see “How CI runs”), so every required context reports `success` or `skipped` on the same head SHA auto-merge waits on—none can hang uncreated.
 - **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`, same mechanism.
 - **Post-merge**: `push: main` re-runs the full suite plus `deploy.yaml`. `deploy.yaml`’s `verify-test-results` job polls check-runs on the landed SHA, so deploy waits for those to pass before pushing to Cloudflare.
+
+## Outbound link archiving (build-time fallback)
+
+`quartz/plugins/transformers/archiveLinks.ts` rewrites confirmed-dead outbound
+links to a self-hosted archived copy at build time (no client JS). It reads
+`config/link_archive_manifest.json` once per build; for each external `<a>` whose
+canonical href is in the manifest with `dead: true`, it swaps the `href` for the
+archived `archive_url`, adds an `archived` class, and records the original in
+`data-original-href`. Live/unknown links are untouched, so with the committed
+empty manifest the transformer is a no-op.
+
+The manifest is produced by a separate writer (ArchiveBox + R2), shipped in its
+own PR. Canonicalization uses the WHATWG `new URL` parser; the writer mirrors it
+with the same `ada` parser so the keys match.
 
 ## Lessons learned
 

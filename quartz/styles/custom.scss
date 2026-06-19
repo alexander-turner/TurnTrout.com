@@ -452,6 +452,15 @@ figcaption,
     display: block;
   }
 
+  // A video has no usable intrinsic width before its resource loads, so without
+  // a definite width the shrink-to-fit float collapses to the 300px default and
+  // shifts layout once the video arrives. `--natural-width` is set per video by
+  // the asset-dimensions transformer.
+  & video,
+  video.float-right {
+    width: var(--natural-width, 100%);
+  }
+
   float: right;
   max-width: 45%;
 }
@@ -681,6 +690,13 @@ img.emoji {
   width: 1em;
   margin: 0 0.05em 0 0.1em;
   vertical-align: -0.1em;
+}
+
+// Keeps an emoji glued to its preceding glyph so it never wraps alone to the
+// start of a new line (a joiner can't suppress the wrap opportunity an inline
+// img creates at its box boundary).
+.emoji-span {
+  white-space: nowrap;
 }
 
 .theme-emoji {

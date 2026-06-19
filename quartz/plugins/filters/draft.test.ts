@@ -22,6 +22,9 @@ describe("RemoveDrafts", () => {
     ["website_content/posts/my-article.md", true],
     ["website_content/about.md", true],
     ["some/path/without/drafts.md", true],
+    // "drafts" must match a whole segment, not a substring of one.
+    ["website_content/old-drafts/post.md", true],
+    ["website_content/drafts-archive/post.md", true],
   ])("publishes non-draft file %s", (filePath, expected) => {
     expect(shouldPublish(filePath)).toBe(expected)
   })
