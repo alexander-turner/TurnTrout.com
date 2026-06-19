@@ -658,25 +658,23 @@ describe("ModifyNode", () => {
       expect(node.children.length).toBeGreaterThan(0)
     })
 
-    it("throws MissingFaviconError when threshold met but SVG missing", async () => {
+    it("inserts no favicon when threshold met but SVG missing", async () => {
       faviconCounts.set(favicons.normalizePathForCounting(faviconPath), minFaviconCount + 10)
       mockCdnLookup(false)
       const node = h("a", { href: `https://${hostname}/page` })
       const parent = h("div", [node])
-      await expect(favicons.ModifyNode(node, parent, faviconCounts)).rejects.toThrow(
-        favicons.MissingFaviconError,
-      )
+      await expect(favicons.ModifyNode(node, parent, faviconCounts)).resolves.toBeUndefined()
+      expect(node.children.length).toBe(0)
     })
 
-    it("throws when allowlisted favicon has no SVG", async () => {
+    it("inserts no favicon when allowlisted favicon has no SVG", async () => {
       const appleHost = "apple.com"
       // No counts entry; apple_com is allowlisted so should still try to include.
       mockCdnLookup(false)
       const node = h("a", { href: `https://${appleHost}/page` })
       const parent = h("div", [node])
-      await expect(favicons.ModifyNode(node, parent, faviconCounts)).rejects.toThrow(
-        /Missing favicon SVG for apple\.com/,
-      )
+      await expect(favicons.ModifyNode(node, parent, faviconCounts)).resolves.toBeUndefined()
+      expect(node.children.length).toBe(0)
     })
 
     it("does not throw for blocklisted hostnames even with very high count", async () => {
@@ -754,21 +752,6 @@ describe("AddFavicons plugin", () => {
     const divEl = tree.children[0] as Element
     expect((divEl.children[0] as Element).children.length).toBe(0)
     expect((divEl.children[1] as Element).children.length).toBe(0)
-  })
-})
-
-describe("MissingFaviconError", () => {
-  it("includes hostname and expected path in message", () => {
-    const err = new favicons.MissingFaviconError(
-      "example.com",
-      "/static/images/external-favicons/example_com.svg",
-      10,
-    )
-    expect(err.name).toBe("MissingFaviconError")
-    expect(err.message).toContain("example.com")
-    expect(err.message).toContain("/static/images/external-favicons/example_com.svg")
-    expect(err.message).toContain("count=10")
-    expect(err.message).toContain("faviconSubstringBlocklist")
   })
 })
 

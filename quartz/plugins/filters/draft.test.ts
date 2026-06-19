@@ -12,6 +12,11 @@ function shouldPublish(filePath: string): boolean {
   return filter.shouldPublish({} as BuildCtx, content)
 }
 
+function shouldPublishServing(filePath: string): boolean {
+  const content = defaultProcessedContent({ filePath: filePath as FilePath })
+  return filter.shouldPublish({ argv: { serve: true } } as BuildCtx, content)
+}
+
 describe("RemoveDrafts", () => {
   it.each([
     ["website_content/posts/my-article.md", true],
@@ -34,6 +39,14 @@ describe("RemoveDrafts", () => {
     ["drafts/templates/base.md", true],
   ])("publishes template even inside drafts/ %s", (filePath, expected) => {
     expect(shouldPublish(filePath)).toBe(expected)
+  })
+
+  it.each([
+    ["website_content/drafts/wip.md"],
+    ["drafts/something.md"],
+    ["some/nested/drafts/file.md"],
+  ])("keeps draft file %s when serving (dev mode)", (filePath) => {
+    expect(shouldPublishServing(filePath)).toBe(true)
   })
 
   it("falls back to vfile.path when data.filePath is undefined", () => {

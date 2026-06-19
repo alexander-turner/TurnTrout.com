@@ -7,7 +7,11 @@ export function isDraftPath(filePath: string): boolean {
 
 export const RemoveDrafts: QuartzFilterPlugin = () => ({
   name: "RemoveDrafts",
-  shouldPublish(_ctx, [, vfile]) {
+  shouldPublish(ctx, [, vfile]) {
+    // Drafts are previewed locally: keep them when running the dev server.
+    if (ctx.argv?.serve) {
+      return true
+    }
     // Use data.filePath which survives worker thread serialization.
     // Falls back to empty string if path is unknown — defaults to "publish".
     const filePath = vfile.data.filePath ?? vfile.path ?? ""
