@@ -34,6 +34,9 @@ I have no illusions: this system will not be adopted anytime soon, and for good 
 > [!note] Few people have written about this proposal
 > I am apparently not the first person to have this thought. `lsusr` wrote a short note titled ["We write numbers backward".](https://www.lsusr.com/blog/we-write-numbers-backward.html) However, they promote the misconception that Arabic numerals are backwards in English because Arabic reads right-to-left. [I thought that at first too, but it's not true; I explain why.](#right-to-left-scripts-already-swap-directions-for-reading-numbers) I also found [a tiny Hacker News thread](https://news.ycombinator.com/item?id=2909549) whose original poster promotes the same misconception.
 
+> [!idea] An interesting alternative
+> Erez Abrams suggested writing ${}^5 21,514$, where the 5 indicates the order of magnitude (OOM) of the first digit of the number. You'd only want to write the OOM when it isn't apparent at a glance. This resolves [the major "I don't know what to do with these digits" issues](#the-first-digits-are-informative-on-their-own) for written English while [retaining important OOM information up front.](#the-rough-magnitude) That said, Erez's scheme is [worse for serial processing](#simplifies-long-addition-and-multiplication) and doesn't [align with left-to-right number-sense](#mental-number-line-small-on-the-left-big-on-the-right). My [improved scientific notation](#scientific-notation-should-flip) stands independently.
+
 # Advantages of flipped digit order
 
 1. For adults today, switching from the current system would be cursed. I will generally imagine that people had grown up with this system.
