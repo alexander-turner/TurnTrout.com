@@ -126,6 +126,16 @@ describe("spoiler", () => {
       expect(() => handleSpoilerKeydown(event)).not.toThrow()
       expect(event.defaultPrevented).toBe(false)
     })
+
+    it("does not call preventDefault when overlay lacks a .spoiler-container ancestor", () => {
+      const overlay = document.createElement("span")
+      overlay.className = "spoiler-overlay"
+      document.body.appendChild(overlay)
+
+      const event = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })
+      overlay.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(false)
+    })
   })
 })
 

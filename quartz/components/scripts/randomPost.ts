@@ -1,6 +1,6 @@
 /** Wrapped so tests can spy on it — location.assign is non-configurable in JSDOM 25. */
 export const navigation = {
-  navigateTo: (url: URL) => location.assign(url),
+  navigateTo: /* istanbul ignore next */ (url: URL) => location.assign(url),
 }
 
 /** Slug patterns to exclude from random selection (non-post pages). */

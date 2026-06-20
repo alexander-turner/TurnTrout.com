@@ -374,6 +374,16 @@ describe("updateHeadElements", () => {
     expect(document.head.querySelector("meta")?.getAttribute("content")).toBe("nada")
   })
 
+  it("appends identifierless new-doc meta (no name/property/http-equiv) without throwing", () => {
+    document.head.innerHTML = ""
+    // A meta with only a content attribute triggers the else-branch of all three
+    // selector conditions (name / property / http-equiv) and the if (selector) false branch.
+    updateHeadElements(
+      parseDoc('<html><head><meta content="orphan"></head><body></body></html>'),
+    )
+    expect(document.head.querySelector("meta")?.getAttribute("content")).toBe("orphan")
+  })
+
   it("prefers non-preserve matches when updating an existing meta tag", () => {
     document.head.innerHTML =
       '<meta name="description" content="preserved" spa-preserve>' +
