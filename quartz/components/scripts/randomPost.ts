@@ -1,3 +1,8 @@
+/** Wrapped so tests can spy on it — location.assign is non-configurable in JSDOM 25. */
+export const navigation = {
+  navigateTo: (url: URL) => location.assign(url),
+}
+
 /** Slug patterns to exclude from random selection (non-post pages). */
 export const EXCLUDED_SLUG_PREFIXES = ["tags/"]
 export const EXCLUDED_SLUGS = new Set([
@@ -34,7 +39,7 @@ async function handleRandomPostClick(e: MouseEvent): Promise<void> {
     // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
     void window.spaNavigate(url)
   } else {
-    location.assign(url)
+    navigation.navigateTo(url)
   }
 }
 

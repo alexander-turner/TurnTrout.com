@@ -121,6 +121,23 @@ describe("maybeInsertOrnament", () => {
     expect(tree.children[1]).toStrictEqual(beforeNode)
   })
 
+  it("should insert ornament without removing a non-hr element before footnotes section", () => {
+    const divNode = h("div", "content") as HastElement
+    const footnoteNode = h("section", {
+      className: ["footnotes"],
+      dataFootnotes: true,
+    }) as HastElement
+    tree.children = [h("p"), divNode, footnoteNode] as HastElement[]
+
+    const result = maybeInsertOrnament(footnoteNode, 2, tree)
+
+    expect(result).toBe(true)
+    // p, div, ornament, footnotes
+    expect(tree.children).toHaveLength(4)
+    expect(tree.children[2]).toStrictEqual(ornamentNode)
+    expect(tree.children[3]).toStrictEqual(footnoteNode)
+  })
+
   it("should remove hr proceeded by newline and insert ornament before footnotes section", () => {
     const hrNode = h("hr") as HastElement
     const footnoteNode = h("section", {
