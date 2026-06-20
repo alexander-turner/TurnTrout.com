@@ -413,9 +413,9 @@ describe("scoreDocByMatchDegree", () => {
     // "table" and "ab" both appear in "uncomfortable" as substrings (no whole-word match).
     // substringLen is set by "table" (first match); the "ab" token hits the else-branch
     // of `if (substringLen === 0)` and does not overwrite it.
-    expect(
-      scoreDocByMatchDegree(makeDetails({ title: "Uncomfortable" }), ["table", "ab"]),
-    ).toEqual([0, 0, 0, 5, 0, 0])
+    expect(scoreDocByMatchDegree(makeDetails({ title: "Uncomfortable" }), ["table", "ab"])).toEqual(
+      [0, 0, 0, 5, 0, 0],
+    )
   })
 })
 

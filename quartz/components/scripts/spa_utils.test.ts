@@ -378,9 +378,7 @@ describe("updateHeadElements", () => {
     document.head.innerHTML = ""
     // A meta with only a content attribute triggers the else-branch of all three
     // selector conditions (name / property / http-equiv) and the if (selector) false branch.
-    updateHeadElements(
-      parseDoc('<html><head><meta content="orphan"></head><body></body></html>'),
-    )
+    updateHeadElements(parseDoc('<html><head><meta content="orphan"></head><body></body></html>'))
     expect(document.head.querySelector("meta")?.getAttribute("content")).toBe("orphan")
   })
 
