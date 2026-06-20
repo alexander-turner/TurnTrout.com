@@ -80,8 +80,8 @@ describe("PopulateContainers", () => {
       if (command.includes("git rev-list")) return `${DEFAULT_MOCK_STATS.commitCount}\n`
       if (command.includes('git log --all --oneline --grep="claude.ai/code/session"'))
         return `${DEFAULT_MOCK_STATS.aiCommitCount}\n`
-      if (command.includes("--collect-tests --json"))
-        return JSON.stringify({ numTotalTests: DEFAULT_MOCK_STATS.jsTestCount })
+      if (command.includes("pnpm test 2>&1 | grep -E"))
+        return `Tests: ${DEFAULT_MOCK_STATS.jsTestCount} passed\n`
       if (command.includes("pytest --collect-only"))
         return `${DEFAULT_MOCK_STATS.pytestCount} tests collected in 0.50s\n`
       if (command.includes('grep -r "test("')) return `${DEFAULT_MOCK_STATS.playwrightTestCount}\n`
@@ -896,26 +896,26 @@ describe("PopulateContainers", () => {
     })
 
     describe("countJsTestFiles", () => {
-      it("should count JS/TS tests from --collect-tests --json output", () => {
-        mockExecSync.mockReturnValue(JSON.stringify({ numTotalTests: MOCK_STATS.jsTestCount }))
+      it("should count JS/TS tests from pnpm test output", () => {
+        mockExecSync.mockReturnValue(`Tests: ${MOCK_STATS.jsTestCount} passed\n`)
 
         const count = populateModule.countJsTests()
 
         expect(count).toBe(MOCK_STATS.jsTestCount)
         expect(mockExecSync).toHaveBeenCalledWith(
-          "node node_modules/jest/bin/jest.js --collect-tests --json --config config/javascript/jest.config.js 2>/dev/null",
+          "pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1",
           { encoding: "utf-8" },
         )
       })
 
-      it("should throw when JSON is invalid", () => {
-        mockExecSync.mockReturnValue("not-json")
+      it("should throw when output has no passed count", () => {
+        mockExecSync.mockReturnValue("not-matching-output")
 
-        expect(() => populateModule.countJsTests()).toThrow()
+        expect(() => populateModule.countJsTests()).toThrow("Failed to parse test count from output")
       })
 
       it("should handle a different count", () => {
-        mockExecSync.mockReturnValue(JSON.stringify({ numTotalTests: 42 }))
+        mockExecSync.mockReturnValue("Tests: 42 passed\n")
 
         const count = populateModule.countJsTests()
 
@@ -1002,7 +1002,7 @@ describe("PopulateContainers", () => {
           .mockReturnValueOnce(`${MOCK_STATS.commitCount}\n`)
           .mockReturnValueOnce("false\n") // isShallowClone for aiCommitCount
           .mockReturnValueOnce(`${MOCK_STATS.aiCommitCount}\n`)
-          .mockReturnValueOnce(JSON.stringify({ numTotalTests: MOCK_STATS.jsTestCount }))
+          .mockReturnValueOnce(`Tests: ${MOCK_STATS.jsTestCount} passed\n`)
           .mockReturnValueOnce(`${MOCK_STATS.playwrightTestCount}\n`)
           .mockReturnValueOnce(`${MOCK_STATS.pytestCount} tests collected in 0.50s\n`)
           .mockReturnValueOnce(`${MOCK_STATS.linesOfCode}\n`)
