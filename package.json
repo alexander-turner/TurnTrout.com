@@ -62,7 +62,7 @@
     "pnpm": ">=9.0.0",
     "node": ">=22"
   },
-  "packageManager": "pnpm@10.23.0",
+  "packageManager": "pnpm@11.6.0",
   "keywords": [
     "site generator",
     "ssg",
