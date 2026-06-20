@@ -911,7 +911,9 @@ describe("PopulateContainers", () => {
       it("should throw when output has no passed count", () => {
         mockExecSync.mockReturnValue("not-matching-output")
 
-        expect(() => populateModule.countJsTests()).toThrow("Failed to parse test count from output")
+        expect(() => populateModule.countJsTests()).toThrow(
+          "Failed to parse test count from output",
+        )
       })
 
       it("should handle a different count", () => {
