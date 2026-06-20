@@ -13,6 +13,7 @@ import {
   populateExternalContent,
   PopulateExternalMarkdown,
   stripBadges,
+  stripRelativeLinks,
 } from "./populateExternalMarkdown"
 
 /** Wraps `"key": value` output in braces so it can be parsed as JSON. */
@@ -52,6 +53,23 @@ describe("PopulateExternalMarkdown", () => {
       ["No badges here", "No badges here"],
     ])("should strip badges from markdown", (input, expected) => {
       expect(stripBadges(input)).toBe(expected)
+    })
+  })
+
+  describe("stripRelativeLinks", () => {
+    it.each([
+      ["relative path link", "[v5 migration guide](docs/migrating-to-v5.md)", "v5 migration guide"],
+      ["absolute https link", "[text](https://example.com)", "[text](https://example.com)"],
+      ["anchor link", "[issue](#anchor)", "[issue](#anchor)"],
+      ["absolute path link", "[root](/absolute/path)", "[root](/absolute/path)"],
+      ["mailto link", "[mail](mailto:a@b.com)", "[mail](mailto:a@b.com)"],
+      [
+        "multiple relative links",
+        "See [guide](docs/guide.md) and [ref](../other.md) for details.",
+        "See guide and ref for details.",
+      ],
+    ])("%s", (_desc, input, expected) => {
+      expect(stripRelativeLinks(input)).toBe(expected)
     })
   })
 
