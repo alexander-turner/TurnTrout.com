@@ -5,7 +5,13 @@
 import { beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import { type ContentDetails } from "../../plugins/vfile"
-import { EXCLUDED_SLUG_PREFIXES, EXCLUDED_SLUGS, isPost, setupRandomPostLink } from "./randomPost"
+import {
+  EXCLUDED_SLUG_PREFIXES,
+  EXCLUDED_SLUGS,
+  isPost,
+  navigation,
+  setupRandomPostLink,
+} from "./randomPost"
 
 const cd = (content: string): ContentDetails => ({
   title: content,
@@ -159,12 +165,9 @@ describe("setupRandomPostLink", () => {
     expect(VALID_POST_SLUGS).toContain(slug)
   })
 
-  it("falls back to location.assign when spaNavigate is unavailable", async () => {
-    const assignMock = jest.fn<(url: string | URL) => void>()
-    Object.defineProperty(window, "location", {
-      value: { ...window.location, origin: "http://localhost", assign: assignMock },
-      writable: true,
-    })
+  it("falls back to navigation.navigateTo when spaNavigate is unavailable", async () => {
+    const navigateMock = jest.fn<(url: URL) => void>()
+    jest.spyOn(navigation, "navigateTo").mockImplementation(navigateMock)
     // @ts-expect-error -- testing the fallback when spaNavigate is absent
     delete window.spaNavigate
 
@@ -175,7 +178,7 @@ describe("setupRandomPostLink", () => {
     link?.click()
     await new Promise((resolve) => setTimeout(resolve, 0))
 
-    expect(assignMock).toHaveBeenCalledTimes(1)
-    expect((assignMock.mock.calls[0][0] as URL).pathname).toBe("/post-b")
+    expect(navigateMock).toHaveBeenCalledTimes(1)
+    expect(navigateMock.mock.calls[0][0].pathname).toBe("/post-b")
   })
 })

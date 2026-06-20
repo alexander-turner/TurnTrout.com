@@ -33,6 +33,7 @@ import {
   Static,
   stripBadges,
   StripInlineBoundaryWhitespace,
+  stripRelativeLinks,
   SyntaxHighlighting,
   TableDivider,
   TableOfContents,
@@ -71,7 +72,7 @@ const config: QuartzConfig = {
           punctilio: {
             owner: "alexander-turner",
             repo: "punctilio",
-            transform: stripBadges,
+            transform: (content: string) => stripRelativeLinks(stripBadges(content)),
           },
           "lint-staged": {
             filePath: "package.json",

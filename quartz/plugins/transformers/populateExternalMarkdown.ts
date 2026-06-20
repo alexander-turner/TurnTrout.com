@@ -99,6 +99,15 @@ export function stripBadges(content: string): string {
   return content.replace(/\[!\[.*?\]\(.*?\)\]\(.*?\)\s*/g, "")
 }
 
+/**
+ * Replaces relative markdown links with their link text.
+ * Relative links (no scheme, no leading # or /) get misclassified as external
+ * by CrawlLinks and receive an https:// prefix, producing invalid hrefs.
+ */
+export function stripRelativeLinks(content: string): string {
+  return content.replace(/\[([^\]]+)\]\((?!https?:\/\/|mailto:|#|\/)[^)]+\)/g, "$1")
+}
+
 function getContent(name: string, source: MarkdownSource): string {
   const local = isLocalSource(source)
   const cacheKey = local

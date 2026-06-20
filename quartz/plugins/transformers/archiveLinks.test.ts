@@ -257,6 +257,13 @@ describe("ArchiveLinks plugin", () => {
   it("defaults to the committed manifest path when none is provided", () => {
     expect(ArchiveLinks().name).toBe("ArchiveLinks")
   })
+
+  it("visits non-anchor elements without error", async () => {
+    const html = '<p>Some text</p><a href="https://dead.example.com/gone">dead</a>'
+    const out = String(await makeProcessor().process({ value: html }))
+    expect(out).toContain(`href="${entry().archive_url}"`)
+    expect(out).toContain("<p>Some text</p>")
+  })
 })
 
 // The transformer looks up the manifest by the href AFTER CrawlLinks has

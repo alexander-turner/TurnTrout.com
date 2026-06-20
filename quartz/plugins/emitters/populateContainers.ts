@@ -120,9 +120,8 @@ export function countGitCommits(options: GitCountOptions = {}): number {
   return parseInt(output.trim(), 10)
 }
 
-/** Counts passing Jest tests by parsing the trailing "Tests: N passed" line from the test run. */
+/** Counts Jest tests by running the suite and parsing the summary line. */
 export function countJsTests(): number {
-  // Sadly, this requires running all tests but there isn't a --collect-only like for pytest
   const output = execSync("pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1", {
     encoding: "utf-8",
   })
