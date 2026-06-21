@@ -66,8 +66,8 @@ def check_cover_image_alt(metadata: dict) -> list[str]:
         return errors
 
     # Check if there's a custom card_image
-    card_image_alt = metadata.get("card_image_alt", "")
-    if not card_image_alt.strip():
+    card_image_alt = metadata.get("card_image_alt") or ""
+    if not str(card_image_alt).strip():
         errors.append(f"Custom card_image ({card_url}) requires card_image_alt")
 
     return errors
@@ -550,7 +550,7 @@ def check_no_forbidden_patterns(text: str) -> list[str]:
             processed_text = remove_math(processed_text, mark_boundaries=True)
 
         for match in re.finditer(config["pattern"], processed_text):
-            line_num = text[: match.start()].count("\n") + 1
+            line_num = processed_text[: match.start()].count("\n") + 1
             errors.append(
                 f"Forbidden pattern found: {match.group()} on line {line_num}"
             )
