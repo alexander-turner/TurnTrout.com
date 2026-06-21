@@ -544,6 +544,10 @@ def check_no_forbidden_patterns(text: str) -> list[str]:
     errors = []
     for config in _FORBIDDEN_PATTERNS:
         processed_text = text
+        # `line_num` counts newlines in the original `text` up to a match
+        # offset taken from `processed_text`, so the stripping must preserve
+        # newline counts (and thus character offsets up to each match) for the
+        # reported line numbers to stay accurate.
         if config["ignore_code"]:
             processed_text = remove_code(processed_text, mark_boundaries=True)
         if config["ignore_math"]:
@@ -675,14 +679,21 @@ def extract_footnote_line_numbers(text: str) -> dict[str, int]:
         If a footnote is defined multiple times, only the first occurrence
         is recorded.
     """
-    # Extract from original text since definitions can contain code
+    # Detect definitions on the same code/math-stripped text as
+    # `extract_footnote_references`, so a `[^name]:` that only appears inside a
+    # code or math block is not counted as a real definition (which would
+    # falsely flag the footnote as "defined but never referenced"). Stripping
+    # preserves newline counts, so line numbers remain accurate.
+    stripped_text = remove_math(remove_code(text))
     definition_pattern = r"\[\^([^\]]+)\]:"
     definitions: dict[str, int] = {}
-    for match in re.finditer(definition_pattern, text):
+    for match in re.finditer(definition_pattern, stripped_text):
         footnote_name = match.group(1)
         # Only record the first occurrence of each footnote definition
         if footnote_name not in definitions:
-            definitions[footnote_name] = text[: match.start()].count("\n") + 1
+            definitions[footnote_name] = (
+                stripped_text[: match.start()].count("\n") + 1
+            )
     return definitions
 
 

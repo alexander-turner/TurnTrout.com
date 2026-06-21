@@ -120,14 +120,13 @@ export function countGitCommits(options: GitCountOptions = {}): number {
   return parseInt(output.trim(), 10)
 }
 
-/** Counts Jest tests by running the suite and parsing the summary line. */
+/** Counts Jest `it`/`test`/`it.each`/`test.each` declarations across `*.test.{ts,tsx}` files. */
 export function countJsTests(): number {
-  const output = execSync("pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1", {
-    encoding: "utf-8",
-  })
-  const match = output.match(/(?<count>\d+)\s+passed/)
-  if (!match?.groups) throw new Error("Failed to parse test count from output")
-  return parseInt(match.groups.count, 10)
+  const output = execSync(
+    "grep -rhoE '\\b(it|test)(\\.each)?\\s*[(`]' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules . | wc -l",
+    { encoding: "utf-8" },
+  )
+  return parseInt(output.trim(), 10)
 }
 
 /** Counts Playwright `test(...)` declarations in `quartz/components/tests/*.spec.ts`. */
