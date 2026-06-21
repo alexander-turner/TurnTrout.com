@@ -236,8 +236,10 @@ def _run_parallel_group(
             if first_failure is None:
                 first_failure = (step.name, result)
 
-    # Save state at the last step so resume picks up after the whole group.
-    save_state(group[-1].name)
+    # Advance resume state unless a failure is about to halt the run; a halted
+    # group must re-run in full on --resume rather than be skipped.
+    if first_failure is None or continue_on_failure:
+        save_state(group[-1].name)
 
     if first_failure is not None and not continue_on_failure:
         name, result = first_failure
