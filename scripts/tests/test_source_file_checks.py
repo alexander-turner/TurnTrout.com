@@ -145,6 +145,17 @@ def test_check_required_fields(
             {},
             [],
         ),
+        # Test case 7: card_image_alt present but null (YAML `card_image_alt:`)
+        # parses as None - should fail cleanly, not raise AttributeError.
+        (
+            {
+                "title": "Test",
+                "description": "Test Description",
+                "card_image": "/custom-image.png",
+                "card_image_alt": None,
+            },
+            ["Custom card_image (/custom-image.png) requires card_image_alt"],
+        ),
     ],
 )
 def test_check_cover_image_alt(
@@ -2047,6 +2058,12 @@ def test_check_filename_lowercase(filename: str, should_error: bool):
         # Shouldn't ignore boundaries of code/math blocks
         ("Test `code`)", []),
         ("Test $math$)", []),
+        # Line number is computed against the code-stripped text, so inline
+        # code on an earlier line must not shift the reported line.
+        (
+            "`inline code spanning many chars`\nSentence. )",
+            ["Forbidden pattern found:  ) on line 2"],
+        ),
     ],
 )
 def test_check_no_forbidden_patterns(text: str, expected_errors: list[str]):

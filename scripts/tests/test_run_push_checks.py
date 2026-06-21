@@ -1334,6 +1334,49 @@ def test_run_parallel_group_raises_on_failure(temp_state_dir):
     assert exc_info.value.stdout == "boom"
 
 
+@pytest.mark.parametrize("continue_on_failure", [False, True])
+def test_run_parallel_group_save_state_on_failure(
+    continue_on_failure, temp_state_dir
+):
+    """A failed check halts resume progress (state untouched) unless
+    continue_on_failure lets the run proceed past it; otherwise --resume would
+    skip the failed check."""
+    group = [
+        run_push_checks.CheckStep(
+            name="Bad", command=["bad"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="OK", command=["ok"], parallel_group="verify"
+        ),
+    ]
+    results_by_name = {
+        "Bad": run_push_checks.CommandResult(
+            success=False, stdout="boom", stderr="kaboom"
+        ),
+        "OK": run_push_checks.CommandResult(success=True, stdout="", stderr=""),
+    }
+    with (
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.commit_step_changes"),
+        patch("scripts.run_push_checks.save_state") as mock_save,
+    ):
+        mock_exec.side_effect = lambda step, _p: results_by_name[step.name]
+        if continue_on_failure:
+            run_push_checks._run_parallel_group(
+                group, MagicMock(), auto_commit=False, continue_on_failure=True
+            )
+            mock_save.assert_called_once_with("OK")
+        else:
+            with pytest.raises(run_push_checks.CheckFailedError):
+                run_push_checks._run_parallel_group(
+                    group,
+                    MagicMock(),
+                    auto_commit=False,
+                    continue_on_failure=False,
+                )
+            mock_save.assert_not_called()
+
+
 def test_run_parallel_group_continues_past_failure(temp_state_dir):
     """continue_on_failure swallows the failure (used by CI autofix)."""
     group = [
