@@ -236,9 +236,9 @@ def _run_parallel_group(
             if first_failure is None:
                 first_failure = (step.name, result)
 
-    # Advance resume state only when every check in the group passed; if any
-    # failed, leave state untouched so --resume re-runs the whole group.
-    if first_failure is None:
+    # Advance resume state unless a failure is about to halt the run; a halted
+    # group must re-run in full on --resume rather than be skipped.
+    if first_failure is None or continue_on_failure:
         save_state(group[-1].name)
 
     if first_failure is not None and not continue_on_failure:
