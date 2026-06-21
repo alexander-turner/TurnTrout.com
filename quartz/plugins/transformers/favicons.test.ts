@@ -597,6 +597,32 @@ describe("ModifyNode", () => {
     expect(node.children.length).toBe(initialCount)
   })
 
+  it("skips when a sibling of the direct favicon child has no favicon descendants", async () => {
+    // <a> → [<span> (no children, no favicon), <svg class="favicon">]
+    // hasFavicon visits span first: hasClass=false, recursive hasFavicon=false (false branch),
+    // then visits svg: hasClass=true → returns true overall. ModifyNode exits early.
+    const node = h("a", { href: "https://example.com" }, [
+      h("span", {}),
+      h("svg", { className: "favicon" }),
+    ])
+    const parent = h("div", [node])
+    const initialCount = node.children.length
+    await favicons.ModifyNode(node, parent, faviconCounts)
+    expect(node.children.length).toBe(initialCount)
+  })
+
+  it("skips non-element (text) children inside hasFavicon without throwing", async () => {
+    // hasFavicon iterates node.children; text nodes hit the `continue` branch.
+    const node = h("a", { href: "https://example.com" }, [
+      "some text",
+      h("svg", { className: "favicon" }),
+    ])
+    const parent = h("div", [node])
+    const initialCount = node.children.length
+    await favicons.ModifyNode(node, parent, faviconCounts)
+    expect(node.children.length).toBe(initialCount)
+  })
+
   it("skips when href missing or tagName non-anchor", async () => {
     const div = h("div", { href: "https://example.com" })
     await favicons.ModifyNode(div, h("section", [div]), faviconCounts)
@@ -617,6 +643,28 @@ describe("ModifyNode", () => {
       },
       children: [],
     } as Element
+    const parent = h("div", [node])
+    await favicons.ModifyNode(node, parent, faviconCounts)
+    expect(node.children.length).toBe(0)
+  })
+
+  it("skips asset link with string className not containing same-page-link", async () => {
+    const node = {
+      type: "element",
+      tagName: "a",
+      properties: {
+        href: "https://example.com/photo.jpg",
+        className: "external",
+      },
+      children: [],
+    } as Element
+    const parent = h("div", [node])
+    await favicons.ModifyNode(node, parent, faviconCounts)
+    expect(node.children.length).toBe(0)
+  })
+
+  it("skips asset link with array className not containing same-page-link", async () => {
+    const node = h("a", { href: "https://example.com/photo.jpg", className: ["external"] })
     const parent = h("div", [node])
     await favicons.ModifyNode(node, parent, faviconCounts)
     expect(node.children.length).toBe(0)

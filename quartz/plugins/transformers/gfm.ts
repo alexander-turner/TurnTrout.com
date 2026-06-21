@@ -333,6 +333,7 @@ export function removeUnreferencedMarkers(svg: Element): void {
       if (typeof value !== "string") continue
       for (const match of value.matchAll(/url\(#(?<id>[^)]+)\)/g)) {
         const id = match.groups?.id
+        /* istanbul ignore next -- regex requires [^)]+ so id is always defined */
         if (id) referencedIds.add(id)
       }
     }

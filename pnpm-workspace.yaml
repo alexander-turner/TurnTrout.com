@@ -82,3 +82,6 @@ onlyBuiltDependencies:
   - esbuild
   - puppeteer
   - sharp
+
+allowBuilds:
+  unrs-resolver: true

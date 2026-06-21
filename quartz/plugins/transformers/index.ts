@@ -21,7 +21,11 @@ export { HardLineBreaks } from "./linebreaks"
 export { CrawlLinks } from "./links"
 export { ObsidianFlavoredMarkdown } from "./ofm"
 export { OxHugoFlavouredMarkdown } from "./oxhugofm"
-export { PopulateExternalMarkdown, stripBadges } from "./populateExternalMarkdown"
+export {
+  PopulateExternalMarkdown,
+  stripBadges,
+  stripRelativeLinks,
+} from "./populateExternalMarkdown"
 export { rehypeCustomSpoiler } from "./spoiler"
 export { rehypeCustomSubtitle } from "./subtitles"
 export { SyntaxHighlighting } from "./syntax"
