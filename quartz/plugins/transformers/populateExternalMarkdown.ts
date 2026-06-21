@@ -108,6 +108,22 @@ export function stripRelativeLinks(content: string): string {
   return content.replace(/\[([^\]]+)\]\((?!https?:\/\/|mailto:|#|\/)[^)]+\)/g, "$1")
 }
 
+const RELATIVE_LINK_RE = /\[([^\]]+)\]\(((?!https?:\/\/|mailto:|#|\/)[^)]+)\)/g
+
+/**
+ * Returns a transform that rewrites relative markdown links to absolute
+ * GitHub blob URLs so CrawlLinks doesn't mangle them.
+ */
+export function rewriteRelativeLinksToGitHub(
+  owner: string,
+  repo: string,
+  ref = "main",
+): (content: string) => string {
+  const base = `https://github.com/${owner}/${repo}/blob/${ref}`
+  return (content) =>
+    content.replace(RELATIVE_LINK_RE, (_match, text, href) => `[${text}](${base}/${href})`)
+}
+
 function getContent(name: string, source: MarkdownSource): string {
   const local = isLocalSource(source)
   const cacheKey = local

@@ -30,10 +30,10 @@ import {
   RemoveDrafts,
   RemoveFixtures,
   RemovePartials,
+  rewriteRelativeLinksToGitHub,
   Static,
   stripBadges,
   StripInlineBoundaryWhitespace,
-  stripRelativeLinks,
   SyntaxHighlighting,
   TableDivider,
   TableOfContents,
@@ -72,7 +72,8 @@ const config: QuartzConfig = {
           punctilio: {
             owner: "alexander-turner",
             repo: "punctilio",
-            transform: (content: string) => stripRelativeLinks(stripBadges(content)),
+            transform: (content: string) =>
+              rewriteRelativeLinksToGitHub("alexander-turner", "punctilio")(stripBadges(content)),
           },
           "lint-staged": {
             filePath: "package.json",
