@@ -120,7 +120,10 @@ export function countGitCommits(options: GitCountOptions = {}): number {
   return parseInt(output.trim(), 10)
 }
 
-/** Counts Jest `it`/`test`/`it.each`/`test.each` declarations across `*.test.{ts,tsx}` files. */
+/**
+ * Approximate count of Jest `it`/`test`/`it.each`/`test.each` declarations
+ * across `*.test.{ts,tsx}` files via grep (a stat badge, not an exact AST count).
+ */
 export function countJsTests(): number {
   const output = execSync(
     "grep -rhoE '\\b(it|test)(\\.each)?\\s*[(`]' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules . | wc -l",
