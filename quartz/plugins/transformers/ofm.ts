@@ -891,10 +891,12 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
         src = src.replace(tableRegex, (value: string): string => {
           // escape all aliases and headers in wikilinks inside a table
           return value.replace(tableWikilinkRegex, (_match: string, raw: string) => {
-            /* istanbul ignore next -- table wikilink escaping edge case */
+            // `raw` is the `wikilink` capture group, which always matches, so the
+            // `?? ""` fallback is unreachable defensive code.
+            /* istanbul ignore next -- defensive fallback for always-present capture group */
             let escaped = raw ?? ""
-            escaped = escaped.replace("#", "\\#")
-            escaped = escaped.replace("|", "\\|")
+            escaped = escaped.replaceAll("#", "\\#")
+            escaped = escaped.replaceAll("|", "\\|")
 
             return escaped
           })

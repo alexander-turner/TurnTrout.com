@@ -1891,6 +1891,19 @@ describe("replaceFractions", () => {
       expect(processedHtml).not.toContain('<span class="fraction">')
       expect(processedHtml).toContain("1/2")
     })
+
+    it("detects URLs deterministically across repeated calls (no lastIndex carryover)", () => {
+      // URL-bearing fraction skip is order-independent: repeatedly converting the
+      // same text node must produce identical output every time. A global regex's
+      // `.test()` would advance `lastIndex` and intermittently flip the result.
+      const urlValue = "(https://example.com/path/1/2)"
+      for (let i = 0; i < 5; i++) {
+        const node = { type: "text", value: urlValue } as Text
+        const parent = h("p", [node])
+        replaceFractions(node, 0, parent, [])
+        expect(hastToHtml(parent)).not.toContain('<span class="fraction">')
+      }
+    })
   })
 })
 

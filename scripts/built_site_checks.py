@@ -2022,6 +2022,7 @@ class CheckOptions:
 
 
 def check_file_for_issues(
+    soup: BeautifulSoup,
     file_path: Path,
     base_dir: Path,
     md_path: Path | None,
@@ -2031,6 +2032,7 @@ def check_file_for_issues(
     Check a single HTML file for various issues.
 
     Args:
+        soup: Pre-parsed BeautifulSoup object for the HTML file
         file_path: Path to the HTML file to check
         base_dir: Path to the base directory of the site
         md_path: Path to the markdown file that generated the HTML file
@@ -2039,7 +2041,6 @@ def check_file_for_issues(
     Returns:
         Dictionary of issues found in the HTML file
     """
-    soup = script_utils.parse_html_file(file_path)
     if script_utils.is_redirect(soup):
         return {}
     initial_soup_str = str(soup)
@@ -2827,15 +2828,13 @@ def _find_duplicate_citations(
 
 
 def _maybe_collect_citation_keys(
+    soup: BeautifulSoup,
     file_path: Path,
     public_dir: Path,
     citation_to_files: dict[str, list[str]],
 ) -> None:
     """Extract citation keys from file and add to collection if not a
     redirect."""
-    # skipcq: PTC-W6004 -- file_path comes from iterating over trusted local files
-    with open(file_path, encoding="utf-8") as f:
-        soup = BeautifulSoup(f.read(), "html.parser")
     if script_utils.is_redirect(soup):
         return
 
@@ -3177,6 +3176,7 @@ def _resolve_md_path(
 
 
 def _collect_paragraphs_for_spellcheck(
+    soup: BeautifulSoup,
     file: str,
     file_path: Path,
     public_dir: Path,
@@ -3185,14 +3185,11 @@ def _collect_paragraphs_for_spellcheck(
     """Collect flattened paragraph text for spellcheck, skipping test pages."""
     if Path(file).stem == "test-page":
         return
-    # skipcq: PTC-W6004
-    with open(file_path, encoding="utf-8") as f:
-        soup_for_paras = BeautifulSoup(f.read(), "html.parser")
-    if script_utils.is_redirect(soup_for_paras) or soup_for_paras.find(
+    if script_utils.is_redirect(soup) or soup.find(
         "div", class_="page-listing"
     ):
         return
-    paras = _extract_flat_paragraph_texts(soup_for_paras)
+    paras = _extract_flat_paragraph_texts(soup)
     if paras:
         rel = str(file_path.relative_to(public_dir))
         paragraph_map[rel] = paras
@@ -3275,18 +3272,22 @@ def _process_html_files(  # pylint: disable=too-many-locals
                 file, root_path, public_dir, file_path, permalink_to_md_path_map
             )
 
+            # Read and parse each HTML file exactly once, then thread the
+            # parsed soup through every per-page check below.
+            soup = script_utils.parse_html_file(file_path)
+
             issues = check_file_for_issues(
-                file_path, public_dir, md_path, check_opts
+                soup, file_path, public_dir, md_path, check_opts
             )
             if any(lst for lst in issues.values()):
                 _print_issues(file_path, issues)
                 issues_found_in_html = True
 
             _maybe_collect_citation_keys(
-                file_path, public_dir, citation_to_files
+                soup, file_path, public_dir, citation_to_files
             )
             _collect_paragraphs_for_spellcheck(
-                file, file_path, public_dir, paragraph_map
+                soup, file, file_path, public_dir, paragraph_map
             )
 
     # Check for duplicate citation keys across all files

@@ -26,6 +26,7 @@ import {
   setSearchInitializedForTesting,
   setSearchLayoutForTesting,
   shouldRescrollCardPreviews,
+  shouldUseDropcap,
   showSearch,
   syncSearchLayoutState,
   tokenizeTerm,
@@ -1080,5 +1081,17 @@ describe("initializeSearch retry after failed fetch", () => {
     expect(state.searchInitialized).toBe(true)
     expect(state.hasData).toBe(true)
     expect(state.hasIndex).toBe(true)
+  })
+})
+
+describe("shouldUseDropcap", () => {
+  it.each([
+    ["boolean false enables dropcap", { no_dropcap: false }, true],
+    ['string "false" enables dropcap', { no_dropcap: "false" }, true],
+    ["absence enables dropcap", {}, true],
+    ["boolean true suppresses dropcap", { no_dropcap: true }, false],
+    ['string "true" suppresses dropcap', { no_dropcap: "true" }, false],
+  ])("%s", (_name, frontmatter, expected) => {
+    expect(shouldUseDropcap(frontmatter)).toBe(expected)
   })
 })

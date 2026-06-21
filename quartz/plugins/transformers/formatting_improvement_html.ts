@@ -34,7 +34,14 @@ import {
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { isHeading } from "./favicons"
-import { fractionRegex, hasAncestor, hasClass, isCode, replaceRegex, urlRegex } from "./utils"
+import {
+  fractionRegex,
+  hasAncestor,
+  hasClass,
+  isCode,
+  replaceRegex,
+  urlRegexNonGlobal,
+} from "./utils"
 
 /**
  * Tags that should be skipped during text transformation.
@@ -881,7 +888,7 @@ function fractionToSkip(node: Text, _idx: number, parent: Parent, ancestors: Par
         hasClass(ancestor, "fraction"),
       ancestors,
     ) ||
-    (node.value?.includes("/") && urlRegex.test(node.value))
+    (node.value?.includes("/") && urlRegexNonGlobal.test(node.value))
   )
 }
 

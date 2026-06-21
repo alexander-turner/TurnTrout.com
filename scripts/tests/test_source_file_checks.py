@@ -2162,6 +2162,10 @@ def test_check_html_with_braces(text: str, expected_errors: list[str]):
         ("[^test]: Definition\nMore text", {"test": 1}),
         ("Text [^ref] reference\n[^ref]: Definition", {"ref": 2}),
         ("[^test]: Definition\n[^test]: Duplicate", {"test": 1}),
+        # A definition-looking pattern inside inline code is not a definition
+        ("Use `[^foo]:` syntax\n[^bar]: Real", {"bar": 2}),
+        # ...nor inside a fenced code block (newlines preserved → line numbers)
+        ("```\n[^foo]: In code\n```\n[^bar]: Real", {"bar": 4}),
     ],
 )
 def test_extract_footnote_definitions(
@@ -2324,6 +2328,14 @@ def test_extract_footnote_references(
             "Line 3 with footnote.[^combo]\n"
             "\n"
             "[^combo]: Definition",
+            [],
+        ),
+        # A defined-and-referenced footnote is not flagged even when a
+        # definition-looking pattern for it also appears inside inline code.
+        # Definitions and references are detected on the same code/math-stripped
+        # text, so the code occurrence never inflates the definition count.
+        (
+            "Show the `[^real]:` syntax. Real use.[^real]\n[^real]: Definition",
             [],
         ),
     ],
