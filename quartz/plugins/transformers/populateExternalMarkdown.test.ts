@@ -12,6 +12,7 @@ import {
   isLocalSource,
   populateExternalContent,
   PopulateExternalMarkdown,
+  rewriteRelativeLinksToGitHub,
   stripBadges,
   stripRelativeLinks,
 } from "./populateExternalMarkdown"
@@ -70,6 +71,36 @@ describe("PopulateExternalMarkdown", () => {
       ],
     ])("%s", (_desc, input, expected) => {
       expect(stripRelativeLinks(input)).toBe(expected)
+    })
+  })
+
+  describe("rewriteRelativeLinksToGitHub", () => {
+    const rewrite = rewriteRelativeLinksToGitHub("owner", "repo")
+    const rewriteRef = rewriteRelativeLinksToGitHub("owner", "repo", "v2")
+
+    it.each([
+      [
+        "relative path link",
+        "[v5 migration guide](docs/migrating-to-v5.md)",
+        "[v5 migration guide](https://github.com/owner/repo/blob/main/docs/migrating-to-v5.md)",
+      ],
+      ["absolute https link", "[text](https://example.com)", "[text](https://example.com)"],
+      ["anchor link", "[issue](#anchor)", "[issue](#anchor)"],
+      ["absolute path link", "[root](/absolute/path)", "[root](/absolute/path)"],
+      ["mailto link", "[mail](mailto:a@b.com)", "[mail](mailto:a@b.com)"],
+      [
+        "multiple relative links",
+        "See [guide](docs/guide.md) and [ref](other.md) for details.",
+        "See [guide](https://github.com/owner/repo/blob/main/docs/guide.md) and [ref](https://github.com/owner/repo/blob/main/other.md) for details.",
+      ],
+    ])("%s", (_desc, input, expected) => {
+      expect(rewrite(input)).toBe(expected)
+    })
+
+    it("respects custom ref", () => {
+      expect(rewriteRef("[guide](docs/guide.md)")).toBe(
+        "[guide](https://github.com/owner/repo/blob/v2/docs/guide.md)",
+      )
     })
   })
 

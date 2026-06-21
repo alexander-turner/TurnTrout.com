@@ -23,6 +23,7 @@ export { ObsidianFlavoredMarkdown } from "./ofm"
 export { OxHugoFlavouredMarkdown } from "./oxhugofm"
 export {
   PopulateExternalMarkdown,
+  rewriteRelativeLinksToGitHub,
   stripBadges,
   stripRelativeLinks,
 } from "./populateExternalMarkdown"
