@@ -951,11 +951,6 @@ iframe {
   border-radius: $border-radius;
   margin-top: calc(2 * $base-margin);
   margin-bottom: calc(2 * $base-margin);
-
-  // Palform looks out of place in dark mode, so we invert it
-  :root[data-theme="dark"] &[src*="palform.app"] {
-    filter: url("#accurate-invert") grayscale(50%) brightness(95%);
-  }
 }
 
 .right-arrow,
