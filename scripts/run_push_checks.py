@@ -236,8 +236,10 @@ def _run_parallel_group(
             if first_failure is None:
                 first_failure = (step.name, result)
 
-    # Save state at the last step so resume picks up after the whole group.
-    save_state(group[-1].name)
+    # Advance resume state unless a failure is about to halt the run; a halted
+    # group must re-run in full on --resume rather than be skipped.
+    if first_failure is None or continue_on_failure:
+        save_state(group[-1].name)
 
     if first_failure is not None and not continue_on_failure:
         name, result = first_failure
@@ -680,13 +682,14 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
             cwd=str(git_root_path),
             parallel_group="verify",
         ),
+        # No `requires="vale"`: a missing vale must fail the push loudly (the
+        # wrapper errors out) rather than silently skipping the spellcheck gate.
         CheckStep(
             name="Spellcheck and Vale",
             command=[
                 "bash",
                 f"{git_root_path}/scripts/run_spellcheck_and_vale.sh",
             ],
-            requires="vale",
             parallel_group="verify",
         ),
         CheckStep(

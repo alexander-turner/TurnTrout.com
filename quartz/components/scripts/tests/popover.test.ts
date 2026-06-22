@@ -798,6 +798,13 @@ describe("trapFocusInPopover", () => {
     expect(document.activeElement).toBe(middle)
   })
 
+  it("does not wrap on Shift+Tab when focus is not on first element", () => {
+    last.focus()
+    const evt = keydown("Tab", true)
+    expect(evt.defaultPrevented).toBe(false)
+    expect(document.activeElement).toBe(last)
+  })
+
   it("ignores non-Tab keys", () => {
     last.focus()
     const evt = keydown("Enter")

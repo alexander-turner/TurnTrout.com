@@ -21,7 +21,16 @@ export { HardLineBreaks } from "./linebreaks"
 export { CrawlLinks } from "./links"
 export { ObsidianFlavoredMarkdown } from "./ofm"
 export { OxHugoFlavouredMarkdown } from "./oxhugofm"
-export { PopulateExternalMarkdown, stripBadges } from "./populateExternalMarkdown"
+export {
+  asQuoteAdmonition,
+  githubReadmeSource,
+  PopulateExternalMarkdown,
+  rewriteRelativeLinksToGitHub,
+  stripBadges,
+  stripLeadingH1,
+  stripRelativeLinks,
+} from "./populateExternalMarkdown"
+export { PrefixExternalReadmeIds } from "./prefixExternalReadmeIds"
 export { rehypeCustomSpoiler } from "./spoiler"
 export { rehypeCustomSubtitle } from "./subtitles"
 export { SyntaxHighlighting } from "./syntax"

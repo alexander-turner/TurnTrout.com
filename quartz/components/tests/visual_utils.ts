@@ -139,18 +139,20 @@ async function waitForImagesInElement(scope: Locator): Promise<void> {
   await Promise.all(
     images.map((img) =>
       img
-        .evaluate((el: HTMLImageElement) =>
-          el.complete
-            ? undefined
-            : new Promise<void>((resolve) => {
-                const timer = setTimeout(resolve, 5000)
-                const done = (): void => {
-                  clearTimeout(timer)
-                  resolve()
-                }
-                el.addEventListener("load", done, { once: true })
-                el.addEventListener("error", done, { once: true })
-              }),
+        .evaluate(
+          (el: HTMLImageElement) =>
+            new Promise<void>((resolve) => {
+              const timer = setTimeout(resolve, 5000)
+              const done = (): void => {
+                clearTimeout(timer)
+                resolve()
+              }
+              // `decode()` resolves only once the image is decoded and
+              // paint-ready. `complete`/`load` can fire before Firefox has
+              // painted a (remote AVIF) image, so screenshots intermittently
+              // captured a blank image. Resolve on decode success or failure.
+              el.decode().then(done, done)
+            }),
         )
         .catch(() => undefined),
     ),

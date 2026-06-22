@@ -34,7 +34,14 @@ import {
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { isHeading } from "./favicons"
-import { fractionRegex, hasAncestor, hasClass, isCode, replaceRegex, urlRegex } from "./utils"
+import {
+  fractionRegex,
+  hasAncestor,
+  hasClass,
+  isCode,
+  replaceRegex,
+  urlRegexNonGlobal,
+} from "./utils"
 
 /**
  * Tags that should be skipped during text transformation.
@@ -659,13 +666,14 @@ export const rearrangeLinkPunctuation = (
 
   if (sibling && "type" in sibling) {
     const hasAttrs = "tagName" in sibling && "children" in sibling
+    // A favicon-span wraps trailing text + an icon/back-arrow (created for
+    // footnote back-arrows before this pass runs). Its leading punctuation
+    // should move into the link just like a bare text sibling's would.
+    const looksTextLike =
+      hasAttrs && (TEXT_LIKE_TAGS.includes(sibling.tagName) || hasClass(sibling, "favicon-span"))
     if (sibling.type === "text") {
       textNode = sibling
-    } else if (
-      hasAttrs &&
-      TEXT_LIKE_TAGS.includes(sibling.tagName) &&
-      sibling.children.length > 0
-    ) {
+    } else if (looksTextLike && sibling.children.length > 0) {
       textNode = sibling.children[0]
     }
   }
@@ -881,7 +889,7 @@ function fractionToSkip(node: Text, _idx: number, parent: Parent, ancestors: Par
         hasClass(ancestor, "fraction"),
       ancestors,
     ) ||
-    (node.value?.includes("/") && urlRegex.test(node.value))
+    (node.value?.includes("/") && urlRegexNonGlobal.test(node.value))
   )
 }
 

@@ -120,15 +120,16 @@ export function countGitCommits(options: GitCountOptions = {}): number {
   return parseInt(output.trim(), 10)
 }
 
-/** Counts passing Jest tests by parsing the trailing "Tests: N passed" line from the test run. */
+/**
+ * Approximate count of Jest `it`/`test`/`it.each`/`test.each` declarations
+ * across `*.test.{ts,tsx}` files via grep (a stat badge, not an exact AST count).
+ */
 export function countJsTests(): number {
-  // Sadly, this requires running all tests but there isn't a --collect-only like for pytest
-  const output = execSync("pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1", {
-    encoding: "utf-8",
-  })
-  const match = output.match(/(?<count>\d+)\s+passed/)
-  if (!match?.groups) throw new Error("Failed to parse test count from output")
-  return parseInt(match.groups.count, 10)
+  const output = execSync(
+    "grep -rhoE '\\b(it|test)(\\.each)?\\s*[(`]' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules . | wc -l",
+    { encoding: "utf-8" },
+  )
+  return parseInt(output.trim(), 10)
 }
 
 /** Counts Playwright `test(...)` declarations in `quartz/components/tests/*.spec.ts`. */

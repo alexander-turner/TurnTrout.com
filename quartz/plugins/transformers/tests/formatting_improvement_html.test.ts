@@ -923,6 +923,18 @@ describe("rearrangeLinkPunctuation", () => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
+
+    // The footnote back-arrow plugin runs first, splicing trailing text + arrow
+    // into a favicon-span. Punctuation left at the span's head must still move
+    // into the preceding link, otherwise the "." renders after the favicon.
+    it("should move punctuation from a favicon-span into the preceding link", () => {
+      const input =
+        '<p>I even self-host <a href="/alignment-tier-list">AI presidents discuss AI alignment agendas</a><span class="favicon-span">. <a class="data-footnote-backref">⤴</a></span></p>'
+      const expected =
+        '<p>I even self-host <a href="/alignment-tier-list">AI presidents discuss AI alignment agendas.</a><span class="favicon-span"> <a class="data-footnote-backref">⤴</a></span></p>'
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
+    })
   })
 
   describe("End-to-end HTML formatting improvement", () => {
@@ -1890,6 +1902,19 @@ describe("replaceFractions", () => {
       // Should NOT convert the 1/2 to a fraction
       expect(processedHtml).not.toContain('<span class="fraction">')
       expect(processedHtml).toContain("1/2")
+    })
+
+    it("detects URLs deterministically across repeated calls (no lastIndex carryover)", () => {
+      // URL-bearing fraction skip is order-independent: repeatedly converting the
+      // same text node must produce identical output every time. A global regex's
+      // `.test()` would advance `lastIndex` and intermittently flip the result.
+      const urlValue = "(https://example.com/path/1/2)"
+      for (let i = 0; i < 5; i++) {
+        const node = { type: "text", value: urlValue } as Text
+        const parent = h("p", [node])
+        replaceFractions(node, 0, parent, [])
+        expect(hastToHtml(parent)).not.toContain('<span class="fraction">')
+      }
     })
   })
 })

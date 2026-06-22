@@ -700,6 +700,11 @@ describe("ObsidianFlavoredMarkdown", () => {
       expectedToContain: "[[link\\#header\\|alias]]",
     },
     {
+      name: "wikilinks in tables with multiple # and | escape every occurrence",
+      input: "| [[a#b#c|d|e]] | content |\n|---|---|\n| data | more |",
+      expectedToContain: "[[a\\#b\\#c\\|d\\|e]]",
+    },
+    {
       name: "wikilinks with block references",
       input: "[[page#^block-ref]]",
       expectedToContain: "[[page#^block-ref]]",

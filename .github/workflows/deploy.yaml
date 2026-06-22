@@ -8,19 +8,6 @@ on:
   push:
     branches: ["main", "dev"]
   pull_request:
-    types: [opened, synchronize, reopened]
-    paths:
-      - "quartz/**"
-      - "!quartz/**/*.spec.ts"
-      - "!quartz/**/*.test.ts"
-      - "!quartz/**/*.test.tsx"
-      - "!quartz/**/tests/**"
-      - "website_content/**"
-      - "config/quartz/**"
-      - "config/constants.json"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
   workflow_dispatch:
 
 # Read-only default; each job below elevates only to the writes it needs
@@ -33,13 +20,51 @@ permissions:
   contents: read
 
 jobs:
+  # Always triggers so the required-check context is created; the gate emits
+  # run=false (and the deploy jobs report "skipped") when a PR touches no
+  # deploy-relevant paths. Pushes and manual dispatches always run.
+  should-run:
+    name: deploy-should-run
+    # Bot guard applies only to PRs; pushes/dispatches must always run so a
+    # bot-authored squash-merge to main never skips the production deploy.
+    if: github.event_name != 'pull_request' || (github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          sparse-checkout: .github/actions/ci-gate
+      - id: gate
+        uses: ./.github/actions/ci-gate
+        with:
+          force-labels: "ci:full-tests,ci:run-deploy"
+          filters: |
+            relevant:
+              - "quartz/**"
+              - "!quartz/**/*.spec.ts"
+              - "!quartz/**/*.test.ts"
+              - "!quartz/**/*.test.tsx"
+              - "!quartz/**/tests/**"
+              - "website_content/**"
+              - "config/quartz/**"
+              - "config/constants.json"
+              - "package.json"
+              - "pnpm-lock.yaml"
+              - ".github/actions/**"
+
   deploy-build:
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
     with:
       fetch-depth: 0
 
   prepare-deploy:
-    needs: deploy-build
+    needs: [should-run, deploy-build]
+    if: needs.should-run.outputs.run == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     # Cloudflare Pages deploy (OIDC + Pages) plus PR preview comments.

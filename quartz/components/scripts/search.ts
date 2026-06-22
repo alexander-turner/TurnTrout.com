@@ -101,6 +101,16 @@ interface Frontmatter {
   no_dropcap?: boolean | string
 }
 
+/**
+ * Whether a page's preview should render a dropcap. The dropcap is used unless
+ * `no_dropcap` is explicitly truthy (boolean `true` or string `"true"`); boolean
+ * `false`, string `"false"`, and absence all enable it. Mirrors the canonical
+ * interpretation in `Content.tsx`.
+ */
+export function shouldUseDropcap(frontmatter: Frontmatter): boolean {
+  return frontmatter.no_dropcap !== true && frontmatter.no_dropcap !== "true"
+}
+
 interface FetchResult {
   content: Element[]
   frontmatter: Frontmatter
@@ -200,13 +210,19 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
     tokenizedText = tokenizedText.slice(startIndex, endIndex + 1)
   }
 
+  // Compile each term's highlight regex once, rather than per text token in the
+  // map below (which would recompile the same regex for every token).
+  const compiledTerms = tokenizedTerms.map((searchTok) => ({
+    lowered: searchTok.toLowerCase(),
+    regex: new RegExp(RegExp.escape(escapeHTML(searchTok)), "gi"),
+  }))
+
   const slice = tokenizedText
     .map((tok: string): string => {
       const escaped = escapeHTML(tok)
-      for (const searchTok of tokenizedTerms) {
-        if (tok.toLowerCase().includes(searchTok.toLowerCase())) {
-          const sanitizedSearchTok = RegExp.escape(escapeHTML(searchTok))
-          const regex = new RegExp(sanitizedSearchTok, "gi")
+      const lowerTok = tok.toLowerCase()
+      for (const { lowered, regex } of compiledTerms) {
+        if (lowerTok.includes(lowered)) {
           return escaped.replace(regex, `<span class="${SEARCH_MATCH_CLASS}">$&</span>`)
         }
       }
@@ -406,8 +422,7 @@ export class PreviewManager {
         return
       }
 
-      const useDropcap: boolean =
-        !("no_dropcap" in frontmatter) || frontmatter.no_dropcap === "false"
+      const useDropcap: boolean = shouldUseDropcap(frontmatter)
       this.inner.setAttribute("data-use-dropcap", useDropcap.toString())
 
       // Create a document fragment to build content off-screen
@@ -1270,6 +1285,21 @@ export type MatchScore = readonly [
  * wins. Word boundaries respect Unicode letters/digits so "rétable"
  * doesn't count as a whole-word match for "table".
  */
+// Cache the whole-word regex per token. `longestMatchedTokenLengths` runs once
+// per scored document with the same token set, so without this the identical
+// regex would be recompiled for every document. The regex is non-global, so
+// `.test()` is stateless and safe to reuse.
+const wholeWordRegexCache = new Map<string, RegExp>()
+
+const getWholeWordRegex = (token: string): RegExp => {
+  let regex = wholeWordRegexCache.get(token)
+  if (!regex) {
+    regex = new RegExp(`(?<![\\p{L}\\p{N}_])${RegExp.escape(token)}(?![\\p{L}\\p{N}_])`, "u")
+    wholeWordRegexCache.set(token, regex)
+  }
+  return regex
+}
+
 const longestMatchedTokenLengths = (
   lowercasedHaystack: string,
   lowercasedTokens: readonly string[],
@@ -1279,10 +1309,7 @@ const longestMatchedTokenLengths = (
   for (const token of lowercasedTokens) {
     if (!lowercasedHaystack.includes(token)) continue
     if (substringLen === 0) substringLen = token.length
-    const wholeWordRe = new RegExp(
-      `(?<![\\p{L}\\p{N}_])${RegExp.escape(token)}(?![\\p{L}\\p{N}_])`,
-      "u",
-    )
+    const wholeWordRe = getWholeWordRegex(token)
     if (wholeWordRe.test(lowercasedHaystack)) {
       wholeWordLen = token.length
       break
