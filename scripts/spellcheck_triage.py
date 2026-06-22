@@ -177,7 +177,10 @@ def classify(
         messages=[{"role": "user", "content": payload}],
     )
     text = "".join(
-        b.text for b in response.content if getattr(b, "type", None) == "text"
+        # Content blocks are duck-typed by their `type` tag; only text blocks carry `.text`.
+        b.text  # pyright: ignore[reportAttributeAccessIssue]
+        for b in response.content
+        if getattr(b, "type", None) == "text"
     )
     return _parse_decisions(text)
 

@@ -17,7 +17,8 @@ from urllib.parse import urlparse
 
 import git
 import requests
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup, Tag
+from bs4.element import NavigableString
 from requests.adapters import HTTPAdapter
 from ruamel.yaml import YAML, YAMLError
 from urllib3.util.retry import Retry

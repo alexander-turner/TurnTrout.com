@@ -653,7 +653,7 @@ _TEST_ROOT = Path("/test/root")
 _VERIFY_NAMES = frozenset(
     {
         "Pylint",
-        "Mypy",
+        "Pyright",
         "Source file checks",
         "Spellcheck and Vale",
     }

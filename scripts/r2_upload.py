@@ -19,7 +19,7 @@ from pathlib import Path
 try:
     from . import utils as script_utils
 except ImportError:
-    import utils as script_utils  # type: ignore
+    import utils as script_utils
 
 R2_BASE_URL: str = script_utils.CDN_BASE_URL
 R2_BUCKET_NAME: str = "turntrout"
