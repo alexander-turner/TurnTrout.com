@@ -9,6 +9,15 @@ set -uo pipefail
 GIT_ROOT=$(git rev-parse --show-toplevel)
 cd "$GIT_ROOT" || exit 1
 
+# Fail loudly when vale is missing: this gate must never silently skip prose
+# checks. session-setup.sh installs vale; if it's absent, install it before
+# pushing.
+if ! command -v vale >/dev/null 2>&1; then
+	echo "vale is not installed; the spellcheck/prose gate cannot run." >&2
+	echo "Install it via 'webi vale@3' or rerun .claude/hooks/session-setup.sh." >&2
+	exit 1
+fi
+
 # `mktemp -t TEMPLATE` is non-portable: macOS treats the arg as a literal
 # prefix and appends random chars, so the directory name ends up containing
 # the literal "XXXXXX". Pass a full template path instead — both macOS and

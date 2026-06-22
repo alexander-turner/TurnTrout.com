@@ -682,13 +682,14 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
             cwd=str(git_root_path),
             parallel_group="verify",
         ),
+        # No `requires="vale"`: a missing vale must fail the push loudly (the
+        # wrapper errors out) rather than silently skipping the spellcheck gate.
         CheckStep(
             name="Spellcheck and Vale",
             command=[
                 "bash",
                 f"{git_root_path}/scripts/run_spellcheck_and_vale.sh",
             ],
-            requires="vale",
             parallel_group="verify",
         ),
         CheckStep(
