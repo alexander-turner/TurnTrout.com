@@ -10,8 +10,8 @@ try:
     from . import compress
     from . import utils as script_utils
 except ImportError:  # pragma: no cover
-    import compress  # type: ignore
-    import utils as script_utils  # type: ignore
+    import compress
+    import utils as script_utils
 
 
 ASSET_STAGING_PATTERN: str = r"(?:(?:\.?/)?asset_staging/)?"

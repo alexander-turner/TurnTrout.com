@@ -610,7 +610,7 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     Get the pre-push check steps to run locally.
 
     Includes shared autofixers from `get_formatter_steps` plus a parallel
-    "verify" group of read-only checks (pylint, mypy, source-file checks,
+    "verify" group of read-only checks (pylint, pyright, source-file checks,
     spellcheck+vale) that mirror CI's lint-and-validate gates so failures
     surface before main goes red. Sequential tail steps handle local-only
     work: asset compression/upload (R2) and alt-text scanning.
@@ -618,12 +618,6 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     Args:
         git_root_path: Path to the git repository root.
     """
-    mypy_files = glob.glob(f"{git_root_path}/scripts/*.py")
-    if not mypy_files and (git_root_path / "scripts").is_dir():
-        raise FileNotFoundError(
-            f"No Python files found in {git_root_path}/scripts/ for Mypy"
-        )
-
     return [
         *get_formatter_steps(git_root_path),
         # source_file_checks.py imports the generated variables.scss when
@@ -657,18 +651,12 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
             cwd=str(git_root_path),
             parallel_group="verify",
         ),
+        # Bare `pyright` reads the include + rules from pyproject.toml's
+        # [tool.pyright], so it must run from the repo root.
         CheckStep(
-            name="Mypy",
-            command=[
-                "uv",
-                "run",
-                "python",
-                "-m",
-                "mypy",
-                "--config-file",
-                f"{git_root_path}/config/python/mypy.ini",
-                *mypy_files,
-            ],
+            name="Pyright",
+            command=["uv", "run", "pyright"],
+            cwd=str(git_root_path),
             parallel_group="verify",
         ),
         CheckStep(

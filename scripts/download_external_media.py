@@ -19,7 +19,7 @@ import requests
 try:
     from . import utils as script_utils
 except ImportError:
-    import utils as script_utils  # type: ignore
+    import utils as script_utils
 
 _http_session = script_utils.http_session()
 

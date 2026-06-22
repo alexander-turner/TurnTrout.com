@@ -168,7 +168,7 @@ When pushing to main, `scripts/run_push_checks.py` runs:
 2. **Sequential prep** — `pnpm exec tsx quartz/styles/generate-variables.ts` regenerates `quartz/styles/variables.scss` because `source_file_checks.py` reads it.
 3. **Parallel verify group** (read-only, runs concurrently via `ThreadPoolExecutor`):
    - `pylint` (matches `python-lint.yaml` CI invocation: `pylint .` with `config/python/.pylintrc`).
-   - `mypy` (uses the `dmypy` daemon pre-warmed by `session-setup.sh`).
+   - `pyright` (type-checks `scripts/`; config in `pyproject.toml`'s `[tool.pyright]`).
    - `source_file_checks.py` (frontmatter / dates / asset refs / fonts).
    - `scripts/run_spellcheck_and_vale.sh` (strips `[!quote]` callouts, runs spellchecker-cli and Vale concurrently inside the wrapper).
 4. **Sequential tail**—asset compression + R2 upload (skipped if `rclone` not present), alt-text scan (LLM; requires `alt-text-llm`).

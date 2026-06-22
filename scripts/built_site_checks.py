@@ -22,10 +22,11 @@ from types import MappingProxyType
 from typing import Literal, NamedTuple
 from urllib.parse import urlparse
 
-import requests  # type: ignore[import]
+import requests
 import tqdm
-import validators  # type: ignore[import]
-from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
+import validators
+from bs4 import BeautifulSoup, Tag
+from bs4.element import NavigableString, PageElement
 
 # Add the project root to sys.path
 # pylint: disable=C0413
@@ -345,11 +346,8 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
     for link in links:
         if not isinstance(link, Tag):  # pragma: no cover
             continue  # just a typeguard
-        if (
-            not link.has_attr("href")
-            or not isinstance(link["href"], str)
-            or link["href"].startswith("https://")
-        ):
+        href = link["href"] if link.has_attr("href") else None
+        if not isinstance(href, str) or href.startswith("https://"):
             invalid_internal_links.append(link)
 
     return invalid_internal_links

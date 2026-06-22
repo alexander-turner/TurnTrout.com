@@ -23,6 +23,7 @@ export const codeTerms: readonly string[] = [
   "pylint",
   "eslint",
   "mypy",
+  "pyright",
   "linkchecker",
   "docformatter",
   "micromorph",
