@@ -739,9 +739,16 @@ def test_autofix_lint_runs_before_autofix_format():
     assert last_lint_idx < first_format_idx
 
 
-def test_spellcheck_step_requires_vale():
+def test_spellcheck_step_has_no_requires_so_it_fails_loudly():
+    """
+    The spellcheck/prose gate must not silently skip when vale is absent: it has
+    no `requires`, so it always runs and errors loudly (the wrapper checks for
+    vale itself).
+
+    session-setup.sh installs vale.
+    """
     steps = run_push_checks.get_check_steps(_TEST_ROOT)
-    assert _step_by_name(steps, "Spellcheck and Vale").requires == "vale"
+    assert _step_by_name(steps, "Spellcheck and Vale").requires is None
 
 
 def test_eslint_step_invocation():

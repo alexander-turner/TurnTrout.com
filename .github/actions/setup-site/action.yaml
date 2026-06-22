@@ -206,7 +206,7 @@ runs:
         command: |
           sudo apt-get update && \
           sudo apt-get install -y --no-install-recommends \
-            libxml2-utils=2.9.14+dfsg-1.3ubuntu3.7 \
+            libxml2-utils=2.9.14+dfsg-1.3ubuntu3.8 \
             dos2unix=7.5.1-1 \
             ffmpeg=7:6.1.1-3ubuntu5 \
             libimage-exiftool-perl=12.76+dfsg-1 \

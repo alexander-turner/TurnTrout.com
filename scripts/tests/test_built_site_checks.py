@@ -2759,6 +2759,11 @@ def test_check_inline_formatting_spacing(html, expected):
             '<p class="no-formatting">text<code>X</code>more</p>',
             0,
         ),
+        # Code inside an embedded external README is skipped.
+        (
+            '<div class="external-readme"><p>you <code>curl</code>ed it</p></div>',
+            0,
+        ),
     ],
 )
 def test_check_inline_code_word_boundaries(html, expected_count):
