@@ -71,9 +71,7 @@ const config: QuartzConfig = {
         sources: {
           punctilio: githubReadmeSource("alexander-turner", "punctilio"),
           "ci-truth-serum": githubReadmeSource("alexander-turner", "ci-truth-serum"),
-          "agent-input-sanitizer": githubReadmeSource("alexander-turner", "agent-input-sanitizer", {
-            stripLeadingH1: true,
-          }),
+          "agent-input-sanitizer": githubReadmeSource("alexander-turner", "agent-input-sanitizer"),
           "lint-staged": {
             filePath: "package.json",
             jsonPath: "lint-staged",

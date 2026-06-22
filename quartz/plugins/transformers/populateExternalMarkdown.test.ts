@@ -148,20 +148,18 @@ describe("PopulateExternalMarkdown", () => {
         title,
       )}\n\n</div>`
 
-    it("strips badges, rewrites relative links, and wraps (keeping the leading H1 by default)", () => {
+    it("strips badges and a leading H1, rewrites relative links, and wraps in a quote callout", () => {
       const source = githubReadmeSource("owner", "repo")
       expect(source).toMatchObject({ owner: "owner", repo: "repo" })
       expect(source.transform?.(badgeAndLink)).toBe(
-        wrap(
-          "# Repo title\n\nBody with [a](https://github.com/owner/repo/blob/main/docs/g.md) link.",
-        ),
+        wrap("Body with [a](https://github.com/owner/repo/blob/main/docs/g.md) link."),
       )
     })
 
-    it("drops the leading H1 when stripLeadingH1 is set", () => {
-      const source = githubReadmeSource("owner", "repo", { stripLeadingH1: true })
-      expect(source.transform?.(badgeAndLink)).toBe(
-        wrap("Body with [a](https://github.com/owner/repo/blob/main/docs/g.md) link."),
+    it("leaves content intact when no H1 leads the file", () => {
+      const source = githubReadmeSource("owner", "repo")
+      expect(source.transform?.("**Bold intro**\n\n## Usage")).toBe(
+        wrap("**Bold intro**\n\n## Usage"),
       )
     })
   })

@@ -163,28 +163,23 @@ export function asQuoteAdmonition(content: string, title: string): string {
 }
 
 /**
- * Builds a GitHub README source: strips badges, rewrites relative links to
- * absolute blob URLs, optionally drops a leading H1 that would duplicate the
- * embedding page's own section heading, renders the result inside a `[!quote]`
- * admonition titled with the repo link, and wraps it so its heading ids stay
- * unique on the host page.
+ * Builds a GitHub README source: strips badges, drops a leading H1 (when it
+ * leads the file) that would duplicate the embedding page's own section
+ * heading, rewrites relative links to absolute blob URLs, renders the result
+ * inside a `[!quote]` admonition titled with the repo link, and wraps it so its
+ * heading ids stay unique on the host page.
  */
-export function githubReadmeSource(
-  owner: string,
-  repo: string,
-  opts: { stripLeadingH1?: boolean } = {},
-): GitHubMarkdownSource {
+export function githubReadmeSource(owner: string, repo: string): GitHubMarkdownSource {
   const rewriteLinks = rewriteRelativeLinksToGitHub(owner, repo)
   const title = `[\`${owner}/${repo}\`](https://github.com/${owner}/${repo})`
   return {
     owner,
     repo,
-    transform: (content) => {
-      const stripped = opts.stripLeadingH1
-        ? stripLeadingH1(stripBadges(content))
-        : stripBadges(content)
-      return wrapExternalReadme(asQuoteAdmonition(rewriteLinks(stripped), title), repo)
-    },
+    transform: (content) =>
+      wrapExternalReadme(
+        asQuoteAdmonition(rewriteLinks(stripLeadingH1(stripBadges(content))), title),
+        repo,
+      ),
   }
 }
 
