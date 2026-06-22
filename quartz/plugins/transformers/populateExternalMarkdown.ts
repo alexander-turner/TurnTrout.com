@@ -150,10 +150,24 @@ export function wrapExternalReadme(content: string, slug: string): string {
 }
 
 /**
+ * Renders markdown as a `[!quote]` admonition by prefixing every line with `> `,
+ * matching the quote callouts used elsewhere on the site. Blank lines become a
+ * bare `>` so the blockquote stays contiguous.
+ */
+export function asQuoteAdmonition(content: string, title: string): string {
+  const quoted = content
+    .split("\n")
+    .map((line) => (line.length > 0 ? `> ${line}` : ">"))
+    .join("\n")
+  return `> [!quote] ${title}\n${quoted}`
+}
+
+/**
  * Builds a GitHub README source: strips badges, rewrites relative links to
  * absolute blob URLs, optionally drops a leading H1 that would duplicate the
- * embedding page's own section heading, and wraps the result so its heading ids
- * stay unique on the host page.
+ * embedding page's own section heading, renders the result inside a `[!quote]`
+ * admonition titled with the repo link, and wraps it so its heading ids stay
+ * unique on the host page.
  */
 export function githubReadmeSource(
   owner: string,
@@ -161,6 +175,7 @@ export function githubReadmeSource(
   opts: { stripLeadingH1?: boolean } = {},
 ): GitHubMarkdownSource {
   const rewriteLinks = rewriteRelativeLinksToGitHub(owner, repo)
+  const title = `[\`${owner}/${repo}\`](https://github.com/${owner}/${repo})`
   return {
     owner,
     repo,
@@ -168,7 +183,7 @@ export function githubReadmeSource(
       const stripped = opts.stripLeadingH1
         ? stripLeadingH1(stripBadges(content))
         : stripBadges(content)
-      return wrapExternalReadme(rewriteLinks(stripped), repo)
+      return wrapExternalReadme(asQuoteAdmonition(rewriteLinks(stripped), title), repo)
     },
   }
 }

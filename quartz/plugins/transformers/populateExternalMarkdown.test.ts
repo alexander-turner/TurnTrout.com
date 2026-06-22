@@ -5,6 +5,7 @@ import fs from "fs"
 import type { BuildCtx } from "../../util/ctx"
 
 import {
+  asQuoteAdmonition,
   buildPlaceholderRegex,
   clearContentCache,
   fetchGitHubContentSync,
@@ -132,10 +133,20 @@ describe("PopulateExternalMarkdown", () => {
     })
   })
 
+  describe("asQuoteAdmonition", () => {
+    it("titles the callout and prefixes every line (blank lines become bare '>')", () => {
+      expect(asQuoteAdmonition("a\n\nb", "T")).toBe("> [!quote] T\n> a\n>\n> b")
+    })
+  })
+
   describe("githubReadmeSource", () => {
     const badgeAndLink = "[![CI](badge.svg)](ci)\n\n# Repo title\n\nBody with [a](docs/g.md) link."
+    const title = "[`owner/repo`](https://github.com/owner/repo)"
     const wrap = (inner: string) =>
-      `<div class="external-readme" data-readme-slug="repo">\n\n${inner}\n\n</div>`
+      `<div class="external-readme" data-readme-slug="repo">\n\n${asQuoteAdmonition(
+        inner,
+        title,
+      )}\n\n</div>`
 
     it("strips badges, rewrites relative links, and wraps (keeping the leading H1 by default)", () => {
       const source = githubReadmeSource("owner", "repo")

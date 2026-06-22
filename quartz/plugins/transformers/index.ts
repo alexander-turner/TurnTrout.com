@@ -22,6 +22,7 @@ export { CrawlLinks } from "./links"
 export { ObsidianFlavoredMarkdown } from "./ofm"
 export { OxHugoFlavouredMarkdown } from "./oxhugofm"
 export {
+  asQuoteAdmonition,
   githubReadmeSource,
   PopulateExternalMarkdown,
   rewriteRelativeLinksToGitHub,
