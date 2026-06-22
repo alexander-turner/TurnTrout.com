@@ -1273,6 +1273,9 @@ def should_skip(element: Tag | NavigableString) -> bool:
         "elvish",
         "bad-handwriting",
         "katex",
+        # Embedded external READMEs: prose-quality checks target first-party
+        # authoring, not third-party README text.
+        "external-readme",
     }
 
     # Check current element and all parents
@@ -2426,7 +2429,11 @@ def check_inline_code_word_boundaries(soup: BeautifulSoup) -> list[str]:
     """
     issues: list[str] = []
     for code in _tags_only(soup.find_all("code")):
-        if code.find_parent("pre") or code.find_parent(class_="no-formatting"):
+        if (
+            code.find_parent("pre")
+            or code.find_parent(class_="no-formatting")
+            or code.find_parent(class_="external-readme")
+        ):
             continue
         issues.extend(
             _check_element_spacing(

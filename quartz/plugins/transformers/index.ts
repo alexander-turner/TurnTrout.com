@@ -29,6 +29,7 @@ export {
   stripLeadingH1,
   stripRelativeLinks,
 } from "./populateExternalMarkdown"
+export { PrefixExternalReadmeIds } from "./prefixExternalReadmeIds"
 export { rehypeCustomSpoiler } from "./spoiler"
 export { rehypeCustomSubtitle } from "./subtitles"
 export { SyntaxHighlighting } from "./syntax"

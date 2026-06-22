@@ -25,6 +25,7 @@ import {
   ObsidianFlavoredMarkdown,
   PopulateContainers,
   PopulateExternalMarkdown,
+  PrefixExternalReadmeIds,
   RecentPostsPage,
   rehypeCustomSpoiler,
   rehypeCustomSubtitle,
@@ -127,6 +128,9 @@ const config: QuartzConfig = {
         enableCheckbox: true,
       }),
       GitHubFlavoredMarkdown({ enableSmartyPants: false }),
+      // After GitHubFlavoredMarkdown assigns heading ids/autolinks: namespace the
+      // ids of embedded external READMEs so they stay unique on the host page.
+      PrefixExternalReadmeIds(),
       TableDivider(),
       FixFootnotes(),
       WrapNakedElements(),

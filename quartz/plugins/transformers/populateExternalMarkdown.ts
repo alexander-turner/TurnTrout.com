@@ -132,10 +132,28 @@ export function rewriteRelativeLinksToGitHub(
     content.replace(RELATIVE_LINK_RE, (_match, text, href) => `[${text}](${base}/${href})`)
 }
 
+/** Class marking a wrapper around embedded external README content. */
+export const EXTERNAL_README_CLASS = "external-readme"
+/** Attribute holding the source slug used to namespace the README's heading ids. */
+export const EXTERNAL_README_SLUG_ATTR = "data-readme-slug"
+
+/**
+ * Wraps embedded README markdown in a `div.external-readme` carrying the source
+ * slug. rehype-raw re-nests the markdown under the div, so its headings can be
+ * id-namespaced (see PrefixExternalReadmeIds) and its prose exempted from the
+ * site's content-quality checks, which target first-party authoring. The TOC
+ * builder (which runs on the pre-nesting mdast) skips the README's headings by
+ * tracking the wrapper's `<div>`/`</div>` boundaries.
+ */
+export function wrapExternalReadme(content: string, slug: string): string {
+  return `<div class="${EXTERNAL_README_CLASS}" ${EXTERNAL_README_SLUG_ATTR}="${slug}">\n\n${content}\n\n</div>`
+}
+
 /**
  * Builds a GitHub README source: strips badges, rewrites relative links to
- * absolute blob URLs, and optionally drops a leading H1 that would duplicate the
- * embedding page's own section heading.
+ * absolute blob URLs, optionally drops a leading H1 that would duplicate the
+ * embedding page's own section heading, and wraps the result so its heading ids
+ * stay unique on the host page.
  */
 export function githubReadmeSource(
   owner: string,
@@ -150,7 +168,7 @@ export function githubReadmeSource(
       const stripped = opts.stripLeadingH1
         ? stripLeadingH1(stripBadges(content))
         : stripBadges(content)
-      return rewriteLinks(stripped)
+      return wrapExternalReadme(rewriteLinks(stripped), repo)
     },
   }
 }

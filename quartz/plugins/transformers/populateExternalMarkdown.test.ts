@@ -17,6 +17,7 @@ import {
   stripBadges,
   stripLeadingH1,
   stripRelativeLinks,
+  wrapExternalReadme,
 } from "./populateExternalMarkdown"
 
 /** Wraps `"key": value` output in braces so it can be parsed as JSON. */
@@ -123,21 +124,33 @@ describe("PopulateExternalMarkdown", () => {
     })
   })
 
+  describe("wrapExternalReadme", () => {
+    it("wraps content in a div carrying the source slug", () => {
+      expect(wrapExternalReadme("# Hi\n\nBody", "my-repo")).toBe(
+        '<div class="external-readme" data-readme-slug="my-repo">\n\n# Hi\n\nBody\n\n</div>',
+      )
+    })
+  })
+
   describe("githubReadmeSource", () => {
     const badgeAndLink = "[![CI](badge.svg)](ci)\n\n# Repo title\n\nBody with [a](docs/g.md) link."
+    const wrap = (inner: string) =>
+      `<div class="external-readme" data-readme-slug="repo">\n\n${inner}\n\n</div>`
 
-    it("strips badges and rewrites relative links, keeping the leading H1 by default", () => {
+    it("strips badges, rewrites relative links, and wraps (keeping the leading H1 by default)", () => {
       const source = githubReadmeSource("owner", "repo")
       expect(source).toMatchObject({ owner: "owner", repo: "repo" })
       expect(source.transform?.(badgeAndLink)).toBe(
-        "# Repo title\n\nBody with [a](https://github.com/owner/repo/blob/main/docs/g.md) link.",
+        wrap(
+          "# Repo title\n\nBody with [a](https://github.com/owner/repo/blob/main/docs/g.md) link.",
+        ),
       )
     })
 
     it("drops the leading H1 when stripLeadingH1 is set", () => {
       const source = githubReadmeSource("owner", "repo", { stripLeadingH1: true })
       expect(source.transform?.(badgeAndLink)).toBe(
-        "Body with [a](https://github.com/owner/repo/blob/main/docs/g.md) link.",
+        wrap("Body with [a](https://github.com/owner/repo/blob/main/docs/g.md) link."),
       )
     })
   })
