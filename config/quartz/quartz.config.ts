@@ -34,6 +34,7 @@ import {
   Static,
   stripBadges,
   StripInlineBoundaryWhitespace,
+  stripLeadingH1,
   SyntaxHighlighting,
   TableDivider,
   TableOfContents,
@@ -74,6 +75,24 @@ const config: QuartzConfig = {
             repo: "punctilio",
             transform: (content: string) =>
               rewriteRelativeLinksToGitHub("alexander-turner", "punctilio")(stripBadges(content)),
+          },
+          "ci-truth-serum": {
+            owner: "alexander-turner",
+            repo: "ci-truth-serum",
+            transform: (content: string) =>
+              rewriteRelativeLinksToGitHub(
+                "alexander-turner",
+                "ci-truth-serum",
+              )(stripBadges(content)),
+          },
+          "agent-input-sanitizer": {
+            owner: "alexander-turner",
+            repo: "agent-input-sanitizer",
+            transform: (content: string) =>
+              rewriteRelativeLinksToGitHub(
+                "alexander-turner",
+                "agent-input-sanitizer",
+              )(stripLeadingH1(stripBadges(content))),
           },
           "lint-staged": {
             filePath: "package.json",

@@ -25,6 +25,7 @@ export {
   PopulateExternalMarkdown,
   rewriteRelativeLinksToGitHub,
   stripBadges,
+  stripLeadingH1,
   stripRelativeLinks,
 } from "./populateExternalMarkdown"
 export { rehypeCustomSpoiler } from "./spoiler"

@@ -100,6 +100,14 @@ export function stripBadges(content: string): string {
 }
 
 /**
+ * Removes a leading top-level `# Heading` so an embedded README nests under the
+ * surrounding page's own section heading instead of introducing a duplicate H1.
+ */
+export function stripLeadingH1(content: string): string {
+  return content.replace(/^\s*#\s+(?:\S.*)?(?:\r?\n)+/, "")
+}
+
+/**
  * Replaces relative markdown links with their link text.
  * Relative links (no scheme, no leading # or /) get misclassified as external
  * by CrawlLinks and receive an https:// prefix, producing invalid hrefs.

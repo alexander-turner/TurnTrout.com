@@ -14,6 +14,7 @@ import {
   PopulateExternalMarkdown,
   rewriteRelativeLinksToGitHub,
   stripBadges,
+  stripLeadingH1,
   stripRelativeLinks,
 } from "./populateExternalMarkdown"
 
@@ -54,6 +55,23 @@ describe("PopulateExternalMarkdown", () => {
       ["No badges here", "No badges here"],
     ])("should strip badges from markdown", (input, expected) => {
       expect(stripBadges(input)).toBe(expected)
+    })
+  })
+
+  describe("stripLeadingH1", () => {
+    it.each([
+      ["leading h1 with body", "# agent-input-sanitizer\n\nBody text", "Body text"],
+      ["leading h1 with single newline", "# Title\nNext line", "Next line"],
+      ["leading whitespace before h1", "\n# Title\n\nBody", "Body"],
+      [
+        "no leading h1 keeps content",
+        "Intro paragraph\n\n## Section",
+        "Intro paragraph\n\n## Section",
+      ],
+      ["only strips the first h1", "# First\n\nMid\n\n# Second", "Mid\n\n# Second"],
+      ["does not strip h2", "## Subsection\n\nBody", "## Subsection\n\nBody"],
+    ])("%s", (_desc, input, expected) => {
+      expect(stripLeadingH1(input)).toBe(expected)
     })
   })
 
