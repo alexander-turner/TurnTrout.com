@@ -9,6 +9,7 @@ import {
   clearContentCache,
   fetchGitHubContentSync,
   fetchLocalContentSync,
+  githubReadmeSource,
   isLocalSource,
   populateExternalContent,
   PopulateExternalMarkdown,
@@ -118,6 +119,25 @@ describe("PopulateExternalMarkdown", () => {
     it("respects custom ref", () => {
       expect(rewriteRef("[guide](docs/guide.md)")).toBe(
         "[guide](https://github.com/owner/repo/blob/v2/docs/guide.md)",
+      )
+    })
+  })
+
+  describe("githubReadmeSource", () => {
+    const badgeAndLink = "[![CI](badge.svg)](ci)\n\n# Repo title\n\nBody with [a](docs/g.md) link."
+
+    it("strips badges and rewrites relative links, keeping the leading H1 by default", () => {
+      const source = githubReadmeSource("owner", "repo")
+      expect(source).toMatchObject({ owner: "owner", repo: "repo" })
+      expect(source.transform?.(badgeAndLink)).toBe(
+        "# Repo title\n\nBody with [a](https://github.com/owner/repo/blob/main/docs/g.md) link.",
+      )
+    })
+
+    it("drops the leading H1 when stripLeadingH1 is set", () => {
+      const source = githubReadmeSource("owner", "repo", { stripLeadingH1: true })
+      expect(source.transform?.(badgeAndLink)).toBe(
+        "Body with [a](https://github.com/owner/repo/blob/main/docs/g.md) link.",
       )
     })
   })

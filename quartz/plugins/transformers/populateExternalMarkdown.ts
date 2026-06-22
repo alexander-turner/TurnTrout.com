@@ -132,6 +132,29 @@ export function rewriteRelativeLinksToGitHub(
     content.replace(RELATIVE_LINK_RE, (_match, text, href) => `[${text}](${base}/${href})`)
 }
 
+/**
+ * Builds a GitHub README source: strips badges, rewrites relative links to
+ * absolute blob URLs, and optionally drops a leading H1 that would duplicate the
+ * embedding page's own section heading.
+ */
+export function githubReadmeSource(
+  owner: string,
+  repo: string,
+  opts: { stripLeadingH1?: boolean } = {},
+): GitHubMarkdownSource {
+  const rewriteLinks = rewriteRelativeLinksToGitHub(owner, repo)
+  return {
+    owner,
+    repo,
+    transform: (content) => {
+      const stripped = opts.stripLeadingH1
+        ? stripLeadingH1(stripBadges(content))
+        : stripBadges(content)
+      return rewriteLinks(stripped)
+    },
+  }
+}
+
 function getContent(name: string, source: MarkdownSource): string {
   const local = isLocalSource(source)
   const cacheKey = local
