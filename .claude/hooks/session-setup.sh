@@ -26,10 +26,11 @@ uv_install_if_missing() {
 }
 
 # Install vale (prose linter) if missing, from a pinned GitHub release.
-# webi has no vale package, so pull the official tarball directly. Pinned to
-# match CI (lint-and-validate.yaml) so pre-push and CI agree; required by the
+# webi has no vale package, so pull the official tarball directly. The version
+# is the single source of truth in config/vale/version, shared with CI
+# (lint-and-validate.yaml) so pre-push and CI never drift; required by the
 # pre-push spellcheck/prose gate.
-VALE_VERSION=3.9.0
+VALE_VERSION="$(cat "$PROJECT_DIR/config/vale/version")"
 vale_install_if_missing() {
 	command -v vale &>/dev/null && return 0
 	local os arch
