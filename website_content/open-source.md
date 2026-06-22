@@ -113,13 +113,9 @@ The original `subfont` traced font usage from scratch on every page. That took a
 
 # Make your CI confess
 
-I open source [`alexander-turner/ci-truth-serum`](https://github.com/alexander-turner/ci-truth-serum), a pack of fast, offline pre-commit lints. The README below explains the two kinds of lie it catches.
-
 <span class="populate-markdown-ci-truth-serum"></span>
 
 # Sanitize untrusted text before your agent sees it
-
-I open source [`alexander-turner/agent-input-sanitizer`](https://github.com/alexander-turner/agent-input-sanitizer), which strips hidden-content injection from untrusted text before any model reads it. The README below walks through its threat model and API.
 
 <span class="populate-markdown-agent-input-sanitizer"></span>
 
