@@ -188,6 +188,7 @@ export default [
       "**/*.min.ts",
       "quartz/i18n/",
       "**/img-comparison-slider.js",
+      "**/.worktrees/",
       ".venv/",
       ".stryker-tmp/",
       "mutants/",

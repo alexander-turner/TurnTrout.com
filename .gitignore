@@ -6,6 +6,7 @@
 # Dependencies & Environments
 node_modules
 .venv/
+.worktrees/
 
 # Build Output & Caches
 public
