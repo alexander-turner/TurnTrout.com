@@ -1,19 +1,3655 @@
 {
-  "test-page": [
+  "AI-textbook-review": [
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "A personal reflection on finding the rationalist community and the joy and anxiety of pursuing AI alignment.",
+      "permalink": "lightness-and-unease",
+      "title": "Lightness and Unease"
+    },
+    {
+      "excerpt": "A deep dive into reinforcement learning, covering algorithms, exploration vs. exploitation, and the importance of safe AI development.",
+      "permalink": "RL-textbook-review",
+      "title": "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
+    },
+    {
+      "excerpt": "Stuart Russell's \"Human Compatible\" makes the case for aligning AI with human values and sketches a research agenda based on uncertainty.",
+      "permalink": "thoughts-on-human-compatible",
+      "title": "Thoughts on 'Human-Compatible'"
+    },
+    {
+      "excerpt": "Why you should read “Harry Potter and the Methods of Rationality” to live more ethically and effectively.",
+      "permalink": "read-hpmor",
+      "title": "You Should Read 'Harry Potter and the Methods of Rationality'"
+    }
+  ],
+  "MDPs-are-not-subjective": [
+    {
+      "excerpt": "A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.",
+      "permalink": "seeking-power-is-often-convergently-instrumental-in-mdps",
+      "title": "Seeking Power is Often Convergently Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions.",
+      "permalink": "power-seeking-beyond-MDPs",
+      "title": "Seeking Power is Convergently Instrumental in a Broad Class of Environments"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "The structure of environments, not just reward functions, contributes to power-seeking in AI agents.",
+      "permalink": "environmental-structure-can-cause-instrumental-convergence",
+      "title": "Environmental Structure Can Cause Instrumental Convergence"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    }
+  ],
+  "RL-textbook-review": [
+    {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
+    },
+    {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
+    },
+    {
+      "excerpt": "A proposed tweak to policy gradient algorithms may avoid mode collapse, but more research is needed to assess its practicality.",
+      "permalink": "mode-collapse-in-rl-may-be-fueled-by-the-update-equation",
+      "title": "Mode collapse in RL may be fueled by the update equation"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "My review of \"Artificial Intelligence, A Modern Approach\" & how I read hundreds of pages in 3 days.",
+      "permalink": "AI-textbook-review",
+      "title": "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
+    }
+  ],
+  "RL-trains-policies-not-agents": [
+    {
+      "excerpt": "AI alignment plagued by imprecise language. Ex: \"reward\" and \"shoggoth\" are suggestive words that obstruct clear thought.",
+      "permalink": "danger-of-suggestive-terminology",
+      "title": "Dreams of AI alignment: The danger of suggestive names"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
+      "permalink": "parametrically-retargetable-power-seeking",
+      "title": "Parametrically retargetable decision-makers tend to seek power"
+    },
+    {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    }
+  ],
+  "a-certain-formalization-of-corrigibility-is-vnm-incoherent": [
+    {
+      "excerpt": "Non-obstruction: how do we design AI that doesn't limit our ability to achieve our goals, even if we misspecified its programming?",
+      "permalink": "non-obstruction-motivates-corrigibility",
+      "title": "Non-Obstruction: A Simple Concept Motivating Corrigibility"
+    },
+    {
+      "excerpt": "Formalizing one aspect of corrigibility: How much can a human change an AI's policy, measured using mutual information.",
+      "permalink": "formalizing-policy-modification-corrigibility",
+      "title": "Formalizing Policy-Modification Corrigibility"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "VNM-coherent preference orderings have the same statistical incentives as utility functions, often leading to power-seeking behavior.",
+      "permalink": "instrumental-convergence-via-vnm-preferences",
+      "title": "When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives"
+    },
+    {
+      "excerpt": "Corrigibility may emerge when AI recognizes its flaws by simulating its own decision-making and defers to human judgment when appropriate.",
+      "permalink": "corrigibility-as-outside-view",
+      "title": "Corrigibility as outside view"
+    }
+  ],
+  "a-shot-at-the-diamond-alignment-problem": [
+    {
+      "excerpt": "Common alignment ideas involve gaming the grader, not achieving the goal. Counterproductive, like building a toaster which both warms and cools the bread.",
+      "permalink": "dont-design-agents-which-exploit-adversarial-inputs",
+      "title": "Don't design agents which exploit adversarial inputs"
+    },
+    {
+      "excerpt": "I argue for studying the only known example of aligned intelligence: humans. Stop speculating about AIXI and diamonds - look at humans!",
+      "permalink": "humans-provide-alignment-evidence",
+      "title": "Humans provide an untapped wealth of evidence about alignment"
+    },
+    {
+      "excerpt": "Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.",
+      "permalink": "against-inner-outer-alignment",
+      "title": "Inner and outer alignment decompose one hard problem into two extremely hard problems"
+    },
+    {
+      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
+      "permalink": "alignment-without-total-robustness",
+      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
+    },
+    {
+      "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
+      "permalink": "dont-align-agents-to-evaluations-of-plans",
+      "title": "Don't align agents to evaluations of plans"
+    }
+  ],
+  "about": [
+    {
+      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
+      "permalink": "date-me",
+      "title": "I'm that \"other fish in the sea\""
+    },
+    {
+      "excerpt": "Celebrating the launch of the website after months of work.",
+      "permalink": "launch",
+      "title": "Site launch: Come relax by The Pond!"
+    },
+    {
+      "excerpt": "My projects include this website's infrastructure, AI-powered alt text generation, and dataset protection utilities.",
+      "permalink": "open-source",
+      "title": "My open source contributions"
+    },
+    {
+      "excerpt": "Showing off and explaining this site's beauty.",
+      "permalink": "design",
+      "title": "The design of this website"
+    }
+  ],
+  "advanced-privacy": [
+    {
+      "excerpt": "In 2025, America is different. Reduce your chance of persecution via smart technical choices.",
+      "permalink": "privacy-despite-authoritarianism",
+      "title": "An opinionated guide to privacy despite authoritarianism"
+    },
+    {
+      "excerpt": "A cost-benefit analysis of technology: Is your smartphone really worth 1.5 waking months per year?",
+      "permalink": "digital-minimalism",
+      "title": "Do a cost-benefit analysis of your technology usage"
+    }
+  ],
+  "against-inner-outer-alignment": [
+    {
+      "excerpt": "Common alignment ideas involve gaming the grader, not achieving the goal. Counterproductive, like building a toaster which both warms and cools the bread.",
+      "permalink": "dont-design-agents-which-exploit-adversarial-inputs",
+      "title": "Don't design agents which exploit adversarial inputs"
+    },
+    {
+      "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
+      "permalink": "dont-align-agents-to-evaluations-of-plans",
+      "title": "Don't align agents to evaluations of plans"
+    },
+    {
+      "excerpt": "Four distinct concepts related to \"loss function\" in AI are often conflated, leading to ambiguity in the field of AI alignment.",
+      "permalink": "four-usages-of-loss-in-ai",
+      "title": "Four usages of 'loss' in AI"
+    },
+    {
+      "excerpt": "A critical look at the idea of \"lethal\" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.",
+      "permalink": "disagreements-with-list-of-lethalities",
+      "title": "Some of my disagreements with List of Lethalities"
+    },
+    {
+      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
+      "permalink": "alignment-without-total-robustness",
+      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
+    }
+  ],
+  "against-rewards-over-observations": [
+    {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    },
+    {
+      "excerpt": "Reinforcing AI for smiles: simple, yet potentially disastrous? I'm less confident than most. Let's explore why.",
+      "permalink": "questioning-why-simple-alignment-plan-fails",
+      "title": "Seriously, what goes wrong with 'reward the agent when it makes you smile'?"
+    },
+    {
+      "excerpt": "Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.",
+      "permalink": "against-inner-outer-alignment",
+      "title": "Inner and outer alignment decompose one hard problem into two extremely hard problems"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    }
+  ],
+  "against-shoggoth": [
+    {
+      "excerpt": "AI alignment plagued by imprecise language. Ex: \"reward\" and \"shoggoth\" are suggestive words that obstruct clear thought.",
+      "permalink": "danger-of-suggestive-terminology",
+      "title": "Dreams of AI alignment: The danger of suggestive names"
+    },
+    {
+      "excerpt": "When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.",
+      "permalink": "self-fulfilling-misalignment",
+      "title": "Self-fulfilling misalignment data might be poisoning our AI models"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    }
+  ],
+  "agi-risk-introduction": [
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "Instrumental and success-conditioned convergence both require AI psychology assumptions, so neither is just a \"fact about reality.\"",
+      "permalink": "instrumental-convergence-requires-psychology-assumptions",
+      "title": "No instrumental convergence without AI psychology"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    }
+  ],
+  "alignment-phd": [
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "I dove headfirst into AI safety, even at the risk of my PhD. This is how.",
+      "permalink": "swimming-upstream",
+      "title": "Swimming Upstream: A Case Study in Instrumental Rationality"
+    },
+    {
+      "excerpt": "Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.",
+      "permalink": "problem-relaxation-as-a-tactic",
+      "title": "Problem relaxation as a tactic"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "The author's unorthodox approach to AI safety research: Ignore existing work, simplify relentlessly, and break your own solutions.",
+      "permalink": "how-i-do-research",
+      "title": "How I do research"
+    }
+  ],
+  "alignment-tier-list": [
+    {
+      "excerpt": "Experts clash on the dangers of \"instrumental convergence\" in AI, but clear definitions and formal thought are sorely needed.",
+      "permalink": "review-of-debate-on-instrumental-convergence",
+      "title": "Review of 'Debate on Instrumental Convergence between LeCun, Russell, Bengio, Zador, and More'"
+    }
+  ],
+  "alignment-without-total-robustness": [
+    {
+      "excerpt": "Common alignment ideas involve gaming the grader, not achieving the goal. Counterproductive, like building a toaster which both warms and cools the bread.",
+      "permalink": "dont-design-agents-which-exploit-adversarial-inputs",
+      "title": "Don't design agents which exploit adversarial inputs"
+    },
+    {
+      "excerpt": "Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.",
+      "permalink": "against-inner-outer-alignment",
+      "title": "Inner and outer alignment decompose one hard problem into two extremely hard problems"
+    },
+    {
+      "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
+      "permalink": "dont-align-agents-to-evaluations-of-plans",
+      "title": "Don't align agents to evaluations of plans"
+    },
+    {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
+    },
+    {
+      "excerpt": "A review of Katja Grace's post questioning the \"value is fragile\" argument, arguing it sparked valuable but confused debate.",
+      "permalink": "review-of-but-exactly-how-complex-and-fragile",
+      "title": "Review of 'But exactly how complex and fragile?'"
+    }
+  ],
+  "all-of-statistics-textbook-review": [
+    {
+      "excerpt": "Tao's \"Analysis II\" reviewed: metric spaces, uniform convergence, Lebesgue integration–sharpening my mathematical tools.",
+      "permalink": "second-analysis-textbook-review",
+      "title": "Turning Up the Heat: Insights from Tao's 'Analysis II'"
+    },
+    {
+      "excerpt": "A deep dive into reinforcement learning, covering algorithms, exploration vs. exploitation, and the importance of safe AI development.",
+      "permalink": "RL-textbook-review",
+      "title": "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
+    },
+    {
+      "excerpt": "Good formalizations are two-way correspondences: the math suggests the concept it formalizes.",
+      "permalink": "on-good-formal-definitions",
+      "title": "Math That Clicks: Look for Two-Way Correspondences"
+    },
+    {
+      "excerpt": "Tao's \"Analysis I\" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.",
+      "permalink": "first-analysis-textbook-review",
+      "title": "Into the Kiln: Insights from Tao's 'Analysis I'"
+    }
+  ],
+  "announcing-rewrite-of-power-seeking-post": [
+    {
+      "excerpt": "A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.",
+      "permalink": "seeking-power-is-often-convergently-instrumental-in-mdps",
+      "title": "Seeking Power is Often Convergently Instrumental in MDPs"
+    },
+    {
+      "excerpt": "The structure of environments, not just reward functions, contributes to power-seeking in AI agents.",
+      "permalink": "environmental-structure-can-cause-instrumental-convergence",
+      "title": "Environmental Structure Can Cause Instrumental Convergence"
+    },
+    {
+      "excerpt": "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions.",
+      "permalink": "power-seeking-beyond-MDPs",
+      "title": "Seeking Power is Convergently Instrumental in a Broad Class of Environments"
+    },
+    {
+      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
+      "permalink": "parametrically-retargetable-power-seeking",
+      "title": "Parametrically retargetable decision-makers tend to seek power"
+    },
+    {
+      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
+      "permalink": "satisficers-tend-to-seek-power",
+      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
+    }
+  ],
+  "attainable-utility-landscape": [
+    {
+      "excerpt": "Description: Impact isn't about changing the world; it's about changing our ability to achieve goals within it.",
+      "permalink": "attainable-utility-theory",
+      "title": "Attainable Utility Theory: Why Things Matter"
+    },
+    {
+      "excerpt": "Impact reframed: a gears-level view of how and why some things seem important to us.",
+      "permalink": "the-gears-of-impact",
+      "title": "The Gears of Impact"
+    },
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
+    },
+    {
+      "excerpt": "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power.",
+      "permalink": "the-catastrophic-convergence-conjecture",
+      "title": "The Catastrophic Convergence Conjecture"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    }
+  ],
+  "attainable-utility-preservation-concepts": [
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "AUP scales to superintelligence by penalizing power-seeking, but loopholes exist. I propose fixes and explore their implications.",
+      "permalink": "attainable-utility-preservation-scaling-to-superhuman",
+      "title": "Attainable Utility Preservation: Scaling to Superhuman"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "The AUP technique encourages low-impact behavior in both simple and complex environments.",
+      "permalink": "attainable-utility-preservation-empirical-results",
+      "title": "Attainable Utility Preservation: Empirical Results"
+    },
+    {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
+    }
+  ],
+  "attainable-utility-preservation-empirical-results": [
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
+    },
+    {
+      "excerpt": "AI agents trained with Attainable Utility Preservation avoid most side effects in Conway's Game of Life without explicit instructions.",
+      "permalink": "avoiding-side-effects-in-complex-environments",
+      "title": "Avoiding Side Effects in Complex Environments"
+    },
+    {
+      "excerpt": "AUP scales to superintelligence by penalizing power-seeking, but loopholes exist. I propose fixes and explore their implications.",
+      "permalink": "attainable-utility-preservation-scaling-to-superhuman",
+      "title": "Attainable Utility Preservation: Scaling to Superhuman"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
+    },
+    {
+      "excerpt": "How to make AI agents avoid negative side effects, especially in multi-stakeholder environments.",
+      "permalink": "conservative-agency-with-multiple-stakeholders",
+      "title": "Conservative Agency with Multiple Stakeholders"
+    }
+  ],
+  "attainable-utility-preservation-paper": [
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
+    },
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
+    },
+    {
+      "excerpt": "The AUP technique encourages low-impact behavior in both simple and complex environments.",
+      "permalink": "attainable-utility-preservation-empirical-results",
+      "title": "Attainable Utility Preservation: Empirical Results"
+    },
+    {
+      "excerpt": "AI agents trained with Attainable Utility Preservation avoid most side effects in Conway's Game of Life without explicit instructions.",
+      "permalink": "avoiding-side-effects-in-complex-environments",
+      "title": "Avoiding Side Effects in Complex Environments"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    }
+  ],
+  "attainable-utility-preservation-scaling-to-superhuman": [
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
+    },
+    {
+      "excerpt": "The AUP technique encourages low-impact behavior in both simple and complex environments.",
+      "permalink": "attainable-utility-preservation-empirical-results",
+      "title": "Attainable Utility Preservation: Empirical Results"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
+    }
+  ],
+  "attainable-utility-theory": [
+    {
+      "excerpt": "Understanding impact as change to the world: attractive, but misleading.",
+      "permalink": "world-state-is-the-wrong-abstraction-for-impact",
+      "title": "World State is the Wrong Abstraction for Impact"
+    },
+    {
+      "excerpt": "Impact reframed: a gears-level view of how and why some things seem important to us.",
+      "permalink": "the-gears-of-impact",
+      "title": "The Gears of Impact"
+    },
+    {
+      "excerpt": "Examining how our actions reshape the landscape of achievable goals, highlighting opportunity costs and the structure of agency in shaping the future.",
+      "permalink": "attainable-utility-landscape",
+      "title": "Attainable Utility Landscape: How The World Is Changed"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
+    }
+  ],
+  "author-responsibility": [
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "AI alignment plagued by imprecise language. Ex: \"reward\" and \"shoggoth\" are suggestive words that obstruct clear thought.",
+      "permalink": "danger-of-suggestive-terminology",
+      "title": "Dreams of AI alignment: The danger of suggestive names"
+    },
+    {
+      "excerpt": "Experts clash on the dangers of \"instrumental convergence\" in AI, but clear definitions and formal thought are sorely needed.",
+      "permalink": "review-of-debate-on-instrumental-convergence",
+      "title": "Review of 'Debate on Instrumental Convergence between LeCun, Russell, Bengio, Zador, and More'"
+    },
+    {
+      "excerpt": "A list of some of my major conceptual mistakes.",
+      "permalink": "mistakes",
+      "title": "Mistaken claims I've made"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    }
+  ],
+  "avoiding-side-effects-in-complex-environments": [
+    {
+      "excerpt": "The AUP technique encourages low-impact behavior in both simple and complex environments.",
+      "permalink": "attainable-utility-preservation-empirical-results",
+      "title": "Attainable Utility Preservation: Empirical Results"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
+    },
+    {
+      "excerpt": "How to make AI agents avoid negative side effects, especially in multi-stakeholder environments.",
+      "permalink": "conservative-agency-with-multiple-stakeholders",
+      "title": "Conservative Agency with Multiple Stakeholders"
+    },
+    {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
+    },
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
+    }
+  ],
+  "ban-development-of-unpredictable-powerful-models": [
+    {
+      "excerpt": "When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.",
+      "permalink": "self-fulfilling-misalignment",
+      "title": "Self-fulfilling misalignment data might be poisoning our AI models"
+    },
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
+      "permalink": "best-reasons-for-pessimism-about-impact-measures",
+      "title": "Best reasons for pessimism about impact of impact measures?"
+    },
+    {
+      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
+      "permalink": "consistency-training",
+      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
+    }
+  ],
+  "best-reasons-for-pessimism-about-impact-measures": [
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
+      "permalink": "reframing-impact",
+      "title": "Reframing Impact"
+    },
+    {
+      "excerpt": "Desirable properties of impact measures for safe and beneficial AI development.",
+      "permalink": "impact-measure-desiderata",
+      "title": "Impact Measure Desiderata"
+    },
+    {
+      "excerpt": "Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.",
+      "permalink": "problem-relaxation-as-a-tactic",
+      "title": "Problem relaxation as a tactic"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    }
+  ],
+  "bruce-wayne-and-the-cost-of-inaction": [
+    {
+      "excerpt": "Textbook insights on economic policy, price gouging, and the surprising efficiency of competitive markets.",
+      "permalink": "insights-from-modern-principles-of-economics",
+      "title": "Insights from Modern Principles of Economics"
+    }
+  ],
+  "can-fear-of-the-dark-bias-us-more-generally": [
+    {
+      "excerpt": "Insights from a management textbook on how to improve decision-making, negotiate effectively, and overcome cognitive biases.",
+      "permalink": "managerial-decision-making-review",
+      "title": "Judgment Day: Insights from 'Judgment in Managerial Decision Making'"
+    },
+    {
+      "excerpt": "Examining a statistical illusion that tricks us into seeing correlations where there are none. Can we rewire our brains to see through it?",
+      "permalink": "collider-bias-as-a-cognitive-blindspot",
+      "title": "Collider bias as a cognitive blindspot?"
+    }
+  ],
+  "cheese-vector-paper": [
+    {
+      "excerpt": "A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.",
+      "permalink": "understanding-and-controlling-a-maze-solving-policy-network",
+      "title": "Understanding and controlling a maze-solving policy network"
+    },
+    {
+      "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
+      "permalink": "top-right-steering-vector",
+      "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
+    },
+    {
+      "excerpt": "Predictions about a cheese-finding AI model's internal workings, before the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖",
+      "permalink": "predictions-for-shard-theory-mechanistic-interpretability",
+      "title": "Predictions for shard theory mechanistic interpretability results"
+    },
+    {
+      "excerpt": "Closeness to cheese and the top-right corner both influence a maze-solving AI, suggesting a \"shard-like\" decision-making process.",
+      "permalink": "statistics-of-a-maze-solving-network",
+      "title": "Behavioural statistics for a maze-solving agent"
+    },
+    {
+      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
+      "permalink": "parametrically-retargetable-power-seeking",
+      "title": "Parametrically retargetable decision-makers tend to seek power"
+    }
+  ],
+  "collider-bias-as-a-cognitive-blindspot": [
+    {
+      "excerpt": "Fear of the dark increases our perception of risk. I ask: does this apply to decision-making more broadly?",
+      "permalink": "can-fear-of-the-dark-bias-us-more-generally",
+      "title": "Can fear of the dark bias us more generally?"
+    }
+  ],
+  "computability-and-logic-textbook-review": [
+    {
+      "excerpt": "Tao's \"Analysis I\" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.",
+      "permalink": "first-analysis-textbook-review",
+      "title": "Into the Kiln: Insights from Tao's 'Analysis I'"
+    },
+    {
+      "excerpt": "My review of \"Artificial Intelligence, A Modern Approach\" & how I read hundreds of pages in 3 days.",
+      "permalink": "AI-textbook-review",
+      "title": "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
+    },
+    {
+      "excerpt": "Functions are static sets; families are functions; Zorn's Lemma is hard. I reflect on my set theory learnings and effective self-study strategies.",
+      "permalink": "set-theory-textbook-review",
+      "title": "Set Up for Success: Insights from 'Naïve Set Theory'"
+    },
+    {
+      "excerpt": "Functional analysis: infinite dimensions, discontinuous linear functions, and the headache-inducing functional derivative.",
+      "permalink": "functional-analysis-textbook-review",
+      "title": "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
+    },
+    {
+      "excerpt": "Good formalizations are two-way correspondences: the math suggests the concept it formalizes.",
+      "permalink": "on-good-formal-definitions",
+      "title": "Math That Clicks: Look for Two-Way Correspondences"
+    }
+  ],
+  "conclusion-to-reframing-impact": [
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    },
+    {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
+    }
+  ],
+  "conservative-agency-with-multiple-stakeholders": [
+    {
+      "excerpt": "AI agents trained with Attainable Utility Preservation avoid most side effects in Conway's Game of Life without explicit instructions.",
+      "permalink": "avoiding-side-effects-in-complex-environments",
+      "title": "Avoiding Side Effects in Complex Environments"
+    },
+    {
+      "excerpt": "The AUP technique encourages low-impact behavior in both simple and complex environments.",
+      "permalink": "attainable-utility-preservation-empirical-results",
+      "title": "Attainable Utility Preservation: Empirical Results"
+    },
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
+    },
+    {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
+    }
+  ],
+  "consistency-training": [
+    {
+      "excerpt": "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts.",
+      "permalink": "recontextualization-mitigates-specification-gaming",
+      "title": "Recontextualization Mitigates Specification Gaming Without Modifying the Specification"
+    },
+    {
+      "excerpt": "When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.",
+      "permalink": "self-fulfilling-misalignment",
+      "title": "Self-fulfilling misalignment data might be poisoning our AI models"
+    },
+    {
+      "excerpt": "Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.",
+      "permalink": "llama2-steering-vectors",
+      "title": "Steering Llama-2 with contrastive activation additions"
+    },
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
+      "permalink": "deep-causal-transcoding",
+      "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
+    }
+  ],
+  "corrigibility-as-outside-view": [
+    {
+      "excerpt": "Non-obstruction: how do we design AI that doesn't limit our ability to achieve our goals, even if we misspecified its programming?",
+      "permalink": "non-obstruction-motivates-corrigibility",
+      "title": "Non-Obstruction: A Simple Concept Motivating Corrigibility"
+    },
+    {
+      "excerpt": "Stuart Russell's \"Human Compatible\" makes the case for aligning AI with human values and sketches a research agenda based on uncertainty.",
+      "permalink": "thoughts-on-human-compatible",
+      "title": "Thoughts on 'Human-Compatible'"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    },
     {
       "excerpt": "Formal analysis showing that, for agents optimizing a reward function, corrigibility is rare and perhaps even incoherent.",
       "permalink": "a-certain-formalization-of-corrigibility-is-vnm-incoherent",
       "title": "A Certain Formalization of Corrigibility Is VNM-Incoherent"
     },
     {
-      "excerpt": "Revised post clarifies theory on power-seeking and corrects terminology used in the original post.",
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    }
+  ],
+  "danger-of-suggestive-terminology": [
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    },
+    {
+      "excerpt": "Four distinct concepts related to \"loss function\" in AI are often conflated, leading to ambiguity in the field of AI alignment.",
+      "permalink": "four-usages-of-loss-in-ai",
+      "title": "Four usages of 'loss' in AI"
+    },
+    {
+      "excerpt": "RL researchers call trained policies \"agents\", biasing how we think about their behavior. I advocate for using the term \"policy\" instead.",
+      "permalink": "RL-trains-policies-not-agents",
+      "title": "Think carefully before calling RL policies  'agents'"
+    },
+    {
+      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
+      "permalink": "parametrically-retargetable-power-seeking",
+      "title": "Parametrically retargetable decision-makers tend to seek power"
+    }
+  ],
+  "dangers-of-intrinsic-power-seeking": [
+    {
+      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
+      "permalink": "parametrically-retargetable-power-seeking",
+      "title": "Parametrically retargetable decision-makers tend to seek power"
+    },
+    {
+      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
+      "permalink": "satisficers-tend-to-seek-power",
+      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
+    },
+    {
+      "excerpt": "A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.",
+      "permalink": "seeking-power-is-often-convergently-instrumental-in-mdps",
+      "title": "Seeking Power is Often Convergently Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
       "permalink": "announcing-rewrite-of-power-seeking-post",
       "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    }
+  ],
+  "dataset-protection": [
+    {
+      "excerpt": "My projects include this website's infrastructure, AI-powered alt text generation, and dataset protection utilities.",
+      "permalink": "open-source",
+      "title": "My open source contributions"
+    }
+  ],
+  "date-me": [
+    {
+      "excerpt": "Celebrating the launch of the website after months of work.",
+      "permalink": "launch",
+      "title": "Site launch: Come relax by The Pond!"
+    },
+    {
+      "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
+      "permalink": "about",
+      "title": "About me"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "My projects include this website's infrastructure, AI-powered alt text generation, and dataset protection utilities.",
+      "permalink": "open-source",
+      "title": "My open source contributions"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
+    }
+  ],
+  "deducing-impact": [
+    {
+      "excerpt": "Impact is objectively important to agents, no matter their goals. Even robots hoarding pebbles care about a meteor strike.",
+      "permalink": "value-impact",
+      "title": "Value Impact"
+    },
+    {
+      "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
+      "permalink": "reframing-impact",
+      "title": "Reframing Impact"
+    },
+    {
+      "excerpt": "Description: Impact isn't about changing the world; it's about changing our ability to achieve goals within it.",
+      "permalink": "attainable-utility-theory",
+      "title": "Attainable Utility Theory: Why Things Matter"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    },
+    {
+      "excerpt": "Understanding impact as change to the world: attractive, but misleading.",
+      "permalink": "world-state-is-the-wrong-abstraction-for-impact",
+      "title": "World State is the Wrong Abstraction for Impact"
+    }
+  ],
+  "deep-causal-transcoding": [
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "800+ orthogonal vectors steer an AI model to write code. Redundant features or something weirder?",
+      "permalink": "high-dimensional-subspace-of-code-steering-vectors",
+      "title": "I found >800 orthogonal 'write code' steering vectors"
+    },
+    {
+      "excerpt": "Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.",
+      "permalink": "gpt2-steering-vectors",
+      "title": "Steering GPT-2-XL by adding an activation vector"
+    },
+    {
+      "excerpt": "Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.",
+      "permalink": "llama2-steering-vectors",
+      "title": "Steering Llama-2 with contrastive activation additions"
+    },
+    {
+      "excerpt": "Activation additions: steering language models by adding a bias to the forward pass. Surprisingly broad control, small impact on off-target capabilities.",
+      "permalink": "gpt2-steering-paper-announcement",
+      "title": "ActAdd: Steering Language Models without Optimization"
+    }
+  ],
+  "deepmind-equity-discussion": [
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    }
+  ],
+  "design": [
+    {
+      "excerpt": "Celebrating the launch of the website after months of work.",
+      "permalink": "launch",
+      "title": "Site launch: Come relax by The Pond!"
+    },
+    {
+      "excerpt": "My projects include this website's infrastructure, AI-powered alt text generation, and dataset protection utilities.",
+      "permalink": "open-source",
+      "title": "My open source contributions"
+    },
+    {
+      "excerpt": "Displaying the features of the website for use in visual regression testing.",
+      "permalink": "test-page",
+      "title": "Testing site features"
+    },
+    {
+      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
+      "permalink": "date-me",
+      "title": "I'm that \"other fish in the sea\""
+    },
+    {
+      "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
+      "permalink": "about",
+      "title": "About me"
+    }
+  ],
+  "digital-minimalism": [
+    {
+      "excerpt": "In 2025, America is different. Reduce your chance of persecution via smart technical choices.",
+      "permalink": "advanced-privacy",
+      "title": "Advanced Privacy Despite Authoritarianism"
+    }
+  ],
+  "disagreements-with-list-of-lethalities": [
+    {
+      "excerpt": "Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.",
+      "permalink": "against-inner-outer-alignment",
+      "title": "Inner and outer alignment decompose one hard problem into two extremely hard problems"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "Four distinct concepts related to \"loss function\" in AI are often conflated, leading to ambiguity in the field of AI alignment.",
+      "permalink": "four-usages-of-loss-in-ai",
+      "title": "Four usages of 'loss' in AI"
+    },
+    {
+      "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
+      "permalink": "dont-align-agents-to-evaluations-of-plans",
+      "title": "Don't align agents to evaluations of plans"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    }
+  ],
+  "distillation-robustifies-unlearning": [
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts.",
+      "permalink": "recontextualization-mitigates-specification-gaming",
+      "title": "Recontextualization Mitigates Specification Gaming Without Modifying the Specification"
+    },
+    {
+      "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
+      "permalink": "deep-causal-transcoding",
+      "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
     },
     {
       "excerpt": "A proposal for a government regulation of AI: Developers must be able to accurately predict the model's output.",
       "permalink": "ban-development-of-unpredictable-powerful-models",
       "title": "Ban development of unpredictable powerful models?"
+    },
+    {
+      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
+      "permalink": "consistency-training",
+      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
+    }
+  ],
+  "doctor-stone": [
+    {
+      "excerpt": "Why you should read “Harry Potter and the Methods of Rationality” to live more ethically and effectively.",
+      "permalink": "read-hpmor",
+      "title": "You Should Read 'Harry Potter and the Methods of Rationality'"
+    }
+  ],
+  "dont-align-agents-to-evaluations-of-plans": [
+    {
+      "excerpt": "Common alignment ideas involve gaming the grader, not achieving the goal. Counterproductive, like building a toaster which both warms and cools the bread.",
+      "permalink": "dont-design-agents-which-exploit-adversarial-inputs",
+      "title": "Don't design agents which exploit adversarial inputs"
+    },
+    {
+      "excerpt": "Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.",
+      "permalink": "against-inner-outer-alignment",
+      "title": "Inner and outer alignment decompose one hard problem into two extremely hard problems"
+    },
+    {
+      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
+      "permalink": "alignment-without-total-robustness",
+      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
+    },
+    {
+      "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
+      "permalink": "a-shot-at-the-diamond-alignment-problem",
+      "title": "A shot at the diamond-alignment problem"
+    },
+    {
+      "excerpt": "A critical look at the idea of \"lethal\" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.",
+      "permalink": "disagreements-with-list-of-lethalities",
+      "title": "Some of my disagreements with List of Lethalities"
+    }
+  ],
+  "dont-design-agents-which-exploit-adversarial-inputs": [
+    {
+      "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
+      "permalink": "dont-align-agents-to-evaluations-of-plans",
+      "title": "Don't align agents to evaluations of plans"
+    },
+    {
+      "excerpt": "Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.",
+      "permalink": "against-inner-outer-alignment",
+      "title": "Inner and outer alignment decompose one hard problem into two extremely hard problems"
+    },
+    {
+      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
+      "permalink": "alignment-without-total-robustness",
+      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
+    },
+    {
+      "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
+      "permalink": "a-shot-at-the-diamond-alignment-problem",
+      "title": "A shot at the diamond-alignment problem"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    }
+  ],
+  "effective-layer-horizon": [
+    {
+      "excerpt": "Residual stream norms grow, perhaps due to layer normalization making it hard to delete information and easier to overshadow it.",
+      "permalink": "residual-stream-norms-grow-exponentially-over-the-forward-pass",
+      "title": "Residual stream norms grow exponentially over the forward pass"
+    }
+  ],
+  "elk-proposal-thinking-via-a-human-imitator": [
+    {
+      "excerpt": "Stuart Russell's \"Human Compatible\" makes the case for aligning AI with human values and sketches a research agenda based on uncertainty.",
+      "permalink": "thoughts-on-human-compatible",
+      "title": "Thoughts on 'Human-Compatible'"
+    },
+    {
+      "excerpt": "I argue for studying the only known example of aligned intelligence: humans. Stop speculating about AIXI and diamonds - look at humans!",
+      "permalink": "humans-provide-alignment-evidence",
+      "title": "Humans provide an untapped wealth of evidence about alignment"
+    },
+    {
+      "excerpt": "Predictions about a cheese-finding AI model's internal workings, before the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖",
+      "permalink": "predictions-for-shard-theory-mechanistic-interpretability",
+      "title": "Predictions for shard theory mechanistic interpretability results"
+    },
+    {
+      "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
+      "permalink": "a-shot-at-the-diamond-alignment-problem",
+      "title": "A shot at the diamond-alignment problem"
+    },
+    {
+      "excerpt": "Corrigibility may emerge when AI recognizes its flaws by simulating its own decision-making and defers to human judgment when appropriate.",
+      "permalink": "corrigibility-as-outside-view",
+      "title": "Corrigibility as outside view"
+    }
+  ],
+  "emotionally-confronting-doom": [
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "Overcoming self-doubt: How emotionally-charged internal dialogue helped resolve long-held anxieties and limiting beliefs.",
+      "permalink": "internalizing-internal-double-crux",
+      "title": "Internalizing Internal Double Crux"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "A personal reflection on finding the rationalist community and the joy and anxiety of pursuing AI alignment.",
+      "permalink": "lightness-and-unease",
+      "title": "Lightness and Unease"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    }
+  ],
+  "english-numbers-are-backwards": [
+    {
+      "excerpt": "Good formalizations are two-way correspondences: the math suggests the concept it formalizes.",
+      "permalink": "on-good-formal-definitions",
+      "title": "Math That Clicks: Look for Two-Way Correspondences"
+    }
+  ],
+  "environmental-structure-can-cause-instrumental-convergence": [
+    {
+      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
+      "permalink": "satisficers-tend-to-seek-power",
+      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Realistic AI objectives aren't random utility functions. I explore instrumental convergence for objectives defined over features of the environment.",
+      "permalink": "instrumental-convergence-for-realistic-agent-objectives",
+      "title": "Instrumental Convergence For Realistic Agent Objectives"
+    },
+    {
+      "excerpt": "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions.",
+      "permalink": "power-seeking-beyond-MDPs",
+      "title": "Seeking Power is Convergently Instrumental in a Broad Class of Environments"
+    },
+    {
+      "excerpt": "Instrumental convergence strengthens proportional to the ratio of an agent's control if it survives to its control if it dies.",
+      "permalink": "quantitative-strength-of-instrumental-convergence",
+      "title": "The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal Policies"
+    }
+  ],
+  "eval-cooperation": [
+    {
+      "excerpt": "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts.",
+      "permalink": "recontextualization-mitigates-specification-gaming",
+      "title": "Recontextualization Mitigates Specification Gaming Without Modifying the Specification"
+    },
+    {
+      "excerpt": "Common alignment ideas involve gaming the grader, not achieving the goal. Counterproductive, like building a toaster which both warms and cools the bread.",
+      "permalink": "dont-design-agents-which-exploit-adversarial-inputs",
+      "title": "Don't design agents which exploit adversarial inputs"
+    },
+    {
+      "excerpt": "When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.",
+      "permalink": "self-fulfilling-misalignment",
+      "title": "Self-fulfilling misalignment data might be poisoning our AI models"
+    },
+    {
+      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
+      "permalink": "consistency-training",
+      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
+    },
+    {
+      "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
+      "permalink": "dont-align-agents-to-evaluations-of-plans",
+      "title": "Don't align agents to evaluations of plans"
+    }
+  ],
+  "excitement-about-impact-measures": [
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    },
+    {
+      "excerpt": "Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.",
+      "permalink": "problem-relaxation-as-a-tactic",
+      "title": "Problem relaxation as a tactic"
+    },
+    {
+      "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
+      "permalink": "best-reasons-for-pessimism-about-impact-measures",
+      "title": "Best reasons for pessimism about impact of impact measures?"
+    }
+  ],
+  "first-analysis-textbook-review": [
+    {
+      "excerpt": "Tao's \"Analysis II\" reviewed: metric spaces, uniform convergence, Lebesgue integration–sharpening my mathematical tools.",
+      "permalink": "second-analysis-textbook-review",
+      "title": "Turning Up the Heat: Insights from Tao's 'Analysis II'"
+    },
+    {
+      "excerpt": "Functional analysis: infinite dimensions, discontinuous linear functions, and the headache-inducing functional derivative.",
+      "permalink": "functional-analysis-textbook-review",
+      "title": "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
+    },
+    {
+      "excerpt": "Turing computability and the surprising limits of what formal systems can express.",
+      "permalink": "computability-and-logic-textbook-review",
+      "title": "And My Axiom! Insights from 'Computability and Logic'"
+    },
+    {
+      "excerpt": "The author rediscovers their love for math while rigorously studying linear algebra, sharing insights and lessons learned along the way.",
+      "permalink": "linear-algebra-textbook-review",
+      "title": "The First Rung: Insights from 'Linear Algebra Done Right'"
+    },
+    {
+      "excerpt": "Reviewing Munkres' \"Topology\", reflecting on compactness, homotopy, and what I was even doing with my life before understanding homeomorphisms.",
+      "permalink": "topology-textbook-review",
+      "title": "Continuous Improvement: Insights from 'Topology'"
+    }
+  ],
+  "formalizing-alignment-in-game-theory": [
+    {
+      "excerpt": "Quantifying player alignment in game theory: how aligned are the players' incentives in a given game?",
+      "permalink": "question-about-defining-alignment-in-simple-setting",
+      "title": "How can we quantify player alignment in 2×2 normal-form games?"
+    },
+    {
+      "excerpt": "Formalizing \"power\" in multi-agent games, showing that increased agent capabilities can lead to power scarcity and increased competition for resources.",
+      "permalink": "formalizing-multi-agent-power",
+      "title": "Generalizing POWER to multi-agent games"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    },
+    {
+      "excerpt": "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power.",
+      "permalink": "the-catastrophic-convergence-conjecture",
+      "title": "The Catastrophic Convergence Conjecture"
+    }
+  ],
+  "formalizing-multi-agent-power": [
+    {
+      "excerpt": "A game-theoretic examination of how \"aligned\" agents are in a multi-player game, using an alignment metric based on social welfare functions.",
+      "permalink": "formalizing-alignment-in-game-theory",
+      "title": "Game-theoretic Alignment in terms of Attainable Utility"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.",
+      "permalink": "seeking-power-is-often-convergently-instrumental-in-mdps",
+      "title": "Seeking Power is Often Convergently Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power.",
+      "permalink": "the-catastrophic-convergence-conjecture",
+      "title": "The Catastrophic Convergence Conjecture"
+    }
+  ],
+  "formalizing-policy-modification-corrigibility": [
+    {
+      "excerpt": "Formal analysis showing that, for agents optimizing a reward function, corrigibility is rare and perhaps even incoherent.",
+      "permalink": "a-certain-formalization-of-corrigibility-is-vnm-incoherent",
+      "title": "A Certain Formalization of Corrigibility Is VNM-Incoherent"
+    },
+    {
+      "excerpt": "Non-obstruction: how do we design AI that doesn't limit our ability to achieve our goals, even if we misspecified its programming?",
+      "permalink": "non-obstruction-motivates-corrigibility",
+      "title": "Non-Obstruction: A Simple Concept Motivating Corrigibility"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    },
+    {
+      "excerpt": "Corrigibility may emerge when AI recognizes its flaws by simulating its own decision-making and defers to human judgment when appropriate.",
+      "permalink": "corrigibility-as-outside-view",
+      "title": "Corrigibility as outside view"
+    },
+    {
+      "excerpt": "Impact measures incentivize agents to avoid side effects, but what about the side effects of ★other agents★?",
+      "permalink": "overcoming-clinginess-in-impact-measures",
+      "title": "Overcoming Clinginess in Impact Measures"
+    }
+  ],
+  "four-usages-of-loss-in-ai": [
+    {
+      "excerpt": "Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.",
+      "permalink": "against-inner-outer-alignment",
+      "title": "Inner and outer alignment decompose one hard problem into two extremely hard problems"
+    },
+    {
+      "excerpt": "AI alignment plagued by imprecise language. Ex: \"reward\" and \"shoggoth\" are suggestive words that obstruct clear thought.",
+      "permalink": "danger-of-suggestive-terminology",
+      "title": "Dreams of AI alignment: The danger of suggestive names"
+    },
+    {
+      "excerpt": "A critical look at the idea of \"lethal\" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.",
+      "permalink": "disagreements-with-list-of-lethalities",
+      "title": "Some of my disagreements with List of Lethalities"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    },
+    {
+      "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
+      "permalink": "dont-align-agents-to-evaluations-of-plans",
+      "title": "Don't align agents to evaluations of plans"
+    }
+  ],
+  "functional-analysis-textbook-review": [
+    {
+      "excerpt": "Tao's \"Analysis I\" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.",
+      "permalink": "first-analysis-textbook-review",
+      "title": "Into the Kiln: Insights from Tao's 'Analysis I'"
+    },
+    {
+      "excerpt": "Tao's \"Analysis II\" reviewed: metric spaces, uniform convergence, Lebesgue integration–sharpening my mathematical tools.",
+      "permalink": "second-analysis-textbook-review",
+      "title": "Turning Up the Heat: Insights from Tao's 'Analysis II'"
+    },
+    {
+      "excerpt": "Reviewing Munkres' \"Topology\", reflecting on compactness, homotopy, and what I was even doing with my life before understanding homeomorphisms.",
+      "permalink": "topology-textbook-review",
+      "title": "Continuous Improvement: Insights from 'Topology'"
+    },
+    {
+      "excerpt": "The author rediscovers their love for math while rigorously studying linear algebra, sharing insights and lessons learned along the way.",
+      "permalink": "linear-algebra-textbook-review",
+      "title": "The First Rung: Insights from 'Linear Algebra Done Right'"
+    },
+    {
+      "excerpt": "Turing computability and the surprising limits of what formal systems can express.",
+      "permalink": "computability-and-logic-textbook-review",
+      "title": "And My Axiom! Insights from 'Computability and Logic'"
+    }
+  ],
+  "game-theoretic-definition-of-defection": [
+    {
+      "excerpt": "A game-theoretic examination of how \"aligned\" agents are in a multi-player game, using an alignment metric based on social welfare functions.",
+      "permalink": "formalizing-alignment-in-game-theory",
+      "title": "Game-theoretic Alignment in terms of Attainable Utility"
+    },
+    {
+      "excerpt": "Quantifying player alignment in game theory: how aligned are the players' incentives in a given game?",
+      "permalink": "question-about-defining-alignment-in-simple-setting",
+      "title": "How can we quantify player alignment in 2×2 normal-form games?"
+    },
+    {
+      "excerpt": "Formalizing \"power\" in multi-agent games, showing that increased agent capabilities can lead to power scarcity and increased competition for resources.",
+      "permalink": "formalizing-multi-agent-power",
+      "title": "Generalizing POWER to multi-agent games"
+    },
+    {
+      "excerpt": "The structure of environments, not just reward functions, contributes to power-seeking in AI agents.",
+      "permalink": "environmental-structure-can-cause-instrumental-convergence",
+      "title": "Environmental Structure Can Cause Instrumental Convergence"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    }
+  ],
+  "gemini-steering": [
+    {
+      "excerpt": "A list of some of my major conceptual mistakes.",
+      "permalink": "mistakes",
+      "title": "Mistaken claims I've made"
+    },
+    {
+      "excerpt": "Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.",
+      "permalink": "llama2-steering-vectors",
+      "title": "Steering Llama-2 with contrastive activation additions"
+    },
+    {
+      "excerpt": "Activation additions: steering language models by adding a bias to the forward pass. Surprisingly broad control, small impact on off-target capabilities.",
+      "permalink": "gpt2-steering-paper-announcement",
+      "title": "ActAdd: Steering Language Models without Optimization"
+    },
+    {
+      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
+      "permalink": "consistency-training",
+      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
+    },
+    {
+      "excerpt": "Open questions on controlling language models at runtime via activation engineering.",
+      "permalink": "open-problems-in-activation-engineering",
+      "title": "Open problems in activation engineering"
+    }
+  ],
+  "general-alignment-properties": [
+    {
+      "excerpt": "I argue for studying the only known example of aligned intelligence: humans. Stop speculating about AIXI and diamonds - look at humans!",
+      "permalink": "humans-provide-alignment-evidence",
+      "title": "Humans provide an untapped wealth of evidence about alignment"
+    },
+    {
+      "excerpt": "The genome can't directly hardwire complex human values like \"fear of death.\" Those values probably arise from simpler, hardcoded learning mechanisms.",
+      "permalink": "human-values-and-biases-are-inaccessible-to-the-genome",
+      "title": "Human values & biases are inaccessible to the genome"
+    },
+    {
+      "excerpt": "Stuart Russell's \"Human Compatible\" makes the case for aligning AI with human values and sketches a research agenda based on uncertainty.",
+      "permalink": "thoughts-on-human-compatible",
+      "title": "Thoughts on 'Human-Compatible'"
+    },
+    {
+      "excerpt": "Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.",
+      "permalink": "shard-theory",
+      "title": "The shard theory of human values"
+    },
+    {
+      "excerpt": "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power.",
+      "permalink": "the-catastrophic-convergence-conjecture",
+      "title": "The Catastrophic Convergence Conjecture"
+    }
+  ],
+  "gpt2-steering-paper-announcement": [
+    {
+      "excerpt": "Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.",
+      "permalink": "gpt2-steering-vectors",
+      "title": "Steering GPT-2-XL by adding an activation vector"
+    },
+    {
+      "excerpt": "Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.",
+      "permalink": "llama2-steering-vectors",
+      "title": "Steering Llama-2 with contrastive activation additions"
+    },
+    {
+      "excerpt": "Open questions on controlling language models at runtime via activation engineering.",
+      "permalink": "open-problems-in-activation-engineering",
+      "title": "Open problems in activation engineering"
+    },
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
+      "permalink": "top-right-steering-vector",
+      "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
+    }
+  ],
+  "gpt2-steering-vectors": [
+    {
+      "excerpt": "Activation additions: steering language models by adding a bias to the forward pass. Surprisingly broad control, small impact on off-target capabilities.",
+      "permalink": "gpt2-steering-paper-announcement",
+      "title": "ActAdd: Steering Language Models without Optimization"
+    },
+    {
+      "excerpt": "Open questions on controlling language models at runtime via activation engineering.",
+      "permalink": "open-problems-in-activation-engineering",
+      "title": "Open problems in activation engineering"
+    },
+    {
+      "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
+      "permalink": "top-right-steering-vector",
+      "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
+    },
+    {
+      "excerpt": "Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.",
+      "permalink": "llama2-steering-vectors",
+      "title": "Steering Llama-2 with contrastive activation additions"
+    },
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    }
+  ],
+  "gpt3-gems": [
+    {
+      "excerpt": "Examining the reasoning capabilities of GPT-3 through a series of hypothetical questions and scenarios.",
+      "permalink": "to-what-extent-is-gpt3-capable-of-reasoning",
+      "title": "To what extent is GPT-3 capable of reasoning?"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.",
+      "permalink": "self-fulfilling-misalignment",
+      "title": "Self-fulfilling misalignment data might be poisoning our AI models"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "I argue for studying the only known example of aligned intelligence: humans. Stop speculating about AIXI and diamonds - look at humans!",
+      "permalink": "humans-provide-alignment-evidence",
+      "title": "Humans provide an untapped wealth of evidence about alignment"
+    }
+  ],
+  "gradient-routing-demo": [
+    {
+      "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
+      "permalink": "deep-causal-transcoding",
+      "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.",
+      "permalink": "understanding-and-controlling-a-maze-solving-policy-network",
+      "title": "Understanding and controlling a maze-solving policy network"
+    },
+    {
+      "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
+      "permalink": "top-right-steering-vector",
+      "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
+    }
+  ],
+  "hammertime-final-exam": [
+    {
+      "excerpt": "Overcoming self-doubt: How emotionally-charged internal dialogue helped resolve long-held anxieties and limiting beliefs.",
+      "permalink": "internalizing-internal-double-crux",
+      "title": "Internalizing Internal Double Crux"
+    },
+    {
+      "excerpt": "Why you should read “Harry Potter and the Methods of Rationality” to live more ethically and effectively.",
+      "permalink": "read-hpmor",
+      "title": "You Should Read 'Harry Potter and the Methods of Rationality'"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "My review of \"Artificial Intelligence, A Modern Approach\" & how I read hundreds of pages in 3 days.",
+      "permalink": "AI-textbook-review",
+      "title": "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
+    },
+    {
+      "excerpt": "Insights from a management textbook on how to improve decision-making, negotiate effectively, and overcome cognitive biases.",
+      "permalink": "managerial-decision-making-review",
+      "title": "Judgment Day: Insights from 'Judgment in Managerial Decision Making'"
+    }
+  ],
+  "high-dimensional-subspace-of-code-steering-vectors": [
+    {
+      "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
+      "permalink": "deep-causal-transcoding",
+      "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.",
+      "permalink": "llama2-steering-vectors",
+      "title": "Steering Llama-2 with contrastive activation additions"
+    },
+    {
+      "excerpt": "Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.",
+      "permalink": "gpt2-steering-vectors",
+      "title": "Steering GPT-2-XL by adding an activation vector"
+    },
+    {
+      "excerpt": "Activation additions: steering language models by adding a bias to the forward pass. Surprisingly broad control, small impact on off-target capabilities.",
+      "permalink": "gpt2-steering-paper-announcement",
+      "title": "ActAdd: Steering Language Models without Optimization"
+    }
+  ],
+  "how-i-do-research": [
+    {
+      "excerpt": "Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.",
+      "permalink": "problem-relaxation-as-a-tactic",
+      "title": "Problem relaxation as a tactic"
+    },
+    {
+      "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
+      "permalink": "best-reasons-for-pessimism-about-impact-measures",
+      "title": "Best reasons for pessimism about impact of impact measures?"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    }
+  ],
+  "how-to-dissolve-it": [
+    {
+      "excerpt": "Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.",
+      "permalink": "problem-relaxation-as-a-tactic",
+      "title": "Problem relaxation as a tactic"
+    },
+    {
+      "excerpt": "The author's unorthodox approach to AI safety research: Ignore existing work, simplify relentlessly, and break your own solutions.",
+      "permalink": "how-i-do-research",
+      "title": "How I do research"
+    }
+  ],
+  "human-values-and-biases-are-inaccessible-to-the-genome": [
+    {
+      "excerpt": "Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.",
+      "permalink": "shard-theory",
+      "title": "The shard theory of human values"
+    },
+    {
+      "excerpt": "Comparing how AIXI and humans acquire values reveals important differences in how these agents interact with the world.",
+      "permalink": "general-alignment-properties",
+      "title": "General alignment properties"
+    },
+    {
+      "excerpt": "A critical look at the idea of \"lethal\" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.",
+      "permalink": "disagreements-with-list-of-lethalities",
+      "title": "Some of my disagreements with List of Lethalities"
+    },
+    {
+      "excerpt": "Imperfect human values like familial love seem to contradict AI alignment arguments about Goodhart's Curse.",
+      "permalink": "humane-values-despite-imperfections",
+      "title": "People care about each other even though they have imperfect motivational pointers?"
+    },
+    {
+      "excerpt": "Stuart Russell's \"Human Compatible\" makes the case for aligning AI with human values and sketches a research agenda based on uncertainty.",
+      "permalink": "thoughts-on-human-compatible",
+      "title": "Thoughts on 'Human-Compatible'"
+    }
+  ],
+  "humane-values-despite-imperfections": [
+    {
+      "excerpt": "I argue for studying the only known example of aligned intelligence: humans. Stop speculating about AIXI and diamonds - look at humans!",
+      "permalink": "humans-provide-alignment-evidence",
+      "title": "Humans provide an untapped wealth of evidence about alignment"
+    },
+    {
+      "excerpt": "Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.",
+      "permalink": "shard-theory",
+      "title": "The shard theory of human values"
+    },
+    {
+      "excerpt": "Stuart Russell's \"Human Compatible\" makes the case for aligning AI with human values and sketches a research agenda based on uncertainty.",
+      "permalink": "thoughts-on-human-compatible",
+      "title": "Thoughts on 'Human-Compatible'"
+    },
+    {
+      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
+      "permalink": "alignment-without-total-robustness",
+      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
+    },
+    {
+      "excerpt": "The genome can't directly hardwire complex human values like \"fear of death.\" Those values probably arise from simpler, hardcoded learning mechanisms.",
+      "permalink": "human-values-and-biases-are-inaccessible-to-the-genome",
+      "title": "Human values & biases are inaccessible to the genome"
+    }
+  ],
+  "humans-provide-alignment-evidence": [
+    {
+      "excerpt": "Comparing how AIXI and humans acquire values reveals important differences in how these agents interact with the world.",
+      "permalink": "general-alignment-properties",
+      "title": "General alignment properties"
+    },
+    {
+      "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
+      "permalink": "a-shot-at-the-diamond-alignment-problem",
+      "title": "A shot at the diamond-alignment problem"
+    },
+    {
+      "excerpt": "Imperfect human values like familial love seem to contradict AI alignment arguments about Goodhart's Curse.",
+      "permalink": "humane-values-despite-imperfections",
+      "title": "People care about each other even though they have imperfect motivational pointers?"
+    },
+    {
+      "excerpt": "Stuart Russell's \"Human Compatible\" makes the case for aligning AI with human values and sketches a research agenda based on uncertainty.",
+      "permalink": "thoughts-on-human-compatible",
+      "title": "Thoughts on 'Human-Compatible'"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    }
+  ],
+  "impact-measure-desiderata": [
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    },
+    {
+      "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
+      "permalink": "reframing-impact",
+      "title": "Reframing Impact"
+    },
+    {
+      "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
+      "permalink": "best-reasons-for-pessimism-about-impact-measures",
+      "title": "Best reasons for pessimism about impact of impact measures?"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "Impact measures incentivize agents to avoid side effects, but what about the side effects of ★other agents★?",
+      "permalink": "overcoming-clinginess-in-impact-measures",
+      "title": "Overcoming Clinginess in Impact Measures"
+    }
+  ],
+  "impact-penalty-strength": [
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    },
+    {
+      "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
+      "permalink": "reframing-impact",
+      "title": "Reframing Impact"
+    },
+    {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
+    }
+  ],
+  "insights-from-euclids-elements": [
+    {
+      "excerpt": "Tao's \"Analysis I\" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.",
+      "permalink": "first-analysis-textbook-review",
+      "title": "Into the Kiln: Insights from Tao's 'Analysis I'"
+    },
+    {
+      "excerpt": "The author rediscovers their love for math while rigorously studying linear algebra, sharing insights and lessons learned along the way.",
+      "permalink": "linear-algebra-textbook-review",
+      "title": "The First Rung: Insights from 'Linear Algebra Done Right'"
+    },
+    {
+      "excerpt": "Lessons learned from years of self-teaching: use Anki, read multiple books concurrently, and don't be afraid of easier texts.",
+      "permalink": "self-teaching-insights",
+      "title": "Lessons I've Learned from Self-Teaching"
+    }
+  ],
+  "insights-from-modern-principles-of-economics": [
+    {
+      "excerpt": "Insights from a management textbook on how to improve decision-making, negotiate effectively, and overcome cognitive biases.",
+      "permalink": "managerial-decision-making-review",
+      "title": "Judgment Day: Insights from 'Judgment in Managerial Decision Making'"
+    }
+  ],
+  "insights-from-physiology": [
+    {
+      "excerpt": "Lessons learned from years of self-teaching: use Anki, read multiple books concurrently, and don't be afraid of easier texts.",
+      "permalink": "self-teaching-insights",
+      "title": "Lessons I've Learned from Self-Teaching"
+    }
+  ],
+  "instrumental-convergence-for-realistic-agent-objectives": [
+    {
+      "excerpt": "The structure of environments, not just reward functions, contributes to power-seeking in AI agents.",
+      "permalink": "environmental-structure-can-cause-instrumental-convergence",
+      "title": "Environmental Structure Can Cause Instrumental Convergence"
+    },
+    {
+      "excerpt": "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions.",
+      "permalink": "power-seeking-beyond-MDPs",
+      "title": "Seeking Power is Convergently Instrumental in a Broad Class of Environments"
+    },
+    {
+      "excerpt": "VNM-coherent preference orderings have the same statistical incentives as utility functions, often leading to power-seeking behavior.",
+      "permalink": "instrumental-convergence-via-vnm-preferences",
+      "title": "When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives"
+    },
+    {
+      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
+      "permalink": "satisficers-tend-to-seek-power",
+      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
+    },
+    {
+      "excerpt": "Instrumental convergence strengthens proportional to the ratio of an agent's control if it survives to its control if it dies.",
+      "permalink": "quantitative-strength-of-instrumental-convergence",
+      "title": "The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal Policies"
+    }
+  ],
+  "instrumental-convergence-requires-psychology-assumptions": [
+    {
+      "excerpt": "Proof of instrumental convergence: Even if an AI's goals seem unrelated to humanity, it may still turn us into paperclips.",
+      "permalink": "toy-instrumental-convergence-paper-walkthrough",
+      "title": "Walkthrough of 'Formalizing Convergent Instrumental Goals'"
+    },
+    {
+      "excerpt": "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power.",
+      "permalink": "the-catastrophic-convergence-conjecture",
+      "title": "The Catastrophic Convergence Conjecture"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
+      "permalink": "satisficers-tend-to-seek-power",
+      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
+    },
+    {
+      "excerpt": "This post explores a hypothetical scenario where the AI alignment problem seems lower-stakes due to a unique universe structure.",
+      "permalink": "lower-stakes-alignment-scenario",
+      "title": "A world in which the alignment problem seems lower-stakes"
+    }
+  ],
+  "instrumental-convergence-via-vnm-preferences": [
+    {
+      "excerpt": "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions.",
+      "permalink": "power-seeking-beyond-MDPs",
+      "title": "Seeking Power is Convergently Instrumental in a Broad Class of Environments"
+    },
+    {
+      "excerpt": "A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.",
+      "permalink": "seeking-power-is-often-convergently-instrumental-in-mdps",
+      "title": "Seeking Power is Often Convergently Instrumental in MDPs"
+    },
+    {
+      "excerpt": "The structure of environments, not just reward functions, contributes to power-seeking in AI agents.",
+      "permalink": "environmental-structure-can-cause-instrumental-convergence",
+      "title": "Environmental Structure Can Cause Instrumental Convergence"
+    },
+    {
+      "excerpt": "Realistic AI objectives aren't random utility functions. I explore instrumental convergence for objectives defined over features of the environment.",
+      "permalink": "instrumental-convergence-for-realistic-agent-objectives",
+      "title": "Instrumental Convergence For Realistic Agent Objectives"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    }
+  ],
+  "internalizing-internal-double-crux": [
+    {
+      "excerpt": "I dove headfirst into AI safety, even at the risk of my PhD. This is how.",
+      "permalink": "swimming-upstream",
+      "title": "Swimming Upstream: A Case Study in Instrumental Rationality"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "Three short essays written against the clock on instrumental rationality, confusion identification, and emotion propagation.",
+      "permalink": "hammertime-final-exam",
+      "title": "Unyielding Yoda Timers: Taking the Hammertime Final Exam"
+    },
+    {
+      "excerpt": "Rejecting defeatism in the face of potential AI doom.  We shouldn't seek a “dignified” death—let's fight for a future worth living.",
+      "permalink": "emotionally-confronting-doom",
+      "title": "Emotionally Confronting Doom"
+    },
+    {
+      "excerpt": "A personal reflection on finding the rationalist community and the joy and anxiety of pursuing AI alignment.",
+      "permalink": "lightness-and-unease",
+      "title": "Lightness and Unease"
+    }
+  ],
+  "interpersonal-approaches-for-x-risk-education": [
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
+      "permalink": "best-reasons-for-pessimism-about-impact-measures",
+      "title": "Best reasons for pessimism about impact of impact measures?"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "Experts clash on the dangers of \"instrumental convergence\" in AI, but clear definitions and formal thought are sorely needed.",
+      "permalink": "review-of-debate-on-instrumental-convergence",
+      "title": "Review of 'Debate on Instrumental Convergence between LeCun, Russell, Bengio, Zador, and More'"
+    }
+  ],
+  "invalid-ai-risk-arguments": [
+    {
+      "excerpt": "AI alignment plagued by imprecise language. Ex: \"reward\" and \"shoggoth\" are suggestive words that obstruct clear thought.",
+      "permalink": "danger-of-suggestive-terminology",
+      "title": "Dreams of AI alignment: The danger of suggestive names"
+    },
+    {
+      "excerpt": "A list of some of my major conceptual mistakes.",
+      "permalink": "mistakes",
+      "title": "Mistaken claims I've made"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
+      "permalink": "parametrically-retargetable-power-seeking",
+      "title": "Parametrically retargetable decision-makers tend to seek power"
+    },
+    {
+      "excerpt": "Experts clash on the dangers of \"instrumental convergence\" in AI, but clear definitions and formal thought are sorely needed.",
+      "permalink": "review-of-debate-on-instrumental-convergence",
+      "title": "Review of 'Debate on Instrumental Convergence between LeCun, Russell, Bengio, Zador, and More'"
+    }
+  ],
+  "launch": [
+    {
+      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
+      "permalink": "date-me",
+      "title": "I'm that \"other fish in the sea\""
+    },
+    {
+      "excerpt": "Showing off and explaining this site's beauty.",
+      "permalink": "design",
+      "title": "The design of this website"
+    },
+    {
+      "excerpt": "My projects include this website's infrastructure, AI-powered alt text generation, and dataset protection utilities.",
+      "permalink": "open-source",
+      "title": "My open source contributions"
+    },
+    {
+      "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
+      "permalink": "about",
+      "title": "About me"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    }
+  ],
+  "lightness-and-unease": [
+    {
+      "excerpt": "I dove headfirst into AI safety, even at the risk of my PhD. This is how.",
+      "permalink": "swimming-upstream",
+      "title": "Swimming Upstream: A Case Study in Instrumental Rationality"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "My review of \"Artificial Intelligence, A Modern Approach\" & how I read hundreds of pages in 3 days.",
+      "permalink": "AI-textbook-review",
+      "title": "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
+    },
+    {
+      "excerpt": "Effective ways to raise awareness of AI risk among researchers, weighing persuasion vs. education and status vs. receptiveness.",
+      "permalink": "interpersonal-approaches-for-x-risk-education",
+      "title": "Interpersonal Approaches for X-Risk Education"
+    },
+    {
+      "excerpt": "Why you should read “Harry Potter and the Methods of Rationality” to live more ethically and effectively.",
+      "permalink": "read-hpmor",
+      "title": "You Should Read 'Harry Potter and the Methods of Rationality'"
+    }
+  ],
+  "linear-algebra-textbook-review": [
+    {
+      "excerpt": "Tao's \"Analysis I\" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.",
+      "permalink": "first-analysis-textbook-review",
+      "title": "Into the Kiln: Insights from Tao's 'Analysis I'"
+    },
+    {
+      "excerpt": "Functions are static sets; families are functions; Zorn's Lemma is hard. I reflect on my set theory learnings and effective self-study strategies.",
+      "permalink": "set-theory-textbook-review",
+      "title": "Set Up for Success: Insights from 'Naïve Set Theory'"
+    },
+    {
+      "excerpt": "Euclid's \"Elements\", but made beautiful. A colorful exploration of geometric proofs and the power of visual learning.",
+      "permalink": "insights-from-euclids-elements",
+      "title": "Insights from Euclid's 'Elements'"
+    },
+    {
+      "excerpt": "Lessons learned from years of self-teaching: use Anki, read multiple books concurrently, and don't be afraid of easier texts.",
+      "permalink": "self-teaching-insights",
+      "title": "Lessons I've Learned from Self-Teaching"
+    },
+    {
+      "excerpt": "Functional analysis: infinite dimensions, discontinuous linear functions, and the headache-inducing functional derivative.",
+      "permalink": "functional-analysis-textbook-review",
+      "title": "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
+    }
+  ],
+  "llama2-steering-vectors": [
+    {
+      "excerpt": "Activation additions: steering language models by adding a bias to the forward pass. Surprisingly broad control, small impact on off-target capabilities.",
+      "permalink": "gpt2-steering-paper-announcement",
+      "title": "ActAdd: Steering Language Models without Optimization"
+    },
+    {
+      "excerpt": "Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.",
+      "permalink": "gpt2-steering-vectors",
+      "title": "Steering GPT-2-XL by adding an activation vector"
+    },
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Open questions on controlling language models at runtime via activation engineering.",
+      "permalink": "open-problems-in-activation-engineering",
+      "title": "Open problems in activation engineering"
+    },
+    {
+      "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
+      "permalink": "top-right-steering-vector",
+      "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
+    }
+  ],
+  "lower-stakes-alignment-scenario": [
+    {
+      "excerpt": "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power.",
+      "permalink": "the-catastrophic-convergence-conjecture",
+      "title": "The Catastrophic Convergence Conjecture"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    },
+    {
+      "excerpt": "The structure of environments, not just reward functions, contributes to power-seeking in AI agents.",
+      "permalink": "environmental-structure-can-cause-instrumental-convergence",
+      "title": "Environmental Structure Can Cause Instrumental Convergence"
+    },
+    {
+      "excerpt": "Proof of instrumental convergence: Even if an AI's goals seem unrelated to humanity, it may still turn us into paperclips.",
+      "permalink": "toy-instrumental-convergence-paper-walkthrough",
+      "title": "Walkthrough of 'Formalizing Convergent Instrumental Goals'"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    }
+  ],
+  "managerial-decision-making-review": [
+    {
+      "excerpt": "My review of \"Artificial Intelligence, A Modern Approach\" & how I read hundreds of pages in 3 days.",
+      "permalink": "AI-textbook-review",
+      "title": "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
+    },
+    {
+      "excerpt": "Fear of the dark increases our perception of risk. I ask: does this apply to decision-making more broadly?",
+      "permalink": "can-fear-of-the-dark-bias-us-more-generally",
+      "title": "Can fear of the dark bias us more generally?"
+    },
+    {
+      "excerpt": "Three short essays written against the clock on instrumental rationality, confusion identification, and emotion propagation.",
+      "permalink": "hammertime-final-exam",
+      "title": "Unyielding Yoda Timers: Taking the Hammertime Final Exam"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "Textbook insights on economic policy, price gouging, and the surprising efficiency of competitive markets.",
+      "permalink": "insights-from-modern-principles-of-economics",
+      "title": "Insights from Modern Principles of Economics"
+    }
+  ],
+  "mechanistically-eliciting-latent-behaviors": [
+    {
+      "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
+      "permalink": "deep-causal-transcoding",
+      "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.",
+      "permalink": "llama2-steering-vectors",
+      "title": "Steering Llama-2 with contrastive activation additions"
+    },
+    {
+      "excerpt": "800+ orthogonal vectors steer an AI model to write code. Redundant features or something weirder?",
+      "permalink": "high-dimensional-subspace-of-code-steering-vectors",
+      "title": "I found >800 orthogonal 'write code' steering vectors"
+    },
+    {
+      "excerpt": "Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.",
+      "permalink": "gpt2-steering-vectors",
+      "title": "Steering GPT-2-XL by adding an activation vector"
+    },
+    {
+      "excerpt": "When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.",
+      "permalink": "self-fulfilling-misalignment",
+      "title": "Self-fulfilling misalignment data might be poisoning our AI models"
+    }
+  ],
+  "mistakes": [
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "We tried boosting Gemini benchmarks by optimizing steering vectors. It didn't work. We share our takeaways.",
+      "permalink": "gemini-steering",
+      "title": "Steering Gemini using BIDPO vectors"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    },
+    {
+      "excerpt": "AI alignment plagued by imprecise language. Ex: \"reward\" and \"shoggoth\" are suggestive words that obstruct clear thought.",
+      "permalink": "danger-of-suggestive-terminology",
+      "title": "Dreams of AI alignment: The danger of suggestive names"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    }
+  ],
+  "mode-collapse-in-rl-may-be-fueled-by-the-update-equation": [
+    {
+      "excerpt": "A deep dive into reinforcement learning, covering algorithms, exploration vs. exploitation, and the importance of safe AI development.",
+      "permalink": "RL-textbook-review",
+      "title": "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
+    },
+    {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Formal analysis showing that, for agents optimizing a reward function, corrigibility is rare and perhaps even incoherent.",
+      "permalink": "a-certain-formalization-of-corrigibility-is-vnm-incoherent",
+      "title": "A Certain Formalization of Corrigibility Is VNM-Incoherent"
+    },
+    {
+      "excerpt": "We challenge the assumption that output supervision preserves Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the CoTs.",
+      "permalink": "output-feedback-can-obfuscate-chain-of-thought",
+      "title": "Output Supervision Can Obfuscate the CoT"
+    }
+  ],
+  "non-obstruction-motivates-corrigibility": [
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    },
+    {
+      "excerpt": "Formal analysis showing that, for agents optimizing a reward function, corrigibility is rare and perhaps even incoherent.",
+      "permalink": "a-certain-formalization-of-corrigibility-is-vnm-incoherent",
+      "title": "A Certain Formalization of Corrigibility Is VNM-Incoherent"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "Desirable properties of impact measures for safe and beneficial AI development.",
+      "permalink": "impact-measure-desiderata",
+      "title": "Impact Measure Desiderata"
+    }
+  ],
+  "on-being-robust": [
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    }
+  ],
+  "on-good-formal-definitions": [
+    {
+      "excerpt": "A tour of fundamental statistical concepts, from basic probability to hypothesis testing and Bayesian inference.",
+      "permalink": "all-of-statistics-textbook-review",
+      "title": "Confounded No Longer: Insights from 'All of Statistics'"
+    },
+    {
+      "excerpt": "Four distinct concepts related to \"loss function\" in AI are often conflated, leading to ambiguity in the field of AI alignment.",
+      "permalink": "four-usages-of-loss-in-ai",
+      "title": "Four usages of 'loss' in AI"
+    },
+    {
+      "excerpt": "Turing computability and the surprising limits of what formal systems can express.",
+      "permalink": "computability-and-logic-textbook-review",
+      "title": "And My Axiom! Insights from 'Computability and Logic'"
+    },
+    {
+      "excerpt": "AI alignment plagued by imprecise language. Ex: \"reward\" and \"shoggoth\" are suggestive words that obstruct clear thought.",
+      "permalink": "danger-of-suggestive-terminology",
+      "title": "Dreams of AI alignment: The danger of suggestive names"
+    }
+  ],
+  "open-category-classification": [
+    {
+      "excerpt": "An impact measure for AI safety that whitelists the object transformations which are allowed.",
+      "permalink": "whitelisting-impact-measure",
+      "title": "Worrying about the Vase: Whitelisting"
+    }
+  ],
+  "open-problems-in-activation-engineering": [
+    {
+      "excerpt": "Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.",
+      "permalink": "gpt2-steering-vectors",
+      "title": "Steering GPT-2-XL by adding an activation vector"
+    },
+    {
+      "excerpt": "Activation additions: steering language models by adding a bias to the forward pass. Surprisingly broad control, small impact on off-target capabilities.",
+      "permalink": "gpt2-steering-paper-announcement",
+      "title": "ActAdd: Steering Language Models without Optimization"
+    },
+    {
+      "excerpt": "Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.",
+      "permalink": "llama2-steering-vectors",
+      "title": "Steering Llama-2 with contrastive activation additions"
+    },
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
+      "permalink": "top-right-steering-vector",
+      "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
+    }
+  ],
+  "open-source": [
+    {
+      "excerpt": "Showing off and explaining this site's beauty.",
+      "permalink": "design",
+      "title": "The design of this website"
+    },
+    {
+      "excerpt": "Celebrating the launch of the website after months of work.",
+      "permalink": "launch",
+      "title": "Site launch: Come relax by The Pond!"
+    },
+    {
+      "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
+      "permalink": "about",
+      "title": "About me"
+    },
+    {
+      "excerpt": "A command-line tool to harden datasets, helping prevent AI data contamination by deploying a protected download portal.",
+      "permalink": "dataset-protection",
+      "title": "We built a tool to protect your dataset from simple scrapers"
+    },
+    {
+      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
+      "permalink": "date-me",
+      "title": "I'm that \"other fish in the sea\""
+    }
+  ],
+  "ordinary-differential-equations-textbook-review": [
+    {
+      "excerpt": "Tao's \"Analysis I\" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.",
+      "permalink": "first-analysis-textbook-review",
+      "title": "Into the Kiln: Insights from Tao's 'Analysis I'"
+    }
+  ],
+  "original-truthfulqa-weaknesses": [
+    {
+      "excerpt": "When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.",
+      "permalink": "self-fulfilling-misalignment",
+      "title": "Self-fulfilling misalignment data might be poisoning our AI models"
+    },
+    {
+      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
+      "permalink": "consistency-training",
+      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
+    }
+  ],
+  "output-feedback-can-obfuscate-chain-of-thought": [
+    {
+      "excerpt": "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts.",
+      "permalink": "recontextualization-mitigates-specification-gaming",
+      "title": "Recontextualization Mitigates Specification Gaming Without Modifying the Specification"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    },
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
+      "permalink": "deep-causal-transcoding",
+      "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
+      "permalink": "consistency-training",
+      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
+    }
+  ],
+  "overcoming-clinginess-in-impact-measures": [
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    },
+    {
+      "excerpt": "Desirable properties of impact measures for safe and beneficial AI development.",
+      "permalink": "impact-measure-desiderata",
+      "title": "Impact Measure Desiderata"
+    },
+    {
+      "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
+      "permalink": "reframing-impact",
+      "title": "Reframing Impact"
+    },
+    {
+      "excerpt": "An impact measure for AI safety that whitelists the object transformations which are allowed.",
+      "permalink": "whitelisting-impact-measure",
+      "title": "Worrying about the Vase: Whitelisting"
+    },
+    {
+      "excerpt": "How to make AI agents avoid negative side effects, especially in multi-stakeholder environments.",
+      "permalink": "conservative-agency-with-multiple-stakeholders",
+      "title": "Conservative Agency with Multiple Stakeholders"
+    }
+  ],
+  "parametrically-retargetable-power-seeking": [
+    {
+      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
+      "permalink": "satisficers-tend-to-seek-power",
+      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.",
+      "permalink": "seeking-power-is-often-convergently-instrumental-in-mdps",
+      "title": "Seeking Power is Often Convergently Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    },
+    {
+      "excerpt": "The structure of environments, not just reward functions, contributes to power-seeking in AI agents.",
+      "permalink": "environmental-structure-can-cause-instrumental-convergence",
+      "title": "Environmental Structure Can Cause Instrumental Convergence"
+    }
+  ],
+  "playwright-tips": [
+    {
+      "excerpt": "Displaying the features of the website for use in visual regression testing.",
+      "permalink": "test-page",
+      "title": "Testing site features"
+    }
+  ],
+  "power-as-easily-exploitable-opportunities": [
+    {
+      "excerpt": "A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.",
+      "permalink": "seeking-power-is-often-convergently-instrumental-in-mdps",
+      "title": "Seeking Power is Often Convergently Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power.",
+      "permalink": "the-catastrophic-convergence-conjecture",
+      "title": "The Catastrophic Convergence Conjecture"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
+      "permalink": "satisficers-tend-to-seek-power",
+      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
+    }
+  ],
+  "power-seeking-beyond-MDPs": [
+    {
+      "excerpt": "A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.",
+      "permalink": "seeking-power-is-often-convergently-instrumental-in-mdps",
+      "title": "Seeking Power is Often Convergently Instrumental in MDPs"
+    },
+    {
+      "excerpt": "VNM-coherent preference orderings have the same statistical incentives as utility functions, often leading to power-seeking behavior.",
+      "permalink": "instrumental-convergence-via-vnm-preferences",
+      "title": "When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives"
+    },
+    {
+      "excerpt": "Instrumental convergence strengthens proportional to the ratio of an agent's control if it survives to its control if it dies.",
+      "permalink": "quantitative-strength-of-instrumental-convergence",
+      "title": "The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal Policies"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Realistic AI objectives aren't random utility functions. I explore instrumental convergence for objectives defined over features of the environment.",
+      "permalink": "instrumental-convergence-for-realistic-agent-objectives",
+      "title": "Instrumental Convergence For Realistic Agent Objectives"
+    }
+  ],
+  "predictions-for-shard-theory-mechanistic-interpretability": [
+    {
+      "excerpt": "A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.",
+      "permalink": "understanding-and-controlling-a-maze-solving-policy-network",
+      "title": "Understanding and controlling a maze-solving policy network"
+    },
+    {
+      "excerpt": "Closeness to cheese and the top-right corner both influence a maze-solving AI, suggesting a \"shard-like\" decision-making process.",
+      "permalink": "statistics-of-a-maze-solving-network",
+      "title": "Behavioural statistics for a maze-solving agent"
+    },
+    {
+      "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
+      "permalink": "top-right-steering-vector",
+      "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
+    },
+    {
+      "excerpt": "Shard theory, once speculative, is definitively confirmed by GPT-NeoX-20B. Time to stop arguing and start experimenting.",
+      "permalink": "shard-theory-confirmed",
+      "title": "Definitive confirmation of shard theory"
+    },
+    {
+      "excerpt": "My team published a paper on steering a maze-solving AI by manipulating its internal goal representations.",
+      "permalink": "cheese-vector-paper",
+      "title": "Paper: Understanding and Controlling a Maze-Solving Policy Network"
+    }
+  ],
+  "privacy-despite-authoritarianism": [
+    {
+      "excerpt": "In 2025, America is different. Reduce your chance of persecution via smart technical choices.",
+      "permalink": "advanced-privacy",
+      "title": "Advanced Privacy Despite Authoritarianism"
+    }
+  ],
+  "problem-relaxation-as-a-tactic": [
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    },
+    {
+      "excerpt": "The author's unorthodox approach to AI safety research: Ignore existing work, simplify relentlessly, and break your own solutions.",
+      "permalink": "how-i-do-research",
+      "title": "How I do research"
+    },
+    {
+      "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
+      "permalink": "best-reasons-for-pessimism-about-impact-measures",
+      "title": "Best reasons for pessimism about impact of impact measures?"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    }
+  ],
+  "punctilio": [
+    {
+      "excerpt": "Displaying the features of the website for use in visual regression testing.",
+      "permalink": "test-page",
+      "title": "Testing site features"
+    }
+  ],
+  "quantitative-strength-of-instrumental-convergence": [
+    {
+      "excerpt": "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions.",
+      "permalink": "power-seeking-beyond-MDPs",
+      "title": "Seeking Power is Convergently Instrumental in a Broad Class of Environments"
+    },
+    {
+      "excerpt": "The structure of environments, not just reward functions, contributes to power-seeking in AI agents.",
+      "permalink": "environmental-structure-can-cause-instrumental-convergence",
+      "title": "Environmental Structure Can Cause Instrumental Convergence"
+    },
+    {
+      "excerpt": "A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.",
+      "permalink": "seeking-power-is-often-convergently-instrumental-in-mdps",
+      "title": "Seeking Power is Often Convergently Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Realistic AI objectives aren't random utility functions. I explore instrumental convergence for objectives defined over features of the environment.",
+      "permalink": "instrumental-convergence-for-realistic-agent-objectives",
+      "title": "Instrumental Convergence For Realistic Agent Objectives"
+    }
+  ],
+  "question-about-defining-alignment-in-simple-setting": [
+    {
+      "excerpt": "A game-theoretic examination of how \"aligned\" agents are in a multi-player game, using an alignment metric based on social welfare functions.",
+      "permalink": "formalizing-alignment-in-game-theory",
+      "title": "Game-theoretic Alignment in terms of Attainable Utility"
+    },
+    {
+      "excerpt": "A game-theoretic formalism of “defection”, analyzing whether an action is self-serving at the expense of the group.",
+      "permalink": "game-theoretic-definition-of-defection",
+      "title": "Formalizing “defection” using game theory"
+    },
+    {
+      "excerpt": "Formalizing \"power\" in multi-agent games, showing that increased agent capabilities can lead to power scarcity and increased competition for resources.",
+      "permalink": "formalizing-multi-agent-power",
+      "title": "Generalizing POWER to multi-agent games"
+    },
+    {
+      "excerpt": "The structure of environments, not just reward functions, contributes to power-seeking in AI agents.",
+      "permalink": "environmental-structure-can-cause-instrumental-convergence",
+      "title": "Environmental Structure Can Cause Instrumental Convergence"
+    },
+    {
+      "excerpt": "Non-obstruction: how do we design AI that doesn't limit our ability to achieve our goals, even if we misspecified its programming?",
+      "permalink": "non-obstruction-motivates-corrigibility",
+      "title": "Non-Obstruction: A Simple Concept Motivating Corrigibility"
+    }
+  ],
+  "questioning-why-simple-alignment-plan-fails": [
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
+    },
+    {
+      "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
+      "permalink": "dont-align-agents-to-evaluations-of-plans",
+      "title": "Don't align agents to evaluations of plans"
+    },
+    {
+      "excerpt": "Markovian reward functions are underdefined. Aligning AI isn't about designing the \"right\" reward, but designing rewards compatible with how the world is.",
+      "permalink": "against-rewards-over-observations",
+      "title": "What You See Isn't Always What You Want"
+    },
+    {
+      "excerpt": "Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.",
+      "permalink": "shard-theory",
+      "title": "The shard theory of human values"
+    }
+  ],
+  "read-hpmor": [
+    {
+      "excerpt": "My review of \"Artificial Intelligence, A Modern Approach\" & how I read hundreds of pages in 3 days.",
+      "permalink": "AI-textbook-review",
+      "title": "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "A personal reflection on finding the rationalist community and the joy and anxiety of pursuing AI alignment.",
+      "permalink": "lightness-and-unease",
+      "title": "Lightness and Unease"
+    },
+    {
+      "excerpt": "Three short essays written against the clock on instrumental rationality, confusion identification, and emotion propagation.",
+      "permalink": "hammertime-final-exam",
+      "title": "Unyielding Yoda Timers: Taking the Hammertime Final Exam"
+    },
+    {
+      "excerpt": "Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.",
+      "permalink": "shard-theory",
+      "title": "The shard theory of human values"
+    }
+  ],
+  "recontextualization-mitigates-specification-gaming": [
+    {
+      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
+      "permalink": "consistency-training",
+      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    },
+    {
+      "excerpt": "When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.",
+      "permalink": "self-fulfilling-misalignment",
+      "title": "Self-fulfilling misalignment data might be poisoning our AI models"
+    },
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "AI increasingly fakes good behavior on evaluations. Rather than hiding that the AI is being evaluated, make it prioritize helping evaluators.",
+      "permalink": "eval-cooperation",
+      "title": "Eval cooperativeness may be a scalable mitigation for eval gaming"
+    }
+  ],
+  "reflections-on-pretense": [
+    {
+      "excerpt": "How to avoid feeling like a fraud: build good habits and stop cutting corners.",
+      "permalink": "on-being-robust",
+      "title": "On Being Robust"
+    }
+  ],
+  "reframing-impact": [
+    {
+      "excerpt": "Desirable properties of impact measures for safe and beneficial AI development.",
+      "permalink": "impact-measure-desiderata",
+      "title": "Impact Measure Desiderata"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
+      "permalink": "best-reasons-for-pessimism-about-impact-measures",
+      "title": "Best reasons for pessimism about impact of impact measures?"
+    }
+  ],
+  "research": [
+    {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
+    },
+    {
+      "excerpt": "AI agents trained with Attainable Utility Preservation avoid most side effects in Conway's Game of Life without explicit instructions.",
+      "permalink": "avoiding-side-effects-in-complex-environments",
+      "title": "Avoiding Side Effects in Complex Environments"
+    },
+    {
+      "excerpt": "The AUP technique encourages low-impact behavior in both simple and complex environments.",
+      "permalink": "attainable-utility-preservation-empirical-results",
+      "title": "Attainable Utility Preservation: Empirical Results"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    }
+  ],
+  "residual-stream-norms-grow-exponentially-over-the-forward-pass": [
+    {
+      "excerpt": "Norm growth in activations drowns out earlier computations - do transformers just process recent sublayer outputs?",
+      "permalink": "effective-layer-horizon",
+      "title": "Can transformers act on information beyond an effective layer horizon?"
+    },
+    {
+      "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
+      "permalink": "deep-causal-transcoding",
+      "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.",
+      "permalink": "gpt2-steering-vectors",
+      "title": "Steering GPT-2-XL by adding an activation vector"
+    },
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    }
+  ],
+  "review-of-but-exactly-how-complex-and-fragile": [
+    {
+      "excerpt": "Stuart Russell's \"Human Compatible\" makes the case for aligning AI with human values and sketches a research agenda based on uncertainty.",
+      "permalink": "thoughts-on-human-compatible",
+      "title": "Thoughts on 'Human-Compatible'"
+    },
+    {
+      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
+      "permalink": "alignment-without-total-robustness",
+      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
+    },
+    {
+      "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
+      "permalink": "best-reasons-for-pessimism-about-impact-measures",
+      "title": "Best reasons for pessimism about impact of impact measures?"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    }
+  ],
+  "review-of-debate-on-instrumental-convergence": [
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
+      "permalink": "parametrically-retargetable-power-seeking",
+      "title": "Parametrically retargetable decision-makers tend to seek power"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    }
+  ],
+  "reward-hacking-doesnt-show-reward-is-optimization-target": [
+    {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
+    },
+    {
+      "excerpt": "AI alignment plagued by imprecise language. Ex: \"reward\" and \"shoggoth\" are suggestive words that obstruct clear thought.",
+      "permalink": "danger-of-suggestive-terminology",
+      "title": "Dreams of AI alignment: The danger of suggestive names"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "A list of some of my major conceptual mistakes.",
+      "permalink": "mistakes",
+      "title": "Mistaken claims I've made"
+    },
+    {
+      "excerpt": "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts.",
+      "permalink": "recontextualization-mitigates-specification-gaming",
+      "title": "Recontextualization Mitigates Specification Gaming Without Modifying the Specification"
+    }
+  ],
+  "reward-is-not-the-optimization-target": [
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    },
+    {
+      "excerpt": "Markovian reward functions are underdefined. Aligning AI isn't about designing the \"right\" reward, but designing rewards compatible with how the world is.",
+      "permalink": "against-rewards-over-observations",
+      "title": "What You See Isn't Always What You Want"
+    },
+    {
+      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
+      "permalink": "alignment-without-total-robustness",
+      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
+    },
+    {
+      "excerpt": "AI alignment plagued by imprecise language. Ex: \"reward\" and \"shoggoth\" are suggestive words that obstruct clear thought.",
+      "permalink": "danger-of-suggestive-terminology",
+      "title": "Dreams of AI alignment: The danger of suggestive names"
+    },
+    {
+      "excerpt": "A deep dive into reinforcement learning, covering algorithms, exploration vs. exploitation, and the importance of safe AI development.",
+      "permalink": "RL-textbook-review",
+      "title": "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
+    }
+  ],
+  "robustness-of-positive-values": [
+    {
+      "excerpt": "Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.",
+      "permalink": "shard-theory",
+      "title": "The shard theory of human values"
+    },
+    {
+      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
+      "permalink": "alignment-without-total-robustness",
+      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
+    },
+    {
+      "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
+      "permalink": "a-shot-at-the-diamond-alignment-problem",
+      "title": "A shot at the diamond-alignment problem"
+    },
+    {
+      "excerpt": "A shard theory analysis of value drift: what it is, how it happens, and how to avoid it, even without controlling your experiences.",
+      "permalink": "understanding-and-avoiding-value-drift",
+      "title": "Understanding and avoiding value drift"
+    },
+    {
+      "excerpt": "Desirable properties of impact measures for safe and beneficial AI development.",
+      "permalink": "impact-measure-desiderata",
+      "title": "Impact Measure Desiderata"
+    }
+  ],
+  "satisficers-tend-to-seek-power": [
+    {
+      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
+      "permalink": "parametrically-retargetable-power-seeking",
+      "title": "Parametrically retargetable decision-makers tend to seek power"
+    },
+    {
+      "excerpt": "The structure of environments, not just reward functions, contributes to power-seeking in AI agents.",
+      "permalink": "environmental-structure-can-cause-instrumental-convergence",
+      "title": "Environmental Structure Can Cause Instrumental Convergence"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    },
+    {
+      "excerpt": "A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.",
+      "permalink": "seeking-power-is-often-convergently-instrumental-in-mdps",
+      "title": "Seeking Power is Often Convergently Instrumental in MDPs"
+    }
+  ],
+  "second-analysis-textbook-review": [
+    {
+      "excerpt": "Tao's \"Analysis I\" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.",
+      "permalink": "first-analysis-textbook-review",
+      "title": "Into the Kiln: Insights from Tao's 'Analysis I'"
+    },
+    {
+      "excerpt": "Functional analysis: infinite dimensions, discontinuous linear functions, and the headache-inducing functional derivative.",
+      "permalink": "functional-analysis-textbook-review",
+      "title": "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
+    },
+    {
+      "excerpt": "A tour of fundamental statistical concepts, from basic probability to hypothesis testing and Bayesian inference.",
+      "permalink": "all-of-statistics-textbook-review",
+      "title": "Confounded No Longer: Insights from 'All of Statistics'"
+    },
+    {
+      "excerpt": "Reviewing Munkres' \"Topology\", reflecting on compactness, homotopy, and what I was even doing with my life before understanding homeomorphisms.",
+      "permalink": "topology-textbook-review",
+      "title": "Continuous Improvement: Insights from 'Topology'"
+    },
+    {
+      "excerpt": "The author rediscovers their love for math while rigorously studying linear algebra, sharing insights and lessons learned along the way.",
+      "permalink": "linear-algebra-textbook-review",
+      "title": "The First Rung: Insights from 'Linear Algebra Done Right'"
+    }
+  ],
+  "seeking-power-is-often-convergently-instrumental-in-mdps": [
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions.",
+      "permalink": "power-seeking-beyond-MDPs",
+      "title": "Seeking Power is Convergently Instrumental in a Broad Class of Environments"
+    },
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    },
+    {
+      "excerpt": "Agent architecture and environmental dynamics determine Markov Decision Processes. Power-seeking tendencies are not subjective.",
+      "permalink": "MDPs-are-not-subjective",
+      "title": "MDP models are determined by the agent architecture and the environmental dynamics"
+    },
+    {
+      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
+      "permalink": "satisficers-tend-to-seek-power",
+      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
+    }
+  ],
+  "self-fulfilling-misalignment": [
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "AI alignment plagued by imprecise language. Ex: \"reward\" and \"shoggoth\" are suggestive words that obstruct clear thought.",
+      "permalink": "danger-of-suggestive-terminology",
+      "title": "Dreams of AI alignment: The danger of suggestive names"
+    },
+    {
+      "excerpt": "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts.",
+      "permalink": "recontextualization-mitigates-specification-gaming",
+      "title": "Recontextualization Mitigates Specification Gaming Without Modifying the Specification"
+    },
+    {
+      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
+      "permalink": "consistency-training",
+      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
+    }
+  ],
+  "self-teaching-insights": [
+    {
+      "excerpt": "My review of \"Artificial Intelligence, A Modern Approach\" & how I read hundreds of pages in 3 days.",
+      "permalink": "AI-textbook-review",
+      "title": "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
+    },
+    {
+      "excerpt": "The author rediscovers their love for math while rigorously studying linear algebra, sharing insights and lessons learned along the way.",
+      "permalink": "linear-algebra-textbook-review",
+      "title": "The First Rung: Insights from 'Linear Algebra Done Right'"
+    },
+    {
+      "excerpt": "Functions are static sets; families are functions; Zorn's Lemma is hard. I reflect on my set theory learnings and effective self-study strategies.",
+      "permalink": "set-theory-textbook-review",
+      "title": "Set Up for Success: Insights from 'Naïve Set Theory'"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "Euclid's \"Elements\", but made beautiful. A colorful exploration of geometric proofs and the power of visual learning.",
+      "permalink": "insights-from-euclids-elements",
+      "title": "Insights from Euclid's 'Elements'"
+    }
+  ],
+  "set-theory-textbook-review": [
+    {
+      "excerpt": "My review of \"Artificial Intelligence, A Modern Approach\" & how I read hundreds of pages in 3 days.",
+      "permalink": "AI-textbook-review",
+      "title": "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
+    },
+    {
+      "excerpt": "The author rediscovers their love for math while rigorously studying linear algebra, sharing insights and lessons learned along the way.",
+      "permalink": "linear-algebra-textbook-review",
+      "title": "The First Rung: Insights from 'Linear Algebra Done Right'"
+    },
+    {
+      "excerpt": "Tao's \"Analysis I\" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.",
+      "permalink": "first-analysis-textbook-review",
+      "title": "Into the Kiln: Insights from Tao's 'Analysis I'"
+    },
+    {
+      "excerpt": "Lessons learned from years of self-teaching: use Anki, read multiple books concurrently, and don't be afraid of easier texts.",
+      "permalink": "self-teaching-insights",
+      "title": "Lessons I've Learned from Self-Teaching"
+    },
+    {
+      "excerpt": "Turing computability and the surprising limits of what formal systems can express.",
+      "permalink": "computability-and-logic-textbook-review",
+      "title": "And My Axiom! Insights from 'Computability and Logic'"
+    }
+  ],
+  "shard-theory": [
+    {
+      "excerpt": "A shard theory analysis of value drift: what it is, how it happens, and how to avoid it, even without controlling your experiences.",
+      "permalink": "understanding-and-avoiding-value-drift",
+      "title": "Understanding and avoiding value drift"
+    },
+    {
+      "excerpt": "The genome can't directly hardwire complex human values like \"fear of death.\" Those values probably arise from simpler, hardcoded learning mechanisms.",
+      "permalink": "human-values-and-biases-are-inaccessible-to-the-genome",
+      "title": "Human values & biases are inaccessible to the genome"
+    },
+    {
+      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
+      "permalink": "alignment-without-total-robustness",
+      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
+    },
+    {
+      "excerpt": "I argue for studying the only known example of aligned intelligence: humans. Stop speculating about AIXI and diamonds - look at humans!",
+      "permalink": "humans-provide-alignment-evidence",
+      "title": "Humans provide an untapped wealth of evidence about alignment"
+    },
+    {
+      "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
+      "permalink": "a-shot-at-the-diamond-alignment-problem",
+      "title": "A shot at the diamond-alignment problem"
+    }
+  ],
+  "shard-theory-confirmed": [
+    {
+      "excerpt": "Predictions about a cheese-finding AI model's internal workings, before the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖",
+      "permalink": "predictions-for-shard-theory-mechanistic-interpretability",
+      "title": "Predictions for shard theory mechanistic interpretability results"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.",
+      "permalink": "shard-theory",
+      "title": "The shard theory of human values"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "I argue for studying the only known example of aligned intelligence: humans. Stop speculating about AIXI and diamonds - look at humans!",
+      "permalink": "humans-provide-alignment-evidence",
+      "title": "Humans provide an untapped wealth of evidence about alignment"
+    }
+  ],
+  "statistics-of-a-maze-solving-network": [
+    {
+      "excerpt": "Predictions about a cheese-finding AI model's internal workings, before the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖",
+      "permalink": "predictions-for-shard-theory-mechanistic-interpretability",
+      "title": "Predictions for shard theory mechanistic interpretability results"
+    },
+    {
+      "excerpt": "A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.",
+      "permalink": "understanding-and-controlling-a-maze-solving-policy-network",
+      "title": "Understanding and controlling a maze-solving policy network"
+    },
+    {
+      "excerpt": "My team published a paper on steering a maze-solving AI by manipulating its internal goal representations.",
+      "permalink": "cheese-vector-paper",
+      "title": "Paper: Understanding and Controlling a Maze-Solving Policy Network"
+    },
+    {
+      "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
+      "permalink": "top-right-steering-vector",
+      "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
+    },
+    {
+      "excerpt": "A deep dive into reinforcement learning, covering algorithms, exploration vs. exploitation, and the importance of safe AI development.",
+      "permalink": "RL-textbook-review",
+      "title": "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
+    }
+  ],
+  "swimming-upstream": [
+    {
+      "excerpt": "A personal reflection on finding the rationalist community and the joy and anxiety of pursuing AI alignment.",
+      "permalink": "lightness-and-unease",
+      "title": "Lightness and Unease"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "Overcoming self-doubt: How emotionally-charged internal dialogue helped resolve long-held anxieties and limiting beliefs.",
+      "permalink": "internalizing-internal-double-crux",
+      "title": "Internalizing Internal Double Crux"
+    },
+    {
+      "excerpt": "The author's unorthodox approach to AI safety research: Ignore existing work, simplify relentlessly, and break your own solutions.",
+      "permalink": "how-i-do-research",
+      "title": "How I do research"
+    },
+    {
+      "excerpt": "Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.",
+      "permalink": "problem-relaxation-as-a-tactic",
+      "title": "Problem relaxation as a tactic"
+    }
+  ],
+  "team-shard": [
+    {
+      "excerpt": "Shard theory, once speculative, is definitively confirmed by GPT-NeoX-20B. Time to stop arguing and start experimenting.",
+      "permalink": "shard-theory-confirmed",
+      "title": "Definitive confirmation of shard theory"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
+      "permalink": "date-me",
+      "title": "I'm that \"other fish in the sea\""
+    },
+    {
+      "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
+      "permalink": "a-shot-at-the-diamond-alignment-problem",
+      "title": "A shot at the diamond-alignment problem"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
+    }
+  ],
+  "test-page": [
+    {
+      "excerpt": "Showing off and explaining this site's beauty.",
+      "permalink": "design",
+      "title": "The design of this website"
+    },
+    {
+      "excerpt": "My projects include this website's infrastructure, AI-powered alt text generation, and dataset protection utilities.",
+      "permalink": "open-source",
+      "title": "My open source contributions"
+    },
+    {
+      "excerpt": "Hard-won best practices for stable visual regression testing.",
+      "permalink": "playwright-tips",
+      "title": "Lessons from my 428-day battle against flaky Playwright screenshots"
+    }
+  ],
+  "the-catastrophic-convergence-conjecture": [
+    {
+      "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
+      "permalink": "power-as-easily-exploitable-opportunities",
+      "title": "Power as Easily Exploitable Opportunities"
+    },
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
+    },
+    {
+      "excerpt": "This post explores a hypothetical scenario where the AI alignment problem seems lower-stakes due to a unique universe structure.",
+      "permalink": "lower-stakes-alignment-scenario",
+      "title": "A world in which the alignment problem seems lower-stakes"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    }
+  ],
+  "the-gears-of-impact": [
+    {
+      "excerpt": "Description: Impact isn't about changing the world; it's about changing our ability to achieve goals within it.",
+      "permalink": "attainable-utility-theory",
+      "title": "Attainable Utility Theory: Why Things Matter"
+    },
+    {
+      "excerpt": "Understanding impact as change to the world: attractive, but misleading.",
+      "permalink": "world-state-is-the-wrong-abstraction-for-impact",
+      "title": "World State is the Wrong Abstraction for Impact"
+    },
+    {
+      "excerpt": "Examining how our actions reshape the landscape of achievable goals, highlighting opportunity costs and the structure of agency in shaping the future.",
+      "permalink": "attainable-utility-landscape",
+      "title": "Attainable Utility Landscape: How The World Is Changed"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    }
+  ],
+  "thoughts-on-human-compatible": [
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "A review of Katja Grace's post questioning the \"value is fragile\" argument, arguing it sparked valuable but confused debate.",
+      "permalink": "review-of-but-exactly-how-complex-and-fragile",
+      "title": "Review of 'But exactly how complex and fragile?'"
+    },
+    {
+      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
+      "permalink": "alignment-phd",
+      "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.",
+      "permalink": "problem-relaxation-as-a-tactic",
+      "title": "Problem relaxation as a tactic"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    }
+  ],
+  "to-what-extent-is-gpt3-capable-of-reasoning": [
+    {
+      "excerpt": "GPT-3's output: sometimes insightful, sometimes silly. Read my favorite interactions with this intriguing, flawed network.",
+      "permalink": "gpt3-gems",
+      "title": "GPT-3 Gems"
+    }
+  ],
+  "top-right-steering-vector": [
+    {
+      "excerpt": "A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.",
+      "permalink": "understanding-and-controlling-a-maze-solving-policy-network",
+      "title": "Understanding and controlling a maze-solving policy network"
+    },
+    {
+      "excerpt": "Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.",
+      "permalink": "gpt2-steering-vectors",
+      "title": "Steering GPT-2-XL by adding an activation vector"
+    },
+    {
+      "excerpt": "My team published a paper on steering a maze-solving AI by manipulating its internal goal representations.",
+      "permalink": "cheese-vector-paper",
+      "title": "Paper: Understanding and Controlling a Maze-Solving Policy Network"
+    },
+    {
+      "excerpt": "Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.",
+      "permalink": "llama2-steering-vectors",
+      "title": "Steering Llama-2 with contrastive activation additions"
+    },
+    {
+      "excerpt": "Predictions about a cheese-finding AI model's internal workings, before the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖",
+      "permalink": "predictions-for-shard-theory-mechanistic-interpretability",
+      "title": "Predictions for shard theory mechanistic interpretability results"
+    }
+  ],
+  "topology-textbook-review": [
+    {
+      "excerpt": "Functional analysis: infinite dimensions, discontinuous linear functions, and the headache-inducing functional derivative.",
+      "permalink": "functional-analysis-textbook-review",
+      "title": "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
+    },
+    {
+      "excerpt": "Tao's \"Analysis I\" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.",
+      "permalink": "first-analysis-textbook-review",
+      "title": "Into the Kiln: Insights from Tao's 'Analysis I'"
+    },
+    {
+      "excerpt": "Tao's \"Analysis II\" reviewed: metric spaces, uniform convergence, Lebesgue integration–sharpening my mathematical tools.",
+      "permalink": "second-analysis-textbook-review",
+      "title": "Turning Up the Heat: Insights from Tao's 'Analysis II'"
+    }
+  ],
+  "towards-a-new-impact-measure": [
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
+    },
+    {
+      "excerpt": "Desirable properties of impact measures for safe and beneficial AI development.",
+      "permalink": "impact-measure-desiderata",
+      "title": "Impact Measure Desiderata"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.",
+      "permalink": "problem-relaxation-as-a-tactic",
+      "title": "Problem relaxation as a tactic"
+    }
+  ],
+  "toy-instrumental-convergence-paper-walkthrough": [
+    {
+      "excerpt": "A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.",
+      "permalink": "seeking-power-is-often-convergently-instrumental-in-mdps",
+      "title": "Seeking Power is Often Convergently Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Instrumental and success-conditioned convergence both require AI psychology assumptions, so neither is just a \"fact about reality.\"",
+      "permalink": "instrumental-convergence-requires-psychology-assumptions",
+      "title": "No instrumental convergence without AI psychology"
+    },
+    {
+      "excerpt": "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power.",
+      "permalink": "the-catastrophic-convergence-conjecture",
+      "title": "The Catastrophic Convergence Conjecture"
+    },
+    {
+      "excerpt": "This post explores a hypothetical scenario where the AI alignment problem seems lower-stakes due to a unique universe structure.",
+      "permalink": "lower-stakes-alignment-scenario",
+      "title": "A world in which the alignment problem seems lower-stakes"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    }
+  ],
+  "understanding-and-avoiding-value-drift": [
+    {
+      "excerpt": "Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.",
+      "permalink": "shard-theory",
+      "title": "The shard theory of human values"
+    },
+    {
+      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
+      "permalink": "alignment-without-total-robustness",
+      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
+    },
+    {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
+    },
+    {
+      "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
+      "permalink": "a-shot-at-the-diamond-alignment-problem",
+      "title": "A shot at the diamond-alignment problem"
+    },
+    {
+      "excerpt": "Negative values (\"don't kill\") may be fragile. Positive values (\"protect people\") might be more robust and lasting within AI agents.",
+      "permalink": "robustness-of-positive-values",
+      "title": "Positive values seem more robust and lasting than prohibitions"
+    }
+  ],
+  "understanding-and-controlling-a-maze-solving-policy-network": [
+    {
+      "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
+      "permalink": "top-right-steering-vector",
+      "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
+    },
+    {
+      "excerpt": "My team published a paper on steering a maze-solving AI by manipulating its internal goal representations.",
+      "permalink": "cheese-vector-paper",
+      "title": "Paper: Understanding and Controlling a Maze-Solving Policy Network"
+    },
+    {
+      "excerpt": "Predictions about a cheese-finding AI model's internal workings, before the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖",
+      "permalink": "predictions-for-shard-theory-mechanistic-interpretability",
+      "title": "Predictions for shard theory mechanistic interpretability results"
+    },
+    {
+      "excerpt": "Closeness to cheese and the top-right corner both influence a maze-solving AI, suggesting a \"shard-like\" decision-making process.",
+      "permalink": "statistics-of-a-maze-solving-network",
+      "title": "Behavioural statistics for a maze-solving agent"
+    },
+    {
+      "excerpt": "Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.",
+      "permalink": "gpt2-steering-vectors",
+      "title": "Steering GPT-2-XL by adding an activation vector"
+    }
+  ],
+  "value-impact": [
+    {
+      "excerpt": "Impact, viewed through the lens of humans and other agents, demands a definition. How do we measure the mark we leave on the world?",
+      "permalink": "deducing-impact",
+      "title": "Deducing Impact"
+    },
+    {
+      "excerpt": "Impact reframed: a gears-level view of how and why some things seem important to us.",
+      "permalink": "the-gears-of-impact",
+      "title": "The Gears of Impact"
+    },
+    {
+      "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
+      "permalink": "reframing-impact",
+      "title": "Reframing Impact"
+    },
+    {
+      "excerpt": "Understanding impact as change to the world: attractive, but misleading.",
+      "permalink": "world-state-is-the-wrong-abstraction-for-impact",
+      "title": "World State is the Wrong Abstraction for Impact"
+    },
+    {
+      "excerpt": "Description: Impact isn't about changing the world; it's about changing our ability to achieve goals within it.",
+      "permalink": "attainable-utility-theory",
+      "title": "Attainable Utility Theory: Why Things Matter"
+    }
+  ],
+  "whitelisting-impact-measure": [
+    {
+      "excerpt": "Desirable properties of impact measures for safe and beneficial AI development.",
+      "permalink": "impact-measure-desiderata",
+      "title": "Impact Measure Desiderata"
+    },
+    {
+      "excerpt": "Impact measures incentivize agents to avoid side effects, but what about the side effects of ★other agents★?",
+      "permalink": "overcoming-clinginess-in-impact-measures",
+      "title": "Overcoming Clinginess in Impact Measures"
+    },
+    {
+      "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
+      "permalink": "reframing-impact",
+      "title": "Reframing Impact"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
+    }
+  ],
+  "world-state-is-the-wrong-abstraction-for-impact": [
+    {
+      "excerpt": "Description: Impact isn't about changing the world; it's about changing our ability to achieve goals within it.",
+      "permalink": "attainable-utility-theory",
+      "title": "Attainable Utility Theory: Why Things Matter"
+    },
+    {
+      "excerpt": "Impact reframed: a gears-level view of how and why some things seem important to us.",
+      "permalink": "the-gears-of-impact",
+      "title": "The Gears of Impact"
+    },
+    {
+      "excerpt": "Impact is objectively important to agents, no matter their goals. Even robots hoarding pebbles care about a meteor strike.",
+      "permalink": "value-impact",
+      "title": "Value Impact"
+    },
+    {
+      "excerpt": "Examining how our actions reshape the landscape of achievable goals, highlighting opportunity costs and the structure of agency in shaping the future.",
+      "permalink": "attainable-utility-landscape",
+      "title": "Attainable Utility Landscape: How The World Is Changed"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
     }
   ]
 }
