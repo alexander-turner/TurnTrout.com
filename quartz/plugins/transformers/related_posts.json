@@ -1,22 +1,19 @@
 {
   "test-page": [
     {
-      "permalink": "a-certain-formalization-of-corrigibility-is-vnm-incoherent",
-      "title": "A Certain Formalization of Corrigibility Is VNM-Incoherent",
       "excerpt": "Formal analysis showing that, for agents optimizing a reward function, corrigibility is rare and perhaps even incoherent.",
-      "score": 0.612
+      "permalink": "a-certain-formalization-of-corrigibility-is-vnm-incoherent",
+      "title": "A Certain Formalization of Corrigibility Is VNM-Incoherent"
     },
     {
-      "permalink": "announcing-rewrite-of-power-seeking-post",
-      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs",
       "excerpt": "Revised post clarifies theory on power-seeking and corrects terminology used in the original post.",
-      "score": 0.571
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
     },
     {
-      "permalink": "ban-development-of-unpredictable-powerful-models",
-      "title": "Ban development of unpredictable powerful models?",
       "excerpt": "A proposal for a government regulation of AI: Developers must be able to accurately predict the model's output.",
-      "score": 0.534
+      "permalink": "ban-development-of-unpredictable-powerful-models",
+      "title": "Ban development of unpredictable powerful models?"
     }
   ]
 }

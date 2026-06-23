@@ -221,13 +221,14 @@ class Neighbor(TypedDict):
     """
     One rendered "Similar links" entry.
 
-    ``score`` is kept for transparency.
+    Only the fields the transformer renders are written; the cosine score is
+    used for ranking/filtering but deliberately omitted from the committed map
+    to keep its diffs small (no float jitter on re-embed).
     """
 
     permalink: str
     title: str
     excerpt: str
-    score: float
 
 
 def _rank_neighbors(
@@ -262,7 +263,6 @@ def _rank_neighbors(
                 permalink=other.permalink,
                 title=other.title,
                 excerpt=other.excerpt,
-                score=score,
             )
         )
         if len(neighbors) >= top_n:

@@ -261,7 +261,7 @@ class TestComputeNeighbors:
         articles = {s: _article(s) for s in embeddings}
         result = grp.compute_neighbors(embeddings, articles, top_n=1)
         assert [n["permalink"] for n in result["a"]] == ["b"]
-        assert result["a"][0]["score"] <= 1.0
+        assert "score" not in result["a"][0]  # score is not serialized
 
     def test_excludes_self_and_unknown_articles(self) -> None:
         embeddings = {"a": [1.0, 0.0], "b": [0.0, 1.0]}
@@ -269,12 +269,12 @@ class TestComputeNeighbors:
         result = grp.compute_neighbors(embeddings, {"a": _article("a")})
         assert result == {"a": []}
 
-    def test_zero_vector_scores_zero(self) -> None:
+    def test_zero_vector_does_not_crash(self) -> None:
+        # A zero vector (norm 0) must not divide-by-zero; it still ranks.
         embeddings = {"a": [0.0, 0.0], "b": [1.0, 0.0]}
         articles = {s: _article(s) for s in embeddings}
         result = grp.compute_neighbors(embeddings, articles)
         assert [n["permalink"] for n in result["a"]] == ["b"]
-        assert result["a"][0]["score"] == 0.0
 
     def test_min_score_drops_weak_filler_but_keeps_best(self) -> None:
         # a-b ~0.99 (strong); a-c == 0 and b-c ~0.14 (both below floor 0.7).
@@ -288,7 +288,6 @@ class TestComputeNeighbors:
         # c's best neighbor (b, ~0.14) is below the floor but kept as the lone
         # match so the page still renders a block.
         assert [n["permalink"] for n in result["c"]] == ["b"]
-        assert result["c"][0]["score"] < 0.7
 
 
 # --- _select_to_embed --------------------------------------------------------

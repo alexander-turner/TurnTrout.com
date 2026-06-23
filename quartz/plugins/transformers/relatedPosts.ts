@@ -23,10 +23,7 @@ export const relatedPostsPath = path.join(
   "related_posts.json",
 )
 
-/**
- * One rendered "Similar links" entry. `generate_related_posts.py` writes extra
- * fields (e.g. `score`) for transparency; only the rendered ones are typed here.
- */
+/** One rendered "Similar links" entry, as stored in `related_posts.json`. */
 export interface RelatedPost {
   permalink: string
   title: string
