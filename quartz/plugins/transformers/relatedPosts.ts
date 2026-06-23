@@ -12,6 +12,7 @@ import { type QuartzTransformerPlugin } from "../types"
 import { type TocEntry } from "../vfile"
 import { insertAfterOrnamentNode } from "./afterArticle"
 import { applyTextTransforms } from "./formatting_improvement_html"
+import { slugify } from "./gfm"
 
 const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
 
@@ -98,7 +99,7 @@ function insertAfterSubscriptionBlock(tree: Root, block: Element) {
 }
 
 const SIMILAR_POSTS_HEADING = "Similar posts"
-const SIMILAR_POSTS_SLUG = "similar-posts"
+const SIMILAR_POSTS_SLUG = slugify(SIMILAR_POSTS_HEADING)
 
 export const similarPostsTocEntry: TocEntry = {
   depth: 0,
