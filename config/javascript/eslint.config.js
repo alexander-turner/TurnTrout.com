@@ -187,7 +187,7 @@ export default [
       "**/*.min.js",
       "**/*.min.ts",
       "quartz/i18n/",
-      "quartz/static/scripts/img-comparison-slider.js",
+      "**/img-comparison-slider.js",
       ".venv/",
       ".stryker-tmp/",
       "mutants/",
