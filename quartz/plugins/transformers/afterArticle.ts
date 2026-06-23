@@ -67,12 +67,16 @@ export function insertAfterOrnamentNode(tree: Root, components: Element[]) {
  * @param file - The VFile containing frontmatter and plugin data
  */
 function afterArticleTransform(tree: Root, file: VFile) {
-  const sequenceLinksComponent = createSequenceLinksComponent(file.data as QuartzPluginData)
-  const components: Element[] = sequenceLinksComponent ? [sequenceLinksComponent] : []
+  const components: Element[] = []
 
   // If frontmatter doesn't say to avoid it
   if (!file.data.frontmatter?.hideSubscriptionLinks) {
     components.push(h("div", { id: "subscription-and-contact" }, [subscriptionElement, contactMe]))
+  }
+
+  const sequenceLinksComponent = createSequenceLinksComponent(file.data as QuartzPluginData)
+  if (sequenceLinksComponent) {
+    components.push(sequenceLinksComponent)
   }
 
   if (components.length > 0) {
