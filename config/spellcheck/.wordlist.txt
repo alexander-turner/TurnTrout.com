@@ -1123,6 +1123,7 @@ ReLU
 ReLUs
 Reabsorption
 Reachability
+README
 Recontextualization
 Recontextualized
 Reddit
@@ -3171,6 +3172,7 @@ unstyled
 untackled
 untethered
 untransformed
+untrusted
 unwisdom
 uparrow
 uptime

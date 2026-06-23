@@ -25,6 +25,37 @@ uv_install_if_missing() {
 	fi
 }
 
+# Install vale (prose linter) if missing, from a pinned GitHub release.
+# webi has no vale package, so pull the official tarball directly. The version
+# is the single source of truth in config/vale/version, shared with CI
+# (lint-and-validate.yaml) so pre-push and CI never drift; required by the
+# pre-push spellcheck/prose gate.
+VALE_VERSION="$(cat "$PROJECT_DIR/config/vale/version")"
+vale_install_if_missing() {
+	command -v vale &>/dev/null && return 0
+	local os arch
+	case "$(uname -s)" in
+	Linux) os=Linux ;;
+	Darwin) os=macOS ;;
+	*) warn "Unsupported OS for vale install: $(uname -s)" && return 0 ;;
+	esac
+	case "$(uname -m)" in
+	x86_64 | amd64) arch=64-bit ;;
+	aarch64 | arm64) arch=arm64 ;;
+	*) warn "Unsupported arch for vale install: $(uname -m)" && return 0 ;;
+	esac
+	local url tarball
+	url="https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_${os}_${arch}.tar.gz"
+	tarball=$(mktemp "${TMPDIR:-/tmp}/vale-XXXXXX.tar.gz")
+	mkdir -p "$HOME/.local/bin"
+	if curl --proto '=https' -fsSL "$url" -o "$tarball" 2>/dev/null; then
+		tar -xzf "$tarball" -C "$HOME/.local/bin" vale 2>/dev/null || warn "Failed to extract vale"
+	else
+		warn "Failed to download vale from $url"
+	fi
+	rm -f "$tarball"
+}
+
 # Install a command via webi if missing
 # $1 = command name, $2 = optional webi package specifier (e.g. tool@version)
 # Hardened: HTTPS-only, shebang validation, version pinning via $2
@@ -63,6 +94,9 @@ fi
 webi_install_if_missing shfmt shfmt@3
 webi_install_if_missing gh gh@2
 webi_install_if_missing jq jq@1.7
+# vale is required by the pre-push spellcheck/prose gate (it errors when vale
+# is absent), so install it here rather than letting it silently skip.
+vale_install_if_missing
 uv_install_if_missing alt-text-llm
 if is_root; then
 	# Map: command-to-probe -> apt package name. ffmpeg/imagemagick are
@@ -366,10 +400,6 @@ if [ -f "$PROJECT_DIR/uv.lock" ] && command -v uv &>/dev/null; then
 			echo "export PATH=\"$PROJECT_DIR/.venv/bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
 		fi
 	fi
-	# Pre-warm dmypy daemon in the background so lint-staged mypy checks are
-	# fast (~1s) on all commits rather than cold-starting (~18s) on the first.
-	uv run dmypy start -- --config-file "$PROJECT_DIR/config/python/mypy.ini" \
-		>/dev/null &
 fi
 
 if [ "$SETUP_WARNINGS" -gt 0 ]; then

@@ -653,7 +653,7 @@ _TEST_ROOT = Path("/test/root")
 _VERIFY_NAMES = frozenset(
     {
         "Pylint",
-        "Mypy",
+        "Pyright",
         "Source file checks",
         "Spellcheck and Vale",
     }
@@ -739,9 +739,16 @@ def test_autofix_lint_runs_before_autofix_format():
     assert last_lint_idx < first_format_idx
 
 
-def test_spellcheck_step_requires_vale():
+def test_spellcheck_step_has_no_requires_so_it_fails_loudly():
+    """
+    The spellcheck/prose gate must not silently skip when vale is absent: it has
+    no `requires`, so it always runs and errors loudly (the wrapper checks for
+    vale itself).
+
+    session-setup.sh installs vale.
+    """
     steps = run_push_checks.get_check_steps(_TEST_ROOT)
-    assert _step_by_name(steps, "Spellcheck and Vale").requires == "vale"
+    assert _step_by_name(steps, "Spellcheck and Vale").requires is None
 
 
 def test_eslint_step_invocation():
@@ -1332,6 +1339,49 @@ def test_run_parallel_group_raises_on_failure(temp_state_dir):
         )
     assert exc_info.value.step_name == "Bad"
     assert exc_info.value.stdout == "boom"
+
+
+@pytest.mark.parametrize("continue_on_failure", [False, True])
+def test_run_parallel_group_save_state_on_failure(
+    continue_on_failure, temp_state_dir
+):
+    """A failed check halts resume progress (state untouched) unless
+    continue_on_failure lets the run proceed past it; otherwise --resume would
+    skip the failed check."""
+    group = [
+        run_push_checks.CheckStep(
+            name="Bad", command=["bad"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="OK", command=["ok"], parallel_group="verify"
+        ),
+    ]
+    results_by_name = {
+        "Bad": run_push_checks.CommandResult(
+            success=False, stdout="boom", stderr="kaboom"
+        ),
+        "OK": run_push_checks.CommandResult(success=True, stdout="", stderr=""),
+    }
+    with (
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.commit_step_changes"),
+        patch("scripts.run_push_checks.save_state") as mock_save,
+    ):
+        mock_exec.side_effect = lambda step, _p: results_by_name[step.name]
+        if continue_on_failure:
+            run_push_checks._run_parallel_group(
+                group, MagicMock(), auto_commit=False, continue_on_failure=True
+            )
+            mock_save.assert_called_once_with("OK")
+        else:
+            with pytest.raises(run_push_checks.CheckFailedError):
+                run_push_checks._run_parallel_group(
+                    group,
+                    MagicMock(),
+                    auto_commit=False,
+                    continue_on_failure=False,
+                )
+            mock_save.assert_not_called()
 
 
 def test_run_parallel_group_continues_past_failure(temp_state_dir):

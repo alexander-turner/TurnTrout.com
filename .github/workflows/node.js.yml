@@ -20,6 +20,7 @@ on:
       - "pnpm-lock.yaml"
       - ".github/actions/**"
   pull_request:
+  workflow_dispatch:
 
 permissions:
   actions: read

@@ -10,6 +10,11 @@ export const urlRegex = new RegExp(
   /(?<protocol>https?:\/\/)(?<domain>(?:[\da-z-]+\.)+)(?<path>[/?=\w.-]+(?:\([\w.\-,() ]*\))?)(?=\))/g,
 )
 
+// Non-global copy of `urlRegex` for stateless `.test()` calls. A global regex's
+// `.test()` advances `lastIndex` between calls, making repeated detection on the
+// same string order-dependent; this copy keeps detection deterministic.
+export const urlRegexNonGlobal = new RegExp(urlRegex.source, urlRegex.flags.replace("g", ""))
+
 const linkText = /\[(?<linkText>[^\]]+)\]/
 const linkURL = /\((?<linkURL>[^#].*?)\)/ // Ignore internal links, capture as little as possible
 export const mdLinkRegex = new RegExp(linkText.source + linkURL.source, "g")

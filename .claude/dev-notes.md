@@ -168,7 +168,7 @@ When pushing to main, `scripts/run_push_checks.py` runs:
 2. **Sequential prep** — `pnpm exec tsx quartz/styles/generate-variables.ts` regenerates `quartz/styles/variables.scss` because `source_file_checks.py` reads it.
 3. **Parallel verify group** (read-only, runs concurrently via `ThreadPoolExecutor`):
    - `pylint` (matches `python-lint.yaml` CI invocation: `pylint .` with `config/python/.pylintrc`).
-   - `mypy` (uses the `dmypy` daemon pre-warmed by `session-setup.sh`).
+   - `pyright` (type-checks `scripts/`; config in `pyproject.toml`'s `[tool.pyright]`).
    - `source_file_checks.py` (frontmatter / dates / asset refs / fonts).
    - `scripts/run_spellcheck_and_vale.sh` (strips `[!quote]` callouts, runs spellchecker-cli and Vale concurrently inside the wrapper).
 4. **Sequential tail**—asset compression + R2 upload (skipped if `rclone` not present), alt-text scan (LLM; requires `alt-text-llm`).
@@ -205,7 +205,7 @@ Public-repo Actions are free, so we don’t tier coverage by event. Path-awarene
 
 - **Why not trigger-level `paths:`**: a workflow filtered out by a trigger-level `paths:` filter never starts, so its required check context is never created and branch protection hangs at “Expected — Waiting” forever. A required check is satisfied only by `success` or `skipped`, so the fix is to always trigger and let the gate emit `skipped`—never to filter the trigger.
 - **Path gate (`.github/actions/ci-gate`)**: on a `pull_request` it runs `dorny/paths-filter` over the workflow’s relevant-path globs (passed in via the `filters:` input) and outputs `run=true` only when relevant files changed. `push` / `workflow_dispatch` always get `run=true` (full coverage). The `ci:full-tests` / `ci:run-*` labels (the `force-labels:` input) force `run=true` regardless of paths.
-- **How the skip surfaces**: workflows with a unified `if: always()` status job (`playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`) exit 0 from that job when `run=false`. `python-tests` / `python-lint` / `lint` gate the required job itself on a `detect-changes` (dorny) output, so the job reports `skipped`. `preview-audits` lets `build` → `deploy` → lighthouse skip down the `needs` chain. **Node is special**: its required check `build (<version>)` is a matrix job, and skipping a matrixed job at the job level can report under the bare name—so `build` always runs (context always created) and the gate skips only the inner `Setup site` / `Run tests` steps, leaving the job green.
+- **How the skip surfaces**: workflows with a unified `if: always()` status job (`playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`) exit 0 from that job when `run=false`. `python-tests` / `python-lint` / `lint` gate the required job itself on a `detect-changes` (dorny) output, so the job reports `skipped`. `deploy.yaml` gates `deploy-build` / `prepare-deploy` on a `should-run` (ci-gate) job, so on an irrelevant PR they report `skipped` (no preview deploy) while the context is still created; `push` always gates `run=true`, so production deploys are never skipped. `preview-audits` lets `build` → `deploy` → lighthouse skip down the `needs` chain. **Node is special**: its required check `build (<version>)` is a matrix job, and skipping a matrixed job at the job level can report under the bare name—so `build` always runs (context always created) and the gate skips only the inner `Setup site` / `Run tests` steps, leaving the job green.
 - **Bot skip**: `should-run` skips dependabot/renovate/deepsource branches so lockfile bumps don’t churn the visual baselines; the status jobs treat a skipped `should-run` as a pass.
 - **Flake check**: `workflow_dispatch` only.
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards.
@@ -216,7 +216,7 @@ Public-repo Actions are free, so we don’t tier coverage by event. Path-awarene
 `main` is gated by required-status-check branch protection plus auto-merge—there’s **no merge queue** (the feature isn’t enabled in this repo).
 
 - **How to merge**: call `mcp__github__enable_pr_auto_merge` once the PR is green. GitHub waits for required checks to pass on the PR head SHA, then squashes.
-- **Required checks**: `playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`, `python-tests`, `python-lint`, `lint`, `Node.js CI / build`, lighthouse jobs. Each workflow always triggers on a PR and gates internally (see “How CI runs”), so every required context reports `success` or `skipped` on the same head SHA auto-merge waits on—none can hang uncreated.
+- **Required checks**: `playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`, `python-tests`, `python-lint`, `lint-and-validate.yaml`, `Node tests / build`, lighthouse jobs. Each workflow always triggers on a PR and gates internally (see “How CI runs”), so every required context reports `success` or `skipped` on the same head SHA auto-merge waits on—none can hang uncreated.
 - **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`, same mechanism.
 - **Post-merge**: `push: main` re-runs the full suite plus `deploy.yaml`. `deploy.yaml`’s `verify-test-results` job polls check-runs on the landed SHA, so deploy waits for those to pass before pushing to Cloudflare.
 

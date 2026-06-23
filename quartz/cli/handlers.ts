@@ -381,8 +381,9 @@ export async function injectCriticalCSSIntoHTMLFiles(
 
       await fsPromises.writeFile(file, updatedQuerier.html(loadSettings))
     } catch (err) {
-      console.warn(`Warning: Could not process ${file}: ${err}`)
-      continue
+      // A failed injection ships a page with no critical CSS (FOUC), so abort
+      // the build rather than continuing.
+      throw new Error(`Failed to inject critical CSS into ${file}`, { cause: err })
     }
   }
 }
@@ -442,7 +443,10 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
       // Handle both SCSS interpolation syntax #{$var} and bare $var references
       for (const [key, value] of Object.entries(scssVars)) {
         replacedCss = replacedCss.replaceAll(`#{$${key}}`, value)
-        replacedCss = replacedCss.replaceAll(`$${key}`, value)
+        // Match `$key` only as a whole token: not followed by an identifier
+        // continuation char, so replacing `$color` never touches `$color-light`.
+        const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+        replacedCss = replacedCss.replace(new RegExp(`\\$${escapedKey}(?![\\w-])`, "g"), value)
       }
 
       cachedCriticalCSS = css + replacedCss

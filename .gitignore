@@ -12,8 +12,6 @@ public
 prof
 tsconfig.tsbuildinfo
 .quartz-cache
-.dmypy.json
-.mypy_cache
 .quartz_checks
 .timestamps
 *variables.scss
@@ -71,7 +69,6 @@ private/
 scripts/*.json
 
 # Python Tools
-.dmypy.json
 
 # AI Tools
 .aider*

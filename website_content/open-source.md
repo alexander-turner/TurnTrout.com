@@ -111,6 +111,14 @@ The original `subfont` traced font usage from scratch on every page. That took a
 
 [`alexander-turner/claude-automation-template`](https://github.com/alexander-turner/claude-automation-template) packages my automation workflows into a reusable starting point for any project using Claude Code. The template is designed so that adopting repos get improvements automatically via the sync workflow --- fix a bug in the template, and every downstream project picks it up.
 
+# Make your CI confess
+
+<span class="populate-markdown-ci-truth-serum"></span>
+
+# Sanitize untrusted text before your agent sees it
+
+<span class="populate-markdown-agent-input-sanitizer"></span>
+
 # Pull requests on other projects
 
 ## Mermaid diagrams now generate unique element IDs

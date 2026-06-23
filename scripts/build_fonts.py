@@ -20,12 +20,12 @@ import tempfile
 from pathlib import Path
 from typing import Any, Final
 
-from fontTools.otlLib.builder import (  # type: ignore[import-untyped]
+from fontTools.otlLib.builder import (
     PairPosBuilder,
     buildValue,
 )
-from fontTools.ttLib import TTFont  # type: ignore[import-untyped]
-from fontTools.ttLib.tables import otTables  # type: ignore[import-untyped]
+from fontTools.ttLib import TTFont
+from fontTools.ttLib.tables import otTables
 
 _FONT_DIR: Final[Path] = (
     Path(__file__).resolve().parent.parent
@@ -187,11 +187,12 @@ def _register_kern_feature(gpos: Any, lookup_index: int) -> None:
             feat_rec.Feature.LookupListIndex.append(lookup_index)
             return
 
-    feat = otTables.Feature()  # pylint: disable=no-member
+    # otTables builds Feature/FeatureRecord dynamically, so neither static tool sees them.
+    feat = otTables.Feature()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
     feat.LookupListIndex = [lookup_index]
     feat.LookupCount = 1
 
-    feat_rec = otTables.FeatureRecord()  # pylint: disable=no-member
+    feat_rec = otTables.FeatureRecord()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
     feat_rec.FeatureTag = "kern"
     feat_rec.Feature = feat
     gpos.FeatureList.FeatureRecord.append(feat_rec)

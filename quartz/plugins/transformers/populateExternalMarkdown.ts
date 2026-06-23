@@ -100,12 +100,87 @@ export function stripBadges(content: string): string {
 }
 
 /**
+ * Removes a leading top-level `# Heading` so an embedded README nests under the
+ * surrounding page's own section heading instead of introducing a duplicate H1.
+ */
+export function stripLeadingH1(content: string): string {
+  return content.replace(/^\s*#\s+(?:\S.*)?(?:\r?\n)+/, "")
+}
+
+/**
  * Replaces relative markdown links with their link text.
  * Relative links (no scheme, no leading # or /) get misclassified as external
  * by CrawlLinks and receive an https:// prefix, producing invalid hrefs.
  */
 export function stripRelativeLinks(content: string): string {
   return content.replace(/\[([^\]]+)\]\((?!https?:\/\/|mailto:|#|\/)[^)]+\)/g, "$1")
+}
+
+const RELATIVE_LINK_RE = /\[([^\]]+)\]\(((?!https?:\/\/|mailto:|#|\/)[^)]+)\)/g
+
+/**
+ * Returns a transform that rewrites relative markdown links to absolute
+ * GitHub blob URLs so CrawlLinks doesn't mangle them.
+ */
+export function rewriteRelativeLinksToGitHub(
+  owner: string,
+  repo: string,
+  ref = "main",
+): (content: string) => string {
+  const base = `https://github.com/${owner}/${repo}/blob/${ref}`
+  return (content) =>
+    content.replace(RELATIVE_LINK_RE, (_match, text, href) => `[${text}](${base}/${href})`)
+}
+
+/** Class marking a wrapper around embedded external README content. */
+export const EXTERNAL_README_CLASS = "external-readme"
+/** Attribute holding the source slug used to namespace the README's heading ids. */
+export const EXTERNAL_README_SLUG_ATTR = "data-readme-slug"
+
+/**
+ * Wraps embedded README markdown in a `div.external-readme` carrying the source
+ * slug. rehype-raw re-nests the markdown under the div, so its headings can be
+ * id-namespaced (see PrefixExternalReadmeIds) and its prose exempted from the
+ * site's content-quality checks, which target first-party authoring. The TOC
+ * builder (which runs on the pre-nesting mdast) skips the README's headings by
+ * tracking the wrapper's `<div>`/`</div>` boundaries.
+ */
+export function wrapExternalReadme(content: string, slug: string): string {
+  return `<div class="${EXTERNAL_README_CLASS}" ${EXTERNAL_README_SLUG_ATTR}="${slug}">\n\n${content}\n\n</div>`
+}
+
+/**
+ * Renders markdown as a `[!quote]` admonition by prefixing every line with `> `,
+ * matching the quote callouts used elsewhere on the site. Blank lines become a
+ * bare `>` so the blockquote stays contiguous.
+ */
+export function asQuoteAdmonition(content: string, title: string): string {
+  const quoted = content
+    .split("\n")
+    .map((line) => (line.length > 0 ? `> ${line}` : ">"))
+    .join("\n")
+  return `> [!quote] ${title}\n${quoted}`
+}
+
+/**
+ * Builds a GitHub README source: strips badges, drops a leading H1 (when it
+ * leads the file) that would duplicate the embedding page's own section
+ * heading, rewrites relative links to absolute blob URLs, renders the result
+ * inside a `[!quote]` admonition titled with the repo link, and wraps it so its
+ * heading ids stay unique on the host page.
+ */
+export function githubReadmeSource(owner: string, repo: string): GitHubMarkdownSource {
+  const rewriteLinks = rewriteRelativeLinksToGitHub(owner, repo)
+  const title = `[\`${owner}/${repo}\`](https://github.com/${owner}/${repo})`
+  return {
+    owner,
+    repo,
+    transform: (content) =>
+      wrapExternalReadme(
+        asQuoteAdmonition(rewriteLinks(stripLeadingH1(stripBadges(content))), title),
+        repo,
+      ),
+  }
 }
 
 function getContent(name: string, source: MarkdownSource): string {

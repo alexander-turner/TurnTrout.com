@@ -8,6 +8,7 @@ on:
   push:
     branches: ["main", "dev"]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   actions: read
@@ -307,9 +308,11 @@ jobs:
       - name: Install Vale
         if: needs.detect-changes.outputs.content == 'true'
         run: |
-          wget -q https://github.com/errata-ai/vale/releases/download/v3.9.0/vale_3.9.0_Linux_64-bit.tar.gz
-          echo "fd39029bd9dbd0ecf8cbd5274b69dcff03ad27a5d7344c69c173c93a00f6d423  vale_3.9.0_Linux_64-bit.tar.gz" | sha256sum --check
-          tar -xzf vale_3.9.0_Linux_64-bit.tar.gz
+          VALE_VERSION="$(cat config/vale/version)"
+          tarball="vale_${VALE_VERSION}_Linux_64-bit.tar.gz"
+          wget -q "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/${tarball}"
+          echo "fd39029bd9dbd0ecf8cbd5274b69dcff03ad27a5d7344c69c173c93a00f6d423  ${tarball}" | sha256sum --check
+          tar -xzf "${tarball}"
           sudo mv vale /usr/local/bin/
 
       - name: Generate SCSS variables
