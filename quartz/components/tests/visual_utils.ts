@@ -273,6 +273,14 @@ export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<vo
       document.querySelectorAll("article > h1, article > section[data-footnotes]"),
     )
 
+    // The related-posts block carries its own dedicated screenshot, so it must
+    // end the preceding h1 section rather than be folded into it. Treat it as a
+    // stop without giving it a section span of its own.
+    const stops = new Set<Node>([
+      ...boundaries,
+      ...document.querySelectorAll("article > .related-posts"),
+    ])
+
     for (const boundary of boundaries) {
       const parent = boundary.parentElement
 
@@ -296,7 +304,7 @@ export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<vo
 
       // Move all subsequent siblings into the span until we hit the next boundary
       let nextSibling = span.nextSibling
-      while (nextSibling && boundaries.indexOf(nextSibling as Element) === -1) {
+      while (nextSibling && !stops.has(nextSibling)) {
         const toMove = nextSibling
         nextSibling = toMove.nextSibling
         span.appendChild(toMove)
