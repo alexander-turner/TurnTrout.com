@@ -1,12 +1,11 @@
 @use "../../styles/variables.scss" as *;
 
-.related-posts {
+.related-posts-title {
   margin-top: calc(2 * $base-margin);
+  margin-bottom: $base-margin;
+}
 
-  .related-posts-title {
-    margin-bottom: $base-margin;
-  }
-
+.related-posts {
   ul {
     list-style: none;
     margin-top: 0;

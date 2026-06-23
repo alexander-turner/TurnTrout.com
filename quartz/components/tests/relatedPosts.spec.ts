@@ -18,7 +18,9 @@ test.describe("Related posts block", () => {
   })
 
   test("registers its heading in the table of contents", async ({ page }) => {
-    await expect(page.locator(`${RELATED_POSTS} h1#similar-posts`)).toHaveCount(1)
+    // The heading is a top-level article `<h1>` (sibling of the list block), so
+    // it behaves like any other section heading.
+    await expect(page.locator("article > h1#similar-posts.related-posts-title")).toHaveCount(1)
     await expect(
       page.locator('#table-of-contents a.same-page-link[data-for="similar-posts"]'),
     ).toHaveCount(1)

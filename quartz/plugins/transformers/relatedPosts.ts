@@ -73,11 +73,11 @@ export async function loadRelatedPosts(
 }
 
 /**
- * Inserts `block` immediately after the `.after-article-components` wrapper
+ * Inserts `blocks` immediately after the `.after-article-components` wrapper
  * (which contains the newsletter/email box). Falls back to after the ornament
  * when that wrapper is absent (e.g. pages with subscription links suppressed).
  */
-function insertAfterSubscriptionBlock(tree: Root, block: Element) {
+function insertAfterSubscriptionBlock(tree: Root, blocks: Element[]) {
   let inserted = false
   visit(tree, "element", (node: Element, index, parent: Element | null) => {
     const cls = node.properties?.className
@@ -87,14 +87,14 @@ function insertAfterSubscriptionBlock(tree: Root, block: Element) {
       Array.isArray(cls) &&
       (cls as string[]).includes("after-article-components")
     ) {
-      parent.children.splice(index + 1, 0, block)
+      parent.children.splice(index + 1, 0, ...blocks)
       inserted = true
       return false
     }
     return true
   })
   if (!inserted) {
-    insertAfterOrnamentNode(tree, [block])
+    insertAfterOrnamentNode(tree, blocks)
   }
 }
 
@@ -107,31 +107,38 @@ export const similarPostsTocEntry: TocEntry = {
   slug: SIMILAR_POSTS_SLUG,
 }
 
-/** Builds the "Similar posts" block for a list of related posts. */
-export function buildRelatedPostsBlock(posts: readonly RelatedPost[]): Element {
-  return h("div", { className: "related-posts" }, [
+/**
+ * Builds the "Similar posts" section: a top-level `<h1>` heading followed by
+ * the list block. Emitting the heading as a direct article child (rather than
+ * nesting it in the list wrapper) makes it a real section heading — it gets a
+ * ToC anchor and ends the previous heading's section like any other `<h1>`.
+ */
+export function buildRelatedPostsBlock(posts: readonly RelatedPost[]): Element[] {
+  return [
     h("h1", { id: SIMILAR_POSTS_SLUG, className: "related-posts-title" }, SIMILAR_POSTS_HEADING),
-    h(
-      "ul",
-      posts.map((post) =>
-        h("li", { className: "related-post" }, [
-          h(
-            "a",
-            {
-              href: `/${post.permalink.replace(/^\/+/, "")}`,
-              className: "internal can-trigger-popover",
-            },
-            formatTitle(post.title),
-          ),
-          h(
-            "span",
-            { className: "related-post-excerpt" },
-            applyTextTransforms(post.excerpt, { useNbsp: false }),
-          ),
-        ]),
+    h("div", { className: "related-posts" }, [
+      h(
+        "ul",
+        posts.map((post) =>
+          h("li", { className: "related-post" }, [
+            h(
+              "a",
+              {
+                href: `/${post.permalink.replace(/^\/+/, "")}`,
+                className: "internal can-trigger-popover",
+              },
+              formatTitle(post.title),
+            ),
+            h(
+              "span",
+              { className: "related-post-excerpt" },
+              applyTextTransforms(post.excerpt, { useNbsp: false }),
+            ),
+          ]),
+        ),
       ),
-    ),
-  ])
+    ]),
+  ]
 }
 
 /**

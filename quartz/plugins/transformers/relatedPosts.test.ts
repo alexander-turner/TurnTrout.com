@@ -126,20 +126,22 @@ describe("loadRelatedPosts", () => {
 })
 
 describe("buildRelatedPostsBlock", () => {
-  it("renders a titled list of internal popover links with excerpts", () => {
-    const block = buildRelatedPostsBlock(samplePosts)
+  it("renders a top-level heading followed by a list of internal popover links with excerpts", () => {
+    const [title, list] = buildRelatedPostsBlock(samplePosts)
 
-    const [title] = elementsWithClass(block, "related-posts-title")
+    // The heading is its own top-level element, not nested in the list block.
     expect(title.tagName).toBe("h1")
+    expect(classesOf(title)).toContain("related-posts-title")
     expect(title.properties?.id).toBe("similar-posts")
     expect(title.children[0]).toMatchObject({ value: "Similar posts" })
+    expect(classesOf(list)).toContain("related-posts")
 
-    const links = elementsByTag(block, "a")
+    const links = elementsByTag(list, "a")
     expect(links.map((l) => l.properties?.href)).toEqual(["/first-post", "/alias/second"])
     expect(links.every((l) => classesOf(l).includes("can-trigger-popover"))).toBe(true)
     expect(links.every((l) => classesOf(l).includes("internal"))).toBe(true)
 
-    const excerpts = elementsWithClass(block, "related-post-excerpt")
+    const excerpts = elementsWithClass(list, "related-post-excerpt")
     expect(excerpts).toHaveLength(2)
     // Excerpts run through the site's text transforms (straight → smart quotes).
     expect(excerpts[1].children[0]).toMatchObject({ value: "The model’s second thing." })
@@ -154,16 +156,21 @@ describe("RelatedPosts transformer", () => {
     const { tree } = await runTransform(plugin, treeWithOrnament(), "post-a")
     expect(elementsWithClass(tree, "related-post")).toHaveLength(2)
 
-    // Related-posts block must follow after-article-components in the root children.
+    // The heading then the list must follow after-article-components, both as
+    // top-level root children (so the heading is a real `article > h1`).
     const rootChildren = (tree.children as Element[]).filter((n) => n.type === "element")
     const afterIdx = rootChildren.findIndex((n) =>
       (n.properties?.className as string[] | undefined)?.includes("after-article-components"),
+    )
+    const headingIdx = rootChildren.findIndex(
+      (n) => n.tagName === "h1" && n.properties?.id === "similar-posts",
     )
     const relatedIdx = rootChildren.findIndex((n) =>
       (n.properties?.className as string[] | undefined)?.includes("related-posts"),
     )
     expect(afterIdx).toBeGreaterThanOrEqual(0)
-    expect(relatedIdx).toBe(afterIdx + 1)
+    expect(headingIdx).toBe(afterIdx + 1)
+    expect(relatedIdx).toBe(afterIdx + 2)
 
     // A second page through the same instance hits the memoized map (no re-read).
     const { tree: tree2 } = await runTransform(plugin, treeWithOrnament(), "post-a")

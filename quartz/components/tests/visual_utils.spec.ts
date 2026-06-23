@@ -122,35 +122,6 @@ test.describe("wrapH1SectionsInSpans", () => {
     await expect(footnoteSpan.locator("section[data-footnotes]")).toHaveCount(1)
   })
 
-  test("keeps the related-posts block out of the preceding h1 span", async ({ page }) => {
-    await page.setContent(`
-      <html>
-        <body>
-          <article id="content">
-            <h1 id="citation">Citation</h1>
-            <p>How to cite this post</p>
-            <div class="after-article-components">Subscription box</div>
-            <div class="related-posts">
-              <h1 id="similar-posts">Similar posts</h1>
-              <ul><li>A neighbor</li></ul>
-            </div>
-          </article>
-        </body>
-      </html>
-    `)
-
-    await wrapH1SectionsInSpans(page)
-
-    // The citation section still gets its span and keeps the subscription box.
-    const citationSpan = page.locator("#h1-span-citation")
-    await expect(citationSpan.locator(".after-article-components")).toHaveCount(1)
-    // The related-posts block is left out of the citation span entirely.
-    await expect(citationSpan.locator(".related-posts")).toHaveCount(0)
-    // It also does not get a span of its own (it has a dedicated screenshot).
-    await expect(page.locator("span[id^='h1-span-']")).toHaveCount(1)
-    await expect(page.locator("article > .related-posts")).toHaveCount(1)
-  })
-
   test("footnote span wrapping is idempotent", async ({ page }) => {
     await page.setContent(`
       <html>
