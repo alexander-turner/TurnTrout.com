@@ -29,6 +29,7 @@ import {
   RecentPostsPage,
   rehypeCustomSpoiler,
   rehypeCustomSubtitle,
+  RelatedPosts,
   RemoveDrafts,
   RemoveFixtures,
   RemovePartials,
@@ -145,6 +146,7 @@ const config: QuartzConfig = {
       TagSmallcaps(),
       AutoCode(),
       AfterArticle(),
+      RelatedPosts(),
       AddFavicons(),
       // After AddFavicons because favicon insertion can rewrite link
       // content and reintroduce leading whitespace inside an <a>.

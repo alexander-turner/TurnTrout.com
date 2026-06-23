@@ -31,6 +31,7 @@ export {
   stripRelativeLinks,
 } from "./populateExternalMarkdown"
 export { PrefixExternalReadmeIds } from "./prefixExternalReadmeIds"
+export { RelatedPosts } from "./relatedPosts"
 export { rehypeCustomSpoiler } from "./spoiler"
 export { rehypeCustomSubtitle } from "./subtitles"
 export { SyntaxHighlighting } from "./syntax"

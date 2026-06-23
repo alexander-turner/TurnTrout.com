@@ -107,8 +107,12 @@ def reset_saved_progress() -> None:
 
 
 @dataclass
-class CheckStep:
-    """A step in the pre-push check process."""
+class CheckStep:  # pylint: disable=too-many-instance-attributes
+    """
+    A step in the pre-push check process.
+
+    Each field is one config knob.
+    """
 
     name: str
     command: Sequence[str]
@@ -118,6 +122,14 @@ class CheckStep:
     requires: str | None = None
     """External tool that must be on PATH; step is skipped with a warning if
     missing."""
+
+    requires_env: str | None = None
+    """
+    Environment variable that must be set (non-empty); step is skipped with a
+    warning if absent.
+
+    Used for steps that need local-only credentials.
+    """
 
     parallel_group: str | None = None
     """
@@ -178,12 +190,19 @@ def _execute_step(
     """
     Run one CheckStep.
 
-    Returns None if skipped (missing required tool).
+    Returns None if skipped (missing required tool or environment variable).
     """
     if step.requires and not shutil.which(step.requires):
         console.print(
             f"[yellow]⚠ Skipping {step.name}: "
             f"{step.requires} not installed[/yellow]"
+        )
+        return None
+
+    if step.requires_env and not os.environ.get(step.requires_env):
+        console.print(
+            f"[yellow]⚠ Skipping {step.name}: "
+            f"{step.requires_env} not set[/yellow]"
         )
         return None
 
@@ -687,6 +706,22 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 f"{git_root_path}/scripts/handle_assets.sh",
             ],
             requires="rclone",
+        ),
+        # Regenerate the related-posts neighbor map so every content page is
+        # covered. Embeds new/changed posts (within budget) via Voyage, syncs
+        # the vector cache on R2, and fails if the budget leaves a post
+        # uncovered. The auto-commit step folds the updated JSON into the push.
+        CheckStep(
+            name="Generating related posts",
+            command=[
+                "uv",
+                "run",
+                "python",
+                "scripts/generate_related_posts.py",
+            ],
+            cwd=str(git_root_path),
+            requires="rclone",
+            requires_env="VOYAGE_API_KEY",
         ),
         CheckStep(
             name="Labeling images for dark-mode inversion",
