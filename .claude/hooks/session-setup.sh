@@ -284,8 +284,16 @@ if [ ! -d "$PROJECT_DIR/.timestamps/.git" ]; then
 fi
 
 # Configure .timestamps push access using GH_TOKEN (the local proxy only
-# authorizes the main repo, so .timestamps needs direct GitHub auth)
-if [ -d "$PROJECT_DIR/.timestamps/.git" ] && [ -n "${GH_TOKEN:-}" ]; then
+# authorizes the main repo, so .timestamps needs direct GitHub auth).
+# A token-free remote URL means the user has a credential helper
+# (GCM/osxkeychain) wired up — leave that setup alone.
+ts_remote_url=$(git -C "$PROJECT_DIR/.timestamps" remote get-url origin 2>/dev/null || true)
+ts_needs_token_override=true
+if [ -n "$ts_remote_url" ] && [[ "$ts_remote_url" != *"x-access-token"* ]]; then
+	ts_needs_token_override=false
+fi
+if [ "$ts_needs_token_override" = true ] && \
+   [ -d "$PROJECT_DIR/.timestamps/.git" ] && [ -n "${GH_TOKEN:-}" ]; then
 	git -C "$PROJECT_DIR/.timestamps" remote set-url origin \
 		"https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps.git"
 	# Web sessions lack CA certs for direct GitHub access; disable SSL
