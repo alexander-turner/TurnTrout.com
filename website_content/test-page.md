@@ -35,11 +35,15 @@ I use this page for <a href="/design#visual-regression-testing" id="first-link-t
 
 Text.
 
+This line of text verifies that adding content to a section only updates that section's screenshot, not every section below it.
+
 Subtitle: I am a subtitle with [a link](/test-page).
 
 Subtitle: MATS (starting with smallcaps).
 
 # Lists
+
+This sentence is a baseline-scoping probe: it sits in the Lists section, so only the Lists screenshots should change.
 
 > I am a block quote.
 >

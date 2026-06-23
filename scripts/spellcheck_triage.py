@@ -29,6 +29,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
+from bs4 import BeautifulSoup
+
 from scripts import built_site_checks
 
 _MODEL = "claude-haiku-4-5-20251001"
@@ -90,8 +92,11 @@ def collect_unknown_words(public_dir: Path) -> list[UnknownWord]:
     """Run the rendered-text spellcheck and parse unknown-word warnings."""
     paragraph_map: dict[str, list[str]] = {}
     for file_path in public_dir.rglob("*.html"):
+        soup = BeautifulSoup(
+            file_path.read_text(encoding="utf-8"), "html.parser"
+        )
         built_site_checks._collect_paragraphs_for_spellcheck(
-            file_path.name, file_path, public_dir, paragraph_map
+            soup, file_path.name, file_path, public_dir, paragraph_map
         )
     issues = built_site_checks._spellcheck_flattened_paragraphs(paragraph_map)
 
@@ -172,7 +177,10 @@ def classify(
         messages=[{"role": "user", "content": payload}],
     )
     text = "".join(
-        b.text for b in response.content if getattr(b, "type", None) == "text"
+        # Content blocks are duck-typed by their `type` tag; only text blocks carry `.text`.
+        b.text  # pyright: ignore[reportAttributeAccessIssue]
+        for b in response.content
+        if getattr(b, "type", None) == "text"
     )
     return _parse_decisions(text)
 

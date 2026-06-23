@@ -227,6 +227,71 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
     readFileSpy.mockRestore()
     writeSpy.mockRestore()
   }, 10000)
+
+  it("should not corrupt prefix-overlapping SCSS variable names", async () => {
+    Object.assign(styleVars, {
+      color: "#111",
+      colorLight: "#eee",
+    })
+
+    const manualCriticalCss = "a{border-color: $color; background: $color-light;}"
+    const criticalScssPath = path.resolve("quartz/styles/critical.scss")
+    const htmlPath = path.join(outputDir, "index.html")
+    await fsExtra.writeFile(htmlPath, "<!DOCTYPE html><html><head></head><body></body></html>")
+    await fsExtra.writeFile(path.join(outputDir, "index.css"), "/* css */")
+    const katexDir = path.join(outputDir, "static", "styles")
+    await ensureDir(katexDir)
+    await fsExtra.writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
+
+    const realReadFile = fs.promises.readFile
+    const readFileSpy = jest.spyOn(fs.promises, "readFile").mockImplementation((fp, ...args) => {
+      if (fp === criticalScssPath) {
+        return Promise.resolve(manualCriticalCss)
+      }
+      return realReadFile(fp, ...args)
+    })
+    const writeSpy = jest.spyOn(fs.promises, "writeFile").mockResolvedValue()
+
+    await maybeGenerateCriticalCSS(outputDir)
+    await injectCriticalCSSIntoHTMLFiles([htmlPath], outputDir)
+
+    const writtenHtml = writeSpy.mock.calls[0][1] as string
+    expect(writtenHtml).toContain("border-color: #111")
+    // `$color` must not clobber the `$color-light` occurrence.
+    expect(writtenHtml).toContain("background: #eee")
+    expect(writtenHtml).not.toContain("#111-light")
+
+    readFileSpy.mockRestore()
+    writeSpy.mockRestore()
+  }, 10000)
+
+  it("should throw when a file cannot be processed rather than silently continuing", async () => {
+    const criticalScssPath = path.resolve("quartz/styles/critical.scss")
+    const htmlPath = path.join(outputDir, "index.html")
+    await fsExtra.writeFile(htmlPath, "<!DOCTYPE html><html><head></head><body></body></html>")
+    await fsExtra.writeFile(path.join(outputDir, "index.css"), "/* css */")
+    const katexDir = path.join(outputDir, "static", "styles")
+    await ensureDir(katexDir)
+    await fsExtra.writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
+
+    const realReadFile = fs.promises.readFile
+    const readFileSpy = jest.spyOn(fs.promises, "readFile").mockImplementation((fp, ...args) => {
+      if (fp === criticalScssPath) {
+        return Promise.resolve("body{}")
+      }
+      return realReadFile(fp, ...args)
+    })
+    const writeSpy = jest.spyOn(fs.promises, "writeFile").mockRejectedValue(new Error("disk full"))
+
+    await maybeGenerateCriticalCSS(outputDir)
+
+    await expect(injectCriticalCSSIntoHTMLFiles([htmlPath], outputDir)).rejects.toThrow(
+      `Failed to inject critical CSS into ${htmlPath}`,
+    )
+
+    readFileSpy.mockRestore()
+    writeSpy.mockRestore()
+  }, 10000)
 })
 
 describe("checkPortAvailability", () => {

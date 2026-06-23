@@ -414,7 +414,15 @@ class AssetProcessor {
       node.properties = node.properties || {}
       node.properties.width = dims.width
       node.properties.height = dims.height
-      prependStyles(node, `aspect-ratio: ${dims.width} / ${dims.height};`)
+      let styles = `aspect-ratio: ${dims.width} / ${dims.height};`
+      // A video reports no usable intrinsic width until its resource loads, so a
+      // shrink-to-fit float-right figure sizes to the 300px default object width
+      // and then jumps to the real width on load. Expose the known width so CSS
+      // can give such figures a definite width up front.
+      if (node.tagName === "video") {
+        styles += ` --natural-width: ${dims.width}px;`
+      }
+      prependStyles(node, styles)
     }
   }
 }

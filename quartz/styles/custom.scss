@@ -454,6 +454,15 @@ figcaption,
     display: block;
   }
 
+  // A video has no usable intrinsic width before its resource loads, so without
+  // a definite width the shrink-to-fit float collapses to the 300px default and
+  // shifts layout once the video arrives. `--natural-width` is set per video by
+  // the asset-dimensions transformer.
+  & video,
+  video.float-right {
+    width: var(--natural-width, 100%);
+  }
+
   float: right;
   max-width: 45%;
 }

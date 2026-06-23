@@ -22,7 +22,7 @@ from pathlib import Path
 try:
     from . import utils as script_utils
 except ImportError:
-    import utils as script_utils  # type: ignore
+    import utils as script_utils
 
 R2_BUCKET = "turntrout"
 R2_PREFIX = "visual-baselines"

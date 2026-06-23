@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from typing import Literal, TypedDict
 
-import requests  # type: ignore[import]
+import requests
 
 # Add the project root to sys.path
 # pylint: disable=wrong-import-position
@@ -66,8 +66,8 @@ def check_cover_image_alt(metadata: dict) -> list[str]:
         return errors
 
     # Check if there's a custom card_image
-    card_image_alt = metadata.get("card_image_alt", "")
-    if not card_image_alt.strip():
+    card_image_alt = metadata.get("card_image_alt") or ""
+    if not str(card_image_alt).strip():
         errors.append(f"Custom card_image ({card_url}) requires card_image_alt")
 
     return errors
@@ -544,13 +544,15 @@ def check_no_forbidden_patterns(text: str) -> list[str]:
     errors = []
     for config in _FORBIDDEN_PATTERNS:
         processed_text = text
+        # `line_num` is derived from `processed_text`, so stripping below must
+        # preserve newline counts for line numbers to match the original file.
         if config["ignore_code"]:
             processed_text = remove_code(processed_text, mark_boundaries=True)
         if config["ignore_math"]:
             processed_text = remove_math(processed_text, mark_boundaries=True)
 
         for match in re.finditer(config["pattern"], processed_text):
-            line_num = text[: match.start()].count("\n") + 1
+            line_num = processed_text[: match.start()].count("\n") + 1
             errors.append(
                 f"Forbidden pattern found: {match.group()} on line {line_num}"
             )
@@ -675,14 +677,16 @@ def extract_footnote_line_numbers(text: str) -> dict[str, int]:
         If a footnote is defined multiple times, only the first occurrence
         is recorded.
     """
-    # Extract from original text since definitions can contain code
+    # Detect definitions on the same code/math-stripped text as
+    # `extract_footnote_references`, so a `[^name]:` inside a code/math block is
+    # not a real definition. Stripping preserves newline counts (line numbers).
+    stripped_text = remove_math(remove_code(text))
     definition_pattern = r"\[\^([^\]]+)\]:"
     definitions: dict[str, int] = {}
-    for match in re.finditer(definition_pattern, text):
-        footnote_name = match.group(1)
-        # Only record the first occurrence of each footnote definition
-        if footnote_name not in definitions:
-            definitions[footnote_name] = text[: match.start()].count("\n") + 1
+    for match in re.finditer(definition_pattern, stripped_text):
+        # setdefault keeps only the first definition of each footnote
+        line = stripped_text[: match.start()].count("\n") + 1
+        definitions.setdefault(match.group(1), line)
     return definitions
 
 

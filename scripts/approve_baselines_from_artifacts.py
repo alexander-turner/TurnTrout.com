@@ -25,7 +25,7 @@ def _canonical_baseline_name(attachment_name: str) -> str | None:
     if not attachment_name.endswith(_ACTUAL_SUFFIX):
         return None
     stem = attachment_name[: -len(_ACTUAL_SUFFIX)]
-    if not stem or "/" in stem or "\\" in stem or ".." in stem.split("/"):
+    if not stem or "/" in stem or "\\" in stem or stem == "..":
         return None
     return stem + ".png"
 

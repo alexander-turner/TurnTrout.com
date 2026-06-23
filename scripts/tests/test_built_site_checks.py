@@ -48,6 +48,7 @@ def mock_environment(
     # Mock functions and constants
     monkeypatch.setattr(built_site_checks, "_PUBLIC_DIR", public_dir)
     monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    monkeypatch.setattr(script_utils, "get_git_root", lambda: tmp_path)
     monkeypatch.setattr(sys, "argv", ["built_site_checks.py"])
 
     # Mock common utility functions
@@ -660,17 +661,14 @@ def test_check_file_for_issues(tmp_path):
     </html>
     """
     file_path.write_text(html_content)
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html_content, "html.parser"),
-    ) as mock_parse_html_file:
-        issues = built_site_checks.check_file_for_issues(
-            file_path,
-            tmp_path / "public",
-            tmp_path / "website_content",
-            built_site_checks.CheckOptions(),
-        )
-    mock_parse_html_file.assert_called_once_with(file_path)
+    soup = BeautifulSoup(html_content, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup,
+        file_path,
+        tmp_path / "public",
+        tmp_path / "website_content",
+        built_site_checks.CheckOptions(),
+    )
     assert issues["localhost_links"] == ["https://localhost:8000"]
     assert issues["invalid_anchors"] == [
         "Invalid anchor: #invalid-anchor",
@@ -696,17 +694,14 @@ def test_complicated_blockquote(tmp_path):
     file_path = tmp_path / "public" / "test.html"
     file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_text(complicated_blockquote)
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(complicated_blockquote, "html.parser"),
-    ) as mock_parse_html_file:
-        issues = built_site_checks.check_file_for_issues(
-            file_path,
-            tmp_path / "public",
-            tmp_path / "website_content",
-            built_site_checks.CheckOptions(),
-        )
-    mock_parse_html_file.assert_called_once_with(file_path)
+    soup = BeautifulSoup(complicated_blockquote, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup,
+        file_path,
+        tmp_path / "public",
+        tmp_path / "website_content",
+        built_site_checks.CheckOptions(),
+    )
     assert issues["trailing_blockquotes"] == [
         "Problematic blockquote: Basic facts about language models during trai ning >"
     ]
@@ -717,17 +712,14 @@ def test_check_file_for_issues_with_redirect(tmp_path):
     file_path.parent.mkdir(parents=True, exist_ok=True)
     html_content = '<html><head><meta http-equiv="refresh" content="0;url=/new-page"></head></html>'
     file_path.write_text(html_content)
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html_content, "html.parser"),
-    ) as mock_parse_html_file:
-        issues = built_site_checks.check_file_for_issues(
-            file_path,
-            tmp_path / "public",
-            tmp_path / "website_content",
-            built_site_checks.CheckOptions(),
-        )
-    mock_parse_html_file.assert_called_once_with(file_path)
+    soup = BeautifulSoup(html_content, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup,
+        file_path,
+        tmp_path / "public",
+        tmp_path / "website_content",
+        built_site_checks.CheckOptions(),
+    )
     assert issues == {}
 
 
@@ -2767,6 +2759,11 @@ def test_check_inline_formatting_spacing(html, expected):
             '<p class="no-formatting">text<code>X</code>more</p>',
             0,
         ),
+        # Code inside an embedded external README is skipped.
+        (
+            '<div class="external-readme"><p>you <code>curl</code>ed it</p></div>',
+            0,
+        ),
     ],
 )
 def test_check_inline_code_word_boundaries(html, expected_count):
@@ -3808,32 +3805,28 @@ def test_check_file_for_issues_with_fonts(tmp_path):
         f.write(html_content)
 
     # Check with fonts enabled
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html_content, "html.parser"),
-    ):
-        issues = built_site_checks.check_file_for_issues(
-            file_path,
-            tmp_path / "public",
-            None,
-            built_site_checks.CheckOptions(should_check_fonts=True),
-        )
+    soup = BeautifulSoup(html_content, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup,
+        file_path,
+        tmp_path / "public",
+        None,
+        built_site_checks.CheckOptions(should_check_fonts=True),
+    )
 
     # Verify that missing_preloaded_font is in the issues
     assert "missing_preloaded_font" in issues
     assert issues["missing_preloaded_font"] is True
 
     # Check with fonts disabled
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html_content, "html.parser"),
-    ):
-        issues = built_site_checks.check_file_for_issues(
-            file_path,
-            tmp_path / "public",
-            None,
-            built_site_checks.CheckOptions(),
-        )
+    soup = BeautifulSoup(html_content, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup,
+        file_path,
+        tmp_path / "public",
+        None,
+        built_site_checks.CheckOptions(),
+    )
 
     # Verify that missing_preloaded_font is not in the issues
     assert "missing_preloaded_font" not in issues
@@ -4060,19 +4053,13 @@ description: Test Description
     )
     assert md_file_path.is_file()
 
-    with (
-        patch(
-            "built_site_checks.check_markdown_assets_in_html",
-            return_value=["Mocked issue"],
-        ) as mock_check,
-        patch(
-            "scripts.utils.parse_html_file",
-            return_value=BeautifulSoup(
-                "<html><body>Test</body></html>", "html.parser"
-            ),
-        ),
-    ):
+    soup = BeautifulSoup("<html><body>Test</body></html>", "html.parser")
+    with patch(
+        "built_site_checks.check_markdown_assets_in_html",
+        return_value=["Mocked issue"],
+    ) as mock_check:
         issues = built_site_checks.check_file_for_issues(
+            soup,
             html_file_path,
             base_dir,
             md_file_path,
@@ -4101,37 +4088,27 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
     html_file_path.write_text("<html><body>Test</body></html>")
     non_existent_md_path = content_dir / "non_existent.md"
 
-    with (
-        patch(
-            "built_site_checks.check_markdown_assets_in_html",
-            return_value=[],
-        ) as mock_check_none,
-        patch(
-            "scripts.utils.parse_html_file",
-            return_value=BeautifulSoup(
-                "<html><body>Test</body></html>", "html.parser"
-            ),
-        ),
-    ):
+    soup = BeautifulSoup("<html><body>Test</body></html>", "html.parser")
+    with patch(
+        "built_site_checks.check_markdown_assets_in_html",
+        return_value=[],
+    ) as mock_check_none:
         issues_none = built_site_checks.check_file_for_issues(
-            html_file_path, base_dir, None, built_site_checks.CheckOptions()
+            soup,
+            html_file_path,
+            base_dir,
+            None,
+            built_site_checks.CheckOptions(),
         )
     mock_check_none.assert_not_called()
     assert "missing_markdown_assets" not in issues_none
 
-    with (
-        patch(
-            "built_site_checks.check_markdown_assets_in_html",
-            return_value=[],
-        ) as mock_check_non_existent,
-        patch(
-            "scripts.utils.parse_html_file",
-            return_value=BeautifulSoup(
-                "<html><body>Test</body></html>", "html.parser"
-            ),
-        ),
-    ):
+    with patch(
+        "built_site_checks.check_markdown_assets_in_html",
+        return_value=[],
+    ) as mock_check_non_existent:
         issues_non_existent = built_site_checks.check_file_for_issues(
+            soup,
             html_file_path,
             base_dir,
             non_existent_md_path,
@@ -4197,13 +4174,10 @@ def test_check_file_for_issues_favicon_check_called(
     file_path.write_text(html_content)
 
     # We don't need to mock check_favicons_missing, just check if the key is added
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html_content, "html.parser"),
-    ):
-        issues = built_site_checks.check_file_for_issues(
-            file_path, base_dir, None, built_site_checks.CheckOptions()
-        )
+    soup = BeautifulSoup(html_content, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup, file_path, base_dir, None, built_site_checks.CheckOptions()
+    )
 
     if should_check_favicon:
         assert issues["missing_favicon"] is True
@@ -4396,6 +4370,7 @@ def test_main_handles_markdown_mapping(
 
         # Verify check_file_for_issues was called with correct md_path
         mock_check.assert_called_with(
+            BeautifulSoup(html_file.read_text(encoding="utf-8"), "html.parser"),
             html_file,
             mock_environment["public_dir"],
             md_file,
@@ -4457,6 +4432,7 @@ def test_main_command_line_args(
         built_site_checks.main()
 
     mock_check.assert_called_with(
+        BeautifulSoup(html_file.read_text(encoding="utf-8"), "html.parser"),
         html_file,
         mock_environment["public_dir"],
         None,
@@ -4554,7 +4530,7 @@ def test_main_skips_non_root_html_md_mapping_not_required(
         built_site_checks.main()
 
     mock_check.assert_called_once()
-    called_file_path = mock_check.call_args.args[0]
+    called_file_path = mock_check.call_args.args[1]
     assert called_file_path == nested_html
 
 
@@ -5228,6 +5204,7 @@ def soup_check_setup(
     )
 
     common_args = {
+        "soup": BeautifulSoup(html_content, "html.parser"),
         "file_path": html_file_path,
         "base_dir": public_dir,
         "md_path": None,
@@ -7404,18 +7381,16 @@ def test_check_file_for_issues_with_included_domains(tmp_path):
     )
     file_path.write_text(html)
 
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html, "html.parser"),
-    ):
-        issues = built_site_checks.check_file_for_issues(
-            file_path,
-            base_dir,
-            None,
-            built_site_checks.CheckOptions(
-                favicon_included_domains=frozenset({"apple_com"})
-            ),
-        )
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup,
+        file_path,
+        base_dir,
+        None,
+        built_site_checks.CheckOptions(
+            favicon_included_domains=frozenset({"apple_com"})
+        ),
+    )
 
     assert "missing_favicons" in issues
     assert any(
@@ -7436,13 +7411,10 @@ def test_check_file_for_issues_without_included_domains(tmp_path):
     )
     file_path.write_text(html)
 
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html, "html.parser"),
-    ):
-        issues = built_site_checks.check_file_for_issues(
-            file_path, base_dir, None, built_site_checks.CheckOptions()
-        )
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup, file_path, base_dir, None, built_site_checks.CheckOptions()
+    )
 
     assert "missing_favicons" not in issues
 
@@ -7458,9 +7430,10 @@ def test_maybe_collect_citation_keys_redirect(tmp_path):
     file_path = public_dir / "redirect.html"
     file_path.write_text(redirect_html)
 
+    soup = BeautifulSoup(redirect_html, "html.parser")
     citation_to_files: dict[str, list[str]] = defaultdict(list)
     built_site_checks._maybe_collect_citation_keys(
-        file_path, public_dir, citation_to_files
+        soup, file_path, public_dir, citation_to_files
     )
     assert len(citation_to_files) == 0
 
@@ -7473,9 +7446,10 @@ def test_maybe_collect_citation_keys_collects(tmp_path):
     file_path = public_dir / "page.html"
     file_path.write_text(html)
 
+    soup = BeautifulSoup(html, "html.parser")
     citation_to_files: dict[str, list[str]] = defaultdict(list)
     built_site_checks._maybe_collect_citation_keys(
-        file_path, public_dir, citation_to_files
+        soup, file_path, public_dir, citation_to_files
     )
     assert "Turner2024Design" in citation_to_files
     assert citation_to_files["Turner2024Design"] == ["page.html"]
@@ -7547,9 +7521,10 @@ def test_maybe_collect_citation_keys(
 ):
     html_file = tmp_path / "page.html"
     html_file.write_text(html_content, encoding="utf-8")
+    soup = BeautifulSoup(html_content, "html.parser")
     citation_to_files: dict[str, list[str]] = defaultdict(list)
     built_site_checks._maybe_collect_citation_keys(
-        html_file, tmp_path, citation_to_files
+        soup, html_file, tmp_path, citation_to_files
     )
     assert sorted(citation_to_files.keys()) == sorted(expected_keys)
     for key in expected_keys:
@@ -7587,6 +7562,13 @@ def test_process_html_files_duplicate_citations(tmp_path: Path):
             built_site_checks,
             "_build_included_favicon_domains",
             return_value=frozenset(),
+        ),
+        patch.object(
+            script_utils,
+            "parse_html_file",
+            side_effect=lambda p: BeautifulSoup(
+                Path(p).read_text(encoding="utf-8"), "html.parser"
+            ),
         ),
     ):
         result = built_site_checks._process_html_files(

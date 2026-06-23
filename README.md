@@ -1,4 +1,4 @@
-[![Node tests](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/node.js.yml/badge.svg)](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/node.js.yml) ![Python tests pass](https://img.shields.io/badge/Python%20tests-Passing-green?style=plastic)[^python] ![Python type-checking](https://img.shields.io/badge/Python%20typechecking-Passing-green?style=plastic) [![DeepSource](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com.svg/?label=active+issues&show_trend=true&token=Uwx9Q68JFvapkwk26AqQzswN)](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com/)
+[![Node tests](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/node.js.yml/badge.svg)](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/node.js.yml) [![Python tests](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/python-tests.yaml/badge.svg)](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/python-tests.yaml)[^python] [![Python linting](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/python-lint.yaml/badge.svg)](https://github.com/alexander-turner/TurnTrout.com/actions/workflows/python-lint.yaml) [![DeepSource](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com.svg/?label=active+issues&show_trend=true&token=Uwx9Q68JFvapkwk26AqQzswN)](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com/)
 
 100% Python line coverage and 100% TypeScript branch coverage.
 
@@ -28,7 +28,7 @@ The above `ots` ([Open Timestamp](https://github.com/opentimestamps/opentimestam
 
 - Run `git config core.hooksPath .hooks` to use the repository’s hooks.
 
-[^python]: Python testing and type-checking are run locally and not on GitHub actions.
+[^python]: Python testing and type-checking run in CI (`.github/workflows/python-tests.yaml` and `python-lint.yaml`), not only locally.
 
 `turntrout.com` © 2024–2026 by Alexander Turner is licensed under CC BY-SA 4.0. Feel free to fork to use on your own website, but in addition to the licensing requirements of CC BY-SA 4.0:
 

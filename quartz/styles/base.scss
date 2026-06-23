@@ -121,6 +121,21 @@ a {
       fill: var(--foreground);
     }
   }
+
+  // Outbound link whose target rotted: the href now points at our archived
+  // snapshot on the CDN. A dashed underline plus a small marker tells the
+  // reader they're following a fallback copy, not the live page.
+  &.archived {
+    text-decoration-style: dashed;
+
+    &::after {
+      content: "archived";
+      margin-left: 0.2em;
+      color: var(--midground-faint);
+      font-size: 0.6em;
+      vertical-align: super;
+    }
+  }
 }
 
 .desktop-only {

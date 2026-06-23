@@ -260,6 +260,23 @@ describe("revertImage", () => {
   it("returns false when there is no stashed original", () => {
     expect(revertImage(makeLoadedImg())).toBe(false)
   })
+
+  it("restores src for a bare (non-picture) img without touching a <source>", () => {
+    const img = makeLoadedImg("https://x/bare.avif")
+    img.dataset["invertOriginalSrc"] = "https://x/bare.avif"
+    img.src = "https://x/bare-inverted.avif"
+    expect(revertImage(img)).toBe(true)
+    expect(img.src).toBe("https://x/bare.avif")
+  })
+
+  it("no-ops gracefully when picture has no <source> sibling", () => {
+    const picture = document.createElement("picture")
+    const img = makeLoadedImg("https://x/nosrc.avif")
+    picture.appendChild(img)
+    invertPictureSrc(img)
+    expect(() => revertImage(img)).not.toThrow()
+    expect(img.src).toBe("https://x/nosrc.avif")
+  })
 })
 
 describe("handleLoadEvent", () => {
@@ -482,6 +499,24 @@ describe("prepareForThemeChange", () => {
   it("is a no-op when no images need swapping", async () => {
     await prepareForThemeChange(true)
     await expect(prepareForThemeChange(false)).resolves.toBeUndefined()
+  })
+
+  it("does not call invertPictureSrc for a bare (non-picture) img", async () => {
+    mockSystemDark(false)
+    const img = makeLoadedImg("https://x/bare.avif")
+    document.body.appendChild(img)
+    await prepareForThemeChange(true)
+    expect(img.dataset["invertProcessed"]).toBeUndefined()
+    expect(img.dataset["invertOriginalSrc"]).toBeUndefined()
+  })
+
+  it("skips images already marked as processed", async () => {
+    mockSystemDark(false)
+    const img = makePictureWrappedImg("https://x/img.avif")
+    img.dataset["invertProcessed"] = "1"
+    document.body.appendChild(img.parentElement as HTMLElement)
+    await prepareForThemeChange(true)
+    expect(img.src).toBe("https://x/img.avif")
   })
 })
 

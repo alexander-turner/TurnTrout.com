@@ -147,7 +147,7 @@ min-similarity-lines = 4
 [SPELLING]
 max-spelling-suggestions = 4
 spelling-dict = 
-spelling-ignore-comment-directives = fmt: on,fmt: off,noqa:,noqa,nosec,isort:skip,mypy:
+spelling-ignore-comment-directives = fmt: on,fmt: off,noqa:,noqa,nosec,isort:skip,pyright:
 spelling-ignore-words = 
 spelling-private-dict-file = 
 spelling-store-unknown-words = no

@@ -10,6 +10,11 @@ export const urlRegex = new RegExp(
   /(?<protocol>https?:\/\/)(?<domain>(?:[\da-z-]+\.)+)(?<path>[/?=\w.-]+(?:\([\w.\-,() ]*\))?)(?=\))/g,
 )
 
+// Non-global copy of `urlRegex` for stateless `.test()` calls. A global regex's
+// `.test()` advances `lastIndex` between calls, making repeated detection on the
+// same string order-dependent; this copy keeps detection deterministic.
+export const urlRegexNonGlobal = new RegExp(urlRegex.source, urlRegex.flags.replace("g", ""))
+
 const linkText = /\[(?<linkText>[^\]]+)\]/
 const linkURL = /\((?<linkURL>[^#].*?)\)/ // Ignore internal links, capture as little as possible
 export const mdLinkRegex = new RegExp(linkText.source + linkURL.source, "g")
@@ -66,10 +71,16 @@ export const replaceRegex = (
   // Find all non-overlapping matches in the node's text
   regex.lastIndex = 0 // Reset regex state before first pass with exec()
   while ((match = regex.exec(node.value)) !== null) {
+    // A zero-width match leaves lastIndex unchanged; nudge it forward so the
+    // loop terminates instead of spinning on the same empty match.
+    if (match[0].length === 0) {
+      regex.lastIndex++
+      continue
+    }
     /* istanbul ignore next -- exec() always advances past previous match on global regex */
     if (match.index >= lastMatchEnd) {
       matches.push(match)
-      lastMatchEnd = match.index + match[0]?.length
+      lastMatchEnd = match.index + match[0].length
     }
   }
 

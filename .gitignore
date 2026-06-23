@@ -6,14 +6,13 @@
 # Dependencies & Environments
 node_modules
 .venv/
+.worktrees/
 
 # Build Output & Caches
 public
 prof
 tsconfig.tsbuildinfo
 .quartz-cache
-.dmypy.json
-.mypy_cache
 .quartz_checks
 .timestamps
 *variables.scss

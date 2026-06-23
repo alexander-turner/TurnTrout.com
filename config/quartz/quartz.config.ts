@@ -4,6 +4,7 @@ import {
   AfterArticle,
   AliasRedirects,
   AllTagsPage,
+  ArchiveLinks,
   Assets,
   AutoCode,
   Bibtex,
@@ -16,6 +17,7 @@ import {
   FixFootnotes,
   FrontMatter,
   GitHubFlavoredMarkdown,
+  githubReadmeSource,
   HTMLFormattingImprovement,
   InvertInDarkMode,
   Latex,
@@ -23,6 +25,7 @@ import {
   ObsidianFlavoredMarkdown,
   PopulateContainers,
   PopulateExternalMarkdown,
+  PrefixExternalReadmeIds,
   RecentPostsPage,
   rehypeCustomSpoiler,
   rehypeCustomSubtitle,
@@ -31,7 +34,6 @@ import {
   RemoveFixtures,
   RemovePartials,
   Static,
-  stripBadges,
   StripInlineBoundaryWhitespace,
   SyntaxHighlighting,
   TableDivider,
@@ -68,11 +70,9 @@ const config: QuartzConfig = {
       FrontMatter(),
       PopulateExternalMarkdown({
         sources: {
-          punctilio: {
-            owner: "alexander-turner",
-            repo: "punctilio",
-            transform: stripBadges,
-          },
+          punctilio: githubReadmeSource("alexander-turner", "punctilio"),
+          "ci-truth-serum": githubReadmeSource("alexander-turner", "ci-truth-serum"),
+          "agent-input-sanitizer": githubReadmeSource("alexander-turner", "agent-input-sanitizer"),
           "lint-staged": {
             filePath: "package.json",
             jsonPath: "lint-staged",
@@ -127,6 +127,9 @@ const config: QuartzConfig = {
         enableCheckbox: true,
       }),
       GitHubFlavoredMarkdown({ enableSmartyPants: false }),
+      // After GitHubFlavoredMarkdown assigns heading ids/autolinks: namespace the
+      // ids of embedded external READMEs so they stay unique on the host page.
+      PrefixExternalReadmeIds(),
       TableDivider(),
       FixFootnotes(),
       WrapNakedElements(),
@@ -136,6 +139,9 @@ const config: QuartzConfig = {
       HTMLFormattingImprovement(),
       Latex(),
       CrawlLinks({ lazyLoad: true, markdownLinkResolution: "shortest" }),
+      // After CrawlLinks so it sees normalized https:// hrefs + the "external"
+      // class; swaps confirmed-dead outbound links for their archived copy.
+      ArchiveLinks(),
       rehypeCustomSpoiler(),
       TagSmallcaps(),
       AutoCode(),

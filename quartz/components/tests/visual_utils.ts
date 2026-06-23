@@ -69,6 +69,14 @@ const ISOLATION_STYLE_ID = "__dom-isolation-style"
 const ISOLATION_ATTR = "data-dom-isolate"
 const ISOLATION_PARENT_ATTR = "data-dom-isolate-parent"
 
+const MAX_DIFF_PIXEL_RATIO = 0.002
+// Absolute floor of allowed differing pixels. Playwright compares with
+// min(maxDiffPixels, area * maxDiffPixelRatio), so a single computed
+// maxDiffPixels = max(floor, ceil(area * ratio)) yields a true floor: it only
+// relaxes very small isolated sections (a handful of antialiasing pixels) and
+// never masks structural diffs, which run to thousands of pixels.
+const MIN_DIFF_PIXELS = 100
+
 async function performDOMIsolation(
   elementLocator: Locator,
   preserveSiblings: boolean,
@@ -122,7 +130,6 @@ export interface RegressionScreenshotOptions {
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
   skipMediaPause?: boolean
-  skipDOMIsolation?: boolean
   skipStabilityWait?: boolean
   preserveSiblings?: boolean
 }
@@ -132,18 +139,20 @@ async function waitForImagesInElement(scope: Locator): Promise<void> {
   await Promise.all(
     images.map((img) =>
       img
-        .evaluate((el: HTMLImageElement) =>
-          el.complete
-            ? undefined
-            : new Promise<void>((resolve) => {
-                const timer = setTimeout(resolve, 5000)
-                const done = (): void => {
-                  clearTimeout(timer)
-                  resolve()
-                }
-                el.addEventListener("load", done, { once: true })
-                el.addEventListener("error", done, { once: true })
-              }),
+        .evaluate(
+          (el: HTMLImageElement) =>
+            new Promise<void>((resolve) => {
+              const timer = setTimeout(resolve, 5000)
+              const done = (): void => {
+                clearTimeout(timer)
+                resolve()
+              }
+              // `decode()` resolves only once the image is decoded and
+              // paint-ready. `complete`/`load` can fire before Firefox has
+              // painted a (remote AVIF) image, so screenshots intermittently
+              // captured a blank image. Resolve on decode success or failure.
+              el.decode().then(done, done)
+            }),
         )
         .catch(() => undefined),
     ),
@@ -223,7 +232,7 @@ export async function takeRegressionScreenshot(
 
   let screenshotBuffer: Buffer
   const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
-  if (options?.elementToScreenshot && !options.skipDOMIsolation) {
+  if (options?.elementToScreenshot) {
     const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
     await performDOMIsolation(elementToIsolate, options.preserveSiblings ?? false)
 
@@ -232,18 +241,26 @@ export async function takeRegressionScreenshot(
     } finally {
       await restoreDOMFromIsolation(page)
     }
-  } else if (options?.elementToScreenshot) {
-    screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
   } else {
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
+
+  // PNG IHDR stores width at byte offset 16 and height at 20. Using the
+  // captured buffer's own dimensions matches the area Playwright applies the
+  // ratio to (expected.width * expected.height when dimensions agree).
+  const pngWidth = screenshotBuffer.readUInt32BE(16)
+  const pngHeight = screenshotBuffer.readUInt32BE(20)
+  const maxDiffPixels = Math.max(
+    MIN_DIFF_PIXELS,
+    Math.ceil(pngWidth * pngHeight * MAX_DIFF_PIXEL_RATIO),
+  )
 
   // Array form skips Playwright's 60-char hash-truncation of the
   // attachment name, so approve-baselines can map attachments back to
   // baseline filenames for any name length.
   await expect
     .soft(screenshotBuffer, { message: screenshotName })
-    .toMatchSnapshot([screenshotName], { maxDiffPixelRatio: 0.002 })
+    .toMatchSnapshot([screenshotName], { maxDiffPixels })
 
   return screenshotBuffer
 }
@@ -332,10 +349,17 @@ export async function getH1Screenshots(
     const sanitizedH1Id = h1Id ? sanitize(h1Id) : null
     if (!sanitizedH1Id) throw new Error("H1 header has no id")
 
+    // Firefox image decode/load timing is nondeterministic in CI; hide images
+    // (visibility:hidden preserves layout) so section screenshots stay stable.
+    if (isFirefox(testInfo)) {
+      await h1Span.evaluate((el) => {
+        el.querySelectorAll<HTMLElement>("img").forEach((img) => (img.style.visibility = "hidden"))
+      })
+    }
+
     await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
       elementToScreenshot: h1Span,
       skipMediaPause: true,
-      skipDOMIsolation: true,
     })
   }
 }

@@ -19,7 +19,7 @@ from pathlib import Path
 try:
     from . import utils as script_utils
 except ImportError:  # pragma: no cover
-    import utils as script_utils  # type: ignore
+    import utils as script_utils
 
 
 def _get_asset_files(asset_staging_dir: Path) -> list[Path]:

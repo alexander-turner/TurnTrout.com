@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-06-06
+date_updated: 2026-06-23
 no_dropcap: false
 createBibtex: true
 ---
@@ -905,7 +905,7 @@ Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my 
 Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. I enable the [`pyupgrade`](https://docs.astral.sh/ruff/rules/#pyupgrade-up) and [`return-statement`](https://docs.astral.sh/ruff/rules/#flake8-return-ret) rule families to modernize Python idioms (PEP 585 type hints, PEP 604 unions) and to simplify control flow. After the auto-fix steps, four more read-only checks sweep in parallel:
 
 - [`pylint`](https://pylint.readthedocs.io/) — the static-analysis nits DeepSource also flags, picked up before push instead of after merge.
-- [`mypy`](https://mypy.readthedocs.io/) — type-checking across my Python scripts. The session-start hook warms up a `dmypy` daemon so this finishes in a few seconds.
+- [`pyright`](https://microsoft.github.io/pyright/) — type-checking across my Python scripts, with a handful of extra correctness rules switched on beyond its defaults.
 - My [Markdown and source-file validators](#static-validation-of-markdown-and-source-files).
 - A wrapper around [`spellchecker-cli`](https://www.npmjs.com/package/spellchecker-cli) and [Vale](https://vale.sh/). Before linting, I run a preprocessor that strips `[!quote]` callouts (so external quotes don't trip my dictionary), blanks the interior of LaTeX math (so `\cdot`-style commands aren't tokenized as words), and collapses inline `<span class="dropcap">…</span>` tags (so `dropcap` reads as one word, not split across the tag).
 
@@ -1168,9 +1168,6 @@ Several GitHub workflows run on schedules or in response to external events. Muc
 
 Monthly newsletter
 : A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/monthly-newsletter.yml) collects commits since the last newsletter, feeds them to the Claude API with a [prompt template](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/prompts/newsletter-prompt.md), and emails me the draft via [Resend](https://resend.com/).
-
-Weekly security scan
-: A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/security-vulnerability-scan.yaml) aggregates Dependabot alerts, code scanning alerts, secret scanning alerts, and `pnpm audit` results. [`claude-code-action`](https://github.com/anthropics/claude-code-action) triages the findings, applies fixes, and opens a PR.
 
 Template sync
 : A [daily workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/template-sync.yaml) diffs local automation files against the [template repo](https://github.com/alexander-turner/claude-automation-template), copies new files, and opens a PR.
