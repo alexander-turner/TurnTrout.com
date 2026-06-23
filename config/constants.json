@@ -178,6 +178,7 @@
     "model": "voyage-3",
     "maxNewEmbeddingsPerRun": 50,
     "topN": 5,
+    "minScore": 0.5,
     "maxEmbedChars": 8000
   }
 }

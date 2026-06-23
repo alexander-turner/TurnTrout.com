@@ -11,7 +11,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from collections.abc import Callable, Collection
+from collections.abc import Callable, Collection, Mapping
 from pathlib import Path
 from typing import NoReturn
 from urllib.parse import urlparse
@@ -481,6 +481,28 @@ def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
         return {}, ""
 
     return metadata, body
+
+
+def is_embeddable_article(frontmatter: Mapping) -> bool:
+    """
+    Whether a content file should carry a related-posts ("Similar posts") block.
+
+    Single source of truth shared by the generator
+    (``scripts/generate_related_posts.py``, which embeds these pages) and the
+    built-site content-page gate (``scripts/built_site_checks.py``). A page
+    qualifies when it has a ``title``, ``permalink``, and ``description`` and is
+    neither a draft nor a ``hide_metadata`` listing/landing page (e.g. the
+    homepage or the "Posts & Sequences" index).
+    """
+    if not frontmatter:
+        return False
+    if frontmatter.get("draft") is True or frontmatter.get("hide_metadata"):
+        return False
+    return bool(
+        frontmatter.get("title")
+        and frontmatter.get("permalink")
+        and frontmatter.get("description")
+    )
 
 
 def build_html_to_md_map(md_dir: Path) -> dict[str, Path]:

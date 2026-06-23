@@ -2144,8 +2144,12 @@ def check_file_for_issues(
     if opts.should_check_fonts:
         issues["missing_preloaded_font"] = not check_preloaded_fonts(soup)
 
+    is_content_page = False
+    if md_path and md_path.is_file():
+        md_frontmatter, _ = script_utils.split_yaml(md_path)
+        is_content_page = script_utils.is_embeddable_article(md_frontmatter)
     issues["related_posts"] = check_related_posts(
-        soup, is_content_page=bool(md_path and md_path.is_file())
+        soup, is_content_page=is_content_page
     )
 
     if md_path and md_path.is_file():

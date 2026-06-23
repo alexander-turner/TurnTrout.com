@@ -4074,6 +4074,50 @@ description: Test Description
     assert issues["missing_markdown_assets"] == ["Mocked issue"]
 
 
+def test_check_file_for_issues_related_posts_required_on_content_page(
+    tmp_path,
+):
+    """An embeddable content page (full frontmatter) must carry the block."""
+    base_dir = tmp_path / "public"
+    base_dir.mkdir()
+    content_dir = tmp_path / "website_content"
+    content_dir.mkdir()
+
+    html_file_path = base_dir / "post.html"
+    html_file_path.write_text("<html><body>Body</body></html>")
+    md_file_path = content_dir / "post.md"
+    md_file_path.write_text(
+        "---\ntitle: T\npermalink: post\ndescription: D\n---\nBody"
+    )
+
+    # No .related-posts block on a content page → flagged.
+    soup_without = BeautifulSoup("<html><body>x</body></html>", "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup_without,
+        html_file_path,
+        base_dir,
+        md_file_path,
+        built_site_checks.CheckOptions(),
+    )
+    assert issues["related_posts"] == [
+        "Missing related-posts block (.related-posts) on a content page"
+    ]
+
+    # With the block → no related-posts issue.
+    soup_with = BeautifulSoup(
+        '<html><body><div class="related-posts"></div></body></html>',
+        "html.parser",
+    )
+    issues_ok = built_site_checks.check_file_for_issues(
+        soup_with,
+        html_file_path,
+        base_dir,
+        md_file_path,
+        built_site_checks.CheckOptions(),
+    )
+    assert issues_ok["related_posts"] == []
+
+
 def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
     tmp_path,
 ):

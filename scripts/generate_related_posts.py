@@ -65,6 +65,7 @@ MODEL: Final[str] = str(_CONFIG["model"])
 DEFAULT_BUDGET: Final[int] = int(_CONFIG["maxNewEmbeddingsPerRun"])
 TOP_N: Final[int] = int(_CONFIG["topN"])
 MAX_EMBED_CHARS: Final[int] = int(_CONFIG["maxEmbedChars"])
+MIN_SCORE: Final[float] = float(_CONFIG["minScore"])
 
 
 # --- article enumeration -----------------------------------------------------
@@ -98,20 +99,18 @@ def gather_articles(content_dir: Path = CONTENT_DIR) -> tuple[Article, ...]:
     """
     Enumerate publishable top-level articles, sorted by permalink.
 
-    Skips drafts and any file missing a ``title``, ``permalink``, or
-    ``description`` (all three are required to render a link with an excerpt).
+    Inclusion is governed by ``utils.is_embeddable_article`` (shared with the
+    built-site content-page gate): needs ``title``/``permalink``/``description``
+    and is neither a draft nor a ``hide_metadata`` listing/landing page.
     """
     articles: list[Article] = []
     for md_path in sorted(content_dir.glob("*.md")):
         front, body = script_utils.split_yaml(md_path)
-        title = front.get("title")
-        permalink = front.get("permalink")
-        description = front.get("description")
-        if front.get("draft") is True or not (
-            title and permalink and description
-        ):
+        if not script_utils.is_embeddable_article(front):
             continue
-        excerpt = str(description).strip()
+        title = front["title"]
+        permalink = front["permalink"]
+        excerpt = str(front["description"]).strip()
         embed_input = build_embed_input(str(title), excerpt, body)
         articles.append(
             Article(
@@ -208,7 +207,7 @@ def embed_texts(
     if client is None:
         import voyageai  # pylint: disable=import-outside-toplevel
 
-        client = voyageai.Client()
+        client = voyageai.Client()  # pyright: ignore[reportPrivateImportUsage]
     result = client.embed(  # type: ignore[attr-defined]
         list(texts), model=model, input_type="document"
     )
@@ -231,11 +230,52 @@ class Neighbor(TypedDict):
     score: float
 
 
+def _rank_neighbors(
+    row: Sequence[float],
+    self_idx: int,
+    ordered_articles: Sequence[Article],
+    *,
+    top_n: int,
+    min_score: float,
+) -> list[Neighbor]:
+    """
+    Top neighbors for one article, from its row of the similarity matrix.
+
+    ``ordered_articles`` is indexed the same way as ``row``. The single best
+    neighbor is always kept; the rest (positions 2..``top_n``) are kept only
+    while their score is ``>= min_score``, so weak filler is dropped while every
+    covered article still renders a block.
+    """
+    neighbors: list[Neighbor] = []
+    for j in np.argsort(-np.asarray(row), kind="stable"):
+        j_idx = int(j)
+        if j_idx == self_idx:
+            continue
+        score = round(float(row[j_idx]), 6)
+        # Sorted descending, so once a non-first neighbor falls below the
+        # floor every later one does too.
+        if neighbors and score < min_score:
+            break
+        other = ordered_articles[j_idx]
+        neighbors.append(
+            Neighbor(
+                permalink=other.permalink,
+                title=other.title,
+                excerpt=other.excerpt,
+                score=score,
+            )
+        )
+        if len(neighbors) >= top_n:
+            break
+    return neighbors
+
+
 def compute_neighbors(
     embeddings: Mapping[str, Sequence[float]],
     articles: Mapping[str, Article],
     *,
     top_n: int = TOP_N,
+    min_score: float = MIN_SCORE,
 ) -> dict[str, list[Neighbor]]:
     """
     Top-``top_n`` cosine neighbors per article, keyed by permalink.
@@ -253,24 +293,11 @@ def compute_neighbors(
     normed = matrix / np.where(norms == 0, 1.0, norms)
     sims = normed @ normed.T
 
+    ordered = [articles[p] for p in permalinks]
     for i, permalink in enumerate(permalinks):
-        neighbors: list[Neighbor] = []
-        for j in np.argsort(-sims[i], kind="stable"):
-            j_idx = int(j)
-            if j_idx == i:
-                continue
-            other = articles[permalinks[j_idx]]
-            neighbors.append(
-                Neighbor(
-                    permalink=other.permalink,
-                    title=other.title,
-                    excerpt=other.excerpt,
-                    score=round(float(sims[i][j_idx]), 6),
-                )
-            )
-            if len(neighbors) >= top_n:
-                break
-        result[permalink] = neighbors
+        result[permalink] = _rank_neighbors(
+            sims[i], i, ordered, top_n=top_n, min_score=min_score
+        )
     return result
 
 
@@ -307,8 +334,8 @@ def _select_to_embed(
 
 
 @dataclass(frozen=True)
-class GenerateConfig:
-    """Inputs for one :func:`generate` run."""
+class GenerateConfig:  # pylint: disable=too-many-instance-attributes
+    """Inputs for one :func:`generate` run (a plain configuration record)."""
 
     cache_path: Path
     content_dir: Path = CONTENT_DIR
@@ -316,6 +343,7 @@ class GenerateConfig:
     budget: int = DEFAULT_BUDGET
     model: str = MODEL
     top_n: int = TOP_N
+    min_score: float = MIN_SCORE
     dry_run: bool = False
 
 
@@ -374,7 +402,9 @@ def generate(
         for permalink, entry in cache.items()
         if permalink in by_permalink and entry["model"] == config.model
     }
-    neighbors = compute_neighbors(embeddings, by_permalink, top_n=config.top_n)
+    neighbors = compute_neighbors(
+        embeddings, by_permalink, top_n=config.top_n, min_score=config.min_score
+    )
     script_utils.atomic_write_json(
         neighbors, config.neighbors_path, sort_keys=True
     )

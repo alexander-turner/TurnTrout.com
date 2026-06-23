@@ -29,6 +29,7 @@ def _write_md(
     permalink: str | None = "perma",
     description: str | None = "Desc.",
     draft: bool = False,
+    hide_metadata: bool = False,
     body: str = "Body text.",
 ) -> Path:
     lines = ["---"]
@@ -40,6 +41,8 @@ def _write_md(
         lines.append(f"description: {description}")
     if draft:
         lines.append("draft: true")
+    if hide_metadata:
+        lines.append('hide_metadata: "true"')
     lines.append("---")
     lines.append("")
     lines.append(body)
@@ -50,6 +53,29 @@ def _write_md(
 
 def _cache_entry(vec: list[float], text_hash: str, model: str = grp.MODEL):
     return {"embedding": vec, "text_hash": text_hash, "model": model}
+
+
+# --- is_embeddable_article ---------------------------------------------------
+
+
+_VALID_FM = {"title": "T", "permalink": "p", "description": "D"}
+
+
+class TestIsEmbeddableArticle:
+    @pytest.mark.parametrize(
+        ("frontmatter", "expected"),
+        [
+            (_VALID_FM, True),
+            ({}, False),
+            ({**_VALID_FM, "draft": True}, False),
+            ({**_VALID_FM, "hide_metadata": "true"}, False),
+            ({"permalink": "p", "description": "D"}, False),  # no title
+            ({"title": "T", "description": "D"}, False),  # no permalink
+            ({"title": "T", "permalink": "p"}, False),  # no description
+        ],
+    )
+    def test_predicate(self, frontmatter: dict, expected: bool) -> None:
+        assert grp.script_utils.is_embeddable_article(frontmatter) is expected
 
 
 # --- text helpers ------------------------------------------------------------
@@ -78,6 +104,10 @@ class TestGatherArticles:
 
     def test_skips_drafts(self, tmp_path: Path) -> None:
         _write_md(tmp_path, "draft.md", draft=True)
+        assert grp.gather_articles(tmp_path) == ()
+
+    def test_skips_hide_metadata_listing_pages(self, tmp_path: Path) -> None:
+        _write_md(tmp_path, "posts.md", permalink="posts", hide_metadata=True)
         assert grp.gather_articles(tmp_path) == ()
 
     @pytest.mark.parametrize("missing", ["title", "permalink", "description"])
@@ -245,6 +275,20 @@ class TestComputeNeighbors:
         result = grp.compute_neighbors(embeddings, articles)
         assert [n["permalink"] for n in result["a"]] == ["b"]
         assert result["a"][0]["score"] == 0.0
+
+    def test_min_score_drops_weak_filler_but_keeps_best(self) -> None:
+        # a-b ~0.99 (strong); a-c == 0 and b-c ~0.14 (both below floor 0.7).
+        embeddings = {"a": [1.0, 0.0], "b": [0.99, 0.14], "c": [0.0, 1.0]}
+        articles = {s: _article(s) for s in embeddings}
+        result = grp.compute_neighbors(
+            embeddings, articles, top_n=5, min_score=0.7
+        )
+        # a keeps only the strong neighbor; the weak c (0.0) is floored out.
+        assert [n["permalink"] for n in result["a"]] == ["b"]
+        # c's best neighbor (b, ~0.14) is below the floor but kept as the lone
+        # match so the page still renders a block.
+        assert [n["permalink"] for n in result["c"]] == ["b"]
+        assert result["c"][0]["score"] < 0.7
 
 
 # --- _select_to_embed --------------------------------------------------------
