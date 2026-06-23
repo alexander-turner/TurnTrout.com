@@ -7546,6 +7546,55 @@ def test_check_orphaned_subfigures(html: str, expected: list[str]):
 
 
 @pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Each furniture type as a direct child of <article> (valid)
+        (
+            '<article><div id="trout-ornament-container"></div></article>',
+            [],
+        ),
+        (
+            '<article><div class="after-article-components"></div></article>',
+            [],
+        ),
+        ('<article><div class="related-posts"></div></article>', []),
+        # No after-article furniture at all (valid)
+        ("<article><p>Body</p></article>", []),
+        # Swallowed by an unclosed content widget — parent has an id (invalid)
+        (
+            '<article><div id="punctilio-demo">'
+            '<div class="related-posts"></div></div></article>',
+            [
+                ".related-posts must be a direct child of <article> but is "
+                "inside <div#punctilio-demo>"
+            ],
+        ),
+        # Nested in a parent without an id (invalid; descriptor omits the id)
+        (
+            "<article><section>"
+            '<div id="trout-ornament-container"></div></section></article>',
+            [
+                "trout ornament (#trout-ornament-container) must be a direct "
+                "child of <article> but is inside <section>"
+            ],
+        ),
+        # Furniture with no <article> ancestor at all (invalid)
+        (
+            '<div class="related-posts"></div>',
+            [
+                ".related-posts must be a direct child of <article> but is "
+                "inside <[document]>"
+            ],
+        ),
+    ],
+)
+def test_check_after_article_placement(html: str, expected: list[str]):
+    """After-article furniture must be a direct child of <article>."""
+    soup = BeautifulSoup(html, "html.parser")
+    assert built_site_checks.check_after_article_placement(soup) == expected
+
+
+@pytest.mark.parametrize(
     "html_content,expected_keys",
     [
         # Redirect pages should be skipped

@@ -19,7 +19,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
-from typing import Literal, NamedTuple
+from typing import Literal, NamedTuple, cast
 from urllib.parse import urlparse
 
 import requests
@@ -2046,6 +2046,46 @@ def check_related_posts(
     return []
 
 
+# Furniture injected after the article body by ``afterArticle.ts`` /
+# ``relatedPosts.ts``. Each is spliced in as a direct child of ``<article>``.
+AFTER_ARTICLE_FURNITURE: tuple[tuple[str, dict[str, str]], ...] = (
+    (
+        "trout ornament (#trout-ornament-container)",
+        {"id": "trout-ornament-container"},
+    ),
+    (".after-article-components", {"class": "after-article-components"}),
+    (".related-posts", {"class": "related-posts"}),
+)
+
+
+def check_after_article_placement(soup: BeautifulSoup) -> list[str]:
+    """
+    Ensure after-article furniture sits at the top level of the article.
+
+    The trout ornament, the after-article-components wrapper, and the
+    related-posts block are spliced in as direct children of ``<article>``. An
+    unclosed tag in page content makes the HTML5 parser silently adopt them into
+    a content widget (e.g. a demo container) without producing invalid markup,
+    so no HTML validator would catch it. Flag any furniture whose direct parent
+    is not an ``<article>``.
+    """
+    issues: list[str] = []
+    for label, attrs in AFTER_ARTICLE_FURNITURE:
+        for element in _tags_only(soup.find_all(attrs=attrs)):
+            parent = cast(Tag, element.parent)
+            if parent.name == "article":
+                continue
+            descriptor = f"<{parent.name}>"
+            parent_id = parent.get("id")
+            if parent_id:
+                descriptor = f"<{parent.name}#{parent_id}>"
+            issues.append(
+                f"{label} must be a direct child of <article> but is "
+                f"inside {descriptor}"
+            )
+    return issues
+
+
 def check_file_for_issues(
     soup: BeautifulSoup,
     file_path: Path,
@@ -2134,6 +2174,7 @@ def check_file_for_issues(
         "invalid_tengwar_characters": check_tengwar_characters(soup),
         "invalid_class_names": check_invalid_class_names(soup),
         "orphaned_subfigures": check_orphaned_subfigures(soup),
+        "after_article_misplaced": check_after_article_placement(soup),
     }
 
     if opts.favicon_included_domains is not None:
