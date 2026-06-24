@@ -7,7 +7,7 @@ import { visitParents } from "unist-util-visit-parents"
 import type { QuartzTransformerPlugin } from "../types"
 import type { TocEntry } from "../vfile"
 
-import { footnoteHeadingId, normalizeNbsp } from "../../components/constants"
+import { footnoteHeadingId, normalizeNbsp, tocMaxDepth } from "../../components/constants"
 import { createWinstonLogger } from "../../util/log"
 import { applyTextTransforms } from "./formatting_improvement_html"
 import { resetSlugger, slugify } from "./gfm"
@@ -30,10 +30,21 @@ export interface Options {
 }
 
 const defaultOptions: Options = {
-  maxDepth: 2,
+  maxDepth: tocMaxDepth as Options["maxDepth"],
   minEntries: 1,
   showByDefault: true,
   collapseByDefault: false,
+}
+
+/**
+ * Single source of truth for which heading depths appear in the table of
+ * contents. A heading is included iff its level is at or above `maxDepth`
+ * (e.g. with `maxDepth: 2`, h1 and h2 are listed but h3+ are not). Shared so
+ * downstream consumers — and the built-site checker — agree on the cutoff
+ * rather than re-deriving it.
+ */
+export function isIncludedTocDepth(depth: number, maxDepth: number = tocMaxDepth): boolean {
+  return depth <= maxDepth
 }
 
 const logger = createWinstonLogger("TableOfContents")
@@ -125,7 +136,10 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                 )
                   return SKIP
 
-                if (node.type === "heading" && (node as Heading).depth <= opts.maxDepth) {
+                if (
+                  node.type === "heading" &&
+                  isIncludedTocDepth((node as Heading).depth, opts.maxDepth)
+                ) {
                   const heading = node as Heading
                   const text = applyTextTransforms(customToString(heading), { useNbsp: false })
                   const plainText = stripHtmlTagsFromString(text)

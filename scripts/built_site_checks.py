@@ -49,6 +49,8 @@ from scripts.utils import (
     RIGHT_DOUBLE_QUOTE,
     RIGHT_GUILLEMET,
     RIGHT_SINGLE_QUOTE,
+    SIMILAR_POSTS_HEADING_ID,
+    TOC_MAX_DEPTH,
     WORD_JOINER,
     ZERO_WIDTH_NBSP,
     ZERO_WIDTH_SPACE,
@@ -2046,6 +2048,109 @@ def check_related_posts(
     return []
 
 
+_HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
+
+
+def _toc_entries_in_order(toc_content: Tag) -> list[tuple[str, int]]:
+    """
+    Return ``(slug, nesting)`` for each TOC anchor in document order.
+
+    ``nesting`` is the number of ``<ol>`` ancestors, so a top-level entry is 1
+    and each nested list adds one.
+    """
+    entries: list[tuple[str, int]] = []
+    for anchor in toc_content.find_all("a", attrs={"data-for": True}):
+        slug = anchor.get("data-for")
+        if isinstance(slug, str):
+            entries.append((slug, len(anchor.find_parents("ol"))))
+    return entries
+
+
+class _TocHeading(NamedTuple):
+    """A TOC entry resolved against its target heading in the article."""
+
+    slug: str
+    pos: int  # document order of the target heading
+    nesting: int  # number of <ol> ancestors in the TOC
+    level: int  # heading level (1-6)
+
+
+def _article_heading_index(article: Tag) -> dict[str, tuple[int, int]]:
+    """Map each article heading id to ``(document order, level)``."""
+    index: dict[str, tuple[int, int]] = {}
+    for order, heading in enumerate(article.find_all(_HEADING_TAGS)):
+        hid = heading.get("id")
+        if isinstance(hid, str) and hid not in index:
+            index[hid] = (order, int(heading.name[1]))
+    return index
+
+
+def _toc_pair_issues(prev: _TocHeading, cur: _TocHeading) -> list[str]:
+    """Order + nesting consistency between two consecutive TOC headings."""
+    issues: list[str] = []
+    if cur.pos <= prev.pos:
+        issues.append(
+            f"TOC entry '#{cur.slug}' is out of document order (listed after "
+            f"'#{prev.slug}', which appears later in the article)"
+        )
+    nesting_dir = (cur.nesting > prev.nesting) - (cur.nesting < prev.nesting)
+    level_dir = (cur.level > prev.level) - (cur.level < prev.level)
+    if nesting_dir != level_dir:
+        issues.append(
+            f"TOC nesting disagrees with heading levels: '#{cur.slug}' "
+            f"(<h{cur.level}>, nesting {cur.nesting}) follows '#{prev.slug}' "
+            f"(<h{prev.level}>, nesting {prev.nesting})"
+        )
+    return issues
+
+
+def check_toc_ordering(soup: BeautifulSoup) -> list[str]:
+    """
+    Verify the table of contents agrees with the article's headings.
+
+    Keyed off the shared TOC config (``TOC_MAX_DEPTH``) so this checker can't
+    drift from the transformer that builds the TOC:
+
+    * **Order** — real-heading entries are listed in the same order their
+      target headings appear in the document.
+    * **Nesting** — the TOC nesting moves in lockstep with heading level: a
+      more deeply nested entry points to a deeper heading, a shallower one to a
+      shallower heading, and siblings to the same level.
+    * **Depth cutoff** — no entry targets a heading deeper than
+      ``TOC_MAX_DEPTH`` (e.g. an h3 leaking into an h1/h2 TOC).
+
+    The injected "Similar posts" entry is exempt from the order/nesting rules:
+    its block renders at the very end of the article but is deliberately listed
+    earlier in the TOC, so it has no document-flow position to match.
+    """
+    toc_content = soup.find(id="toc-content")
+    article = soup.find("article")
+    if toc_content is None or article is None:
+        return []
+
+    headings = _article_heading_index(article)
+    issues: list[str] = []
+    prev: _TocHeading | None = None
+    for slug, nesting in _toc_entries_in_order(toc_content):
+        meta = headings.get(slug)
+        if meta is None:
+            continue  # entry targets something other than an article heading
+        pos, level = meta
+        if level > TOC_MAX_DEPTH:
+            issues.append(
+                f"TOC entry '#{slug}' targets an <h{level}>, deeper than "
+                f"tocMaxDepth={TOC_MAX_DEPTH}"
+            )
+        if slug == SIMILAR_POSTS_HEADING_ID:
+            continue  # injected out of document flow; order/nesting exempt
+        cur = _TocHeading(slug, pos, nesting, level)
+        if prev is not None:
+            issues.extend(_toc_pair_issues(prev, cur))
+        prev = cur
+
+    return issues
+
+
 def check_file_for_issues(
     soup: BeautifulSoup,
     file_path: Path,
@@ -2134,6 +2239,7 @@ def check_file_for_issues(
         "invalid_tengwar_characters": check_tengwar_characters(soup),
         "invalid_class_names": check_invalid_class_names(soup),
         "orphaned_subfigures": check_orphaned_subfigures(soup),
+        "toc_ordering": check_toc_ordering(soup),
     }
 
     if opts.favicon_included_domains is not None:

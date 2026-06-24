@@ -8,12 +8,11 @@ import { fileURLToPath } from "url"
 import { VFile } from "vfile"
 
 import { formatTitle } from "../../components/component_utils"
-import { footnoteHeadingId } from "../../components/constants"
+import { footnoteHeadingId, similarPostsHeadingId } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { type TocEntry } from "../vfile"
 import { insertAfterOrnamentNode } from "./afterArticle"
 import { applyTextTransforms } from "./formatting_improvement_html"
-import { slugify } from "./gfm"
 import { startsWithAppendix } from "./trout_hr"
 
 const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
@@ -101,7 +100,7 @@ function insertAfterSubscriptionBlock(tree: Root, blocks: Element[]) {
 }
 
 const SIMILAR_POSTS_HEADING = "Similar posts"
-const SIMILAR_POSTS_SLUG = slugify(SIMILAR_POSTS_HEADING)
+const SIMILAR_POSTS_SLUG = similarPostsHeadingId
 
 export const similarPostsTocEntry: TocEntry = {
   depth: 0,

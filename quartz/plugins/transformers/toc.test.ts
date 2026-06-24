@@ -17,7 +17,7 @@ import type { BuildCtx } from "../../util/ctx"
 
 import { normalizeNbsp } from "../../components/constants"
 import { type TocEntry } from "../vfile"
-import { customToString, stripHtmlTagsFromString, TableOfContents } from "./toc"
+import { customToString, isIncludedTocDepth, stripHtmlTagsFromString, TableOfContents } from "./toc"
 
 // Type definitions for test objects
 type MockFile = {
@@ -154,6 +154,18 @@ describe("customToString", () => {
       const emptyChildrenNode = createNode<Emphasis>("emphasis", { children: [] })
       expect(customToString(emptyChildrenNode)).toBe("")
     })
+  })
+})
+
+describe("isIncludedTocDepth", () => {
+  it.each([
+    [1, undefined, true],
+    [2, undefined, true],
+    [3, undefined, false],
+    [3, 3, true],
+    [4, 3, false],
+  ])("depth %p with maxDepth %p → %p", (depth, maxDepth, expected) => {
+    expect(isIncludedTocDepth(depth, maxDepth)).toBe(expected)
   })
 })
 
