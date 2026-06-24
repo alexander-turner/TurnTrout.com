@@ -187,9 +187,12 @@ def upload_to_r2(
         print(f"Uploading {file_path} to R2 with key: {r2_key}")
 
     rclone_args = ["rclone", "copyto", str(file_path), upload_target]
-    # Set content-type for SVG files to ensure proper serving
-    if file_path.suffix.lower() == ".svg":
+    # Set content-type for files whose extension rclone may not map correctly.
+    suffix = file_path.suffix.lower()
+    if suffix == ".svg":
         rclone_args.extend(["--metadata-set", "content-type=image/svg+xml"])
+    elif suffix == ".vtt":
+        rclone_args.extend(["--metadata-set", "content-type=text/vtt"])
     try:
         subprocess.run(rclone_args, check=True)
     except subprocess.CalledProcessError as e:
@@ -225,7 +228,7 @@ def move_uploaded_file(
     shutil.move(str(file_path), str(target_path))
 
 
-file_exts_to_upload = (".mp4", ".svg", ".avif", ".webm")
+file_exts_to_upload = (".mp4", ".svg", ".avif", ".webm", ".vtt")
 
 
 def upload_and_move(

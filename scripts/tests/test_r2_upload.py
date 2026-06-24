@@ -699,6 +699,33 @@ def test_upload_svg_with_metadata(mock_git_root: Path):
         )
 
 
+def test_vtt_in_upload_extensions():
+    """VTT captions are uploaded alongside the other video assets."""
+    assert ".vtt" in r2_upload.file_exts_to_upload
+
+
+# Ensure we tell rclone to serve captions with the correct MIME header
+def test_upload_vtt_with_metadata(mock_git_root: Path):
+    test_file = mock_git_root / "quartz" / "static" / "test.vtt"
+    test_file.parent.mkdir(parents=True, exist_ok=True)
+    test_file.touch()
+
+    with patch("subprocess.run") as mock_run, patch("shutil.move"):
+        r2_upload.upload_and_move(test_file, verbose=True)
+
+        mock_run.assert_any_call(
+            [
+                "rclone",
+                "copyto",
+                str(test_file),
+                f"r2:{r2_upload.R2_BUCKET_NAME}/static/test.vtt",
+                "--metadata-set",
+                "content-type=text/vtt",
+            ],
+            check=True,
+        )
+
+
 def test_move_uploaded_file(mock_git_root: Path, tmp_path: Path):
     """Test that move_uploaded_file preserves directory structure."""
     source_file = mock_git_root / "quartz" / "static" / "deep" / "test.jpg"

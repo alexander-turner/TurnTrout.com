@@ -4782,6 +4782,82 @@ def test_check_video_source_order_and_match(
     assert sorted(result) == sorted(expected_issues)
 
 
+_NO_CAPTIONS_ISSUE = (
+    "<video> https://cdn/talk.mp4 has no real captions track "
+    "(.vtt) or 'No audio' marker"
+)
+
+
+@pytest.mark.parametrize(
+    "html, expected_issues",
+    [
+        # Relevant (controls) video with a real .vtt track -> ok.
+        (
+            '<video controls><source src="https://cdn/talk.mp4">'
+            '<track kind="captions" src="https://cdn/talk.vtt" srclang="en">'
+            "</video>",
+            [],
+        ),
+        # Relevant video with only the injected empty placeholder -> issue.
+        (
+            '<video controls><source src="https://cdn/talk.mp4">'
+            '<track kind="captions" src="data:text/vtt,WEBVTT"></video>',
+            [_NO_CAPTIONS_ISSUE],
+        ),
+        # Relevant video with no track at all -> issue.
+        (
+            '<video controls><source src="https://cdn/talk.mp4"></video>',
+            [_NO_CAPTIONS_ISSUE],
+        ),
+        # Explicit "No audio" marker on a relevant video -> ok.
+        (
+            '<video controls><source src="https://cdn/talk.mp4">'
+            '<track kind="captions" label="No audio"></video>',
+            [],
+        ),
+        # Inline muted GIF replacement -> skipped (no audio).
+        (
+            '<video autoplay loop muted><source src="https://cdn/anim.mp4">'
+            "</video>",
+            [],
+        ),
+        # The pond video is always skipped.
+        (
+            '<video id="pond-video" controls>'
+            '<source src="https://cdn/pond.mp4"></video>',
+            [],
+        ),
+        # A non-captions track does not satisfy the requirement.
+        (
+            '<video controls><source src="https://cdn/talk.mp4">'
+            '<track kind="descriptions" src="https://cdn/talk.vtt"></video>',
+            [_NO_CAPTIONS_ISSUE],
+        ),
+        # Falls back to the <video src> attribute for the hint.
+        (
+            '<video controls src="https://cdn/inline.mp4"></video>',
+            [
+                "<video> https://cdn/inline.mp4 has no real captions track "
+                "(.vtt) or 'No audio' marker"
+            ],
+        ),
+        # No identifiable source -> "(unknown source)" hint.
+        (
+            "<video controls></video>",
+            [
+                "<video> (unknown source) has no real captions track "
+                "(.vtt) or 'No audio' marker"
+            ],
+        ),
+    ],
+)
+def test_check_video_caption_tracks(html: str, expected_issues: list[str]):
+    """Audio-bearing videos must carry a real captions track."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_video_caption_tracks(soup)
+    assert sorted(result) == sorted(expected_issues)
+
+
 @pytest.mark.parametrize(
     "html_content, expected_issues",
     [
