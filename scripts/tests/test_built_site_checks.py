@@ -4254,24 +4254,45 @@ def test_check_toc_ordering_ignores_entries_without_a_heading():
     assert built_site_checks.check_toc_ordering(soup) == []
 
 
-def test_check_toc_ordering_exempts_similar_posts_from_order():
-    """Similar posts is listed before the appendix yet renders last."""
-    toc_ol = (
-        "<ol>"
-        '<li><a data-for="intro" href="#intro">Intro</a></li>'
-        '<li><a data-for="similar-posts" href="#similar-posts">'
-        "Similar posts</a></li>"
-        '<li><a data-for="appendix" href="#appendix">Appendix</a></li>'
-        "</ol>"
+# The Similar-posts block is rendered before the appendix, so its heading sits
+# there in document order — it is a normal entry, not a special case.
+_SIMILAR_POSTS_ARTICLE = (
+    '<h1 id="intro">Intro</h1>'
+    '<h1 id="similar-posts">Similar posts</h1>'
+    '<h1 id="appendix">Appendix A</h1>'
+    '<h1 id="footnotes">Footnotes</h1>'
+)
+
+
+def _similar_posts_toc(*slugs: str) -> str:
+    labels = {
+        "intro": "Intro",
+        "similar-posts": "Similar posts",
+        "appendix": "Appendix A",
+        "footnotes": "Footnotes",
+    }
+    items = "".join(
+        f'<li><a data-for="{s}" href="#{s}">{labels[s]}</a></li>' for s in slugs
     )
-    article = (
-        '<h1 id="intro">Intro</h1>'
-        '<h1 id="appendix">Appendix</h1>'
-        '<h1 id="similar-posts">Similar posts</h1>'
-    )
-    assert (
-        built_site_checks.check_toc_ordering(_toc_page(toc_ol, article)) == []
-    )
+    return f"<ol>{items}</ol>"
+
+
+def test_check_toc_ordering_accepts_similar_posts_in_document_order():
+    """Similar posts is listed where its (pre-appendix) heading actually is."""
+    toc = _similar_posts_toc("intro", "similar-posts", "appendix", "footnotes")
+    soup = _toc_page(toc, _SIMILAR_POSTS_ARTICLE)
+    assert built_site_checks.check_toc_ordering(soup) == []
+
+
+def test_check_toc_ordering_flags_similar_posts_listed_after_its_heading():
+    """Regression for the original bug: the entry appended after the appendix,
+    even though the block (and heading) precede it — a plain order violation."""
+    toc = _similar_posts_toc("intro", "appendix", "similar-posts", "footnotes")
+    soup = _toc_page(toc, _SIMILAR_POSTS_ARTICLE)
+    assert built_site_checks.check_toc_ordering(soup) == [
+        "TOC entry '#similar-posts' is out of document order (listed after "
+        "'#appendix', which appears later in the article)"
+    ]
 
 
 def test_check_toc_ordering_flags_out_of_order_entries():

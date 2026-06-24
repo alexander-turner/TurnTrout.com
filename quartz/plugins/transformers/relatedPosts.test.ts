@@ -11,6 +11,7 @@ import { VFile } from "vfile"
 import type { QuartzTransformerPluginInstance } from "../types"
 
 import { footnoteHeadingId } from "../../components/constants"
+import { AfterArticle } from "./afterArticle"
 import {
   buildRelatedPostsBlock,
   insertSimilarPostsTocEntry,
@@ -20,7 +21,7 @@ import {
   RelatedPosts,
   similarPostsTocEntry,
 } from "./relatedPosts"
-import { troutContainerId } from "./trout_hr"
+import { insertOrnamentNode, troutContainerId } from "./trout_hr"
 
 const samplePosts: RelatedPost[] = [
   { permalink: "first-post", title: "First Post", excerpt: "About the first thing." },
@@ -183,6 +184,37 @@ describe("insertSimilarPostsTocEntry", () => {
 })
 
 describe("RelatedPosts transformer", () => {
+  it("renders the block before the first appendix (full ornament pipeline)", async () => {
+    const filePath = await writeTempMap({ "post-a": samplePosts })
+    // No pre-built ornament: TroutOrnamentHr places it before the appendix,
+    // AfterArticle adds the subscription box after it, then RelatedPosts adds
+    // the block after that — so the block must land before the appendix.
+    const tree = h(null, [
+      h("h1", { id: "intro" }, "Intro"),
+      h("p", "body"),
+      h("h1", { id: "appendix-a" }, "Appendix A"),
+      h("p", "appendix body"),
+    ]) as Root
+
+    insertOrnamentNode(tree)
+    const afterFactory = AfterArticle().htmlPlugins?.({} as never)?.[0]
+    if (!afterFactory) throw new Error("no after-article plugin")
+    const afterFile = new VFile({ value: "" })
+    afterFile.data.frontmatter = { permalink: "post-a" } as never
+    await (afterFactory as unknown as () => (t: Root, f: VFile) => Promise<void>)()(tree, afterFile)
+    await runTransform(RelatedPosts({ filePath }), tree, "post-a")
+
+    const topLevel = (tree.children as Element[]).filter((n) => n.type === "element")
+    const similarIdx = topLevel.findIndex(
+      (n) => n.tagName === "h1" && n.properties?.id === "similar-posts",
+    )
+    const appendixIdx = topLevel.findIndex(
+      (n) => n.tagName === "h1" && n.properties?.id === "appendix-a",
+    )
+    expect(similarIdx).toBeGreaterThanOrEqual(0)
+    expect(appendixIdx).toBeGreaterThan(similarIdx)
+  })
+
   it("inserts the block after the subscription box, reusing one read across pages", async () => {
     const filePath = await writeTempMap({ "post-a": samplePosts })
     const plugin = RelatedPosts({ filePath })

@@ -13,7 +13,6 @@ import { type QuartzTransformerPlugin } from "../types"
 import { type TocEntry } from "../vfile"
 import { insertAfterOrnamentNode } from "./afterArticle"
 import { applyTextTransforms } from "./formatting_improvement_html"
-import { startsWithAppendix } from "./trout_hr"
 
 const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
 
@@ -110,14 +109,15 @@ export const similarPostsTocEntry: TocEntry = {
 
 /**
  * Returns a copy of `toc` with the "Similar posts" entry placed before the
- * article's closing supplementary sections — the first appendix heading or the
- * Footnotes entry, whichever comes first. These are the sections `trout_hr`
- * divides off with an ornament, so the similar-posts link belongs ahead of
- * them; absent both, the entry lands at the end.
+ * first appendix heading or the Footnotes entry, whichever comes first. The
+ * TOC is built from the markdown headings before this HTML-stage block exists,
+ * so the entry is inserted by hand — at the position where the block is
+ * actually rendered (the ornament places it ahead of those closing sections).
+ * Absent both, the block and the entry land at the end.
  */
 export function insertSimilarPostsTocEntry(toc: readonly TocEntry[]): TocEntry[] {
   const closingIndex = toc.findIndex(
-    (entry) => startsWithAppendix(entry.text) || entry.slug === footnoteHeadingId,
+    (entry) => entry.text.toLowerCase().startsWith("appendix") || entry.slug === footnoteHeadingId,
   )
   if (closingIndex === -1) {
     return [...toc, similarPostsTocEntry]
