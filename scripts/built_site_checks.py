@@ -2050,28 +2050,14 @@ def check_related_posts(
 _HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
 
 
-def _toc_entries_in_order(toc_content: Tag) -> list[tuple[str, int]]:
-    """
-    Return ``(slug, nesting)`` for each TOC anchor in document order.
-
-    ``nesting`` is the number of ``<ol>`` ancestors, so a top-level entry is 1
-    and each nested list adds one.
-    """
-    entries: list[tuple[str, int]] = []
+def _ordered_toc_slugs(toc_content: Tag) -> list[str]:
+    """Slug of each TOC anchor, in document order."""
+    slugs: list[str] = []
     for anchor in toc_content.find_all("a", attrs={"data-for": True}):
         slug = anchor.get("data-for")
         if isinstance(slug, str):
-            entries.append((slug, len(anchor.find_parents("ol"))))
-    return entries
-
-
-class _TocHeading(NamedTuple):
-    """A TOC entry resolved against its target heading in the article."""
-
-    slug: str
-    position: int  # document order of the target heading
-    nesting: int  # number of <ol> ancestors in the TOC
-    level: int  # heading level (1-6)
+            slugs.append(slug)
+    return slugs
 
 
 class _HeadingMeta(NamedTuple):
@@ -2091,48 +2077,25 @@ def _article_heading_index(article: Tag) -> dict[str, _HeadingMeta]:
     return index
 
 
-def _direction(previous_value: int, current_value: int) -> int:
-    """Sign of the change: -1 if it fell, +1 if it rose, 0 if unchanged."""
-    return (current_value > previous_value) - (current_value < previous_value)
-
-
-def _consecutive_entry_issues(
-    previous: _TocHeading, current: _TocHeading
-) -> list[str]:
-    """Order + nesting consistency between two consecutive TOC entries."""
-    issues: list[str] = []
-    if current.position <= previous.position:
-        issues.append(
-            f"TOC entry '#{current.slug}' is out of document order (listed after "
-            f"'#{previous.slug}', which appears later in the article)"
-        )
-    nesting_direction = _direction(previous.nesting, current.nesting)
-    level_direction = _direction(previous.level, current.level)
-    if nesting_direction != level_direction:
-        issues.append(
-            f"TOC nesting disagrees with heading levels: '#{current.slug}' "
-            f"(<h{current.level}>, nesting {current.nesting}) follows "
-            f"'#{previous.slug}' (<h{previous.level}>, nesting {previous.nesting})"
-        )
-    return issues
-
-
 def check_toc_ordering(soup: BeautifulSoup) -> list[str]:
     """
     Verify the table of contents agrees with the article's headings.
 
-    Keyed off the shared TOC config (``TOC_MAX_DEPTH``) so this checker can't
-    drift from the transformer that builds the TOC:
+    Two invariants, keyed off the shared TOC config (``TOC_MAX_DEPTH``) so the
+    checker can't drift from the transformer that builds the TOC:
 
-    * **Order** — every entry is listed in the same order its target heading
-      appears in the document. The injected "Similar posts" entry is included:
-      its block is rendered before the first appendix (or footnotes), so its
-      heading really does sit where the entry is listed.
-    * **Nesting** — the TOC nesting moves in lockstep with heading level: a
-      more deeply nested entry points to a deeper heading, a shallower one to a
-      shallower heading, and siblings to the same level.
+    * **Order** — every entry is listed in the order its target heading appears
+      in the document. The injected "Similar posts" entry is included: its block
+      is rendered before the first appendix (or footnotes), so its heading
+      really does sit where the entry is listed.
     * **Depth cutoff** — no entry targets a heading deeper than
       ``TOC_MAX_DEPTH`` (e.g. an h3 leaking into an h1/h2 TOC).
+
+    Nesting is intentionally not checked. The TOC nests by depth *relative* to
+    the article's top heading, not by absolute ``<hN>`` level, so a page whose
+    body sections are ``<h2>`` lists them at the same top level as the injected
+    ``<h1>`` "Similar posts" entry — correct, yet indistinguishable from a bug
+    by tag name alone.
     """
     toc_content = soup.find(id="toc-content")
     article = soup.find("article")
@@ -2141,9 +2104,10 @@ def check_toc_ordering(soup: BeautifulSoup) -> list[str]:
 
     headings = _article_heading_index(article)
     issues: list[str] = []
+    previous_slug: str | None = None
+    previous_position = -1
 
-    previous: _TocHeading | None = None
-    for slug, nesting in _toc_entries_in_order(toc_content):
+    for slug in _ordered_toc_slugs(toc_content):
         target = headings.get(slug)
         if target is None:
             continue  # entry targets something other than an article heading
@@ -2152,10 +2116,13 @@ def check_toc_ordering(soup: BeautifulSoup) -> list[str]:
                 f"TOC entry '#{slug}' targets an <h{target.level}>, deeper than "
                 f"tocMaxDepth={TOC_MAX_DEPTH}"
             )
-        current = _TocHeading(slug, target.position, nesting, target.level)
-        if previous is not None:
-            issues.extend(_consecutive_entry_issues(previous, current))
-        previous = current
+        if previous_slug is not None and target.position <= previous_position:
+            issues.append(
+                f"TOC entry '#{slug}' is out of document order (listed after "
+                f"'#{previous_slug}', which appears later in the article)"
+            )
+        previous_slug = slug
+        previous_position = target.position
 
     return issues
 

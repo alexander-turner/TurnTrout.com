@@ -4208,7 +4208,7 @@ def _toc_page(toc_ol: str, article_inner: str) -> BeautifulSoup:
     return BeautifulSoup(html, "html.parser")
 
 
-# Intro(h1) > Sub(h2) nested, then Appendix(h1): order + nesting both agree.
+# Intro(h1), Sub(h2) nested, then Appendix(h1): headings in document order.
 _VALID_TOC_OL = (
     "<ol>"
     '<li><a data-for="intro" href="#intro">Intro</a>'
@@ -4284,6 +4284,30 @@ def test_check_toc_ordering_accepts_similar_posts_in_document_order():
     assert built_site_checks.check_toc_ordering(soup) == []
 
 
+def test_check_toc_ordering_accepts_h1_similar_posts_among_h2_sections():
+    """
+    An h2-rooted article lists its sections and the injected h1 entry at the
+    same top level; differing tag names are not a nesting error (real pages like
+    mode-collapse-in-rl...
+
+    look exactly like this).
+    """
+    toc = (
+        "<ol>"
+        '<li><a data-for="summary" href="#summary">Summary</a></li>'
+        '<li><a data-for="similar-posts" href="#similar-posts">'
+        "Similar posts</a></li>"
+        '<li><a data-for="appendix" href="#appendix">Appendix A</a></li>'
+        "</ol>"
+    )
+    article = (
+        '<h2 id="summary">Summary</h2>'
+        '<h1 id="similar-posts">Similar posts</h1>'
+        '<h2 id="appendix">Appendix A</h2>'
+    )
+    assert built_site_checks.check_toc_ordering(_toc_page(toc, article)) == []
+
+
 def test_check_toc_ordering_flags_similar_posts_listed_after_its_heading():
     """Regression for the original bug: the entry appended after the appendix,
     even though the block (and heading) precede it — a plain order violation."""
@@ -4320,21 +4344,6 @@ def test_check_toc_ordering_flags_heading_deeper_than_max_depth():
     assert built_site_checks.check_toc_ordering(_toc_page(toc_ol, article)) == [
         f"TOC entry '#c' targets an <h3>, deeper than "
         f"tocMaxDepth={script_utils.TOC_MAX_DEPTH}"
-    ]
-
-
-def test_check_toc_ordering_flags_nesting_that_contradicts_levels():
-    """Two h1s, but the TOC nests one under the other."""
-    toc_ol = (
-        "<ol>"
-        '<li><a data-for="a" href="#a">A</a>'
-        '<ol><li><a data-for="b" href="#b">B</a></li></ol></li>'
-        "</ol>"
-    )
-    article = '<h1 id="a">A</h1><h1 id="b">B</h1>'
-    assert built_site_checks.check_toc_ordering(_toc_page(toc_ol, article)) == [
-        "TOC nesting disagrees with heading levels: '#b' (<h1>, nesting 2) "
-        "follows '#a' (<h1>, nesting 1)"
     ]
 
 
