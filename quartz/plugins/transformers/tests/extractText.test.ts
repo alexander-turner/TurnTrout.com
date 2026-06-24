@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import type { Root } from "hast"
+import type { Root } from "mdast"
 
 import { describe, expect, it } from "@jest/globals"
 

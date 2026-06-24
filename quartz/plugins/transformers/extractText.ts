@@ -1,4 +1,4 @@
-import type { Root } from "hast"
+import type { Root } from "mdast"
 
 import { CONTINUE, EXIT, SKIP, visit } from "unist-util-visit"
 
@@ -38,6 +38,9 @@ function firstTextValue(node: MdastLike): string | null {
 /**
  * Detects a blockquote whose admonition directive defaults to collapsed (`[!type]-`).
  * The reading-time estimate skips these because their content is hidden by default.
+ *
+ * Runs before remark-gfm and the OFM transform, so the admonition is still a raw
+ * blockquote whose first text line carries the directive.
  */
 function isCollapsedAdmonition(node: MdastLike): boolean {
   if (node.type !== "blockquote") return false
@@ -71,35 +74,22 @@ function isFootnoteDefinition(node: MdastLike): boolean {
 }
 
 /**
- * Gathers text from all text nodes plus any content nested inside <code> blocks.
- * Returns a single string that you can store for indexing.
- */
-export function gatherAllText(tree: Root): string {
-  let allText = ""
-  visit(tree, (node) => {
-    const value = nodeText(node as unknown as MdastLike)
-    if (value !== null) {
-      allText += `${value} `
-    }
-  })
-  return allText
-}
-
-/**
- * Gathers the text that counts toward the displayed reading time. Mirrors
- * {@link gatherAllText} but excludes content the reader does not see by default:
+ * Gathers the value of every text/code/math node in document order. When
+ * `excludeHidden` is set, content a reader does not see by default is skipped:
  * collapsed admonitions, footnote definitions, and the appendix region
  * (everything from the first top-level `Appendix` heading onward).
  */
-export function gatherReadingTimeText(tree: Root): string {
+function gatherText(tree: Root, excludeHidden: boolean): string {
   let allText = ""
   visit(tree, (node, _index, parent) => {
     const mdastNode = node as unknown as MdastLike
-    if (parent === tree && isAppendixHeading(mdastNode)) {
-      return EXIT
-    }
-    if (isCollapsedAdmonition(mdastNode) || isFootnoteDefinition(mdastNode)) {
-      return SKIP
+    if (excludeHidden) {
+      if (parent === tree && isAppendixHeading(mdastNode)) {
+        return EXIT
+      }
+      if (isCollapsedAdmonition(mdastNode) || isFootnoteDefinition(mdastNode)) {
+        return SKIP
+      }
     }
     const value = nodeText(mdastNode)
     if (value !== null) {
@@ -109,6 +99,12 @@ export function gatherReadingTimeText(tree: Root): string {
   })
   return allText
 }
+
+/** Full document text, for search indexing. */
+export const gatherAllText = (tree: Root): string => gatherText(tree, false)
+
+/** Text counted toward the displayed reading time; excludes hidden content. */
+export const gatherReadingTimeText = (tree: Root): string => gatherText(tree, true)
 
 /** Normalizes gathered text for storage: escape HTML and collapse URLs. */
 export function processGatheredText(raw: string): string {

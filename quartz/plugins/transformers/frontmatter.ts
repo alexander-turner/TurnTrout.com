@@ -1,4 +1,4 @@
-import type { Root } from "hast"
+import type { Root } from "mdast"
 
 import matter from "gray-matter"
 import { JSON_SCHEMA, load as loadYAML } from "js-yaml"
@@ -97,9 +97,7 @@ export const FrontMatter: QuartzTransformerPlugin<Partial<Options> | undefined> 
             // Fill out frontmatter data
             file.data.frontmatter = data as QuartzPluginData["frontmatter"]
 
-            // Gather text from all text + code nodes for search indexing
             file.data.text = processGatheredText(gatherAllText(tree))
-            // Reading time excludes collapsed admonitions and appendices
             file.data.readingTimeText = processGatheredText(gatherReadingTimeText(tree))
           }
         },
