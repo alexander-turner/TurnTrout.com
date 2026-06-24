@@ -4,16 +4,14 @@ import matter from "gray-matter"
 import { JSON_SCHEMA, load as loadYAML } from "js-yaml"
 import remarkFrontmatter from "remark-frontmatter"
 import toml from "toml"
-import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
 import type { QuartzTransformerPlugin } from "../types"
 import type { QuartzPluginData } from "../vfile"
 
 import { uiStrings } from "../../components/constants"
-import { escapeHTML } from "../../util/escape"
 import { slugTag } from "../../util/path"
-import { urlRegex } from "./utils"
+import { gatherAllText, gatherReadingTimeText, processGatheredText } from "./documentText"
 
 export interface Options {
   delimiters: string | [string, string]
@@ -23,27 +21,6 @@ export interface Options {
 const defaultOptions: Options = {
   delimiters: "---",
   language: "yaml",
-}
-
-/**
- * Gathers text from all text nodes plus any content nested inside <code> blocks.
- * Returns a single string that you can store for indexing.
- */
-function gatherAllText(tree: Root): string {
-  let allText = ""
-  const textNodeTypes: ReadonlySet<string> = new Set([
-    "text",
-    "inlineCode",
-    "code",
-    "math",
-    "inlineMath",
-  ])
-  visit(tree, (node) => {
-    if (textNodeTypes.has(node.type) && "value" in node && typeof node.value === "string") {
-      allText += `${node.value} `
-    }
-  })
-  return allText
 }
 
 function coalesceAliases(data: { [key: string]: string[] }, aliases: string[]) {
@@ -121,10 +98,9 @@ export const FrontMatter: QuartzTransformerPlugin<Partial<Options> | undefined> 
             file.data.frontmatter = data as QuartzPluginData["frontmatter"]
 
             // Gather text from all text + code nodes for search indexing
-            let combinedText = gatherAllText(tree)
-            combinedText = escapeHTML(combinedText)
-            combinedText = combinedText.replace(urlRegex, "$<domain>$<path>")
-            file.data.text = combinedText
+            file.data.text = processGatheredText(gatherAllText(tree))
+            // Reading time excludes collapsed admonitions and appendices
+            file.data.readingTimeText = processGatheredText(gatherReadingTimeText(tree))
           }
         },
       ]

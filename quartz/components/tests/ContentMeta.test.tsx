@@ -228,6 +228,21 @@ describe("renderReadingTime", () => {
     expect(result).toBeTruthy()
     expect(result.props?.children).toBeFalsy()
   })
+
+  it("prefers readingTimeText over the full text", () => {
+    const fileData = createFileData() as QuartzPluginData
+    fileData.text = "word ".repeat(2000) // ~10 minutes if used
+    fileData.readingTimeText = "word"
+    const result = renderReadingTime(fileData)
+    expect(result.props?.children).toContain("1 minute")
+  })
+
+  it("falls back to the full text when readingTimeText is absent", () => {
+    const fileData = createFileData() as QuartzPluginData
+    fileData.text = "word ".repeat(2000) // ~10 minutes
+    const result = renderReadingTime(fileData)
+    expect(result.props?.children).toContain("10 minutes")
+  })
 })
 
 describe("renderLinkpostInfo", () => {
