@@ -654,9 +654,9 @@ I showcase all included favicons on [the test page](/test-page#external-links-wi
 
 ## Suggest related posts based on embedding similarity
 
-Subtitle: Inspired by [`gwern](https://gwern.net/design#similar-links).
+Subtitle: Inspired by [`gwern`](https://gwern.net/design#similar-links).
 
-I feed all of my articles through a text embedding model. For each article, I find the top 5 articles with highest [cosine-similarity](https://en.wikipedia.org/wiki/Cosine_similarity) (giving up on articles without sufficiently similar counterparts). 
+I feed all of my articles through a text embedding model. For each article, I find the top 5 articles with highest [cosine-similarity](https://en.wikipedia.org/wiki/Cosine_similarity) (giving up on articles without sufficiently similar counterparts).
 
 ## Admonitions encapsulate information
 
