@@ -230,6 +230,8 @@ def test_format_timestamp_negative_raises():
         (0, "00:00:00.000"),
         (65.4, "00:01:05.400"),
         (3661.25, "01:01:01.250"),
+        (59.9996, "00:01:00.000"),  # sub-second rounding carries into minutes
+        (3599.9999, "01:00:00.000"),  # carries all the way to hours
     ],
 )
 def test_format_timestamp(seconds: float, expected: str):
@@ -243,6 +245,8 @@ def test_format_timestamp(seconds: float, expected: str):
         ({"word": "yo"}, "yo"),
         ({"text": "", "word": "w"}, "w"),
         ({}, ""),
+        ({"text": "a < b & c > d"}, "a &lt; b &amp; c &gt; d"),
+        ({"text": "look --> here"}, "look --&gt; here"),
     ],
 )
 def test_cue_text(segment: dict, expected: str):
@@ -275,6 +279,18 @@ def test_transcript_to_vtt_word_fallback():
 
 def test_transcript_to_vtt_empty():
     assert transcribe_videos.transcript_to_vtt({}) == "WEBVTT\n"
+
+
+def test_transcript_to_vtt_missing_bounds_raises():
+    transcript = {"segments": [{"text": "no timing"}]}
+    with pytest.raises(ValueError, match="no start/end"):
+        transcribe_videos.transcript_to_vtt(transcript)
+
+
+def test_transcript_to_vtt_escapes_cue_text():
+    transcript = {"segments": [{"start": 0.0, "end": 1.0, "text": "a & b < c"}]}
+    vtt = transcribe_videos.transcript_to_vtt(transcript)
+    assert "a &amp; b &lt; c" in vtt
 
 
 # --- Caption track injection ---
@@ -345,6 +361,18 @@ def test_inject_caption_track_adjacent_blocks(tmp_path: Path):
     assert f"{other_block}\n" in updated
     assert updated.count("<track") == 1
     assert 'src="static/images/posts/talk.vtt"' in updated
+
+
+def test_inject_caption_track_stem_not_substring(tmp_path: Path):
+    """``bar.mp4`` must not match a ``foobar.mp4`` source (anchored stem)."""
+    refs = tmp_path / "content"
+    original = (
+        '<video controls><source src="static/images/posts/foobar.mp4" '
+        'type="video/mp4; codecs=hvc1"></video>\n'
+    )
+    md = _write_md(refs, "post.md", original)
+    transcribe_videos.inject_caption_track(Path("x/bar.mp4"), refs)
+    assert md.read_text(encoding="utf-8") == original
 
 
 # --- Asset orchestration ---

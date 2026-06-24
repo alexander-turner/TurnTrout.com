@@ -214,10 +214,21 @@ def format_timestamp(seconds: float) -> str:
     return f"{hours:02d}:{minutes:02d}:{secs:02d}.{millis:03d}"
 
 
+def _escape_cue_text(text: str) -> str:
+    """
+    Escape characters WebVTT reserves in a cue payload.
+
+    ``&`` and ``<`` are required escapes; escaping ``>`` too neutralizes the
+    forbidden ``-->`` sequence should the model ever emit it mid-caption.
+    """
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def _cue_text(segment: dict) -> str:
-    """Return a segment's caption text (whisperX uses ``text``; word-level
-    fallbacks use ``word``)."""
-    return str(segment.get("text") or segment.get("word") or "").strip()
+    """Return a segment's escaped caption text (whisperX uses ``text``; word-
+    level fallbacks use ``word``)."""
+    raw = str(segment.get("text") or segment.get("word") or "").strip()
+    return _escape_cue_text(raw)
 
 
 def transcript_to_vtt(transcript: dict) -> str:
@@ -233,6 +244,10 @@ def transcript_to_vtt(transcript: dict) -> str:
         text = _cue_text(segment)
         if not text:
             continue
+        if "start" not in segment or "end" not in segment:
+            raise ValueError(
+                f"Transcript segment has text but no start/end: {segment}"
+            )
         start = format_timestamp(segment["start"])
         end = format_timestamp(segment["end"])
         lines.append(f"{start} --> {end}")

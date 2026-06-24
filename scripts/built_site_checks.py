@@ -864,7 +864,7 @@ def _canonical_inline_video_source(video: Tag) -> str | None:
     """
     if video.get("id") == "pond-video":
         return None
-    if not all(video.has_attr(a) for a in ("autoplay", "loop", "muted")):
+    if not _is_gif_replacement(video):
         return None
     candidates: Iterable[str | list[str] | None] = (
         video.get("src"),
