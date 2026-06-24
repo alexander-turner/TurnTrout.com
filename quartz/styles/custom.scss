@@ -10,7 +10,7 @@
 
 // Shared bottom-margin for the after-article box, the footnotes heading,
 // and the footnotes section itself, so the page-bottom rhythm stays balanced.
-$page-end-bottom-margin: calc(2 * $base-margin);
+$page-end-bottom-margin: calc(3 * $base-margin);
 
 body {
   min-height: 100vh;
@@ -924,7 +924,7 @@ foreignObject {
 }
 
 .after-article-components {
-  margin-bottom: calc(3 * $base-margin);
+  margin-bottom: $page-end-bottom-margin;
   margin-top: calc(2 * $base-margin);
 
   & p {
