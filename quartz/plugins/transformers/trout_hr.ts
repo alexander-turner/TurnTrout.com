@@ -24,6 +24,10 @@ export function createOrnamentNode(): Element {
   ])
 }
 
+/** Case-insensitive check that `text` begins with "appendix". */
+export const startsWithAppendix = (text: string): boolean =>
+  text.toLowerCase().startsWith("appendix")
+
 /**
  * Attempts to insert an ornament node before a heading that starts with "Appendix" or before footnotes.
  *
@@ -32,10 +36,6 @@ export function createOrnamentNode(): Element {
  * @param parent - The parent node of the current node.
  * @returns True if the ornament was inserted, false otherwise.
  */
-/** Case-insensitive check that `text` begins with "appendix". */
-export const startsWithAppendix = (text: string): boolean =>
-  text.toLowerCase().startsWith("appendix")
-
 export function maybeInsertOrnament(
   node: Element,
   index: number | undefined,
