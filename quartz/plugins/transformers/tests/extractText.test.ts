@@ -5,7 +5,7 @@ import type { Root } from "hast"
 
 import { describe, expect, it } from "@jest/globals"
 
-import { gatherAllText, gatherReadingTimeText, processGatheredText } from "../documentText"
+import { gatherAllText, gatherReadingTimeText, processGatheredText } from "../extractText"
 
 // Builders for the minimal mdast shapes the gather functions inspect.
 const text = (value: string) => ({ type: "text", value })

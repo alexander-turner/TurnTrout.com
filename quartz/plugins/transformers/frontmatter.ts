@@ -11,7 +11,7 @@ import type { QuartzPluginData } from "../vfile"
 
 import { uiStrings } from "../../components/constants"
 import { slugTag } from "../../util/path"
-import { gatherAllText, gatherReadingTimeText, processGatheredText } from "./documentText"
+import { gatherAllText, gatherReadingTimeText, processGatheredText } from "./extractText"
 
 export interface Options {
   delimiters: string | [string, string]
