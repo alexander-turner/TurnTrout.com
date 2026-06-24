@@ -120,7 +120,7 @@ def test_save_labels_cleans_tempfile_on_error(
     def boom(*_a: object, **_kw: object) -> None:
         raise RuntimeError("boom")
 
-    monkeypatch.setattr(label_invert.os, "replace", boom)
+    monkeypatch.setattr(label_invert.script_utils.os, "replace", boom)
     with pytest.raises(RuntimeError, match="boom"):
         label_invert.save_labels({"u": _label(True)}, tmp_path / "labels.json")
     assert list(tmp_path.iterdir()) == []
@@ -594,7 +594,7 @@ def test_save_luminances_cleans_tempfile_on_error(
     def boom(*_a: object, **_kw: object) -> None:
         raise RuntimeError("boom")
 
-    monkeypatch.setattr(label_invert.os, "replace", boom)
+    monkeypatch.setattr(label_invert.script_utils.os, "replace", boom)
     with pytest.raises(RuntimeError, match="boom"):
         label_invert.save_luminances({"u": 0.5}, tmp_path / "lum.json")
     assert list(tmp_path.iterdir()) == []

@@ -2022,6 +2022,30 @@ class CheckOptions:
     invert_labels: Mapping[str, InvertLabel] | None = None
 
 
+def check_related_posts(
+    soup: BeautifulSoup, *, is_content_page: bool
+) -> list[str]:
+    """
+    Enforce that only content pages carry a "Similar posts" block.
+
+    Every embeddable article gets a precomputed neighbor list in
+    ``related_posts.json``, which the transformer renders as a ``.related-posts``
+    block. Content pages must have one (a missing block means the article was
+    never embedded, so coverage is incomplete); non-content pages (listings,
+    tag pages, etc.) must not.
+    """
+    present = soup.find(class_="related-posts") is not None
+    if is_content_page and not present:
+        return [
+            "Missing related-posts block (.related-posts) on a content page"
+        ]
+    if not is_content_page and present:
+        return [
+            "Unexpected related-posts block (.related-posts) on a non-content page"
+        ]
+    return []
+
+
 def check_file_for_issues(
     soup: BeautifulSoup,
     file_path: Path,
@@ -2119,6 +2143,14 @@ def check_file_for_issues(
 
     if opts.should_check_fonts:
         issues["missing_preloaded_font"] = not check_preloaded_fonts(soup)
+
+    is_content_page = False
+    if md_path and md_path.is_file():
+        md_frontmatter, _ = script_utils.split_yaml(md_path)
+        is_content_page = script_utils.is_embeddable_article(md_frontmatter)
+    issues["related_posts"] = check_related_posts(
+        soup, is_content_page=is_content_page
+    )
 
     if md_path and md_path.is_file():
         issues["missing_markdown_assets"] = check_markdown_assets_in_html(

@@ -39,6 +39,9 @@ test.use({ stubCdnAssets: false })
 //     neither is actionable from our code.
 //   - "was preloaded … but not used": icons preloaded via <link rel=preload>
 //     for admonition types that don't appear on a given page. Harmless.
+//   - palform.app: the third-party feedback-form embed (on /about) ships its
+//     own bundled PouchDB, which logs a `db.type() is deprecated` warning. It's
+//     external code we don't control, so we don't fail our console check on it.
 const ALLOWED_PATTERNS: readonly RegExp[] = [
   /umami\.is/i,
   /umami\.dev/i,
@@ -46,6 +49,7 @@ const ALLOWED_PATTERNS: readonly RegExp[] = [
   /Trying to load from next <source> element/i,
   /mathvariant.*deprecated/i,
   /was preloaded using link preload but not used/i,
+  /palform\.app/i,
 ]
 
 function isAllowed(text: string): boolean {

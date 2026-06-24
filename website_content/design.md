@@ -652,6 +652,12 @@ Many favicons are monochromatic to avoid chaos. However, some iconic brand logos
 
 I showcase all included favicons on [the test page](/test-page#external-links-with-favicons) to verify that the favicons look good after several kinds of characters.
 
+## Suggest related posts based on embedding similarity
+
+Subtitle: Inspired by [`gwern](https://gwern.net/design#similar-links).
+
+I feed all of my articles through a text embedding model. For each article, I find the top 5 articles with highest [cosine-similarity](https://en.wikipedia.org/wiki/Cosine_similarity) (giving up on articles without sufficiently similar counterparts). 
+
 ## Admonitions encapsulate information
 
 I love these "admonition" bubbles which contain information. When an admonition is collapsed by default, the reader can decide whether or not they _want_ more detail on a topic, reducing ambient frustration.
