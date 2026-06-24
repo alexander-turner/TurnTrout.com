@@ -8,11 +8,11 @@ import { fileURLToPath } from "url"
 import { VFile } from "vfile"
 
 import { formatTitle } from "../../components/component_utils"
+import { footnoteHeadingId, similarPostsHeadingId } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { type TocEntry } from "../vfile"
 import { insertAfterOrnamentNode } from "./afterArticle"
 import { applyTextTransforms } from "./formatting_improvement_html"
-import { slugify } from "./gfm"
 
 const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
 
@@ -99,12 +99,30 @@ function insertAfterSubscriptionBlock(tree: Root, blocks: Element[]) {
 }
 
 const SIMILAR_POSTS_HEADING = "Similar posts"
-const SIMILAR_POSTS_SLUG = slugify(SIMILAR_POSTS_HEADING)
+const SIMILAR_POSTS_SLUG = similarPostsHeadingId
 
 export const similarPostsTocEntry: TocEntry = {
   depth: 0,
   text: SIMILAR_POSTS_HEADING,
   slug: SIMILAR_POSTS_SLUG,
+}
+
+/**
+ * Returns a copy of `toc` with the "Similar posts" entry placed before the
+ * first appendix heading or the Footnotes entry, whichever comes first. The
+ * TOC is built from the markdown headings before this HTML-stage block exists,
+ * so the entry is inserted by hand — at the position where the block is
+ * actually rendered (the ornament places it ahead of those closing sections).
+ * Absent both, the block and the entry land at the end.
+ */
+export function insertSimilarPostsTocEntry(toc: readonly TocEntry[]): TocEntry[] {
+  const closingIndex = toc.findIndex(
+    (entry) => entry.text.toLowerCase().startsWith("appendix") || entry.slug === footnoteHeadingId,
+  )
+  if (closingIndex === -1) {
+    return [...toc, similarPostsTocEntry]
+  }
+  return [...toc.slice(0, closingIndex), similarPostsTocEntry, ...toc.slice(closingIndex)]
 }
 
 /**
@@ -165,7 +183,7 @@ export const RelatedPosts: QuartzTransformerPlugin<{ filePath?: string } | undef
         if (!posts || posts.length === 0) return
         insertAfterSubscriptionBlock(tree, buildRelatedPostsBlock(posts))
         if (file.data.toc) {
-          file.data.toc = [...file.data.toc, similarPostsTocEntry]
+          file.data.toc = insertSimilarPostsTocEntry(file.data.toc)
         }
       },
     ],

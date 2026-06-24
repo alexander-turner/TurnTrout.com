@@ -49,6 +49,7 @@ from scripts.utils import (
     RIGHT_DOUBLE_QUOTE,
     RIGHT_GUILLEMET,
     RIGHT_SINGLE_QUOTE,
+    TOC_MAX_DEPTH,
     WORD_JOINER,
     ZERO_WIDTH_NBSP,
     ZERO_WIDTH_SPACE,
@@ -2046,6 +2047,86 @@ def check_related_posts(
     return []
 
 
+_HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
+
+
+def _ordered_toc_slugs(toc_content: Tag) -> list[str]:
+    """Slug of each TOC anchor, in document order."""
+    slugs: list[str] = []
+    for anchor in toc_content.find_all("a", attrs={"data-for": True}):
+        slug = anchor.get("data-for")
+        if isinstance(slug, str):
+            slugs.append(slug)
+    return slugs
+
+
+class _HeadingMeta(NamedTuple):
+    """Where an article heading sits and how deep it is."""
+
+    position: int  # document order among article headings
+    level: int  # heading level (1-6)
+
+
+def _article_heading_index(article: Tag) -> dict[str, _HeadingMeta]:
+    """Map each article heading id to its document position and level."""
+    index: dict[str, _HeadingMeta] = {}
+    for order, heading in enumerate(article.find_all(_HEADING_TAGS)):
+        heading_id = heading.get("id")
+        if isinstance(heading_id, str) and heading_id not in index:
+            index[heading_id] = _HeadingMeta(order, int(heading.name[1]))
+    return index
+
+
+def check_toc_ordering(soup: BeautifulSoup) -> list[str]:
+    """
+    Verify the table of contents agrees with the article's headings.
+
+    Two invariants, keyed off the shared TOC config (``TOC_MAX_DEPTH``) so the
+    checker can't drift from the transformer that builds the TOC:
+
+    * **Order** — every entry is listed in the order its target heading appears
+      in the document. The injected "Similar posts" entry is included: its block
+      is rendered before the first appendix (or footnotes), so its heading
+      really does sit where the entry is listed.
+    * **Depth cutoff** — no entry targets a heading deeper than
+      ``TOC_MAX_DEPTH`` (e.g. an h3 leaking into an h1/h2 TOC).
+
+    Nesting is intentionally not checked. The TOC nests by depth *relative* to
+    the article's top heading, not by absolute ``<hN>`` level, so a page whose
+    body sections are ``<h2>`` lists them at the same top level as the injected
+    ``<h1>`` "Similar posts" entry — correct, yet indistinguishable from a bug
+    by tag name alone.
+    """
+    toc_content = soup.find(id="toc-content")
+    article = soup.find("article")
+    if toc_content is None or article is None:
+        return []
+
+    headings = _article_heading_index(article)
+    issues: list[str] = []
+    previous_slug: str | None = None
+    previous_position = -1
+
+    for slug in _ordered_toc_slugs(toc_content):
+        target = headings.get(slug)
+        if target is None:
+            continue  # entry targets something other than an article heading
+        if target.level > TOC_MAX_DEPTH:
+            issues.append(
+                f"TOC entry '#{slug}' targets an <h{target.level}>, deeper than "
+                f"tocMaxDepth={TOC_MAX_DEPTH}"
+            )
+        if previous_slug is not None and target.position <= previous_position:
+            issues.append(
+                f"TOC entry '#{slug}' is out of document order (listed after "
+                f"'#{previous_slug}', which appears later in the article)"
+            )
+        previous_slug = slug
+        previous_position = target.position
+
+    return issues
+
+
 def check_file_for_issues(
     soup: BeautifulSoup,
     file_path: Path,
@@ -2134,6 +2215,7 @@ def check_file_for_issues(
         "invalid_tengwar_characters": check_tengwar_characters(soup),
         "invalid_class_names": check_invalid_class_names(soup),
         "orphaned_subfigures": check_orphaned_subfigures(soup),
+        "toc_ordering": check_toc_ordering(soup),
     }
 
     if opts.favicon_included_domains is not None:

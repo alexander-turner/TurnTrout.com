@@ -4199,6 +4199,154 @@ def test_check_related_posts(
     )
 
 
+def _toc_page(toc_ol: str, article_inner: str) -> BeautifulSoup:
+    """Wrap a TOC ``<ol>`` and article headings into a checkable page."""
+    html = (
+        '<nav id="table-of-contents"><div id="toc-content">'
+        f"{toc_ol}</div></nav><article>{article_inner}</article>"
+    )
+    return BeautifulSoup(html, "html.parser")
+
+
+# Intro(h1), Sub(h2) nested, then Appendix(h1): headings in document order.
+_VALID_TOC_OL = (
+    "<ol>"
+    '<li><a data-for="intro" href="#intro">Intro</a>'
+    '<ol><li><a data-for="sub" href="#sub">Sub</a></li></ol></li>'
+    '<li><a data-for="appendix" href="#appendix">Appendix</a></li>'
+    "</ol>"
+)
+_VALID_ARTICLE = (
+    '<h1 id="intro">Intro</h1>'
+    '<h2 id="sub">Sub</h2>'
+    '<h1 id="appendix">Appendix</h1>'
+)
+
+
+def test_check_toc_ordering_valid_page_has_no_issues():
+    soup = _toc_page(_VALID_TOC_OL, _VALID_ARTICLE)
+    assert built_site_checks.check_toc_ordering(soup) == []
+
+
+@pytest.mark.parametrize(
+    "soup",
+    [
+        # No TOC content.
+        BeautifulSoup('<article><h1 id="a">A</h1></article>', "html.parser"),
+        # TOC but no article.
+        BeautifulSoup(
+            '<nav id="table-of-contents"><div id="toc-content"><ol>'
+            '<li><a data-for="a" href="#a">A</a></li></ol></div></nav>',
+            "html.parser",
+        ),
+    ],
+)
+def test_check_toc_ordering_skips_pages_without_both(soup: BeautifulSoup):
+    assert built_site_checks.check_toc_ordering(soup) == []
+
+
+def test_check_toc_ordering_ignores_entries_without_a_heading():
+    """An entry pointing at a non-heading id has nothing to compare."""
+    soup = _toc_page(
+        '<ol><li><a data-for="ghost" href="#ghost">Ghost</a></li></ol>',
+        '<h1 id="real">Real</h1>',
+    )
+    assert built_site_checks.check_toc_ordering(soup) == []
+
+
+# The Similar-posts block is rendered before the appendix, so its heading sits
+# there in document order — it is a normal entry, not a special case.
+_SIMILAR_POSTS_ARTICLE = (
+    '<h1 id="intro">Intro</h1>'
+    '<h1 id="similar-posts">Similar posts</h1>'
+    '<h1 id="appendix">Appendix A</h1>'
+    '<h1 id="footnotes">Footnotes</h1>'
+)
+
+
+def _similar_posts_toc(*slugs: str) -> str:
+    labels = {
+        "intro": "Intro",
+        "similar-posts": "Similar posts",
+        "appendix": "Appendix A",
+        "footnotes": "Footnotes",
+    }
+    items = "".join(
+        f'<li><a data-for="{s}" href="#{s}">{labels[s]}</a></li>' for s in slugs
+    )
+    return f"<ol>{items}</ol>"
+
+
+def test_check_toc_ordering_accepts_similar_posts_in_document_order():
+    """Similar posts is listed where its (pre-appendix) heading actually is."""
+    toc = _similar_posts_toc("intro", "similar-posts", "appendix", "footnotes")
+    soup = _toc_page(toc, _SIMILAR_POSTS_ARTICLE)
+    assert built_site_checks.check_toc_ordering(soup) == []
+
+
+def test_check_toc_ordering_accepts_h1_similar_posts_among_h2_sections():
+    """
+    An h2-rooted article lists its sections and the injected h1 entry at the
+    same top level; differing tag names are not a nesting error (real pages like
+    mode-collapse-in-rl...
+
+    look exactly like this).
+    """
+    toc = (
+        "<ol>"
+        '<li><a data-for="summary" href="#summary">Summary</a></li>'
+        '<li><a data-for="similar-posts" href="#similar-posts">'
+        "Similar posts</a></li>"
+        '<li><a data-for="appendix" href="#appendix">Appendix A</a></li>'
+        "</ol>"
+    )
+    article = (
+        '<h2 id="summary">Summary</h2>'
+        '<h1 id="similar-posts">Similar posts</h1>'
+        '<h2 id="appendix">Appendix A</h2>'
+    )
+    assert built_site_checks.check_toc_ordering(_toc_page(toc, article)) == []
+
+
+def test_check_toc_ordering_flags_similar_posts_listed_after_its_heading():
+    """Regression for the original bug: the entry appended after the appendix,
+    even though the block (and heading) precede it — a plain order violation."""
+    toc = _similar_posts_toc("intro", "appendix", "similar-posts", "footnotes")
+    soup = _toc_page(toc, _SIMILAR_POSTS_ARTICLE)
+    assert built_site_checks.check_toc_ordering(soup) == [
+        "TOC entry '#similar-posts' is out of document order (listed after "
+        "'#appendix', which appears later in the article)"
+    ]
+
+
+def test_check_toc_ordering_flags_out_of_order_entries():
+    toc_ol = (
+        "<ol>"
+        '<li><a data-for="beta" href="#beta">Beta</a></li>'
+        '<li><a data-for="alpha" href="#alpha">Alpha</a></li>'
+        "</ol>"
+    )
+    article = '<h1 id="alpha">Alpha</h1><h1 id="beta">Beta</h1>'
+    assert built_site_checks.check_toc_ordering(_toc_page(toc_ol, article)) == [
+        "TOC entry '#alpha' is out of document order (listed after '#beta', "
+        "which appears later in the article)"
+    ]
+
+
+def test_check_toc_ordering_flags_heading_deeper_than_max_depth():
+    toc_ol = (
+        "<ol>"
+        '<li><a data-for="a" href="#a">A</a>'
+        '<ol><li><a data-for="c" href="#c">C</a></li></ol></li>'
+        "</ol>"
+    )
+    article = '<h1 id="a">A</h1><h3 id="c">C</h3>'
+    assert built_site_checks.check_toc_ordering(_toc_page(toc_ol, article)) == [
+        f"TOC entry '#c' targets an <h3>, deeper than "
+        f"tocMaxDepth={script_utils.TOC_MAX_DEPTH}"
+    ]
+
+
 @pytest.mark.parametrize(
     "filename, should_check_favicon",
     [

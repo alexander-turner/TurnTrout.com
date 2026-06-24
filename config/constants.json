@@ -96,6 +96,8 @@
     "s"
   ],
   "footnoteHeadingId": "footnotes",
+  "similarPostsHeadingId": "similar-posts",
+  "tocMaxDepth": 2,
   "testPageSlug": "test-page",
   "designPageSlug": "design",
   "tightScrollTolerance": 10,
