@@ -108,6 +108,21 @@ export const similarPostsTocEntry: TocEntry = {
 }
 
 /**
+ * Returns a copy of `toc` with the "Similar posts" entry placed before the
+ * first appendix heading. Appendices conventionally close out an article, so
+ * the similar-posts section belongs ahead of them; absent any appendix the
+ * entry lands at the end. Appendix matching mirrors `trout_hr`: a heading whose
+ * rendered text begins with "appendix" (case-insensitive).
+ */
+export function insertSimilarPostsTocEntry(toc: readonly TocEntry[]): TocEntry[] {
+  const appendixIndex = toc.findIndex((entry) => entry.text.toLowerCase().startsWith("appendix"))
+  if (appendixIndex === -1) {
+    return [...toc, similarPostsTocEntry]
+  }
+  return [...toc.slice(0, appendixIndex), similarPostsTocEntry, ...toc.slice(appendixIndex)]
+}
+
+/**
  * Builds the "Similar posts" section: a top-level `<h1>` heading followed by
  * the list block. Emitting the heading as a direct article child (rather than
  * nesting it in the list wrapper) makes it a real section heading — it gets a
@@ -165,7 +180,7 @@ export const RelatedPosts: QuartzTransformerPlugin<{ filePath?: string } | undef
         if (!posts || posts.length === 0) return
         insertAfterSubscriptionBlock(tree, buildRelatedPostsBlock(posts))
         if (file.data.toc) {
-          file.data.toc = [...file.data.toc, similarPostsTocEntry]
+          file.data.toc = insertSimilarPostsTocEntry(file.data.toc)
         }
       },
     ],

@@ -12,6 +12,7 @@ import type { QuartzTransformerPluginInstance } from "../types"
 
 import {
   buildRelatedPostsBlock,
+  insertSimilarPostsTocEntry,
   loadRelatedPosts,
   parseRelatedPosts,
   type RelatedPost,
@@ -148,6 +149,31 @@ describe("buildRelatedPostsBlock", () => {
   })
 })
 
+describe("insertSimilarPostsTocEntry", () => {
+  const intro = { depth: 0, text: "Introduction", slug: "introduction" }
+  const appendix = { depth: 0, text: "Appendix: Notes", slug: "appendix-notes" }
+
+  it("appends when there is no appendix", () => {
+    expect(insertSimilarPostsTocEntry([intro])).toEqual([intro, similarPostsTocEntry])
+  })
+
+  it("inserts before the first appendix, matching case-insensitively", () => {
+    const lower = { depth: 0, text: "appendix two", slug: "appendix-two" }
+    expect(insertSimilarPostsTocEntry([intro, appendix, lower])).toEqual([
+      intro,
+      similarPostsTocEntry,
+      appendix,
+      lower,
+    ])
+  })
+
+  it("leaves the input array unmutated", () => {
+    const toc = [intro, appendix]
+    insertSimilarPostsTocEntry(toc)
+    expect(toc).toEqual([intro, appendix])
+  })
+})
+
 describe("RelatedPosts transformer", () => {
   it("inserts the block after the subscription box, reusing one read across pages", async () => {
     const filePath = await writeTempMap({ "post-a": samplePosts })
@@ -184,6 +210,19 @@ describe("RelatedPosts transformer", () => {
       existingEntry,
     ])
     expect(file.data.toc).toEqual([existingEntry, similarPostsTocEntry])
+  })
+
+  it("inserts the ToC entry before the first appendix heading", async () => {
+    const filePath = await writeTempMap({ "post-a": samplePosts })
+    const intro = { depth: 0, text: "Introduction", slug: "introduction" }
+    const appendixA = { depth: 0, text: "Appendix A", slug: "appendix-a" }
+    const appendixB = { depth: 0, text: "Appendix B", slug: "appendix-b" }
+    const { file } = await runTransform(RelatedPosts({ filePath }), treeWithOrnament(), "post-a", [
+      intro,
+      appendixA,
+      appendixB,
+    ])
+    expect(file.data.toc).toEqual([intro, similarPostsTocEntry, appendixA, appendixB])
   })
 
   it("does not create a toc when the file has none", async () => {
