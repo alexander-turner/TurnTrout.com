@@ -768,6 +768,28 @@ def test_asset_step_uses_bash_and_requires_rclone():
     assert asset_step.requires == "rclone"
 
 
+def test_related_posts_step_invocation():
+    """The related-posts generator runs sequentially after asset upload and
+    needs rclone for the R2 vector-cache sync."""
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    step = _step_by_name(steps, "Generating related posts")
+    assert step.command == [
+        "uv",
+        "run",
+        "python",
+        "scripts/generate_related_posts.py",
+    ]
+    assert step.cwd == str(_TEST_ROOT)
+    assert step.requires == "rclone"
+    assert step.requires_env == "VOYAGE_API_KEY"
+    assert step.parallel_group is None
+    step_index = {s.name: i for i, s in enumerate(steps)}
+    assert (
+        step_index["Compressing and uploading local assets"]
+        < step_index["Generating related posts"]
+    )
+
+
 def test_alt_text_step_requires_alt_text_llm():
     steps = run_push_checks.get_check_steps(_TEST_ROOT)
     alt_step = _step_by_name(steps, "Scanning for images without alt text")
@@ -797,6 +819,30 @@ def test_run_checks_skips_missing_requires(temp_state_dir, capsys):
 
     captured = capsys.readouterr().out
     assert "nonexistent-tool-xyz not installed" in captured
+
+
+def test_run_checks_skips_missing_requires_env(
+    temp_state_dir, capsys, monkeypatch
+):
+    """Steps whose required env var is unset are skipped with a warning."""
+    monkeypatch.delenv("NEEDED_KEY", raising=False)
+    steps = [
+        run_push_checks.CheckStep(
+            name="Needs key", command=["echo", "x"], requires_env="NEEDED_KEY"
+        ),
+        run_push_checks.CheckStep(name="Always runs", command=["echo", "hi"]),
+    ]
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+        run_push_checks.run_checks(steps)
+        assert mock_run.call_count == 1
+
+    assert "NEEDED_KEY not set" in capsys.readouterr().out
 
 
 def test_main_resume_with_invalid_step(temp_state_dir):

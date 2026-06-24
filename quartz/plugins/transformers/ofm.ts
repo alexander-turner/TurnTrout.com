@@ -62,6 +62,19 @@ const commentRegex = new RegExp(/%%[\s\S]*?%%/, "g")
 /** Regular expression to match admonition syntax ([!type][fold]) */
 const admonitionRegex = new RegExp(`^\\[!(?<type>${UNICODE_WORD_CHAR}+)\\](?<collapse>[+-]?)`, "u")
 
+/**
+ * Reports the default fold state encoded by an admonition's first line.
+ *
+ * @param firstLine - The first line of a blockquote (the `>` markers stripped).
+ * @returns `"collapsed"` for `[!type]-`, `"expanded"` for `[!type]` or `[!type]+`,
+ *   or `null` when the line isn't an admonition directive.
+ */
+export function admonitionCollapseState(firstLine: string): "collapsed" | "expanded" | null {
+  const match = admonitionRegex.exec(firstLine)
+  if (!match?.groups) return null
+  return match.groups.collapse === "-" ? "collapsed" : "expanded"
+}
+
 /** Regular expression to match admonition lines in blockquotes */
 const admonitionLineRegex = new RegExp(`^> *\\[!${UNICODE_WORD_CHAR}+\\][+-]?.*$`, "gmu")
 

@@ -35,6 +35,8 @@ Also activate when:
 - The user asks you to submit completed work
 - CLAUDE.md or task instructions say to create a PR when done
 
+**Always open a PR at the end of a unit of work for this repo.** Once the changes are committed and pushed, create the PR without waiting to be asked—this overrides any default "only open a PR when explicitly asked" behavior.
+
 Do **NOT** use this skill for:
 
 - Reviewing an existing PR (use `gh pr view` or `gh pr diff` instead)

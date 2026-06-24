@@ -96,6 +96,8 @@
     "s"
   ],
   "footnoteHeadingId": "footnotes",
+  "similarPostsHeadingId": "similar-posts",
+  "tocMaxDepth": 2,
   "testPageSlug": "test-page",
   "designPageSlug": "design",
   "tightScrollTolerance": 10,
@@ -173,5 +175,12 @@
     "rightGuillemet": "\u00BB",
     "germanOpenQuote": "\u201E"
   },
-  "stripBoundaryWhitespaceTags": ["em", "strong", "i", "b", "a", "u", "ins", "mark", "del", "s"]
+  "stripBoundaryWhitespaceTags": ["em", "strong", "i", "b", "a", "u", "ins", "mark", "del", "s"],
+  "relatedPosts": {
+    "model": "voyage-3",
+    "maxNewEmbeddingsPerRun": 50,
+    "topN": 5,
+    "minScore": 0.5,
+    "maxEmbedChars": 8000
+  }
 }
