@@ -39,7 +39,7 @@ Configuration entry points: `config/quartz/quartz.config.ts`, `config/quartz/qua
 - **Hooks auto-configured** via `.claude/settings.json` SessionStart hook (also exports `GH_REPO` for proxy environments). Manual: `git config core.hooksPath .hooks`.
 - **Pre-commit**: lint-staged formatters/linters on changed files.
 - **Pre-push**: stashes uncommitted changes, runs auto-fix formatters, pylint, asset upload, alt-text scan. Resume from last failure with `RESUME=true git push`.
-- **Pull requests**: always follow `.claude/skills/pr-creation.md`.
+- **Pull requests**: always follow `.claude/skills/pr-creation.md`. **Always open a PR at the end of a unit of work**—once the changes are committed and pushed, create the PR without waiting to be asked (this overrides any default "only open a PR when explicitly asked" behavior for this repo).
 - **Dev branch workflow**: when working on `dev`, first merge `main` into `dev`, push `dev`, then start the new feature branch from `dev`.
 - **Merging PRs**: never call `merge_pull_request` directly. Once checks are green, call `mcp__github__enable_pr_auto_merge` (squash by default). Required status checks gate the merge—the full suite (Linux Chromium + Firefox, macOS WebKit, visual, a11y, lighthouse, site-build-checks, python, lint, node) runs on every PR where the `paths:` filter matches. Do **not** force-merge with empty “run ALL CI” commits or a direct merge—auto-merge is the only sanctioned path to `main`.
 
