@@ -10,6 +10,7 @@ import { VFile } from "vfile"
 
 import type { QuartzTransformerPluginInstance } from "../types"
 
+import { footnoteHeadingId } from "../../components/constants"
 import {
   buildRelatedPostsBlock,
   insertSimilarPostsTocEntry,
@@ -152,19 +153,26 @@ describe("buildRelatedPostsBlock", () => {
 describe("insertSimilarPostsTocEntry", () => {
   const intro = { depth: 0, text: "Introduction", slug: "introduction" }
   const appendix = { depth: 0, text: "Appendix: Notes", slug: "appendix-notes" }
+  const appendixDeep = { depth: 2, text: "ApPeNdix C", slug: "appendix-c" }
+  const footnotes = { depth: 1, text: "Footnotes", slug: footnoteHeadingId }
 
-  it("appends when there is no appendix", () => {
-    expect(insertSimilarPostsTocEntry([intro])).toEqual([intro, similarPostsTocEntry])
-  })
-
-  it("inserts before the first appendix, matching case-insensitively", () => {
-    const lower = { depth: 0, text: "appendix two", slug: "appendix-two" }
-    expect(insertSimilarPostsTocEntry([intro, appendix, lower])).toEqual([
-      intro,
-      similarPostsTocEntry,
-      appendix,
-      lower,
-    ])
+  it.each([
+    ["empty toc", [], [similarPostsTocEntry]],
+    ["no closing section, appends", [intro], [intro, similarPostsTocEntry]],
+    ["before the first appendix", [intro, appendix], [intro, similarPostsTocEntry, appendix]],
+    [
+      "before an appendix at any depth, matching mixed case",
+      [intro, appendixDeep],
+      [intro, similarPostsTocEntry, appendixDeep],
+    ],
+    ["before the Footnotes entry", [intro, footnotes], [intro, similarPostsTocEntry, footnotes]],
+    [
+      "before whichever closing section comes first",
+      [intro, appendix, footnotes],
+      [intro, similarPostsTocEntry, appendix, footnotes],
+    ],
+  ])("places the entry %s", (_label, input, expected) => {
+    expect(insertSimilarPostsTocEntry(input)).toEqual(expected)
   })
 
   it("leaves the input array unmutated", () => {
@@ -203,26 +211,15 @@ describe("RelatedPosts transformer", () => {
     expect(elementsWithClass(tree2, "related-post")).toHaveLength(2)
   })
 
-  it("appends the ToC entry when the file already has a toc", async () => {
-    const filePath = await writeTempMap({ "post-a": samplePosts })
-    const existingEntry = { depth: 0, text: "Introduction", slug: "introduction" }
-    const { file } = await runTransform(RelatedPosts({ filePath }), treeWithOrnament(), "post-a", [
-      existingEntry,
-    ])
-    expect(file.data.toc).toEqual([existingEntry, similarPostsTocEntry])
-  })
-
-  it("inserts the ToC entry before the first appendix heading", async () => {
+  it("routes an existing toc through insertSimilarPostsTocEntry", async () => {
     const filePath = await writeTempMap({ "post-a": samplePosts })
     const intro = { depth: 0, text: "Introduction", slug: "introduction" }
-    const appendixA = { depth: 0, text: "Appendix A", slug: "appendix-a" }
-    const appendixB = { depth: 0, text: "Appendix B", slug: "appendix-b" }
+    const appendix = { depth: 0, text: "Appendix A", slug: "appendix-a" }
     const { file } = await runTransform(RelatedPosts({ filePath }), treeWithOrnament(), "post-a", [
       intro,
-      appendixA,
-      appendixB,
+      appendix,
     ])
-    expect(file.data.toc).toEqual([intro, similarPostsTocEntry, appendixA, appendixB])
+    expect(file.data.toc).toEqual([intro, similarPostsTocEntry, appendix])
   })
 
   it("does not create a toc when the file has none", async () => {

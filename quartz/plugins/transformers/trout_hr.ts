@@ -32,6 +32,10 @@ export function createOrnamentNode(): Element {
  * @param parent - The parent node of the current node.
  * @returns True if the ornament was inserted, false otherwise.
  */
+/** Case-insensitive check that `text` begins with "appendix". */
+export const startsWithAppendix = (text: string): boolean =>
+  text.toLowerCase().startsWith("appendix")
+
 export function maybeInsertOrnament(
   node: Element,
   index: number | undefined,
@@ -41,9 +45,6 @@ export function maybeInsertOrnament(
 
   // Check for "Appendix" headings
   if (node.tagName === "h1" || node.tagName === "h2") {
-    /** Case-insensitive check that `text` begins with "appendix". */
-    const startsWithAppendix = (text: string) => text.toLowerCase().startsWith("appendix")
-
     // Check direct text children
     if (node.children[0]?.type === "text" && startsWithAppendix(node.children[0].value)) {
       parent.children.splice(index, 0, createOrnamentNode())

@@ -8,11 +8,13 @@ import { fileURLToPath } from "url"
 import { VFile } from "vfile"
 
 import { formatTitle } from "../../components/component_utils"
+import { footnoteHeadingId } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { type TocEntry } from "../vfile"
 import { insertAfterOrnamentNode } from "./afterArticle"
 import { applyTextTransforms } from "./formatting_improvement_html"
 import { slugify } from "./gfm"
+import { startsWithAppendix } from "./trout_hr"
 
 const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
 
@@ -109,17 +111,19 @@ export const similarPostsTocEntry: TocEntry = {
 
 /**
  * Returns a copy of `toc` with the "Similar posts" entry placed before the
- * first appendix heading. Appendices conventionally close out an article, so
- * the similar-posts section belongs ahead of them; absent any appendix the
- * entry lands at the end. Appendix matching mirrors `trout_hr`: a heading whose
- * rendered text begins with "appendix" (case-insensitive).
+ * article's closing supplementary sections — the first appendix heading or the
+ * Footnotes entry, whichever comes first. These are the sections `trout_hr`
+ * divides off with an ornament, so the similar-posts link belongs ahead of
+ * them; absent both, the entry lands at the end.
  */
 export function insertSimilarPostsTocEntry(toc: readonly TocEntry[]): TocEntry[] {
-  const appendixIndex = toc.findIndex((entry) => entry.text.toLowerCase().startsWith("appendix"))
-  if (appendixIndex === -1) {
+  const closingIndex = toc.findIndex(
+    (entry) => startsWithAppendix(entry.text) || entry.slug === footnoteHeadingId,
+  )
+  if (closingIndex === -1) {
     return [...toc, similarPostsTocEntry]
   }
-  return [...toc.slice(0, appendixIndex), similarPostsTocEntry, ...toc.slice(appendixIndex)]
+  return [...toc.slice(0, closingIndex), similarPostsTocEntry, ...toc.slice(closingIndex)]
 }
 
 /**
