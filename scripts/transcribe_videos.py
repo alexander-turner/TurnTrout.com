@@ -125,6 +125,7 @@ def _headers(api_key: str) -> dict[str, str]:
 def _upload(video: Path, base_url: str, api_key: str) -> str:
     """Upload *video* to Scriberr and return the created job id."""
     url = f"{base_url}{_TRANSCRIPTION_PATH}/upload-video"
+    # skipcq: PTC-W6004 - server-side asset path from get_files, not user-facing
     with open(video, "rb") as handle:
         response = _http_session.post(
             url,
