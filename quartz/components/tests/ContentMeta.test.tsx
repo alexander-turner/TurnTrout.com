@@ -228,6 +228,18 @@ describe("renderReadingTime", () => {
     expect(result).toBeTruthy()
     expect(result.props?.children).toBeFalsy()
   })
+
+  // `text` is ~10 minutes; readingTimeText (when present) drives the estimate instead.
+  it.each([
+    ["prefers readingTimeText over the full text", "word", "1 minute"],
+    ["falls back to the full text when readingTimeText is absent", undefined, "10 minutes"],
+  ])("%s", (_name, readingTimeText, expected) => {
+    const fileData = createFileData() as QuartzPluginData
+    fileData.text = "word ".repeat(2000)
+    fileData.readingTimeText = readingTimeText
+    const result = renderReadingTime(fileData)
+    expect(result.props?.children).toEqual(["Read time: ", expected])
+  })
 })
 
 describe("renderLinkpostInfo", () => {
