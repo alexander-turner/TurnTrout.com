@@ -475,6 +475,7 @@ Ephel
 Epistemologists
 Equilibria
 Erebor
+Erez
 Espero
 EteSync
 Eval
@@ -953,6 +954,7 @@ Norvig
 Noschese's
 OAuth2
 OGI
+OOM
 OV
 OV-circuit
 OV-circuits
