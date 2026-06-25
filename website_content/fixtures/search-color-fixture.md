@@ -4,13 +4,13 @@ permalink: search-color-fixture
 no_dropcap: "true"
 tags:
   - website
-description: Stable fixture for the search-highlight color-invariant test in `search.spec.ts`. No screenshot test targets this page, so editing it never churns visual baselines.
+description: Dedicated fixture for the search-highlight color-invariant test in `search.spec.ts`.
 hideSubscriptionLinks: true
 date_published: 2024-12-04
 date_updated: 2024-12-04
 ---
 
-This page exists only so `search.spec.ts` can assert that highlighted search matches keep one color across every element type. Its unique title phrase deterministically returns this page, and the word "quotation" appears in the body, a heading, and an admonition title so the search highlights all three.
+The word "quotation" recurs in the body, a heading, and an admonition title so a search for it highlights matches in every element type.
 
 # Quotation heading
 

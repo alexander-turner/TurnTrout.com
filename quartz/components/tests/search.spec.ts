@@ -314,6 +314,10 @@ test("search matches keep one highlight color across every element type", async 
 
   const preview = await waitForArticlePreview(page)
 
+  // Confirm the preview is this fixture, so a ranking change can't silently
+  // make the color assertion run against the wrong page.
+  await expect(preview).toContainText("Quotation heading")
+
   // The admonition-title match is the case that regressed; make sure it renders
   // so the shared-color assertion below actually exercises it.
   const admonitionMatch = preview.locator(".admonition-title .search-match")
