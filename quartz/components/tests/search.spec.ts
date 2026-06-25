@@ -300,17 +300,23 @@ test("search matches in headers have correct color styling", async ({ page }) =>
 })
 
 test("search matches keep one highlight color across every element type", async ({ page }) => {
-  // The fixture's unique title deterministically lands on the search fixture,
-  // whose "fixture" token appears in headers, body text, and a custom
-  // admonition title ("Quote fixture"). The highlight color must win
-  // everywhere — a high-specificity `color: ... !important` rule on
-  // descendants (admonition titles force `color: inherit !important` on every
-  // child) would otherwise clobber the match inside the title, leaving its
-  // color diverging from the others. Asserting all matches share one color
-  // catches that regression for any clobbering selector, not just admonitions.
-  await search(page, "Search preview fixture")
+  // Searches a dedicated, never-screenshotted fixture whose unique title
+  // phrase deterministically returns it. The word "quotation" appears in a
+  // heading, body text, and an admonition title. Using a private fixture keeps
+  // this test independent: editing it can never churn another test's visual
+  // baseline. The highlight color must win everywhere — a high-specificity
+  // `color: ... !important` rule on descendants (admonition titles force
+  // `color: inherit !important` on every child) would otherwise clobber the
+  // match inside the title, leaving its color diverging from the others.
+  // Asserting all matches share one color catches that regression for any
+  // clobbering selector, not just admonitions.
+  await search(page, "Highlighted quotation fixture")
 
   const preview = await waitForArticlePreview(page)
+
+  // Confirm the preview is this fixture, so a ranking change can't silently
+  // make the color assertion run against the wrong page.
+  await expect(preview).toContainText("Quotation heading")
 
   // The admonition-title match is the case that regressed; make sure it renders
   // so the shared-color assertion below actually exercises it.

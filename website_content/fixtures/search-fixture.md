@@ -19,7 +19,7 @@ The fixture lives outside the live site (see `RemoveFixtures` filter), so no use
 > [!note]
 > A short note admonition for the focused mobile-card-preview screenshot.
 
-> [!quote] Quote fixture
+> [!quote]
 > A second admonition.
 
 # Checkboxes fixture
