@@ -300,15 +300,16 @@ test("search matches in headers have correct color styling", async ({ page }) =>
 })
 
 test("search matches keep one highlight color across every element type", async ({ page }) => {
-  // The fixture's unique title deterministically lands on the search fixture,
-  // whose "fixture" token appears in headers, body text, and a custom
-  // admonition title ("Quote fixture"). The highlight color must win
+  // Searches a dedicated, never-screenshotted fixture whose unique word
+  // "Matchcolor" appears in a heading, body text, and an admonition title.
+  // Using a private fixture keeps this test independent: editing it can never
+  // churn another test's visual baseline. The highlight color must win
   // everywhere — a high-specificity `color: ... !important` rule on
   // descendants (admonition titles force `color: inherit !important` on every
   // child) would otherwise clobber the match inside the title, leaving its
   // color diverging from the others. Asserting all matches share one color
   // catches that regression for any clobbering selector, not just admonitions.
-  await search(page, "Search preview fixture")
+  await search(page, "Matchcolor")
 
   const preview = await waitForArticlePreview(page)
 
