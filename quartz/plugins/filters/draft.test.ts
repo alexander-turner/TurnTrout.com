@@ -60,7 +60,7 @@ describe("RemoveDrafts", () => {
 
   it("falls back to empty string when both filePath and path are undefined", () => {
     const content = defaultProcessedContent({})
-    // With empty string, includes("drafts/") is false → publishes
+    // With empty string, there is no "drafts" path segment → publishes
     expect(filter.shouldPublish({} as BuildCtx, content)).toBe(true)
   })
 })

@@ -1,6 +1,7 @@
 """Convert assets to optimized formats."""
 
 import argparse
+import json
 import logging
 import re
 import subprocess
@@ -160,10 +161,70 @@ def _image_patterns(input_file: Path) -> tuple[str, str]:
     )
 
 
-def _strip_metadata(file_path: Path) -> None:
+# Tag names (without `Group:` prefix) that indicate user/source-derived
+# metadata in a WEBM. Anything starting with `GPS` is also treated as PII.
+_WEBM_PII_TAG_NAMES: frozenset[str] = frozenset(
+    {
+        "Artist",
+        "Author",
+        "Comment",
+        "Copyright",
+        "Creator",
+        "CreateDate",
+        "DateTimeOriginal",
+        "DateUTC",
+        "Description",
+        "HostComputer",
+        "LensModel",
+        "LocationInformation",
+        "LocationName",
+        "Make",
+        "Model",
+        "OwnerName",
+        "SerialNumber",
+        "Software",
+        "Title",
+    }
+)
+
+
+def _webm_pii_tags(tags: dict[str, object]) -> dict[str, object]:
+    """Return the subset of exiftool-reported tags that look like PII."""
+    leaked: dict[str, object] = {}
+    for key, value in tags.items():
+        _, _, name = key.rpartition(":")
+        if name.startswith("GPS") or name in _WEBM_PII_TAG_NAMES:
+            leaked[key] = value
+    return leaked
+
+
+def _assert_webm_clean(file_path: Path) -> None:
+    # exiftool cannot write to Matroska/WEBM, so verify ffmpeg's output is
+    # free of source-derived PII instead of trying (and failing) to strip it.
     exiftool_executable = script_utils.find_executable("exiftool")
     result = subprocess.run(
-        [exiftool_executable, "-all=", str(file_path), "--verbose"],
+        [exiftool_executable, "-j", "-G", str(file_path)],
+        capture_output=True,
+        check=True,
+    )
+    tags: dict[str, object] = json.loads(result.stdout)[0]
+    leaked = _webm_pii_tags(tags)
+    if leaked:
+        raise RuntimeError(
+            f"WEBM {file_path} carries source-derived metadata that "
+            f"exiftool cannot strip from Matroska; re-encode upstream to "
+            f"drop these tags: {leaked}"
+        )
+
+
+def _strip_metadata(file_path: Path) -> None:
+    if file_path.suffix == ".webm":
+        _assert_webm_clean(file_path)
+        return
+
+    exiftool_executable = script_utils.find_executable("exiftool")
+    result = subprocess.run(
+        [exiftool_executable, "-all=", str(file_path)],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.PIPE,
         check=False,

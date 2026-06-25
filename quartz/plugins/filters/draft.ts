@@ -2,7 +2,10 @@ import { type QuartzFilterPlugin } from "../types"
 
 /** A file is a draft when it lives under a `drafts/` directory but is not a template. */
 export function isDraftPath(filePath: string): boolean {
-  return filePath.includes("drafts/") && !filePath.includes("templates/")
+  // Match `drafts` as a whole path segment so siblings like `old-drafts/` or
+  // `drafts-archive/` aren't misclassified as drafts.
+  const segments = filePath.split("/")
+  return segments.includes("drafts") && !segments.includes("templates")
 }
 
 export const RemoveDrafts: QuartzFilterPlugin = () => ({

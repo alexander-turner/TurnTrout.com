@@ -16,6 +16,7 @@ import type { FilePath, FullSlug } from "./util/path"
 import cfg from "../config/quartz/quartz.config"
 import DepGraph from "./depgraph"
 import { getStaticResourcesFromPlugins } from "./plugins"
+import { isDraftPath } from "./plugins/filters/draft"
 import { countAllFavicons } from "./plugins/transformers/countFavicons"
 import { emitContent } from "./processors/emit"
 import { filterContent } from "./processors/filter"
@@ -218,8 +219,10 @@ async function partialRebuildFromEntrypoint(
   const { ctx, ignored, dependencies, contentMap, mut, toRemove } = buildData
   const { argv, cfg } = ctx
 
-  // don't do anything for gitignored files
-  if (ignored(filepath)) {
+  // Drafts live under a gitignored `drafts/` directory but must still hot-rebuild
+  // in serve (dev) mode so the preview reflects edits; everything else that is
+  // gitignored stays ignored.
+  if (ignored(filepath) && !(argv.serve && isDraftPath(toPosixPath(filepath)))) {
     return
   }
 
@@ -418,8 +421,10 @@ async function rebuildFromEntrypoint(
 
   const { argv } = ctx
 
-  // don't do anything for gitignored files
-  if (ignored(fp)) {
+  // Drafts live under a gitignored `drafts/` directory but must still hot-rebuild
+  // in serve (dev) mode so the preview reflects edits; everything else that is
+  // gitignored stays ignored.
+  if (ignored(fp) && !(argv.serve && isDraftPath(toPosixPath(fp)))) {
     return
   }
 

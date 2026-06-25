@@ -267,6 +267,54 @@ def test_strip_video_metadata(ext: str, setup_test_env):
         assert "Test Copyright" not in exif_output.decode()
 
 
+@pytest.mark.parametrize(
+    "tags, expected",
+    [
+        ({"File:FileName": "x.webm", "Matroska:CodecID": "V_VP9"}, {}),
+        (
+            {"Matroska:Artist": "Alex", "Matroska:CodecID": "V_VP9"},
+            {"Matroska:Artist": "Alex"},
+        ),
+        (
+            {"GPS:GPSLatitude": "37.7749 N", "File:FileSize": "1 MB"},
+            {"GPS:GPSLatitude": "37.7749 N"},
+        ),
+        (
+            {"Composite:GPSPosition": "37.77 N, 122.42 W"},
+            {"Composite:GPSPosition": "37.77 N, 122.42 W"},
+        ),
+        (
+            {"Matroska:Title": "secret.mov", "Matroska:Comment": "hi"},
+            {"Matroska:Title": "secret.mov", "Matroska:Comment": "hi"},
+        ),
+    ],
+)
+def test_webm_pii_tags(
+    tags: dict[str, object], expected: dict[str, object]
+) -> None:
+    assert convert_assets._webm_pii_tags(tags) == expected
+
+
+def test_assert_webm_clean_raises_on_pii(
+    setup_test_env, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    asset_path = Path(setup_test_env) / "quartz" / "static" / "asset.webm"
+    asset_path.write_bytes(b"")
+
+    def fake_run(*_args, **_kwargs):
+        return subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout=b'[{"Matroska:Artist": "Alex", "Matroska:CodecID": "V_VP9"}]',
+            stderr=b"",
+        )
+
+    monkeypatch.setattr(convert_assets.subprocess, "run", fake_run)
+
+    with pytest.raises(RuntimeError, match="source-derived metadata"):
+        convert_assets._assert_webm_clean(asset_path)
+
+
 def test_ignores_unsupported_file_types(setup_test_env):
     asset_path = Path(setup_test_env) / "quartz" / "static" / "unsupported.txt"
 
