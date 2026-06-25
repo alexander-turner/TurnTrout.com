@@ -299,6 +299,31 @@ test("search matches in headers have correct color styling", async ({ page }) =>
   expect(matchColor).not.toBe(foregroundColor)
 })
 
+test("search matches keep one highlight color across every element type", async ({ page }) => {
+  // The fixture's unique title deterministically lands on the search fixture,
+  // whose "fixture" token appears in headers, body text, and a custom
+  // admonition title ("Quote fixture"). The highlight color must win
+  // everywhere — a high-specificity `color: ... !important` rule on
+  // descendants (admonition titles force `color: inherit !important` on every
+  // child) would otherwise clobber the match inside the title, leaving its
+  // color diverging from the others. Asserting all matches share one color
+  // catches that regression for any clobbering selector, not just admonitions.
+  await search(page, "Search preview fixture")
+
+  const preview = await waitForArticlePreview(page)
+
+  // The admonition-title match is the case that regressed; make sure it renders
+  // so the shared-color assertion below actually exercises it.
+  const admonitionMatch = preview.locator(".admonition-title .search-match")
+  await expect(admonitionMatch.first()).toBeAttached({ timeout: 10_000 })
+
+  const colors = await preview
+    .locator(".search-match")
+    .evaluateAll((els) => els.map((el) => window.getComputedStyle(el).color))
+  expect(colors.length).toBeGreaterThan(1)
+  expect(new Set(colors).size).toBe(1)
+})
+
 test("Search results are case-insensitive", async ({ page }, testInfo) => {
   // Two sequential searches can exceed default timeouts on Firefox
   test.slow(testInfo.project.name.includes("Firefox"), "Firefox is slow in CI")
