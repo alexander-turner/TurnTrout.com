@@ -364,7 +364,7 @@ _ASSET_PATTERN = convert_assets.ASSET_STAGING_PATTERN
     [
         (
             Path("animation.gif"),
-            rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
+            rf"\!?\[(?P<markdown_alt_text>[^\]]*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
             rf"animation\.gif\)(?P<attributes_parens>\{{[^}}]*\}})?|"
             rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\]\"]*)"
             rf"animation\.gif\]\](?P<attributes_brackets>\{{[^}}]*\}})?|"
@@ -380,7 +380,7 @@ _ASSET_PATTERN = convert_assets.ASSET_STAGING_PATTERN
     + [
         (
             Path(f"video{ext}"),
-            rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
+            rf"\!?\[(?P<markdown_alt_text>[^\]]*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
             rf"video\{ext}\)(?P<attributes_parens>\{{[^}}]*\}})?|"
             rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\]\"]*)"
             rf"video\{ext}\]\](?P<attributes_brackets>\{{[^}}]*\}})?|"
@@ -799,6 +799,38 @@ def test_markdown_video_with_alt_text(ext: str, setup_test_env):
     tags_to_use = f" {convert_assets.GIF_ATTRIBUTES}" if ext == ".gif" else ""
     expected_html = (
         f'<video{tags_to_use} alt="{alt_text}">'
+        f'<source src="{asset_name}.mp4" type="video/mp4; codecs=hvc1">'
+        f'<source src="{asset_name}.webm" type="video/webm">'
+        "</video>"
+    )
+
+    assert converted_content.strip() == expected_html
+
+
+def test_admonition_directive_before_video_link_is_preserved(setup_test_env):
+    """A `[!quote]` directive before a video link must not be swallowed into the
+    converted video's alt text."""
+    test_dir = Path(setup_test_env)
+    content_dir = test_dir / "website_content"
+    asset_name = "prune_still-easy_trajectories"
+    asset_filename = f"{asset_name}.mp4"
+    dummy_video_path: Path = test_dir / "quartz" / "static" / asset_filename
+    test_md_path: Path = content_dir / "test_admonition.md"
+
+    alt_text = "Stuart Russell's final remarks"
+    input_markdown = f"> [!quote] [{alt_text}]({asset_filename})"
+
+    test_utils.create_test_video(dummy_video_path)
+    test_md_path.write_text(input_markdown)
+
+    convert_assets.convert_asset(
+        dummy_video_path, md_references_dir=content_dir
+    )
+
+    converted_content = test_md_path.read_text(encoding="utf-8")
+
+    expected_html = (
+        f'> [!quote] <video alt="{alt_text}">'
         f'<source src="{asset_name}.mp4" type="video/mp4; codecs=hvc1">'
         f'<source src="{asset_name}.webm" type="video/webm">'
         "</video>"
