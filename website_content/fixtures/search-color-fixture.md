@@ -1,5 +1,5 @@
 ---
-title: Matchcolor fixture
+title: Highlighted quotation fixture
 permalink: search-color-fixture
 no_dropcap: "true"
 tags:
@@ -10,10 +10,10 @@ date_published: 2024-12-04
 date_updated: 2024-12-04
 ---
 
-This page exists only so `search.spec.ts` can assert that highlighted search matches keep one color across every element type. The coined word "Matchcolor" is unique in the corpus, so searching it deterministically returns this page and highlights the word in the body, a heading, and an admonition title.
+This page exists only so `search.spec.ts` can assert that highlighted search matches keep one color across every element type. Its unique title phrase deterministically returns this page, and the word "quotation" appears in the body, a heading, and an admonition title so the search highlights all three.
 
-# Matchcolor heading
+# Quotation heading
 
-> [!quote] Matchcolor quote
+> [!quote] Quotation title
 > A quote admonition whose title contains the searched word, exercising the
 > admonition-title case that previously clobbered the highlight color.
