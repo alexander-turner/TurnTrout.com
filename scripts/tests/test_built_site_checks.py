@@ -4955,8 +4955,15 @@ def test_check_video_source_order_and_match(
             "<source src='a.mp4'></video>",
             0,
         ),
-        # The pond-video element is always skipped.
-        ('<video id="pond-video"><source src="a.mp4"></video>', 0),
+        # #pond-video is not special-cased: it passes only via its
+        # aria-hidden="true" decorative marker (as rendered in the navbar),
+        # and a bare id no longer exempts it.
+        (
+            '<video id="pond-video" aria-hidden="true">'
+            "<source src='a.mp4'></video>",
+            0,
+        ),
+        ('<video id="pond-video"><source src="a.mp4"></video>', 1),
         # No label and no decorative marker -> flagged.
         ("<video><source src='a.mp4'></video>", 1),
         ("<video autoplay loop muted><source src='a.mp4'></video>", 1),

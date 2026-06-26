@@ -2960,11 +2960,12 @@ def check_video_accessibility(soup: BeautifulSoup) -> list[str]:
     A video passes when it has a meaningful ``alt``/``aria-label``/``title``,
     or is explicitly marked decorative (``alt=""`` or ``aria-hidden="true"``).
     Videos with neither are reported so the gap surfaces in CI rather than
-    only in the local pre-push alt-text scan.
+    only in the local pre-push alt-text scan. The persistent ``#pond-video``
+    is not special-cased here: it passes on its own ``aria-hidden="true"``.
     """
     issues: list[str] = []
     for video in _tags_only(soup.find_all("video")):
-        if _should_skip_video(video) or _video_is_decorative(video):
+        if _video_is_decorative(video):
             continue
         if any(
             _video_label_is_meaningful(video.get(attr))
