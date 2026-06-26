@@ -82,10 +82,13 @@ onlyBuiltDependencies:
   - esbuild
   - puppeteer
   - sharp
+  # Transitive dep of wrangler, installed ad hoc by the Cloudflare deploy jobs.
+  - workerd
 
 allowBuilds:
   "@parcel/watcher": true
   esbuild: true
   puppeteer: true
   sharp: true
+  workerd: true
   unrs-resolver: true
