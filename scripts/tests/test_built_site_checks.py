@@ -4931,6 +4931,82 @@ def test_check_video_source_order_and_match(
 
 
 @pytest.mark.parametrize(
+    "html, expected_count",
+    [
+        # Meaningful labels satisfy the requirement.
+        ('<video alt="A trout swimming"><source src="a.mp4"></video>', 0),
+        (
+            '<video aria-label="A trout swimming"><source src="a.mp4"></video>',
+            0,
+        ),
+        ('<video title="A trout swimming"><source src="a.mp4"></video>', 0),
+        (
+            '<video aria-describedby="A trout swimming">'
+            "<source src='a.mp4'></video>",
+            0,
+        ),
+        # Explicit decorative markers exempt the video.
+        ('<video alt=""><source src="a.mp4"></video>', 0),
+        ('<video aria-hidden="true"><source src="a.mp4"></video>', 0),
+        # Decorative marker short-circuits before the label check, so a
+        # placeholder label alongside it is still fine.
+        (
+            '<video aria-hidden="true" aria-label="video">'
+            "<source src='a.mp4'></video>",
+            0,
+        ),
+        # #pond-video is not special-cased: it passes only via its
+        # aria-hidden="true" decorative marker (as rendered in the navbar),
+        # and a bare id no longer exempts it.
+        (
+            '<video id="pond-video" aria-hidden="true">'
+            "<source src='a.mp4'></video>",
+            0,
+        ),
+        ('<video id="pond-video"><source src="a.mp4"></video>', 1),
+        # No label and no decorative marker -> flagged.
+        ("<video><source src='a.mp4'></video>", 1),
+        ("<video autoplay loop muted><source src='a.mp4'></video>", 1),
+        # aria-hidden="false" is not a decorative marker -> flagged.
+        ('<video aria-hidden="false"><source src="a.mp4"></video>', 1),
+        # Placeholder labels are not meaningful -> flagged.
+        ('<video alt="video"><source src="a.mp4"></video>', 1),
+        ('<video aria-label="  Clip "><source src="a.mp4"></video>', 1),
+        # Whitespace-only label is not meaningful -> flagged.
+        ('<video title="   "><source src="a.mp4"></video>', 1),
+        # Each offending video is reported independently.
+        (
+            "<video><source src='a.mp4'></video>"
+            '<video alt="ok"><source src="b.mp4"></video>'
+            "<video><source src='c.mp4'></video>",
+            2,
+        ),
+    ],
+)
+def test_check_video_accessibility(html: str, expected_count: int):
+    """Test that videos require a label or an explicit decorative marker."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_video_accessibility(soup)
+    assert len(result) == expected_count
+    for issue in result:
+        assert "missing accessibility label" in issue
+        # The offending opening tag is included for debugging.
+        assert "<video" in issue
+
+
+def test_check_video_accessibility_reports_offending_tag():
+    """The reported message includes the specific opening <video> tag."""
+    soup = BeautifulSoup(
+        '<video class="float-right"><source src="x.mp4"></video>',
+        "html.parser",
+    )
+    (issue,) = built_site_checks.check_video_accessibility(soup)
+    assert '<video class="float-right">' in issue
+    # Only the opening tag is reported, not the <source> children.
+    assert "<source" not in issue
+
+
+@pytest.mark.parametrize(
     "html_content, expected_issues",
     [
         # --- Valid Cases ---
