@@ -1664,8 +1664,12 @@ def _build_included_favicon_domains(
     ``{"apple_com", "openai_com", "scholar_google_com"}``).
     """
     script = str(git_root / "scripts" / "compute_favicon_lists.ts")
+    # Invoke tsx directly rather than via ``pnpm exec``: pnpm 11's
+    # deps-status check can recreate node_modules and print install chatter
+    # to stdout, which would corrupt the JSON parsed below.
+    tsx_bin = str(git_root / "node_modules" / ".bin" / "tsx")
     result = subprocess.run(  # skipcq: BAN-B607
-        ["pnpm", "exec", "tsx", script],
+        [tsx_bin, script],
         capture_output=True,
         text=True,
         cwd=str(git_root),
