@@ -20,8 +20,8 @@ title: "I want to take off the coat"
 lw-latest-edit: 2018-07-29T00:35:24.674000Z
 lw-is-linkpost: "false"
 tags:
-  - "personal"
-  - "rationality"
+  - personal
+  - rationality
 aliases:
   - "pretense"
 lw-reward-post-warning: "false"

@@ -6,6 +6,7 @@ tags:
   - activation-engineering
   - AI
   - mats-program
+  - interpretability
 description: Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.
 authors:
   - Andrew Mack

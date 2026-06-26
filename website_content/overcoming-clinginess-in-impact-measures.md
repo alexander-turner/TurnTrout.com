@@ -20,7 +20,7 @@ title: "Overcoming Clinginess in Impact Measures"
 lw-latest-edit: 2018-06-30T22:51:29.065000Z
 lw-is-linkpost: "false"
 tags:
-  - "impact-regularization"
+  - impact-regularization
 aliases:
   - "overcoming-clinginess-in-impact-measures"
 lw-reward-post-warning: "false"

@@ -24,6 +24,7 @@ authors:
   - Alex Turner
 tags:
   - AI
+  - interpretability
 aliases:
   - residual-stream-norms-grow-exponentially-over-the-forward
 lw-reward-post-warning: "false"

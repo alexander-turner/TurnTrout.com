@@ -21,6 +21,7 @@ lw-latest-edit: 2019-12-17T22:27:13.803000Z
 lw-is-linkpost: 'false'
 tags:
   - AI
+  - existential-risk
 aliases:
   - thoughts-on-human-compatible
 lw-reward-post-warning: 'true'

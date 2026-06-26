@@ -20,9 +20,9 @@ title: "Inner and outer alignment decompose one hard problem into two extremely 
 lw-latest-edit: 2023-01-24T00:43:58.097000Z
 lw-is-linkpost: "false"
 tags:
-  - "shard-theory"
-  - "AI"
-  - "critique"
+  - shard-theory
+  - AI
+  - critique
 aliases:
   - "inner-and-outer-alignment-decompose-one-hard-problem-into"
 sequence-link: posts#shard-theory

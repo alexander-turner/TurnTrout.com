@@ -26,6 +26,7 @@ tags:
   - AI
   - mats-program
   - shard-theory
+  - interpretability
 aliases:
   - behavioural-statistics-for-a-maze-solving-agent
 sequence-link: posts#interpreting-a-maze-solving-network

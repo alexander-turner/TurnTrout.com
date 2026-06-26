@@ -6,6 +6,7 @@ tags:
   - AI
   - critique
   - deepmind
+  - language-models
 description: Common factuality benchmark was easily gamed using our simple decision tree. The benchmark is now updated.
 authors:
   - Alex Turner

@@ -21,6 +21,7 @@ lw-latest-edit: 2024-01-09T22:19:50.402000Z
 lw-is-linkpost: 'false'
 tags:
   - AI
+  - existential-risk
 aliases:
   - some-of-my-disagreements-with-list-of-lethalities
 lw-reward-post-warning: 'false'

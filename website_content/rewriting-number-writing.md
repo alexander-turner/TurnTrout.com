@@ -5,6 +5,7 @@ no_dropcap: false
 tags:
   - critique
   - understanding-the-world
+  - writing
 description: "Our eyes must scan to the end of a long number, then jump back to the start in order to understand it. My modest proposal: flip how we write numbers."
 authors:
   - Alex Turner

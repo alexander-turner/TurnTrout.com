@@ -5,6 +5,7 @@ tags:
   - AI
   - mats-program
   - reinforcement-learning
+  - specification-gaming
 description: We challenge the assumption that output supervision preserves Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the CoTs.
 authors:
   - Jacob Drori

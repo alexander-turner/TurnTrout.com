@@ -20,8 +20,9 @@ title: "What You See Isn't Always What You Want"
 lw-latest-edit: 2024-08-15T22:29:06.757000Z
 lw-is-linkpost: "false"
 tags:
-  - "AI"
-  - "reinforcement-learning"
+  - AI
+  - reinforcement-learning
+  - specification-gaming
 aliases:
   - "what-you-see-isn-t-always-what-you-want"
 lw-reward-post-warning: "true"

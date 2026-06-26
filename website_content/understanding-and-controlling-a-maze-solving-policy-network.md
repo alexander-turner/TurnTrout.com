@@ -30,6 +30,7 @@ tags:
   - mats-program
   - shard-theory
   - activation-engineering
+  - interpretability
 aliases:
   - understanding-and-controlling-a-maze-solving-policy-network
   - cheese-vector

@@ -30,6 +30,7 @@ tags:
   - shard-theory
   - activation-engineering
   - mats-program
+  - language-models
 aliases:
   - steering-gpt-2-xl-by-adding-an-activation-vector
   - steering-vectors

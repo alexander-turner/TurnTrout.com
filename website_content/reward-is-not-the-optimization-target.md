@@ -23,6 +23,7 @@ tags:
   - AI
   - reinforcement-learning
   - shard-theory
+  - specification-gaming
 aliases:
   - reward-is-not-the-optimization-target
 sequence-link: posts#shard-theory

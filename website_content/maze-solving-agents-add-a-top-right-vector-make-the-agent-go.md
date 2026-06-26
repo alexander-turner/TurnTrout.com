@@ -26,6 +26,7 @@ authors:
 tags:
   - AI
   - activation-engineering
+  - interpretability
 aliases:
   - maze-solving-agents-add-a-top-right-vector-make-the-agent-go
 lw-sequence-title: Interpreting a Maze-Solving Network

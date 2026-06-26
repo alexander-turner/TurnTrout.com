@@ -21,6 +21,7 @@ lw-latest-edit: 2024-03-27T02:58:00.187000Z
 lw-is-linkpost: 'false'
 tags:
   - AI
+  - existential-risk
 aliases:
   - ban-development-of-unpredictable-powerful-models
 lw-reward-post-warning: 'false'

@@ -21,6 +21,7 @@ lw-latest-edit: 2023-01-24T00:26:35.060000Z
 lw-is-linkpost: 'false'
 tags:
   - AI
+  - language-models
 aliases:
   - four-usages-of-loss-in-ai
 lw-reward-post-warning: 'false'

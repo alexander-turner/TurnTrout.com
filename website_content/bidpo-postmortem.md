@@ -6,6 +6,7 @@ tags:
   - AI
   - activation-engineering
   - deepmind
+  - language-models
 description: We tried boosting Gemini benchmarks by optimizing steering vectors. It didn't work. We share our takeaways.
 authors:
   - Alex Turner

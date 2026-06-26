@@ -21,6 +21,7 @@ lw-latest-edit: 2022-08-11T22:23:09.276000Z
 lw-is-linkpost: "false"
 tags:
   - AI
+  - specification-gaming
 aliases:
   - seriously-what-goes-wrong-with-reward-the-agent-when-it
 lw-reward-post-warning: "false"

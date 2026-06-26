@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - AI
   - critique
+  - existential-risk
 aliases:
   - many-arguments-for-ai-x-risk-are-wrong
 lw-reward-post-warning: 'false'

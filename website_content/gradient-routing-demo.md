@@ -5,6 +5,7 @@ no_dropcap: "false"
 tags:
   - AI
   - mats-program
+  - interpretability
 description: Our gradient routing technique can force an interpretable inner representation. Each dimension corresponds to a digit. Play with a demo!
 authors:
   - Jacob Goldman-Wetzler

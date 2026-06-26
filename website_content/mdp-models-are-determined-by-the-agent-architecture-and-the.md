@@ -20,8 +20,8 @@ title: "MDP models are determined by the agent architecture and the environmenta
 lw-latest-edit: 2021-06-02T18:31:04.668000Z
 lw-is-linkpost: "false"
 tags:
-  - "instrumental-convergence"
-  - "AI"
+  - instrumental-convergence
+  - AI
 aliases:
   - "mdp-models-are-determined-by-the-agent-architecture-and-the"
 lw-sequence-title: "The Causes of Power-seeking and Instrumental Convergence"

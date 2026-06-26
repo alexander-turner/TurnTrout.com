@@ -6,6 +6,7 @@ tags:
   - AI
   - activation-engineering
   - deepmind
+  - language-models
 description: "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash."
 authors:
   - Alex Irpan

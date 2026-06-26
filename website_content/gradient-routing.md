@@ -6,6 +6,7 @@ no_dropcap: "false"
 tags:
   - AI
   - mats-program
+  - interpretability
 description: Isolate capabilities to known parts of a network. Helps with interpretability, robust unlearning, and scalable oversight.
 date-published: ""
 authors:

@@ -20,7 +20,7 @@ title: "Collider bias as a cognitive blindspot?"
 lw-latest-edit: 2020-12-30T02:54:15.755000Z
 lw-is-linkpost: "false"
 tags:
-  - "rationality"
+  - rationality
 aliases:
   - "collider-bias-as-a-cognitive-blindspot"
 lw-reward-post-warning: "false"

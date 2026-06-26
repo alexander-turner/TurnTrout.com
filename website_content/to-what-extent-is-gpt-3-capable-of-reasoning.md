@@ -21,6 +21,7 @@ lw-latest-edit: 2020-08-19T17:37:22.246000Z
 lw-is-linkpost: 'false'
 tags:
   - AI
+  - language-models
 aliases:
   - to-what-extent-is-gpt-3-capable-of-reasoning
 lw-reward-post-warning: 'false'

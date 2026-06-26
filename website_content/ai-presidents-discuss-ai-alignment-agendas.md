@@ -24,8 +24,8 @@ authors:
   - Alex Turner
   - Garrett Baker
 tags:
-  - "AI"
-  - "humor"
+  - AI
+  - humor
 aliases:
   - "ai-presidents-discuss-ai-alignment-agendas"
 lw-reward-post-warning: "false"

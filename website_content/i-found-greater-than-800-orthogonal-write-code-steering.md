@@ -27,6 +27,7 @@ tags:
   - AI
   - mats-program
   - activation-engineering
+  - interpretability
 aliases:
   - i-found-greater-than-800-orthogonal-write-code-steering
 lw-reward-post-warning: 'false'

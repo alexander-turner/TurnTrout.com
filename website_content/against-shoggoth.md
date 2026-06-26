@@ -5,6 +5,7 @@ no_dropcap: "false"
 tags:
   - critique
   - AI
+  - language-models
 description: The "shoggoth" meme reflects fears about AI but lacks sufficient scientific basis. The meme implies that AI is scarier than we know it to be.
 authors:
   - Alex Turner

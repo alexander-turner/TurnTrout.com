@@ -32,6 +32,7 @@ tags:
   - AI
   - shard-theory
   - activation-engineering
+  - interpretability
 aliases:
   - paper-understanding-and-controlling-a-maze-solving-policy
   - cheese-vector-paper-announcement

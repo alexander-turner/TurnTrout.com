@@ -21,6 +21,7 @@ lw-latest-edit: 2018-01-24T00:47:44.183000Z
 lw-is-linkpost: "false"
 tags:
   - community
+  - existential-risk
 aliases:
   - interpersonal-approaches-for-x-risk-education
 lw-reward-post-warning: "false"

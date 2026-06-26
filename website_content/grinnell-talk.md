@@ -6,6 +6,7 @@ tags:
   - AI
   - grinnell
   - talk-notes
+  - existential-risk
 description: Could human-designed AI kill all humans? I spent my PhD on this and still worry.
 authors:
   - Alex Turner

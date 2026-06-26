@@ -21,6 +21,7 @@ lw-latest-edit: 2021-09-07T18:18:27.363000Z
 lw-is-linkpost: 'false'
 tags:
   - AI
+  - language-models
 aliases:
   - gpt-3-gems
 lw-reward-post-warning: 'false'

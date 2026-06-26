@@ -28,6 +28,7 @@ tags:
   - mats-program
   - shard-theory
   - rationality
+  - interpretability
 aliases:
   - predictions-for-shard-theory-mechanistic-interpretability
 lw-sequence-title: Interpreting a Maze-Solving Network

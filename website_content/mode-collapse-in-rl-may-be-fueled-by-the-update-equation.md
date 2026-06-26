@@ -25,6 +25,7 @@ authors:
 tags:
   - AI
   - reinforcement-learning
+  - specification-gaming
 aliases:
   - mode-collapse-in-rl-may-be-fueled-by-the-update-equation
 lw-reward-post-warning: 'false'

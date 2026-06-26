@@ -27,6 +27,7 @@ tags:
   - mats-program
   - understanding-the-world
   - activation-engineering
+  - interpretability
 aliases:
   - mechanistically-eliciting-latent-behaviors-in-language-1
   - melbo
