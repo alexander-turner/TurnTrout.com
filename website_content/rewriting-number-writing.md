@@ -17,7 +17,7 @@ aliases:
   - number-proposal
   - rethinking-number-writing
 date_published: 2025-07-25
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 card_image_alt: A depiction of the House of Wisdom, made in the style of the famous School of Athens painting.
 ---
 
