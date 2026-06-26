@@ -84,4 +84,8 @@ onlyBuiltDependencies:
   - sharp
 
 allowBuilds:
+  "@parcel/watcher": true
+  esbuild: true
+  puppeteer: true
+  sharp: true
   unrs-resolver: true
