@@ -942,9 +942,13 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
             // Handle alias processing - only use explicitly provided aliases
             const displayAlias = rawAlias ?? ""
 
-            /* istanbul ignore next -- external link wikilink edge case */
             if (rawFp && externalLinkRegex.test(rawFp)) {
-              return `${embedDisplay}[${displayAlias.replace(/^\|/, "")}](${rawFp})`
+              // Encode spaces so the markdown link/image destination parses; an
+              // unencoded space terminates the destination and the embed renders
+              // as literal text. Matches the %20 convention used for external
+              // asset URLs elsewhere in the pipeline.
+              const encodedFp = rawFp.replace(/ /g, "%20")
+              return `${embedDisplay}[${displayAlias.replace(/^\|/, "")}](${encodedFp})`
             }
 
             return `${embedDisplay}[[${fp}${displayAnchor}${displayAlias}]]`
