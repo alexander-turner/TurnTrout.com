@@ -2905,6 +2905,64 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
     return all_issues
 
 
+# Generic labels that don't describe the video's content, so they don't
+# satisfy the accessibility requirement.
+_PLACEHOLDER_VIDEO_LABELS: frozenset[str] = frozenset(
+    {"video", "movie", "clip", "media", "content", "placeholder"}
+)
+
+# Attributes that, when present and descriptive, give a <video> a text
+# alternative for assistive technology.
+_VIDEO_LABEL_ATTRS: tuple[str, ...] = ("alt", "aria-label", "title")
+
+
+def _video_label_is_meaningful(value: object) -> bool:
+    """True iff *value* is a non-placeholder, non-empty label string."""
+    if not isinstance(value, str):
+        return False
+    stripped = value.strip().lower()
+    return bool(stripped) and stripped not in _PLACEHOLDER_VIDEO_LABELS
+
+
+def _video_is_decorative(video: Tag) -> bool:
+    """A <video> explicitly marked decorative is exempt from needing a label.
+
+    Decorative markers mirror the image convention: an empty ``alt=""`` or
+    ``aria-hidden="true"`` signals the video carries no information for
+    assistive technology.
+    """
+    if video.get("aria-hidden") == "true":
+        return True
+    alt = video.get("alt")
+    return isinstance(alt, str) and alt.strip() == ""
+
+
+def check_video_accessibility(soup: BeautifulSoup) -> list[str]:
+    """Every <video> must carry a text alternative or be marked decorative.
+
+    A video passes when it has a meaningful ``alt``/``aria-label``/``title``,
+    or is explicitly marked decorative (``alt=""`` or ``aria-hidden="true"``).
+    Videos with neither are reported so the gap surfaces in CI rather than
+    only in the local pre-push alt-text scan.
+    """
+    issues: list[str] = []
+    for video in _tags_only(soup.find_all("video")):
+        if _should_skip_video(video) or _video_is_decorative(video):
+            continue
+        if any(
+            _video_label_is_meaningful(video.get(attr))
+            for attr in _VIDEO_LABEL_ATTRS
+        ):
+            continue
+        open_tag = str(video).split(">", 1)[0] + ">"
+        issues.append(
+            "<video> missing accessibility label "
+            "(alt/aria-label/title) or decorative marker "
+            f'(alt="" / aria-hidden="true"): {open_tag}'
+        )
+    return issues
+
+
 REQUIRED_ROOT_FILES = ("robots.txt", "favicon.svg", "favicon.ico")
 
 # Pattern to match citation keys in BibTeX entries: @misc{CitationKey,

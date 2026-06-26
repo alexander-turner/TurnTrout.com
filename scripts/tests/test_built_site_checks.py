@@ -4931,6 +4931,47 @@ def test_check_video_source_order_and_match(
 
 
 @pytest.mark.parametrize(
+    "html, expected_count",
+    [
+        # Meaningful labels satisfy the requirement.
+        ('<video alt="A trout swimming"><source src="a.mp4"></video>', 0),
+        (
+            '<video aria-label="A trout swimming"><source src="a.mp4"></video>',
+            0,
+        ),
+        ('<video title="A trout swimming"><source src="a.mp4"></video>', 0),
+        # Explicit decorative markers exempt the video.
+        ('<video alt=""><source src="a.mp4"></video>', 0),
+        ('<video aria-hidden="true"><source src="a.mp4"></video>', 0),
+        # The pond-video element is always skipped.
+        ('<video id="pond-video"><source src="a.mp4"></video>', 0),
+        # No label and no decorative marker -> flagged.
+        ("<video><source src='a.mp4'></video>", 1),
+        ("<video autoplay loop muted><source src='a.mp4'></video>", 1),
+        # Placeholder labels are not meaningful -> flagged.
+        ('<video alt="video"><source src="a.mp4"></video>', 1),
+        ('<video aria-label="  Clip "><source src="a.mp4"></video>', 1),
+        # Whitespace-only label is not meaningful -> flagged.
+        ('<video title="   "><source src="a.mp4"></video>', 1),
+        # Each offending video is reported independently.
+        (
+            "<video><source src='a.mp4'></video>"
+            '<video alt="ok"><source src="b.mp4"></video>'
+            "<video><source src='c.mp4'></video>",
+            2,
+        ),
+    ],
+)
+def test_check_video_accessibility(html: str, expected_count: int):
+    """Test that videos require a label or an explicit decorative marker."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_video_accessibility(soup)
+    assert len(result) == expected_count
+    for issue in result:
+        assert "missing accessibility label" in issue
+
+
+@pytest.mark.parametrize(
     "html_content, expected_issues",
     [
         # --- Valid Cases ---
