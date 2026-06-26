@@ -21,6 +21,7 @@ lw-latest-edit: 2018-08-24T17:54:54.344000Z
 lw-is-linkpost: 'false'
 tags:
   - summaries
+  - mathematics
 aliases:
   - turning-up-the-heat-insights-from-tao-s-analysis-ii
 lw-sequence-title: Becoming Stronger
@@ -37,7 +38,7 @@ date_published: 2018-08-24
 original_url: https://www.lesswrong.com/posts/uSaJoL64DYg2WunJJ/turning-up-the-heat-insights-from-tao-s-analysis-ii
 skip_import: true
 description: "Tao's \"Analysis II\" reviewed: metric spaces, uniform convergence, Lebesgue integration–sharpening my mathematical tools."
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 ---
 
 It's been too long - a month and a half since my last review, and about three months since _[Analysis I](/first-analysis-textbook-review)_. I've been immersed in my work for CHAI, but reality doesn't grade on a curve, and I want more mathematical firepower.

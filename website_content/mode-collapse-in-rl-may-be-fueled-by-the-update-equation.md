@@ -25,6 +25,7 @@ authors:
 tags:
   - AI
   - reinforcement-learning
+  - specification-gaming
 aliases:
   - mode-collapse-in-rl-may-be-fueled-by-the-update-equation
 lw-reward-post-warning: 'false'
@@ -33,7 +34,7 @@ date_published: 2023-06-19
 original_url: https://www.lesswrong.com/posts/A7RgYuYH4HywNeYWD/mode-collapse-in-rl-may-be-fueled-by-the-update-equation
 skip_import: true
 description: A proposed tweak to policy gradient algorithms may avoid mode collapse, but more research is needed to assess its practicality.
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 ---
 
 **TL;DR:** We present an advantage variant which, in certain settings, does not train an optimal policy, but instead uses a fixed reward to update a policy a fixed amount from initialization. Non-tabular empirical results seem mixed: The policy doesn't mode-collapse, but has unclear convergence properties.

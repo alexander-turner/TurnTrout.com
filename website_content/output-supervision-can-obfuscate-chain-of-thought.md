@@ -5,6 +5,7 @@ tags:
   - AI
   - mats-program
   - reinforcement-learning
+  - specification-gaming
 description: We challenge the assumption that output supervision preserves Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the CoTs.
 authors:
   - Jacob Drori
@@ -19,7 +20,7 @@ aliases:
   - output-cot
   - output-feedback-can-obfuscate-chain-of-thought
 date_published: 2025-11-22
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 no_dropcap: false
 card_image_alt: A diagram shows that penalizing an AI's output for cheating causes it to obfuscate its reasoning. Before training, a robot's CoT is "I'll cheat" and its output is "I just cheated!". After training, its CoT says "I'll solve it like an honest chatbot" but still cheats, and its output is "Nothing to see here!".
 createBibtex: true
