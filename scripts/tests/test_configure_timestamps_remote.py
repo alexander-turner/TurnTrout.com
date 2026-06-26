@@ -1,4 +1,5 @@
-"""Tests for scripts/configure_timestamps_remote.sh.
+"""
+Tests for scripts/configure_timestamps_remote.sh.
 
 The .timestamps repo lives inside the project, which claude-guard bind-mounts
 writable into the sandbox — so any auth the helper writes into its .git/config
