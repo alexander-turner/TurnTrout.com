@@ -103,7 +103,10 @@ jobs:
             --formats woff2 --in-place --instance --inline-css --no-recursive --debug
 
       - name: Install Wrangler
-        run: pnpm add -g wrangler
+        # Local install (not -g): the deploy step below invokes it via
+        # `pnpm exec wrangler`, which resolves from node_modules. pnpm 11
+        # also hard-fails `add -g` when its global bin dir isn't on PATH.
+        run: pnpm install wrangler@3.99.0
 
       - name: Publish to Cloudflare Pages for Lighthouse testing
         id: deploy_cf_pages
