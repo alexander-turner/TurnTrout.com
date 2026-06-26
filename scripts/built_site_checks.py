@@ -2936,7 +2936,8 @@ def _video_label_is_meaningful(value: object) -> bool:
 
 
 def _video_is_decorative(video: Tag) -> bool:
-    """A <video> explicitly marked decorative is exempt from needing a label.
+    """
+    A <video> explicitly marked decorative is exempt from needing a label.
 
     Decorative markers mirror the image convention: an empty ``alt=""`` or
     ``aria-hidden="true"`` signals the video carries no information for
@@ -2949,7 +2950,8 @@ def _video_is_decorative(video: Tag) -> bool:
 
 
 def check_video_accessibility(soup: BeautifulSoup) -> list[str]:
-    """Every <video> must carry a text alternative or be marked decorative.
+    """
+    Every <video> must carry a text alternative or be marked decorative.
 
     A video passes when it has a meaningful ``alt``/``aria-label``/``title``,
     or is explicitly marked decorative (``alt=""`` or ``aria-hidden="true"``).
