@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - summaries
   - scholarship-&-learning
+  - mathematics
 aliases:
   - confounded-no-longer-insights-from-all-of-statistics
 lw-sequence-title: Becoming Stronger

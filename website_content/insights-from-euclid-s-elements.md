@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - scholarship-&-learning
   - understanding-the-world
+  - mathematics
 aliases:
   - insights-from-euclid-s-elements
 lw-sequence-title: Becoming Stronger

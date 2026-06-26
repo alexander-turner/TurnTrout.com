@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - summaries
   - understanding-the-world
+  - mathematics
 aliases:
   - into-the-kiln-insights-from-tao-s-analysis-i
 lw-sequence-title: Becoming Stronger

@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - rationality
   - understanding-the-world
+  - mathematics
 aliases:
   - math-that-clicks-look-for-two-way-correspondences
 lw-reward-post-warning: 'false'

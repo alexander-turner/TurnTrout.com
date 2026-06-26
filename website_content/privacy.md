@@ -8,6 +8,7 @@ tags:
   - open-source
   - understanding-the-world
   - community
+  - privacy
 description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
 authors:
   - Alex Turner

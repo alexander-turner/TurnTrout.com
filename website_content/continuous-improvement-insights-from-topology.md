@@ -21,6 +21,7 @@ lw-latest-edit: 2020-02-25T19:34:03.925000Z
 lw-is-linkpost: "false"
 tags:
   - summaries
+  - mathematics
 aliases:
   - continuous-improvement-insights-from-topology
 lw-sequence-title: Becoming Stronger

@@ -21,6 +21,7 @@ lw-latest-edit: 2020-05-07T23:08:28.107000Z
 lw-is-linkpost: 'false'
 tags:
   - summaries
+  - mathematics
 aliases:
   - and-my-axiom-insights-from-computability-and-logic
 lw-sequence-title: Becoming Stronger

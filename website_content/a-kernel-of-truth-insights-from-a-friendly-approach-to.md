@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - scholarship-&-learning
   - understanding-the-world
+  - mathematics
 aliases:
   - a-kernel-of-truth-insights-from-a-friendly-approach-to
 lw-sequence-title: Becoming Stronger
