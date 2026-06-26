@@ -24,11 +24,11 @@ SCRIPT = (
     / "configure_timestamps_remote.sh"
 )
 
-TOKEN_URL = (
-    "https://x-access-token:ghs_FAKETOKEN@github.com/alexander-turner/.timestamps.git"
-)
+TOKEN_URL = "https://x-access-token:ghs_FAKETOKEN@github.com/alexander-turner/.timestamps.git"
 CLEAN_URL = "https://github.com/alexander-turner/.timestamps.git"
-PROXY_URL = "http://local_proxy@127.0.0.1:41729/git/alexander-turner/.timestamps"
+PROXY_URL = (
+    "http://local_proxy@127.0.0.1:41729/git/alexander-turner/.timestamps"
+)
 
 
 def _run(ts_repo: Path, is_web_sandbox: str, token: str | None) -> None:
