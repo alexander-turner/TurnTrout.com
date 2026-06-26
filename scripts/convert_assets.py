@@ -70,8 +70,11 @@ def _video_original_pattern(input_file: Path) -> str:
     input_file_pattern: str = rf"{input_file.stem}\{input_file.suffix}"
 
     # Pattern for markdown image syntax: ![alt text](link){attributes}
+    # Alt text must not span a `]`, or an admonition directive plus a following
+    # link (`[!quote] [text](video.mp4)`) collapses into one match whose alt
+    # swallows the directive.
     parens_pattern: str = (
-        rf"\!?\[(?P<markdown_alt_text>.*?)\]\({ASSET_STAGING_PATTERN}"
+        rf"\!?\[(?P<markdown_alt_text>[^\]]*?)\]\({ASSET_STAGING_PATTERN}"
         rf"{link_pattern_fn('parens')}{input_file_pattern}\)"
         r"(?P<attributes_parens>\{[^}]*\})?"
     )
