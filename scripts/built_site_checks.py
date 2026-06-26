@@ -1664,8 +1664,12 @@ def _build_included_favicon_domains(
     ``{"apple_com", "openai_com", "scholar_google_com"}``).
     """
     script = str(git_root / "scripts" / "compute_favicon_lists.ts")
+    # Invoke tsx directly rather than via ``pnpm exec``: pnpm 11's
+    # deps-status check can recreate node_modules and print install chatter
+    # to stdout, which would corrupt the JSON parsed below.
+    tsx_bin = str(git_root / "node_modules" / ".bin" / "tsx")
     result = subprocess.run(  # skipcq: BAN-B607
-        ["pnpm", "exec", "tsx", script],
+        [tsx_bin, script],
         capture_output=True,
         text=True,
         cwd=str(git_root),
@@ -2833,6 +2837,11 @@ def _compare_base_paths(src1: str, src2: str, video_preview: str) -> list[str]:
     return []
 
 
+def _video_open_tag(video: Tag) -> str:
+    """The opening ``<video ...>`` tag string, without children."""
+    return str(video).split(">", 1)[0] + ">"
+
+
 def _check_single_video(
     video: Tag, expected_sources: list[tuple[str, str]]
 ) -> list[str]:
@@ -2844,7 +2853,7 @@ def _check_single_video(
         for child in video.children
         if isinstance(child, Tag) and child.name == "source"
     ]
-    open_tag = str(video).split(">", 1)[0] + ">"
+    open_tag = _video_open_tag(video)
 
     if len(sources) < len(expected_sources):
         _append_to_list(
@@ -2903,6 +2912,72 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
         all_issues.extend(video_issues)
 
     return all_issues
+
+
+# Generic labels that don't describe the video's content, so they don't
+# satisfy the accessibility requirement.
+_PLACEHOLDER_VIDEO_LABELS: frozenset[str] = frozenset(
+    {"video", "movie", "clip", "media", "content", "placeholder"}
+)
+
+# Attributes that, when present and descriptive, give a <video> a text
+# alternative for assistive technology. ``alt`` follows the repo's GIF
+# conversion convention; the rest mirror the alt-text-llm scanner.
+_VIDEO_LABEL_ATTRS: tuple[str, ...] = (
+    "alt",
+    "aria-label",
+    "title",
+    "aria-describedby",
+)
+
+
+def _video_label_is_meaningful(value: object) -> bool:
+    """True iff *value* is a non-placeholder, non-empty label string."""
+    if not isinstance(value, str):
+        return False
+    stripped = value.strip().lower()
+    return bool(stripped) and stripped not in _PLACEHOLDER_VIDEO_LABELS
+
+
+def _video_is_decorative(video: Tag) -> bool:
+    """
+    A <video> explicitly marked decorative is exempt from needing a label.
+
+    Decorative markers mirror the image convention: an empty ``alt=""`` or
+    ``aria-hidden="true"`` signals the video carries no information for
+    assistive technology.
+    """
+    if video.get("aria-hidden") == "true":
+        return True
+    alt = video.get("alt")
+    return isinstance(alt, str) and alt.strip() == ""
+
+
+def check_video_accessibility(soup: BeautifulSoup) -> list[str]:
+    """
+    Every <video> must carry a text alternative or be marked decorative.
+
+    A video passes when it has a meaningful ``alt``/``aria-label``/``title``,
+    or is explicitly marked decorative (``alt=""`` or ``aria-hidden="true"``).
+    Videos with neither are reported so the gap surfaces in CI rather than
+    only in the local pre-push alt-text scan. The persistent ``#pond-video``
+    is not special-cased here: it passes on its own ``aria-hidden="true"``.
+    """
+    issues: list[str] = []
+    for video in _tags_only(soup.find_all("video")):
+        if _video_is_decorative(video):
+            continue
+        if any(
+            _video_label_is_meaningful(video.get(attr))
+            for attr in _VIDEO_LABEL_ATTRS
+        ):
+            continue
+        issues.append(
+            "<video> missing accessibility label "
+            "(alt/aria-label/title) or decorative marker "
+            f'(alt="" / aria-hidden="true"): {_video_open_tag(video)}'
+        )
+    return issues
 
 
 REQUIRED_ROOT_FILES = ("robots.txt", "favicon.svg", "favicon.ico")

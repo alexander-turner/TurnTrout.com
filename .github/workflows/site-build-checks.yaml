@@ -90,9 +90,13 @@ jobs:
 
       - name: Check CSS variables
         run: |
-          # Run stylelint to check for unknown CSS variables
+          # Run stylelint to check for unknown CSS variables.
+          # Invoke the binary directly rather than via `pnpm exec`: pnpm's
+          # deps-status check can recreate node_modules and print install
+          # chatter to stderr, which the 2>&1 capture below would mistake
+          # for stylelint warnings.
           # Filter out known false positives and check if any real issues remain
-          WARNINGS=$(pnpm exec stylelint public/index.css \
+          WARNINGS=$(node_modules/.bin/stylelint public/index.css \
             --config config/stylelint/.variables-only-stylelintrc.json 2>&1 \
             | grep -vE 'shiki|problem|public/index.css' \
             | grep . || true)

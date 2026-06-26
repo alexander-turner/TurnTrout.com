@@ -15,9 +15,14 @@ end
 
 set -l IGNORE_PATTERNS 'shiki|problems|public/index.css'
 
+# Invoke the stylelint binary directly rather than via `pnpm exec`: pnpm 11's
+# deps-status check can recreate node_modules and print install chatter that
+# the capture below would mistake for stylelint warnings.
+set -l STYLELINT "$GIT_ROOT/node_modules/.bin/stylelint"
+
 # Run stylelint, filter output (ignoring patterns and empty/whitespace lines),
 # and capture potential errors
-set -l warnings_found (pnpm exec stylelint "$css_file" \
+set -l warnings_found ($STYLELINT "$css_file" \
             --config "$GIT_ROOT/config/stylelint/.variables-only-stylelintrc.json" \
             &| command grep -vE $IGNORE_PATTERNS \
             | command grep .)
@@ -25,7 +30,7 @@ set -l warnings_found (pnpm exec stylelint "$css_file" \
 if test -n "$warnings_found"
     echo "Error: Found unknown CSS variable(s):"
 
-    set -l formatted_errors (pnpm exec stylelint "$css_file" \
+    set -l formatted_errors ($STYLELINT "$css_file" \
             --config "$GIT_ROOT/config/stylelint/.variables-only-stylelintrc.json" \
             &| command grep -vE $IGNORE_PATTERNS)
     echo "$formatted_errors"
