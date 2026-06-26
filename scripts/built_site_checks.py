@@ -2833,6 +2833,11 @@ def _compare_base_paths(src1: str, src2: str, video_preview: str) -> list[str]:
     return []
 
 
+def _video_open_tag(video: Tag) -> str:
+    """The opening ``<video ...>`` tag string, without children."""
+    return str(video).split(">", 1)[0] + ">"
+
+
 def _check_single_video(
     video: Tag, expected_sources: list[tuple[str, str]]
 ) -> list[str]:
@@ -2844,7 +2849,7 @@ def _check_single_video(
         for child in video.children
         if isinstance(child, Tag) and child.name == "source"
     ]
-    open_tag = str(video).split(">", 1)[0] + ">"
+    open_tag = _video_open_tag(video)
 
     if len(sources) < len(expected_sources):
         _append_to_list(
@@ -2912,8 +2917,14 @@ _PLACEHOLDER_VIDEO_LABELS: frozenset[str] = frozenset(
 )
 
 # Attributes that, when present and descriptive, give a <video> a text
-# alternative for assistive technology.
-_VIDEO_LABEL_ATTRS: tuple[str, ...] = ("alt", "aria-label", "title")
+# alternative for assistive technology. ``alt`` follows the repo's GIF
+# conversion convention; the rest mirror the alt-text-llm scanner.
+_VIDEO_LABEL_ATTRS: tuple[str, ...] = (
+    "alt",
+    "aria-label",
+    "title",
+    "aria-describedby",
+)
 
 
 def _video_label_is_meaningful(value: object) -> bool:
@@ -2954,11 +2965,10 @@ def check_video_accessibility(soup: BeautifulSoup) -> list[str]:
             for attr in _VIDEO_LABEL_ATTRS
         ):
             continue
-        open_tag = str(video).split(">", 1)[0] + ">"
         issues.append(
             "<video> missing accessibility label "
             "(alt/aria-label/title) or decorative marker "
-            f'(alt="" / aria-hidden="true"): {open_tag}'
+            f'(alt="" / aria-hidden="true"): {_video_open_tag(video)}'
         )
     return issues
 
