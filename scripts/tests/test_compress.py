@@ -709,7 +709,7 @@ def test_stream_progress_without_duration(capsys):
 def test_probe_duration_seconds(
     monkeypatch, probe_stdout: str, expected: float | None
 ):
-    """`_probe_duration_seconds` parses ffprobe output, None when unparseable."""
+    """`_probe_duration_seconds` parses ffprobe output, None when unparsable."""
 
     def mock_run(*_args: object, **_kwargs: object):
         return subprocess.CompletedProcess(

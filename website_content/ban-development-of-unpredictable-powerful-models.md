@@ -64,7 +64,7 @@ Partially incentivizes labs to do alignment research for us.
 
 ## Drawbacks
 
-Most notably, this test seems _extremely strict_, perhaps beyond even the strict standards we will want to demand of those looking to deploy potentially world-changing models. I'll discuss a few drawbacks in the next section.
+Most notably, this test seems _extremely strict_, perhaps beyond even the strict standards we will want to demand of those looking to deploy potentially world-changing models. I'll discuss a few drawbacks in [the next section](#anticipated-questions).
 
 ## Anticipated questions
 

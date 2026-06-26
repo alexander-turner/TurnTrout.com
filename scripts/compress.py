@@ -193,7 +193,8 @@ def _run_ffmpeg(
     label: str,
     duration_seconds: float | None,
 ) -> None:
-    """Run an ffmpeg command via a tempfile, then move it into place.
+    """
+    Run an ffmpeg command via a tempfile, then move it into place.
 
     Streams ffmpeg's progress to stdout while the encode runs. ffmpeg's stderr
     is routed to a tempfile so reading the progress pipe can't deadlock; on a
