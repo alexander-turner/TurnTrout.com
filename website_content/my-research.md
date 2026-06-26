@@ -50,7 +50,7 @@ The above results showed AUP works in tiny gridworld environments. In my 2020 Ne
 
 The AI policy controls the chevron (<img class="inline-img" src="https://assets.turntrout.com/static/images/chevron.avif" alt="chevron sprite"/>). The policy was reinforced for destroying the red dots (<img class="inline-img" src="https://assets.turntrout.com/static/images/red-dot.avif" alt="red dot"/>) and finishing the level. However, there are fragile green dot (<img class="inline-img" src="https://assets.turntrout.com/static/images/green-dot.avif" alt="green dot"/>) patterns which we want the AI to not mess with. The challenge is to train a policy which avoids the green dots <img class="inline-img" src="https://assets.turntrout.com/static/images/green-dot.avif" alt="green dot"/> while still effectively destroying the red dots <img class="inline-img" src="https://assets.turntrout.com/static/images/red-dot.avif" alt="red dot"/>, _without_ explicitly penalizing the AI for bumping into green dots <img class="inline-img" src="https://assets.turntrout.com/static/images/green-dot.avif" alt="green dot"/>!
 
-<video autoplay muted loop playsinline aria-label="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1">
+<video aria-label="The Baseline agent on the left causes side effects by destroying green dots. The AUP agent on the right cleanly completes the task by destroying only red dots." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"></video>
 
 Figure: AUP does a great job. The policy avoids the green stuff and hits the red stuff.
@@ -76,14 +76,14 @@ Figure: AUP does a great job. The policy avoids the green stuff and hits the red
 >
 > The agent is reinforced for destroying red cells. After enough cells are destroyed, the agent may exit the level.
 >
-> <video autoplay loop muted playsinline aria-label="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4"  type="video/mp4; codecs=hvc1">
+&gt; <video aria-label="The Baseline agent on the left causes side effects by destroying green dots. The AUP agent on the right cleanly completes the task by destroying only red dots." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"></video>
 >
 > #### `append-still-easy`
 >
 > The agent is reinforced for creating gray cells on light blue tiles. After enough gray cells are present on blue tiles, the agent may exit the level.
 >
-> <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1">
+&gt; <video aria-label="The Baseline agent on the left causes side effects by destroying green dots. The AUP agent on the right cleanly completes the task by destroying only red dots." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"></video>
 >
 > AUP's first trajectory temporarily stalls, before finishing the episode after the video's 14-second cutoff. AUP's second trajectory does much better.
@@ -231,7 +231,7 @@ Subtitle: January through April 2023
 
 As I transitioned from theory to practice, I flirted with _understanding the internal mechanisms of networks_ - "mechanistic interpretability."
 
-<video autoplay loop muted playsinline style="width: 80%; margin-top: 0; margin-bottom: 0;" ><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
+<video aria-label="A mouse-like AI agent repeatedly navigates to a red dot's location within a maze." autoplay="" loop="" muted="" playsinline="" style="width: 80%; margin-top: 0; margin-bottom: 0;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>
 
 Figure: **Locally** [**retargeting the search**](https://www.alignmentforum.org/posts/w4aeAFzSAguvqA5qu/how-to-go-from-interpretability-to-alignment-just-retarget) **by modifying a single activation.** We found a residual channel halfway through a maze-solving network. When we set one of the channel activations to +5.5, the agent often navigates to the maze location (shown above in red) implied by that positive activation. This allows limited on-the-fly redirection of the net's goals by modifying only a single activation! For more, read [our paper](https://arxiv.org/abs/2310.08043).

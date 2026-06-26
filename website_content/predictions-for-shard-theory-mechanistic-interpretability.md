@@ -48,7 +48,7 @@ createBibtex: true
 
 How do agents work, internally? My shard theory [MATS 3.0](https://www.serimats.org/) team set out to do mechanistic interpretability on one of the [goal misgeneralization](https://arxiv.org/abs/2105.14111) agents: the cheese-maze network.
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/xuq1yzfdjztdhi4gy0jw.mp4" type="video/mp4; codecs=hvc1">
+<video aria-label="A trained AI agent repeatedly solves different mazes by navigating to a piece of cheese that always appears in the top-right quadrant." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/xuq1yzfdjztdhi4gy0jw.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/xuq1yzfdjztdhi4gy0jw.webm" type="video/webm"></video>
 
 Figure: The network in action on its training distribution, where cheese is randomly spawned in the top-right 5x5 available grid region. For more training videos, see the [`rand_region_5`](https://drive.google.com/drive/folders/1oX-PoNbqMQKYAPQQMRUSw0bVsaJO9FpP?usp=share_link) Google Drive folder.

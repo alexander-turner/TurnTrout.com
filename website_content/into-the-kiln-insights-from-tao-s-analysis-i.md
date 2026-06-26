@@ -167,7 +167,7 @@ As a neat exercise, let's see how this rule breaks if we violate preconditions:
 
 - If $f(a)$ or $g(a)\neq 0$, then the ratio is "messed up" and not necessarily indicative of the functions' slopes as $a$ is approached.
 - If $f$ or $g$ is not differentiable on $(a,b]$, then perhaps
-  <video autoplay loop muted playsinline style="margin-left:auto;margin-right:auto"><source src="https://assets.turntrout.com/static/images/posts/tumblr_mg2eerTssi1rkty0bo1_500.mp4" type="video/mp4; codecs=hvc1">
+ <video aria-label='A clip from the movie *Mean Girls* shows Cady Heron with an intense expression, with the caption "THE LIMIT DOES NOT EXIST."' autoplay="" loop="" muted="" playsinline="" style="margin-left:auto;margin-right:auto"><source src="https://assets.turntrout.com/static/images/posts/tumblr_mg2eerTssi1rkty0bo1_500.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/tumblr_mg2eerTssi1rkty0bo1_500.webm" type="video/webm"></video>
   - No, but really - you _would_ use L'Hôpital's rule to analytically determine that the limit in question ($\lim _{x \rightarrow 0} \frac{\ln (1-x)-\sin x}{1-\cos ^2 x}$) does not exist.
 - If $g'(x)=0$ for some $x \in [a,b]$, then we have division by zero (unless $x=a$, in which case we find more [twisted counterexamples](https://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule#Counterexamples_when_the_derivative_of_the_denominator_is_zero) which necessitate the closure of this interval).
