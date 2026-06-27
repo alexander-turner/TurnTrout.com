@@ -5,6 +5,8 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
+import { INLINE_PASSTHROUGH_TAGS } from "./utils"
+
 // Inline code gets a hair of leading space so its monospace glyph doesn't crowd
 // the preceding word. The space is carried by a zero-width marker placed
 // *before* the code rather than a left margin on the code itself: a trailing
@@ -29,27 +31,6 @@ export const NO_GAP_PREDECESSORS: ReadonlySet<string> = new Set([
   "/",
   "-",
   "=",
-])
-
-// Inline wrappers we ascend through when looking backwards for the preceding
-// character: the code may sit inside a link/emphasis whose own start coincides
-// with the start of the code (e.g. `of [`code`](…)`).
-const INLINE_PASSTHROUGH_TAGS: ReadonlySet<string> = new Set([
-  "a",
-  "em",
-  "strong",
-  "i",
-  "b",
-  "del",
-  "s",
-  "ins",
-  "abbr",
-  "sub",
-  "sup",
-  "mark",
-  "small",
-  "span",
-  "u",
 ])
 
 // Last rendered character of a node (recursing into inline children), or null

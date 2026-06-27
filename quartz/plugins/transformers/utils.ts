@@ -305,6 +305,38 @@ export function isCode(node: Element): boolean {
 }
 
 /**
+ * Phrasing-content (inline) wrapper tags. Transforms treat these as inline
+ * context: tagSmallcaps ascends through them when deciding sentence-initial
+ * capitalization, and inlineCodeSpacing ascends out of them to find the
+ * character preceding inline code.
+ *
+ * `<abbr>` is intentionally excluded: tagSmallcaps emits `<abbr class="small-caps">`
+ * as its own output and skips text inside `<abbr>`, so it is a processing
+ * terminal rather than a passthrough wrapper.
+ *
+ * `favicons.ts` keeps its own `tagsToZoomInto` instead: favicon placement
+ * descends into `<code>` and excludes `<a>` (links are handled separately), so
+ * its membership intentionally differs.
+ */
+export const INLINE_PASSTHROUGH_TAGS: ReadonlySet<string> = new Set([
+  "a",
+  "b",
+  "del",
+  "em",
+  "i",
+  "ins",
+  "mark",
+  "s",
+  "small",
+  "span",
+  "strike",
+  "strong",
+  "sub",
+  "sup",
+  "u",
+])
+
+/**
  * Factory function to create a Quartz transformer plugin that visits all elements in the HTML AST.
  * Reduces boilerplate for simple transformer plugins that just need to visit and modify elements.
  *
