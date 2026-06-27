@@ -142,6 +142,7 @@ $italic-fonts: (
 @include font-face("DejaVuSerifCondensed-Bold", "DejaVuSerifCondensed-Bold-subset", ".woff2");
 @include font-face("BadHandwriting", "badhandwriting-webfont", ".woff2");
 @include font-face("Scary", "DarkmodeRegular", ".woff2");
+@include font-face("Acidic", "Acidic", ".woff2");
 @include font-face("Elvish", "tengwar_artano/TengwarArtano", ".woff2");
 
 // Tengwar Artano uses Unicode PUA encoding (U+E000-U+E07F).
@@ -249,6 +250,11 @@ em {
 
 .corrupted {
   font-family: Scary, serif;
+  font-style: normal;
+}
+
+.acidic {
+  font-family: Acidic, serif;
   font-style: normal;
 }
 

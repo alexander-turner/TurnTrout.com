@@ -834,6 +834,9 @@ Gold script
 Corrupted text
 : <span class=”corrupted”>The corruption creeps ever closer...</span>
 
+Acidic display font
+: <span class="acidic">Silence</span>
+
 ## Italic punctuation
 
 Enclosing punctuation should render upright (roman) while letter forms remain italic. Apostrophes in contractions should stay italic.
