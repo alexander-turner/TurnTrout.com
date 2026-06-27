@@ -142,6 +142,12 @@ export const PREVIEWABLE_CLASS = "previewable"
 export const CAN_TRIGGER_POPOVER_CLASS = "can-trigger-popover"
 export const SEARCH_MATCH_CLASS = "search-match"
 
+// Title-binding links: when an internal link's display text is exactly this
+// sentinel, its text is replaced at build time with the up-to-date title of the
+// target page (or the target section heading, for `#anchor` links). See
+// `quartz/plugins/transformers/bindLinkTitles.ts`.
+export const LINK_TITLE_SENTINEL = "@title"
+
 // UI strings for various components
 export const uiStrings = {
   propertyDefaults: {

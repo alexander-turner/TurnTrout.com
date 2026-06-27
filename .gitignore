@@ -47,6 +47,7 @@ tests/visual-baselines/*.png
 *zopfli*
 **.faviconUrls.txt
 **.faviconCounts.txt
+**.titleIndex.json
 quartz/static/images/external-favicons/*.png
 quartz/static/images/posts
 *.avif_original
