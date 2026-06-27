@@ -10,7 +10,6 @@ import {
 } from "../constants"
 import { expect, test } from "./fixtures"
 import {
-  getH1Screenshots,
   gotoPage,
   isDesktopViewport,
   isElementChecked,
@@ -116,12 +115,15 @@ async function hideForceHslInvertInFirefox(page: Page, testInfo: TestInfo): Prom
 
 test.describe("Test page sections", () => {
   THEMES.forEach((theme) => {
+    // Per-section detail is covered by the isolated fixtures in
+    // section-fixtures.spec.ts; this viewport shot is the cross-section
+    // integration check (header + how the top sections stack together).
     test(`Normal page in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
 
       await hideForceHslInvertInFirefox(page, testInfo)
 
-      await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
+      await takeRegressionScreenshot(page, testInfo, `test-page-normal-${theme}`)
     })
   })
 })

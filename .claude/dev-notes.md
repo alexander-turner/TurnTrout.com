@@ -254,7 +254,19 @@ top-level (`# `) headings into one fixture page per section under
 Each section is its own page, so a Playwright screenshot of one section is
 unaffected by edits to—or reordering of—any other section
 (`quartz/components/tests/section-fixtures.spec.ts` screenshots each in both
-themes). `test-page.md` itself stays the full-page integration shot.
+themes). `test-page.md` itself stays the integration shot: the `Normal page in
+{theme}` test in `visual-regression.spec.ts` takes a single viewport screenshot
+of its top (cross-section / header coverage), **not** a `fullPage` capture — no
+test in the suite passes `fullPage`, so a bare `takeRegressionScreenshot` shoots
+only the viewport.
+
+This replaced the old `getH1Screenshots` / `wrapH1SectionsInSpans` helpers, which
+screenshotted each section in-place on one page. The per-section fixtures do that
+job with true isolation, so those helpers were removed. **DOM isolation
+(`performDOMIsolation` / `elementToScreenshot` / `preserveSiblings`) stays** — it
+is still needed by every element-scoped screenshot taken on a shared page
+(popovers, search previews, sidebar, etc.); it is only redundant *on the fixture
+pages themselves*, where nothing else is on the page to hide.
 
 **After editing `test-page.md`, regenerate and commit the fixtures:**
 
