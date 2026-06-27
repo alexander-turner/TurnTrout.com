@@ -205,7 +205,7 @@ Eventually, the ultimate solution will be [progressive font enrichment](https://
 
 ### Images
 
-Among lossy compression formats, there are two kings: AVIF and WEBP. Under my tests, they achieved similar (amazing) compression ratios of about 10x over PNG. I hit compatibility issues back in 2024, chose AVIF, and never looked back. The upshot is that _images are nearly costless in terms of responsiveness_, which is liberating.
+Among lossy compression formats, there are two kings: AVIF and WEBP. Under my tests, they achieved similar (amazing) compression ratios of about 10x over PNG. I chose AVIF. The upshot is that _images are nearly costless in terms of responsiveness_, which is liberating.
 
 To demonstrate this liberty, I perform a statistical analysis of the 941 AVIF files hosted on my CDN as of November 9, 2024.[^colab] I downloaded each AVIF file and used `magick` to convert it back to a PNG, measuring the size before and after.
 
