@@ -3,6 +3,8 @@ import type { Element as HastElement } from "hast"
 import { slug as slugAnchor } from "github-slugger"
 import rfdc from "rfdc"
 
+import { specialFaviconPaths } from "../components/constants"
+
 export const clone = rfdc()
 
 // this file must be isomorphic so it can't use node libs (e.g. path)
@@ -171,6 +173,51 @@ export function normalizeRelativeURLs(el: Element | Document, destination: strin
   )
 }
 
+// The `data-domain` a favicon carries identifies which icon it renders. The
+// same-page (anchor) favicon and the internal turntrout favicon are the two
+// relevant here.
+const ANCHOR_FAVICON_DOMAIN = "anchor"
+const TURNTROUT_FAVICON_DOMAIN = "turntrout_com"
+
+/** Removes a class from a HAST element's className, preserving its shape (string or array). */
+function removeClass(el: HastElement, className: string): void {
+  const existing = el.properties?.className
+  if (typeof existing === "string") {
+    el.properties.className = existing
+      .split(/\s+/)
+      .filter((c) => c && c !== className)
+      .join(" ")
+  } else if (Array.isArray(existing)) {
+    el.properties.className = existing.filter((c) => String(c) !== className)
+  }
+}
+
+/** Rewrites an anchor (same-page) favicon descendant in place to the internal turntrout favicon. */
+function retargetAnchorFaviconToInternal(el: HastElement): void {
+  if (el.tagName === "svg" && el.properties?.["data-domain"] === ANCHOR_FAVICON_DOMAIN) {
+    el.properties["data-domain"] = TURNTROUT_FAVICON_DOMAIN
+    el.properties.style = `--mask-url: url(${specialFaviconPaths.turntrout});`
+  }
+  for (const child of el.children) {
+    if ((child as HastElement).type === "element") {
+      retargetAnchorFaviconToInternal(child as HastElement)
+    }
+  }
+}
+
+/**
+ * An author-written `[text](#section)` link is decorated as a same-page link at
+ * its source page's transform stage. Once transcluded, it is rebased to a
+ * cross-page link back to the source, so demote it to a normal internal link:
+ * drop the `same-page-link` class (which otherwise suppresses navigation) and
+ * swap its anchor favicon for the internal turntrout favicon.
+ */
+function demoteRebasedAnchorLink(el: HastElement): void {
+  if (el.tagName !== "a") return
+  removeClass(el, "same-page-link")
+  retargetAnchorFaviconToInternal(el)
+}
+
 /**
  * Rebases a HAST element's attribute to a new base slug
  *
@@ -192,6 +239,7 @@ const _rebaseHastElement = (
     if (attrValue.startsWith("#")) {
       const relativeToOriginal = resolveRelative(curBase, newBase)
       el.properties[attr] = relativeToOriginal + attrValue
+      demoteRebasedAnchorLink(el)
       return
     }
 

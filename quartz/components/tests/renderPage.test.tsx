@@ -255,6 +255,68 @@ describe("renderPage", () => {
     expect(html).toContain("./source-page/nested#intro")
   })
 
+  it("demotes a transcluded same-page link to a normal internal link", () => {
+    const anchorFavicon: Element = {
+      type: "element",
+      tagName: "svg",
+      children: [],
+      properties: {
+        class: "favicon",
+        "data-domain": "anchor",
+        style:
+          "--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/anchor.svg);",
+      },
+    }
+    const link = h("a", { href: "#intro", className: ["internal", "same-page-link"] }, [
+      h("span", { className: ["favicon-span"] }, ["Link", anchorFavicon]),
+    ])
+
+    const transcludedPage: QuartzPluginData = {
+      slug: "source-page/nested" as FullSlug,
+      frontmatter: { title: "Source Page" },
+      htmlAst: {
+        type: "root",
+        children: [h("p", [link]) as unknown as Element],
+      },
+    } as unknown as QuartzPluginData
+
+    const props = createMockProps(
+      {
+        tree: {
+          type: "root",
+          children: [
+            h("span", { className: ["transclude"], dataUrl: "source-page/nested", dataBlock: "" }),
+          ],
+        } as unknown as Root,
+      },
+      [transcludedPage],
+    )
+
+    const html = renderPage(
+      props.cfg,
+      "current-page" as FullSlug,
+      props,
+      {
+        ...components,
+        pageBody: ({ tree }: QuartzComponentProps) => (
+          <div id="page-body">{JSON.stringify(tree)}</div>
+        ),
+      } as typeof components,
+      pageResources,
+    )
+
+    // The transcluded link is serialized as escaped JSON inside #page-body; scope
+    // assertions to it so the page shell's own skip-to-content link is ignored.
+    const pageBody = html.slice(html.indexOf('id="page-body"'))
+    expect(pageBody).toContain("./source-page/nested#intro")
+    // Demoted: same-page-link dropped (className is internal-only), anchor favicon
+    // swapped for the turntrout favicon.
+    expect(pageBody).toContain("[&quot;internal&quot;]")
+    expect(pageBody).toContain("turntrout_com")
+    expect(pageBody).not.toContain("same-page-link")
+    expect(pageBody).not.toContain("&quot;anchor&quot;")
+  })
+
   it.each([
     {
       name: "intro transclusion with ![[page#]]",
