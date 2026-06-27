@@ -341,6 +341,13 @@ code {
   }
 }
 
+// Inline code's leading glyph can crowd the preceding word, especially after
+// letters with a rightward hook ("f", "r"); a hair of left spacing keeps the
+// monospace from touching the prior text. Block code (`pre > code`) is excluded.
+:not(pre) > code {
+  margin-left: 0.1em;
+}
+
 // For usage in the middle of a paragraph
 .dropcap {
   display: inline-block;

@@ -767,6 +767,8 @@ Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 
 Inline code ligature kerning: `$var` must be interpolated into `#{$var}`. See also `===`, `!==`, `=>`, and `custom-property-no-missing-interpolation`.
 
+Inline code left spacing after a crowding glyph: with the help of `TomSmith` and `regex`, the monospace should not touch the preceding letter.
+
 ```json
 "lint-staged": {
  "*.{js, jsx, ts, tsx, css, scss, json}": "prettier --write",
