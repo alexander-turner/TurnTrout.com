@@ -124,8 +124,8 @@ sync_repo() {
 }
 
 # Drain the queue: snapshot it, stamp each hash, re-queue any failures. Returns
-# 0 if the queue was fully drained, 1 if it stopped early on a failure (those
-# hashes stay queued for the next commit rather than hammering the network).
+# 0 if the queue was fully drained, 1 if any hash failed — failed hashes stay
+# queued for the next commit rather than being re-polled in a tight loop.
 process_queue() {
   local work="$state_dir/queue.work"
   local failed="$state_dir/queue.failed"
