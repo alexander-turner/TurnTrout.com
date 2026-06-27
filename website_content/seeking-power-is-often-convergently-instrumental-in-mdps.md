@@ -86,8 +86,7 @@ The table’s convergently instrumental strategies are about maintaining, gainin
 
 My theorems apply to finite MDPs; for the unfamiliar, I’ll illustrate with Pac-Man.
 
-<video aria-label="Pac-Man gameplay." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/f9uz4ran04prpaofwfce.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/f9uz4ran04prpaofwfce.webm" type="video/webm"></video>
+<video aria-label="Pac-Man gameplay." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/f9uz4ran04prpaofwfce.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/f9uz4ran04prpaofwfce.webm" type="video/webm" /></video>
 
 Full observability
 : You can see everything that's going on; this information is packaged in the _state s_. In Pac-Man, the state is the game screen.
