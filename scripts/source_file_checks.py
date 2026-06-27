@@ -254,6 +254,41 @@ def check_invalid_md_links(text: str, file_path: Path) -> list[str]:
     return errors
 
 
+def check_spaces_in_md_link_urls(text: str) -> list[str]:
+    """
+    Flag markdown link/image URLs that contain raw spaces.
+
+    A space inside `](...)` makes the parser read the URL as ending at the
+    space and try to treat the remainder as a link title. Since titles must be
+    quoted, an unquoted URL with spaces is invalid and the whole construct
+    renders as literal text. Spaces must be percent-encoded (`%20`).
+
+    Valid forms are not flagged:
+    - A quoted title after the URL: `[t](/url "the title")`
+    - An angle-bracketed URL: `[t](</url with spaces>)`
+    """
+    stripped_text = remove_math(remove_code(text))
+    errors = []
+    # Capture the contents of the `(...)` in a `](...)` link target.
+    for match in re.finditer(r"\]\(([^()\n]*)\)", stripped_text):
+        target = match.group(1)
+        url_part, _, rest = target.partition(" ")
+        if " " not in target:
+            continue
+        # Angle-bracketed URLs may legally contain spaces.
+        if url_part.startswith("<"):
+            continue
+        # A quoted title after the URL is legal; only the URL itself is checked.
+        if re.fullmatch(r"\"[^\"]*\"|'[^']*'|\([^)]*\)", rest.strip()):
+            continue
+        line_num = stripped_text[: match.start()].count("\n") + 1
+        errors.append(
+            f"Markdown link URL contains spaces at line {line_num} "
+            f"(percent-encode them as %20): {match.group()}"
+        )
+    return errors
+
+
 def check_latex_tags(text: str, file_path: Path) -> list[str]:
     r"""
     Check for \tag{ in markdown files, which should be avoided.
@@ -817,6 +852,7 @@ def check_file_data(
         "required_fields": check_required_fields(metadata),
         "cover_image_alt": check_cover_image_alt(metadata),
         "invalid_links": check_invalid_md_links(text, file_path),
+        "spaces_in_link_urls": check_spaces_in_md_link_urls(text),
         "latex_tags": check_latex_tags(text, file_path),
         "table_alignments": check_table_alignments(text),
         "unescaped_braces": check_unescaped_braces(text),
