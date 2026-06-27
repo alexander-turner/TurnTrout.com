@@ -171,8 +171,8 @@ describe("replaceTweetBlocks", () => {
   })
 
   it("renders a thread for multiple URLs", async () => {
-    readFileSpy.mockImplementation((async (filePath: string) =>
-      snapshotJson(filePath.includes("10124") ? "10124" : "10123")) as never)
+    readFileSpy.mockImplementation(((filePath: string) =>
+      Promise.resolve(snapshotJson(filePath.includes("10124") ? "10124" : "10123"))) as never)
     const root = tree(
       tweetBlock("https://x.com/turntrout/status/10123\nhttps://x.com/turntrout/status/10124\n"),
     )

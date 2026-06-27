@@ -53,8 +53,7 @@ class FakeResponse:
     def __exit__(self, *_exc: object) -> bool:
         return False
 
-    def iter_content(self, chunk_size: int = 0) -> Iterator[bytes]:
-        del chunk_size
+    def iter_content(self, **_kwargs: object) -> Iterator[bytes]:
         yield self._content
 
 
@@ -302,8 +301,7 @@ def test_assert_media_host() -> None:
 def test_localize_media(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    def fake_download(url: str, target: Path, session: Any) -> None:
-        del url, session
+    def fake_download(_url: str, target: Path, _session: Any) -> None:
         target.write_bytes(b"x")
 
     monkeypatch.setattr(ts, "download_file", fake_download)

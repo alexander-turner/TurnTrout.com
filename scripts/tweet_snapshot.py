@@ -297,6 +297,8 @@ def download_file(url: str, target: Path, session: requests.Session) -> None:
         with session.get(url, stream=True, timeout=60) as response:
             response.raise_for_status()
             response.raw.decode_content = True
+            # skipcq: PTC-W6004 — target is an internally-built staging path
+            # (staging_dir / a fixed role name like "avatar.jpg"), never user input.
             with open(target, "wb") as out_file:
                 for chunk in response.iter_content(chunk_size=1 << 16):
                     out_file.write(chunk)
