@@ -57,7 +57,7 @@ Your stomach rumbles. This guess should be good enough. You tell your would-be r
 
 # Recovering the intuition from the math
 
-> [!quote] [How I Do Research](/how-i-do-research)
+> [!quote] [@title](/how-i-do-research)
 >
 > Don't think for a second that having math representing your thoughts means you've necessarily made progress – for the kind of problems I'm thinking about right now, the math has to _sing_ with the elegance of the philosophical insight you're formalizing.
 

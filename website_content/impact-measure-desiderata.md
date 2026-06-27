@@ -39,7 +39,7 @@ The long-term goal of impact measure research is to find a measure which neatly 
 No approaches to date meet these standards. What do we even require of an impact measure we hope to make safe for use with arbitrarily powerful agents?
 
 > [!warning] Disclaimer
-> I no longer endorse this way of grading impact measures. See instead [Reframing Impact](/reframing-impact).
+> I no longer endorse this way of grading impact measures. See instead [@title](/reframing-impact).
 
 # Desiderata
 
@@ -158,7 +158,7 @@ No approaches to date meet these standards. What do we even require of an impact
 First, notice that my list points at some abstract amount-of-impact, while the above proposal focuses on specific effects.
 
 - Thinking in terms of "effects" seems like a subtle map/territory confusion. That is, it seems highly unlikely that there exists a robust, value-agnostic means of detecting "effects" that makes sense across representations and environments.
-- [Overcoming Clinginess in Impact Measures](/overcoming-clinginess-in-impact-measures) suggests that penalizing impact based on the world state necessitates a value-laden tradeoff.
+- [@title](/overcoming-clinginess-in-impact-measures) suggests that penalizing impact based on the world state necessitates a value-laden tradeoff.
 
 I left out 1), as I believe that the desired benefit will naturally follow from an approach satisfying my proposed desiderata.
 

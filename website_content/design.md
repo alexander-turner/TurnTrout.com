@@ -744,7 +744,7 @@ Asset accessibility
 > [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
 > ![[/open-source#automatic-alt-text-generation]]
 
-I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
+I also subtitled the 22-minute [@title](/alignment-tier-list).
 
 Color contrast
 : I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context.
@@ -1020,6 +1020,10 @@ Over time, [links decay and rot](https://en.wikipedia.org/wiki/Link_rot), eventu
 - Links to [the Github repository for the website.](https://github.com/alexander-turner/TurnTrout.com)
 
 I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
+
+### Linking by title
+
+Sometimes I link by the title of a post, like "[Towards A New Impact Measure](/towards-a-new-impact-measure)." But what if I change that title later? The linked title is just text in a Markdown file. To prevent drift, I write `@title` as the link text. Then the build fills in the target's current title.
 
 ### Validating the emitted HTML files
 

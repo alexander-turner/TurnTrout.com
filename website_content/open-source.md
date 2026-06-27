@@ -66,7 +66,7 @@ Subtitle: Install with `pip install easy-dataset-share`.
 
 I helped fund this project. Here's the introduction to an article I wrote:
 
-> [!quote] [We Built a Tool to Protect Your Dataset From Simple Scrapers](/dataset-protection)
+> [!quote] [@title](/dataset-protection)
 > ![[dataset-protection#]]
 
 # Automated setup

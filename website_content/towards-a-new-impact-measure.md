@@ -36,7 +36,7 @@ createBibtex: true
 > [!note] Summary
 > I propose a closed-form solution to [low impact](https://arbital.com/p/low_impact/), increasing [corrigibility](https://arbital.com/p/corrigibility/) and seemingly taking major steps to neutralize [basic AI drives](https://selfawaresystems.files.wordpress.com/2008/01/ai_drives_final.pdf) 1 (self-improvement), 5 (self-protectiveness), and 6 (acquisition of resources)
 >
-> **Previous posts:** [Worrying about the Vase: Whitelisting](/whitelisting-impact-measure), [Overcoming Clinginess in Impact Measures](/overcoming-clinginess-in-impact-measures), [Impact Measure Desiderata](/impact-measure-desiderata)
+> **Previous posts:** [Worrying about the Vase: Whitelisting](/whitelisting-impact-measure), [@title](/overcoming-clinginess-in-impact-measures), [@title](/impact-measure-desiderata)
 
 > [!quote] [Safe Impact Measure](https://arbital.com/p/4l/)
 >
@@ -49,7 +49,7 @@ If we have a safe impact measure, we may have arbitrarily intelligent unaligned 
 
 # What _is_ "Impact"?
 
-One lazy Sunday afternoon, I worried that I had written myself out of a job. After all, [Overcoming Clinginess in Impact Measures](/overcoming-clinginess-in-impact-measures) basically said, "Suppose an impact measure extracts 'effects on the world'. If the agent penalizes itself for these effects, it's incentivized to stop the environment (and any agents in it) from producing them. On the other hand, if it can somehow model other agents and avoid penalizing their effects, the agent is now incentivized to get the other agents to do its dirty work." This seemed to be strong evidence against the possibility of a simple conceptual core underlying "impact", and I didn't know what to do.
+One lazy Sunday afternoon, I worried that I had written myself out of a job. After all, [@title](/overcoming-clinginess-in-impact-measures) basically said, "Suppose an impact measure extracts 'effects on the world'. If the agent penalizes itself for these effects, it's incentivized to stop the environment (and any agents in it) from producing them. On the other hand, if it can somehow model other agents and avoid penalizing their effects, the agent is now incentivized to get the other agents to do its dirty work." This seemed to be strong evidence against the possibility of a simple conceptual core underlying "impact", and I didn't know what to do.
 
 > [!quote] [Methodology of Unbounded Analysis](https://arbital.com/p/unbounded_analysis/)
 >
@@ -718,7 +718,7 @@ _Note:_ Although more exotic possibilities (such as improvements which only work
 
 # Desiderata
 
-_For additional context, please see [Impact Measure Desiderata](/impact-measure-desiderata)._
+_For additional context, please see [@title](/impact-measure-desiderata)._
 
 I believe that some of AUP's most startling successes are those which come naturally and have therefore been little discussed: not requiring any notion of human preferences, any hard-coded or trained trade-offs, any specific ontology, or any specific environment, and its intertwining instrumental convergence and opportunity cost to capture a universal notion of impact. To my knowledge, no one (myself included, prior to AUP) was sure whether any measure could meet even the first four.
 
