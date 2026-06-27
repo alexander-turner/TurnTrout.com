@@ -189,7 +189,7 @@ describe("Backlinks", () => {
     const html = render(element)
     expect(normalizeNbsp(html)).toContain("Link 1")
     expect(normalizeNbsp(html)).toContain("Link 2")
-    expect(html.match(/<li/g)?.length).toBe(2)
+    expect(html.match(/<li/gu)?.length).toBe(2)
   })
 
   // Test handling of invalid file data
@@ -238,7 +238,7 @@ describe("Backlinks", () => {
     const html = render(element)
 
     // Ensure the <abbr> element was rendered with the expected class and transformed text
-    expect(html).toMatch(/<abbr[^>]*class="initialism"[^>]*>AI<\/abbr>/)
+    expect(html).toMatch(/<abbr[^>]*class="initialism"[^>]*>AI<\/abbr>/u)
   })
 
   it("renders abbreviations without className using empty string fallback", () => {
@@ -258,7 +258,7 @@ describe("Backlinks", () => {
     const html = render(element)
 
     // Ensure the <abbr> element was rendered with empty class (fallback branch)
-    expect(html).toMatch(/<abbr[^>]*class[^>]*>HTML<\/abbr>/)
+    expect(html).toMatch(/<abbr[^>]*class[^>]*>HTML<\/abbr>/u)
   })
 
   // Test non-abbreviation inline HTML elements are wrapped in a <span>
@@ -301,7 +301,7 @@ describe("Backlinks", () => {
 
     // A blockquote should still be rendered (backlinkFiles length > 0), but there should be no <li> entries
     expect(html).toContain("<blockquote")
-    expect(html.match(/<li/g)).toBeNull()
+    expect(html.match(/<li/gu)).toBeNull()
   })
 
   it("handles abbr elements with no children gracefully", () => {
@@ -315,7 +315,7 @@ describe("Backlinks", () => {
     const jsx = elementToJsx(abbrNode)
     const html = render(jsx)
 
-    expect(html).toMatch(/<abbr[^>]*class="small-caps"[^>]*><\/abbr>/)
+    expect(html).toMatch(/<abbr[^>]*class="small-caps"[^>]*><\/abbr>/u)
   })
 
   // Test unsupported RootContent type triggers default branch returning empty fragment
