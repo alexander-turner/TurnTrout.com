@@ -176,7 +176,7 @@ Since you're using a unique password for every site, you won't have to scramble 
 
 ## Two-factor authentication (2FA)
 
-"2-factor authentication" means an attacker has to try a lot harder to get into your accounts, because they need a password *and* another piece of information -- a second "factor".  Even if your credentials are exposed in a massive breach, your account will be safe because they won't have access to your second factor.
+"Two-factor authentication" means an attacker has to try a lot harder to get into your accounts, because they need a password *and* another piece of information -- a second "factor".  Even if your credentials are exposed in a massive breach, your account will be safe because they won't have access to your second factor.
 
 Enable two-factor authentication on every possible account that you care about protecting. You don't have to do it all at once. You can just enable 2FA on your most important accounts and then start enabling them in the future as you notice.
 

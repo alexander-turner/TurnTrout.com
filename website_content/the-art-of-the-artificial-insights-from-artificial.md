@@ -93,7 +93,7 @@ I knew that this plan was preposterous; in all likelihood, I'd finish 3 chapters
 
 Not only did I do it, but I finished a day early. The Murphyjitsu was invaluable; the failure modes I predicted came up and were dealt with by my precautions.
 
-24 hours of studying over the last two days, and I enjoyed every moment.
+Twenty-four hours of studying over the last two days, and I enjoyed every moment.
 
 # AI: A Modern Approach
 

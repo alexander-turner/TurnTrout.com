@@ -1,3 +1,4 @@
+# pylint: disable=C0302
 """Check source files for issues, like invalid links, missing required fields,
 etc."""
 
@@ -791,6 +792,110 @@ def check_self_closing_non_void_elements(text: str) -> list[str]:
     return errors
 
 
+_SENTENCE_INITIAL_NUMERAL_IGNORE = "lint-ignore sentence-initial-numeral"
+
+# Quotes and closing brackets permitted between a sentence boundary and the
+# leading digit: a closing quotation mark from the prior sentence, or an
+# opening quotation mark that begins the new one. Opening "(" and "[" are
+# excluded so parenthetical labels ("(1)") and citations ("[2]") are not read
+# as prose numerals.
+_LEADING_QUOTE_CHARS = "\"'“”‘’)\\]"
+
+_SENTENCE_INITIAL_START_RE = re.compile(
+    r"^\s*[" + _LEADING_QUOTE_CHARS + r"]*\d"
+)
+# A leading "(?<!\.)" keeps an ASCII ellipsis ("...") from registering as a
+# sentence boundary; a Unicode ellipsis ("…") is not in "[.!?]" to begin with.
+_SENTENCE_INITIAL_MID_RE = re.compile(
+    r"(?<!\.)([.!?])[ \t]+[" + _LEADING_QUOTE_CHARS + r"]*\d"
+)
+_TRAILING_WORD_RE = re.compile(r"([A-Za-z.]+)$")
+_LIST_MARKER_RE = re.compile(r"^\s*([-*+]\s+|\d+[.)]\s+)")
+_FOOTNOTE_DEFINITION_RE = re.compile(r"^\[\^[^\]]+\]:")
+
+# Abbreviations whose trailing period is not a sentence boundary, so a digit
+# after them ("eq. 5", "e.g. 2", "Fig. 3") is not sentence-initial.
+_SENTENCE_END_ABBREVIATIONS = frozenset(
+    """
+    al et seq eq eqs ch chs fig figs no nos vol vols pp p pg pos sec secs
+    thm thms def defs prop props lemma cor ref refs ie eg etc cf vs viz resp
+    approx ca nov dec jan feb mar apr jun jul aug sep sept oct mon tue wed
+    thu fri sat sun st mr mrs ms dr prof inc ltd co corp dept univ art arts
+    ex exs col cols pt pts ver v i ii iii iv vi vii viii ix x xi xii
+    """.split()
+)
+
+
+def _blank_frontmatter_lines(lines: list[str]) -> None:
+    """
+    Blank a leading YAML frontmatter block in place.
+
+    Blanking (rather than removing) preserves line numbers for the body.
+    """
+    if lines[0] != "---":
+        return
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "---":
+            for j in range(i + 1):
+                lines[j] = ""
+            return
+
+
+def _is_prose_line(line: str) -> bool:
+    """Whether a line is prose subject to the sentence-initial numeral check."""
+    stripped = line.strip()
+    if not stripped or stripped.startswith((">", "#", "|", "![", ":")):
+        return False
+    return not (
+        _FOOTNOTE_DEFINITION_RE.match(stripped) or _LIST_MARKER_RE.match(line)
+    )
+
+
+def check_sentence_initial_numerals(text: str) -> list[str]:
+    """
+    Flag Arabic numerals that begin a sentence in prose.
+
+    English style spells out numbers that open a sentence ("Twenty-six people
+    attended", not "26 people attended"). This flags a digit at the start of a
+    paragraph, or after sentence-ending punctuation, within prose. Code, math,
+    YAML frontmatter, headings, tables, blockquotes, list markers, image alt
+    text, and footnote definitions are excluded, as is a digit following an
+    ellipsis (a trailing-off continuation, not a new sentence). A line carrying
+    the
+    "<!-- lint-ignore sentence-initial-numeral -->" marker is skipped so a
+    deliberate leading numeral (e.g. one that refers to a literal figure) can
+    be kept with a one-line reason.
+    """
+    stripped_text = remove_math(
+        remove_code(text, mark_boundaries=True), mark_boundaries=True
+    )
+    lines = stripped_text.split("\n")
+    _blank_frontmatter_lines(lines)
+
+    errors: list[str] = []
+    for line_num, line in enumerate(lines, 1):
+        if _SENTENCE_INITIAL_NUMERAL_IGNORE in line or not _is_prose_line(line):
+            continue
+        if _SENTENCE_INITIAL_START_RE.match(line):
+            errors.append(
+                f"Sentence-initial numeral at line {line_num}: "
+                f"{line.strip()[:60]}"
+            )
+            continue
+        for match in _SENTENCE_INITIAL_MID_RE.finditer(line):
+            trailing = _TRAILING_WORD_RE.search(line[: match.start() + 1])
+            word = (
+                trailing.group(1).replace(".", "").lower() if trailing else ""
+            )
+            if word in _SENTENCE_END_ABBREVIATIONS:
+                continue
+            errors.append(
+                f"Sentence-initial numeral at line {line_num}: "
+                f"{line.strip()[max(0, match.start() - 20) : match.start() + 20]}"
+            )
+    return errors
+
+
 def check_file_data(
     metadata: dict,
     existing_urls: PathMap,
@@ -830,6 +935,7 @@ def check_file_data(
         "heading_links": check_heading_links(text),
         "footnote_references": check_footnote_references(text),
         "self_closing_non_void": check_self_closing_non_void_elements(text),
+        "sentence_initial_numerals": check_sentence_initial_numerals(text),
         "invalid_filename": (
             check_spaces_in_path(file_path)
             + check_filename_lowercase(file_path)
