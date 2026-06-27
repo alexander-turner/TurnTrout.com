@@ -170,23 +170,10 @@ export function linkifyTweetText(text: string, urls: readonly TweetUrl[]): (Elem
   return withLineBreaks(nodes)
 }
 
-function verifiedBadge(): Element {
-  return s(
-    "svg",
-    {
-      className: "tweet-verified",
-      viewBox: "0 0 24 24",
-      "aria-label": "Verified account",
-      role: "img",
-    },
-    [s("path", { d: VERIFIED_PATH })],
-  )
-}
-
-function xLogo(): Element {
-  return s("svg", { className: "tweet-x-logo", viewBox: "0 0 24 24", "aria-hidden": "true" }, [
-    s("path", { d: X_LOGO_PATH }),
-  ])
+/** A 24×24 inline icon. Decorative by default; pass an `aria-label` to expose it. */
+function icon(path: string, className: string, props: Record<string, string> = {}): Element {
+  const a11y = "aria-label" in props ? {} : { "aria-hidden": "true" }
+  return s("svg", { className, viewBox: "0 0 24 24", ...a11y, ...props }, [s("path", { d: path })])
 }
 
 function mediaNode(media: TweetMedia): Element {
@@ -227,18 +214,19 @@ function mediaGrid(media: readonly TweetMedia[]): Element[] {
   ]
 }
 
+const compactNumber = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+})
+
 /** Compact engagement count, Twitter-style: 165, 1.2K, 34.8K, 1.2M. */
 export function formatCount(n: number): string {
-  if (n < 1000) return String(n)
-  if (n < 1_000_000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K`
-  return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`
+  return compactNumber.format(n)
 }
 
 function metric(path: string, label: string, value: number): Element {
   return h("span", { className: "tweet-metric" }, [
-    s("svg", { className: "tweet-metric-icon", viewBox: "0 0 24 24", "aria-hidden": "true" }, [
-      s("path", { d: path }),
-    ]),
+    icon(path, "tweet-metric-icon"),
     h(
       "span",
       { className: "tweet-metric-count", "aria-label": `${value} ${label}` },
@@ -260,9 +248,7 @@ function metricsRow(metrics: TweetMetrics | undefined): Element[] {
 /** The "<name> retweeted" context line shown above a card. */
 function retweetContext(name: string): Element {
   return h("div", { className: "tweet-retweet-context" }, [
-    s("svg", { className: "tweet-retweet-icon", viewBox: "0 0 24 24", "aria-hidden": "true" }, [
-      s("path", { d: RETWEET_PATH }),
-    ]),
+    icon(RETWEET_PATH, "tweet-retweet-icon"),
     h("span", `${name} retweeted`),
   ])
 }
@@ -271,7 +257,11 @@ function retweetContext(name: string): Element {
 export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): Element {
   const { author } = snapshot
   const nameChildren: (Element | string)[] = [h("span", { className: "tweet-name" }, author.name)]
-  if (author.verified) nameChildren.push(verifiedBadge())
+  if (author.verified) {
+    nameChildren.push(
+      icon(VERIFIED_PATH, "tweet-verified", { "aria-label": "Verified account", role: "img" }),
+    )
+  }
 
   const authorLabel = `${author.name} (@${author.handle})`
   const header = h("div", { className: "tweet-header" }, [
@@ -294,7 +284,12 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
       externalAnchor(snapshot.url, nameChildren, "tweet-name-link"),
       externalAnchor(snapshot.url, [`@${author.handle}`], "tweet-handle"),
     ]),
-    externalAnchor(snapshot.url, [xLogo()], "tweet-source-link", "View post on X"),
+    externalAnchor(
+      snapshot.url,
+      [icon(X_LOGO_PATH, "tweet-x-logo")],
+      "tweet-source-link",
+      "View post on X",
+    ),
   ])
 
   const body = h("div", { className: "tweet-body" }, linkifyTweetText(snapshot.text, snapshot.urls))
