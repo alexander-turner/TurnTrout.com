@@ -61,6 +61,10 @@ article[data-use-dropcap="true"] {
   --font-dropcap-background: "EBGaramondInitialsF1__subset", "EBGaramondInitialsF1";
 }
 
+article[data-use-dropcap="true"][data-no-dropcap-color="true"] {
+  --before-color: var(--midground-faint);
+}
+
 article[data-use-dropcap="true"] > p:first-of-type {
   position: relative;
   min-height: #{$dropcap-min-height};

@@ -64,6 +64,40 @@ test.describe("Random dropcap color", () => {
     await page2.close()
   })
 
+  test('data-no-dropcap-color="true" suppresses the rolled color', async ({ page }) => {
+    // Force a colored roll (red) so the opt-out has something to suppress.
+    await page.addInitScript(mockRandom, [0.01, 0.0])
+    await gotoPage(page, DROPCAP_URL)
+
+    const dropcapParagraph = page
+      .locator('article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type')
+      .first()
+    await dropcapParagraph.scrollIntoViewIfNeeded()
+
+    const beforeColor = () =>
+      dropcapParagraph.evaluate((el) => getComputedStyle(el, "::before").color)
+
+    const coloredEmbellishment = await beforeColor()
+
+    // Opting out reverts the embellishment to the monochrome --midground-faint.
+    await dropcapParagraph.evaluate((el) =>
+      el.closest("article")?.setAttribute("data-no-dropcap-color", "true"),
+    )
+    const monochromeEmbellishment = await beforeColor()
+
+    expect(monochromeEmbellishment).not.toBe(coloredEmbellishment)
+
+    const midgroundFaint = await dropcapParagraph.evaluate((el) => {
+      const probe = document.createElement("span")
+      probe.style.color = "var(--midground-faint)"
+      el.appendChild(probe)
+      const resolved = getComputedStyle(probe).color
+      probe.remove()
+      return resolved
+    })
+    expect(monochromeEmbellishment).toBe(midgroundFaint)
+  })
+
   test("color re-rolls on SPA navigation", async ({ page }) => {
     // IIFE roll: colored (0.01 < probability → pick red), SPA nav roll: no color (0.5 >= probability)
     await page.addInitScript(mockRandom, [0.01, 0.0, 0.5])
