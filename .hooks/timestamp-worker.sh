@@ -62,11 +62,6 @@ acquire_lock() {
   return 1
 }
 
-# shellcheck disable=SC2317  # invoked indirectly via trap
-cleanup() {
-  rm -rf "$lockdir" 2>/dev/null || true
-}
-
 has_unpushed() {
   local n
   n="$(git -C "$timestamps_repo" rev-list --count origin/master..HEAD 2>/dev/null || echo 0)"
@@ -159,7 +154,7 @@ if ! command -v ots >/dev/null 2>&1; then
 fi
 
 acquire_lock || exit 0
-trap cleanup EXIT
+trap 'rm -rf "$lockdir" 2>/dev/null || true' EXIT
 rotate_log
 
 # Drain, push, then re-poll so hashes enqueued while we were working get handled
