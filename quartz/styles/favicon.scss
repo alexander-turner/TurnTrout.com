@@ -53,6 +53,7 @@ svg.favicon {
   --attenuated-green: color-mix(in srgb, var(--green) var(--color-percentage), var(--svg-color));
   --attenuated-yellow: color-mix(in srgb, var(--gold) var(--color-percentage), var(--svg-color));
   --attenuated-orange: color-mix(in srgb, var(--orange) var(--color-percentage), var(--svg-color));
+  --attenuated-purple: color-mix(in srgb, var(--purple) var(--color-percentage), var(--svg-color));
 
   mask: var(--mask-url) no-repeat center / contain;
   filter: none; // Don't apply img filters to masks
@@ -108,6 +109,24 @@ svg.favicon {
       var(--attenuated-green) 95deg 180deg,
       var(--attenuated-yellow) 180deg 260deg,
       var(--attenuated-red) 260deg 360deg
+    );
+  }
+
+  // NBC peacock: six feathers fan out from the bottom-center origin, so a
+  // conic-gradient anchored there paints each feather its own hue. Going
+  // left-to-right across the fan: yellow, orange, red, purple, blue, green.
+  // The gradient's 0deg/360deg seam sits at 180deg (straight down), inside the
+  // empty wedge below the fan, so no feather straddles the wrap and picks up a
+  // neighbor's color.
+  &[data-domain="msnbc_com"] {
+    background: conic-gradient(
+      from 0deg at 50% 100%,
+      var(--attenuated-purple) 0deg 25deg,
+      var(--attenuated-blue) 25deg 54deg,
+      var(--attenuated-green) 54deg 180deg,
+      var(--attenuated-yellow) 180deg 306deg,
+      var(--attenuated-orange) 306deg 334deg,
+      var(--attenuated-red) 334deg 360deg
     );
   }
 
