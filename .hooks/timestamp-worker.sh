@@ -4,9 +4,9 @@
 # Launched detached by .hooks/post-commit so `git commit` never blocks on
 # network I/O. Drains a queue of commit hashes: for each, creates an OTS proof
 # and commits it into the .timestamps repo, then pushes the whole batch in a
-# single pull/push. A single mkdir lock keeps concurrent commits from racing;
-# whichever worker holds the lock drains every queued hash, so newer commits
-# piggyback on the running worker instead of spawning redundant network work.
+# single pull/push. A single mkdir lock serializes workers; the lock holder
+# keeps draining and re-polls the queue, so commits enqueued while it runs are
+# handled in the same run instead of spawning redundant network work.
 #
 # Best-effort by design: a failed stamp or push is logged and the hash is left
 # pending so the next commit retries it. The commit it belongs to is never
@@ -73,28 +73,37 @@ has_unpushed() {
   [ "${n:-0}" -gt 0 ]
 }
 
-# Create and locally commit the OTS proof for a single commit hash.
+# Create (if needed) and commit the OTS proof for a single commit hash. Both
+# steps are idempotent: an existing .ots is reused instead of re-stamped, and an
+# already-committed proof is a no-op. So a proof whose commit failed on an
+# earlier run is still committed on retry rather than skipped as "done".
 stamp_one() {
   local hash="$1"
   local txt_file="$timestamps_dir/$hash.txt"
   local ots_file="$txt_file.ots"
 
-  [ -f "$ots_file" ] && return 0 # already stamped
-
-  printf '%s' "$hash" >"$txt_file"
-
-  local out
-  if ! out="$(ots stamp -m 1 --timeout 30 "$txt_file" 2>&1)"; then
-    log "ots stamp failed for $hash: $out"
-    return 1
-  fi
   if [ ! -f "$ots_file" ]; then
-    log "ots produced no .ots file for $hash"
-    return 1
+    printf '%s' "$hash" >"$txt_file"
+    local out
+    if ! out="$(ots stamp -m 1 --timeout 30 "$txt_file" 2>&1)"; then
+      log "ots stamp failed for $hash: $out"
+      return 1
+    fi
+    if [ ! -f "$ots_file" ]; then
+      log "ots produced no .ots file for $hash"
+      return 1
+    fi
   fi
 
-  if ! git -C "$timestamps_repo" add "files/$hash.txt" "files/$hash.txt.ots" 2>>"$log_file" ||
-    ! git -C "$timestamps_repo" commit --quiet -m "Add OpenTimestamp proof for commit $hash" 2>>"$log_file"; then
+  if ! git -C "$timestamps_repo" add "files/$hash.txt" "files/$hash.txt.ots" 2>>"$log_file"; then
+    log "failed to stage proof for $hash"
+    return 1
+  fi
+  # Nothing staged means the proof is already committed — done.
+  if git -C "$timestamps_repo" diff --cached --quiet -- "files/$hash.txt" "files/$hash.txt.ots"; then
+    return 0
+  fi
+  if ! git -C "$timestamps_repo" commit --quiet -m "Add OpenTimestamp proof for commit $hash" 2>>"$log_file"; then
     log "failed to commit proof for $hash"
     return 1
   fi
@@ -114,33 +123,29 @@ sync_repo() {
   return 0
 }
 
-stamped_any=0
-
-# Drain the queue: snapshot it, stamp each hash, re-queue any failures and stop
-# (they retry on the next commit rather than hammering the network in a loop).
+# Drain the queue: snapshot it, stamp each hash, re-queue any failures. Returns
+# 0 if the queue was fully drained, 1 if it stopped early on a failure (those
+# hashes stay queued for the next commit rather than hammering the network).
 process_queue() {
   local work="$state_dir/queue.work"
   local failed="$state_dir/queue.failed"
   while [ -s "$queue" ]; do
-    mv "$queue" "$work" 2>/dev/null || break
+    mv "$queue" "$work" 2>/dev/null || return 0
     : >"$failed"
     local hash
     while IFS= read -r hash; do
       [ -n "$hash" ] || continue
-      if stamp_one "$hash"; then
-        stamped_any=1
-      else
-        printf '%s\n' "$hash" >>"$failed"
-      fi
+      stamp_one "$hash" || printf '%s\n' "$hash" >>"$failed"
     done <"$work"
     rm -f "$work"
     if [ -s "$failed" ]; then
       cat "$failed" >>"$queue"
       rm -f "$failed"
-      break
+      return 1
     fi
     rm -f "$failed"
   done
+  return 0
 }
 
 if [ ! -d "$timestamps_repo/.git" ]; then
@@ -157,10 +162,16 @@ acquire_lock || exit 0
 trap cleanup EXIT
 rotate_log
 
-process_queue
-
-if [ "$stamped_any" -eq 1 ] || has_unpushed; then
-  sync_repo || log "sync deferred; will retry on next commit"
-fi
+# Drain, push, then re-poll so hashes enqueued while we were working get handled
+# in this run instead of waiting for the next commit. Stop re-polling once a
+# stamp fails — those hashes retry on the next commit.
+while :; do
+  process_queue
+  drained=$?
+  if has_unpushed; then
+    sync_repo || log "sync deferred; will retry on next commit"
+  fi
+  { [ "$drained" -eq 0 ] && [ -s "$queue" ]; } || break
+done
 
 exit 0
