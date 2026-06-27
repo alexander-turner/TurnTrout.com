@@ -13,14 +13,9 @@ describe("normalizeHostname", () => {
     ["docs.python.org", "python.org"],
     ["www.example.com", "example.com"],
     ["subdomain.example.co.uk", "example.co.uk"],
+    ["math.stackexchange.com", "stackexchange.com"],
+    ["gaming.stackexchange.com", "stackexchange.com"],
   ])("strips subdomains: %s → %s", (input, expected) => {
-    expect(normalizeHostname(input)).toBe(expected)
-  })
-
-  it.each([
-    ["math.stackexchange.com", "math.stackexchange.com"],
-    ["gaming.stackexchange.com", "gaming.stackexchange.com"],
-  ])("preserves StackExchange subdomains: %s", (input, expected) => {
     expect(normalizeHostname(input)).toBe(expected)
   })
 
@@ -46,8 +41,8 @@ describe("normalizeFaviconListEntry", () => {
     expect(result).toBe("example_com")
   })
 
-  it("preserves StackExchange entries", () => {
-    expect(normalizeFaviconListEntry("math_stackexchange_com")).toBe("math_stackexchange_com")
+  it("collapses StackExchange subdomain entries to the root domain", () => {
+    expect(normalizeFaviconListEntry("math_stackexchange_com")).toBe("stackexchange_com")
   })
 
   it("handles simple domains", () => {
