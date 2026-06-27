@@ -20,8 +20,9 @@ title: "What You See Isn't Always What You Want"
 lw-latest-edit: 2024-08-15T22:29:06.757000Z
 lw-is-linkpost: "false"
 tags:
-  - "AI"
-  - "reinforcement-learning"
+  - AI
+  - reinforcement-learning
+  - specification-gaming
 aliases:
   - "what-you-see-isn-t-always-what-you-want"
 lw-reward-post-warning: "true"
@@ -30,7 +31,7 @@ date_published: 2019-09-13
 original_url: https://www.lesswrong.com/posts/AeHtdxHheMjHredaq/what-you-see-isn-t-always-what-you-want
 skip_import: true
 description: Markovian reward functions are underdefined. Aligning AI isn't about designing the "right" reward, but designing rewards compatible with how the world is.
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 ---
 
 > [!failure] No longer endorsed. This isn't how reward functions work.

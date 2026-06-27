@@ -2573,3 +2573,108 @@ def test_void_elements_are_allowed_self_closing(tag: str):
     text = f"<{tag} />"
     errors = source_file_checks.check_self_closing_non_void_elements(text)
     assert errors == []
+
+
+@pytest.mark.parametrize(
+    "text, expected_errors",
+    [
+        # Bare digit beginning a paragraph
+        (
+            "26 people attended.",
+            ["Sentence-initial numeral at line 1: 26 people attended."],
+        ),
+        # Leading quotation mark before the digit still counts
+        (
+            '"2FA" is secure.',
+            ['Sentence-initial numeral at line 1: "2FA" is secure.'],
+        ),
+        # Curly opening quote
+        (
+            "“5 reasons” to care.",
+            ["Sentence-initial numeral at line 1: “5 reasons” to care."],
+        ),
+        # Digit after sentence-ending punctuation mid-line
+        (
+            "Hello. 5 cats.",
+            ["Sentence-initial numeral at line 1: Hello. 5 cats."],
+        ),
+        # Boundary with no preceding word token (trailing word is None)
+        ("? 5 things", ["Sentence-initial numeral at line 1: ? 5 things"]),
+        # A leading numeral is flagged once and does not double-count later
+        # numerals on the same line.
+        (
+            "5 cats. 6 dogs.",
+            ["Sentence-initial numeral at line 1: 5 cats. 6 dogs."],
+        ),
+        # Abbreviation before the digit is not a sentence boundary
+        ("See eq. 5 above.", []),
+        ("For example, e.g. 2 apples are enough.", []),
+        ("Refer to Fig. 3 for details.", []),
+        # Ellipsis is a trailing-off continuation, not a new sentence
+        ("Wait... 5 more to go.", []),
+        ("Wait… 5 more to go.", []),
+        # Plain prose without a leading numeral
+        ("Just some ordinary text.", []),
+        # Non-prose contexts are excluded
+        ("> 5 reasons it works", []),
+        ("# 5 reasons it works", []),
+        ("| 5 | column |", []),
+        ("![5 boxes in a diagram](/img.png)", []),
+        (": 5 is the definition", []),
+        ("[^note]: 5 things to note", []),
+        ("- 5 things", []),
+        ("* 5 things", []),
+        ("1. 256-shot prompting", []),
+        ("1) 256-shot prompting", []),
+        # Blank lines are skipped, body numeral still flagged on its line
+        (
+            "   \n5 cats walked away.",
+            ["Sentence-initial numeral at line 2: 5 cats walked away."],
+        ),
+        # Inline suppression marker with a reason
+        (
+            "5 things <!-- lint-ignore sentence-initial-numeral: refers to "
+            "the literal 5 -->",
+            [],
+        ),
+        # Code and math are stripped before checking
+        ("`5 birds` flew", []),
+        ("$5 birds$ flew", []),
+        (
+            "```\n5 birds flew\n```",
+            [],
+        ),
+        # YAML frontmatter is blanked; line numbers stay correct for the body
+        (
+            "---\ntitle: 9 lives\n---\n5 cats walked away.",
+            ["Sentence-initial numeral at line 4: 5 cats walked away."],
+        ),
+        # Frontmatter without a closing fence does not crash or misreport
+        ("---\ntitle: Test\nbody has 9 lives", []),
+        # Empty input
+        ("", []),
+        # Double space after the period (house style) is still a boundary
+        (
+            "Hello.  5 cats.",
+            ["Sentence-initial numeral at line 1: Hello.  5 cats."],
+        ),
+        # A digit opening a sentence after stripped inline math is flagged
+        (
+            "Value is $x$. 5 follows.",
+            [
+                "Sentence-initial numeral at line 1: Value is "
+                f"{source_file_checks._REPLACEMENT_CHAR}. 5 follows."
+            ],
+        ),
+        # A sentence ending in a single capital letter is a real boundary,
+        # not an abbreviation, so the next numeral is flagged
+        (
+            "Plan B. 5 remain.",
+            ["Sentence-initial numeral at line 1: Plan B. 5 remain."],
+        ),
+    ],
+)
+def test_check_sentence_initial_numerals(text: str, expected_errors: list[str]):
+    """Test the check_sentence_initial_numerals function."""
+    errors = source_file_checks.check_sentence_initial_numerals(text)
+    assert errors == expected_errors

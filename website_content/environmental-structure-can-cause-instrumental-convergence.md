@@ -40,7 +40,7 @@ original_url: https://www.lesswrong.com/posts/b6jJddSvWMdZHJHh3/environmental-st
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/78ceb0300f76784b6d8d043afb15587fb25a50dd52a42e21.png
 description: The structure of environments, not just reward functions, contributes to power-seeking in AI agents.
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 card_image_alt: A cartoon titled "Orbit of Fortune" illustrates the hypothesized difficulty of AI alignment. A blindfolded robot faces a game wheel surrounded by 12 possible reward functions in an "orbit." Ten of the functions are on fire with devil horns, representing misaligned, power-seeking objectives.
 ---
 

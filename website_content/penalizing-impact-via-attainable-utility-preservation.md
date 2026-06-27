@@ -31,7 +31,7 @@ date_published: 2018-12-28
 original_url: https://www.lesswrong.com/posts/mDTded2Dn7BKRBEPX/penalizing-impact-via-attainable-utility-preservation
 skip_import: true
 description: A new AI safety paper formalizing "attainable utility preservation" to penalize negative AI impacts, with experimental results.
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 ---
 
 The [linked paper](https://arxiv.org/abs/1902.09725) offers fresh motivation and simplified formalization of attainable utility preservation (AUP), with brand-new results and minimal notation. Whether or not you're a hardened veteran of the last odyssey of a post, there's a lot new here.  

@@ -28,6 +28,7 @@ tags:
   - mats-program
   - shard-theory
   - rationality
+  - interpretability
 aliases:
   - predictions-for-shard-theory-mechanistic-interpretability
 lw-sequence-title: Interpreting a Maze-Solving Network
@@ -42,7 +43,7 @@ date_published: 2023-03-01
 original_url: https://www.lesswrong.com/posts/JusJcepE2qohiC3hm/predictions-for-shard-theory-mechanistic-interpretability
 skip_import: true
 description: Predictions about a cheese-finding AI model's internal workings, before the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖
-date_updated: 2026-06-05
+date_updated: 2026-06-27
 createBibtex: true
 ---
 

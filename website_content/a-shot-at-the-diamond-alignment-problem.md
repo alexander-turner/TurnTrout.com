@@ -36,7 +36,7 @@ date_published: 2022-10-06
 original_url: https://www.lesswrong.com/posts/k4AQqboXz8iE5TNXK/a-shot-at-the-diamond-alignment-problem
 skip_import: true
 description: "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values. "
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 createBibtex: true
 ---
 
@@ -203,13 +203,13 @@ And remember that part where the more aggressive diamond-subshards got strengthe
 5. How do we avoid catastrophic ontological shift during jumps in reflectivity, which probably change activation contexts for first-person values?
     - For example, if the AI thinks it’s initially an embodied robot and then realizes it’s running in a decentralized fashion on a server farm, how does that change its world model? Do its “being ‘near’ diamonds” values still activate properly?
 
-1 is [evidentially supported](/shard-theory) [by the only known examples of general intelligences](/humans-provide-alignment-evidence), but also AI will not have the same inductive biases. So the picture might be more complicated. I’d guess shard theory is still appropriate, but that's ultimately a question for empirical work (with interpretability).[^12] There’s also some weak-moderate behavioral evidence for shard theory in AI which I’ve observed by looking at videos from the [Goal Misgeneralization paper](https://arxiv.org/abs/2105.14111).
+Question 1 is [evidentially supported](/shard-theory) [by the only known examples of general intelligences](/humans-provide-alignment-evidence), but also AI will not have the same inductive biases. So the picture might be more complicated. I’d guess shard theory is still appropriate, but that's ultimately a question for empirical work (with interpretability).[^12] There’s also some weak-moderate behavioral evidence for shard theory in AI which I’ve observed by looking at videos from the [Goal Misgeneralization paper](https://arxiv.org/abs/2105.14111).
 
-2 and 3 are early-training phenomena—well before superintelligence and gradient hacking, on my model—and thus far easier to verify via interpretability. Furthermore, this increases the relevance of pre-AGI experiments, since probably,[^13] later training performance of pre-AGI architectures will be qualitatively similar to earlier training performance for the (scaled up) AGI architecture. These are also questions we should be able to study pre-AGI models and get some empirical basis for, from getting expertise in forming target shards given fixed ontologies, to studying the extent to which the shard theory story is broadly correct (question 1).
+Questions 2 and 3 are early-training phenomena—well before superintelligence and gradient hacking, on my model—and thus far easier to verify via interpretability. Furthermore, this increases the relevance of pre-AGI experiments, since probably,[^13] later training performance of pre-AGI architectures will be qualitatively similar to earlier training performance for the (scaled up) AGI architecture. These are also questions we should be able to study pre-AGI models and get some empirical basis for, from getting expertise in forming target shards given fixed ontologies, to studying the extent to which the shard theory story is broadly correct (question 1).
 
-4 seems a bit trickier. We’ll probably need a better theory of value formation dynamics to get more confidence here, although possibly (depending on interpretability tech) we can still sanity-check via interpretability on pre-AGI models.
+Question 4 seems a bit trickier. We’ll probably need a better theory of value formation dynamics to get more confidence here, although possibly (depending on interpretability tech) we can still sanity-check via interpretability on pre-AGI models.
 
-5 seems like a question which resolves with more thinking, also clarified by answers to 1–4.
+Question 5 seems like one which resolves with more thinking, also clarified by answers to 1–4.
 
 I think there are many ways to tell the story I told while maintaining a similar difficulty profile for the problems confronted. Obviously this exact story doesn’t have to go through, there are probably obvious tweaks which improve the chance of success. Overall, though, these are real research questions. And I have lots of other substantial uncertainties as well.
 

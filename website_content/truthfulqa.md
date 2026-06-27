@@ -6,6 +6,7 @@ tags:
   - AI
   - critique
   - deepmind
+  - language-models
 description: Common factuality benchmark was easily gamed using our simple decision tree. The benchmark is now updated.
 authors:
   - Alex Turner
@@ -20,7 +21,7 @@ aliases:
   - truthfulqa-weaknesses
   - truthful-qa-weaknesses
 date_published: 2025-01-15
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 card_image_alt: A clickbait-style meme with the headline "TruthfulQA Authors HATE Him!" featuring a stick figure jester pointing at a chart showing "Accuracy" rising. Text reads "Local Researchers nearly hit SOTA" and "With this one weird trick!" above a red "LEARN THE TRUTH NOW" button.
 ---
 

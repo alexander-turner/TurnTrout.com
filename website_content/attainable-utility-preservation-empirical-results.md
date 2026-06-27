@@ -41,7 +41,7 @@ date_published: 2020-02-22
 original_url: https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utility-preservation-empirical-results
 skip_import: true
 description: The AUP technique encourages low-impact behavior in both simple and complex environments.
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 createBibtex: true
 ---
 

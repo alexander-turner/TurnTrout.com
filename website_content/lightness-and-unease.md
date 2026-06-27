@@ -1,5 +1,6 @@
 ---
 permalink: lightness-and-unease
+no_dropcap_color: true
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
@@ -37,7 +38,7 @@ date_published: 2018-03-21
 original_url: https://www.lesswrong.com/posts/EvKWNRkJgLosgRDSa/lightness-and-unease
 skip_import: true
 description: A personal reflection on finding the rationalist community and the joy and anxiety of pursuing AI alignment.
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 ---
 
 # Light

@@ -38,7 +38,7 @@ date_published: 2020-02-27
 original_url: https://www.lesswrong.com/posts/S8AGyJJsdBFXmxHcb/attainable-utility-preservation-scaling-to-superhuman
 skip_import: true
 description: AUP scales to superintelligence by penalizing power-seeking, but loopholes exist. I propose fixes and explore their implications.
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 createBibtex: true
 ---
 

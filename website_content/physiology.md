@@ -18,7 +18,7 @@ sequence-link: posts#becoming-stronger
 prev-post-slug: alignment-phd
 prev-post-title: Looking back on my alignment PhD
 date_published: 2025-01-23
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 card_image_alt: The cutesy cartoon cover of "The Manga Guide to Physiology."
 ---
 

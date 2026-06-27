@@ -27,6 +27,7 @@ tags:
   - AI
   - mats-program
   - activation-engineering
+  - interpretability
 aliases:
   - i-found-greater-than-800-orthogonal-write-code-steering
 lw-reward-post-warning: 'false'
@@ -35,7 +36,7 @@ date_published: 2024-07-15
 original_url: https://www.lesswrong.com/posts/CbSEZSpjdpnvBcEvc/i-found-greater-than-800-orthogonal-write-code-steering
 skip_import: true
 description: 800+ orthogonal vectors steer an AI model to write code. Redundant features or something weirder?
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 ---
 
 > [!thanks]
