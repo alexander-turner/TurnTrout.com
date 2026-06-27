@@ -450,10 +450,63 @@ export function renderPage(
   return optimizeLcpImage(`<!DOCTYPE html>\n${render(doc)}`)
 }
 
+/** Whether an `<img>` tag is a content image eligible to be the LCP element. */
+function isLcpCandidate(imgTag: string): boolean {
+  if (/\bfavicon\b/.test(imgTag)) return false
+  const srcMatch = imgTag.match(/\bsrc="(?<srcValue>[^"]*)"/)
+  if (!srcMatch?.groups) return false
+  // Twemoji glyphs are tiny inline characters, never the LCP element.
+  return !srcMatch.groups["srcValue"].startsWith(twemojiBaseUrl)
+}
+
+/** Promotes an `<img>` tag string to `loading="eager"` and `fetchpriority="high"`. */
+function promoteImgTag(imgTag: string): string {
+  let newTag = imgTag
+
+  if (/\bloading="/.test(newTag)) {
+    newTag = newTag.replace(/\bloading="[^"]*"/, 'loading="eager"')
+  } else {
+    newTag = newTag.replace("<img ", '<img loading="eager" ')
+  }
+
+  if (/\bfetchpriority="/.test(newTag)) {
+    newTag = newTag.replace(/\bfetchpriority="[^"]*"/, 'fetchpriority="high"')
+  } else {
+    newTag = newTag.replace("<img ", '<img fetchpriority="high" ')
+  }
+
+  return newTag
+}
+
 /**
- * Post-processes rendered HTML to ensure the first content image (likely LCP
- * element) has `loading="eager"`, `fetchpriority="high"`, and a matching
- * `<link rel="preload">` in `<head>`.
+ * If `imgIdx` falls inside an `<img-comparison-slider>` within the article,
+ * returns the slider's inner `[start, end)` range; otherwise `null`.
+ */
+function enclosingSliderRange(
+  html: string,
+  articleIdx: number,
+  imgIdx: number,
+): { start: number; end: number } | null {
+  const openIdx = html.lastIndexOf("<img-comparison-slider", imgIdx)
+  if (openIdx < articleIdx) return null
+
+  const openEnd = html.indexOf(">", openIdx)
+  if (openEnd === -1) return null
+
+  const closeIdx = html.indexOf("</img-comparison-slider>", openEnd)
+  if (closeIdx === -1 || closeIdx <= imgIdx) return null
+
+  return { start: openEnd + 1, end: closeIdx }
+}
+
+/**
+ * Post-processes rendered HTML to ensure the LCP image has `loading="eager"`,
+ * `fetchpriority="high"`, and a matching `<link rel="preload">` in `<head>`.
+ *
+ * The LCP candidate is the first content image in the article. Inside an
+ * `<img-comparison-slider>`, two equally sized images overlap and the browser
+ * can pick the second (overlay) image as the LCP element, so every image in the
+ * slider is promoted.
  *
  * Catches images from React components that bypass the CrawlLinks transformer
  * pipeline. Idempotent: pages already optimized by the transformer are
@@ -466,53 +519,56 @@ export function optimizeLcpImage(html: string): string {
   const articleEndIdx = html.indexOf("</article>", articleIdx)
   if (articleEndIdx === -1) return html
 
-  // Find the first non-favicon <img> within the article
   const imgRegex = /<img\s[^>]*>/g
   imgRegex.lastIndex = articleIdx
 
+  let firstMatch: RegExpExecArray | null = null
   let match: RegExpExecArray | null
   while ((match = imgRegex.exec(html)) !== null) {
     if (match.index >= articleEndIdx) break
     if (/\bfavicon\b/.test(match[0])) continue
+    // An <img> without a usable src cannot be a preload target; stop here.
+    if (!/\bsrc="[^"]*"/.test(match[0])) break
+    if (!isLcpCandidate(match[0])) continue
+    firstMatch = match
+    break
+  }
+  if (!firstMatch) return html
 
-    const imgTag = match[0]
-    const srcMatch = imgTag.match(/\bsrc="(?<srcValue>[^"]*)"/)
-    if (!srcMatch?.groups) break
-    const src = srcMatch.groups["srcValue"]
+  const sliderRange = enclosingSliderRange(html, articleIdx, firstMatch.index)
+  const region = sliderRange ?? {
+    start: firstMatch.index,
+    end: firstMatch.index + firstMatch[0].length,
+  }
 
-    // Twemoji glyphs are tiny inline characters, never the LCP element.
-    if (src.startsWith(twemojiBaseUrl)) continue
+  const targets: { index: number; tag: string; src: string }[] = []
+  imgRegex.lastIndex = region.start
+  while ((match = imgRegex.exec(html)) !== null) {
+    if (match.index >= region.end) break
+    if (!isLcpCandidate(match[0])) continue
+    const src = match[0].match(/\bsrc="(?<srcValue>[^"]*)"/)?.groups?.["srcValue"]
+    if (!src) continue
+    targets.push({ index: match.index, tag: match[0], src })
+  }
 
-    let newTag = imgTag
-
-    // Ensure loading="eager"
-    if (/\bloading="/.test(newTag)) {
-      newTag = newTag.replace(/\bloading="[^"]*"/, 'loading="eager"')
-    } else {
-      newTag = newTag.replace("<img ", '<img loading="eager" ')
+  // Rewrite tags back-to-front so earlier indices stay valid as the string grows.
+  for (let i = targets.length - 1; i >= 0; i--) {
+    const { index, tag } = targets[i]
+    const newTag = promoteImgTag(tag)
+    if (newTag !== tag) {
+      html = html.slice(0, index) + newTag + html.slice(index + tag.length)
     }
+  }
 
-    // Ensure fetchpriority="high"
-    if (/\bfetchpriority="/.test(newTag)) {
-      newTag = newTag.replace(/\bfetchpriority="[^"]*"/, 'fetchpriority="high"')
-    } else {
-      newTag = newTag.replace("<img ", '<img fetchpriority="high" ')
-    }
-
-    if (newTag !== imgTag) {
-      html = html.slice(0, match.index) + newTag + html.slice(match.index + imgTag.length)
-    }
-
-    // `crossorigin` on the preload must match the <img>'s CORS mode. All
-    // content images are CDN-sourced and carry `crossorigin="anonymous"`.
+  // `crossorigin` on the preload must match the <img>'s CORS mode. All content
+  // images are CDN-sourced and carry `crossorigin="anonymous"`.
+  for (const { src } of targets) {
     if (!html.includes(`<link rel="preload" href="${src}" as="image"`)) {
       html = html.replace(
         "</head>",
         `<link rel="preload" href="${src}" as="image" crossorigin="anonymous"/></head>`,
       )
     }
-
-    break
   }
 
   return html
