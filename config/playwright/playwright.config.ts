@@ -1,7 +1,7 @@
 // Playwright configuration for cross-browser testing
 import { defineConfig, devices } from "@playwright/test"
-import { fileURLToPath } from "url"
 import { dirname, resolve } from "path"
+import { fileURLToPath } from "url"
 
 // Playwright resolves a relative `webServer.command` path against
 // `webServer.cwd`, which defaults to this config file's directory. The built
