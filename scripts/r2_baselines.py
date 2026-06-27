@@ -24,7 +24,6 @@ except ImportError:
     import r2_sync
     import utils as script_utils
 
-R2_BUCKET = "turntrout"
 R2_PREFIX = "visual-baselines"
 LOCAL_DIR = Path("tests/visual-baselines")
 
@@ -39,7 +38,7 @@ def _rclone(args: list[str], config_path: Path) -> None:
 
 
 def _remote_path() -> str:
-    return f"r2:{R2_BUCKET}/{R2_PREFIX}"
+    return f"r2:{r2_sync.R2_BUCKET}/{R2_PREFIX}"
 
 
 def download(local_dir: Path) -> None:

@@ -35,6 +35,7 @@ import math
 import re
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 import requests
 
@@ -68,7 +69,7 @@ TWEET_BLOCK_RE = re.compile(
     re.MULTILINE | re.DOTALL,
 )
 # Pull the numeric status id out of an x.com / twitter.com / xcancel.com URL,
-# or accept a bare id.
+# or accept a bare id. Keep in sync with TWEET_ID_RE in tweetEmbed.ts.
 TWEET_ID_RE = re.compile(r"(?:status(?:es)?/)?(?P<id>\d{5,25})")
 
 
@@ -190,7 +191,12 @@ def fetch_tweet_result(tweet_id: str, session: requests.Session) -> dict:
             f"Bad response fetching tweet {tweet_id}: {error}"
         ) from error
 
-    data = response.json()
+    try:
+        data = response.json()
+    except ValueError as error:
+        raise TweetUnavailableError(
+            f"Tweet {tweet_id} returned a non-JSON response"
+        ) from error
     if data.get("__typename") == "TweetTombstone":
         raise TweetUnavailableError(
             f"Tweet {tweet_id} is a tombstone (removed)"
@@ -300,13 +306,18 @@ def download_file(url: str, target: Path, session: requests.Session) -> None:
         ) from error
 
 
-def _media_filename(url: str, fallback: str) -> str:
-    """Best-effort filename (with extension) for a downloaded media URL."""
-    try:
-        name = script_utils.extract_filename_from_url(url)
-    except ValueError:
-        return fallback
-    return name or fallback
+# Twitter serves all post media from these two hosts. Refusing anything else
+# stops a malicious/compromised syndication payload from pointing a download at
+# an internal address while this runs with R2 credentials in the environment.
+MEDIA_HOSTS = frozenset({"pbs.twimg.com", "video.twimg.com"})
+
+
+def _assert_media_host(url: str) -> None:
+    host = urlparse(url).hostname or ""
+    if host not in MEDIA_HOSTS:
+        raise TweetUnavailableError(
+            f"Refusing to download tweet media from untrusted host: {host or url!r}"
+        )
 
 
 def localize_media(
@@ -317,28 +328,28 @@ def localize_media(
     the snapshot's URLs to their eventual CDN locations under
     ``static/tweets/<id>/``.
 
-    Mutates ``snapshot`` in place.
+    Each asset is stored under a role-and-index name (``avatar``, ``media-0``,
+    ``poster-0`` …) so two assets that happen to share a basename can't clobber
+    each other. Mutates ``snapshot`` in place.
     """
     tweet_id = snapshot["id"]
     staging_dir.mkdir(parents=True, exist_ok=True)
     cdn_prefix = f"{CDN_BASE_URL}/{R2_TWEETS_PREFIX}/{tweet_id}"
 
-    def localize(url: str, fallback: str) -> str:
-        filename = _media_filename(url, fallback)
+    def localize(url: str, name: str) -> str:
+        _assert_media_host(url)
+        filename = f"{name}{Path(urlparse(url).path).suffix}"
         download_file(url, staging_dir / filename, session)
         return f"{cdn_prefix}/{filename}"
 
-    avatar_ext = Path(
-        _media_filename(snapshot["author"]["avatarSrc"], "a.jpg")
-    ).suffix
     snapshot["author"]["avatarSrc"] = localize(
-        snapshot["author"]["avatarSrc"], f"avatar{avatar_ext or '.jpg'}"
+        snapshot["author"]["avatarSrc"], "avatar"
     )
 
     for index, item in enumerate(snapshot["media"]):
         item["src"] = localize(item["src"], f"media-{index}")
         if item.get("poster"):
-            item["poster"] = localize(item["poster"], f"poster-{index}.jpg")
+            item["poster"] = localize(item["poster"], f"poster-{index}")
 
 
 def _snapshot_json_remote(tweet_id: str) -> str:
@@ -393,7 +404,7 @@ def download_snapshot(
         snapshot = response.json()
     except requests.RequestException as error:
         raise TweetUnavailableError(
-            f"Tweet {tweet_id} has no snapshot on the CDN (and live fetch failed)"
+            f"Tweet {tweet_id} has no snapshot on the CDN"
         ) from error
     script_utils.atomic_write_json(snapshot, snapshot_path)
     return snapshot

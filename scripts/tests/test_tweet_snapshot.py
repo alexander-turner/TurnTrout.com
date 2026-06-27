@@ -27,11 +27,13 @@ class FakeResponse:
         *,
         status_code: int = 200,
         json_data: Any = None,
+        json_error: Exception | None = None,
         content: bytes = b"",
         raise_for_status: Exception | None = None,
     ) -> None:
         self.status_code = status_code
         self._json = json_data
+        self._json_error = json_error
         self._content = content
         self._raise = raise_for_status
         self.raw = SimpleNamespace(decode_content=False)
@@ -41,6 +43,8 @@ class FakeResponse:
             raise self._raise
 
     def json(self) -> Any:
+        if self._json_error is not None:
+            raise self._json_error
         return self._json
 
     def __enter__(self) -> FakeResponse:
@@ -104,16 +108,16 @@ RAW_TWEET: dict = {
                     {
                         "content_type": "video/mp4",
                         "bitrate": 100,
-                        "url": "low.mp4",
+                        "url": "https://video.twimg.com/low.mp4",
                     },
                     {
                         "content_type": "video/mp4",
                         "bitrate": 900,
-                        "url": "high.mp4",
+                        "url": "https://video.twimg.com/high.mp4",
                     },
                     {
                         "content_type": "application/x-mpegURL",
-                        "url": "stream.m3u8",
+                        "url": "https://video.twimg.com/stream.m3u8",
                     },
                 ]
             },
@@ -167,11 +171,10 @@ def test_to_base36() -> None:
     assert len(ts._to_base36(1 / 7).split(".")[1]) == 12
 
 
-def test_derive_token_strips_zeros_and_dot() -> None:
-    token = ts.derive_token("1700000000000000001")
-    assert "0" not in token
-    assert "." not in token
-    assert token
+def test_derive_token() -> None:
+    # Pinned so a change to the (third-party) token algorithm is caught: a wrong
+    # token makes every live fetch 404 and silently fall back to the CDN forever.
+    assert ts.derive_token("1700000000000000001") == "44cpgxmyurn5biu"
 
 
 def test_fetch_tweet_result_success() -> None:
@@ -214,6 +217,12 @@ def test_fetch_tweet_result_missing_user() -> None:
         ts.fetch_tweet_result("123", session)  # type: ignore[arg-type]
 
 
+def test_fetch_tweet_result_non_json() -> None:
+    session = FakeSession([FakeResponse(json_error=ValueError("not json"))])
+    with pytest.raises(ts.TweetUnavailableError, match="non-JSON"):
+        ts.fetch_tweet_result("123", session)  # type: ignore[arg-type]
+
+
 def test_avatar_url_upgrade() -> None:
     assert ts._avatar_url("https://x/a_normal.jpg") == "https://x/a_400x400.jpg"
 
@@ -236,7 +245,7 @@ def test_normalize() -> None:
     assert snapshot["snapshotAt"] == "2026-06-27T00:00:00+00:00"
     types = [m["type"] for m in snapshot["media"]]
     assert types == ["photo", "video"]
-    assert snapshot["media"][1]["src"] == "high.mp4"
+    assert snapshot["media"][1]["src"] == "https://video.twimg.com/high.mp4"
     assert snapshot["urls"][0]["expanded"] == "https://example.com"
 
 
@@ -283,10 +292,11 @@ def test_download_file_error(tmp_path: Path) -> None:
         ts.download_file("https://x/y.bin", tmp_path / "o", session)  # type: ignore[arg-type]
 
 
-def test_media_filename_fallback() -> None:
-    assert ts._media_filename("https://x/photo.jpg", "fb") == "photo.jpg"
-    # A URL with no filename component falls back.
-    assert ts._media_filename("https://x/", "fb.jpg") == "fb.jpg"
+def test_assert_media_host() -> None:
+    ts._assert_media_host("https://pbs.twimg.com/media/x.jpg")
+    ts._assert_media_host("https://video.twimg.com/x.mp4")
+    with pytest.raises(ts.TweetUnavailableError, match="untrusted host"):
+        ts._assert_media_host("https://evil.example/x.jpg")
 
 
 def test_localize_media(
@@ -298,11 +308,51 @@ def test_localize_media(
 
     monkeypatch.setattr(ts, "download_file", fake_download)
     snapshot = ts.normalize(RAW_TWEET, "555")
-    ts.localize_media(snapshot, tmp_path / "555", FakeSession([]))  # type: ignore[arg-type]
+    staging = tmp_path / "555"
+    ts.localize_media(snapshot, staging, FakeSession([]))  # type: ignore[arg-type]
     cdn = f"{ts.CDN_BASE_URL}/static/tweets/555"
-    assert snapshot["author"]["avatarSrc"].startswith(cdn)
-    assert snapshot["media"][0]["src"].startswith(cdn)
-    assert snapshot["media"][1]["poster"].startswith(cdn)
+    assert snapshot["author"]["avatarSrc"] == f"{cdn}/avatar.jpg"
+    assert snapshot["media"][0]["src"] == f"{cdn}/media-0.jpg"
+    assert snapshot["media"][1]["src"] == f"{cdn}/media-1.mp4"
+    assert snapshot["media"][1]["poster"] == f"{cdn}/poster-1.jpg"
+
+
+def test_localize_media_avoids_basename_collision(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        ts,
+        "download_file",
+        lambda url, target, session: target.write_bytes(b"x"),
+    )
+    # Two photos that share a basename must not clobber each other.
+    snapshot = {
+        "id": "9",
+        "author": {"avatarSrc": "https://pbs.twimg.com/profile/a_400x400.jpg"},
+        "media": [
+            {"type": "photo", "src": "https://pbs.twimg.com/media/dup.jpg"},
+            {"type": "photo", "src": "https://pbs.twimg.com/other/dup.jpg"},
+        ],
+    }
+    staging = tmp_path / "9"
+    ts.localize_media(snapshot, staging, FakeSession([]))  # type: ignore[arg-type]
+    assert snapshot["media"][0]["src"] != snapshot["media"][1]["src"]
+    assert len(list(staging.iterdir())) == 3  # avatar + two distinct photos
+
+
+def test_localize_media_rejects_untrusted_host(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        ts, "download_file", lambda *a: pytest.fail("should not download")
+    )
+    snapshot = {
+        "id": "9",
+        "author": {"avatarSrc": "https://evil.example/a.jpg"},
+        "media": [],
+    }
+    with pytest.raises(ts.TweetUnavailableError, match="untrusted host"):
+        ts.localize_media(snapshot, tmp_path / "9", FakeSession([]))  # type: ignore[arg-type]
 
 
 @contextlib.contextmanager

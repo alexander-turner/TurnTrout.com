@@ -20,6 +20,7 @@ export const snapshotDir = path.join(
   ".tweet_snapshots",
 )
 
+// Keep in sync with TWEET_ID_RE in scripts/tweet_snapshot.py.
 const TWEET_ID_RE = /(?:status(?:es)?\/)?(\d{5,25})/
 const TWEET_HOST_RE = /^https?:\/\/(?:www\.)?(?:x|twitter|xcancel|nitter\.[^/]+)\.com/i
 
