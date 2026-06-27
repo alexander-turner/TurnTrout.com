@@ -1,13 +1,13 @@
 ---
-title: "Test section: spoilers"
+title: "Test section: Spoilers"
 permalink: test-section-spoilers
 no_dropcap: "true"
 tags:
   - website
-description: Isolated section fixture (spoilers) for per-section visual regression testing. Modify only when intentionally updating this section's baseline.
+description: Auto-generated isolated section fixture (Spoilers) for per-section visual regression testing. Edit website_content/test-page.md and regenerate; do not edit by hand.
 hideSubscriptionLinks: true
-date_published: 2026-06-27
-date_updated: 2026-06-27
+date_published: 2024-12-04
+date_updated: 2024-12-04
 ---
 
 # Spoilers
