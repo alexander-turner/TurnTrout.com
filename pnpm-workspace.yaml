@@ -85,3 +85,8 @@ onlyBuiltDependencies:
 
 allowBuilds:
   unrs-resolver: true
+
+# First-party packages published from our own provenance-signed CI are exempt
+# from the minimum-release-age supply-chain delay applied to third-party deps.
+minimumReleaseAgeExclude:
+  - punctilio
