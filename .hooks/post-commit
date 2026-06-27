@@ -28,7 +28,15 @@ if command -v ots >/dev/null 2>&1; then
 fi
 
 if [ -z "$OTS_BIN" ]; then
-  rollback "ots not found! Install opentimestamps-client."
+  rollback "ots not found! Install opentimestamps-client (uv tool install opentimestamps-client)."
+fi
+
+# `command -v` proves the file exists, not that it runs: a broken interpreter
+# (e.g. a '#!.../python3.11' shebang whose Python is gone) satisfies the check
+# above but aborts on exec. Probe executability so a broken install fails here
+# with an actionable message.
+if ! "$OTS_BIN" --version >/dev/null 2>&1; then
+  rollback "ots ($OTS_BIN) is installed but won't execute (broken interpreter?). Reinstall: uv tool install --force opentimestamps-client."
 fi
 
 mkdir -p "$timestamps_dir"
