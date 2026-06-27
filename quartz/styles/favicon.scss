@@ -127,6 +127,7 @@ $domain-svg-colors: (
   "arstechnica_com": var(--orange),
   "arxiv_org": var(--red),
   "cnn_com": var(--red),
+  "stackexchange_com": var(--blue),
   "stackoverflow_com": var(--orange),
   "theguardian_com": var(--blue),
   "deepmind_com": var(--blue),
@@ -154,12 +155,6 @@ $domain-svg-colors: (
   svg.favicon[data-domain="#{$domain}"] {
     --svg-color: #{$color};
   }
-}
-
-// StackExchange subdomains are preserved individually (math, stats, ai, …), so
-// match the shared suffix rather than enumerating every subdomain.
-svg.favicon[data-domain$="stackexchange_com"] {
-  --svg-color: var(--blue);
 }
 
 svg.favicon[data-domain="huggingface_co"] {

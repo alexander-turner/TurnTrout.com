@@ -45,9 +45,7 @@ FAVICON_MAPPING: dict[str, str] = {
     "cbs.svg": "cbsnews_com.svg",  # simpleicons slug
     "arstechnica.svg": "arstechnica_com.svg",
     "stackoverflow.svg": "stackoverflow_com.svg",
-    # StackExchange subdomains are preserved, so the shared icon is duplicated
-    # per linked subdomain (math/stats/ai/gaming_stackexchange_com.svg).
-    "stackexchange.svg": "math_stackexchange_com.svg",
+    "stackexchange.svg": "stackexchange_com.svg",
 }
 
 SOURCE_DIR = Path.home() / "Pictures" / "new_favicons"
