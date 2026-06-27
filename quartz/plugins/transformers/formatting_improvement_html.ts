@@ -540,11 +540,12 @@ export function formatOrdinalSuffixes(tree: Root): void {
 
     const index = parent.children.indexOf(node as ElementContent)
     replaceRegex(node, index, parent, ordinalSuffixRegex, (match: RegExpMatchArray) => {
-      // exec() always populates index/input for these matches.
-      const matchEnd = (match.index as number) + match[0].length
-      const followedByYear = trailingYearRegex.test((match.input as string).slice(matchEnd))
-      const numClass = followedByYear ? "span.date-ordinal-num" : "span.ordinal-num"
-      const numSpan = h(numClass, match.groups?.number ?? /* istanbul ignore next */ "")
+      const matchEnd = (match.index ?? /* istanbul ignore next */ 0) + match[0].length
+      const followedByYear = trailingYearRegex.test(
+        match.input?.slice(matchEnd) ?? /* istanbul ignore next */ "",
+      )
+      const numSelector = followedByYear ? "span.date-ordinal-num" : "span.ordinal-num"
+      const numSpan = h(numSelector, match.groups?.number ?? /* istanbul ignore next */ "")
       const suffixSpan = h(
         "sup.ordinal-suffix",
         match.groups?.suffix ?? /* istanbul ignore next */ "",

@@ -2012,6 +2012,10 @@ describe("Ordinal Suffixes", () => {
       "<p>finished 22nd, 2050 entrants</p>", // A 4-digit non-year still pairs visually
       '<p>finished <span class="date-ordinal-num">22</span><sup class="ordinal-suffix">nd</sup>, 2050 entrants</p>',
     ],
+    [
+      "<p>5th 12345 widgets</p>", // 5+ digits is not a year (\d{4}\b) → lining
+      '<p><span class="ordinal-num">5</span><sup class="ordinal-suffix">th</sup> 12345 widgets</p>',
+    ],
 
     // Cases that should not be transformed
     ["<pre>1st</pre>", "<pre>1st</pre>"], // Preformatted text

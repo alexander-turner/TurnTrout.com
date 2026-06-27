@@ -423,9 +423,8 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   }
 }
 
-// EG 1st, 2nd, 3rd. Use the font's true superscript glyphs (designed at the
-// right size, weight, and height) rather than shrinking and raising a normal
-// glyph, so cancel the UA <sup> size/position and let "sups" do the work.
+// EG 1st, 2nd, 3rd. Cancel the UA <sup> size/position so the font's true
+// superscript glyphs ("sups") control the size, weight, and height.
 .ordinal-suffix {
   font-size: 1em;
   vertical-align: baseline;
