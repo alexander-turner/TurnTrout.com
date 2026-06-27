@@ -450,13 +450,17 @@ export function renderPage(
   return optimizeLcpImage(`<!DOCTYPE html>\n${render(doc)}`)
 }
 
-/** Whether an `<img>` tag is a content image eligible to be the LCP element. */
-function isLcpCandidate(imgTag: string): boolean {
-  if (/\bfavicon\b/.test(imgTag)) return false
-  const srcMatch = imgTag.match(/\bsrc="(?<srcValue>[^"]*)"/)
-  if (!srcMatch?.groups) return false
+/**
+ * Returns the LCP-eligible content image `src` for an `<img>` tag, or `null`
+ * when the tag is a favicon, a Twemoji glyph, or has no `src`.
+ */
+function lcpImageSrc(imgTag: string): string | null {
+  if (/\bfavicon\b/.test(imgTag)) return null
+  const src = imgTag.match(/\bsrc="(?<srcValue>[^"]*)"/)?.groups?.["srcValue"]
+  if (src === undefined) return null
   // Twemoji glyphs are tiny inline characters, never the LCP element.
-  return !srcMatch.groups["srcValue"].startsWith(twemojiBaseUrl)
+  if (src.startsWith(twemojiBaseUrl)) return null
+  return src
 }
 
 /** Promotes an `<img>` tag string to `loading="eager"` and `fetchpriority="high"`. */
@@ -490,13 +494,12 @@ function enclosingSliderRange(
   const openIdx = html.lastIndexOf("<img-comparison-slider", imgIdx)
   if (openIdx < articleIdx) return null
 
-  const openEnd = html.indexOf(">", openIdx)
-  if (openEnd === -1) return null
+  const start = html.indexOf(">", openIdx) + 1
+  const end = html.indexOf("</img-comparison-slider>", start)
+  // The image is enclosed only when the slider closes after it.
+  if (end <= imgIdx) return null
 
-  const closeIdx = html.indexOf("</img-comparison-slider>", openEnd)
-  if (closeIdx === -1 || closeIdx <= imgIdx) return null
-
-  return { start: openEnd + 1, end: closeIdx }
+  return { start, end }
 }
 
 /**
@@ -522,34 +525,20 @@ export function optimizeLcpImage(html: string): string {
   const imgRegex = /<img\s[^>]*>/g
   imgRegex.lastIndex = articleIdx
 
-  let firstMatch: RegExpExecArray | null = null
+  const candidates: { index: number; tag: string; src: string }[] = []
   let match: RegExpExecArray | null
   while ((match = imgRegex.exec(html)) !== null) {
     if (match.index >= articleEndIdx) break
-    if (/\bfavicon\b/.test(match[0])) continue
-    // An <img> without a usable src cannot be a preload target; stop here.
-    if (!/\bsrc="[^"]*"/.test(match[0])) break
-    if (!isLcpCandidate(match[0])) continue
-    firstMatch = match
-    break
+    const src = lcpImageSrc(match[0])
+    if (src === null) continue
+    candidates.push({ index: match.index, tag: match[0], src })
   }
-  if (!firstMatch) return html
+  if (candidates.length === 0) return html
 
-  const sliderRange = enclosingSliderRange(html, articleIdx, firstMatch.index)
-  const region = sliderRange ?? {
-    start: firstMatch.index,
-    end: firstMatch.index + firstMatch[0].length,
-  }
-
-  const targets: { index: number; tag: string; src: string }[] = []
-  imgRegex.lastIndex = region.start
-  while ((match = imgRegex.exec(html)) !== null) {
-    if (match.index >= region.end) break
-    if (!isLcpCandidate(match[0])) continue
-    const src = match[0].match(/\bsrc="(?<srcValue>[^"]*)"/)?.groups?.["srcValue"]
-    if (!src) continue
-    targets.push({ index: match.index, tag: match[0], src })
-  }
+  const sliderRange = enclosingSliderRange(html, articleIdx, candidates[0].index)
+  const targets = sliderRange
+    ? candidates.filter((c) => c.index < sliderRange.end)
+    : [candidates[0]]
 
   // Rewrite tags back-to-front so earlier indices stay valid as the string grows.
   for (let i = targets.length - 1; i >= 0; i--) {
