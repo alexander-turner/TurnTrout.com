@@ -167,10 +167,10 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                 logger.debug(`Generated TOC for ${file.path} with ${adjustedToc.length} entries`)
                 adjustedToc.forEach(logTocEntry)
               } else {
-                logger.warn(`Skipped TOC generation for ${file.path}: not enough entries`)
+                logger.debug(`Skipped TOC generation for ${file.path}: not enough entries`)
               }
             } else {
-              logger.warn(`TOC generation skipped for ${file.path}: display is false`)
+              logger.debug(`TOC generation skipped for ${file.path}: display is false`)
             }
           }
         },

@@ -50,7 +50,7 @@ def test_invert_css_colors() -> None:
     assert "opacity: 0.5" in out
 
 
-def test_invert_css_colors_leaves_unparseable_values() -> None:
+def test_invert_css_colors_leaves_unparsable_values() -> None:
     assert giv.invert_css_colors("fill: none") == "fill: none"
 
 

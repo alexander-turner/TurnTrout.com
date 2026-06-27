@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-06-16
+date_updated: 2026-06-27
 createBibtex: true
 ---
 
@@ -478,7 +478,7 @@ Equation and table nested in a list item (gaps must not stack with `<p>` margins
 
 <video autoplay muted loop playsinline aria-label="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"><track kind="captions" label="No audio"></video>
 
-<video controls width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"><track kind="captions" src="/static/debate.vtt" srclang="en" label="English"></video>
+<video aria-label="AI-generated voices of Barack Obama, Joe Biden, and Donald Trump humorously debate and create a tier list ranking different approaches to ensuring AI safety." controls="" width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"/><track kind="captions" label="English" src="/static/debate.vtt" srclang="en"/></video>
 
 # Audio
 
@@ -848,6 +848,12 @@ Gold script
 
 Corrupted text
 : <span class=”corrupted”>The corruption creeps ever closer...</span>
+
+Acidic display font
+: <span class="acidic">Silence</span>
+
+Acidic display font, in context
+: International Association of <span class="acidic">Silence</span> on the Ethics of AI
 
 ## Italic punctuation
 

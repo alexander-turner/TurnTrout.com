@@ -39,7 +39,7 @@ date_published: 2018-05-03
 original_url: https://www.lesswrong.com/posts/NMfQFubXAQda4Y5fe/confounded-no-longer-insights-from-all-of-statistics
 skip_import: true
 description: A tour of fundamental statistical concepts, from basic probability to hypothesis testing and Bayesian inference.
-date_updated: 2026-06-26
+date_updated: 2026-06-27
 ---
 
 > [!quote]Larry Wasserman, _All of Statistics_
@@ -155,7 +155,7 @@ Random variables are functions $Y:\Omega\to\mathbb{R}$, assigning a number to ea
 
 Fairly straightforward.
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/converge_distribution.mp4" type="video/mp4; codecs=hvc1">
+<video aria-label="An animated graph illustrating the Central Limit Theorem. As the sample size 'n' increases from 1, the shape of a probability distribution transforms from a flat rectangle to a triangle, and then smoothly converges into a taller, narrower bell curve (normal distribution)." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/converge_distribution.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/converge_distribution.webm" type="video/webm"></video>
 
 A similar [^1] geometric intuition:
