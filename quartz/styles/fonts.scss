@@ -342,17 +342,12 @@ code {
 }
 
 // Inline code's leading glyph can crowd the preceding word, especially after
-// letters with a rightward hook ("f", "r"); a hair of left spacing keeps the
-// monospace from touching the prior text. Block code (`pre > code`) is excluded.
-:not(pre) > code {
-  margin-left: 0.1em;
-
-  // Characters that hug their operand (opening delimiters, slash, hyphen,
-  // equals) take no extra space when glued directly before the code. The
-  // `flush-left` class is applied by the InlineCodeSpacing transformer.
-  &.flush-left {
-    margin-left: 0;
-  }
+// letters with a rightward hook ("f", "r"). The InlineCodeSpacing transformer
+// inserts a zero-width marker before such code; its right margin supplies the
+// gap mid-line but is discarded at a soft wrap, so code stays flush when it
+// falls to the start of a line.
+.inline-code-gap {
+  margin-right: 0.1em;
 }
 
 // For usage in the middle of a paragraph

@@ -7,11 +7,13 @@ import rehypeStringify from "rehype-stringify"
 import { unified } from "unified"
 
 import {
-  FLUSH_LEFT_PREDECESSORS,
   InlineCodeSpacing,
   lastTextChar,
-  precedingChar,
+  NO_GAP_PREDECESSORS,
+  precedingBoundary,
 } from "./inlineCodeSpacing"
+
+const MARKER = '<span class="inline-code-gap" aria-hidden="true"></span>'
 
 const processHtmlWithPlugin = async (html: string): Promise<string> => {
   const plugin = InlineCodeSpacing()
@@ -26,43 +28,49 @@ const processHtmlWithPlugin = async (html: string): Promise<string> => {
   return String(await processor.process(html))
 }
 
-const isFlush = (html: string): Promise<boolean> =>
-  processHtmlWithPlugin(html).then((out) => out.includes('class="flush-left"'))
-
 describe("InlineCodeSpacing", () => {
-  describe("flushes code glued to a hugging predecessor", () => {
-    it.each([...FLUSH_LEFT_PREDECESSORS])("adds flush-left after %s", async (char) => {
-      expect(await isFlush(`<p>${char}<code>grep</code></p>`)).toBe(true)
+  describe("inserts a leading gap marker", () => {
+    it("places the marker immediately before code preceded by a word", async () => {
+      const out = await processHtmlWithPlugin("<p>of <code>grep</code></p>")
+      expect(out).toContain(`${MARKER}<code>grep</code>`)
     })
 
-    it("flushes code glued to an opener even inside a wrapping link", async () => {
-      expect(await isFlush('<p>(<a href="#"><code>grep</code></a>)</p>')).toBe(true)
+    it("places the marker before the wrapping link, not inside it", async () => {
+      const out = await processHtmlWithPlugin('<p>help of <a href="#"><code>grep</code></a></p>')
+      expect(out).toContain(`${MARKER}<a href="#"><code>grep</code></a>`)
     })
 
-    it("flushes when the predecessor delimiter is nested in an inline element", async () => {
-      expect(await isFlush("<p><em>(</em><code>grep</code></p>")).toBe(true)
+    it("marks every gapped code when several share a parent", async () => {
+      const out = await processHtmlWithPlugin("<p>a <code>one</code> b <code>two</code></p>")
+      expect(out).toBe(
+        `<p>a ${MARKER}<code>one</code> b ${MARKER}<code>two</code></p>`,
+      )
     })
   })
 
-  describe("leaves the default margin in place", () => {
+  describe("inserts no marker", () => {
+    it.each([...NO_GAP_PREDECESSORS])("when code is glued behind %s", async (char) => {
+      const out = await processHtmlWithPlugin(`<p>${char}<code>grep</code></p>`)
+      expect(out).not.toContain("inline-code-gap")
+    })
+
     it.each([
-      ["word + space", "<p>of <code>grep</code></p>"],
-      ["em dash", "<p>war—<code>grep</code></p>"],
-      ["period", "<p>end.<code>grep</code></p>"],
-      ["code inside a link after a space", '<p>help of <a href="#"><code>grep</code></a></p>'],
       ["code at the start of a paragraph", "<p><code>grep</code> is a tool.</p>"],
       ["code at the start of a fragment", "<code>grep</code>"],
-    ])("no flush-left for %s", async (_label, html) => {
-      expect(await isFlush(html)).toBe(false)
+      ["glued opener inside a wrapping link", '<p>(<a href="#"><code>grep</code></a>)</p>'],
+    ])("for %s", async (_label, html) => {
+      const out = await processHtmlWithPlugin(html)
+      expect(out).not.toContain("inline-code-gap")
     })
 
     it("ignores block code inside <pre>", async () => {
-      expect(await isFlush("<p>(</p><pre><code>grep</code></pre>")).toBe(false)
+      const out = await processHtmlWithPlugin("<p>run </p><pre><code>grep</code></pre>")
+      expect(out).not.toContain("inline-code-gap")
     })
 
     it("leaves non-code elements untouched", async () => {
-      const out = await processHtmlWithPlugin("<p>(<em>grep</em>)</p>")
-      expect(out).not.toContain("flush-left")
+      const out = await processHtmlWithPlugin("<p>run <em>grep</em></p>")
+      expect(out).not.toContain("inline-code-gap")
     })
   })
 
@@ -76,9 +84,7 @@ describe("InlineCodeSpacing", () => {
     })
 
     it("recurses into element children, skipping empty trailing nodes", () => {
-      // Trailing <img> contributes no text, so the "(" from the earlier child wins.
-      const node = h("em", ["(", h("img")]) as Element
-      expect(lastTextChar(node)).toBe("(")
+      expect(lastTextChar(h("em", ["(", h("img")]) as Element)).toBe("(")
     })
 
     it("returns null for an element with no text", () => {
@@ -90,37 +96,48 @@ describe("InlineCodeSpacing", () => {
     })
   })
 
-  describe("precedingChar", () => {
-    it("returns null when the code is the only child of a block root", () => {
+  describe("precedingBoundary", () => {
+    it("returns the preceding character and insertion point", () => {
       const code = h("code", ["grep"]) as Element
-      const root = { type: "root", children: [code] } as Root
-      expect(precedingChar(code, [root])).toBeNull()
+      const paragraph = h("p", ["of ", code]) as Parent
+      expect(precedingBoundary(code, [paragraph])).toEqual({
+        parent: paragraph,
+        index: 1,
+        char: " ",
+      })
     })
 
-    it("ascends out of inline wrappers to find the preceding character", () => {
+    it("ascends out of inline wrappers, pointing before the wrapper", () => {
       const code = h("code", ["grep"]) as Element
       const link = h("a", [code]) as Element
       const paragraph = h("p", ["of ", link]) as Parent
-      expect(precedingChar(code, [paragraph, link])).toBe(" ")
+      const boundary = precedingBoundary(code, [paragraph, link])
+      expect(boundary).toEqual({ parent: paragraph, index: 1, char: " " })
+    })
+
+    it("skips a text-less preceding sibling to reach the delimiter", () => {
+      const code = h("code", ["grep"]) as Element
+      const paragraph = h("p", ["(", h("img"), code]) as Parent
+      expect(precedingBoundary(code, [paragraph])?.char).toBe("(")
+    })
+
+    it("returns null at a block start (no preceding sibling)", () => {
+      const code = h("code", ["grep"]) as Element
+      const root = { type: "root", children: [code] } as Root
+      expect(precedingBoundary(code, [root])).toBeNull()
     })
 
     it("stops at a block boundary instead of crossing into a prior block", () => {
       const code = h("code", ["grep"]) as Element
       const paragraph = h("p", [code]) as Parent
       const root = { type: "root", children: [h("p", ["earlier."]), paragraph] } as Root
-      expect(precedingChar(code, [root, paragraph])).toBeNull()
-    })
-
-    it("skips a text-less preceding sibling to reach the delimiter", () => {
-      const code = h("code", ["grep"]) as Element
-      const paragraph = h("p", ["(", h("img"), code]) as Parent
-      expect(precedingChar(code, [paragraph])).toBe("(")
+      expect(precedingBoundary(code, [root, paragraph])).toBeNull()
     })
 
     it("returns null when every ancestor is inline and yields no predecessor", () => {
       const code = h("code", ["grep"]) as Element
       const wrapper = h("em", [code]) as Parent
-      expect(precedingChar(code, [wrapper])).toBeNull()
+      expect(precedingBoundary(code, [wrapper])).toBeNull()
     })
   })
 })
