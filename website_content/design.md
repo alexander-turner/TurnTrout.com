@@ -650,7 +650,7 @@ Many favicons are monochromatic to avoid chaos. However, some iconic brand logos
   </div>
   <div class="subfigure">
     <svg class="favicon favicon-big" data-domain="msnbc_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/msnbc_com.svg);" alt=""></svg>
-    <figcaption><code>msnbc.com</code>'s peacock fans out from a <code>conic-gradient</code>: <svg class="favicon favicon-demo-inline full-color" data-domain="msnbc_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/msnbc_com.svg);" alt="The NBC peacock in full color, its six feathers yellow, orange, red, purple, blue, and green from left to right."></svg>.</figcaption>
+    <figcaption><code>msnbc.com</code>'s peacock fans out from a <code>conic-gradient</code>: <svg class="favicon no-mask favicon-demo-inline full-color" data-domain="msnbc_com" alt="The six peacock colors (yellow, orange, red, purple, blue, and green) fanning out as wedges from a point near the bottom of a square."></svg>.</figcaption>
   </div>
   </figure>
 

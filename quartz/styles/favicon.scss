@@ -112,15 +112,16 @@ svg.favicon {
     );
   }
 
-  // NBC peacock: six feathers fan out from the bottom-center origin, so a
-  // conic-gradient anchored there paints each feather its own hue. Going
-  // left-to-right across the fan: yellow, orange, red, purple, blue, green.
-  // The gradient's 0deg/360deg seam sits at 180deg (straight down), inside the
-  // empty wedge below the fan, so no feather straddles the wrap and picks up a
-  // neighbor's color.
+  // NBC peacock: six feathers fan out from a single point, so a conic-gradient
+  // anchored there paints each feather its own hue. Going left-to-right across
+  // the fan: yellow, orange, red, purple, blue, green. The ~24:15 artwork is
+  // letterboxed into the square favicon box, so its fan base sits at 80.8% of
+  // the box height (not 100%); anchoring there keeps each feather one solid
+  // color. The 0deg/360deg seam sits at 180deg (straight down), inside the
+  // empty wedge below the fan, so no feather straddles the wrap.
   &[data-domain="msnbc_com"] {
     background: conic-gradient(
-      from 0deg at 50% 100%,
+      from 0deg at 50% 80.8%,
       var(--attenuated-purple) 0deg 25deg,
       var(--attenuated-blue) 25deg 54deg,
       var(--attenuated-green) 54deg 180deg,
