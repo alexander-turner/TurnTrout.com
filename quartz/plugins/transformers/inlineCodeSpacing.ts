@@ -5,16 +5,18 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { INLINE_PASSTHROUGH_TAGS } from "./utils"
+import { addClass, INLINE_PASSTHROUGH_TAGS } from "./utils"
 
 // Inline code gets a hair of leading space so its monospace glyph doesn't crowd
-// the preceding word. The space is carried by a zero-width marker placed
-// *before* the code rather than a left margin on the code itself: a trailing
-// margin is discarded at a soft wrap, so when the code falls to the start of a
-// line it sits flush with the text column instead of being indented.
+// the preceding word. The space is a `margin-left` on the code, but the code
+// (and its preceding word) are wrapped in a `white-space: nowrap` span so the
+// code can never fall to the start of a line — where the margin would indent
+// it. A left margin alone is not enough: at a soft wrap some engines keep it
+// and some drop it, so the only cross-engine guarantee is to keep the code off
+// the line start entirely.
 //
 // These characters should instead hug the code that immediately follows them,
-// so no marker is inserted: opening delimiters and the binding operators
+// so no gap is added: opening delimiters and the binding operators
 // slash/hyphen/equals. A leading space would shadow them, so seeing one as the
 // immediately-preceding character means it is glued to the code.
 export const NO_GAP_PREDECESSORS: ReadonlySet<string> = new Set([
@@ -56,10 +58,9 @@ interface Boundary {
   char: string
 }
 
-// Where to insert the leading-gap marker: immediately before the inline unit
-// containing the code, at the level where the preceding character lives.
-// Ascends out of inline wrappers but never crosses a block boundary; returns
-// null at the start of a block (nothing is glued before the code).
+// The character immediately before `node` in document order, with the index of
+// the code's inline unit inside its parent. Ascends out of inline wrappers but
+// never crosses a block boundary; returns null at the start of a block.
 export function precedingBoundary(node: Element, ancestors: readonly Parent[]): Boundary | null {
   let child: Parent | Element = node
   for (let i = ancestors.length - 1; i >= 0; i--) {
@@ -83,37 +84,56 @@ function isInPre(ancestors: readonly Parent[]): boolean {
   )
 }
 
-function createGapMarker(): Element {
-  return {
-    type: "element",
-    tagName: "span",
-    properties: { className: ["inline-code-gap"], "aria-hidden": "true" },
-    children: [],
-  }
+interface JoinOp {
+  parent: Parent
+  index: number
+  prevText: Text
+  unit: Element
 }
 
 /**
- * Rehype plugin that gives inline `<code>` a small leading gap via a zero-width
- * marker inserted before it, so the code stays flush at a line/block start while
- * keeping breathing room mid-line. No marker is inserted when the code is glued
- * to a hugging delimiter (see `NO_GAP_PREDECESSORS`) or starts its block. Block
- * code (inside `<pre>`) is left untouched.
+ * Rehype plugin that keeps inline `<code>` on its preceding word's line and
+ * gives it a small left-margin gap. The preceding word and the code's inline
+ * unit are moved into a `white-space: nowrap` span; the code (or its wrapping
+ * link) carries `inline-code-gap`. No gap is added when the code is glued to a
+ * hugging delimiter (see `NO_GAP_PREDECESSORS`) or starts its block, and block
+ * code (inside `<pre>`) is untouched.
  */
 export const rehypeInlineCodeSpacing: Plugin = () => {
   return (tree: Node) => {
-    const insertions: Boundary[] = []
+    const ops: JoinOp[] = []
     visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
       if (node.tagName !== "code" || isInPre(ancestors)) return
       const boundary = precedingBoundary(node, ancestors)
-      if (boundary && !NO_GAP_PREDECESSORS.has(boundary.char)) {
-        insertions.push(boundary)
-      }
+      if (!boundary || NO_GAP_PREDECESSORS.has(boundary.char)) return
+      // `index` is always >= 1 here (the boundary char was found at a lower
+      // sibling), so both neighbours exist; the unit is the element we ascended
+      // through (or the code itself).
+      const prev = boundary.parent.children[boundary.index - 1] as RootContent
+      const unit = boundary.parent.children[boundary.index] as Element
+      if (prev.type !== "text" || !/\S/u.test(prev.value)) return
+      ops.push({ parent: boundary.parent, index: boundary.index, prevText: prev, unit })
     })
-    // Splice from the highest index down so earlier insertions don't shift the
+    // Splice from the highest index down so earlier rewrites don't shift the
     // positions recorded for later ones.
-    insertions.sort((a, b) => b.index - a.index)
-    for (const { parent, index } of insertions) {
-      parent.children.splice(index, 0, createGapMarker())
+    ops.sort((a, b) => b.index - a.index)
+    for (const { parent, index, prevText, unit } of ops) {
+      // The trailing word (plus any space separating it from the code) joins the
+      // code; earlier text stays put so a break can still occur before the word.
+      const match = /(\S+\s*)$/u.exec(prevText.value)
+      // istanbul ignore next -- the \S guard above guarantees a match
+      if (!match) continue
+      const tail = match[1]
+      const head = prevText.value.slice(0, prevText.value.length - tail.length)
+      addClass(unit, "inline-code-gap")
+      const span: Element = {
+        type: "element",
+        tagName: "span",
+        properties: { className: ["inline-code-nowrap"] },
+        children: [{ type: "text", value: tail }, unit],
+      }
+      const replacement: ElementContent[] = head ? [{ type: "text", value: head }, span] : [span]
+      parent.children.splice(index - 1, 2, ...replacement)
     }
   }
 }

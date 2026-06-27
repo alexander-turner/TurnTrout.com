@@ -13,8 +13,6 @@ import {
   precedingBoundary,
 } from "./inlineCodeSpacing"
 
-const MARKER = '<span class="inline-code-gap" aria-hidden="true"></span>'
-
 const processHtmlWithPlugin = async (html: string): Promise<string> => {
   const plugin = InlineCodeSpacing()
   const htmlPlugins = plugin.htmlPlugins?.({} as never)
@@ -29,24 +27,45 @@ const processHtmlWithPlugin = async (html: string): Promise<string> => {
 }
 
 describe("InlineCodeSpacing", () => {
-  describe("inserts a leading gap marker", () => {
-    it("places the marker immediately before code preceded by a word", async () => {
+  describe("joins the code to its preceding word with a gap", () => {
+    it("wraps the word + code in a nowrap span and marks the code", async () => {
       const out = await processHtmlWithPlugin("<p>of <code>grep</code></p>")
-      expect(out).toContain(`${MARKER}<code>grep</code>`)
+      expect(out).toBe(
+        '<p><span class="inline-code-nowrap">of <code class="inline-code-gap">grep</code></span></p>',
+      )
     })
 
-    it("places the marker before the wrapping link, not inside it", async () => {
+    it("leaves earlier text in place, joining only the trailing word", async () => {
+      const out = await processHtmlWithPlugin("<p>help of <code>grep</code></p>")
+      expect(out).toBe(
+        '<p>help <span class="inline-code-nowrap">of <code class="inline-code-gap">grep</code></span></p>',
+      )
+    })
+
+    it("marks the wrapping link and joins it, not the inner code", async () => {
       const out = await processHtmlWithPlugin('<p>help of <a href="#"><code>grep</code></a></p>')
-      expect(out).toContain(`${MARKER}<a href="#"><code>grep</code></a>`)
+      expect(out).toBe(
+        '<p>help <span class="inline-code-nowrap">of <a href="#" class="inline-code-gap"><code>grep</code></a></span></p>',
+      )
     })
 
-    it("marks every gapped code when several share a parent", async () => {
+    it("keeps the gap when glued behind non-hugging punctuation", async () => {
+      const out = await processHtmlWithPlugin("<p>war—<code>grep</code></p>")
+      expect(out).toBe(
+        '<p><span class="inline-code-nowrap">war—<code class="inline-code-gap">grep</code></span></p>',
+      )
+    })
+
+    it("handles several codes sharing a parent", async () => {
       const out = await processHtmlWithPlugin("<p>a <code>one</code> b <code>two</code></p>")
-      expect(out).toBe(`<p>a ${MARKER}<code>one</code> b ${MARKER}<code>two</code></p>`)
+      expect(out).toBe(
+        '<p><span class="inline-code-nowrap">a <code class="inline-code-gap">one</code></span> ' +
+          '<span class="inline-code-nowrap">b <code class="inline-code-gap">two</code></span></p>',
+      )
     })
   })
 
-  describe("inserts no marker", () => {
+  describe("adds no gap", () => {
     it.each([...NO_GAP_PREDECESSORS])("when code is glued behind %s", async (char) => {
       const out = await processHtmlWithPlugin(`<p>${char}<code>grep</code></p>`)
       expect(out).not.toContain("inline-code-gap")
@@ -56,6 +75,8 @@ describe("InlineCodeSpacing", () => {
       ["code at the start of a paragraph", "<p><code>grep</code> is a tool.</p>"],
       ["code at the start of a fragment", "<code>grep</code>"],
       ["glued opener inside a wrapping link", '<p>(<a href="#"><code>grep</code></a>)</p>'],
+      ["no joinable word before the code", "<p><em>x</em><code>grep</code></p>"],
+      ["only whitespace before the code", "<p><img> <code>grep</code></p>"],
     ])("for %s", async (_label, html) => {
       const out = await processHtmlWithPlugin(html)
       expect(out).not.toContain("inline-code-gap")
@@ -68,7 +89,7 @@ describe("InlineCodeSpacing", () => {
 
     it("leaves non-code elements untouched", async () => {
       const out = await processHtmlWithPlugin("<p>run <em>grep</em></p>")
-      expect(out).not.toContain("inline-code-gap")
+      expect(out).not.toContain("inline-code")
     })
   })
 
@@ -95,7 +116,7 @@ describe("InlineCodeSpacing", () => {
   })
 
   describe("precedingBoundary", () => {
-    it("returns the preceding character and insertion point", () => {
+    it("returns the preceding character and the unit index", () => {
       const code = h("code", ["grep"]) as Element
       const paragraph = h("p", ["of ", code]) as Parent
       expect(precedingBoundary(code, [paragraph])).toEqual({
@@ -105,12 +126,15 @@ describe("InlineCodeSpacing", () => {
       })
     })
 
-    it("ascends out of inline wrappers, pointing before the wrapper", () => {
+    it("ascends out of inline wrappers, pointing at the wrapper", () => {
       const code = h("code", ["grep"]) as Element
       const link = h("a", [code]) as Element
       const paragraph = h("p", ["of ", link]) as Parent
-      const boundary = precedingBoundary(code, [paragraph, link])
-      expect(boundary).toEqual({ parent: paragraph, index: 1, char: " " })
+      expect(precedingBoundary(code, [paragraph, link])).toEqual({
+        parent: paragraph,
+        index: 1,
+        char: " ",
+      })
     })
 
     it("skips a text-less preceding sibling to reach the delimiter", () => {
