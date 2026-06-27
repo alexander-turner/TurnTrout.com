@@ -15,7 +15,7 @@ aliases:
   - convergence-psychology
   - success-conditioned-convergence
 date_published: 2026-01-20
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 ---
 
 > [!quote] Zack M. Davis, group discussion
@@ -118,7 +118,7 @@ I've shown that reality determines the alignment tax but not which plans get sel
 
 ## Instrumental convergence depends on psychology
 
-Instrumental convergence depends on AI psychology, as demonstrated by my paper [Parametrically Retargetable Decision-Makers Tend to Seek Power](/parametrically-retargetable-power-seeking). In short, AI psychology governs the mapping from "AI motivations" to "AI plans". Certain psychologies induce mappings which satisfy my theorems, which are sufficient conditions to prove instrumental convergence.
+Instrumental convergence depends on AI psychology, as demonstrated by my paper [@title](/parametrically-retargetable-power-seeking). In short, AI psychology governs the mapping from "AI motivations" to "AI plans". Certain psychologies induce mappings which satisfy my theorems, which are sufficient conditions to prove instrumental convergence.
 
 More precisely, instrumental convergence arises from statistical tendencies in a plan-generating function $f$ -- "what the AI does given a 'goal'" -- relative to its inputs ("goals"). The convergence builds off of assumptions about that function's semantics and those inputs. These assumptions can be satisfied by:
 

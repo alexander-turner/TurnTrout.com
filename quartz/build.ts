@@ -17,7 +17,9 @@ import cfg from "../config/quartz/quartz.config"
 import DepGraph from "./depgraph"
 import { getStaticResourcesFromPlugins } from "./plugins"
 import { isDraftPath } from "./plugins/filters/draft"
+import { resetTitleIndexCache } from "./plugins/transformers/bindLinkTitles"
 import { countAllFavicons } from "./plugins/transformers/countFavicons"
+import { buildTitleIndex } from "./processors/buildTitleIndex"
 import { emitContent } from "./processors/emit"
 import { filterContent } from "./processors/filter"
 import { parseMarkdown } from "./processors/parse"
@@ -117,6 +119,11 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
     } else {
       console.log(chalk.yellow("Skipping link counting (offline mode)"))
     }
+
+    perf.addEvent("title-index")
+    await buildTitleIndex(ctx, filePaths)
+    resetTitleIndexCache()
+    console.log(`Built title index in ${perf.timeSince("title-index")}`)
 
     parsedFiles = await parseMarkdown(ctx, filePaths)
     const filteredContent = filterContent(ctx, parsedFiles)
@@ -503,6 +510,15 @@ async function rebuildFromEntrypoint(
       .map((fp) => slugifyFilePath(path.posix.relative(argv.directory, fp) as FilePath))
 
     ctx.allSlugs = [...new Set([...initialSlugs, ...trackedSlugs])]
+
+    // Rebuild the title index over all tracked Markdown so `@title` links resolve
+    // against current titles, then drop the cache so workers re-read it.
+    const trackedMarkdown = [...new Set([...contentMap.keys(), ...toRebuild])].filter(
+      (fp) => !toRemove.has(fp) && fp.endsWith(".md"),
+    )
+    await buildTitleIndex(ctx, trackedMarkdown)
+    resetTitleIndexCache()
+
     const parsedContent = await parseMarkdown(ctx, filesToRebuild)
     for (const content of parsedContent) {
       const [, vfile] = content

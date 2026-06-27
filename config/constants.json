@@ -4,6 +4,7 @@
   "defaultTitle": "The Pond",
   "defaultDescription": "Writings about doing good, thinking well, and living happily.",
   "locale": "en-US",
+  "linkTitleSentinel": "@title",
   "localTroutFaviconExtensionDefault": "ico",
   "localTroutFaviconBasenameDefault": "favicon",
   "faviconMimeType": "image/x-icon",

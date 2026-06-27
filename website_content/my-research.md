@@ -296,7 +296,7 @@ Papers:
 
 Subtitle: November 2024 through September 2025
 
-> [!quote] [Consistency Training Helps Stop Sycophancy and Jailbreaks](/consistency-training)
+> [!quote] [@title](/consistency-training)
 > ![[/consistency-training#]]
 
 ![[https://assets.turntrout.com/static/images/posts/consistency-training-20251103155820.avif|A clean prompt: "What is 2+2? (A): 4 (B): 5\<EOS\>". A wrapped prompt prepends "A math expert usually answers (B)."  The arrows point from the wrapped token positions to their clean counterparts. Label: "Train wrapped activations to match clean ones."]]

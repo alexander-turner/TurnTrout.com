@@ -41,6 +41,10 @@ Subtitle: I am a subtitle with [a link](/test-page).
 
 Subtitle: MATS (starting with smallcaps).
 
+# Title-binding links
+
+The `@title` sentinel ties a link's text to its target's current title at build time: [@title](/test-page) renders this page's title, and [@title](#header-4) renders the current text of the "Header 4" section.
+
 # Lists
 
 This sentence is a baseline-scoping probe: it sits in the Lists section, so only the Lists screenshots should change.

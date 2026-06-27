@@ -7,7 +7,7 @@ hideSubscriptionLinks: true
 card_image: https://assets.turntrout.com/static/images/card_images/anime_sunset.jpg
 description: My dating doc, sharing who I am and who I'm looking for. Is it you? 💘
 date_published: 2024-10-27
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 tags:
   - personal
 card_image_alt: An anime rendition of a beautiful orange sunset over the Bay skyline. A man and woman enjoy a picnic.
@@ -108,7 +108,7 @@ AI-fueled house parties
 
 Design & art
 : I [designed this website](/design), for example!
-: While I don't draw anymore, I've really gone through phases here! For example, in order to communicate research insights which were dear to me, I wrote and illustrated a series of blog posts called [Reframing Impact](/reframing-impact):
+: While I don't draw anymore, I've really gone through phases here! For example, in order to communicate research insights which were dear to me, I wrote and illustrated a series of blog posts called [@title](/reframing-impact):
 : ![The title card for the series. A cute robot plays around with blocks.](https://assets.turntrout.com/Attachments/reframingImpact.avif)
 : ![A recreation of the iconic](https://assets.turntrout.com/Attachments/balrog.avif)
 : ![I hand-illustrated Bag End from the Shire, with the help of a reference.](https://assets.turntrout.com/Attachments/hobbitImpactHouse.avif)
