@@ -837,6 +837,9 @@ Corrupted text
 Acidic display font
 : <span class="acidic">Silence</span>
 
+Acidic display font, in context
+: International Association of <span class="acidic">Silence</span> on the Ethics of AI
+
 ## Italic punctuation
 
 Enclosing punctuation should render upright (roman) while letter forms remain italic. Apostrophes in contractions should stay italic.

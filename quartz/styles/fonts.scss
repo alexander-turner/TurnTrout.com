@@ -256,6 +256,12 @@ em {
 .acidic {
   font-family: Acidic, serif;
   font-style: normal;
+
+  // The subset's "S" sits flush against its left edge while the trailing "e"
+  // keeps a sliver of slack, so inline the word crowds the word before it and
+  // drifts from the word after. Lead in slightly and pull the trailing gap
+  // back so the display word spaces evenly between normal-font words.
+  margin-inline: 0.06em -0.04em;
 }
 
 .fraction {
