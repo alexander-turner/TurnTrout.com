@@ -430,12 +430,11 @@ article[data-use-dropcap="true"][data-no-dropcap-color="true"] > p:not(.subtitle
   --before-color: var(--midground-faint);
 }
 
-// EG 1st, 2nd, 3rd. Cancel the UA <sup> size/position so the font's true
-// superscript glyphs ("sups") control the size, weight, and height.
+// EG 1st, 2nd, 3rd. A raised, scaled glyph keeps the suffix consistent across
+// the upright and italic faces.
 .ordinal-suffix {
-  font-size: 1em;
-  vertical-align: baseline;
-  font-feature-settings: "sups" 1;
+  font-size: 0.75em;
+  vertical-align: 0.22em;
 
   em & {
     margin-left: calc(0.25 * $base-margin);
@@ -452,6 +451,12 @@ article[data-use-dropcap="true"][data-no-dropcap-color="true"] > p:not(.subtitle
 
 .date-ordinal-num {
   font-variant-numeric: oldstyle-nums;
+}
+
+// Oldstyle date figures are shorter than lining figures, so the suffix sits
+// lower to stay on top of them.
+.date-ordinal-num + .ordinal-suffix {
+  vertical-align: 0.1em;
 }
 
 // Version labels like "V1", "V2", "V100" — keep digits at cap height so they
