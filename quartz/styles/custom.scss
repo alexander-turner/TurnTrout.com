@@ -582,6 +582,11 @@ hr {
     & .date-ordinal-num {
       font-variant-numeric: lining-nums;
     }
+
+    // Figures are lining here, so the suffix stays at lining height.
+    & .date-ordinal-num + .ordinal-suffix {
+      vertical-align: 0.34em;
+    }
   }
 }
 
