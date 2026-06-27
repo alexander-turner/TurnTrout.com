@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-06-23
+date_updated: 2026-06-27
 no_dropcap: false
 createBibtex: true
 ---
@@ -201,11 +201,11 @@ Therefore, I use [my optimized fork of `subfont`](/open-source#faster-font-subse
 
 <span class="populate-markdown-font-stats"></span>
 
-Eventually, the ultimate solution will be [progressive font enrichment](https://www.w3.org/TR/PFE-evaluation/), which will load just those glyphs needed for a webpage, and then cache those glyphs so that they aren't reloaded during future calls. Sadly, progressive font enrichment is not yet available.
+Eventually, the ultimate solution will be [progressive font enrichment](https://www.w3.org/TR/PFE-evaluation/), which will load just those glyphs needed for a webpage, and then cache those glyphs so that they aren't reloaded during future calls. Its successor standard, [Incremental Font Transfer](https://www.w3.org/TR/IFT/), has begun shipping in Chromium but isn't yet broadly available.
 
 ### Images
 
-Among lossy compression formats, there are two kings: AVIF and WEBP. Under my tests, they achieved similar (amazing) compression ratios of about 10x over PNG. For compatibility reasons, I chose AVIF. The upshot is that _images are nearly costless in terms of responsiveness_, which is liberating.
+Among lossy compression formats, there are two kings: AVIF and WEBP. Under my tests, they achieved similar (amazing) compression ratios of about 10x over PNG. I chose AVIF. The upshot is that _images are nearly costless in terms of responsiveness_, which is liberating.
 
 To demonstrate this liberty, I perform a statistical analysis of the 941 AVIF files hosted on my CDN as of November 9, 2024.[^colab] I downloaded each AVIF file and used `magick` to convert it back to a PNG, measuring the size before and after.
 
@@ -654,9 +654,9 @@ I showcase all included favicons on [the test page](/test-page#external-links-wi
 
 ## Suggest related posts based on embedding similarity
 
-Subtitle: Inspired by [`gwern](https://gwern.net/design#similar-links).
+Subtitle: Inspired by [`gwern`](https://gwern.net/design#similar-links).
 
-I feed all of my articles through a text embedding model. For each article, I find the top 5 articles with highest [cosine-similarity](https://en.wikipedia.org/wiki/Cosine_similarity) (giving up on articles without sufficiently similar counterparts). 
+I feed all of my articles through a text embedding model. For each article, I find the top 5 articles with highest [cosine-similarity](https://en.wikipedia.org/wiki/Cosine_similarity) (giving up on articles without sufficiently similar counterparts).
 
 ## Admonitions encapsulate information
 

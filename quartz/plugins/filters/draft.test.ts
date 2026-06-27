@@ -3,13 +3,18 @@ import { describe, expect, it } from "@jest/globals"
 import { type BuildCtx } from "../../util/ctx"
 import { type FilePath } from "../../util/path"
 import { defaultProcessedContent } from "../vfile"
-import { RemoveDrafts } from "./draft"
+import { isDraftPath, RemoveDrafts } from "./draft"
 
 const filter = RemoveDrafts()
 
 function shouldPublish(filePath: string): boolean {
   const content = defaultProcessedContent({ filePath: filePath as FilePath })
   return filter.shouldPublish({} as BuildCtx, content)
+}
+
+function shouldPublishServing(filePath: string): boolean {
+  const content = defaultProcessedContent({ filePath: filePath as FilePath })
+  return filter.shouldPublish({ argv: { serve: true } } as BuildCtx, content)
 }
 
 describe("RemoveDrafts", () => {
@@ -39,6 +44,14 @@ describe("RemoveDrafts", () => {
     expect(shouldPublish(filePath)).toBe(expected)
   })
 
+  it.each([
+    ["website_content/drafts/wip.md"],
+    ["drafts/something.md"],
+    ["some/nested/drafts/file.md"],
+  ])("keeps draft file %s when serving (dev mode)", (filePath) => {
+    expect(shouldPublishServing(filePath)).toBe(true)
+  })
+
   it("falls back to vfile.path when data.filePath is undefined", () => {
     const content = defaultProcessedContent({})
     content[1].path = "website_content/posts/article.md"
@@ -47,7 +60,19 @@ describe("RemoveDrafts", () => {
 
   it("falls back to empty string when both filePath and path are undefined", () => {
     const content = defaultProcessedContent({})
-    // With empty string, includes("drafts/") is false → publishes
+    // With empty string, there is no "drafts" path segment → publishes
     expect(filter.shouldPublish({} as BuildCtx, content)).toBe(true)
+  })
+})
+
+describe("isDraftPath", () => {
+  it.each([
+    ["website_content/drafts/wip.md", true],
+    ["some/nested/drafts/file.md", true],
+    ["website_content/posts/my-article.md", false],
+    ["website_content/drafts/templates/my-template.md", false],
+    ["", false],
+  ])("classifies %s as draft=%s", (filePath, expected) => {
+    expect(isDraftPath(filePath)).toBe(expected)
   })
 })

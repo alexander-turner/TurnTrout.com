@@ -195,13 +195,13 @@ describe("AfterArticle plugin", () => {
       // Plus subscription component, so we expect 2 components
       const addedDiv = expectAfterArticleComponentsAdded(mockTree, 2)
 
-      // First should be sequence component (has sequence-links class)
-      const sequenceDiv = addedDiv.children[0] as Element
-      expect(sequenceDiv.properties?.className).toContain("sequence-links")
-
-      // Second should be subscription component
-      const subscriptionDiv = addedDiv.children[1] as Element
+      // First should be the subscription component
+      const subscriptionDiv = addedDiv.children[0] as Element
       expect(subscriptionDiv.properties?.id).toBe("subscription-and-contact")
+
+      // Second should be the sequence component (has sequence-links class)
+      const sequenceDiv = addedDiv.children[1] as Element
+      expect(sequenceDiv.properties?.className).toContain("sequence-links")
     })
   })
 })

@@ -26,3 +26,6 @@ pnpm-lock.yaml
 **/website_content/.obsidian/**
 # Jinja2 templates: prettier-html mangles `{% %}` blocks inside attributes.
 **/scripts/templates/**
+.claude-tooling/
+.worktrees
+.pnpm-store

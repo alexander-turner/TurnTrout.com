@@ -1994,6 +1994,29 @@ describe("Ordinal Suffixes", () => {
       '<p><span class="ordinal-num">11</span><sup class="ordinal-suffix">th</sup>, <span class="ordinal-num">12</span><sup class="ordinal-suffix">th</sup>, and <span class="ordinal-num">13</span><sup class="ordinal-suffix">th</sup></p>',
     ],
 
+    // A day adjacent to a year is a date: the number gets .date-ordinal-num
+    // (oldstyle figures) so it matches the year instead of .ordinal-num.
+    [
+      "<p>February 26th, 2026</p>",
+      '<p>February <span class="date-ordinal-num">26</span><sup class="ordinal-suffix">th</sup>, 2026</p>',
+    ],
+    [
+      "<p>August 1st 2023</p>", // Year without a comma still counts
+      '<p>August <span class="date-ordinal-num">1</span><sup class="ordinal-suffix">st</sup> 2023</p>',
+    ],
+    [
+      "<p>June 3rd was fun</p>", // Date-shaped but no year → lining
+      '<p>June <span class="ordinal-num">3</span><sup class="ordinal-suffix">rd</sup> was fun</p>',
+    ],
+    [
+      "<p>finished 22nd, 2050 entrants</p>", // A 4-digit non-year still pairs visually
+      '<p>finished <span class="date-ordinal-num">22</span><sup class="ordinal-suffix">nd</sup>, 2050 entrants</p>',
+    ],
+    [
+      "<p>5th 12345 widgets</p>", // 5+ digits is not a year (\d{4}\b) → lining
+      '<p><span class="ordinal-num">5</span><sup class="ordinal-suffix">th</sup> 12345 widgets</p>',
+    ],
+
     // Cases that should not be transformed
     ["<pre>1st</pre>", "<pre>1st</pre>"], // Preformatted text
     ["<code>1st place</code>", "<code>1st place</code>"], // Inside code block
@@ -2194,13 +2217,12 @@ describe("HTMLFormattingImprovement plugin", () => {
 describe("Non-breaking space insertion", () => {
   it.each([
     // After short words (1-2 letters) and before last word (widow prevention).
-    // punctilio's cascade-block skips adding an NBSP when the neighboring
-    // word is already glued via a prior NBSP, so the phrase doesn't become a
-    // 3-word non-breaking atom. That's why "I love this" gets one NBSP (after
-    // "I"), not two, and the widow NBSP is suppressed when the second-to-last
-    // word is already forward-glued.
-    ["<p>I love this</p>", `<p>I${NBSP}love this</p>`],
-    ["<p>A cat sat on a mat</p>", `<p>A${NBSP}cat sat on${NBSP}a mat</p>`],
+    // When a short-word glue lands on the second-to-last word, punctilio lets
+    // last-word protection win the final pair: the short-word NBSP yields so the
+    // last word binds instead, keeping the non-breaking run to two words. So
+    // "I love this" binds "love this", and "…on a mat" binds "a mat".
+    ["<p>I love this</p>", `<p>I love${NBSP}this</p>`],
+    ["<p>A cat sat on a mat</p>", `<p>A${NBSP}cat sat on a${NBSP}mat</p>`],
     // Before last word (widow prevention)
     ["<p>Hello world</p>", `<p>Hello${NBSP}world</p>`],
     // Between numbers and units

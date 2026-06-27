@@ -34,12 +34,12 @@ export const faviconCounter = new Map<string, number>()
 export async function getFaviconCounts(): Promise<ReadonlyMap<string, number>> {
   // If in-memory map has data, use it (normal build-time usage)
   if (faviconCounter.size > 0) {
-    logger.info(`Using in-memory favicon counts: ${faviconCounter.size} entries`)
+    logger.debug(`Using in-memory favicon counts: ${faviconCounter.size} entries`)
     return new Map(faviconCounter)
   }
 
   // Otherwise, read from persisted file (cross-process usage, e.g., during Playwright tests)
-  logger.info(`In-memory favicon counter is empty, attempting to read from ${faviconCountsFile}`)
+  logger.debug(`In-memory favicon counter is empty, attempting to read from ${faviconCountsFile}`)
 
   // Use the centralized reading function from favicons.ts
   return await readFaviconCounts()

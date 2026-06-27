@@ -192,6 +192,8 @@ export default [
       ".venv/",
       ".stryker-tmp/",
       "mutants/",
+      ".claude-tooling/",
+      ".pnpm-store",
     ],
   },
 

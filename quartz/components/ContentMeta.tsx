@@ -136,7 +136,7 @@ export const renderReadingTime = (fileData: QuartzPluginData): JSX.Element => {
     return <></>
   }
 
-  const text = fileData.text as string
+  const text = (fileData.readingTimeText ?? fileData.text) as string
   const { minutes } = readingTime(text)
   const displayedTime = processReadingTime(Math.ceil(minutes))
 

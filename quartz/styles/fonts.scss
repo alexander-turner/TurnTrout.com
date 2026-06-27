@@ -423,21 +423,42 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   }
 }
 
-// EG 1st, 2nd, 3rd
-.ordinal-suffix {
-  vertical-align: calc(0.5 * $base-margin);
-  font-size: 0.75em; // Adapt to the font size
+// Opt out of the random color flourish (e.g. solemn posts) while keeping the
+// dropcap. The extra attribute outranks the colored rule above, so the
+// embellishment always falls back to the monochrome --midground-faint.
+article[data-use-dropcap="true"][data-no-dropcap-color="true"] > p:not(.subtitle):first-of-type {
+  --before-color: var(--midground-faint);
+}
 
+// EG 1st, 2nd, 3rd. A raised, scaled glyph sized and positioned to match the
+// upright face's designed superscript, so the suffix stays consistent across
+// the upright and italic faces (the italic face ships no superscript glyphs).
+.ordinal-suffix {
+  font-size: 0.7em;
+  vertical-align: 0.34em;
+
+  // Italic figures slant into the raised suffix, so add space before it.
   em & {
-    margin-left: calc(0.25 * $base-margin);
+    margin-left: 0.15em;
   }
 }
 
-// Body text ordinals (like "21st place") use lining-nums for visual consistency.
-// Date ordinals (.date-ordinal-num) intentionally have no styling so they
-// inherit oldstyle-nums from body to match the year (e.g., "October 8th, 2025").
-article .ordinal-num {
+// Standalone ordinals (like "21st place") use lining figures so the number
+// keeps full cap height. A day adjacent to a year is tagged .date-ordinal-num
+// instead and uses oldstyle figures so it matches the year (e.g., "October
+// 8th, 2025").
+.ordinal-num {
   font-variant-numeric: lining-nums;
+}
+
+.date-ordinal-num {
+  font-variant-numeric: oldstyle-nums;
+}
+
+// Oldstyle date figures are shorter than lining figures, so drop the suffix to
+// sit on top of them instead of floating at lining height.
+.date-ordinal-num + .ordinal-suffix {
+  vertical-align: 0.22em;
 }
 
 // Version labels like "V1", "V2", "V100" — keep digits at cap height so they

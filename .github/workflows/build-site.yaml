@@ -37,9 +37,13 @@ jobs:
       # Cache keyed on commit SHA + fixture flag. Test builds and deploy
       # builds end up at different keys so fixtures can't leak from one to
       # the other.
+      # Restore-only here; the cache is saved by a later completeness-gated step.
+      # The all-in-one cache action saves in its post-step regardless of whether
+      # the build succeeded, so a failed or cancelled build poisons the key with a
+      # partial/empty public/ that every consumer then restores as an empty site.
       - name: Restore build cache
         id: cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: public/
           key: site-build-${{ github.sha }}-fixtures-${{ inputs.include-fixtures }}
@@ -57,3 +61,24 @@ jobs:
       - name: Build site
         if: steps.cache.outputs.cache-hit != 'true'
         run: pnpm build
+
+      # Fail loudly on a partial build or a poisoned cache hit instead of letting
+      # consumers restore an empty public/ and time out their webServer minutes later.
+      - name: Verify built site is complete
+        run: |
+          count=$(find public -name '*.html' | wc -l)
+          echo "public/ contains ${count} HTML files"
+          if [ ! -f public/index.html ] || [ "${count}" -lt 100 ]; then
+            echo "::error::Built site is incomplete (${count} HTML files); refusing to use or cache it."
+            exit 1
+          fi
+
+      # Save only after the build is verified complete, so an incomplete public/
+      # can never be cached. Concurrent builds for the same key race harmlessly:
+      # the first writer wins and the rest no-op on the existing key.
+      - name: Save build cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}-fixtures-${{ inputs.include-fixtures }}

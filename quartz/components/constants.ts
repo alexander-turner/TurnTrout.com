@@ -40,6 +40,8 @@ export const {
   emojisToReplace,
   charsToMoveIntoLinkFromRight,
   footnoteHeadingId,
+  similarPostsHeadingId,
+  tocMaxDepth,
   testPageSlug,
   designPageSlug,
   tightScrollTolerance,

@@ -20,6 +20,8 @@ import { type WebSocket, WebSocketServer } from "ws"
 
 import { generateCritical } from "../styles/generate-critical"
 import { generatePalette, generateScss, generateScssRecord } from "../styles/generate-variables"
+import { type FilePath, slugifyFilePath } from "../util/path"
+import { launchCriticalCssBrowser } from "./browser"
 // @ts-expect-error Importing from a JS file, no types
 import { cacheFile, fp } from "./constants.js"
 
@@ -30,6 +32,7 @@ interface BuildArguments {
   baseDir: string
   port: number
   wsPort: number
+  directory: string
 }
 let cachedCriticalCSS = ""
 
@@ -230,11 +233,11 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
     req.url = req.url?.slice(argv.baseDir.length)
 
     // Serve the site while logging requests
-    const serve = async () => {
+    const serve = async (publicDir: string = argv.output) => {
       const release = await buildMutex.acquire()
       try {
         await serveHandler(req, res, {
-          public: argv.output,
+          public: publicDir,
           directoryListing: false,
           headers: [
             {
@@ -250,6 +253,34 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
       } finally {
         release()
       }
+    }
+
+    // Staged assets live under <contentDir>/asset_staging/ until the pre-push
+    // pipeline uploads them to R2 and rewrites refs to /static/images/posts/.
+    // Serve them directly from the content tree so drafts preview in dev.
+    // Wikilinked references arrive slug-cased (spaces → dashes), but files on
+    // disk keep their original names — rewrite to the literal filename when
+    // the slugged path isn't present.
+    if (req.url?.startsWith("/asset_staging/")) {
+      const rawPath = decodeURIComponent(req.url.split("?")[0])
+      const literal = path.posix.join(argv.directory, rawPath)
+      if (!fs.existsSync(literal)) {
+        const stagingDir = path.posix.join(argv.directory, "asset_staging")
+        const wanted = path.posix.basename(rawPath)
+        try {
+          const match = fs
+            .readdirSync(stagingDir)
+            .find((f) => slugifyFilePath(f as FilePath) === wanted)
+          if (match) {
+            req.url = `/asset_staging/${encodeURIComponent(match)}`
+          }
+        } catch {
+          // asset_staging missing or unreadable; let serve() return 404
+        }
+      }
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+      void serve(argv.directory)
+      return
     }
 
     // Handle and log redirects
@@ -426,13 +457,7 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
           waitForStatus: "networkidle0",
           renderWaitTime: 2000,
           puppeteer: {
-            args: [
-              "--no-sandbox",
-              "--disable-setuid-sandbox",
-              "--disable-dev-shm-usage",
-              "--disable-accelerated-2d-canvas",
-              "--disable-gpu",
-            ],
+            getBrowser: launchCriticalCssBrowser,
           },
         },
       })

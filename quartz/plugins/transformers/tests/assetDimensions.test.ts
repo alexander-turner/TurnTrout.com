@@ -10,8 +10,17 @@ import fsExtra from "fs-extra"
 import { h } from "hastscript"
 import os from "os"
 import path from "path"
+import { VFile } from "vfile"
 
 import type { BuildCtx } from "../../../util/ctx"
+import type { FilePath } from "../../../util/path"
+
+/** A published (non-draft) file, as unified would pass to the transformer. */
+const makeNonDraftFile = (): VFile => {
+  const file = new VFile()
+  file.data.filePath = "website_content/published.md" as FilePath
+  return file
+}
 
 const testVideoUrl = "https://assets.turntrout.com/video.mp4"
 const mockVideoData = Buffer.from("fakevideocontent")
@@ -1072,7 +1081,7 @@ describe("Asset Dimensions Plugin", () => {
       const pluginInstance = addAssetDimensionsFromSrc()
       const mockCtx = { argv: { offline: false } } as BuildCtx
       const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
-      await transformer(tree)
+      await transformer(tree, makeNonDraftFile())
 
       const img1Node = tree.children[0] as Element
       const img2Node = tree.children[1] as Element
@@ -1128,7 +1137,7 @@ describe("Asset Dimensions Plugin", () => {
       const pluginInstance = addAssetDimensionsFromSrc()
       const mockCtx = { argv: {} } as BuildCtx
       const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
-      await transformer(tree)
+      await transformer(tree, makeNonDraftFile())
 
       expect(tree.children).toHaveLength(0)
       expect(mockedFetch).not.toHaveBeenCalled()
@@ -1145,7 +1154,7 @@ describe("Asset Dimensions Plugin", () => {
       const pluginInstance = addAssetDimensionsFromSrc()
       const mockCtx = { argv: { offline: false } } as BuildCtx
       const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
-      await transformer(tree)
+      await transformer(tree, makeNonDraftFile())
 
       expect(mockedFetch).not.toHaveBeenCalled()
     })
@@ -1163,7 +1172,7 @@ describe("Asset Dimensions Plugin", () => {
       const pluginInstance = addAssetDimensionsFromSrc()
       const mockCtx = { argv: { offline: true } } as BuildCtx
       const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
-      await transformer(tree)
+      await transformer(tree, makeNonDraftFile())
 
       // In offline mode, remote assets should not be fetched
       expect(mockedFetch).not.toHaveBeenCalled()
@@ -1183,10 +1192,30 @@ describe("Asset Dimensions Plugin", () => {
       // argv without offline property to test the ?? false branch
       const mockCtx = { argv: {} } as BuildCtx
       const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
-      await transformer(tree)
+      await transformer(tree, makeNonDraftFile())
 
       // Should work without errors (offline defaults to false)
       expect(tree.children).toHaveLength(1)
+    })
+
+    it("should skip drafts so a missing local asset does not fail the build", async () => {
+      const tree: Root = {
+        type: "root",
+        children: [h("img", { src: "/this-asset-does-not-exist.png" }) as Element],
+      }
+      const draftFile = new VFile()
+      draftFile.data.filePath = "website_content/drafts/wip.md" as FilePath
+
+      const pluginInstance = addAssetDimensionsFromSrc()
+      const mockCtx = { argv: { offline: false } } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
+
+      // Resolving the missing asset would throw ENOENT for a published file.
+      await expect(transformer(tree, draftFile)).resolves.toBeUndefined()
+
+      const imgNode = tree.children[0] as Element
+      expect(imgNode.properties?.width).toBeUndefined()
+      expect(imgNode.properties?.height).toBeUndefined()
     })
   })
 

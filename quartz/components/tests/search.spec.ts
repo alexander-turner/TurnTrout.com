@@ -299,6 +299,37 @@ test("search matches in headers have correct color styling", async ({ page }) =>
   expect(matchColor).not.toBe(foregroundColor)
 })
 
+test("search matches keep one highlight color across every element type", async ({ page }) => {
+  // Searches a dedicated, never-screenshotted fixture whose unique title
+  // phrase deterministically returns it. The word "quotation" appears in a
+  // heading, body text, and an admonition title. Using a private fixture keeps
+  // this test independent: editing it can never churn another test's visual
+  // baseline. The highlight color must win everywhere — a high-specificity
+  // `color: ... !important` rule on descendants (admonition titles force
+  // `color: inherit !important` on every child) would otherwise clobber the
+  // match inside the title, leaving its color diverging from the others.
+  // Asserting all matches share one color catches that regression for any
+  // clobbering selector, not just admonitions.
+  await search(page, "Highlighted quotation fixture")
+
+  const preview = await waitForArticlePreview(page)
+
+  // Confirm the preview is this fixture, so a ranking change can't silently
+  // make the color assertion run against the wrong page.
+  await expect(preview).toContainText("Quotation heading")
+
+  // The admonition-title match is the case that regressed; make sure it renders
+  // so the shared-color assertion below actually exercises it.
+  const admonitionMatch = preview.locator(".admonition-title .search-match")
+  await expect(admonitionMatch.first()).toBeAttached({ timeout: 10_000 })
+
+  const colors = await preview
+    .locator(".search-match")
+    .evaluateAll((els) => els.map((el) => window.getComputedStyle(el).color))
+  expect(colors.length).toBeGreaterThan(1)
+  expect(new Set(colors).size).toBe(1)
+})
+
 test("Search results are case-insensitive", async ({ page }, testInfo) => {
   // Two sequential searches can exceed default timeouts on Firefox
   test.slow(testInfo.project.name.includes("Firefox"), "Firefox is slow in CI")

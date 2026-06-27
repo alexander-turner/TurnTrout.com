@@ -38,7 +38,7 @@ date_published: 2018-03-25
 original_url: https://www.lesswrong.com/posts/usEZRkMPJBr534vto/the-art-of-the-artificial-insights-from-artificial
 skip_import: true
 description: My review of "Artificial Intelligence, A Modern Approach" & how I read hundreds of pages in 3 days.
-date_updated: 2026-05-08
+date_updated: 2026-06-27
 ---
 
     
@@ -93,7 +93,7 @@ I knew that this plan was preposterous; in all likelihood, I'd finish 3 chapters
 
 Not only did I do it, but I finished a day early. The Murphyjitsu was invaluable; the failure modes I predicted came up and were dealt with by my precautions.
 
-24 hours of studying over the last two days, and I enjoyed every moment.
+Twenty-four hours of studying over the last two days, and I enjoyed every moment.
 
 # AI: A Modern Approach
 

@@ -62,6 +62,19 @@ const commentRegex = new RegExp(/%%[\s\S]*?%%/, "g")
 /** Regular expression to match admonition syntax ([!type][fold]) */
 const admonitionRegex = new RegExp(`^\\[!(?<type>${UNICODE_WORD_CHAR}+)\\](?<collapse>[+-]?)`, "u")
 
+/**
+ * Reports the default fold state encoded by an admonition's first line.
+ *
+ * @param firstLine - The first line of a blockquote (the `>` markers stripped).
+ * @returns `"collapsed"` for `[!type]-`, `"expanded"` for `[!type]` or `[!type]+`,
+ *   or `null` when the line isn't an admonition directive.
+ */
+export function admonitionCollapseState(firstLine: string): "collapsed" | "expanded" | null {
+  const match = admonitionRegex.exec(firstLine)
+  if (!match?.groups) return null
+  return match.groups.collapse === "-" ? "collapsed" : "expanded"
+}
+
 /** Regular expression to match admonition lines in blockquotes */
 const admonitionLineRegex = new RegExp(`^> *\\[!${UNICODE_WORD_CHAR}+\\][+-]?.*$`, "gmu")
 
@@ -929,9 +942,13 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
             // Handle alias processing - only use explicitly provided aliases
             const displayAlias = rawAlias ?? ""
 
-            /* istanbul ignore next -- external link wikilink edge case */
             if (rawFp && externalLinkRegex.test(rawFp)) {
-              return `${embedDisplay}[${displayAlias.replace(/^\|/, "")}](${rawFp})`
+              // Encode spaces so the markdown link/image destination parses; an
+              // unencoded space terminates the destination and the embed renders
+              // as literal text. Matches the %20 convention used for external
+              // asset URLs elsewhere in the pipeline.
+              const encodedFp = rawFp.replace(/ /g, "%20")
+              return `${embedDisplay}[${displayAlias.replace(/^\|/, "")}](${encodedFp})`
             }
 
             return `${embedDisplay}[[${fp}${displayAnchor}${displayAlias}]]`

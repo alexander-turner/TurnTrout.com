@@ -46,6 +46,10 @@ CDN_BASE_URL: str = _CONSTANTS["cdnBaseUrl"]
 CDN_HOSTNAME: str = CDN_BASE_URL.split("://", 1)[1].split("/", 1)[0]
 TWEMOJI_BASE_URL: str = _CONSTANTS["twemojiBaseUrl"]
 
+# Deepest heading level shown in the table of contents — shared with the TOC
+# transformer (quartz/plugins/transformers/toc.ts) via config/constants.json.
+TOC_MAX_DEPTH: int = _CONSTANTS["tocMaxDepth"]
+
 # R2/Cloudflare credentials shared by scripts/r2_baselines.py and
 # scripts/r2_upload.py. Populated by ``envchain cloudflare`` in normal
 # use; the GitHub Actions runner injects them as secrets.

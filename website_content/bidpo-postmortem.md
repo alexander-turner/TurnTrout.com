@@ -6,6 +6,7 @@ tags:
   - AI
   - activation-engineering
   - deepmind
+  - language-models
 description: We tried boosting Gemini benchmarks by optimizing steering vectors. It didn't work. We share our takeaways.
 authors:
   - Alex Turner
@@ -22,7 +23,7 @@ aliases:
   - bidpo-steering
 original_url: https://www.lesswrong.com/posts/WqjkqrEyFDXoHzz9K/steering-gemini-with-bidpo
 date_published: 2025-01-30
-date_updated: 2026-05-15
+date_updated: 2026-06-26
 other_urls:
   - https://deepmindsafetyresearch.medium.com/steering-gemini-using-bidpo-vectors-8a0e7e1da1c9
 createBibtex: true

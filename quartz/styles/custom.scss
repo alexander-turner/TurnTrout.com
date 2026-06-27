@@ -10,7 +10,7 @@
 
 // Shared bottom-margin for the after-article box, the footnotes heading,
 // and the footnotes section itself, so the page-bottom rhythm stays balanced.
-$page-end-bottom-margin: calc(2 * $base-margin);
+$page-end-bottom-margin: calc(3 * $base-margin);
 
 body {
   min-height: 100vh;
@@ -574,8 +574,19 @@ hr {
     }
   }
 
+  // The masthead dateline reads as a prominent header, so keep it at full cap
+  // height (lining figures) for the whole date — overriding the year-adjacent
+  // oldstyle rule that .date-ordinal-num applies elsewhere.
   & .publication-str {
-    font-variant-numeric: lining-nums;
+    &,
+    & .date-ordinal-num {
+      font-variant-numeric: lining-nums;
+    }
+
+    // Figures are lining here, so the suffix stays at lining height.
+    & .date-ordinal-num + .ordinal-suffix {
+      vertical-align: 0.34em;
+    }
   }
 }
 
@@ -710,6 +721,7 @@ img.emoji {
 }
 
 .sequence-links {
+  margin-top: calc(2 * $base-margin);
   margin-bottom: calc(2 * $base-margin);
 }
 

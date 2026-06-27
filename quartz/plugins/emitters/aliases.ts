@@ -4,8 +4,27 @@ import { locale } from "../../components/constants"
 import DepGraph from "../../depgraph"
 import { renderHead } from "../../util/head"
 import { type FilePath, type FullSlug, joinSegments, resolveRelative } from "../../util/path"
+import { isDraftPath } from "../filters/draft"
 import { type QuartzEmitterPlugin } from "../types"
 import { write } from "./helpers"
+
+/**
+ * Directory that a page's aliases and permalink redirects should be emitted into,
+ * relative to the content root.
+ *
+ * Drafts are previewed in dev from a `drafts/` subdirectory but are served at the
+ * site root (where they will live once published), so their aliases must be rooted
+ * too—otherwise `/leaving-gdm` 404s while the redirect sits at `/drafts/leaving-gdm`.
+ */
+function aliasDir(filePath: FilePath | undefined, directory: string): string {
+  if (!filePath) {
+    return ""
+  }
+  if (isDraftPath(filePath)) {
+    return ""
+  }
+  return path.posix.relative(directory, path.dirname(filePath))
+}
 
 /**
  * Quartz emitter plugin that creates HTML redirect files for page aliases and permalinks.
@@ -42,9 +61,7 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
 
     const { argv } = ctx
     for (const [, file] of content) {
-      const dir = file.data.filePath
-        ? path.posix.relative(argv.directory, path.dirname(file.data.filePath))
-        : ""
+      const dir = aliasDir(file.data.filePath, argv.directory)
       const aliases = file.data.frontmatter?.aliases ?? []
       const slugs = aliases.map((alias) => path.posix.join(dir, alias) as FullSlug)
       const permalink = file.data.frontmatter?.permalink
@@ -77,9 +94,7 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
     const fps: FilePath[] = []
 
     for (const [, file] of content) {
-      const dir = file.data.filePath
-        ? path.posix.relative(argv.directory, path.dirname(file.data.filePath))
-        : ""
+      const dir = aliasDir(file.data.filePath, argv.directory)
       const aliases = file.data.frontmatter?.aliases ?? []
       const slugs: FullSlug[] = aliases.map((alias) => path.posix.join(dir, alias) as FullSlug)
       const permalink = file.data.frontmatter?.permalink
