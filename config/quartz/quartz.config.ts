@@ -19,6 +19,7 @@ import {
   GitHubFlavoredMarkdown,
   githubReadmeSource,
   HTMLFormattingImprovement,
+  InlineCodeSpacing,
   InvertInDarkMode,
   Latex,
   NotFoundPage,
@@ -151,6 +152,9 @@ const config: QuartzConfig = {
       // After AddFavicons because favicon insertion can rewrite link
       // content and reintroduce leading whitespace inside an <a>.
       StripInlineBoundaryWhitespace(),
+      // After whitespace stripping so the preceding-character check sees the
+      // final inline structure (a glued "(" isn't separated by stray text).
+      InlineCodeSpacing(),
       ColorVariables(),
       TableOfContents({ minEntries: 3 }),
       addAssetDimensionsFromSrc(),

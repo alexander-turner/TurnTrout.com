@@ -346,6 +346,13 @@ code {
 // monospace from touching the prior text. Block code (`pre > code`) is excluded.
 :not(pre) > code {
   margin-left: 0.1em;
+
+  // Characters that hug their operand (opening delimiters, slash, hyphen,
+  // equals) take no extra space when glued directly before the code. The
+  // `flush-left` class is applied by the InlineCodeSpacing transformer.
+  &.flush-left {
+    margin-left: 0;
+  }
 }
 
 // For usage in the middle of a paragraph
