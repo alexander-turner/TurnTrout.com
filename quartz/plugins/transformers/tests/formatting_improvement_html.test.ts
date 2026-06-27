@@ -2194,13 +2194,12 @@ describe("HTMLFormattingImprovement plugin", () => {
 describe("Non-breaking space insertion", () => {
   it.each([
     // After short words (1-2 letters) and before last word (widow prevention).
-    // punctilio's cascade-block skips adding an NBSP when the neighboring
-    // word is already glued via a prior NBSP, so the phrase doesn't become a
-    // 3-word non-breaking atom. That's why "I love this" gets one NBSP (after
-    // "I"), not two, and the widow NBSP is suppressed when the second-to-last
-    // word is already forward-glued.
-    ["<p>I love this</p>", `<p>I${NBSP}love this</p>`],
-    ["<p>A cat sat on a mat</p>", `<p>A${NBSP}cat sat on${NBSP}a mat</p>`],
+    // When a short-word glue lands on the second-to-last word, punctilio lets
+    // last-word protection win the final pair: the short-word NBSP yields so the
+    // last word binds instead, keeping the non-breaking run to two words. So
+    // "I love this" binds "love this", and "…on a mat" binds "a mat".
+    ["<p>I love this</p>", `<p>I love${NBSP}this</p>`],
+    ["<p>A cat sat on a mat</p>", `<p>A${NBSP}cat sat on a${NBSP}mat</p>`],
     // Before last word (widow prevention)
     ["<p>Hello world</p>", `<p>Hello${NBSP}world</p>`],
     // Between numbers and units
