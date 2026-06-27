@@ -90,9 +90,8 @@ a[id*="fnref-"] {
   scroll-margin-top: calc(2 * $base-margin);
 
   // Dotted border signals "click for interaction" (same pattern as Elvish text)
-  border: 1px dotted var(--midground-fainter);
-  padding: 0 calc(0.25 * $base-margin);
-  border-radius: $border-radius;
+  background-color: var(--midground-faintest);
+  padding: 0 calc(0.125 * $base-margin);
 
   @media all and (max-width: $max-mobile-width) {
     scroll-margin-top: calc(7 * $base-margin);
