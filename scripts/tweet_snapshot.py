@@ -262,14 +262,25 @@ def normalize(raw: dict, tweet_id: str) -> dict:
                     }
                 )
 
+    entities = raw.get("entities", {}) or {}
     urls = [
         {
             "url": entity["url"],
             "display": entity.get("display_url", entity["url"]),
             "expanded": entity.get("expanded_url", entity["url"]),
         }
-        for entity in (raw.get("entities", {}) or {}).get("urls", []) or []
+        for entity in entities.get("urls", []) or []
     ]
+
+    # Twitter appends a t.co link for attached media to the end of `text`, but
+    # clients display the photo/video instead of that link. Drop those media
+    # t.co URLs so they don't render as trailing raw text.
+    text = raw.get("text", "")
+    for media_entity in entities.get("media", []) or []:
+        short = media_entity.get("url")
+        if short:
+            text = text.replace(short, "")
+    text = text.rstrip()
 
     return {
         "id": tweet_id,
@@ -283,7 +294,7 @@ def normalize(raw: dict, tweet_id: str) -> dict:
             "avatarSrc": _avatar_url(user["profile_image_url_https"]),
         },
         "createdAt": raw.get("created_at", ""),
-        "text": raw.get("text", ""),
+        "text": text,
         "urls": urls,
         "media": media,
         "snapshotAt": _now().isoformat(),

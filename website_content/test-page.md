@@ -489,14 +489,14 @@ Equation and table nested in a list item (gaps must not stack with `<p>` margins
 A single tweet, rendered from a self-hosted snapshot:
 
 ```tweet
-https://x.com/turntrout/status/1700000000000000001
+https://xcancel.com/Turn_Trout/status/2064426233769742627
 ```
 
 A thread (one URL per line) renders as a connected stack:
 
 ```tweet
-https://x.com/turntrout/status/1700000000000000002
-https://x.com/turntrout/status/1700000000000000003
+https://xcancel.com/Turn_Trout/status/2055343603224879417
+https://xcancel.com/Turn_Trout/status/2055343603958878231
 ```
 
 # Images

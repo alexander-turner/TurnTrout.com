@@ -248,6 +248,28 @@ def test_normalize() -> None:
     assert snapshot["urls"][0]["expanded"] == "https://example.com"
 
 
+def test_normalize_strips_trailing_media_link() -> None:
+    raw = {
+        "user": {
+            "name": "n",
+            "screen_name": "h",
+            "profile_image_url_https": "https://x/a_normal.jpg",
+        },
+        "text": 'beating Pokemon using this "team" https://t.co/MEDIA',
+        # Second entity has no url, exercising the skip branch.
+        "entities": {"media": [{"url": "https://t.co/MEDIA"}, {}]},
+        "mediaDetails": [
+            {
+                "type": "photo",
+                "media_url_https": "https://pbs.twimg.com/media/x.jpg",
+                "original_info": {"width": 1, "height": 1},
+            }
+        ],
+    }
+    snapshot = ts.normalize(raw, "1")
+    assert snapshot["text"] == 'beating Pokemon using this "team"'
+
+
 def test_normalize_animated_gif_and_skipped_video() -> None:
     raw = {
         "user": {
