@@ -42,7 +42,7 @@ original_url: https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/xveuJm2.jpg
 description: A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.
-date_updated: 2026-05-22
+date_updated: 2026-06-27
 card_image_alt: A Markov decision process showing a robot agent's choice. One path via red gems leads to a small network of states. The other path via blue gems leads to a larger, more complex network and treasure, illustrating a choice that provides more future options.
 createBibtex: true
 ---
@@ -86,7 +86,7 @@ The table’s convergently instrumental strategies are about maintaining, gainin
 
 My theorems apply to finite MDPs; for the unfamiliar, I’ll illustrate with Pac-Man.
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/f9uz4ran04prpaofwfce.mp4" type="video/mp4; codecs=hvc1">
+<video aria-label="Pac-Man gameplay." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/f9uz4ran04prpaofwfce.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/f9uz4ran04prpaofwfce.webm" type="video/webm"></video>
 
 Full observability

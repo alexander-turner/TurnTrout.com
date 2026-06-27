@@ -113,6 +113,9 @@ black = true
 [tool.coverage.run]
 omit = ["scripts/tests/*", "scripts/__init__.py"]
 disable_warnings = ["no-data-collected"]
+# compress.video() runs its HEVC and WebM encodes in worker threads; without
+# this, lines executed only off the main thread are reported as uncovered.
+concurrency = ["thread"]
 
 [tool.coverage.report]
 exclude_lines = [
