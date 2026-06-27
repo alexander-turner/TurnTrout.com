@@ -437,8 +437,9 @@ article[data-use-dropcap="true"][data-no-dropcap-color="true"] > p:not(.subtitle
   font-size: 0.7em;
   vertical-align: 0.34em;
 
+  // Italic figures slant into the raised suffix, so add space before it.
   em & {
-    margin-left: calc(0.25 * $base-margin);
+    margin-left: 0.2em;
   }
 }
 
