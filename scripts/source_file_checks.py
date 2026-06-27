@@ -814,14 +814,14 @@ _LIST_MARKER_RE = re.compile(r"^\s*([-*+]\s+|\d+[.)]\s+)")
 _FOOTNOTE_DEFINITION_RE = re.compile(r"^\[\^[^\]]+\]:")
 
 # Abbreviations whose trailing period is not a sentence boundary, so a digit
-# after them ("eq. 5", "e.g. 2", "Fig. 3") is not sentence-initial.
+# after them ("eq. 5", "e.g. 2", "Fig. 3") is not sentence-initial. Single
+# letters and Roman numerals are excluded: they would suppress real boundaries
+# ending in a capital letter ("Option B. 5 remain") more than they help.
 _SENTENCE_END_ABBREVIATIONS = frozenset(
     """
     al et seq eq eqs ch chs fig figs no nos vol vols pp p pg pos sec secs
-    thm thms def defs prop props lemma cor ref refs ie eg etc cf vs viz resp
-    approx ca nov dec jan feb mar apr jun jul aug sep sept oct mon tue wed
-    thu fri sat sun st mr mrs ms dr prof inc ltd co corp dept univ art arts
-    ex exs col cols pt pts ver v i ii iii iv vi vii viii ix x xi xii
+    thm thms def defs prop props lemma cor ref refs ie eg etc cf vs approx ca
+    jan feb mar apr jun jul aug sep sept oct nov dec mr mrs ms dr prof
     """.split()
 )
 
@@ -847,7 +847,8 @@ def _is_prose_line(line: str) -> bool:
     if not stripped or stripped.startswith((">", "#", "|", "![", ":")):
         return False
     return not (
-        _FOOTNOTE_DEFINITION_RE.match(stripped) or _LIST_MARKER_RE.match(line)
+        _FOOTNOTE_DEFINITION_RE.match(stripped)
+        or _LIST_MARKER_RE.match(stripped)
     )
 
 
@@ -861,10 +862,9 @@ def check_sentence_initial_numerals(text: str) -> list[str]:
     YAML frontmatter, headings, tables, blockquotes, list markers, image alt
     text, and footnote definitions are excluded, as is a digit following an
     ellipsis (a trailing-off continuation, not a new sentence). A line carrying
-    the
-    "<!-- lint-ignore sentence-initial-numeral -->" marker is skipped so a
-    deliberate leading numeral (e.g. one that refers to a literal figure) can
-    be kept with a one-line reason.
+    the "<!-- lint-ignore sentence-initial-numeral -->" marker is skipped so a
+    deliberate leading numeral (e.g. one that refers to a literal figure) can be
+    kept with a one-line reason.
     """
     stripped_text = remove_math(
         remove_code(text, mark_boundaries=True), mark_boundaries=True

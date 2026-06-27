@@ -2629,6 +2629,27 @@ def test_void_elements_are_allowed_self_closing(tag: str):
         ),
         # Frontmatter without a closing fence does not crash or misreport
         ("---\ntitle: Test\nbody has 9 lives", []),
+        # Empty input
+        ("", []),
+        # Double space after the period (house style) is still a boundary
+        (
+            "Hello.  5 cats.",
+            ["Sentence-initial numeral at line 1: Hello.  5 cats."],
+        ),
+        # A digit opening a sentence after stripped inline math is flagged
+        (
+            "Value is $x$. 5 follows.",
+            [
+                "Sentence-initial numeral at line 1: Value is "
+                f"{source_file_checks._REPLACEMENT_CHAR}. 5 follows."
+            ],
+        ),
+        # A sentence ending in a single capital letter is a real boundary,
+        # not an abbreviation, so the next numeral is flagged
+        (
+            "Plan B. 5 remain.",
+            ["Sentence-initial numeral at line 1: Plan B. 5 remain."],
+        ),
     ],
 )
 def test_check_sentence_initial_numerals(text: str, expected_errors: list[str]):
