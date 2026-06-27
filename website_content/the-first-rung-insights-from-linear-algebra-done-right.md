@@ -21,6 +21,7 @@ lw-latest-edit: 2018-04-22T05:23:49.024000Z
 lw-is-linkpost: 'false'
 tags:
   - scholarship-&-learning
+  - mathematics
 aliases:
   - the-first-rung-insights-from-linear-algebra-done-right
 lw-sequence-title: Becoming Stronger
@@ -37,7 +38,7 @@ date_published: 2018-04-22
 original_url: https://www.lesswrong.com/posts/C6XJcWtxcMTeQPBs3/the-first-rung-insights-from-linear-algebra-done-right
 skip_import: true
 description: "The author rediscovers their love for math while rigorously studying linear algebra, sharing insights and lessons learned along the way. "
-date_updated: 2026-05-08
+date_updated: 2026-06-26
 ---
 
 # Foreword

@@ -68,6 +68,9 @@ const rewardPostWarning = (
 const Content: QuartzComponent = ({ fileData, tree }: QuartzComponentProps) => {
   const useDropcap =
     fileData?.frontmatter?.no_dropcap !== true && fileData?.frontmatter?.no_dropcap !== "true"
+  const noDropcapColor =
+    fileData?.frontmatter?.no_dropcap_color === true ||
+    fileData?.frontmatter?.no_dropcap_color === "true"
   const showWarning = fileData.frontmatter?.["lw-reward-post-warning"] === "true"
   const isQuestion = fileData?.frontmatter?.["lw-is-question"] === "true"
   const originalURL = fileData?.frontmatter?.["original_url"]
@@ -78,7 +81,12 @@ const Content: QuartzComponent = ({ fileData, tree }: QuartzComponentProps) => {
   const classString = [PREVIEWABLE_CLASS, ...classes].join(" ")
   const toc = renderTableOfContents(fileData)
   return (
-    <article id="top" className={classString} data-use-dropcap={useDropcap}>
+    <article
+      id="top"
+      className={classString}
+      data-use-dropcap={useDropcap}
+      data-no-dropcap-color={noDropcapColor}
+    >
       <span className="mobile-only">{toc}</span>
       {isQuestion && originalURL && lessWrongQuestion(originalURL as string)}
       {showWarning && rewardPostWarning}

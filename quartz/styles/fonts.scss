@@ -423,6 +423,13 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   }
 }
 
+// Opt out of the random color flourish (e.g. solemn posts) while keeping the
+// dropcap. The extra attribute outranks the colored rule above, so the
+// embellishment always falls back to the monochrome --midground-faint.
+article[data-use-dropcap="true"][data-no-dropcap-color="true"] > p:not(.subtitle):first-of-type {
+  --before-color: var(--midground-faint);
+}
+
 // EG 1st, 2nd, 3rd. Cancel the UA <sup> size/position so the font's true
 // superscript glyphs ("sups") control the size, weight, and height.
 .ordinal-suffix {

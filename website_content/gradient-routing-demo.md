@@ -5,6 +5,7 @@ no_dropcap: "false"
 tags:
   - AI
   - mats-program
+  - interpretability
 description: Our gradient routing technique can force an interpretable inner representation. Each dimension corresponds to a digit. Play with a demo!
 authors:
   - Jacob Goldman-Wetzler
@@ -16,7 +17,7 @@ aliases:
   - mnist-partition-demo
 lw-linkpost-url: https://jacobgw.com/blog/ml/2024/12/12/interp-latent.html
 date_published: 2024-12-16
-date_updated: 2026-05-15
+date_updated: 2026-06-26
 card_image_alt: A landscape of sparkling crystalline shards growing out of the ground.
 ---
 

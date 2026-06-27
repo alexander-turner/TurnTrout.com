@@ -21,6 +21,7 @@ lw-latest-edit: 2018-02-28T02:01:43.790000Z
 lw-is-linkpost: 'false'
 tags:
   - scholarship-&-learning
+  - mathematics
 aliases:
   - set-up-for-success-insights-from-naive-set-theory
 lw-sequence-title: Becoming Stronger
@@ -35,7 +36,7 @@ date_published: 2018-02-28
 original_url: https://www.lesswrong.com/posts/WPtdQ3JnoRSci87Dz/set-up-for-success-insights-from-naive-set-theory
 skip_import: true
 description: Functions are static sets; families are functions; Zorn's Lemma is hard. I reflect on my set theory learnings and effective self-study strategies.
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 ---
 
 # Foreword

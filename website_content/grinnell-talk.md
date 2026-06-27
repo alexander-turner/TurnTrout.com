@@ -6,6 +6,7 @@ tags:
   - AI
   - grinnell
   - talk-notes
+  - existential-risk
 description: Could human-designed AI kill all humans? I spent my PhD on this and still worry.
 authors:
   - Alex Turner
@@ -16,7 +17,7 @@ aliases:
   - talk-agi
   - intro-agi-risk
 date_published: 2025-06-29
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 card_image_alt: A panoramic view of the Grinnell College campus on a sunny autumn day. A large green lawn sits in the foreground before a line of trees with yellow and orange fall foliage, behind which stands a large, ornate brick building under a blue sky.
 ---
 
