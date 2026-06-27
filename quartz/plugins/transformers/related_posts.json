@@ -327,9 +327,9 @@
   ],
   "alignment-tier-list": [
     {
-      "excerpt": "Experts clash on the dangers of \"instrumental convergence\" in AI, but clear definitions and formal thought are sorely needed.",
-      "permalink": "review-of-debate-on-instrumental-convergence",
-      "title": "Review of 'Debate on Instrumental Convergence between LeCun, Russell, Bengio, Zador, and More'"
+      "excerpt": "A list of some of my major conceptual mistakes.",
+      "permalink": "mistakes",
+      "title": "Mistaken claims I've made"
     }
   ],
   "alignment-without-total-robustness": [
@@ -366,6 +366,11 @@
       "title": "Turning Up the Heat: Insights from Tao's 'Analysis II'"
     },
     {
+      "excerpt": "Tao's \"Analysis I\" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.",
+      "permalink": "first-analysis-textbook-review",
+      "title": "Into the Kiln: Insights from Tao's 'Analysis I'"
+    },
+    {
       "excerpt": "A deep dive into reinforcement learning, covering algorithms, exploration vs. exploitation, and the importance of safe AI development.",
       "permalink": "RL-textbook-review",
       "title": "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
@@ -374,11 +379,6 @@
       "excerpt": "Good formalizations are two-way correspondences: the math suggests the concept it formalizes.",
       "permalink": "on-good-formal-definitions",
       "title": "Math That Clicks: Look for Two-Way Correspondences"
-    },
-    {
-      "excerpt": "Tao's \"Analysis I\" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.",
-      "permalink": "first-analysis-textbook-review",
-      "title": "Into the Kiln: Insights from Tao's 'Analysis I'"
     }
   ],
   "announcing-rewrite-of-power-seeking-post": [
@@ -479,14 +479,14 @@
       "title": "Attainable Utility Preservation: Scaling to Superhuman"
     },
     {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
+    },
+    {
       "excerpt": "A tour of the research areas I've loved over the years.",
       "permalink": "research",
       "title": "My research"
-    },
-    {
-      "excerpt": "How to make AI agents avoid negative side effects, especially in multi-stakeholder environments.",
-      "permalink": "conservative-agency-with-multiple-stakeholders",
-      "title": "Conservative Agency with Multiple Stakeholders"
     }
   ],
   "attainable-utility-preservation-paper": [
@@ -511,9 +511,9 @@
       "title": "Avoiding Side Effects in Complex Environments"
     },
     {
-      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
-      "permalink": "conclusion-to-reframing-impact",
-      "title": "Conclusion to 'Reframing Impact'"
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
     }
   ],
   "attainable-utility-preservation-scaling-to-superhuman": [
@@ -748,14 +748,14 @@
       "title": "Set Up for Success: Insights from 'Naïve Set Theory'"
     },
     {
-      "excerpt": "Functional analysis: infinite dimensions, discontinuous linear functions, and the headache-inducing functional derivative.",
-      "permalink": "functional-analysis-textbook-review",
-      "title": "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
-    },
-    {
       "excerpt": "Good formalizations are two-way correspondences: the math suggests the concept it formalizes.",
       "permalink": "on-good-formal-definitions",
       "title": "Math That Clicks: Look for Two-Way Correspondences"
+    },
+    {
+      "excerpt": "Functional analysis: infinite dimensions, discontinuous linear functions, and the headache-inducing functional derivative.",
+      "permalink": "functional-analysis-textbook-review",
+      "title": "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
     }
   ],
   "conclusion-to-reframing-impact": [
@@ -780,9 +780,9 @@
       "title": "Towards a New Impact Measure"
     },
     {
-      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
-      "permalink": "attainable-utility-preservation-paper",
-      "title": "Penalizing Impact via Attainable Utility Preservation"
+      "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
+      "permalink": "reframing-impact",
+      "title": "Reframing Impact"
     }
   ],
   "conservative-agency-with-multiple-stakeholders": [
@@ -802,14 +802,14 @@
       "title": "Attainable Utility Preservation: Concepts"
     },
     {
-      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
-      "permalink": "attainable-utility-preservation-paper",
-      "title": "Penalizing Impact via Attainable Utility Preservation"
-    },
-    {
       "excerpt": "A tour of the research areas I've loved over the years.",
       "permalink": "research",
       "title": "My research"
+    },
+    {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
     }
   ],
   "consistency-training": [
@@ -1093,14 +1093,14 @@
       "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
     },
     {
-      "excerpt": "A proposal for a government regulation of AI: Developers must be able to accurately predict the model's output.",
-      "permalink": "ban-development-of-unpredictable-powerful-models",
-      "title": "Ban development of unpredictable powerful models?"
-    },
-    {
       "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
       "permalink": "consistency-training",
       "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
+    },
+    {
+      "excerpt": "A proposal for a government regulation of AI: Developers must be able to accurately predict the model's output.",
+      "permalink": "ban-development-of-unpredictable-powerful-models",
+      "title": "Ban development of unpredictable powerful models?"
     }
   ],
   "doctor-stone": [
@@ -2354,11 +2354,6 @@
   ],
   "on-good-formal-definitions": [
     {
-      "excerpt": "A tour of fundamental statistical concepts, from basic probability to hypothesis testing and Bayesian inference.",
-      "permalink": "all-of-statistics-textbook-review",
-      "title": "Confounded No Longer: Insights from 'All of Statistics'"
-    },
-    {
       "excerpt": "Four distinct concepts related to \"loss function\" in AI are often conflated, leading to ambiguity in the field of AI alignment.",
       "permalink": "four-usages-of-loss-in-ai",
       "title": "Four usages of 'loss' in AI"
@@ -2372,6 +2367,11 @@
       "excerpt": "AI alignment plagued by imprecise language. Ex: \"reward\" and \"shoggoth\" are suggestive words that obstruct clear thought.",
       "permalink": "danger-of-suggestive-terminology",
       "title": "Dreams of AI alignment: The danger of suggestive names"
+    },
+    {
+      "excerpt": "A tour of fundamental statistical concepts, from basic probability to hypothesis testing and Bayesian inference.",
+      "permalink": "all-of-statistics-textbook-review",
+      "title": "Confounded No Longer: Insights from 'All of Statistics'"
     }
   ],
   "open-category-classification": [
@@ -2440,6 +2440,11 @@
       "excerpt": "Tao's \"Analysis I\" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.",
       "permalink": "first-analysis-textbook-review",
       "title": "Into the Kiln: Insights from Tao's 'Analysis I'"
+    },
+    {
+      "excerpt": "Functional analysis: infinite dimensions, discontinuous linear functions, and the headache-inducing functional derivative.",
+      "permalink": "functional-analysis-textbook-review",
+      "title": "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
     }
   ],
   "original-truthfulqa-weaknesses": [
@@ -2647,21 +2652,21 @@
       "title": "How I do research"
     },
     {
-      "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
-      "permalink": "best-reasons-for-pessimism-about-impact-measures",
-      "title": "Best reasons for pessimism about impact of impact measures?"
-    },
-    {
       "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
       "permalink": "conclusion-to-reframing-impact",
       "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
+      "permalink": "best-reasons-for-pessimism-about-impact-measures",
+      "title": "Best reasons for pessimism about impact of impact measures?"
     }
   ],
   "punctilio": [
     {
-      "excerpt": "Displaying the features of the website for use in visual regression testing.",
-      "permalink": "test-page",
-      "title": "Testing site features"
+      "excerpt": "Showing off and explaining this site's beauty.",
+      "permalink": "design",
+      "title": "The design of this website"
     }
   ],
   "quantitative-strength-of-instrumental-convergence": [
@@ -3093,9 +3098,9 @@
       "title": "MDP models are determined by the agent architecture and the environmental dynamics"
     },
     {
-      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
-      "permalink": "satisficers-tend-to-seek-power",
-      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
+      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
+      "permalink": "parametrically-retargetable-power-seeking",
+      "title": "Parametrically retargetable decision-makers tend to seek power"
     }
   ],
   "self-fulfilling-misalignment": [
@@ -3240,14 +3245,14 @@
       "title": "Predictions for shard theory mechanistic interpretability results"
     },
     {
-      "excerpt": "A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.",
-      "permalink": "understanding-and-controlling-a-maze-solving-policy-network",
-      "title": "Understanding and controlling a maze-solving policy network"
-    },
-    {
       "excerpt": "My team published a paper on steering a maze-solving AI by manipulating its internal goal representations.",
       "permalink": "cheese-vector-paper",
       "title": "Paper: Understanding and Controlling a Maze-Solving Policy Network"
+    },
+    {
+      "excerpt": "A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.",
+      "permalink": "understanding-and-controlling-a-maze-solving-policy-network",
+      "title": "Understanding and controlling a maze-solving policy network"
     },
     {
       "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
@@ -3480,14 +3485,14 @@
       "title": "Impact Measure Desiderata"
     },
     {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
+    },
+    {
       "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
       "permalink": "conclusion-to-reframing-impact",
       "title": "Conclusion to 'Reframing Impact'"
-    },
-    {
-      "excerpt": "Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.",
-      "permalink": "problem-relaxation-as-a-tactic",
-      "title": "Problem relaxation as a tactic"
     }
   ],
   "toy-instrumental-convergence-paper-walkthrough": [
@@ -3561,14 +3566,14 @@
       "title": "Predictions for shard theory mechanistic interpretability results"
     },
     {
-      "excerpt": "Closeness to cheese and the top-right corner both influence a maze-solving AI, suggesting a \"shard-like\" decision-making process.",
-      "permalink": "statistics-of-a-maze-solving-network",
-      "title": "Behavioural statistics for a maze-solving agent"
-    },
-    {
       "excerpt": "Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.",
       "permalink": "gpt2-steering-vectors",
       "title": "Steering GPT-2-XL by adding an activation vector"
+    },
+    {
+      "excerpt": "Closeness to cheese and the top-right corner both influence a maze-solving AI, suggesting a \"shard-like\" decision-making process.",
+      "permalink": "statistics-of-a-maze-solving-network",
+      "title": "Behavioural statistics for a maze-solving agent"
     }
   ],
   "value-impact": [

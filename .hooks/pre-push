@@ -11,6 +11,17 @@ if [ -d "$GIT_ROOT/node_modules/.bin" ]; then
   export PATH="$GIT_ROOT/node_modules/.bin:$PATH"
 fi
 
+# Fetch VOYAGE_API_KEY from the `ai` envchain namespace when it isn't already
+# available, so the related-posts step can run. The key is passed only to the
+# checks command below rather than exported into the hook's environment. If
+# envchain or the key is unavailable, VOYAGE_API_KEY stays empty and
+# run_push_checks.py skips that step with a warning.
+VOYAGE_API_KEY="${VOYAGE_API_KEY:-}"
+if [ -z "$VOYAGE_API_KEY" ] && command -v envchain >/dev/null 2>&1; then
+  # shellcheck disable=SC2016  # $VOYAGE_API_KEY must expand in envchain's shell.
+  VOYAGE_API_KEY=$(envchain ai sh -c 'printf %s "$VOYAGE_API_KEY"' 2>/dev/null) || VOYAGE_API_KEY=""
+fi
+
 RESUME_FLAG=""
 if [ "$RESUME" = "true" ]; then
   echo "Resuming from last failed step."
@@ -67,7 +78,7 @@ fi
 # Temporarily disable `set -e` so we can capture the exact exit status and
 # print the resume hint before propagating the failure.
 set +e
-uv run python "$GIT_ROOT/scripts/run_push_checks.py" $RESUME_FLAG
+VOYAGE_API_KEY="$VOYAGE_API_KEY" uv run python "$GIT_ROOT/scripts/run_push_checks.py" $RESUME_FLAG
 _checks_status=$?
 set -e
 

@@ -1,9 +1,13 @@
-import { type Element, type Parent, type Text } from "hast"
+import { type Element, type Parent, type Root, type Text } from "hast"
+import { h } from "hastscript"
 import { renderToString } from "katex"
 import { titleCase } from "title-case"
+// skipcq: JS-0257
+import { visitParents } from "unist-util-visit-parents"
 
 import { applyTextTransforms } from "../plugins/transformers/formatting_improvement_html"
 import { replaceSCInNode } from "../plugins/transformers/tagSmallcaps"
+import { processTree as processTwemojiTree } from "../plugins/transformers/twemoji"
 import { locale } from "./constants"
 
 export function formatTitle(title: string): string {
@@ -14,6 +18,35 @@ export function formatTitle(title: string): string {
 
   title = titleCase(title, { locale })
   return title
+}
+
+/**
+ * Single source of truth for the site's node-producing inline transforms:
+ * emoji → Twemoji `<img>` and acronym small-caps, applied in pipeline order
+ * (Twemoji before TagSmallcaps) over an existing hast subtree in place.
+ *
+ * Content injected after those two passes have run (the "Similar posts" block,
+ * sequence links, backlinks) must re-apply them here. Smart-quote / arrow /
+ * nbsp transforms are string-level and belong upstream in the caller
+ * (`formatTitle` for titles, `applyTextTransforms` for descriptions).
+ */
+export function applyInlineFormattingTransforms(tree: Root | Element): void {
+  processTwemojiTree(tree as unknown as Root)
+  visitParents(tree, "text", (node: Text, ancestors: Parent[]) => {
+    replaceSCInNode(node, ancestors)
+  })
+}
+
+/**
+ * Renders a plain (already string-transformed) title or description string into
+ * hast inline nodes with {@link applyInlineFormattingTransforms} applied. For
+ * callers whose source may contain HTML markup, parse it first and call
+ * {@link applyInlineFormattingTransforms} on the resulting tree instead.
+ */
+export function renderInlineFormatting(text: string): (Text | Element)[] {
+  const container = h("span", [{ type: "text", value: text } as Text])
+  applyInlineFormattingTransforms(container)
+  return container.children as (Text | Element)[]
 }
 
 /**
