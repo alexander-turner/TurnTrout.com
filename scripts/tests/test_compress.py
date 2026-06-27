@@ -646,3 +646,75 @@ def test_video_preserves_framerate(
         assert output_fps == pytest.approx(input_fps, rel=0.05), (
             f"Output FPS {output_fps} does not match expected FPS {input_fps}"
         )
+
+
+# --- Progress reporting ---
+
+
+@pytest.mark.parametrize(
+    "elapsed, duration, expected",
+    [
+        (3.0, 6.0, "  [HEVC]  50%  (  3.0s / 6.0s)"),
+        # Past the end clamps to 100% rather than overshooting.
+        (7.0, 6.0, "  [HEVC] 100%  (  7.0s / 6.0s)"),
+        # Unknown duration falls back to an elapsed-time line.
+        (3.0, None, "  [VP9]   3.0s elapsed"),
+        # A zero/negative duration is treated as unknown.
+        (3.0, 0.0, "  [VP9]   3.0s elapsed"),
+    ],
+)
+def test_progress_line(elapsed: float, duration: float | None, expected: str):
+    """`_progress_line` renders percentage or elapsed-time form."""
+    label = "HEVC" if duration else "VP9"
+    assert compress._progress_line(label, elapsed, duration) == expected
+
+
+def test_stream_progress_with_duration(capsys):
+    """Progress prints once per crossed bucket and skips sentinels/keys."""
+    lines = [
+        "frame=1\n",  # non-out_time key -> ignored
+        "\n",  # blank line (no '=') -> ignored
+        "out_time_us=N/A\n",  # pre-roll N/A -> ValueError, ignored
+        "out_time_us=-9223372036854775807\n",  # negative sentinel -> ignored
+        "out_time_us=600000\n",  # 0.6s -> 10% bucket 2
+        "out_time_us=900000\n",  # 0.9s -> 15% bucket 3 (new -> prints)
+        "out_time_us=1000000\n",  # 1.0s -> 16% bucket 3 (same -> no print)
+        "out_time_us=3000000\n",  # 3.0s -> 50% bucket 10 (new -> prints)
+    ]
+    compress._stream_progress(iter(lines), "HEVC", 6.0)
+    out = capsys.readouterr().out
+    assert out == (
+        "  [HEVC]  10%  (  0.6s / 6.0s)\n"
+        "  [HEVC]  15%  (  0.9s / 6.0s)\n"
+        "  [HEVC]  50%  (  3.0s / 6.0s)\n"
+    )
+
+
+def test_stream_progress_without_duration(capsys):
+    """With unknown duration, progress buckets by elapsed seconds."""
+    lines = [
+        "out_time_us=1000000\n",  # 1s -> bucket 0
+        "out_time_us=4000000\n",  # 4s -> bucket 0 (no print)
+        "out_time_us=6000000\n",  # 6s -> bucket 1 (prints)
+    ]
+    compress._stream_progress(iter(lines), "VP9", None)
+    out = capsys.readouterr().out
+    assert out == ("  [VP9]   1.0s elapsed\n  [VP9]   6.0s elapsed\n")
+
+
+@pytest.mark.parametrize(
+    "probe_stdout, expected",
+    [("6.04\n", 6.04), ("N/A\n", None), ("", None)],
+)
+def test_probe_duration_seconds(
+    monkeypatch, probe_stdout: str, expected: float | None
+):
+    """`_probe_duration_seconds` parses ffprobe output, None when unparsable."""
+
+    def mock_run(*_args: object, **_kwargs: object):
+        return subprocess.CompletedProcess(
+            args=[], returncode=0, stdout=probe_stdout, stderr=""
+        )
+
+    monkeypatch.setattr(subprocess, "run", mock_run)
+    assert compress._probe_duration_seconds(Path("video.mp4")) == expected
