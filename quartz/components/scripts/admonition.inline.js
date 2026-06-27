@@ -65,9 +65,9 @@ function setupAdmonition() {
     syncAriaState(admonition, admonition.classList.contains("is-collapsed"))
     admonition.removeEventListener("click", openAdmonition)
     admonition.addEventListener("click", openAdmonition)
-    const title_el = admonition.querySelector(".admonition-title")
-    title_el?.removeEventListener("click", closeAdmonition)
-    title_el?.addEventListener("click", closeAdmonition)
+    const titleEl = admonition.querySelector(".admonition-title")
+    titleEl?.removeEventListener("click", closeAdmonition)
+    titleEl?.addEventListener("click", closeAdmonition)
     // Attach keyboard toggle to the fold icon (not the title div, which may
     // contain links — nesting interactive controls is an a11y violation).
     const foldIcon = admonition.querySelector(".fold-admonition-icon")
