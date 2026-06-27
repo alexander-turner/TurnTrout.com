@@ -134,12 +134,12 @@ describe("util/log", () => {
       )
     })
 
-    it("should add Console transport at info level outside CI", () => {
+    it("should add Console transport at warn level outside CI", () => {
       createWinstonLogger("test-logger")
 
       expect(mockConsoleTransport).toHaveBeenCalledWith(
         expect.objectContaining({
-          level: "info",
+          level: "warn",
           stderrLevels: ["error", "warn", "info", "http", "verbose", "debug", "silly"],
         }),
       )
