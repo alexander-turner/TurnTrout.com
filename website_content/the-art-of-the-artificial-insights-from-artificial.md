@@ -21,7 +21,7 @@ lw-latest-edit: 2018-03-25T06:55:46.204000Z
 lw-is-linkpost: "false"
 tags:
   - AI
-  - scholarship-&-learning
+  - scholarship-and-learning
 aliases:
   - the-art-of-the-artificial-insights-from-artificial
 lw-sequence-title: Becoming Stronger

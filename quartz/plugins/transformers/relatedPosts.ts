@@ -7,7 +7,7 @@ import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 import { VFile } from "vfile"
 
-import { formatTitle } from "../../components/component_utils"
+import { formatTitle, renderInlineFormatting } from "../../components/component_utils"
 import { footnoteHeadingId, similarPostsHeadingId } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { type TocEntry } from "../vfile"
@@ -145,12 +145,12 @@ export function buildRelatedPostsBlock(posts: readonly RelatedPost[]): Element[]
                 href: `/${post.permalink.replace(/^\/+/, "")}`,
                 className: "internal can-trigger-popover",
               },
-              formatTitle(post.title),
+              renderInlineFormatting(formatTitle(post.title)),
             ),
             h(
               "span",
               { className: "related-post-excerpt" },
-              applyTextTransforms(post.excerpt, { useNbsp: false }),
+              renderInlineFormatting(applyTextTransforms(post.excerpt, { useNbsp: false })),
             ),
           ]),
         ),

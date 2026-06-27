@@ -426,12 +426,12 @@ describe("returnAddIdsToHeadingsFn function", () => {
     processor(tree1)
     processor(tree2)
 
-    const h1_tree1 = tree1.children[0] as Element
-    const h1_tree2 = tree2.children[0] as Element
+    const h1Tree1 = tree1.children[0] as Element
+    const h1Tree2 = tree2.children[0] as Element
 
     // Both should get the same ID since slugger is reset
-    expect(h1_tree1.properties?.id).toBe("same-heading")
-    expect(h1_tree2.properties?.id).toBe("same-heading")
+    expect(h1Tree1.properties?.id).toBe("same-heading")
+    expect(h1Tree2.properties?.id).toBe("same-heading")
   })
 })
 

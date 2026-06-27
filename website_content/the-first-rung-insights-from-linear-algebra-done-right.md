@@ -20,7 +20,7 @@ title: "The First Rung: Insights from 'Linear Algebra Done Right'"
 lw-latest-edit: 2018-04-22T05:23:49.024000Z
 lw-is-linkpost: 'false'
 tags:
-  - scholarship-&-learning
+  - scholarship-and-learning
   - mathematics
 aliases:
   - the-first-rung-insights-from-linear-algebra-done-right

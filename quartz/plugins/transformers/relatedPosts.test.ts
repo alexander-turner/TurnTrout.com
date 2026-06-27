@@ -149,6 +149,60 @@ describe("buildRelatedPostsBlock", () => {
     // Excerpts run through the site's text transforms (straight → smart quotes).
     expect(excerpts[1].children[0]).toMatchObject({ value: "The model’s second thing." })
   })
+
+  // The "Similar posts" block is built after the Twemoji and TagSmallcaps
+  // passes have already run, so it must re-apply those transforms itself.
+  // These cases would have caught the bug where emoji/acronyms rendered raw.
+  const emojiPosts: RelatedPost[] = [
+    {
+      permalink: "p",
+      title: "I'm that Other Fish in the Sea 🐟",
+      excerpt: "My dating doc about LLM safety. Is it you? 💘",
+    },
+  ]
+
+  const fullTextOf = (node: Element): string => {
+    let text = ""
+    visit(node, "text", (t: { value: string }) => {
+      text += t.value
+    })
+    return text
+  }
+
+  it("renders emoji in the title as Twemoji <img> elements", () => {
+    const [, list] = buildRelatedPostsBlock(emojiPosts)
+    const link = elementsByTag(list, "a")[0]
+    const imgs = elementsByTag(link, "img")
+    expect(imgs).toHaveLength(1)
+    expect(classesOf(imgs[0])).toContain("emoji")
+    expect(imgs[0].properties?.alt).toBe("🐟")
+  })
+
+  it("renders emoji in the excerpt as Twemoji <img> elements", () => {
+    const [, list] = buildRelatedPostsBlock(emojiPosts)
+    const excerpt = elementsWithClass(list, "related-post-excerpt")[0]
+    const imgs = elementsByTag(excerpt, "img")
+    expect(imgs).toHaveLength(1)
+    expect(classesOf(imgs[0])).toContain("emoji")
+    expect(imgs[0].properties?.alt).toBe("💘")
+  })
+
+  it("wraps acronyms in the excerpt with small-caps <abbr>", () => {
+    const [, list] = buildRelatedPostsBlock(emojiPosts)
+    const excerpt = elementsWithClass(list, "related-post-excerpt")[0]
+    const abbrs = elementsByTag(excerpt, "abbr")
+    expect(abbrs).toHaveLength(1)
+    expect(classesOf(abbrs[0])).toContain("small-caps")
+    expect((abbrs[0].children[0] as { value: string }).value).toBe("llm")
+  })
+
+  it("applies smart-quote transforms to the title", () => {
+    const [, list] = buildRelatedPostsBlock(emojiPosts)
+    const link = elementsByTag(list, "a")[0]
+    // The straight apostrophe in "I'm" becomes a curly one.
+    expect(fullTextOf(link)).toContain("I’m")
+    expect(fullTextOf(link)).not.toContain("I'm")
+  })
 })
 
 describe("insertSimilarPostsTocEntry", () => {

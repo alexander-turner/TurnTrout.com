@@ -144,8 +144,11 @@ svg.favicon {
 // Per-domain SVG colors
 $domain-svg-colors: (
   "arbital_com": var(--green),
+  "arstechnica_com": var(--orange),
   "arxiv_org": var(--red),
   "cnn_com": var(--red),
+  "stackexchange_com": var(--blue),
+  "theguardian_com": var(--blue),
   "deepmind_com": var(--blue),
   "discord_gg": color-mix(in srgb, var(--purple) 50%, var(--blue)),
   "fatebook_io": var(--purple),

@@ -241,6 +241,25 @@ describe("Backlinks", () => {
     expect(html).toMatch(/<abbr[^>]*class="initialism"[^>]*>AI<\/abbr>/)
   })
 
+  it("renders emoji in backlink titles as Twemoji <img> elements", () => {
+    const currentFile = createFileData({ slug: "target" as FullSlug })
+
+    const linkingFile = createFileData({
+      slug: "emoji-source" as FullSlug,
+      frontmatter: { title: "Other fish in the sea 🐟" },
+      links: ["target" as SimpleSlug],
+    })
+
+    const props = createProps(currentFile, [linkingFile])
+    const html = render(preactH(Backlinks, props))
+
+    // The emoji becomes a Twemoji <img class="emoji"> rather than a bare glyph.
+    expect(html).toMatch(/<img[^>]*class="emoji"[^>]*>/)
+    expect(html).toMatch(/<img[^>]*alt="🐟"[^>]*>/)
+    // The only occurrence of the raw glyph is inside the img's alt text.
+    expect(html.match(/🐟/g)).toHaveLength(1)
+  })
+
   it("renders abbreviations without className using empty string fallback", () => {
     const currentFile = createFileData({ slug: "target" as FullSlug })
 
@@ -302,6 +321,20 @@ describe("Backlinks", () => {
     // A blockquote should still be rendered (backlinkFiles length > 0), but there should be no <li> entries
     expect(html).toContain("<blockquote")
     expect(html.match(/<li/g)).toBeNull()
+  })
+
+  it("renders an <img> without a class or draggable attribute when both are absent", () => {
+    const imgNode = {
+      type: "element",
+      tagName: "img",
+      properties: { src: "fish.svg", alt: "🐟" },
+      children: [],
+    } as unknown as RootContent
+
+    const html = render(elementToJsx(imgNode))
+    expect(html).toMatch(/<img[^>]*src="fish.svg"[^>]*>/)
+    expect(html).not.toContain("class=")
+    expect(html).not.toContain("draggable")
   })
 
   it("handles abbr elements with no children gracefully", () => {

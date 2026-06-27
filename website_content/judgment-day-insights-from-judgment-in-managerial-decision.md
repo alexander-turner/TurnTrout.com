@@ -21,7 +21,7 @@ lw-latest-edit: 2019-12-30T00:31:36.289000Z
 lw-is-linkpost: 'false'
 tags:
   - understanding-the-world
-  - scholarship-&-learning
+  - scholarship-and-learning
 aliases:
   - judgment-day-insights-from-judgment-in-managerial-decision
 lw-sequence-title: Becoming Stronger
