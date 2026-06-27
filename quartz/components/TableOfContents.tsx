@@ -42,13 +42,13 @@ const logger = createWinstonLogger("TableOfContents", getLogLevel())
 export const CreateTableOfContents: QuartzComponent = ({
   fileData,
 }: QuartzComponentProps): JSX.Element | null => {
-  logger.info(`Rendering TableOfContents for file: ${fileData.filePath}`)
+  logger.debug(`Rendering TableOfContents for file: ${fileData.filePath}`)
 
   const frontmatterToc = fileData.frontmatter?.toc
   const tocData = fileData.toc
 
   if (!tocData || frontmatterToc === false || frontmatterToc === "false") {
-    logger.info(
+    logger.debug(
       `TableOfContents skipped for ${fileData.filePath}: no TOC data or disabled in frontmatter`,
     )
     return null
@@ -57,7 +57,7 @@ export const CreateTableOfContents: QuartzComponent = ({
   const toc = buildNestedList(tocData, 0, 0)[0]
 
   if (!toc || toc.length === 0) {
-    logger.info(`TableOfContents skipped for ${fileData.filePath}: nested list is empty`)
+    logger.debug(`TableOfContents skipped for ${fileData.filePath}: nested list is empty`)
     return null
   }
 

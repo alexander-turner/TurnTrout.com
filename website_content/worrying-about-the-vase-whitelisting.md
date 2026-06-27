@@ -30,7 +30,7 @@ date_published: 2018-06-16
 original_url: https://www.lesswrong.com/posts/H7KB44oKoSjSCkpzL/worrying-about-the-vase-whitelisting
 skip_import: true
 description: An impact measure for AI safety that whitelists the object transformations which are allowed.
-date_updated: 2026-05-08
+date_updated: 2026-06-27
 ---
 
 > [!quote] Quotes
@@ -56,7 +56,7 @@ While I'm fairly confident that whitelisting contributes meaningfully to short- 
 
 In effect, side effect avoidance aims to decrease how careful we have to be with our wishes. For example, asking for help filling a cauldron with water shouldn't result in _this_:
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/water_buckets.mp4" type="video/mp4; codecs=hvc1">
+<video aria-label="Animated brooms pour water into a cauldron, which overflows and floods the room, illustrating the destructive over-optimization of a simple goal." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/water_buckets.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/water_buckets.webm" type="video/webm"></video>
 
 However, we just can't enumerate [all the bad things that the agent could do](https://www.lesswrong.com/posts/4ARaTpNX62uaL86j6/the-hidden-complexity-of-wishes). How do we avoid these extreme over-optimizations robustly?
@@ -83,7 +83,7 @@ Whitelisting falls prey to none of these.
 
 However, other problems remain, and certain new challenges have arisen; these, and the assumptions made by whitelisting, will be discussed.
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/mickey_leaked.mp4" type="video/mp4; codecs=hvc1">
+<video aria-label="Mickey Mouse as the Sorcerer's Apprentice frantically reads a spellbook while being tossed on turbulent floodwaters." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/mickey_leaked.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/mickey_leaked.webm" type="video/webm"></video>
 
 Figure: Rare LEAKED footage of Mickey trying to catch up on his alignment theory after instantiating an unfriendly genie \[colorized, 2050\].[^2]
@@ -108,7 +108,7 @@ Decompose your current knowledge of the world into a set of objects. Then, for e
 
 Therefore, you avoid breaking vases by default.
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/vase_avoid.mp4" type="video/mp4; codecs=hvc1">
+<video aria-label="An AI agent, represented by a blue 'W', navigating around several vases to reach a green square goal." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/vase_avoid.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/vase_avoid.webm" type="video/webm"></video>
 
 Here are some notes to head off confusion:
@@ -163,7 +163,7 @@ The simulated classification confidence of each object's true class was $p \sim 
 
 At reasonable levels of noise, the whitelist-enabled agent completed all levels without a single side effect, while the Q-learner broke over 80 vases.
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/vase_avoid_2.mp4" type="video/mp4; codecs=hvc1">
+<video aria-label='A standard Q-learning agent (red "Q") moves directly to its goal, breaking two vases in its path. A whitelist-enabled agent (blue "W") navigates around the vases to reach the goal without causing these side effects.' autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/vase_avoid_2.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/vase_avoid_2.webm" type="video/webm"></video>
 
 > [!example] Assumptions
@@ -207,7 +207,7 @@ Even if extreme care is taken in approving these extensions, mistakes may be mad
 
 As DeepMind outlines in _[Specifying AI Safety Problems in Simple Environments](https://deepmind.com/blog/specifying-ai-safety-problems/)_, we may want to penalize not just physical side effects, but also causally irreversible effects:
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/irreversible_side_effect.mp4" type="video/mp4; codecs=hvc1">
+<video aria-label='An animation titled "Side Effects" shows an agent pushing a box square out of its path to reach a goal square in a grid.' autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/irreversible_side_effect.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/irreversible_side_effect.webm" type="video/webm"></video>
 
 Krakovna et al. [introduce](https://deepmind.com/research/publications/measuring-and-avoiding-side-effects-using-relative-reachability/) a means for penalizing actions by the proportion of initially reachable states which are still reachable after the agent acts.

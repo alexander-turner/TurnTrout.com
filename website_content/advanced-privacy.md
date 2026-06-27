@@ -18,7 +18,7 @@ aliases:
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 date_published: 2025-11-06
-date_updated: 2026-06-26
+date_updated: 2026-06-27
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -700,7 +700,7 @@ Element offers [a migration wizard](https://element.io/blog/slack-migration/) to
 
 Subtitle: This isn't so much about privacy as about building censorship-resistant infrastructure.
 
-<video autoplay loop muted playsinline class="float-right"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.webm" type="video/webm"></video>
+<video aria-label='Elon Musk, at a podium, performs the "Heil Hitler" salute twice.' autoplay="" class="float-right" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.webm" type="video/webm"/></video>
 
 The cup runneth over with reasons to leave X. There's always [Elon Musk's repeated "heil Hitler" salutes from back in January 2025](https://en.wikipedia.org/wiki/Elon_Musk_salute_controversy), or his [illegally](https://federalnewsnetwork.com/reorganization/2025/02/usaid-takeover-is-unconstitutional-lawmakers-say/) cutting USAID and [thereby dooming a projected 26 million people by 2040](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5199076), but even [the platform itself learns to hook into your brain and keep you stressed and scrolling](/digital-minimalism).  This platform has done horrible things to world discourse and maybe it's done horrible things to you, too. Most relevant, though, is the censorship which Elon inflicts upon X. Although I don't use X regularly, I plan to migrate my account to places with stronger technical defenses against centralized censorship.
 
