@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - AI
   - critique
+  - existential-risk
 aliases:
   - many-arguments-for-ai-x-risk-are-wrong
 lw-reward-post-warning: 'false'
@@ -30,7 +31,7 @@ date_published: 2024-03-05
 original_url: https://www.lesswrong.com/posts/yQSmcfN4kA7rATHGK/many-arguments-for-ai-x-risk-are-wrong
 skip_import: true
 description: Arguments that AI will inevitably "scheme" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.
-date_updated: 2026-05-08
+date_updated: 2026-06-26
 ---
 
 > [!note] Author's note

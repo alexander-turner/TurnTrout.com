@@ -24,8 +24,8 @@ authors:
   - Alex Turner
   - Garrett Baker
 tags:
-  - "AI"
-  - "humor"
+  - AI
+  - humor
 aliases:
   - "ai-presidents-discuss-ai-alignment-agendas"
 lw-reward-post-warning: "false"
@@ -36,7 +36,7 @@ no_dropcap: "true"
 video_preview_link: https://assets.turntrout.com/US%20presidents%20rate%20alignment%20agendas.mp4
 skip_import: true
 description: Obama, Trump, and Biden walk into a bar. They talk about AI alignment.
-date_updated: 2026-05-20
+date_updated: 2026-06-26
 ---
 
 <video controls width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/>

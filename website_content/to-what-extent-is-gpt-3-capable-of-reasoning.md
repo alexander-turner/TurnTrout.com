@@ -21,6 +21,7 @@ lw-latest-edit: 2020-08-19T17:37:22.246000Z
 lw-is-linkpost: 'false'
 tags:
   - AI
+  - language-models
 aliases:
   - to-what-extent-is-gpt-3-capable-of-reasoning
 lw-reward-post-warning: 'false'
@@ -29,7 +30,7 @@ date_published: 2020-07-20
 original_url: https://www.lesswrong.com/posts/L5JSMZQvkBAx9MD5A/to-what-extent-is-gpt-3-capable-of-reasoning
 skip_import: true
 description: Examining the reasoning capabilities of GPT-3 through a series of hypothetical questions and scenarios.
-date_updated: 2026-05-08
+date_updated: 2026-06-26
 ---
 
 ETA 8/19/20: This interview was conducted with AIDungeon's Dragon model in Custom mode. At the time of writing, the first reply in each exchange was actually sampled from GPT-2.
