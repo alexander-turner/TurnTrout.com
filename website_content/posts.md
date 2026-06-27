@@ -70,7 +70,7 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 19. [Looking Back on my Alignment PhD](./alignment-phd)
 20. [Insights from "The Manga Guide to Physiology"](./insights-from-physiology)
 
-## Reframing Impact
+## Reframing impact
 
 > [!quote] Original sequence description
 > Why do some things seem like really big deals to us? Do most agents best achieve their goals by seeking power? How might we avert catastrophic incentives in the utility maximization framework?
@@ -101,7 +101,7 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 4. [Reasons for Excitement about Impact of Impact Measure Research](./excitement-about-impact-measures)
 5. [Conclusion to "Reframing Impact"](./conclusion-to-reframing-impact)
 
-## The Causes of Power-Seeking and Instrumental Convergence
+## The causes of power-seeking and instrumental convergence
 
 This sequence generalizes the math of [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps). The posts follow up on [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps) and [The Catastrophic Convergence Conjecture](./the-catastrophic-convergence-conjecture).
 
@@ -127,7 +127,7 @@ This sequence generalizes the math of [Seeking Power is Often Convergently Instr
 10. [Instrumental Convergence for Realistic Agent Objectives](./instrumental-convergence-for-realistic-agent-objectives)
 11. [Parametrically Retargetable Decision-Makers Tend to Seek Power](./parametrically-retargetable-power-seeking)
 
-## Thoughts on Corrigibility
+## Thoughts on corrigibility
 
 <figure class="float-right desktop-only" style="margin-top:-1rem; width: 80%;">
 <img src="https://assets.turntrout.com/static/images/posts/hal_9000.avif" alt="A close-up of the HAL 9000 computer's iconic camera eye. A glowing red orb with a bright yellow center is set within a silver metallic ring, representing the concept of a non-corrigible AI." loading="lazy" style="width: 80%;">
@@ -169,7 +169,7 @@ Thus, [it seems OK if our AIs don't have "perfect" shard mixtures](./alignment-w
 11. [Alignment Allows "Nonrobust" Decision-Influences and Doesn't Require Robust Grading](./alignment-without-total-robustness)
 12. [Inner and Outer Alignment Decompose One Hard Problem Into Two Extremely Hard Problems](./against-inner-outer-alignment)
 
-## Interpreting a Maze-Solving Network
+## Interpreting a maze-solving network
 
 My work with my MATS 3.0 scholars, [Ulisse Mini](https://uli.rocks) and [Peli Grietzer](https://thegradientpub.substack.com/p/peli-grietzer-a-mathematized-philosophy)!
 

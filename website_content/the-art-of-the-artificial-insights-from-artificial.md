@@ -245,7 +245,7 @@ _Arc consistency_ can be viewed in a similar light; a variable $X_i$ is arc-cons
 
 _In which the authors invent a formal language called "propositional logic" as a pretext for introducing us to the richest fantasy realm ever imagined: the Wumpus world._
 
-### Impish Implications
+### Impish implications
 
 This chapter was my first time formally learning propositional logic. One thing that confused me at first: for two propositions $\alpha,\beta$, $\alpha \Rightarrow \beta$ is `true` as long as it isn't the case that $\{\alpha=true,\beta=\textit{false}\}$ in some model of our knowledge base. This means that even if $\alpha$ is _total bogus_, the implication holds.
 
@@ -261,7 +261,7 @@ _In which the authors generalize their newly minted "propositional logic"._
 
 _In which the authors incrementally introduce inference for first-order logic._
 
-### Logic Made-To-Order
+### Logic made-to-order
 
 When converting to conjunctive normal form, follow the steps in order. Yes, I know you _can't wait_ to Skolemize, but tame your baser instincts and move your negations inwards like a good rationalist.
 
@@ -293,7 +293,7 @@ _In which the authors share a sampling of the fruits picked by Bayes and Kolmogo
 
 _In which the authors shift their unhealthy obsession from cavities to burglaries; Bayesian networks are introduced, Markov blankets are furnished free of charge, and complimentary Monte Carlo algorithm samples are provided._
 
-### Gibbs Sampling
+### Gibbs sampling
 
 As a member of the Markov chain Monte Carlo algorithm family, Gibbs sampling starts from a random variable assignment (consistent with observed evidence $\textbf{e}$) and stochastically makes tweaks. The idea is to approximate the posterior distribution for whatever variable in which we are interested (the query variable).
 
@@ -441,7 +441,7 @@ $$
 
 Imagine you're driving a car on a Cartesian plane. Your car can reach any $(x,y)$ point and end up in any orientation $\theta$ you so choose, giving it three effective degrees of freedom (even though you can only turn and drive forwards / backwards). Cars are then non-holonomic, since $3\not=2$ (the proof of which is left as an exercise to the dedicated reader). A car which could also move _sideways_ would be holonomic.
 
-### Alignment, Solved
+### Alignment, solved
 
 I bring ye good tidings! Russell and Norvig introduce a full solution to the control problem: the alignment method.
 
@@ -453,7 +453,7 @@ Oh.
 
 _In which the authors consider a range of ethical and philosophical quandries in AI._
 
-### Underestimating Books in the Chinese Room
+### Underestimating books in the Chinese Room
 
 > The rule book and the stacks of paper, being just pieces of paper, do not understand Chinese.
 
@@ -472,7 +472,7 @@ _In which the authors introduce one last concept, asymptotic bounded optimality,
 <div class="centered">"We can see only a short distance ahead, but we can see that much remains to be done." - Alan Turing
 </div>
 
-## Final Thoughts
+## Final thoughts
 
 The authors wield light-hearted prose regularly and to great effect; I often found myself chuckling heartily. Although the pages are packed and the book is big, fear not: if you pay attention and become invested in the task at hand, reading _AI: AMA_ constitutes quite the enjoyable journey.
 
@@ -493,7 +493,7 @@ This seems like a good book to read early on in the [MIRI reading list](https://
 
 For the first half of the book, I didn't write each chapter's commentary immediately after reading. This was a mistake. Skimming half of a thousand-page book to remember what I got stuck on is **not** my idea of a good time.
 
-### Conceptual Issues
+### Conceptual issues
 
 **Proofs** remain inordinately difficult for me, although I have noticed a small improvement. To do MIRI-relevant math, proofs will need to become second nature. Depending on how I feel as I progress through my next book (which will likely be a proof-centric linear algebra tome), I'll start trying different supplemental approaches for improving my proof prowess.
 
@@ -501,7 +501,7 @@ I have resolved that by the completion of my next book review, proofs will be on
 
 **Theoretical machine learning** is another area in which I still notice pangs of confusion. I didn't stop to work on this too much, as I plan to revisit formal machine learning after developing more mathematical sophistication. I'm comfortable with deep learning and its broad-strokes conceptual backdrop, but I don't like not having my gears-level comprehension in order.
 
-### Study Group
+### Study group
 
 If you're interested in working through this book (or other books on the reading list) with me or others, there is a MIRIx Discord run by `Diffractor`. For an invite link, feel free to message [me](https://www.lesswrong.com/users/turntrout)!
 
@@ -521,7 +521,7 @@ As I've worked to increase my scholarship and understanding of the (computationa
 
 I feel a bit like a kid in a candy shop.
 
-### On "Difficulty"
+### On "difficulty"
 
 I am convinced that _there are no hard concepts_, only concepts which take different amounts of time to learn. [^5] This is not trivial; dissolving the seemingly ontologically basic "difficult for me" attribute goes a long way towards having the persistence to figure things out.
 

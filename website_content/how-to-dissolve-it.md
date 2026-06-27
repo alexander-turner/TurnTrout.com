@@ -41,7 +41,7 @@ Often, when I'm confused about a technical problem, I realize that I don't even 
 
 Incredibly, generating a detailed solution model is often enough to quickly resolve (or at least reduce) even formidable-seeming problems.
 
-# Backward Chaining
+# Backward chaining
 
 The aforementioned process is [backward chaining](https://en.wikipedia.org/wiki/Backward_chaining). This contrasts with forward chaining, which involves working forward from what you currently have. Take the time to _actually visualize_ what a solution to the problem would look like. How would it behave in response to different inputs? Are you offloading all of the work onto a weasel word (like "emergence")?
 

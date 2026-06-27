@@ -54,7 +54,7 @@ They also seem to be debating an under-specified proposition. Different perturba
 
 Setting loose a superintelligent expected utility maximizer is different from setting loose a mild optimizer (e.g. a [quantilizer](https://intelligence.org/2015/11/29/new-paper-quantilizers/)), even if they're both optimizing the same flawed representation of human value; the dynamics differ. As another illustration of how dynamics are important for value fragility, imagine if recommender systems had been deployed within a society which already adequately managed the impact of ML systems on its populace. In that world, we may have ceded less of our agency and attention to social media, and would therefore have firmer control over the future and value would be less fragile with respect to the training process of these recommender systems.
 
-# The Post
+# The post
 
 [_But exactly how complex and fragile?_](https://www.lesswrong.com/posts/xzFQp7bmkoKfnae9R/but-exactly-how-complex-and-fragile) and its comments debate whether "value is fragile." I think this is a bad framing because it hides background assumptions about the dynamics of the system being considered. This section motivates a more literal interpretation of the value fragility thesis, demonstrating its coherence and its ability to meaningfully decompose AI alignment disagreements. The next section will use this interpretation to reveal how the comments largely failed to explore key modeling assumptions. This, I claim, helped prevent discussion from addressing the cruxes of disagreements.
 

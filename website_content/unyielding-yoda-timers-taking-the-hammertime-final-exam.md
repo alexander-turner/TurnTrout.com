@@ -49,7 +49,7 @@ date_updated: 2026-04-20
 
 I have one "spirit" which I regard as being the best version of myself and which I can trust to reliably make good choices. Unfortunately, when I'm making decisions, another spirit is often more or less in charge. One approach to mitigating this is making a TAP wherein you simulate my _post facto_ opinion of the (usually bad) choice you're about to make. This interpolates between your current spirit and the normatively correct one. Pretending to be someone else / another version of yourself is, in my experience, surprisingly effective.
 
-# Confusion Identification
+# Confusion identification
 
 > [!question] Challenge
 > Introduce a rationality framework.

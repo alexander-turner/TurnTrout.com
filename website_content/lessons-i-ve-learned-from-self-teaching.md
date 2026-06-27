@@ -176,7 +176,7 @@ Another reason I used to do this a lot was that I wanted to look good by being a
 
 I now often ask myself "am I doing this, at least in part, in order to look good?". Sometimes I answer "yes", and sometimes I do it anyways - wanting to look good isn't always bad. But [there are sometimes things more important than looking good](https://www.lesswrong.com/posts/SGR4GxFK7KmW7ckCB/something-to-protect).
 
-# Read Easier Textbooks Instead of Struggling Valiantly
+# Read easier textbooks instead of struggling valiantly
 
 TL;DR: Even if slogging through tough textbooks makes you feel sophisticated and smart - don't.
 
@@ -205,7 +205,7 @@ I breeze through this book no problem, and I can see how to tie in these laws to
 
 Then, suppose I learn about PDEs and become comfortable with them. Now all I need to do to learn a piece of fluid mechanics is to learn the relevant physical equation, and then think about how it implies things like Archimedes' principle. Crucially, via this method, _I'm only confused about one thing at a time_. [Build models in the right order](https://www.lesswrong.com/posts/qwdupkFd6kmeZHYXy/build-small-skills-in-the-right-order)!
 
-# Be Comfortable with Approximate Models
+# Be comfortable with approximate models
 
 TL;DR: Allow yourself to learn things in order of comprehensibility. Don't try to learn general relativity before Newton's law of gravitation.
 

@@ -57,7 +57,7 @@ This school year, I’ve had problems focusing and relaxing. I tried exercise, d
 
 This spring, I read a LessWrong post which mentioned [_Digital Minimalism_](https://smile.amazon.com/Digital-Minimalism-Choosing-Focused-Noisy/dp/0525536515/). Luckily, this triggered my “if several reasonably smart EAs swear by the benefits of X, investigate X” trigger-action plan.
 
-# Digital Minimalism
+# Digital minimalism
 
 I listened to the first half of the book on Audible in one night. As I wrote above:
 

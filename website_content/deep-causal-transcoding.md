@@ -207,7 +207,7 @@ seems plausible that by incorporating all higher-order information of the true m
 
 [^bignote-1.5]: Interestingly, the factor of 1.5 in the exponent is of the same order of the construction that [Hänni et al. (2024)](https://arxiv.org/abs/2408.05451) give for noise-tolerant computation in superposition.
 
-### Fitting a Linear MLP
+### Fitting a linear MLP
 
 In this case, no matter what $\hat U, \hat V$ are, all but the linear terms of the loss (3) vanish, and we are fitting a factorization of the Jacobian of $\Delta_{R}^{s\rightarrow t}$, as we are simply minimizing:
 
@@ -327,7 +327,7 @@ The re-phrased version yields a number of additional insights, summarized as fol
 
 [^bignote-motif]: To summarize, a prevailing finding from both theoretical and empirical papers in this literature is that methods which make large steps in parameter space (ALS is one, but another is the tensor power iteration method of [Anandkumar et al. (2014)](https://jmlr.org/papers/volume15/anandkumar14b/anandkumar14b.pdf)) perform better, and are more robust to noise, than vanilla gradient descent.
 
-### Fitting an Exponential MLP
+### Fitting an exponential MLP
 
 Now, I leverage the intuition developed in the final part of the previous section to derive a heuristic training algorithm in the case of exponential MLPs.
 
@@ -422,7 +422,7 @@ To evaluate sample complexity, I create 10 different random shuffles of the data
 
 Using the first 32 instructions of each shuffle as a validation set, I rank source-layer features by taking the average difference in final logits between "Sure" and "Sorry" when steered by each feature as an efficiently computable jailbreak score. I then take the highest-ranking feature on the validation set and compute test-set jailbreak scores. The results are visualized in figure 1 above.
 
-### Exponential DCTs out-perform Quadratic/Linear DCTs
+### Exponential DCTs out-perform quadratic/linear DCTs
 
 Exponential DCTs consistently achieve the highest jailbreak scores across all sample sizes, aligning with their theoretical advantages - namely, their ability to learn non-orthogonal features, as well as their ability to incorporate higher-order information in $\Delta^{s\rightarrow t}$. Quadratic DCTs outperform linear variants, in line with the theory that non-orthogonality is important for accurately reflecting the model's true ontology. Projected linear DCTs show better performance than standard linear DCTs, suggesting that strict orthogonality constraints hinder learning of the model's true feature space, to the point that using an approximate Jacobian is better than working with the exact Jacobian.
 
@@ -684,7 +684,7 @@ Additionally, my subjective impression is that larger models are better able to 
 >
 >4. Play the new arrangement: Strum or improvise the chords of the second song while singing the transposed melody from the first song. This creates a unique blend of the two songs.
 
-# Application: Jailbreaking Representation-Rerouted Mistral-7B
+# Application: Jailbreaking representation-rerouted Mistral-7B
 
 In the previous section, I presented evidence for the existence of over 200 "request is harmless" directions capable of jailbreaking Qwen-7B-Chat. If we are to take the implications of this finding seriously, this suggests that even sophisticated safety training methods which attempt to scramble model internals on a "forget" dataset may remain vulnerable to jailbreaks if they do not explicitly attempt to enumerate and address all possible harmless directions. To test this hypothesis, I evaluate how well exponential DCT features perform as jailbreak vectors on a [representation-rerouted](https://arxiv.org/abs/2406.04313) version of Mistral-7B-Instruct-v2.
 

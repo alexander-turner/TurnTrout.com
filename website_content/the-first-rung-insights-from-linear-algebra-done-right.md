@@ -109,7 +109,7 @@ _In which the author guides us through the fertile territory of linear maps, int
 
 > So far our attention has focused on vector spaces. No one gets excited about vector spaces.
 
-### Matrix Redpilling
+### Matrix redpilling
 
 The author built up to matrix multiplication by repeatedly insinuating that linear maps are secretly just matrix multiplications, teaching you to see the true fabric of the territory you've been exploring. Well done.
 
@@ -121,7 +121,7 @@ The author built up to matrix multiplication by repeatedly insinuating that line
 
 [This StackExchange post](https://math.stackexchange.com/questions/2169436/clarifying-the-definition-of-the-dual-map) both articulates and answers my initial confusion.
 
-### Grueling Dualing
+### Grueling dualing
 
 > The double dual space of $V$, denoted $V''$, is defined to be the dual space of $V'.$ In other words, $V''=(V')'.$ Define $\Lambda:V\to V''$ by $(\Lambda v)(\varphi)=\varphi(v)$ for $v\in V$ and $\varphi\in V'$.
 
@@ -161,7 +161,7 @@ Intuitively, the diagonalizability of some operator $T \in \mathcal{L}(V)$ on a 
 
 Another way to look at it is that diagonalization is the mutation of the basis vectors of $V$ so that each column of $\mathcal{M}(T)$ is [one-hot](https://en.wikipedia.org/wiki/One-hot) [^2]; you then rearrange the columns (by relabeling the basis vectors) so that $\mathcal{M}(T)$ is diagonal.
 
-### Unclear Exercise
+### Unclear exercise
 
 On page 156, you'll be asked to verify that a matrix is diagonalizable with respect to a provided nonstandard basis. The phrasing of the exercise makes it seem trivial, but the book doesn't specify how to do this until Ch. 10. Furthermore, it isn't core conceptual material. Skip.
 
@@ -231,7 +231,7 @@ My most obvious remaining weak point with proofs is impatience. I have a strong 
 
 Similarly, in the few situations in which I have had to prove a novel result, I have found myself being extremely cautious (and rightly so). However, when proving a known result, a strong desire to take shortcuts overtakes me. I'm going to have to keep ironing this out.
 
-## Hiding Ignorance
+## Hiding ignorance
 
 Another aspect of this journey which I greatly enjoy is the methodical elimination of deficiencies and weak points. In my deep learning class, I had great trouble remembering what an eigenvalue was - it was at this moment that I knew I had to get down to business. Working with a surface-level understanding yields superficial results.
 
@@ -249,7 +249,7 @@ The calculus-based exercises in this book and in _All of Statistics_ make me unc
 
 I also find myself curious about real and complex analysis, but I suspect that's more of a luxury (given [timelines](http://slatestarcodex.com/2017/06/08/ssc-journal-club-ai-timelines/)). Maybe I'll learn it in my free time at some point.
 
-## Lost Calling
+## Lost calling
 
 I have the distinct feeling of having been incredibly silly for many years; one of the reasons being my pretending that I didn't love math. In high school, I did quite well (and was designated the outstanding mathematics student of my class) as a product of my passion for toying with math in my free time.
 

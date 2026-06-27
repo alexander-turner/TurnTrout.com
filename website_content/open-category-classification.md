@@ -64,7 +64,7 @@ In short, we'd like our machine learning algorithms to learn explanations which 
 
 [The Knows What It Knows](https://dl.acm.org/citation.cfm?id=1390228) framework allows a learner to avoid making mistakes by deferring judgment to a human some polynomial number of times. However, this framework makes the unrealistically strong assumption that the data are _i.i.d._; furthermore, efficient KWIK algorithms are not known for complex hypothesis classes (such as those explored in neural network-based approaches).
 
-# Penalizing Volume
+# Penalizing volume
 
 If we want a robust `cat` / `unknown` classifier, we should indeed cleave the space in two, but with the vast majority of the space being allocated to `unknown`. In other words, we're searching for the smallest, simplest volume which encapsulates the cat training data.
 
@@ -124,7 +124,7 @@ Repeat this for each of the $l$ network layers, sampling input values from the P
 
 However, this may only yield results comparable to random image sampling, as many node activations may not occur often for arbitrary data. While this would be descriptive of the input space as a whole, it would be unlikely to sample any `cat` images, for example.
 
-## Blessing of Dimensionality
+## Blessing of dimensionality
 
 In my opinion, the most promising approach involves abusing the properties of high-dimensional volumes; in particular, the well-known [Curse of Dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality).
 

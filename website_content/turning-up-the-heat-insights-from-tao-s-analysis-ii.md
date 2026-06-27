@@ -49,7 +49,7 @@ It's been too long - a month and a half since my last review, and about three mo
 
 _Metric spaces; completeness and compactness._
 
-### Proving Completeness
+### Proving completeness
 
 It sucks and I hate it.
 
@@ -131,7 +131,7 @@ $$
 $$
 $\exp$ has _all_ the degrees, so no polynomial (of necessarily finite degree) could ever hope to compete! This also suggests why $\frac{d}{dx}e^x=e^x$.
 
-## Complex Exponentiation
+## Complex exponentiation
 
 The book
 : You can multiply a number by itself some number of times.
@@ -216,7 +216,7 @@ Lebesgue integration marks a fundamental shift in how we integrate. With the Rie
 
 In a sense, the Lebesgue integral more cleanly strikes at the heart of what it _means_ to integrate. Surely, Riemann integration was not far from the mark; however, if you rotate the problem slightly in your mind, you will find a better, cleaner way of structuring your thinking.
 
-## Final Thoughts
+## Final thoughts
 
 Although Tao botches a few exercises and the section on topology, I'm a big fan of _Analysis I_ and _II_. Do note, however, that _II_ is far more difficult than _I_ (not just in content, but in terms of the exercises). He generally provides relevant, appropriately difficult problems, and is quite adept at helping the reader develop rigorous and intuitive understanding of the material.
 
@@ -230,7 +230,7 @@ Although Tao botches a few exercises and the section on topology, I'm a big fan 
 
 I completed every exercise in this book; in the second half, I started avoiding looking at the hints provided by problems until I'd already thought for a few minutes. Often, I'd solve the problem and then turn to the hint: "be careful when doing _X_ - don't forget edge case _Y_; hint: use lemma _Z_"! A pit would form in my stomach as I prepared to locate my mistake and back-propagate where-I-should-have-looked, before realizing that I'd _already_ taken care of that edge case using that lemma.
 
-## Why Bother?
+## Why bother?
 
 [One can argue](https://www.lesswrong.com/posts/hWkdiMbqLpzjYvxqD/learning-strategies-and-the-pokemon-league-parable) that my time would be better spent picking up things as I work on problems in alignment. However, while I've made, uh, quite a bit of progress with impact measures this way, [concept-shaped holes are impossible to notice](http://slatestarcodex.com/2017/11/07/concept-shaped-holes-can-be-impossible-to-notice/). If there's some helpful information-theoretic way of viewing a problem that I'd only realize if I had _already taken_ information theory, I'm out of luck.
 

@@ -70,7 +70,7 @@ Welcome to Oliver Byrne's rendition of Euclid's _Elements_, [digitized and freel
 >
 > Thus an averſion is created in the mind of the pupil, and a ſubject fo calculated to improve the reaſoning powers, and give the habit of cloſe thinking, is degraded by a dry and rigid courſe of inſtruction into an unintereſting exerciſe of the memory.
 
-## Equality and Similarity
+## Equality and similarity
 
 Old mathematical writing lacks modern precision. Euclid says that two triangles are "equal", without specifying what that means. It means that one triangle can be turned into another via an [isometric transformation](https://en.wikipedia.org/wiki/Euclidean_plane_isometry). That is, if you rotate, translate, and/or reflect triangle $A$, it turns into triangle $B$.
 

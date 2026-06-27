@@ -67,7 +67,7 @@ _Policy evaluation, policy improvement, policy iteration, value iteration, gener
 
 _Prediction, control, and importance sampling._
 
-### Importance Sampling
+### Importance sampling
 
 After gathering data with our behavior policy $b$, we then want to approximate the value function for the target policy $\pi$. In off-policy methods, the policy we use to gather the data is different from the one whose value $v_\pi$ we're trying to learn; in other words, the distribution of states we sample is different. This gives us a skewed picture of $v_\pi$, so we must overcome this bias.
 
@@ -93,7 +93,7 @@ $$
 V(s):=\frac{\sum_{t \in \mathcal{T}(s)} \rho_{t:T(t)-1}G_t}{\sum_{t \in \mathcal{T}(s)} \rho_{t:T(t)-1}}.
 $$
 
-### Death and Discounting
+### Death and discounting
 
 Instead of viewing the discount factor $\gamma$ as measuring how much we care about the future, think of it as encoding the probability we don't terminate on any given step. That is, we expect with $1-\gamma$ probability to die on the next turn, so we discount rewards accordingly.
 
@@ -212,7 +212,7 @@ _From checkers to checkmate._
 
 _Temporal abstraction, designing reward signals, and the future of reinforcement learning. In particular, the idea I had for having a whitelist-enabled agent predict expected object-level transitions is actually one of the frontiers: general value functions. Rad._
 
-### Pandora's AI Boxing
+### Pandora's AI boxing
 
 > The rapid pace of advances in AI has led to warnings that AI poses serious threats to our societies, even to humanity itself.
 
@@ -228,7 +228,7 @@ I don't think it's impossible, but it's going to be extremely hard to get formal
 
 The above constitutes _one_ of the [many](https://arbital.com/p/advanced_safety/) [open problems in alignment theory](https://arbital.com/p/taskagi_open_problems). If that's not enough, there are always the unknown unknowns...
 
-## Final Thoughts
+## Final thoughts
 
 I read the "nearly complete" [draft of the second edition](http://incompleteideas.net/book/the-book-2nd.html). It was pretty good, but I did find most of the exercises either too easy or requiring considerable programming investment to set up the environment described. The former makes sense, as I've already taken a course on this, and I'm probably a bit above the introductory level.
 

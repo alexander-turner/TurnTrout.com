@@ -66,7 +66,7 @@ _In which the Peano axioms are introduced, allowing us to define addition and mu
 
 _In which functions and Cartesian products are defined, among other concepts._
 
-### Recursive Nesting
+### Recursive nesting
 
 How can you apply the [axiom of foundation](https://en.wikipedia.org/wiki/Axiom_of_regularity) if sets are nested in each other? That is, how can the axiom of foundation "reach into" sets like $A=\{B,\ldots\}$ and $B=\{A,\ldots\}$?
 
@@ -145,7 +145,7 @@ _In which the basic rules of differential calculus are proven._
 
 You know, I actually thought that I wouldn't have too much to explain in this post - the book went smoothly up to this point. On the upside, we get to spend even more time together!
 
-### Differential Intuitions
+### Differential intuitions
 
 Let me simply direct you to [this excellent StackExchange answer](https://math.stackexchange.com/a/1461296).
 
@@ -178,7 +178,7 @@ _In which partitions and piecewise constant functions help us define the Riemann
 
 Having taken care of the exposition, we arrive at the Rivendell of real analysis, preparing ourselves for the arduous journey to Mt. Lebesgue.
 
-### Pointless Integration
+### Pointless integration
 
 Zero area is enclosed under a point (or even under infinitely many points, such as $\mathbb{N}$) due to how we define length, which in turn allows us to build from piecewise Riemann integrals to something better.
 
@@ -226,7 +226,7 @@ In the last pages of CFAR's participant handbook is an entry on marginal attenti
 
 I often simply left my phone at home and accompanied my Kindle to an empty classroom. This worked wonderfully; I suspect it more than doubled my hourly learning efficiency.
 
-## Proving Myself
+## Proving myself
 
 Just over three months ago, I wrote:
 

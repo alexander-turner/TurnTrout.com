@@ -39,7 +39,7 @@ I found _[Formalizing Convergent Instrumental Goals](https://intelligence.org/fi
 
 This paper involves the mathematical formulation and proof of [instrumental convergence](https://en.wikipedia.org/wiki/Instrumental_convergence) within the aforementioned toy model. Instrumental convergence says that an agent  $\mathcal{A}$ with utility function  $U$ will pursue instrumentally relevant subgoals, even though this pursuit may not bear directly on  $U$. Imagine that  $U$ involves the proof of the [Riemann hypothesis](https://en.wikipedia.org/wiki/Riemann_hypothesis).  $\mathcal{A}$ will probably want to gain access to lots of computronium. What if  $\mathcal{A}$ turns _us_ into [computronium](https://en.wikipedia.org/wiki/Computronium)? Well, there's plenty of matter in the universe;  $\mathcal{A}$ could just let us be, right? Wrong. Let's see how to prove it.
 
-## My Background
+## My background
 
 I'm a second-year CS PhD student. I've recently started working through the [MIRI research guide](https://intelligence.org/research-guide/); I'm nearly finished with [Naïve Set Theory](http://smile.amazon.com/Naive-Set-Theory-Paul-Halmos/dp/1614271313/), which I intend to review soon. To expose my understanding to criticism, I'm going to summarize this paper and its technical sections in a somewhat informal fashion. I'm aware that the paper isn't particularly difficult for those with a mathematical background. However, I think this result is important, and I couldn't find much discussion of it.
 
@@ -101,7 +101,7 @@ Let's talk about the situations in which  $\mathcal{A}$ will seize resources; th
 
 Define a _null action_ to be any action which doesn't produce new resources. It's easy to see that null actions are never instrumentally valuable. What we want to show is that  $\mathcal{A}$ will take non-null actions in regions to which  $U$ is indifferent; regions like  $h$, where we live, grow, and love. Regions full of instrumentally valuable resources.
 
-## Discounted Lunches
+## Discounted lunches
 
 An action _preserves_ resources if the input resources are strictly contained in the outputs (nothing is lost, and resources are sometimes gained). A _cheap lunch_ is a feasible partial strategy in some subset of squares  $J$, which is feasible given resources  $\langle R^k \rangle$ and whose constituent actions preserve resources. A _free lunch_ is cheap lunch that doesn't require resources.
 
@@ -157,7 +157,7 @@ We show that as long as  $\mathcal{A}$ can extract useful resources (resources w
 
 The authors introduce a toy model and use the freshly proven theorems to illustrate how  $\mathcal{A}$ takes non-null actions in our precious  $S_h$ (both when it is indifferent to  $h$ and when it is not). This isn't good; the vast majority of utility-maximizing agents will not steer us towards futures we find desirable. If you're interested, I recommend reading this section for yourself, even if you aren't comfortable with math.
 
-# Our Universe
+# Our universe
 
 > [!quote] Formalizing convergent instrumental goals
 > The path that our model shows is untenable is the path of designing powerful agents intended to autonomously have large effects on the world, maximizing goals that do not capture all the complexities of human values. If such systems are built, we cannot expect them to cooperate with or ignore humans, by default.

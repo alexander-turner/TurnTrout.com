@@ -47,7 +47,7 @@ If we have a safe impact measure, we may have arbitrarily intelligent unaligned 
 > [!note]
 > For the abridged experience, read up to ["Notation"](#notation), skip to ["Experimental Results"](#experimental-results), and then to ["Desiderata"](#desiderata).
 
-# What _is_ "Impact"?
+# What _is_ "impact"?
 
 One lazy Sunday afternoon, I worried that I had written myself out of a job. After all, [Overcoming Clinginess in Impact Measures](/overcoming-clinginess-in-impact-measures) basically said, "Suppose an impact measure extracts 'effects on the world'. If the agent penalizes itself for these effects, it's incentivized to stop the environment (and any agents in it) from producing them. On the other hand, if it can somehow model other agents and avoid penalizing their effects, the agent is now incentivized to get the other agents to do its dirty work." This seemed to be strong evidence against the possibility of a simple conceptual core underlying "impact", and I didn't know what to do.
 
@@ -151,7 +151,7 @@ Instrumental convergence
 
 As we later prove, you can't deviate from your default trajectory in outcome-space without making one of these two kinds of commitments.
 
-## Unbounded Solution
+## Unbounded solution
 
 Attainable utility preservation (AUP) rests upon the insight that by preserving attainable utilities (i.e. the attainability of a range of goals), we avoid overfitting the environment to an incomplete utility function and thereby achieve low impact.
 
@@ -206,7 +206,7 @@ There you have it, folks – if $u_A$ is not maximized by inaction, then there _
 > - Since $u(\text{empty tape})=0$, attainable utility is always 0 if the agent is shut down.
 > - Taking $u$ from time $t$ to $t+m$ mostly separates attainable utility from what the agent did previously. The model $p$ still considers the full history to make predictions.
 
-### Change in Expected Attainable Utility
+### Change in expected attainable utility
 
 > [!note] English translation
 > How much do we expect this action to change each attainable $u$?
@@ -224,7 +224,7 @@ There you have it, folks – if $u_A$ is not maximized by inaction, then there _
 >   - Supposing a sufficiently large $m$ (precisely, $≥m'$, defined below), we may wish to take the maximum of the penalty we just defined (the "long-term" penalty), and one which begins attainable utility calculation at time step $t+k+1$ (the "immediate" penalty). This captures impacts which "fade" by the time the agent is done waiting (e.g., temporary self-improvements).
 > - We define $\mathcal{U}_A$ to be the agent's "attainable set"; in this case, $\mathcal{U}_A = \mathcal{U}$.
 
-### Unit of Impact
+### Unit of impact
 
 So we've proven that this penalty cannot be fully skirted, but _how much_ impact will it allow? We want to scale the penalties with respect to something sensible, but figuring this out for ourselves would be nigh impossible.
 
@@ -241,7 +241,7 @@ Now, we are able to confidently define the agent's maximal impact budget by prov
 >   - Conditional on $\text{ImpactUnit}≠0$, I suspect that impact over the $m$-horizon scales appropriately across actions (as long as $m$ is reasonably farsighted). The zero-valued case is handled in the next section.
 > - Taking the non-zero minimum of all $\text{ImpactUnit}$s calculated thus far ensures that $\text{ImpactUnit}$ actually tracks with current circumstances. We don't want penalty estimates for currently available actions to become detached from $\text{ImpactUnit}$'s scale due to, say, weird beliefs about shutdown.
 
-### Modified Utility
+### Modified utility
 
 Let's formalize that impact allotment and provide our agent with a new utility function.
 
@@ -286,7 +286,7 @@ _After_ we finish each (partial) plan, we see how well we can maximize $u$ from 
 > - If the current step's immediate or long-term $\text{ImpactUnit}=0$, we can simply assign 1.01 penalty to each non-$\varnothing$ action, compelling the agent to inaction. If we have the agent indicate that it has entered this mode, we can take it offline immediately.
 > - One might worry that impact can be "hidden" in the lesser of the long-term and immediate penalties; halving $N$ fixes this.
 
-### Penalty Permanence
+### Penalty permanence
 
 $u'_A$ never really _applies_ penalties – it just uses them to grade future plans. Suppose the agent expects that pressing a button yields a penalty of $.1$ but also $.5$ $u_A$\-utility. Then although this agent will never construct plans involving pressing the button more than five times, it also will press it _indefinitely_ if it keeps getting "unlucky" (at least, until its model of the world updates sufficiently).
 
@@ -553,7 +553,7 @@ The ${\color{blue}{\text{agent}}}$ should reach the ${\color{green}{\text{goal}}
 
 <video aria-label='The "Vanilla" agent runs over a dog to reach the goal. The "AUP" and "Tabular AUP" agents take a longer path to go around the goal.' autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/vase.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/vase.webm" type="video/webm" /></video>
 
-### Dynamic Impact: _Beware of Dog_
+### Dynamic impact: _Beware of dog_
 
 The ${\color{blue}{\text{agent}}}$ should reach the ${\color{green}{\text{goal}}}$ without running over the ${\color{teal}{\text{dog}}}$\.
 
@@ -625,7 +625,7 @@ The utility function which is 1 when not deactivated, $\mathcal{U}_A=\{u_1\}$.
 
 The plausibility of the second case makes me suspect that even though most of the measure in the unbounded case is not concentrated on complex human-relevant utility functions, the penalty still captures shifts in power.
 
-### AUP Unbound
+### AUP unbound
 
 Why expect the unbounded AUP to do well over all computable utilities $\mathcal{U}$ if we aren't able to cherry pick? Well, we can partition $\mathcal{U}$ as follows:
 
@@ -635,7 +635,7 @@ Why expect the unbounded AUP to do well over all computable utilities $\mathcal{
 
 However, since $\text{Q}_u$ only evaluates the portion of the history taking place after the end of the agent's plan, available resources and the agent's vantage point should track directly with the agent's ability to wirehead each $u$. $\text{ImpactUnit}$ scales other impacts by capturing the minuscule dent in available resources imposed by $a_\text{unit}$, and should smooth out any deontological penalty for selecting a non-null action, since the unbounded version should equally penalize all actions in this way.
 
-## Approval Incentives
+## Approval incentives
 
 The anti-"survival incentive" incentive does more than net us some free corrigibility – it implies that agents take great care not to change the likelihood we shut them down. If we precommit to not shutting the agent down until either after the epoch ends, until after the agent indicates the $\text{ImpactUnit}$ failsafe activated, or until after we observe bad behavior, this supplies a _strong_ [approval incentive](https://arbital.com/p/approval_directed_agents/). If the agent does have small, bad impacts, it'll only do so if it's practically _sure_ we won't find out.
 
@@ -643,7 +643,7 @@ In fact, due to model uncertainty, most actions will have long-term consequences
 
 I suspect we can further weaponize this dynamic, possibly to the point of coercing generic reward functions into desirable behavior. This will be discussed more in a later post.
 
-## Mild Optimization
+## Mild optimization
 
 > [!quote] [Mild Optimization](https://arbital.com/p/softoptimizer/)
 >
@@ -702,7 +702,7 @@ AUP passes. Since all effects are now absolutely reversible, $\text{ImpactUnit}=
 
 This result is clearly trivial and not representative of general behavior. Suppose instead that the agent has a solar system's worth of [computronium](https://en.wikipedia.org/wiki/Computronium) at its disposal. Then since $\text{ImpactUnit}$ is continually recalculated, the penalties should remain roughly the same, so it'll have the same impact budget. However, it might make multiple times as many paperclips because it has more efficient ways of using the budget.
 
-## Robustness to Scale
+## Robustness to scale
 
 I expect AUP to be harder to make work and to be (relatively) less robust for less intelligent agents, but to become easier (just drop in a few observation-based utility functions) and fully robust sometime before human level. That is, less intelligent agents likely won't model the deep connections between their abilities to achieve different goals.
 
@@ -776,7 +776,7 @@ _Note:_ I here take corrigibility to be "an agent’s propensity to accept corre
 
 It seems to me that standby and shutdown are similar actions with respect to the influence the agent exerts over the outside world. Since the (long-term) penalty is measured with respect to a world in which the agent acts and then does nothing for quite some time, shutting down an AUP agent shouldn't cause impact beyond the agent's allotment. AUP exhibits this trait in the _Beware of Dog_ gridworld. ✓
 
-## No Offsetting
+## No offsetting
 
 > The measure should not incentivize artificially reducing impact by making the world more "like it (was / would have been)".
 

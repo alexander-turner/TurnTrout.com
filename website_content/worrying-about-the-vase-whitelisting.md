@@ -177,7 +177,7 @@ At reasonable levels of noise, the whitelist-enabled agent completed all levels 
 
 Beyond resolving the above assumptions, and in roughly ascending difficulty:
 
-## Object Permanence
+## Object permanence
 
 If you wanted to implement whitelisting in a modern embodied deep-learning agent, you could certainly pair deep networks with state-of-the-art segmentation and object tracking approaches to get most of what you need. However, what's the difference between an object leaving the frame, and an object vanishing?
 
@@ -193,7 +193,7 @@ However, if we don't need to handle noise in the belief distributions, this prob
 
 Whitelisting is wholly unable to capture the importance of "informational states" of systems. It would apply no penalty to passing powerful magnets over your hard drive. It is not clear how to represent this in a sensible way, even in a latent space.
 
-## Loss of Value
+## Loss of value
 
 Whitelisting could get us stuck in a tolerable yet sub-optimal future. [Corrigibility](https://arbital.com/p/corrigibility/) via some mechanism for expanding the whitelist after training has ended is then desirable. For example, the agent could propose extensions to the whitelist. To avoid manipulative behavior, the agent should be _indifferent_ as to whether the extension is approved.
 
@@ -213,7 +213,7 @@ I think this is a step in the right direction. However, even given a hypercomput
 
 What does it really _mean_ for an "effect" to be "reversible"? What level of abstraction do we in fact care about? Does it involve reversibility, or just outcomes for the objects involved?
 
-## Ontological Crises
+## Ontological crises
 
 When a utility-maximizing agent refactors its ontology, it isn't always clear how to apply the old utility function to the new ontology - an _[ontological crisis](https://arxiv.org/abs/1105.3821)_.
 

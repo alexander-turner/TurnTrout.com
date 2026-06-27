@@ -63,7 +63,7 @@ I spent three hours staring at this proof. I understood what Zorn's Lemma meant.
 
 I'm pleased to share my [detailed proof outline](https://www.overleaf.com/read/ppftcthcvjxs) of Zorn's Lemma, the product of many hours of ambient exasperation, rewritten in my own notation. Looking back, the proof in the book was pretty bad. The book's proof was neither succinct nor intuitive, but instead imposed a marais of mental variable tracking on the reader. I think mine is at least a little better, if not fully fleshed-out at all junctures.
 
-## Proof Calibration
+## Proof calibration
 
 As someone without a formal degree in mathematics, it was important for me to monitor how I approached the exercises in the book. Whenever the author began a proof, I tried to generate a mental proof sketch before reading further. Sometimes, I thought the proof would be easy and short, but it would turn out that my approach wasn’t rigorous enough. This was valuable feedback for calibration, and I intend to continue this practice. I'm still worried that down the line and in the absence of teachers, I may believe that I've learnt the research guide with the necessary rigor, go to a MIRIx workshop, and realize I hadn't been holding myself to a sufficiently high standard. Suggestions for ameliorating this would be welcome.
 
@@ -77,6 +77,6 @@ One factor which helped me succeed was that I ensured my morning reading was wha
 
 Of all the productivity advice I've read, the most useful involves imbuing your instrumental goals with terminal values. Ever since having read that advice, every tedious assignment, every daily routine, every keystroke - they're all backed up by an intense desire to _do something_ about the precarious situation in which humanity finds itself.
 
-## Internal Light
+## Internal light
 
 If you don't know where to start, I think the internal fire has to be lit first - don't try to force yourself to do this (or anything else) because you "should". "Stop the guilt-based motivation", proudly stake out what you want, and transform your life into a dazzling assortment of activities and tasks imbued with your terminal values, your brightest visions for yourself and the future.

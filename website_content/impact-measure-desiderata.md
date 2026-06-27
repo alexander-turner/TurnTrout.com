@@ -141,7 +141,7 @@ No approaches to date meet these standards. What do we even require of an impact
 >
 > _Example:_ "Suppose there's some way of gaming the impact measure, but because of  $X$, $Y$, and $Z$, we know this is penalized as well".
 
-# Previous Proposals
+# Previous proposals
 
 [Krakovna et al. propose four desiderata](https://arxiv.org/abs/1806.01186):
 

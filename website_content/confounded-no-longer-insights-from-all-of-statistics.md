@@ -77,7 +77,7 @@ $$
 
 ## 4: Expectation
 
-### Evidence Preservation
+### Evidence preservation
 
 $$
 \mathbb{E}(\mathbb{E}(Y\,\mid\,X))=\mathbb{E}(Y)
@@ -139,7 +139,7 @@ For continuous random variables $X,Y$, we have $P(X=Y)=0$, which is surprising. 
 
 The continuity is the culprit. Since the cumulative density functions $F_X,F_Y$ are continuous, the limit of the density allotted to any given point is 0. See [also](https://stats.stackexchange.com/questions/32605/probability-of-two-values-being-equal-in-a-sample-drawn-from-a-continuous-distri#32607).
 
-### Types of Convergence
+### Types of convergence
 
 > Let $X_1,X_2,\dots$ be a sequence of random variables, and let $X$ be another random variable. Let $F_n$ denote the CDF of $X_n$, and let $F$ denote the CDF of $X$.
 
@@ -186,7 +186,7 @@ _In which we learn to better approximate statistics via simulation._
 
 _In which we explore those models residing in finite-dimensional parameter space._
 
-### Fisher Information
+### Fisher information
 
 The score function captures how the log-likelihood $\ell$ changes with respect to $\theta$:
 
@@ -212,7 +212,7 @@ A statistic is sufficient if and only if we can reexpress the probability densit
 
 _In which we make testable predictions and step towards traditional rationality. Trigger warning: frequentism._
 
-### Frequently Confused
+### Frequently confused
 
 > [!quote] _Anchorman_
 >

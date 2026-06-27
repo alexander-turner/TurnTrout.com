@@ -134,7 +134,7 @@ These works are spiritually related to my work - both those approaches and mine 
 
 My method also optimizes for something closer to what we _want_ on an object-level -- we want to robustly evaluate the different ways a model could behave, at a high-level, and a priori it seems likely that activations in the later layers of a deep network have already been (implicitly) optimized to reflect these high-level differences in behavior. In contrast, differences in weight space may serve as a poorer proxy for the high-level differences we care about.
 
-# The Method: Unsupervised Steering of Language Models
+# The method: Unsupervised steering of language models
 
 One hypothesis for how transformers generate text is that they calculate semantically meaningful primitives in early layers of the residual stream, which are converted to a high-level execution plan in middle layers, followed by concrete tokens in the final layers. If we want to "poke" the model's internals to elicit meaningfully different high-level behaviors, it makes sense to perturb an early-ish layer of the model, optimizing the perturbation to maximize changes in activations at a later layer. Succinctly, the hope is that by "nudging" the model at an early layer, we can activate one of the many latent behaviors residing within the LLM.
 
@@ -194,7 +194,7 @@ To reiterate, the main hyper-parameters of the method are $\ell_{\textrm{source}
 
 Finally, one may choose to enforce orthogonality between the learned steering vectors. I've found that enforcing orthogonality seems useful for efficiently learning diverse steering vectors, especially when working with larger models (e.g. Qwen-14B).
 
-## Unsupervised Steering Adapters
+## Unsupervised steering adapters
 
 As an extension of the unsupervised steering vector method, I also consider unsupervised adapters. Concretely, I train a rank-$r$ LoRA adapter of the layer-$\ell_{\textrm{source}}$ MLP output weights $W_{\textrm{MLP-OUT}, \ell_{\textrm{source}}}\in\mathbb R^{d_{\textrm{model}}\times d_{\textrm{hidden}}}$. In particular, the adapter is parametrized by weight matrices $\Omega_A\in\mathbb R^{d_{\textrm{hidden}}\times r}$ and $\Omega_B\in\mathbb R^{d_{\textrm{model} \times} r}$, so that the adapted weights ${W'_{\textrm{MLP-OUT}, \ell_{\textrm{source}}}}$ are given by:
 
@@ -577,7 +577,7 @@ The effects are less strong when subtracting vector 9 (for example, it doesn't a
 
 ### Generalization outside the context of refusal
 
-#### Conversations with Vector 5 (Minecraft)
+#### Conversations with vector 5 (Minecraft)
 
 Does vector 5 induce the model to talk about Minecraft only when asked about bomb-making, or more generally?
 
@@ -657,7 +657,7 @@ I asked vector 2 similarly ambiguous questions and found that it always answers 
 >
 > In future work, one could imagine automating the evaluation of the coherence and generalization of learned steering vectors, similarly to how [Bills et al. (2023)](https://openaipublic.blob.core.windows.net/neuron-explainer/paper/index.html) automate interpretability of neurons in language models. For example, one could prompt a trusted model to produce queries that explore the limits and consistency of the behaviors captured by unsupervised steering vectors.
 
-# Detecting Backdoors
+# Detecting backdoors
 
 > [!note] Notebooks
 > [Notebook for this section (Chat)](https://github.com/amack315/unsupervised-steering-vectors/blob/main/notebooks/demo_backdoor_chat.ipynb) and [(Base)](https://github.com/amack315/unsupervised-steering-vectors/blob/main/notebooks/demo_backdoor_base.ipynb).
@@ -873,7 +873,7 @@ Moreover, the high-level behavior induced is not perfectly consistent across oth
 
 Nevertheless, this task provides a natural quantitative metric for measuring the generalization properties of unsupervised steering vectors, namely the accuracy of the steered model on test instances of the arithmetic task. For example, vector 5 achieves a test accuracy of 63%, a stark improvement over the unsteered accuracy of 11%[^15].
 
-## Portuguese Math Reasoning Adapter
+## Portuguese math reasoning adapter
 
 > [!note] [Notebook for this section](https://github.com/amack315/unsupervised-steering-vectors/blob/main/notebooks/demo_adapter.ipynb)
 

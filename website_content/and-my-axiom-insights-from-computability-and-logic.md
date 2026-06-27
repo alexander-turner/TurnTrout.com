@@ -189,7 +189,7 @@ Indeed, the notion of provability can be subtly different from our mental proces
 
 I skipped chapters 20-27, as I found these advanced topics rather boring. The most important was likely provability logic, but I intend to study that separately in the future anyways.
 
-## Final Thoughts
+## Final thoughts
 
 - Nate Soares [already covered this](https://www.lesswrong.com/posts/CvhPTwSMPqNju7hhw/book-review-computability-and-logic); unlike him, I didn't quite find it to be a breeze, although it certainly isn't the hardest material I covered last year.
 - I'm surprised the authors didn't include the thematically appropriate [recursion theorem,](https://en.wikipedia.org/wiki/Kleene%27s_recursion_theorem) which states that a Turing machine can use its source code in its own computation without any kind of infinite regress (see: [quines)](<https://en.wikipedia.org/wiki/Quine_(computing)>). This theorem allows particularly elegant proofs of the undecidability of the halting problem, and more generally, of Rice's theorem.

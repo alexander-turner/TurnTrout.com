@@ -221,7 +221,7 @@ Generally, my theorems assume that reward is independently and identically distr
 > [!note] Note, 7/21/21
 > As explained in [_Environmental Structure Can Cause Instrumental Convergence_](/environmental-structure-can-cause-instrumental-convergence), the theorems no longer require the IID assumption. This post refers to v6 of _Optimal Policies Tend To Seek Power_, available on [arXiv](https://arxiv.org/abs/1912.01683).
 
-# When is Seeking POWER Convergently Instrumental?
+# When is seeking POWER convergently instrumental?
 
 ![A diagram of a choice tree starting from a "Start" node. One path leads to a terminal state represented by candy. The other path leads to a "Wait!" node, which then branches into two other terminal states: a chocolate bar and two stick figures hugging.](https://assets.turntrout.com/static/images/posts/ai4vjqncs8t20nad6ktw.avif)
 

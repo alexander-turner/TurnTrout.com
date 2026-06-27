@@ -85,7 +85,7 @@ card_image_alt: 'A black oval symbolizing an empty universe contains the text: "
 
 ![A handwritten diagram titled "Exercise: Decompose something which recently impacted you." An example decomposes a "Promotion" into two aspects. The "value" aspect is "I care about the new position," while the "objective" aspect is "Cash can be used for lots of things."](https://assets.turntrout.com/static/images/posts/fzLD7kQ.avif)
 
-## Appendix: Contrived Objectives
+## Appendix: Contrived objectives
 
 A natural definitional objection is that a few agents aren't affected by objectively impactful events. If you think every outcome is equally good, then who cares if the meteor hits?
 

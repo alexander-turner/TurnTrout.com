@@ -142,7 +142,7 @@ This metric is consistent with the "limiting cases" criterion by properties of t
 
 Additionally, note that if $X$ is a constant variable, then $\text{Cov}(X, Y) = 0$. Thus, if the strategy profile is deterministic, our metric will be 0.
 
-# Social Welfare and the Coordination-Alignment Inequalities
+# Social welfare and the coordination-alignment inequalities
 
 Another approach to the problem of alignment metrics comes from specifying what we mean by "alignment". For the purposes of this section, we define "alignment" to be alignment with social welfare, which we define below:
 

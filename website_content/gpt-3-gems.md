@@ -38,7 +38,7 @@ GPT-3 is captivating, and not just because of its [potential reasoning abilities
 > [!note]
 > Bold text is my input; square brackets contain my italicized commentary.
 
-# Long-form Writing
+# Long-form writing
 
 ## _Beisutsukai_ class project: Solve intent alignment
 
@@ -337,7 +337,7 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 >
 > 'But it is hard to kill innocence. Though many fell along the way, some survived, and they found a land that was empty and waiting for folk such as they, and they settled in it, and most happily they lived.
 
-## Lórien, Unstained
+## Lórien, unstained
 
 > [!quote]
 >
@@ -373,7 +373,7 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 >
 > Sam sighed, and nodded. He got to his feet, and followed his master back to the road.
 
-## Bilbo the Deceiver
+## Bilbo the deceiver
 
 > [!quote]
 >
@@ -393,7 +393,7 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 >
 > But now it was in the very shape of a cloaked figure, a tall and evil shadow. It grew and grew to a menacing size, mightier than any of the dark things that had gathered in the East Morh. Even Gandalf seemed little compared to its height as it rose up and stared down at them. But suddenly it was stricken. Frodo was amazed to see a light, white and dazzling, shine down on the bridge and flow into the shadow of darkness. The figure melted before his eyes and then shimmered like a rainbow, turned to water on the air. It collapsed with a gentle tinkling sound, that seemed sad and sweet to the ears. Beams of light now shone upon the water in rings and teardrops.
 
-## Gildor Inglorion's Fountain
+## Gildor Inglorion's fountain
 
 > [!quote]
 >
@@ -523,7 +523,7 @@ Strangely, the context for this was _also_ two posts from the Sequences. I was t
 >
 > At this point the dog was already half asleep. She would've agreed to going bungee jumping without checking the cords first if he suggested it. "Tomorrow," Bill told her, "we'll wake up early and take a drive out into the country, just you and me. Like we used to.
 
-## The Canine Betrayal
+## The canine betrayal
 
 > [!quote]
 > It was a dark day in the city of Datum. The feral dogs had taken over, and spread over the world. Humans could only watch as some of man's greatest companions succumbed to madness and twisted into beings of pure evil. One man, however, refused to give up. Professor James Gregory, short and with wild black hair on his head and belly, stood at the top of the Rockefeller Center with a shotgun in his hands. He was prepared to defend the Earth from this dog crusade with his dying breath.
@@ -582,7 +582,7 @@ I used nucleus sampling with $p=.76$, but apparently that was insufficient to pr
 >
 > The government is in a tough spot because the investment boom is really powerful and there is a lot of money on the line. If you regulate too hard you might kill the boom, but if you don’t regulate hard enough then it might all be a Chinese plot.
 
-## Title Sensationalization
+## Title sensationalization
 
 No rerolls, excepting the restarts marked by **\[...\]**.
 
@@ -913,7 +913,7 @@ For more, see [_To what extent is GPT-3 capable of reasoning?_](/to-what-extent-
 >
 > Hawking: "Er... nevermind. Let's move on to geothermal energy. \[_lol_\]
 
-## Machine Learning
+## Machine learning
 
 > [!quote]
 >
