@@ -573,6 +573,16 @@ hr {
       margin-bottom: 0;
     }
   }
+
+  // The masthead dateline reads as a prominent header, so keep it at full cap
+  // height (lining figures) for the whole date — overriding the year-adjacent
+  // oldstyle rule that .date-ordinal-num applies elsewhere.
+  & .publication-str {
+    &,
+    & .date-ordinal-num {
+      font-variant-numeric: lining-nums;
+    }
+  }
 }
 
 img,
