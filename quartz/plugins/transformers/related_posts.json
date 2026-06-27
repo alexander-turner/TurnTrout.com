@@ -2647,21 +2647,21 @@
       "title": "How I do research"
     },
     {
-      "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
-      "permalink": "best-reasons-for-pessimism-about-impact-measures",
-      "title": "Best reasons for pessimism about impact of impact measures?"
-    },
-    {
       "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
       "permalink": "conclusion-to-reframing-impact",
       "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
+      "permalink": "best-reasons-for-pessimism-about-impact-measures",
+      "title": "Best reasons for pessimism about impact of impact measures?"
     }
   ],
   "punctilio": [
     {
-      "excerpt": "Displaying the features of the website for use in visual regression testing.",
-      "permalink": "test-page",
-      "title": "Testing site features"
+      "excerpt": "Showing off and explaining this site's beauty.",
+      "permalink": "design",
+      "title": "The design of this website"
     }
   ],
   "quantitative-strength-of-instrumental-convergence": [
