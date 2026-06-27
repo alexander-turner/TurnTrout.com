@@ -42,9 +42,7 @@ describe("InlineCodeSpacing", () => {
 
     it("marks every gapped code when several share a parent", async () => {
       const out = await processHtmlWithPlugin("<p>a <code>one</code> b <code>two</code></p>")
-      expect(out).toBe(
-        `<p>a ${MARKER}<code>one</code> b ${MARKER}<code>two</code></p>`,
-      )
+      expect(out).toBe(`<p>a ${MARKER}<code>one</code> b ${MARKER}<code>two</code></p>`)
     })
   })
 
