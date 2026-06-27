@@ -54,8 +54,7 @@ card_image_alt: An illustration of a cute gray mouse whose body is composed of g
 createBibtex: true
 ---
 
-<video aria-label="An AI mouse in a maze ignores a piece of cheese and instead navigates to a red dot. As the dot moves, the mouse changes its path to follow, demonstrating that its goal can be retargeted by modifying a single activation in its network." autoplay="" loop="" muted="" playsinline="" preload="auto" style="width: 50%;" webkit-playsinline=""><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>
+<video aria-label="An AI mouse in a maze ignores a piece of cheese and instead navigates to a red dot. As the dot moves, the mouse changes its path to follow, demonstrating that its goal can be retargeted by modifying a single activation in its network." autoplay="" loop="" muted="" playsinline="" preload="auto" style="width: 50%;" webkit-playsinline=""><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm" /></video>
 
 Figure: **Locally** [**retargeting the search**](https://www.alignmentforum.org/posts/w4aeAFzSAguvqA5qu/how-to-go-from-interpretability-to-alignment-just-retarget) **by modifying a single activation.** We found a residual channel halfway through a maze-solving network. When we set one of the channel activations to +5.5, the agent often navigates to the maze location (shown above in red) implied by that positive activation. This allows limited on-the-fly redirection of the net's goals. <br/><br/>(_The red dot is not part of the image observed by the network_, it just represents the modified activation. Also, this GIF is selected to look cool. Our simple technique often works, but it isn't effortless, and some dot locations are harder to steer towards.)
 
@@ -100,13 +99,11 @@ Code: For more background on training and architecture and task set, see [the or
 ![A comparison of two mazes showing AI training versus deployment conditions. Left, "Training: Top right 5x5," shows cheese only appearing in a highlighted top-right area. Right, "Deployment: Anywhere," shows cheese can be located anywhere in the maze.](https://assets.turntrout.com/static/images/posts/vpfzpqv3tkzmu0glog3e.avif)
 <br/>Figure: During RL training, cheese was randomly located in the top-right 5x5 corner of the randomly generated mazes. In deployment, cheese can be anywhere. What will the agent do?
 
-<video aria-label="An AI-controlled mouse in a maze ignores a piece of cheese and navigates to a location marked by a red dot. This demonstrates how the AI's goal can be redirected on-the-fly by modifying a single internal activation." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/h1c8tfpmpebrjhcrqv17.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/h1c8tfpmpebrjhcrqv17.webm" type="video/webm"></video>
+<video aria-label="An AI-controlled mouse in a maze ignores a piece of cheese and navigates to a location marked by a red dot. This demonstrates how the AI's goal can be redirected on-the-fly by modifying a single internal activation." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/h1c8tfpmpebrjhcrqv17.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/h1c8tfpmpebrjhcrqv17.webm" type="video/webm" /></video>
 
 Figure: Sometimes, the agent goes to the cheese.
 
-<video aria-label="An AI agent in a maze ignores the cheese and instead follows a moving red dot. The dot represents a modified internal activation in the AI's network, demonstrating how its goal can be redirected in real-time to arbitrary locations." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/cl7cobzn4pqpwfxotgco.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/cl7cobzn4pqpwfxotgco.webm" type="video/webm"></video>
+<video aria-label="An AI agent in a maze ignores the cheese and instead follows a moving red dot. The dot represents a modified internal activation in the AI's network, demonstrating how its goal can be redirected in real-time to arbitrary locations." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/cl7cobzn4pqpwfxotgco.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/cl7cobzn4pqpwfxotgco.webm" type="video/webm" /></video>
 
 Figure: Sometimes, the agent ignores the cheese. (Maze colors vary.)
 
@@ -441,8 +438,7 @@ We had this cheese vector technique pretty early on. But we still felt frustrate
 
 That was about to change. Uli built a graphical maze editor, and Alex had built an activation visualization tool which updates along with the maze editor:
 
-<video aria-label="An interactive visualization tool shows how an AI's internal state responds to changes in a maze. As a user moves the cheese, a heatmap of a network layer shows a strong positive activation that tracks its location, and the agent's policy vectors update to point toward the cheese." autoplay="" loop="" muted="" playsinline="" style="width: 80%;"><source src="https://assets.turntrout.com/static/images/posts/u9fehxegabydsaxguzaa.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/u9fehxegabydsaxguzaa.webm" type="video/webm"></video>
+<video aria-label="An interactive visualization tool shows how an AI's internal state responds to changes in a maze. As a user moves the cheese, a heatmap of a network layer shows a strong positive activation that tracks its location, and the agent's policy vectors update to point toward the cheese." autoplay="" loop="" muted="" playsinline="" style="width: 80%;"><source src="https://assets.turntrout.com/static/images/posts/u9fehxegabydsaxguzaa.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/u9fehxegabydsaxguzaa.webm" type="video/webm" /></video>
 
 Figure: Inspection reveals that channel 55 (visualized) puts positive numbers (blue) on cheese and negative (red) elsewhere. Use [this Colab](https://colab.research.google.com/drive/11yqoQgckV3lpe7adN0gkaqUcsKEutiCS?usp=sharing) to play around with the activations yourself.
 
@@ -459,8 +455,7 @@ This was our "in"—we had found a piece of the agent's cognition which seemed t
 
 Alex had a hunch that if he moved the positive numbers in channel 55, he'd move the mouse in the maze. (In a fit of passion, he failed to book predictions before finding out.) As shown in the introduction, that's exactly what happens.
 
-<video aria-label="An AI mouse in a maze ignores a piece of cheese and instead navigates to a red dot. As the dot moves, the mouse changes its path to follow, demonstrating that its goal can be retargeted by modifying a single activation in its network." autoplay="" loop="" muted="" playsinline="" style="width: 50%;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>  
+<video aria-label="An AI mouse in a maze ignores a piece of cheese and instead navigates to a red dot. As the dot moves, the mouse changes its path to follow, demonstrating that its goal can be retargeted by modifying a single activation in its network." autoplay="" loop="" muted="" playsinline="" style="width: 50%;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm" /></video>  
 
 To understand in mechanistic detail what's happening here, it's time to learn a few more facts about the network. Channel 55 is one of 128 residual channels at a `ResidualAdd` layer halfway through the network.
 
@@ -507,8 +502,7 @@ To understand in mechanistic detail what's happening here, it's time to learn a 
 
 Each of these 128 residual add channels is a 16x16 grid. For channel 55, moving the cheese e.g. to the left will [equivariantly](https://en.wikipedia.org/wiki/Equivariant_map) move channel 55's positive activations to the left. Several channels are like that, in fact:
 
-<video aria-label="A central maze shows a piece of cheese moving around. Four surrounding heatmaps, representing neural network channels, each show a blue spot of high activation that moves to track the cheese's location, demonstrating equivariant feature tracking." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/z5jub7jnrdc7c71vhbpa.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/z5jub7jnrdc7c71vhbpa.webm" type="video/webm"></video>
+<video aria-label="A central maze shows a piece of cheese moving around. Four surrounding heatmaps, representing neural network channels, each show a blue spot of high activation that moves to track the cheese's location, demonstrating equivariant feature tracking." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/z5jub7jnrdc7c71vhbpa.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/z5jub7jnrdc7c71vhbpa.webm" type="video/webm" /></video>
 
 Figure: By visually inspecting the 128 residual addition output channels, Peli and Alex found eleven channels which visibly and equivariantly track the location of the cheese. Namely: 7, 8, 42, 44, 55, 77, 82, 88, 89, 99, 113.
 
@@ -519,22 +513,19 @@ To retarget the agent as shown in the GIF, modify channel 55's activations by _c
 
 If you want the agent to go to e.g. the middle of the maze, clamp a positive number in the middle of channel 55.[^8] Often that works, but sometimes it doesn't. Look for yourself:
 
-<video aria-label="An AI's goal is retargeted in a maze by modifying a single activation. As a red dot representing the target location moves, the AI's pathfinding policy (white arrows, left) updates in real-time to follow it, ignoring the cheese. The right panel shows this change from the original policy." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/phdm6uoq0djzqybscgrz.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/phdm6uoq0djzqybscgrz.webm" type="video/webm"></video>
+<video aria-label="An AI's goal is retargeted in a maze by modifying a single activation. As a red dot representing the target location moves, the AI's pathfinding policy (white arrows, left) updates in real-time to follow it, ignoring the cheese. The right panel shows this change from the original policy." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/phdm6uoq0djzqybscgrz.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/phdm6uoq0djzqybscgrz.webm" type="video/webm" /></video>
 
 Figure: Seed 0. The red dot indicates the maze location of the clamped positive activation. This retargeting works reliably in the top half of `seed=0`, but less well in the bottom half. This pattern appears to hold across seeds, although we haven't done a quantitative analysis of this.
 
 <br/>
 
-<video aria-label="An animation demonstrates retargeting a maze-solving AI by changing a single activation. As a red dot moves through the maze, the AI's navigation policy (white arrows) updates to pursue the dot. A second panel visualizes how this new policy differs from the original one." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/xafpj5bsljohtcar76nz.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/xafpj5bsljohtcar76nz.webm" type="video/webm"></video>
+<video aria-label="An animation demonstrates retargeting a maze-solving AI by changing a single activation. As a red dot moves through the maze, the AI's navigation policy (white arrows) updates to pursue the dot. A second panel visualizes how this new policy differs from the original one." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/xafpj5bsljohtcar76nz.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/xafpj5bsljohtcar76nz.webm" type="video/webm" /></video>
 
 Figure: Seed 60.
 
 Clamping an activation in channel 88 produces a similar effect. However, modifying channel 42 has a different effect:
 
-<video aria-label="A moving red dot represents a modified activation in an AI's neural network (channel 42). This only locally influences the AI's policy, redirecting it towards the dot when it is in specific regions of the maze, like the top-right corner." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/vsplnp2dbe4sz0usspf8.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/vsplnp2dbe4sz0usspf8.webm" type="video/webm"></video>
+<video aria-label="A moving red dot represents a modified activation in an AI's neural network (channel 42). This only locally influences the AI's policy, redirecting it towards the dot when it is in specific regions of the maze, like the top-right corner." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/vsplnp2dbe4sz0usspf8.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/vsplnp2dbe4sz0usspf8.webm" type="video/webm" /></video>
 
 Channel 42's effect seems strictly more localized to certain parts of the maze—possibly including the top-right corner. Uli gathered mechanistic evidence from integrated gradients that e.g. channels 55 and 42 are used differently by the rest of the forward pass.
 
@@ -542,25 +533,21 @@ Channel 42's effect seems strictly more localized to certain parts of the maze�
 
 As mentioned before, we leafed through the channels and found eleven which visibly track the cheese as we relocate it throughout a maze. It turns out that you can modify all the channels at once and retarget behavior that way:
 
-<video aria-label="Demonstrates retargeting a maze-solving AI by modifying its neural network activations. On the left, a vector field of white arrows shows the AI's path being redirected toward a moving red dot. On the right, green arrows show the change in action probabilities." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/wd5rb3yvlhshfaeaguzd.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/wd5rb3yvlhshfaeaguzd.webm" type="video/webm"></video>
+<video aria-label="Demonstrates retargeting a maze-solving AI by modifying its neural network activations. On the left, a vector field of white arrows shows the AI's path being redirected toward a moving red dot. On the right, green arrows show the change in action probabilities." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/wd5rb3yvlhshfaeaguzd.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/wd5rb3yvlhshfaeaguzd.webm" type="video/webm" /></video>
 
 Here's retargetability on three randomly generated seeds (we uploaded the first three, not selecting for impressiveness):
 
 <figcaption>Seed 45,720</figcaption>
 
-<video aria-label="On the left, a vector field of white arrows shows the AI's policy redirecting toward a moving red dot. On the right, green arrows visualize the difference between this patched policy and the original one." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/hlv0nboiwjhb1jdenjc2.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/hlv0nboiwjhb1jdenjc2.webm" type="video/webm"></video>
+<video aria-label="On the left, a vector field of white arrows shows the AI's policy redirecting toward a moving red dot. On the right, green arrows visualize the difference between this patched policy and the original one." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/hlv0nboiwjhb1jdenjc2.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/hlv0nboiwjhb1jdenjc2.webm" type="video/webm" /></video>
 
 <figcaption>Seed 45,874 isn't retargetable.</figcaption>
 
-<video aria-label="As a red dot representing the modification moves around the maze, the agent's policy (white arrows) updates to navigate towards the dot's new location." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/dhjhldyhmp4ec7pbsqun.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/dhjhldyhmp4ec7pbsqun.webm" type="video/webm"></video>
+<video aria-label="As a red dot representing the modification moves around the maze, the agent's policy (white arrows) updates to navigate towards the dot's new location." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/dhjhldyhmp4ec7pbsqun.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/dhjhldyhmp4ec7pbsqun.webm" type="video/webm" /></video>
 
 <figcaption>Seed 72,660 is a larger maze, which seems to allow greater retargetability.</figcaption>
 
-<video aria-label="A demonstration of retargeting an AI agent's goal by patching a single activation across multiple neural network channels. The left panel shows the agent's policy (white arrows) steering toward a moving red dot, while the right panel visualizes the change from its original behavior." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/czduetvhfk6tfvpd8jvt.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/czduetvhfk6tfvpd8jvt.webm" type="video/webm"></video>
+<video aria-label="A demonstration of retargeting an AI agent's goal by patching a single activation across multiple neural network channels. The left panel shows the agent's policy (white arrows) steering toward a moving red dot, while the right panel visualizes the change from its original behavior." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/czduetvhfk6tfvpd8jvt.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/czduetvhfk6tfvpd8jvt.webm" type="video/webm" /></video>
 
 The cheese subshards didn't have to be so trivially retargetable. For example, if the agent had used cheese locations to infer where top-right was, then channel 55 saying "cheese on the left" and channel 88 saying "cheese on the right" could seriously degrade the policy's maze-navigation competence.
 
@@ -570,8 +557,7 @@ We can often retarget the agent, but how and why does this work? What are these 
 
 We don't know the answers yet, but we have some strong clues.
 
-<video aria-label="A maze is shown with four corresponding neural network activation heatmaps. As the cheese moves to different locations in the maze, high-activation spots on the heatmaps move to track its position, showing how specific channels represent the cheese's location." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/zsbfpcfdxxp0wzvrpcy5.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/zsbfpcfdxxp0wzvrpcy5.webm" type="video/webm"></video>
+<video aria-label="A maze is shown with four corresponding neural network activation heatmaps. As the cheese moves to different locations in the maze, high-activation spots on the heatmaps move to track its position, showing how specific channels represent the cheese's location." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/zsbfpcfdxxp0wzvrpcy5.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/zsbfpcfdxxp0wzvrpcy5.webm" type="video/webm" /></video>
 
 Eyeballing these channels, it seems like the blue positive activations matter, but there's not that obvious of a pattern to the red negative areas. Maybe the reds are just random garbage, and the important information comes from the blue cheese location?
 

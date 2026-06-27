@@ -706,7 +706,7 @@ He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._ October 5th, 1
 
 Each emoji stays glued to its preceding character and never wraps alone to the start of a new line:
 
-(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿.
+(🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿.
 
 ## Emoji comparison
 
