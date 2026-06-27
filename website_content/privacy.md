@@ -21,7 +21,7 @@ next-post-slug: advanced-privacy
 lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
 date_published: 2025-10-28
-date_updated: 2026-06-26
+date_updated: 2026-06-27
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -176,7 +176,7 @@ Since you're using a unique password for every site, you won't have to scramble 
 
 ## Two-factor authentication (2FA)
 
-"2-factor authentication" means an attacker has to try a lot harder to get into your accounts, because they need a password *and* another piece of information -- a second "factor".  Even if your credentials are exposed in a massive breach, your account will be safe because they won't have access to your second factor.
+"Two-factor authentication" means an attacker has to try a lot harder to get into your accounts, because they need a password *and* another piece of information -- a second "factor".  Even if your credentials are exposed in a massive breach, your account will be safe because they won't have access to your second factor.
 
 Enable two-factor authentication on every possible account that you care about protecting. You don't have to do it all at once. You can just enable 2FA on your most important accounts and then start enabling them in the future as you notice.
 
