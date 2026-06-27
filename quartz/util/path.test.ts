@@ -160,12 +160,11 @@ describe("normalizeHastElement", () => {
       expect(favicon.properties?.style).toBe(`--mask-url: url(${specialFaviconPaths.turntrout});`)
     })
 
-    it("removes same-page-link from a string-form className", () => {
-      const link = h("a", { href: "#section" }, "Link")
-      link.properties.className = "internal same-page-link"
+    it("drops same-page-link even when the link carries no favicon", () => {
+      const link = h("a", { href: "#section", className: ["internal", "same-page-link"] }, "Link")
       const result = normalizeHastElement(h("p", [link]), baseSlug, newSlug)
       const anchor = result.children[0] as Element
-      expect(anchor.properties?.className).toBe("internal")
+      expect(anchor.properties?.className).toEqual(["internal"])
     })
 
     it("leaves favicons for other domains untouched", () => {

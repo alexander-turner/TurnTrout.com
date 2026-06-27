@@ -173,29 +173,10 @@ export function normalizeRelativeURLs(el: Element | Document, destination: strin
   )
 }
 
-// The `data-domain` a favicon carries identifies which icon it renders. The
-// same-page (anchor) favicon and the internal turntrout favicon are the two
-// relevant here.
-const ANCHOR_FAVICON_DOMAIN = "anchor"
-const TURNTROUT_FAVICON_DOMAIN = "turntrout_com"
-
-/** Removes a class from a HAST element's className, preserving its shape (string or array). */
-function removeClass(el: HastElement, className: string): void {
-  const existing = el.properties?.className
-  if (typeof existing === "string") {
-    el.properties.className = existing
-      .split(/\s+/)
-      .filter((c) => c && c !== className)
-      .join(" ")
-  } else if (Array.isArray(existing)) {
-    el.properties.className = existing.filter((c) => String(c) !== className)
-  }
-}
-
 /** Rewrites an anchor (same-page) favicon descendant in place to the internal turntrout favicon. */
 function retargetAnchorFaviconToInternal(el: HastElement): void {
-  if (el.tagName === "svg" && el.properties?.["data-domain"] === ANCHOR_FAVICON_DOMAIN) {
-    el.properties["data-domain"] = TURNTROUT_FAVICON_DOMAIN
+  if (el.tagName === "svg" && el.properties?.["data-domain"] === "anchor") {
+    el.properties["data-domain"] = "turntrout_com"
     el.properties.style = `--mask-url: url(${specialFaviconPaths.turntrout});`
   }
   for (const child of el.children) {
@@ -214,7 +195,10 @@ function retargetAnchorFaviconToInternal(el: HastElement): void {
  */
 function demoteRebasedAnchorLink(el: HastElement): void {
   if (el.tagName !== "a") return
-  removeClass(el, "same-page-link")
+  const classes = el.properties?.className
+  if (Array.isArray(classes)) {
+    el.properties.className = classes.filter((c) => String(c) !== "same-page-link")
+  }
   retargetAnchorFaviconToInternal(el)
 }
 
