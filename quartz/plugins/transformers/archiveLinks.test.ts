@@ -57,7 +57,7 @@ describe("canonicalizeUrl", () => {
     expect(canonicalizeUrl(input)).toBe(expected)
   })
 
-  it("throws on an unparseable URL", () => {
+  it("throws on an unparsable URL", () => {
     expect(() => canonicalizeUrl("not a url")).toThrow()
   })
 })

@@ -77,15 +77,14 @@ export const createWinstonLogger = (name: string, level: string = getLogLevel())
   ]
 
   // Skip the console transport under Jest (JEST_WORKER_ID is set per worker):
-  // tests assert on captured logs and would surface them as noise. In CI use
-  // warn-level so GitHub Actions logs stay focused; locally use info so the
-  // build pipeline reports progress on stderr instead of going silent between
-  // phases.
+  // tests assert on captured logs and would surface them as noise. The console
+  // carries warnings and errors only; info/debug stay in the per-component log
+  // files so build output isn't cluttered with routine progress.
   // istanbul ignore if
   if (!process.env.JEST_WORKER_ID) {
     loggerTransports.push(
       new transports.Console({
-        level: process.env.CI === "true" ? "warn" : "info",
+        level: "warn",
         stderrLevels: ["error", "warn", "info", "http", "verbose", "debug", "silly"],
         format: format.combine(
           format.colorize(),

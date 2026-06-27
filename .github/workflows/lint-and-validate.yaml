@@ -174,14 +174,14 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           # Only stage files the shared autofixers could have modified.
-          # Git pathspec globs with `**` do NOT match top-level files, so
-          # we pass both `dir/*.ext` and `dir/**/*.ext` for every tree.
+          # ESLint --fix runs over the whole repo, so its targets are matched
+          # repo-wide by bare extension globs (a git pathspec like `*.ts`
+          # matches at any depth). The other fixers are scoped to specific
+          # trees; for those pass both `dir/*.ext` and `dir/**/*.ext`, since a
+          # `**` glob does NOT match top-level files.
           git diff --name-only -z -- \
+            '*.js' '*.jsx' '*.cjs' '*.mjs' '*.ts' '*.tsx' \
             'quartz/*.scss'           'quartz/**/*.scss' \
-            'quartz/*.js'             'quartz/**/*.js' \
-            'quartz/*.jsx'            'quartz/**/*.jsx' \
-            'quartz/*.ts'             'quartz/**/*.ts' \
-            'quartz/*.tsx'            'quartz/**/*.tsx' \
             'scripts/*.py'            'scripts/**/*.py' \
             '.github/scripts/*.py'    '.github/scripts/**/*.py' \
             'website_content/*.md'    'website_content/**/*.md' \

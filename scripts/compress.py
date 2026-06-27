@@ -1,12 +1,13 @@
 """Script to compress images and videos."""
 
 import argparse
+import concurrent.futures
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Final
+from typing import IO, Final, cast
 
 DEFAULT_IMAGE_QUALITY: Final[int] = 56
 _DEFAULT_HEVC_CRF: Final[int] = 28
@@ -62,7 +63,18 @@ _FFMPEG_COMMON_OUTPUT_ARGS: Final[list[str]] = [
     "-y",
     "-v",
     "error",
+    # Machine-readable progress on stdout (parsed by `_stream_progress`);
+    # `-nostats` keeps the human stats line off stderr so it stays clean for
+    # error reporting.
+    "-progress",
+    "pipe:1",
+    "-nostats",
 ]
+
+# Throttle progress prints: emit a line each time the encode crosses another
+# 5% of the source duration (or, when the duration is unknown, every 5s).
+_PROGRESS_PCT_STEP: Final[int] = 5
+_PROGRESS_SECONDS_STEP: Final[int] = 5
 
 # Even-dimension downscale + 8-bit planar pixel format, shared by the HEVC and
 # WebM encoders so both honor the same scaling/pixel-format contract.
@@ -97,20 +109,117 @@ def _ffmpeg_audio_loop_args(is_gif: bool, audio_args: list[str]) -> list[str]:
     ]
 
 
+def _probe_duration_seconds(video_path: Path) -> float | None:
+    """
+    Return the duration of *video_path* in seconds via ffprobe.
+
+    Returns ``None`` when ffprobe cannot determine a duration (e.g. some GIF
+    inputs report ``N/A``), in which case progress is shown as elapsed time
+    rather than a percentage.
+    """
+    result = subprocess.run(
+        (
+            "ffprobe",
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            str(video_path),
+        ),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    try:
+        return float(result.stdout.strip())
+    except ValueError:
+        return None
+
+
+def _progress_line(
+    label: str, elapsed_seconds: float, duration_seconds: float | None
+) -> str:
+    """Render one throttled progress line for an in-flight encode."""
+    if duration_seconds and duration_seconds > 0:
+        pct = min(100, int(elapsed_seconds / duration_seconds * 100))
+        return (
+            f"  [{label}] {pct:3d}%  "
+            f"({elapsed_seconds:5.1f}s / {duration_seconds:.1f}s)"
+        )
+    return f"  [{label}] {elapsed_seconds:5.1f}s elapsed"
+
+
+def _stream_progress(
+    stdout: IO[str], label: str, duration_seconds: float | None
+) -> None:
+    """
+    Print throttled progress from ffmpeg's ``-progress pipe:1`` output.
+
+    Reads ``key=value`` lines until EOF, printing a line each time the encode
+    crosses another progress bucket (see ``_PROGRESS_PCT_STEP`` /
+    ``_PROGRESS_SECONDS_STEP``). Newline-terminated and prefixed with *label*
+    so concurrent encodes interleave readably.
+    """
+    last_bucket = -1
+    for raw_line in stdout:
+        key, sep, value = raw_line.strip().partition("=")
+        if not sep or key != "out_time_us":
+            continue
+        try:
+            out_time_us = int(value)
+        except ValueError:
+            continue  # ffmpeg emits "N/A" before the first frame is written
+        if out_time_us < 0:
+            # Before the first frame ffmpeg reports a huge negative sentinel
+            # (INT64 min) rather than "N/A"; treat it as not-yet-started.
+            continue
+        elapsed_seconds = out_time_us / 1_000_000
+        if duration_seconds and duration_seconds > 0:
+            pct = min(100, int(elapsed_seconds / duration_seconds * 100))
+            bucket = pct // _PROGRESS_PCT_STEP
+        else:
+            bucket = int(elapsed_seconds) // _PROGRESS_SECONDS_STEP
+        if bucket != last_bucket:
+            print(_progress_line(label, elapsed_seconds, duration_seconds))
+            last_bucket = bucket
+
+
 def _run_ffmpeg(
     ffmpeg_cmd: list[str],
     input_video_path: Path,
     output_path: Path,
+    label: str,
+    duration_seconds: float | None,
 ) -> None:
-    """Run an ffmpeg command via a tempfile, then move it into place."""
+    """
+    Run an ffmpeg command via a tempfile, then move it into place.
+
+    Streams ffmpeg's progress to stdout while the encode runs. ffmpeg's stderr
+    is routed to a tempfile so reading the progress pipe can't deadlock; on a
+    non-zero exit it is surfaced via ``CalledProcessError``.
+    """
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path: Path = Path(temp_dir) / output_path.name
-        subprocess.run(
-            ffmpeg_cmd + [str(temp_path)],
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.PIPE,
-        )
+        full_cmd: list[str] = ffmpeg_cmd + [str(temp_path)]
+        stderr_path: Path = Path(temp_dir) / "ffmpeg-stderr.log"
+        with open(stderr_path, "w+", encoding="utf-8") as stderr_file:
+            with subprocess.Popen(
+                full_cmd,
+                stdout=subprocess.PIPE,
+                stderr=stderr_file,
+                text=True,
+            ) as process:
+                _stream_progress(
+                    cast(IO[str], process.stdout), label, duration_seconds
+                )
+                returncode = process.wait()
+            if returncode != 0:
+                stderr_file.seek(0)
+                raise subprocess.CalledProcessError(
+                    returncode, full_cmd, stderr=stderr_file.read()
+                )
         shutil.move(temp_path, output_path)
     print(
         f"Successfully converted {input_video_path.name} to {output_path.name}"
@@ -193,17 +302,38 @@ def video(
             f"Supported types are: {', '.join(ALLOWED_VIDEO_EXTENSIONS)}."
         )
 
+    # HEVC and WebM are independent encodes of the same source, so run them
+    # concurrently. Each ffmpeg is internally multi-threaded; two at once
+    # overlaps the slower x265 pass with the VP9 pass for a ~2x wall-clock win.
+    duration_seconds: float | None = _probe_duration_seconds(video_path)
     hevc_output_path: Path = video_path.with_suffix(".mp4")
-    _run_ffmpeg_hevc(video_path, hevc_output_path, quality_hevc)
-
     webm_output_path: Path = video_path.with_suffix(".webm")
-    _run_ffmpeg_webm(video_path, webm_output_path, quality_webm)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [
+            executor.submit(
+                _run_ffmpeg_hevc,
+                video_path,
+                hevc_output_path,
+                quality_hevc,
+                duration_seconds,
+            ),
+            executor.submit(
+                _run_ffmpeg_webm,
+                video_path,
+                webm_output_path,
+                quality_webm,
+                duration_seconds,
+            ),
+        ]
+        for future in concurrent.futures.as_completed(futures):
+            future.result()
 
 
 def _run_ffmpeg_hevc(
     input_video_path: Path,
     output_path: Path,
     quality: int,
+    duration_seconds: float | None = None,
 ) -> None:
     """Helper function to run the ffmpeg command for HEVC/MP4 conversion."""
     if input_video_path.suffix.lower() == ".mp4" and _check_if_hevc_codec(
@@ -224,7 +354,7 @@ def _run_ffmpeg_hevc(
         "-x265-params",
         "log-level=warning",  # Keep logging minimal for x265
         "-preset",
-        "slower",
+        "slow",
         *_FFMPEG_SCALE_PIX_FMT_ARGS,
         "-tag:v",
         _TAG_APPLE_COMPATIBILITY,
@@ -232,7 +362,9 @@ def _run_ffmpeg_hevc(
         *_FFMPEG_COMMON_OUTPUT_ARGS,
     ]
 
-    _run_ffmpeg(ffmpeg_cmd, input_video_path, output_path)
+    _run_ffmpeg(
+        ffmpeg_cmd, input_video_path, output_path, "HEVC", duration_seconds
+    )
 
 
 _WEBM_AUDIO_ARGS: Final[list[str]] = [
@@ -251,6 +383,7 @@ def _run_ffmpeg_webm(
     input_video_path: Path,
     output_path: Path,
     quality: int,
+    duration_seconds: float | None = None,
 ) -> None:
     """Helper function to run the ffmpeg command for WebM/VP9 conversion."""
     if not 0 <= quality <= 63:
@@ -285,7 +418,9 @@ def _run_ffmpeg_webm(
         *_FFMPEG_COMMON_OUTPUT_ARGS,
     ]
 
-    _run_ffmpeg(ffmpeg_cmd, input_video_path, output_path)
+    _run_ffmpeg(
+        ffmpeg_cmd, input_video_path, output_path, "VP9", duration_seconds
+    )
 
 
 _CMD_TO_CHECK_CODEC: tuple[str, ...] = (
