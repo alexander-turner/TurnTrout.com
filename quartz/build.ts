@@ -334,7 +334,11 @@ async function emitChangedFiles(
         .map((file) => contentMap.get(file) || [])
         .filter((content) => content.length > 0)
 
-      const emittedFps = await emitter.emit(ctx, upstreamContent as ProcessedContent[], staticResources)
+      const emittedFps = await emitter.emit(
+        ctx,
+        upstreamContent as ProcessedContent[],
+        staticResources,
+      )
 
       if (ctx.argv.verbose) {
         for (const file of emittedFps) {
