@@ -34,7 +34,9 @@ FOOTNOTE_REF_PATTERN = re.compile(r"\[\^([^\]]+)\]")
 
 def _is_continuation(line: str) -> bool:
     """A blank line or a 4-space/tab-indented line continues a footnote def."""
-    return line.strip() == "" or line.startswith("    ") or line.startswith("\t")
+    return (
+        line.strip() == "" or line.startswith("    ") or line.startswith("\t")
+    )
 
 
 def extract_footnote_defs(content: str) -> tuple[str, dict[str, str]]:
@@ -61,7 +63,9 @@ def extract_footnote_defs(content: str) -> tuple[str, dict[str, str]]:
             if lines[cursor].strip() != "":
                 last_content = cursor
             cursor += 1
-        defs[match.group(1)] = "\n".join(lines[start : last_content + 1]).rstrip()
+        defs[match.group(1)] = "\n".join(
+            lines[start : last_content + 1]
+        ).rstrip()
         index = cursor
     return "\n".join(kept), defs
 
@@ -70,7 +74,11 @@ def referenced_footnotes(section: str, defs: dict[str, str]) -> list[str]:
     """Return the def blocks ``section`` references, including nested refs."""
     needed: list[str] = []
     seen: set[str] = set()
-    queue = [label for label in FOOTNOTE_REF_PATTERN.findall(section) if label in defs]
+    queue = [
+        label
+        for label in FOOTNOTE_REF_PATTERN.findall(section)
+        if label in defs
+    ]
     while queue:
         label = queue.pop(0)
         if label in seen:
@@ -78,7 +86,9 @@ def referenced_footnotes(section: str, defs: dict[str, str]) -> list[str]:
         seen.add(label)
         block = defs[label]
         needed.append(block)
-        queue.extend(ref for ref in FOOTNOTE_REF_PATTERN.findall(block) if ref in defs)
+        queue.extend(
+            ref for ref in FOOTNOTE_REF_PATTERN.findall(block) if ref in defs
+        )
     return needed
 
 
@@ -99,12 +109,17 @@ def split_sections(body: str) -> list[tuple[str, str]]:
     sections: list[tuple[str, str]] = []
     for index, match in enumerate(matches):
         start = match.start()
-        end = matches[index + 1].start() if index + 1 < len(matches) else len(body)
+        end = (
+            matches[index + 1].start()
+            if index + 1 < len(matches)
+            else len(body)
+        )
         sections.append((match.group(1).strip(), body[start:end].strip()))
     return sections
 
 
 def fixture_frontmatter(heading: str, slug: str) -> str:
+    """Return the YAML frontmatter block for a section fixture page."""
     return (
         "---\n"
         f'title: "Test section: {heading}"\n'
@@ -140,11 +155,14 @@ def build_fixtures(source_markdown: str) -> dict[str, str]:
         needed_defs = referenced_footnotes(section, footnote_defs)
         if needed_defs:
             section = f"{section}\n\n" + "\n\n".join(needed_defs)
-        fixtures[f"{slug}.md"] = f"{fixture_frontmatter(heading, slug)}\n{section}\n"
+        fixtures[f"{slug}.md"] = (
+            f"{fixture_frontmatter(heading, slug)}\n{section}\n"
+        )
     return fixtures
 
 
 def generate() -> list[str]:
+    """Write all section fixtures to OUTPUT_DIR, replacing any stale ones."""
     fixtures = build_fixtures(SOURCE.read_text(encoding="utf-8"))
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     for stale in OUTPUT_DIR.glob("*.md"):
@@ -156,6 +174,8 @@ def generate() -> list[str]:
 
 if __name__ == "__main__":
     names = generate()
-    print(f"Wrote {len(names)} section fixtures to {OUTPUT_DIR.relative_to(REPO_ROOT)}")
+    print(
+        f"Wrote {len(names)} section fixtures to {OUTPUT_DIR.relative_to(REPO_ROOT)}"
+    )
     for name in names:
         print(f"  {name}")
