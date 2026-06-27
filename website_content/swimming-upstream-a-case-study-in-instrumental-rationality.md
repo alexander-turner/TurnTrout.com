@@ -153,7 +153,7 @@ I sacrificed some of my tethering to the [social web](https://www.lesswrong.com/
 
 [^1]: My secret to being able to [continuously](/set-theory-textbook-review) [soak](/AI-textbook-review) [up](/linear-algebra-textbook-review) [math](/all-of-statistics-textbook-review) [is](/first-analysis-textbook-review) that I _enjoy it_. However, it wasn't immediately obvious that this would be the case, and only the intensity of my desire to step up actually got me to start studying. Only then, after occupying myself in earnest with those pages of Greek glyphs, did I realize that it's _fun_.
 
-[^2]: This event marked my discovery of the mental movement detailed in _[How to Dissolve It](/how-to-dissolve-it)_; it has since paid further dividends in both novel ideas and clarity of thought.
+[^2]: This event marked my discovery of the mental movement detailed in _[@title](/how-to-dissolve-it)_; it has since paid further dividends in both novel ideas and clarity of thought.
 
 [^3]: I've since updated away from this being true for humans in practice, but I felt it would be dishonest to edit my thought process after the fact.
 

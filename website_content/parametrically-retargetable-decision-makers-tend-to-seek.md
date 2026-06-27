@@ -61,7 +61,7 @@ Examples of agent designs the power-seeking theorems now apply to:
 - [Quantilizing](https://intelligence.org/files/QuantilizersSaferAlternative.pdf) with a uniform prior over plans, and
 - RL-trained agents under certain modeling assumptions.
 
-The key insight is that the original results hinge not on optimality per se, but on the [retargetability](/satisficers-tend-to-seek-power) of the policy-generation process via a reward or utility function or some other parameter. See [Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability](/satisficers-tend-to-seek-power) for intuitions and illustrations.
+The key insight is that the original results hinge not on optimality per se, but on the [retargetability](/satisficers-tend-to-seek-power) of the policy-generation process via a reward or utility function or some other parameter. See [@title](/satisficers-tend-to-seek-power) for intuitions and illustrations.
 
 # Why am I only now posting this?
 

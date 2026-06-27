@@ -744,7 +744,7 @@ Asset accessibility
 > [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
 > ![[/open-source#automatic-alt-text-generation]]
 
-I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
+I also subtitled the 22-minute [@title](/alignment-tier-list).
 
 Color contrast
 : I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context.
