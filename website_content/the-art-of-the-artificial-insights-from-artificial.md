@@ -57,13 +57,13 @@ One of the fruits of growing older is revisiting your old favorites, whether the
 
 My process for the first 60% of this 1,052-page behemoth was fairly normal: an hour or two of studying per day over the course of a few weeks. The last bit went a little differently.
 
-### Whatever It Takes
+### Whatever it takes
 
 Two days ago, my winter trimester ended; I had upwards of 400 pages to go, half of this post to write, and dozens of exercises to complete. I found myself with three full days to spare before my research resumed the proceeding week. I did what any young man in his early twenties would do - I concocted a plan for studying upwards of 30 hours in that time span.
 
 I knew that this plan was preposterous; in all likelihood, I'd finish 3 chapters and burn out. That's why I wheeled out [Murphyjitsu](https://www.lesswrong.com/posts/N47M3JiHveHfwdbFg/hammertime-day-10-murphyjitsu).
 
-#### Preparing for Failure Modes
+#### Preparing for failure modes
 
 **Burnout** was prepared for by:
 
@@ -89,7 +89,7 @@ I knew that this plan was preposterous; in all likelihood, I'd finish 3 chapters
 
 **Wanting to do other things** was mitigated by setting aside an hour or two where I'd go to the dojo or spend time with friends. I also took a bit of time for myself each night, calling my family as usual.
 
-#### The Outcome
+#### The outcome
 
 Not only did I do it, but I finished a day early. The Murphyjitsu was invaluable; the failure modes I predicted came up and were dealt with by my precautions.
 
@@ -107,13 +107,13 @@ _In which the authors define rationality (no, IEEE Computing Edge, [books do not
 
 _In which the authors broadly define agent frameworks, environmental attributes, and the nature of learning._
 
-### Wireheading Cameo
+### Wireheading cameo
 
 > Notice that we said \[agent performance is graded on\] _environment_ states, not _agent_ states. If we define success in terms of agent's (sic) opinion of its own performance, an agent could achieve perfect rationality simply by deluding itself that its performance was perfect.
 
 Of course, this division only works if there is a [Cartesian boundary](http://lesswrong.com/lw/jlg/bridge_collapse_reductionism_as_engineering/) between that-which-grades and that-which-acts. Which there isn't.
 
-### Charming Philosophical Tangents
+### Charming philosophical tangents
 
 > The notion of "clean floor"... is based on average cleanliness over time. Yet the same average cleanliness can be achieved by two different agents, one of which does a mediocre job all the time while the other cleans energetically but takes long breaks... Which is better - a reckless life of highs and lows, or a safe but humdrum existence? Which is better - an economy where everyone lives in moderate poverty, or one in which some live in plenty while others are poor? We leave these questions as an exercise for the diligent reader.
 
@@ -123,7 +123,7 @@ I don't know if I can answer the first question without more information, but as
 
 _In which the authors teach us to find what we're looking for._
 
-### Admissibility and Consistency
+### Admissibility and consistency
 
 Heuristics are functions which estimate distance to the goal. Let $g(s)$ be the cost to reach $s$ in the current path, let the path cost of reaching state $s'$ from $s$ via action $a$ be $c(s,a,s')$, and let $h$ be a heuristic. The total distance function is then:
 
@@ -181,7 +181,7 @@ Problem relaxation is a great way of finding admissible heuristics, and it's als
 
 _In which the authors introduce ways to search using local information._
 
-### And-Or
+### And-or
 
 Applying And-Or search can seem tricky, but it's really not. When an agent is operating under _partial observability_ (it isn't sure about the exact state of the world), it maintains a _belief state_ (in this chapter, the set of all states the agent could be in). To be sure it will be in the goal state after following its plan, we whip out And-Or search: **for each** state we could be in now (∧), we need to find **at least one** solution ( $\lor$).
 
@@ -195,7 +195,7 @@ _In which the authors demonstrate how to search when the world really **is** out
 
 I won't babble about $\alpha\beta$\-pruning - just [practice](http://inst.eecs.berkeley.edu/~cs61b/fa14/ta-materials/apps/ab_tree_practice/). For me, it was deceptively intuitive - I "got it" so "easily" that I neglected to follow the actual algorithm in a practice problem.
 
-### Patchwork Progress
+### Patchwork progress
 
 I don't think it's a good idea to spend substantial time on quick fixes which slightly improve performance but don't scale in the limit. Elegant algorithms are often superior for reasons exceeding their aesthetic appeal.
 
@@ -355,7 +355,7 @@ _In which the authors introduce entropy and the supervised learning techniques o
 
 > \[Here\], we have the simplest method of all, known informally as "connect-the-dots", and superciliously as "piecewise-linear non-parametric regression".
 
-### Bayes-Structure
+### Bayes-structure
 
 In supervised learning, we grade hypotheses by their likelihood given the data:
 
@@ -405,7 +405,7 @@ _In which the authors outline traditional approaches to text classification, inf
 
 _In which the authors outline logical and probabilistic techniques for natural language processing._
 
-### Avoiding Confusion
+### Avoiding confusion
 
 Let's revisit the point I made in Ch. 5 and discuss how easy it is to avoid confusion by optimizing based on what you know how to do _now_ - this seems to be a common and serious failure mode. Half of this chapter is about efforts to contort English to fit inside hard-and-fast syntactic and semantic rules (which are either provided or learned).
 
@@ -459,7 +459,7 @@ _In which the authors consider a range of ethical and philosophical quandries in
 
 John Searle obviously doesn't read [IEEE Computing Edge](https://www.computer.org/csdl/mags/co/2017/05/mco2017050116.html).
 
-### No Universal Arguments
+### No universal arguments
 
 > One can hope that a robot that is smart enough to figure out how to terminate the human race is also smart enough to figure out that that was not the intended utility function.
 

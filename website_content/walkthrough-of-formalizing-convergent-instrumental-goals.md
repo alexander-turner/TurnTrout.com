@@ -92,7 +92,7 @@ Utility functions evaluate states of the universe;  $U$ evaluates each region an
 
  $\mathcal{A}$ chooses the best possible strategy - that is, the one that maximizes the  $U$ of the final state of the universe-history:  $\mathcal{A}:= \text{argmax}_{\langle \bar{a}^k \rangle \in \texttt{Feasible}} U(\langle \bar{a}^k \rangle)$. Note that this definition implies a Cartesian boundary between the agent and the universe; that is,  $\mathcal{A}$ doesn't model itself as part of the environment (it [isn't naturalized](https://www.lesswrong.com/posts/ethRJh2E7mSSjzCay/building-phenomenological-bridges)).
 
-# Seizing the Means of Cartesian Production
+# Seizing the means of Cartesian production
 
 Let's talk about the situations in which  $\mathcal{A}$ will seize resources; that is, when  $\mathcal{A}$ will take actions to increase its resource pool.
 
@@ -110,7 +110,7 @@ An action _preserves_ resources if the input resources are strictly contained in
 
 A cheap lunch is _compatible with_ a global strategy if the resources required for the lunch are available for use in  $J$ at each time step. Basically, at no point does the partial strategy require resources already being used elsewhere.
 
-## Possibility of Non-Null Actions
+## Possibility of non-null actions
 
 We show that it's really hard to assert that  $\mathcal{A}$ won't chow down on a lunch of an atom or two (or  $1.3×10^{50}$).
 
@@ -153,7 +153,7 @@ We show that as long as  $\mathcal{A}$ can extract useful resources (resources w
 > [!quote] Formalizing convergent instrumental goals
 > We interpret Theorem 3 as a partial confirmation of Omohundro's thesis in the following sense. If there are actions in the real world that produce more resources than they consume, and the resources gained by taking those actions allow agents the freedom to take various other actions, then we can justifiably call these actions "convergent instrumental goals." Most agents will have a strong incentive to pursue these goals, and an agent will refrain from doing so only if it has a utility function over the relevant region that strongly disincentivizes those actions.
 
-# The Bit Universe
+# The bit universe
 
 The authors introduce a toy model and use the freshly proven theorems to illustrate how  $\mathcal{A}$ takes non-null actions in our precious  $S_h$ (both when it is indifferent to  $h$ and when it is not). This isn't good; the vast majority of utility-maximizing agents will not steer us towards futures we find desirable. If you're interested, I recommend reading this section for yourself, even if you aren't comfortable with math.
 
@@ -164,7 +164,7 @@ The authors introduce a toy model and use the freshly proven theorems to illustr
 
 We have much work to do. The risks are enormous and the challenges "[impossible](http://lesswrong.com/lw/up/shut_up_and_do_the_impossible/)", but we have time on the clock. [AI safety research is primarily talent-constrained](https://80000hours.org/career-reviews/artificial-intelligence-risk-research/). If you've been sitting on the sidelines, wondering whether you're good enough to learn the material - well, I can't make any promises. But if you feel the burning desire to _do something_, [to put forth some extraordinary effort](http://lesswrong.com/lw/uo/make_an_extraordinary_effort/), [to become stronger](http://lesswrong.com/lw/h8/tsuyoku_naritai_i_want_to_become_stronger/) - I invite you to contact me so we can work through the material together.
 
-# Appendix: Questions and Errata
+# Appendix: Questions and errata
 
 - Page 4, left column, last line: why is that  $\cup \:P^t$ - shouldn't we take the union of the outputs and whatever resources _weren't_ used at time  $t$?
 - Page 8, right column, second full paragraph, last line: should be "we have two options available _to_ us".

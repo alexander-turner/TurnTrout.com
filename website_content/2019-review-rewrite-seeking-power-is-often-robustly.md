@@ -78,7 +78,7 @@ This choice is not costless: many are already acclimated to the existing "instru
 > [!note] As of 2022, I have given up on "robustly instrumental"
 > I do still say "convergently instrumental" because it's more precise than "instrumentally convergent."
 
-## Qualification of Claims
+## Qualification of claims
 
 The original post claimed that “optimal policies tend to seek power”, _period_. This was partially based on a result which I’d incorrectly interpreted. Vanessa Kosoy and Rohin Shah pointed out this error to me, and I quickly amended the original post and [posted a follow-up explanation](https://www.alignmentforum.org/posts/cwpKagyTvqSyAJB7q/clarifying-power-seeking-and-instrumental-convergence).
 

@@ -105,7 +105,7 @@ In private communication, Joel Leibo points out that Theorems 1 and 2 formalize 
 
 > [!math] Proposition 4: Pareto improvements are never defections
 
-# Game Theorems
+# Game theorems
 
 We can prove that formal defection exists in the trifecta of famous games. Expand the admonitions to view the proofs if you're interested.
 

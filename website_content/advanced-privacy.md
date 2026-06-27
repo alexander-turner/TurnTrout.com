@@ -94,7 +94,7 @@ If you're technically comfortable, I recommend buying a Pixel 9a  for about \$49
   - [ ] [Install GrapheneOS.](https://grapheneos.org/install/web)
 - [ ] If you aren't comfortable setting it up yourself, [buy a Pixel with GrapheneOS preinstalled for \$799.](https://liberateyourtech.com/product/buy-grapheneos-phone-pixel-new/)
 
-#### For any Android user: download apps from Obtainium and Aurora
+#### For any Android user: Download apps from Obtainium and Aurora
 
 Subtitle: Time: 30 minutes to reinstall apps from secure sources.
 

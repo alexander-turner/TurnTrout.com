@@ -154,7 +154,7 @@ This process continues until the entire dataset is exhausted. We may repeat this
 
 When evaluating BIDPO vectors mid-training, we “renormalized” them to have a norm equal to about 5% of the average norm of the residual stream at that part of the forward pass.
 
-## LORA training
+## LoRA training
 
 Our LORAs are trained with rank 1, a learning rate of $10^{-4}$, and a batch size of 16. We evaluate the trained LORAs every 50 steps and evaluate validation accuracy on the checkpoint with lowest validation loss.
 

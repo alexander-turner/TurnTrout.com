@@ -60,7 +60,7 @@ One approach is to set a Yoda Timer for 5 minutes; write down a broad-strokes ex
 
 Be on the lookout for any mental bumps, any areas you gloss over with a trace of discomfort. These dark crevices beckon to you; into them you must descend if you are to emerge solution in hand.
 
-# Emotion Propagation
+# Emotion propagation
 
 > [!question] Challenge
 > Describe a cognitive defect.

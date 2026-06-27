@@ -70,7 +70,7 @@ card_image_alt: A cartoon titled "Orbit of Fortune" illustrates the hypothesized
 > [!thanks]
 >Thanks to `TheMajor`, Rafe Kennedy, and John Wentworth for feedback on this post. Thanks for Rohin Shah and Adam Shimi for feedback on the simplicity prior result.
 
-# Orbits Contain All Permutations of an Objective Function
+# Orbits contain all permutations of an objective function
 
 ## The Minesweeper analogy for power-seeking risks
 
@@ -148,7 +148,7 @@ Table: Different reward functions and the rewards they assign to states.
 
 My new theorems prove that in many situations, for _every_ reward function, power-seeking is incentivized by most (at least half) of its orbit elements.
 
-# In All Orbits, Most Elements Incentivize Power-Seeking
+# In all orbits, most elements incentivize power-seeking
 
 In [_Seeking Power is Often Robustly Instrumental in MDPs_](/seeking-power-is-often-convergently-instrumental-in-mdps), the last example involved gems and dragons and (most exciting of all) subgraph isomorphisms:
 

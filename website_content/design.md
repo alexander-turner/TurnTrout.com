@@ -1150,7 +1150,7 @@ cd .timestamps
 ots --no-bitcoin verify "files/ABC012.txt.ots"
 ```
 
-# Github Actions
+# GitHub Actions
 
 When I `push` commits to [the `main` branch on GitHub](https://github.com/alexander-turner/TurnTrout.com), an Action generates the webpages. Before these pages are sent off to Cloudflare, they must pass yet another gauntlet of tests:
 

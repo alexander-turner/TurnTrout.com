@@ -63,7 +63,7 @@ There's a lot I wanted to say here about topology, but I don't think my understa
 
 _Pointwise and uniform convergence, the Weierstrass_  $M$_\-test, and uniform approximation by polynomials._
 
-### Breaking Point
+### Breaking point
 
 Suppose we have some sequence of functions $f^{(n)}:[0,1]\to\mathbb{R}$, $f^{(n)}(x):=x^n$, which converge pointwise to the 1-indicator function $f:[0,1]\to\mathbb{R}$ (i.e. $f(1)=1$ and $0$ otherwise). Clearly, each $f^{(n)}$ is (infinitely) differentiable. However, the limiting function $f$ isn't differentiable at all! Basically, pointwise convergence isn't at all strong enough to stop the limit from "snapping" the continuity of its constituent functions.
 
@@ -103,11 +103,11 @@ _Already proven:_ $\int_{-1}^1 (1-x^2)^N \,dx \geq \frac{1}{\sqrt{N}}$.
 >
 > the second line being a consequence of $1 > (1-\delta^2)^N$. Then set $N$ to be any natural number such that this inequality is satisfied. Finally, we set $c = \frac{1}{\int_{-1}^1 (1-x^2)^N \, dx}$. By construction, these values of $c,N$ satisfy the second and third properties. □
 
-### Convoluted No Longer
+### Convoluted no longer
 
 Those looking for an excellent explanation of convolutions, [look no further](https://aha.betterexplained.com/t/convolution/679)!
 
-### Weierstrass Approximation Theorem
+### Weierstrass approximation theorem
 
 > [!math] Theorem
 > Suppose  $f : [a,b] \to \mathbb{R}$ is continuous and compactly supported on $[a,b]$. Then for every $\epsilon > 0$, there exists a polynomial $P$ such that $\vert\vert P - f\vert\vert_\infty < \epsilon.$
@@ -175,7 +175,7 @@ _Periodic functions, trigonometric polynomials, periodic convolutions, and the F
 
 _A beautiful unification of Linear Algebra and calculus: linear maps as derivatives of multivariate functions, partial and directional derivatives, Clairaut's theorem, contractions and fixed points, and the inverse and implicit function theorems._
 
-### Implicit Function Theorem
+### Implicit function theorem
 
 If you have a set of points in $\mathbb{R}^n$, when do you know if it's secretly a function $g:\mathbb{R}^{n-1} \to \mathbb{R}$? For functions $\mathbb{R}\to\mathbb{R}$, we can just use the geometric "vertical line test" to figure this out, but that's a bit harder when you only have an algebraic definition. Also, sometimes we can implicitly define a function locally by restricting its domain (even if no explicit form exists for the whole set).
 
@@ -201,7 +201,7 @@ Tao lists desiderata for an ideal measure before deriving it. Imagine that.
 
 _Building up the Lebesgue integral, culminating with Fubini's theorem._
 
-### Conceptual Rotation
+### Conceptual rotation
 
 Suppose $\Omega \subseteq \mathbb{R}^n$ is measurable, and let $f:\Omega \to [0,\infty]$ be a measurable, non-negative function. The Lebesgue integral of $f$ is then defined as:
 

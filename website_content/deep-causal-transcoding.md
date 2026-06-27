@@ -239,7 +239,7 @@ $$
 
 This will serve as a useful fast initialization for learning quadratic and exponential MLPs. And as we will see, despite being an approximation it also often delivers *more* useful/interpretable features than computing the Jacobian exactly, further supporting the hypothesis that assuming orthogonal features does not accurately reflect an LLM's true ontology.
 
-### Fitting a Quadratic MLP
+### Fitting a quadratic MLP
 
 In this case, all but the quadratic terms in equation (3) are constant, and we are fitting a factorization of the Hessian tensor. In particular, our minimization problem is:
 $$
@@ -406,7 +406,7 @@ At first glance, we seem to have simply replaced one hyper-parameter $(R)$ for a
 
 In fact, my preliminary finding is that for a constant depth-horizon $t-s = 10$, a value of $\lambda=.5$ works across a variety of models (even models of varying depths). To illustrate this, for all exponential DCTs in this post I train using the same value of $\lambda=.5$.
 
-# Case Study: Learning Jailbreak Vectors
+# Case study: Learning jailbreak vectors
 
 ## Generalization of linear, quadratic, and exponential DCTs
 
@@ -758,7 +758,7 @@ To achieve a full jailbreak, I train an exponential DCT at source-layer $s=5$ on
 
 To quantify things, this vector achieves an attack success rate of 62% using Harmbench's [Mistral-7B classifier](https://huggingface.co/cais/HarmBench-Mistral-7b-val-cls). This rate is a stark improvement over the 6.2% attack success rate reported in [Zou et al. (2024)](https://arxiv.org/abs/2406.04313) using a representation-engineering based latent-space attack.
 
-# Application: Eliciting Capabilities in Password-Locked Models
+# Application: Eliciting capabilities in password-locked models
 
 In the previous section, I showed how to use DCTs with minimal hyper-parameter tuning to jailbreak a robustly trained version of Mistral-7B-Instruct-v2, showing how the lessons from my initial sample complexity experiments can generalize with minimal hyper-parameter tuning.
 
@@ -766,7 +766,7 @@ To get a sense of how exponential DCTs with standard hyper-parameters might appl
 
 I train the exponential DCT with the same hyper-parameters as my earlier sample complexity experiment ($m=512, \lambda=0.5, s=10, t=20, \tau=10$), on a sample size of $n=8$ questions from MATH. Steering with the calibrated value of $R$, I then choose the best scoring vector on a validation set of 32 questions from MATH, and evaluate performance on a test set of 100 questions. I find that the steered model achieves a test accuracy of 23\%, recovering 32\% of performance of the unlocked model.
 
-# Future Work
+# Future work
 
 I'm excited about the many interesting research directions that can be explored using DCTs. Below is a quick summary of what I think are some of the most compelling questions. If you're interested in pursuing any of these, or have other novel ideas, please get in touch.
 

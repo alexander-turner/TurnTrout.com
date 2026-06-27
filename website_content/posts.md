@@ -34,7 +34,7 @@ If you want, [try going a little further back](/all-posts) to see all of my post
 
 Originally, my content [was hosted on LessWrong](https://www.lesswrong.com/users/turntrout). Much of that content was meant to be consumed as part of a series - or "sequence" - of blog posts.
 
-## Becoming Stronger
+## Becoming stronger
 
 In early 2018, I became convinced that [the AI alignment problem](https://en.wikipedia.org/wiki/AI_alignment) needed to be solved. Who, though, would solve it?
 
@@ -142,7 +142,7 @@ This sequence generalizes the math of [Seeking Power is Often Convergently Instr
 3. [A Certain Formalization of Corrigibility is VNM-Incoherent](./a-certain-formalization-of-corrigibility-is-vnm-incoherent)
 4. [Formalizing Policy Modification Corrigibility](./formalizing-policy-modification-corrigibility)
 
-## Shard Theory
+## Shard theory
 
 In early 2022, [Quintin Pope](https://www.linkedin.com/in/quintin-pope/) and I noticed glaring problems at the heart of "classical" alignment arguments. We thought through the problem with fresh eyes and derived _shard theory_.
 

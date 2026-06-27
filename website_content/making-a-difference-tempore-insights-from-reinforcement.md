@@ -103,7 +103,7 @@ This intuition hugs pre-theoretic understanding much more closely; if you have j
 
 _The tabular triple threat:_ $\text{TD(0)}$, `SARSA`_, and Q-learning._
 
-### Learning TD Learning
+### Learning TD learning
 
 $$
 V(S_t) \gets V(S_t) + \alpha \Big[\underbrace{\overbrace{R_{t+1} + \gamma V(S_{t+1})}^\text{TD target} - V(S_t)}_\text{TD error} \Big]
@@ -144,7 +144,7 @@ $n$-_step everything._
 
 _Models, prioritized sweeping, expected vs. sample updates, MCTS, and rollout algorithms._
 
-### Roles Models Play
+### Roles models play
 
 _Distribution_ models include the full range of possible futures and their probabilities. For example, a distribution model for two fair coins:
 
@@ -182,7 +182,7 @@ _The policy gradient theorem, REINFORCE, and actor-critic._
 
 _Creating a partial mapping between reinforcement learning and psychology._
 
-### Mental, Territorial
+### Mental, territorial
 
 There was a word I was looking for that "mental model" didn't quite seem to fit: "the model with respect to which we mentally simulate courses of action". CFAR's "inner sim" terminology didn't quite map either, as to me, that points to the _system-in-motion_ more than _that-on-which-the-system-runs_. The literature dubs this a cognitive map.
 
@@ -260,7 +260,7 @@ I'll be finishing _Analysis II_ before moving on to Jaynes's _Probability Theory
 
 Recently, OpenAI [made waves with their OpenAI Five Dota 2 bot](https://blog.openai.com/openai-five/). To REINFORCE what I just learned and solidified, I might make a post in the near future breaking down how _Five_ differs from the _Alpha(Go) Zero_ approach, quantifying my expectations for _The International_ for [calibration](https://en.wikipedia.org/wiki/Brier_score).
 
-## No Longer a Spectator
+## No longer a spectator
 
 Four months and one week ago, [I started my journey](/set-theory-textbook-review) through the MIRI reading list. In those dark days, attempting a proof induced a stupor similar to that I encountered approaching a crush in grade school, my words and thoughts leaving me.
 

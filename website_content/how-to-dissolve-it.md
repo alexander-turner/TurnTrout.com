@@ -35,7 +35,7 @@ date_updated: 2026-04-20
 
 In the last month and a half, I've had more (of what I believe to be) profound, creative insights to technical problems than in the five years prior. For example, I independently came up with the core insight behind [DenseNets](https://arxiv.org/abs/1608.06993) during the second lecture on convolutional neural nets in my Deep Learning class. I've noticed that these insights occur as byproducts of _good processes_ and having a _conducive mindset and physiology_ at that point in time. I'm going to focus on the former in this post.
 
-# End in Mind
+# End in mind
 
 Often, when I'm confused about a technical problem, I realize that I don't even know what a solution would look like. Sure, I could verify a solution if one were handed to me on a platter, but in these situations, I generally lack a detailed mental model of how I'd want a solution to behave. This may sound rather obvious once brought to your attention, but I'd like to emphasize how easy it is to spend hours in murky, muddled, pattern-matching gradient descent, mindlessly tweaking the first ideas that came to you.
 
@@ -51,7 +51,7 @@ For example, yesterday I thought about a smaller problem for about 15 minutes, a
 
 In my experience, proper solution formulations are accompanied by a satisfying mental "click." Upon clicking, you eagerly chase down all the freshly exposed avenues of attack. Push the frontier of new understanding as far as it will go, repeat the process when you notice your thought process again becoming muddled, think with paper if the problem is complicated, and enjoy the rush.
 
-# Qualia of Discovery
+# Qualia of discovery
 
 I can't impart to you the exact feeling of using this technique properly, but I can make its fruits concrete by selecting a few things I've dissolved recently:
 

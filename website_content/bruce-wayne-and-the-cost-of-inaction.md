@@ -45,7 +45,7 @@ None of the characters are meant to express my views. I recommend reading accomp
 
 <div class="centered"><audio src="https://assets.turntrout.com/static/audio/batman.mp3" controls> </audio></div>
 
-## 1: Don't Look Away
+## 1: Don't look away
 
 "The man's starving. That doesn't change if you look away, Bruce."
 
@@ -127,7 +127,7 @@ They were home.<br>
 
 <div class="centered"><img id="fade-img" alt="A man and two young boys stand at the edge of a large, circular fountain in front of a grand manor at dusk. The fountain is illuminated, with a central marble statue of a man holding a lit torch and a book, flanked by dolphin statues spouting water." src="https://assets.turntrout.com/static/images/posts/bruce-wayne-and-the-cost-of-inaction-05222026-1.avif" width="90%" height="auto" class="no-select"></div>
 
-## 2: The World is Messy
+## 2: The world is messy
 
 Thomas and Bruce passed through carven mahogany doors into a warm, high-ceilinged room of pale marble floor. Opposite them burned a fireplace of hardwood mantel and brick hearth. Family legend held that its fire had burned uninterrupted through the last century. For his part, Thomas had never seen it darkened.
 
@@ -191,7 +191,7 @@ Bruce looked out the tall windows and onto the rolling hills surrounding the est
 
 "Is this kinda like how the city keeps falling apart?", Bruce asked.
 
-## 3: How People See the World
+## 3: How people see the world
 
 The rich, warm tones of smooth jazz wafted through the apartment: the croon of the saxophone, the deep _doom_ of the bass, the shimmering harmony of the piano. Thomas sank into the cushy leather couch as he sank into the groove of the music.
 

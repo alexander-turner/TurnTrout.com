@@ -73,7 +73,7 @@ I came to [Beyond the Reach of God](https://www.lesswrong.com/posts/sYgv4eYH82JE
 
 Trout can swim.
 
-# Gnawing Shadows
+# Gnawing shadows
 
 I can sense a mix of reasonable dissatisfaction with my performance, and "psychologically unrealistic" expectations. I’ve taken far longer than I wished on my AI book; if only I were less vulnerable to [pica](http://lesswrong.com/lw/15w/experiential_pica/), if I studied an extra hour each day, if the concepts had come to me more easily… I imagine worlds in which I did better and had by now also made progress in, say, topology or linear algebra.
 

@@ -57,7 +57,7 @@ Functions $f:X\to Y$ are _just_ **static sets** of ordered pairs $\{(x,f(x)):x \
 
 Families are, ironically enough, just a special kind of function; don't let your intuition fool you - they aren't "groups of functions." A family belonging to $\prod_{i\in I} X_i$ maps each element $i$ of the index set $I$ to an element $x_i \in X_i$. For example, a family from $\{1,2\}$ to $X_1:=\{cat,dog\}, X_2 :=\{tent,\textit{fire}\}$ could be $\{(1,cat),(2,\textit{fire})\}$ (thanks to `Dacyn` for helping me clarify my writing).
 
-## Zorn's Lemma
+## Zorn's lemma
 
 I spent three hours staring at this proof. I understood what Zorn's Lemma meant. I grasped the relevant concepts. I read other versions of the proof. I still spent three long hours on this damn proof, and then I went to my classes. I don't know why I ended up figuring it out, but I suspect it was a combination of two factors: my brain worked through some things during the day, and I _really wanted it_. On the bus home, I mentally snapped and decided I was _going to understand the proof_. And I did.
 
@@ -73,7 +73,7 @@ As someone without a formal degree in mathematics, it was important for me to mo
 
 One factor which helped me succeed was that I ensured my morning reading was what I most looked forward to each day. I was excited to go to sleep, wake up early, prepare a delicious breakfast, and curl up near the fireplace with book and paper handy. Trivial inconveniences can be fatal - do whatever you must to ensure you properly respect and anticipate your study time.
 
-## Defense with the Dark Arts
+## Defense with the dark arts
 
 Of all the productivity advice I've read, the most useful involves imbuing your instrumental goals with terminal values. Ever since having read that advice, every tedious assignment, every daily routine, every keystroke - they're all backed up by an intense desire to _do something_ about the precarious situation in which humanity finds itself.
 

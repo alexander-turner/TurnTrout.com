@@ -335,7 +335,7 @@ Different shard compositions can produce similar urges
 Shards are just collections of subshards
 : One subshard of your family-shard might steer towards futures where your family is happy, while another subshard may influence decisions so that your mother is proud of you. On my (`TurnTrout`’s) current understanding, “family shard” is just an abstraction of a set of heterogeneous subshards which are downstream of similar historical reinforcement events (e.g. related to spending time with your family). By and large, subshards of the same shard do not all steer towards the same kind of future.
 
-## “Shard Theory”
+## “Shard theory”
 
 Before this post was published, many people read draft documents explaining shard theory. However, in the absence of a canonical public document explaining the ideas and defining terms, “shard theory” has become overloaded. Here, then, are several definitions.
 

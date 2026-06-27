@@ -84,7 +84,7 @@ $$
 $$
 It requires no great leap of imagination to see that we could learn them.
 
-# A Personal Digression
+# A personal digression
 
 I poured so much love and so many words into [Towards a New Impact Measure](/towards-a-new-impact-measure) that I hurt my wrists. For some time after, my typing abilities were quite limited; it was only thanks to the generous help of my friends (in particular, John Maxwell) and family (my mother let me dictate an entire paper in $\LaTeX$ to her) that I was roughly able to stay on pace. Thankfully, physical therapy and newfound dictation software have brightened my prospects.
 

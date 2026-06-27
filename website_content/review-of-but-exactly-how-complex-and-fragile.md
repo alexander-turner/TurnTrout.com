@@ -132,7 +132,7 @@ Value fragility quantifies the robustness of outcome value to perturbation of th
 
 I think this decomposition is much more enlightening than debating whether value is fragile to AI.
 
-# The Comments
+# The comments
 
 If no such decomposition takes place, I think debate is just too hard and opaque and messy, and I think some of this messiness spilled over into the comments. Locally, each comment is well thought-out, but it seems (to me) that cruxes [were largely left untackled](https://www.lesswrong.com/posts/xzFQp7bmkoKfnae9R/but-exactly-how-complex-and-fragile?commentId=C3L8jcExxYphaC5eH).
 

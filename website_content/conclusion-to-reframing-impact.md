@@ -72,7 +72,7 @@ I've made many claims in these posts. All views are my own.
 > [!note]
 > [The LessWrong version of this post](https://www.lesswrong.com/posts/sHpiiZS2gPgoPnijX/conclusion-to-reframing-impact) contained probability estimates from other users.
 
-# Appendix: Easter Eggs
+# Appendix: Easter eggs
 
 The big art pieces (and especially the last illustration in this post) were designed to convey a specific meaning, the interpretation of which I leave to the reader.
 

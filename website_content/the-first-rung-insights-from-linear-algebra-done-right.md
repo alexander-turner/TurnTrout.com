@@ -49,7 +49,7 @@ I received my first homework grade, and I was _not_ pleased with my performance.
 
 This time around, the appropriately acronymized _LADR_ is the first step on my journey to attain a professional-grade mathematical skillset.
 
-## Tight Feedback Loops
+## Tight feedback loops
 
 In a (possibly maniacal) effort to ensure both mastery of the material and the maturation of my proof skillset, I did nearly [^1] every one of the 561 exercises provided. I skipped problems only when I was confident I wouldn't learn anything, or calculus I didn't remember was required (and the payoff didn't seem worth the time spent relearning it now in a shallow manner, as opposed to thoroughly learning more calculus later). If I could sketch a solid proof in my head, I wouldn't write anything down. Even in the latter case, I checked my answers using [this site](http://linearalgebras.com/) (additional solutions may be found in [this GitHub repository](https://github.com/guestname/linear-algebra-done-right-solutions), although be warned that not all of them are correct).
 
@@ -115,7 +115,7 @@ The author built up to matrix multiplication by repeatedly insinuating that line
 
 [Several](https://betterexplained.com/articles/linear-algebra-guide/) [resources](https://www.geogebra.org/m/QxWrMgBV) provide an intuitive understanding of matrix multiplication.
 
-### Dual Maps
+### Dual maps
 
 > If $T \in \mathcal{L}(V,W)$ then the dual map of $T$ is the linear map $T'\in\mathcal{L}(W',V')$ defined by $T'(\phi)=\phi∘T$ for $\phi \,\in \,W'$.
 
@@ -149,7 +149,7 @@ _Edit:_ `daozaich` [writes](https://www.lesswrong.com/posts/qLdG44kpSoYzrzAp7/on
 
 _In which the author uses the prefix "eigen-" so much that it stops sounding like a word._
 
-### Revisiting Material
+### Revisiting material
 
 Before starting this book, I watched 3Blue1Brown's [video](https://www.youtube.com/watch?v=PFDu9oVAE-g) on eigenvectors and came out with a vague "understanding". Rewatching it after reading Ch. 5.A, the geometric intuitions behind eigenvectors didn't seem like useful ways-to-remember an exotic math concept, they felt like a manifestation of how the world works. I _knew_ what I was seeing from the hundreds of proofs I'd done up to that point.
 
@@ -177,7 +177,7 @@ _In which the author lays out adjoint, self-adjoint, normal, and isometric opera
 
 Consider the linear functional $\varphi \in \mathcal{L}(W,F)$ given by $\langle Tv, w \rangle$ for fixed $v \in V$. $\varphi$ is then a linear functional on $W$ for the chosen $Tv$. The adjoint $T^*$ produces the corresponding linear functional in $\mathcal{L}(V,F)$; given fixed $w \in W$, we now map to some linear functional on $V$ such that $\langle  Tv, w \rangle = \langle v, T^*w \rangle$. The left-hand side is a linear functional on $W$, and the right-hand side is a linear functional on $V$.
 
-### The Ghost Theorem
+### The ghost theorem
 
 My brain was unreasonably excited for this chapter because I'd get to learn about "ghosts" (AKA the [Spectral theorem](https://en.wikipedia.org/wiki/Spectral_theorem)). My conscious self-assurances to the contrary completely failed to dampen this ambient anticipation.
 
@@ -197,7 +197,7 @@ _In which the curtain is finally pulled back._
 
 Sassy partial title drop (emphasis mine).
 
-## Final Verdict
+## Final verdict
 
 Overall, I really liked this book and its clean theoretical approach. By withholding `trace` and `det` until the end of the book, many properties were arrived at in a natural, satisfying, and enlightening manner. The proofs were clean, and the writing was succinct (although I did miss the subtle wit of Russell and Norvig). This book positively, definitely belongs on the MIRI book list.
 

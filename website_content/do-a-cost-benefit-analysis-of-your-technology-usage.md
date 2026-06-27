@@ -156,7 +156,7 @@ How will I stay in touch with people? I’m already lonely.
 
 # Benefits of the declutter
 
-## The First Day
+## The first day
 
 I went running and got back to the house 10 minutes earlier than usual. Huh.
 
@@ -164,7 +164,7 @@ I called my parents and went on a leisurely walk. Even so, I got my morning rout
 
 The day yawned and stretched. I wondered if it would ever end. (It did.)
 
-## The Second Day
+## The second day
 
 > [!quote] Journal entry (February 23, 2022)
 >

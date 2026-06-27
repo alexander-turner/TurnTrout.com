@@ -86,11 +86,11 @@ However, other problems remain, and certain new challenges have arisen; these, a
 
 Figure: Rare LEAKED footage of Mickey trying to catch up on his alignment theory after instantiating an unfriendly genie \[colorized, 2050\].[^2]
 
-## So, What's Whitelisting?
+## So, what's whitelisting?
 
 To achieve robust side effect avoidance with only a small training set, let's turn the problem on its head: allow a few effects, and penalize everything else.
 
-### What's an "Effect"?
+### What's an "effect"?
 
 You're going to be the agent, and I'll be the supervisor.
 
@@ -117,7 +117,7 @@ Here are some notes to head off confusion:
 - The whitelist is provably closed under transitivity.
 - The whitelist is directed; $a\to b \neq b\to a$.
 
-### Latent Space Whitelisting
+### Latent space whitelisting
 
 In a sense, class-based whitelisting is but a rough approximation of what we're really after: "which objects in the world can change, and in what ways?". In latent space whitelisting, no longer do we constrain transitions based on class boundaries; instead, we penalize based on endpoint distance in the latent space. Learned latent spaces are low-dimensional manifolds which suffice to describe the data seen thus far. It seems reasonable that nearby points in a well-constructed latent space correspond to like objects, but further investigation is warranted.
 
@@ -183,13 +183,13 @@ If you wanted to implement whitelisting in a modern embodied deep-learning agent
 
 Not only does the agent need to realize that objects are permanent, but also that they keep interacting with the environment even when not being observed. If this is not realized, then an agent might set an effect in motion, stop observing it, and then turn around when the bad effect is done to see a "new" object in its place.
 
-## Time Step Size Invariance
+## Time step size invariance
 
 The penalty is presently attenuated based on the probability that the belief shift was due to noise in the data. Accordingly, there are certain ways to abuse this to skirt the penalty. For example, simply have non-whitelisted side effects take place over long timescales; this would be classified as noise and attenuated away.
 
 However, if we don't need to handle noise in the belief distributions, this problem disappears - presumably, an advanced agent keeps its epistemic house in order. I'm still uncertain about whether (in the limit) we have to hard-code a means for decomposing a representation of the world-state into objects, and where to point the penalty evaluator in a potentially self-modifying agent.
 
-## Information Theory
+## Information theory
 
 Whitelisting is wholly unable to capture the importance of "informational states" of systems. It would apply no penalty to passing powerful magnets over your hard drive. It is not clear how to represent this in a sensible way, even in a latent space.
 
@@ -221,7 +221,7 @@ Whitelisting may be vulnerable to ontological crises. Consider an agent whose wh
 
 Generally, proving invariance of the whitelist across refactorings seems tricky, even assuming that we _can_ [identify the correct mapping](https://arbital.com/p/ontology_identification/).
 
-### Retracing Steps
+### Retracing steps
 
 When I first encountered the ontological crisis problem, I was actually fairly optimistic. It was clear to me that any ontology refactoring should result in utility normality - roughly, the utility functions induced by the pre- and post-refactoring ontologies should output the same scores for the same worlds.
 
@@ -259,7 +259,7 @@ If we have at least an _almost-aligned_ utility function and proper penalty scal
 
 Edit: [Here is a potential solution](/overcoming-clinginess-in-impact-measures) to clinginess.
 
-# Discussing Imperfect Approaches
+# Discussing imperfect approaches
 
 A few months ago, Scott Garrabrant wrote about robustness to scale.
 

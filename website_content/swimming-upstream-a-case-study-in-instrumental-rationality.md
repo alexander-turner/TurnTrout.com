@@ -55,7 +55,7 @@ It's hard to believe how much I've grown and grown up in these last few months, 
 
 I didn't sacrifice my grades, work performance, physical health, or my social life to do this. I sacrificed something else.
 
-# CHAI For At Least Five Minutes
+# CHAI for at least five minutes
 
 Alex<sub>January</sub> had finished the Sequences and was curious about getting involved with AI safety. Not soon, of course - at the time, I had a narrative in which I had to labor and study for long years before becoming worthy. To be sure, I would never endorse such a narrative - [something to protect](https://www.lesswrong.com/posts/SGR4GxFK7KmW7ckCB/something-to-protect), after all - but I had it.
 

@@ -50,7 +50,7 @@ I wanted to help, and so I [started levelling up](/posts#becoming-stronger). Whi
 
 I can't usefully write a letter to my past self, so let me write a letter to you instead, keeping in mind that good advice for past-me [may not be good advice for you](https://slatestarcodex.com/2014/03/24/should-you-reverse-any-advice-you-hear/).
 
-# Make Sure You Remember The Content
+# Make sure you remember the content
 
 Subtitle: The most important piece of advice.
 
@@ -142,7 +142,7 @@ I know quite a bit about how to best use Anki, so if you try this and it doesn't
 - When I think "cool concept!", I generally add a new card to Anki.
   - I recommend adding cards liberally. Don't worry about getting the formatting or phrasing perfect at first. Just add cards and you'll develop a taste for what should be added, and how.
 
-# Read Several Textbooks Concurrently
+# Read several textbooks concurrently
 
 TL;DR: Study several topics at once so that your brain has time to cement the concepts you're learning, before the text builds on those concepts further.
 
@@ -160,7 +160,7 @@ For example, right now I'm reading Nielsen and Chuang's [_Quantum Computation an
 
 I always feel like I'm learning something new instead of banging my head against the wall. Sometimes you should just read one book, but if you don't need to cram, I recommend diversifying.
 
-# Completing The Whole Textbook Is Usually a Big Waste of Time, Please Don't Do It
+# Completing the whole textbook is usually a big waste of time, please don't do it
 
 TL;DR: Extract the most useful / central concepts and remember them forever via Anki. This doesn't require grasping every arcanum, every detail of a textbook.
 

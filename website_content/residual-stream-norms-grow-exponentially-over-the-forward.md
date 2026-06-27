@@ -153,7 +153,7 @@ We know that both `attn_out` and `mlp_out` grow exponentially. In the next two s
 > [!note] Summary
 > We _do_ find evidence for exponentially increasing weights in both sub-layers, although in both cases we are somewhat confused what is happening.
 
-## Analyzing the Attention weights
+## Analyzing the attention weights
 
 **What do we want to get evidence on?**
 : We want to know why `attn_out` grows exponentially with layer number: Is the growth a property inherent to the Attention weights in each of the layers (theory 1), or is the growth relying on properties of the residual stream (theory 2).

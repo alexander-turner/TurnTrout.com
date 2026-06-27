@@ -75,7 +75,7 @@ The direct translator minimizes training loss because it answers all questions c
 
 The direct translator solves ELK for narrowly defined questions, like "is the diamond still in the room?". How do we get it?
 
-# Thinking Via A Human Imitator
+# Thinking via a human imitator
 
 I want to structure the problem so that direct translation is _instrumentally required_ for minimizing predictive training loss. To that end: What if the AI had to do some proportion $p$  of its thinking in the human net?
 

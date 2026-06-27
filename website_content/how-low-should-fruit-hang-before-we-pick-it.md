@@ -404,7 +404,7 @@ This obsoletes the lower bound provided by Theorem 6: Individual appearance boun
 >
 > > ! The largest such $\alpha$ is $13.$
 
-## Even More Math
+## Even more math
 
 > [!math] Proposition: Invariances
 > Let $\mathcal{P}$ be an impact partition induced by $(\bar{A},{\color{Red}u}, {\color{blue}I})$.
