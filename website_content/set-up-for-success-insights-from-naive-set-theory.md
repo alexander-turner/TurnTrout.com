@@ -20,7 +20,7 @@ title: "Set Up for Success: Insights from 'Naïve Set Theory'"
 lw-latest-edit: 2018-02-28T02:01:43.790000Z
 lw-is-linkpost: 'false'
 tags:
-  - scholarship-&-learning
+  - scholarship-and-learning
   - mathematics
 aliases:
   - set-up-for-success-insights-from-naive-set-theory

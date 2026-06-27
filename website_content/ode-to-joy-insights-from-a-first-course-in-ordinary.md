@@ -20,7 +20,7 @@ title: "ODE to Joy: Insights from 'A First Course in Ordinary Differential Equat
 lw-latest-edit: 2020-03-25T22:12:25.494000Z
 lw-is-linkpost: "false"
 tags:
-  - scholarship-&-learning
+  - scholarship-and-learning
   - understanding-the-world
   - mathematics
 aliases:
