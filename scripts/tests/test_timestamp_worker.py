@@ -149,6 +149,9 @@ class _Sandbox:
             "PATH": f"{self.home / '.local' / 'bin'}:{os.environ['PATH']}",
             "OTS_GIT_ROOT": str(self.main),
             "OTS_STATE_DIR": str(self.state),
+            # post-commit skips entirely when CI=true; the GitHub Actions runner
+            # sets CI=true, so default it off here. test_skips_in_ci overrides.
+            "CI": "",
         }
         env.update(overrides)
         return env
