@@ -21,7 +21,7 @@ lw-latest-edit: 2018-05-03T22:56:27.057000Z
 lw-is-linkpost: 'false'
 tags:
   - summaries
-  - scholarship-&-learning
+  - scholarship-and-learning
   - mathematics
 aliases:
   - confounded-no-longer-insights-from-all-of-statistics

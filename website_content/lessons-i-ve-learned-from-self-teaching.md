@@ -20,7 +20,7 @@ title: Lessons I've Learned from Self-Teaching
 lw-latest-edit: 2021-12-05T17:56:31.967000Z
 lw-is-linkpost: "false"
 tags:
-  - scholarship-&-learning
+  - scholarship-and-learning
   - practical
   - rationality
 aliases:
