@@ -26,7 +26,7 @@
     "preview": "tsx quartz/bootstrap-cli.ts build && pnpm serve public",
     "start": "tsx quartz/bootstrap-cli.ts build && pnpm serve public -l 8080",
     "profile": "NODE_OPTIONS='--enable-source-maps' 0x --output-dir ./prof/ ./node_modules/.bin/tsx ./quartz/bootstrap-cli.ts build --concurrency=1",
-    "postinstall": "patch-package",
+    "postinstall": "patch-package --patch-dir patches/patch-package",
     "install-browsers": "pnpm playwright install && npx puppeteer browsers install chrome",
     "test:visual": "pnpm playwright test --config config/playwright/playwright.config.ts --grep '(screenshot)'",
     "test:a11y": "pnpm pa11y-ci --config config/pa11y/.pa11yci --sitemap http://localhost:8080/sitemap.xml --sitemap-find https://turntrout.com --sitemap-replace http://localhost:8080 --sitemap-exclude '.*elk-proposal-thinking-via-a-human-imitator.*'",

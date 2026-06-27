@@ -833,6 +833,28 @@ def test_latex_tags_variations(
 
 
 @pytest.mark.parametrize(
+    "content,expected_count",
+    [
+        ("[ok](/no-spaces)", 0),
+        ("![img](/no-spaces.png)", 0),
+        ("[ok](/url 'a title')", 0),  # quoted title is legal
+        ('[ok](/url "a title")', 0),  # double-quoted title is legal
+        ("[ok](</url with spaces>)", 0),  # angle-bracketed URL is legal
+        ("[bad](/url with spaces)", 1),
+        ("[bad](https://x.com/a b c.mp4)", 1),
+        ("![bad](/img with space.png)", 1),
+        ("`[code](/has spaces)`", 0),  # inline code is ignored
+        ("[a](/x y) and [b](/p q)", 2),
+    ],
+)
+def test_check_spaces_in_md_link_urls(content: str, expected_count: int):
+    """Markdown link/image URLs with raw spaces are flagged; legal forms (quoted
+    titles, angle-bracketed URLs, code spans) are not."""
+    errors = source_file_checks.check_spaces_in_md_link_urls(content)
+    assert len(errors) == expected_count
+
+
+@pytest.mark.parametrize(
     "test_case",
     [
         # Test case 1: Valid bidirectional relationship

@@ -647,7 +647,11 @@ Many favicons are monochromatic to avoid chaos. However, some iconic brand logos
   <div class="subfigure">
     <svg class="favicon favicon-big" data-domain="amazon_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/amazon_com.svg);" alt=""></svg>
     <figcaption><code>amazon.com</code>'s background is a <code>radial-gradient</code>: <svg class="favicon no-mask favicon-demo-inline" data-domain="amazon_com" alt="A disk of text-color surrounded by yellow to form a square."></svg>.</figcaption>
-</div>
+  </div>
+  <div class="subfigure">
+    <svg class="favicon favicon-big" data-domain="msnbc_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/msnbc_com.svg);" alt=""></svg>
+    <figcaption><code>msnbc.com</code>'s peacock fans out from a <code>conic-gradient</code>: <svg class="favicon no-mask favicon-demo-inline full-color" data-domain="msnbc_com" alt="The six peacock colors (yellow, orange, red, purple, blue, and green) fanning out as wedges from a point near the bottom of a square."></svg>.</figcaption>
+  </div>
   </figure>
 
 I showcase all included favicons on [the test page](/test-page#external-links-with-favicons) to verify that the favicons look good after several kinds of characters.
