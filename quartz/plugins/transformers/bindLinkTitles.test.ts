@@ -64,6 +64,14 @@ describe("bindTitlesInTree", () => {
     expect(textOf(root)).toContain(">The Live Title<")
   })
 
+  it("lowercases the title for the @title-lower sentinel", () => {
+    const root = tree(
+      boundAnchor({ "data-slug": "other-page", href: "/other-page" }, "@title-lower"),
+    )
+    bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")
+    expect(textOf(root)).toContain(">the live title<")
+  })
+
   it("binds a section link to the target heading's current text", () => {
     const root = tree(
       boundAnchor({

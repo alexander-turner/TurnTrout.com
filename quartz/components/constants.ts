@@ -148,6 +148,9 @@ export const SEARCH_MATCH_CLASS = "search-match"
 // `quartz/plugins/transformers/bindLinkTitles.ts`. Shared with the built-site
 // checker via `config/constants.json` so the two can't disagree on the token.
 export const LINK_TITLE_SENTINEL: string = constantsJson.linkTitleSentinel
+// Same as LINK_TITLE_SENTINEL, but renders the target title lowercased so it
+// reads naturally mid-sentence.
+export const LINK_TITLE_LOWER_SENTINEL: string = constantsJson.linkTitleLowerSentinel
 
 // UI strings for various components
 export const uiStrings = {
