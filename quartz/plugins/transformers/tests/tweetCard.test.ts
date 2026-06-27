@@ -112,6 +112,12 @@ describe("buildTweetCard", () => {
     expect(html).toContain('data-tweet-id="123"')
   })
 
+  it("gives the icon-only avatar and source links accessible names", () => {
+    const html = render(buildTweetCard(baseSnapshot))
+    expect(html).toContain('aria-label="Alex Turner (@turntrout)"')
+    expect(html).toContain('aria-label="View post on X"')
+  })
+
   it("shows the verified badge only when verified", () => {
     expect(render(buildTweetCard(baseSnapshot))).toContain("tweet-verified")
     const unverified = { ...baseSnapshot, author: { ...baseSnapshot.author, verified: false } }

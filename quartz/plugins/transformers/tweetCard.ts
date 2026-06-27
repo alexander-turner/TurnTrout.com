@@ -81,8 +81,20 @@ export function formatTweetDate(iso: string): string {
 
 const MENTION_OR_TAG = /[@#$]\w+/g
 
-function externalAnchor(href: string, children: (Element | string)[], className: string): Element {
-  return h("a", { href, rel: EXTERNAL_LINK_REL, target: "_blank", className }, children)
+function externalAnchor(
+  href: string,
+  children: (Element | string)[],
+  className: string,
+  ariaLabel?: string,
+): Element {
+  const props: Record<string, string> = {
+    href,
+    rel: EXTERNAL_LINK_REL,
+    target: "_blank",
+    className,
+  }
+  if (ariaLabel) props["aria-label"] = ariaLabel
+  return h("a", props, children)
 }
 
 /** Linkify @mentions, #hashtags, and $cashtags within a plain-text run, pointing at xcancel. */
@@ -208,6 +220,7 @@ export function buildTweetCard(snapshot: TweetSnapshot): Element {
   const nameChildren: (Element | string)[] = [h("span", { className: "tweet-name" }, author.name)]
   if (author.verified) nameChildren.push(verifiedBadge())
 
+  const authorLabel = `${author.name} (@${author.handle})`
   const header = h("div", { className: "tweet-header" }, [
     externalAnchor(
       snapshot.url,
@@ -222,12 +235,13 @@ export function buildTweetCard(snapshot: TweetSnapshot): Element {
         }),
       ],
       "tweet-avatar-link",
+      authorLabel,
     ),
     h("div", { className: "tweet-author" }, [
       externalAnchor(snapshot.url, nameChildren, "tweet-name-link"),
       externalAnchor(snapshot.url, [`@${author.handle}`], "tweet-handle"),
     ]),
-    externalAnchor(snapshot.url, [xLogo()], "tweet-source-link"),
+    externalAnchor(snapshot.url, [xLogo()], "tweet-source-link", "View post on X"),
   ])
 
   const body = h("div", { className: "tweet-body" }, linkifyTweetText(snapshot.text, snapshot.urls))
