@@ -19,6 +19,7 @@ import {
   matchHTML,
   matchTextNodes,
   navigateWithSearchTerm,
+  noDropcapColor,
   PreviewManager,
   resetSearchStateForTesting,
   scoreDocByMatchDegree,
@@ -1093,5 +1094,17 @@ describe("shouldUseDropcap", () => {
     ['string "true" suppresses dropcap', { no_dropcap: "true" }, false],
   ])("%s", (_name, frontmatter, expected) => {
     expect(shouldUseDropcap(frontmatter)).toBe(expected)
+  })
+})
+
+describe("noDropcapColor", () => {
+  it.each([
+    ["boolean true opts out of color", { no_dropcap_color: true }, true],
+    ['string "true" opts out of color', { no_dropcap_color: "true" }, true],
+    ["boolean false keeps color", { no_dropcap_color: false }, false],
+    ['string "false" keeps color', { no_dropcap_color: "false" }, false],
+    ["absence keeps color", {}, false],
+  ])("%s", (_name, frontmatter, expected) => {
+    expect(noDropcapColor(frontmatter)).toBe(expected)
   })
 })

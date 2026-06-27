@@ -65,6 +65,7 @@ export default (() => {
     )
     const exposedFrontmatter = {
       no_dropcap: fileData.frontmatter?.no_dropcap,
+      no_dropcap_color: fileData.frontmatter?.no_dropcap_color,
     }
 
     const frontmatterScript = (

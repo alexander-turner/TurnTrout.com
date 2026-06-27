@@ -215,6 +215,26 @@ describe("Content component - mobile ToC rendering", () => {
   })
 })
 
+describe("Content component - dropcap attributes", () => {
+  it.each([
+    ["absent frontmatter enables dropcap and keeps color", {}, true, false],
+    ["no_dropcap true disables the dropcap", { no_dropcap: true }, false, false],
+    ['no_dropcap "true" disables the dropcap', { no_dropcap: "true" }, false, false],
+    ["no_dropcap_color true opts out of color", { no_dropcap_color: true }, true, true],
+    ['no_dropcap_color "true" opts out of color', { no_dropcap_color: "true" }, true, true],
+    ["no_dropcap_color false keeps color", { no_dropcap_color: false }, true, false],
+  ])("%s", (_name, extraFrontmatter, expectedUseDropcap, expectedNoColor) => {
+    const props = createQuartzProps({
+      frontmatter: { title: "Test Page", ...extraFrontmatter },
+    })
+    const result = Content()(props)
+
+    assertJSXElement(result)
+    expect(result.props["data-use-dropcap"]).toBe(expectedUseDropcap)
+    expect(result.props["data-no-dropcap-color"]).toBe(expectedNoColor)
+  })
+})
+
 describe("createLinkWithFavicon", () => {
   it("should create a link with favicon using default props", () => {
     const result = createLinkWithFavicon("Test Link", "/test-page", specialFaviconPaths.turntrout)
