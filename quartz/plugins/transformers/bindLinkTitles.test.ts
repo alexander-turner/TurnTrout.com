@@ -108,7 +108,7 @@ describe("bindTitlesInTree", () => {
   })
 
   it("ignores anchors with multiple children", () => {
-    const a: Element = {
+    const anchor: Element = {
       type: "element",
       tagName: "a",
       properties: { "data-slug": "other-page", href: "/other-page" },
@@ -117,7 +117,7 @@ describe("bindTitlesInTree", () => {
         { type: "element", tagName: "em", properties: {}, children: [] },
       ],
     }
-    const root = tree(a)
+    const root = tree(anchor)
     bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")
     expect(textOf(root)).toContain("@title")
   })
