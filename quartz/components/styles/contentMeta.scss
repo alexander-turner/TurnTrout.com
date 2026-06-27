@@ -24,11 +24,6 @@
     }
   }
 
-  & .ordinal-suffix {
-    margin-left: -0.01rem;
-    text-decoration-thickness: 0.75px; // Underline is too heavy
-  }
-
   & a {
     color: inherit; // No link color
   }
