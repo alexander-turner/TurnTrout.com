@@ -12,6 +12,7 @@ import { visit } from "unist-util-visit"
 
 import { QuartzTransformerPlugin } from "../types"
 import { isFootnoteListItem } from "./fixFootnotes"
+import { isInlineLoopingVideo } from "./invertInDarkMode"
 import { spliceAndWrapLastChars } from "./utils"
 
 export interface Options {
@@ -124,10 +125,18 @@ function makeMermaidSvgsAccessible(tree: Root): void {
   })
 }
 
-/** Adds `<track kind="captions">` to <video> elements that lack one. */
+/**
+ * Adds an empty placeholder `<track kind="captions">` only to silent
+ * GIF-replacement videos (autoplay+loop+muted), which carry no audio and just
+ * need a track to satisfy the axe captions rule. Audio-bearing videos are left
+ * untouched: they must receive a real `.vtt` track (or a `label="No audio"`
+ * marker) upstream from `transcribe_videos.py`, and the built-site caption
+ * check flags them while that track is missing rather than letting an empty
+ * placeholder mask it.
+ */
 function ensureVideoCaptionTracks(tree: Root): void {
   visit(tree, "element", (node: Element) => {
-    if (node.tagName !== "video") return
+    if (!isInlineLoopingVideo(node)) return
     const hasTrack = node.children.some(
       (child) => child.type === "element" && child.tagName === "track",
     )
