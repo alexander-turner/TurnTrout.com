@@ -20,9 +20,9 @@ test.describe("inline code spacing marker", () => {
       // first line, forcing the marker+code onto the next line regardless of font
       // metrics — a deterministic, cross-browser wrap.
       host.innerHTML =
-        `<p style="margin:0"><span>word</span><code id="ics-mid-plain">x</code></p>` +
+        '<p style="margin:0"><span>word</span><code id="ics-mid-plain">x</code></p>' +
         `<p style="margin:0"><span>word</span>${MARKER}<code id="ics-mid-gap">x</code></p>` +
-        `<p style="margin:0"><span style="display:inline-block;width:100%"></span><code id="ics-wrap-plain">x</code></p>` +
+        '<p style="margin:0"><span style="display:inline-block;width:100%"></span><code id="ics-wrap-plain">x</code></p>' +
         `<p style="margin:0"><span style="display:inline-block;width:100%"></span>${MARKER}<code id="ics-wrap-gap">x</code></p>`
 
       const article = document.querySelector("article") ?? document.body
