@@ -21,24 +21,34 @@ export function formatTitle(title: string): string {
 }
 
 /**
- * Single source of truth for rendering an already-string-transformed title or
- * description into hast inline nodes with the site's node-producing inline
- * transforms applied: emoji → Twemoji `<img>` (matching the main `Twemoji`
- * pass) and acronym small-caps (matching `TagSmallcaps`), in pipeline order.
+ * Single source of truth for the site's node-producing inline transforms:
+ * emoji → Twemoji `<img>` (matching the main `Twemoji` pass) and acronym
+ * small-caps (matching `TagSmallcaps`), applied in pipeline order over an
+ * existing hast subtree in place.
  *
  * Smart-quote / arrow / nbsp transforms are string-level and must be applied
  * upstream by the caller (`formatTitle` for titles, `applyTextTransforms` for
- * descriptions). This helper exists because content injected late in the
- * pipeline (e.g. the "Similar posts" block) is added *after* the `Twemoji` and
- * `TagSmallcaps` passes have already run, so those two transforms would
- * otherwise never touch it.
+ * descriptions). This exists because content injected late in the pipeline
+ * (the "Similar posts" block, sequence links, backlinks) is built *after* the
+ * `Twemoji` and `TagSmallcaps` passes have already run, so those two transforms
+ * would otherwise never touch it.
+ */
+export function applyInlineFormattingTransforms(tree: Root | Element): void {
+  processTwemojiTree(tree as unknown as Root)
+  visitParents(tree, "text", (node: Text, ancestors: Parent[]) => {
+    replaceSCInNode(node, ancestors)
+  })
+}
+
+/**
+ * Renders a plain (already string-transformed) title or description string into
+ * hast inline nodes with {@link applyInlineFormattingTransforms} applied. For
+ * callers whose source may contain HTML markup, parse it first and call
+ * {@link applyInlineFormattingTransforms} on the resulting tree instead.
  */
 export function renderInlineFormatting(text: string): (Text | Element)[] {
   const container = h("span", [{ type: "text", value: text } as Text])
-  processTwemojiTree(container as unknown as Root)
-  visitParents(container, "text", (node: Text, ancestors: Parent[]) => {
-    replaceSCInNode(node, ancestors)
-  })
+  applyInlineFormattingTransforms(container)
   return container.children as (Text | Element)[]
 }
 
