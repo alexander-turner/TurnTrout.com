@@ -1,39 +1,27 @@
 import type { JSX } from "preact"
 
-import { type Element, type Parent, type Root, type RootContent } from "hast"
+import { type Element, type Parent, type RootContent } from "hast"
 import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
 
 import { type QuartzPluginData } from "../plugins/vfile"
 import { type FullSlug, resolveRelative, type SimpleSlug, simplifySlug } from "../util/path"
-import { formatTitle, processSmallCaps } from "./component_utils"
+import { applyInlineFormattingTransforms, formatTitle } from "./component_utils"
 import { type QuartzComponent, type QuartzComponentProps } from "./types"
 
 function processBacklinkTitle(title: string): Parent {
   const formattedTitle = formatTitle(title)
-  const parent = { type: "element", tagName: "span", properties: {}, children: [] } as Parent
+  // Titles may contain inline HTML (e.g. <abbr>), so parse before transforming.
   const htmlAst = fromHtml(formattedTitle, { fragment: true })
-  processHtmlAst(htmlAst, parent)
-  return parent
+  applyInlineFormattingTransforms(htmlAst)
+  return htmlAst as unknown as Parent
 }
 
-function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
-  htmlAst.children.forEach((node: RootContent) => {
-    /* istanbul ignore else -- fromHtml only produces text/element nodes */
-    if (node.type === "text") {
-      processSmallCaps(node.value, parent)
-    } else if (node.type === "element") {
-      const newElement = {
-        type: "element",
-        tagName: node.tagName,
-        properties: { ...node.properties },
-        children: [],
-      } as Element
-      parent.children.push(newElement)
-      processHtmlAst(node, newElement)
-    }
-  })
+/** Joins a hast `className` (an array, or absent) into a class string. */
+function classNameString(properties: Element["properties"]): string {
+  const className = properties?.className
+  return Array.isArray(className) ? className.map(String).join(" ") : ""
 }
 
 function elementToJsx(elt: RootContent): JSX.Element {
@@ -45,13 +33,23 @@ function elementToJsx(elt: RootContent): JSX.Element {
       if (elt.tagName === "abbr") {
         const firstChild = elt.children[0]
         const abbrText = firstChild?.type === "text" ? firstChild.value : ""
-        const className = Array.isArray(elt.properties?.className)
-          ? (elt.properties.className as string[]).join(" ")
-          : ""
-        return <abbr className={className}>{abbrText}</abbr>
-      } else {
-        return <span>{elt.children.map(elementToJsx)}</span>
+        return <abbr className={classNameString(elt.properties)}>{abbrText}</abbr>
       }
+      if (elt.tagName === "img") {
+        return (
+          <img
+            className={classNameString(elt.properties) || undefined}
+            src={elt.properties?.src as string}
+            alt={elt.properties?.alt as string}
+            draggable={elt.properties?.draggable === "false" ? false : undefined}
+          />
+        )
+      }
+      return (
+        <span className={classNameString(elt.properties) || undefined}>
+          {elt.children.map(elementToJsx)}
+        </span>
+      )
     default:
       // skipcq: JS-0424 want to cast as JSX element
       return <></>
