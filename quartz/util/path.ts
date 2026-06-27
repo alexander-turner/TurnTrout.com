@@ -195,9 +195,16 @@ function retargetAnchorFaviconToInternal(el: HastElement): void {
  */
 function demoteRebasedAnchorLink(el: HastElement): void {
   if (el.tagName !== "a") return
+  // Same-page links carry their classes as an array (markdown links) or a
+  // space-separated string (footnote backrefs from rehype-gfm); handle both.
   const classes = el.properties?.className
   if (Array.isArray(classes)) {
     el.properties.className = classes.filter((c) => String(c) !== "same-page-link")
+  } else if (typeof classes === "string") {
+    el.properties.className = classes
+      .split(/\s+/)
+      .filter((c) => c && c !== "same-page-link")
+      .join(" ")
   }
   retargetAnchorFaviconToInternal(el)
 }

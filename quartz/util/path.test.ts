@@ -167,6 +167,15 @@ describe("normalizeHastElement", () => {
       expect(anchor.properties?.className).toEqual(["internal"])
     })
 
+    it("drops same-page-link from a string className (footnote backrefs)", () => {
+      // Footnote backrefs from rehype-gfm carry a space-separated string className.
+      const link = h("a", { href: "#user-content-fnref-1" }, "↩")
+      link.properties.className = "data-footnote-backref internal same-page-link"
+      const result = normalizeHastElement(h("p", [link]), baseSlug, newSlug)
+      const anchor = result.children[0] as Element
+      expect(anchor.properties?.className).toBe("data-footnote-backref internal")
+    })
+
     it("leaves favicons for other domains untouched", () => {
       const otherFavicon = faviconNode("wikipedia_org", "x")
       const link = h("a", { href: "#section", className: ["same-page-link"] }, [
