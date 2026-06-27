@@ -8,7 +8,6 @@ tags:
   - understanding-the-world
   - interpretability
 description: Norm growth in activations drowns out earlier computations - do transformers just process recent sublayer outputs?
-date-published: 07/23/24
 authors:
   - Alex Turner
 hideSubscriptionLinks: false

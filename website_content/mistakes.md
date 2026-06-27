@@ -7,7 +7,6 @@ tags:
   - website
   - personal
 description: A list of some of my major conceptual mistakes.
-date-published:
 authors:
   - Alex Turner
 hideSubscriptionLinks: false

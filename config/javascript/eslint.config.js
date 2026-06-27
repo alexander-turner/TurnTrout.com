@@ -67,6 +67,13 @@ export default [
     },
   },
 
+  // Naming conventions: ban snake_case identifiers (use camelCase or UPPER_CASE)
+  {
+    rules: {
+      camelcase: ["error", { properties: "never" }],
+    },
+  },
+
   // Async/await correctness
   {
     rules: {

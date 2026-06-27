@@ -59,6 +59,25 @@ def check_publication_date(metadata: dict) -> list[str]:
     return []
 
 
+# Keys that have a canonical casing and must not appear in any other form.
+# Maps the wrong variant → the correct canonical key name.
+_FORBIDDEN_KEY_VARIANTS: dict[str, str] = {
+    "date-published": "date_published",
+    "date-updated": "date_updated",
+}
+
+
+def check_frontmatter_key_casing(metadata: dict) -> list[str]:
+    """Check that frontmatter keys use the canonical casing convention."""
+    errors = []
+    for bad_key, canonical in _FORBIDDEN_KEY_VARIANTS.items():
+        if bad_key in metadata:
+            errors.append(
+                f"Frontmatter key '{bad_key}' should be '{canonical}'"
+            )
+    return errors
+
+
 def check_cover_image_alt(metadata: dict) -> list[str]:
     """If a card_image is specified, card_image_alt must also be provided."""
     errors: list[str] = []
@@ -920,6 +939,7 @@ def check_file_data(
     text = file_path.read_text()
     issues: MetadataIssues = {
         "required_fields": check_required_fields(metadata),
+        "frontmatter_key_casing": check_frontmatter_key_casing(metadata),
         "cover_image_alt": check_cover_image_alt(metadata),
         "invalid_links": check_invalid_md_links(text, file_path),
         "latex_tags": check_latex_tags(text, file_path),
