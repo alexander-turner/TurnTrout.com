@@ -108,11 +108,19 @@ export function createNodes(twemojiContent: string): (Text | Element)[] {
  * preceding regular space becomes a non-breaking space; an emoji with no
  * preceding glyph (start of its run) can't strand itself and is left bare.
  *
+ * Each group carries `white-space: nowrap`, so a run with no separating
+ * whitespace (e.g. "(🪿(🪿(🪿") offers the line box no soft-wrap opportunity and
+ * would overflow off the page. A `<wbr>` between adjacent groups restores a
+ * break opportunity at each group boundary while keeping every glyph+emoji
+ * together.
+ *
  * @param nodes - Text and img nodes produced by `createNodes`
  * @returns Nodes with each emoji wrapped together with its preceding glyph
  */
 export function wrapEmojiNodes(nodes: (Text | Element)[]): (Text | Element)[] {
   const wrapped: (Text | Element)[] = []
+  const isEmojiSpan = (n: Text | Element | undefined): boolean =>
+    n?.type === "element" && n.tagName === "span"
   for (const node of nodes) {
     const prev = wrapped[wrapped.length - 1]
     const isEmojiImg = node.type === "element" && node.tagName === "img"
@@ -127,6 +135,9 @@ export function wrapEmojiNodes(nodes: (Text | Element)[]): (Text | Element)[] {
       prevText.value = remaining
       if (remaining === "") {
         wrapped.pop()
+      }
+      if (isEmojiSpan(wrapped[wrapped.length - 1])) {
+        wrapped.push(h("wbr"))
       }
       wrapped.push(h("span.emoji-span", [{ type: "text", value: glyph } as Text, node]))
     } else {

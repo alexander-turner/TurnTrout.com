@@ -212,6 +212,36 @@ describe("Twemoji functions", () => {
       const nodes = [{ type: "text", value: "no emoji here" }]
       expect(wrapEmojiNodes(nodes as never)).toEqual(nodes)
     })
+
+    it("inserts a <wbr> break opportunity between adjacent glued groups", () => {
+      const result = wrapEmojiNodes([
+        { type: "text", value: "(" },
+        emojiImg(),
+        { type: "text", value: "(" },
+        emojiImg(),
+      ])
+      expect(result).toEqual([emojiSpan("("), h("wbr"), emojiSpan("(")])
+    })
+
+    it("does not insert <wbr> when text separates the groups", () => {
+      const result = wrapEmojiNodes([
+        { type: "text", value: "ab" },
+        emojiImg(),
+        { type: "text", value: "cd" },
+        emojiImg(),
+      ])
+      expect(result).toEqual([
+        { type: "text", value: "a" },
+        emojiSpan("b"),
+        { type: "text", value: "c" },
+        emojiSpan("d"),
+      ])
+    })
+
+    it("does not insert <wbr> after a bare leading emoji", () => {
+      const result = wrapEmojiNodes([emojiImg(), { type: "text", value: "(" }, emojiImg()])
+      expect(result).toEqual([emojiImg(), emojiSpan("(")])
+    })
   })
 
   function createEmoji(path: string, originalChar: string): Element {

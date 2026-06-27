@@ -693,6 +693,10 @@ Each emoji stays glued to its preceding character and never wraps alone to the s
 
 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿.
 
+Even a run of glued groups with no separating whitespace wraps at a group boundary instead of overflowing off the page:
+
+(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿.
+
 ## Emoji comparison
 
 <span class="populate-markdown-emoji-comparison"></span>
