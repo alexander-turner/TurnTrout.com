@@ -1,71 +1,41 @@
 #!/bin/bash
+# Enqueue this commit for OpenTimestamps stamping and hand off to a detached
+# worker. The network-heavy work (ots stamp + pull/push to the .timestamps
+# repo) runs in the background so `git commit` returns immediately. See
+# .hooks/timestamp-worker.sh for the queue/lock/retry logic.
 
-commit_hash="$(git rev-parse HEAD)"
+set -uo pipefail
+
+# In CI, .timestamps and ots are not available — skip entirely.
+[ "${CI:-}" = "true" ] && exit 0
+
 git_root="$(git rev-parse --show-toplevel)"
-timestamps_repo="$git_root/.timestamps"
-timestamps_dir="$timestamps_repo/files"
+commit_hash="$(git rev-parse HEAD)"
 
-rollback() {
-  echo "ERROR: $1"
-  echo "Undoing commit..."
-  cd "$git_root" && git reset --soft HEAD~1
-  exit 1
-}
-
-# In CI, .timestamps and ots are not available — skip entirely
-if [ "${CI:-}" = "true" ]; then
+if [ ! -d "$git_root/.timestamps/.git" ]; then
+  echo "Warning: .timestamps repo not set up; skipping OpenTimestamp proof." >&2
+  echo "  Set it up with: git clone <timestamps-repo-url> .timestamps" >&2
   exit 0
 fi
 
-if [ ! -d "$timestamps_repo/.git" ]; then
-  rollback ".timestamps repo not set up! Run: git clone <timestamps-repo-url> .timestamps"
+git_dir="$(git rev-parse --absolute-git-dir)"
+state_dir="$git_dir/ots-timestamps"
+mkdir -p "$state_dir"
+
+# A single-line append under PIPE_BUF is atomic, so concurrent commits can
+# enqueue without a lock.
+printf '%s\n' "$commit_hash" >>"$state_dir/queue"
+
+worker="$git_root/.hooks/timestamp-worker.sh"
+if [ -x "$worker" ]; then
+  if command -v setsid >/dev/null 2>&1; then
+    OTS_GIT_ROOT="$git_root" OTS_STATE_DIR="$state_dir" \
+      setsid "$worker" >/dev/null 2>&1 </dev/null &
+  else
+    OTS_GIT_ROOT="$git_root" OTS_STATE_DIR="$state_dir" \
+      nohup "$worker" >/dev/null 2>&1 </dev/null &
+  fi
+  disown 2>/dev/null || true
 fi
 
-# Find ots binary
-OTS_BIN=""
-if command -v ots >/dev/null 2>&1; then
-  OTS_BIN="$(command -v ots)"
-fi
-
-if [ -z "$OTS_BIN" ]; then
-  rollback "ots not found! Install opentimestamps-client."
-fi
-
-mkdir -p "$timestamps_dir"
-txt_file="$timestamps_dir/$commit_hash.txt"
-printf '%s' "$commit_hash" >"$txt_file"
-
-# Try to create timestamp with relaxed requirements (accept 1 calendar response, 30s timeout)
-ots_output=$(ots stamp -m 1 --timeout 30 "$txt_file" 2>&1)
-ots_exit=$?
-
-if [ $ots_exit -ne 0 ]; then
-  echo "OpenTimestamp output: $ots_output" >&2
-  rollback "Failed to create OpenTimestamp proof! This may be due to network issues or insufficient calendar server responses."
-fi
-
-# Wait for .ots file to be created (up to 5 seconds)
-ots_file="$txt_file.ots"
-count=0
-while [ $count -lt 50 ]; do
-  [ -f "$ots_file" ] && break
-  sleep 0.1
-  count=$((count + 1))
-done
-[ -f "$ots_file" ] || rollback "OpenTimestamp .ots file was not created!"
-
-cd "$timestamps_repo" || rollback "Failed to change to timestamps directory!"
-git add "files/$commit_hash.txt" "files/$commit_hash.txt.ots" || rollback "Failed to add timestamp files!"
-git commit -m "Add OpenTimestamp proof for commit $commit_hash" --quiet || rollback "Failed to commit timestamp files!"
-
-# Pull and rebase before pushing to handle divergent branches
-if ! git pull --rebase --quiet origin master 2>/dev/null; then
-  rollback "Could not pull from .timestamps repo."
-fi
-
-# Push to timestamps repo
-if ! git push --quiet 2>/dev/null; then
-  rollback "Could not push to .timestamps repo (no credentials?). Check session-setup.sh."
-fi
-
-cd "$git_root" || exit 1
+exit 0
