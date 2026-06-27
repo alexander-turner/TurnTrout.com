@@ -81,6 +81,8 @@ RAW_TWEET: dict = {
         "is_blue_verified": True,
     },
     "created_at": "2025-01-21T17:32:00.000Z",
+    "conversation_count": 10,
+    "favorite_count": 165,
     "text": "hello https://t.co/abc",
     "entities": {
         "urls": [
@@ -246,6 +248,7 @@ def test_normalize() -> None:
     assert types == ["photo", "video"]
     assert snapshot["media"][1]["src"] == "https://video.twimg.com/high.mp4"
     assert snapshot["urls"][0]["expanded"] == "https://example.com"
+    assert snapshot["metrics"] == {"replies": 10, "likes": 165}
 
 
 def test_normalize_strips_trailing_media_link() -> None:
@@ -298,6 +301,8 @@ def test_normalize_animated_gif_and_skipped_video() -> None:
     assert len(snapshot["media"]) == 1
     assert snapshot["media"][0]["loop"] is True
     assert snapshot["author"]["verified"] is False
+    # No counts in this payload → no metrics.
+    assert snapshot["metrics"] == {}
 
 
 def test_download_file_success(tmp_path: Path) -> None:

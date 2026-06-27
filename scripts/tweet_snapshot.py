@@ -222,6 +222,75 @@ def _best_video_variant(variants: list[dict]) -> str | None:
     return best.get("url")
 
 
+def _photo_entry(detail: dict, info: dict) -> dict:
+    return {
+        "type": "photo",
+        "src": detail["media_url_https"],
+        "width": info.get("width"),
+        "height": info.get("height"),
+        "alt": detail.get("ext_alt_text") or "",
+    }
+
+
+def _video_entry(detail: dict, info: dict, src: str) -> dict:
+    return {
+        "type": "video",
+        "src": src,
+        "poster": detail.get("media_url_https"),
+        "width": info.get("width"),
+        "height": info.get("height"),
+        "alt": detail.get("ext_alt_text") or "",
+        "loop": detail.get("type") == "animated_gif",
+    }
+
+
+def _build_media(raw: dict) -> list[dict]:
+    """Normalize photos and videos from a payload's ``mediaDetails``."""
+    media: list[dict] = []
+    for detail in raw.get("mediaDetails", []) or []:
+        info = detail.get("original_info", {}) or {}
+        if detail.get("type") == "photo":
+            media.append(_photo_entry(detail, info))
+        elif detail.get("type") in ("video", "animated_gif"):
+            src = _best_video_variant(
+                (detail.get("video_info", {}) or {}).get("variants", [])
+            )
+            if src:
+                media.append(_video_entry(detail, info, src))
+    return media
+
+
+def _display_text(raw: dict, entities: dict) -> str:
+    """
+    The tweet text with attached-media ``t.co`` links removed.
+
+    Twitter appends a media ``t.co`` link to ``text``, but clients show the
+    photo/video instead of that link.
+    """
+    text = raw.get("text", "")
+    for media_entity in entities.get("media", []) or []:
+        short = media_entity.get("url")
+        if short:
+            text = text.replace(short, "")
+    return text.rstrip()
+
+
+def _build_metrics(raw: dict) -> dict:
+    """
+    Capture the engagement counts the cookie-free endpoint exposes: replies
+    (``conversation_count``) and likes (``favorite_count``). Retweets and views
+    aren't available from this endpoint, so they're omitted.
+    """
+    metrics: dict = {}
+    replies = raw.get("conversation_count")
+    likes = raw.get("favorite_count")
+    if replies is not None:
+        metrics["replies"] = replies
+    if likes is not None:
+        metrics["likes"] = likes
+    return metrics
+
+
 def normalize(raw: dict, tweet_id: str) -> dict:
     """
     Convert a raw syndication payload into our snapshot schema.
@@ -231,37 +300,6 @@ def normalize(raw: dict, tweet_id: str) -> dict:
     """
     user = raw["user"]
     handle = user["screen_name"]
-
-    media: list[dict] = []
-    for detail in raw.get("mediaDetails", []) or []:
-        media_type = detail.get("type")
-        info = detail.get("original_info", {}) or {}
-        if media_type == "photo":
-            media.append(
-                {
-                    "type": "photo",
-                    "src": detail["media_url_https"],
-                    "width": info.get("width"),
-                    "height": info.get("height"),
-                    "alt": detail.get("ext_alt_text") or "",
-                }
-            )
-        elif media_type in ("video", "animated_gif"):
-            variants = (detail.get("video_info", {}) or {}).get("variants", [])
-            src = _best_video_variant(variants)
-            if src:
-                media.append(
-                    {
-                        "type": "video",
-                        "src": src,
-                        "poster": detail.get("media_url_https"),
-                        "width": info.get("width"),
-                        "height": info.get("height"),
-                        "alt": detail.get("ext_alt_text") or "",
-                        "loop": media_type == "animated_gif",
-                    }
-                )
-
     entities = raw.get("entities", {}) or {}
     urls = [
         {
@@ -271,16 +309,6 @@ def normalize(raw: dict, tweet_id: str) -> dict:
         }
         for entity in entities.get("urls", []) or []
     ]
-
-    # Twitter appends a t.co link for attached media to the end of `text`, but
-    # clients display the photo/video instead of that link. Drop those media
-    # t.co URLs so they don't render as trailing raw text.
-    text = raw.get("text", "")
-    for media_entity in entities.get("media", []) or []:
-        short = media_entity.get("url")
-        if short:
-            text = text.replace(short, "")
-    text = text.rstrip()
 
     return {
         "id": tweet_id,
@@ -294,9 +322,10 @@ def normalize(raw: dict, tweet_id: str) -> dict:
             "avatarSrc": _avatar_url(user["profile_image_url_https"]),
         },
         "createdAt": raw.get("created_at", ""),
-        "text": text,
+        "text": _display_text(raw, entities),
         "urls": urls,
-        "media": media,
+        "media": _build_media(raw),
+        "metrics": _build_metrics(raw),
         "snapshotAt": _now().isoformat(),
     }
 

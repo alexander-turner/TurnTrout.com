@@ -248,8 +248,14 @@ Author a tweet with a ` ```tweet ` fenced block holding one tweet URL per line
 ````md
 ```tweet
 https://x.com/turntrout/status/1881825910040702979
+retweeted-by: Jeff Dean
 ```
 ````
+
+An optional `retweeted-by: <name>` line attaches a "<name> retweeted" header to
+the tweet above it (the API can't supply retweet context, so it's manual). The
+card also shows the reply and like counts captured at snapshot time; the
+cookie-free endpoint doesn't expose retweet or view counts, so those are omitted.
 
 `quartz/plugins/transformers/tweetEmbed.ts` (registered before
 `SyntaxHighlighting`) replaces each block with a site-native card built in

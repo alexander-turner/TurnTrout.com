@@ -10,6 +10,7 @@ import {
   buildTweetCard,
   buildTweetEmbed,
   buildUnavailableCard,
+  formatCount,
   formatTweetDate,
   linkifyTweetText,
   type TweetSnapshot,
@@ -215,6 +216,54 @@ describe("buildTweetCard", () => {
   })
 })
 
+describe("formatCount", () => {
+  it.each([
+    [165, "165"],
+    [2000, "2K"],
+    [1234, "1.2K"],
+    [34832, "34.8K"],
+    [1_000_000, "1M"],
+    [1_500_000, "1.5M"],
+  ])("formats %d as %s", (input, expected) => {
+    expect(formatCount(input)).toBe(expected)
+  })
+})
+
+describe("tweet metrics", () => {
+  it("renders replies and likes when present", () => {
+    const html = render(buildTweetCard({ ...baseSnapshot, metrics: { replies: 10, likes: 165 } }))
+    expect(html).toContain("tweet-metrics")
+    expect(html).toContain('aria-label="10 replies"')
+    expect(html).toContain('aria-label="165 likes"')
+  })
+
+  it.each([
+    ["replies only", { replies: 3 }, "3 replies", "likes"],
+    ["likes only", { likes: 7 }, "7 likes", "replies"],
+  ])("renders %s", (_label, metrics, present, absentLabel) => {
+    const html = render(buildTweetCard({ ...baseSnapshot, metrics }))
+    expect(html).toContain(present)
+    expect(html).not.toContain(`${absentLabel}"`)
+  })
+
+  it("omits the metrics row when there are no metrics or an empty object", () => {
+    expect(render(buildTweetCard(baseSnapshot))).not.toContain("tweet-metrics")
+    expect(render(buildTweetCard({ ...baseSnapshot, metrics: {} }))).not.toContain("tweet-metrics")
+  })
+})
+
+describe("retweet context", () => {
+  it("renders a retweet header when retweetedBy is set", () => {
+    const html = render(buildTweetCard(baseSnapshot, "Jeff Dean"))
+    expect(html).toContain("tweet-retweet-context")
+    expect(html).toContain("Jeff Dean retweeted")
+  })
+
+  it("omits the retweet header by default", () => {
+    expect(render(buildTweetCard(baseSnapshot))).not.toContain("tweet-retweet-context")
+  })
+})
+
 describe("buildUnavailableCard", () => {
   it("links to xcancel and is marked unavailable", () => {
     const html = render(buildUnavailableCard("https://xcancel.com/turntrout/status/999"))
@@ -249,5 +298,14 @@ describe("buildTweetEmbed", () => {
     )
     expect(html).toContain("tweet-card-unavailable")
     expect(html).toContain("status/777")
+  })
+
+  it("passes a slot's retweetedBy through to the card", () => {
+    const html = render(
+      buildTweetEmbed([
+        { snapshot: baseSnapshot, xcancelUrl: baseSnapshot.url, retweetedBy: "Jeff Dean" },
+      ]),
+    )
+    expect(html).toContain("Jeff Dean retweeted")
   })
 })

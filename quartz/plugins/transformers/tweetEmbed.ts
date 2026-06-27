@@ -39,12 +39,33 @@ export function toXcancelUrl(rawUrl: string): string {
   return trimmed
 }
 
-/** Parse a tweet block's body (one URL or bare id per line) into ordered slots. */
-export function parseTweetReferences(body: string): { id: string; xcancelUrl: string }[] {
-  const refs: { id: string; xcancelUrl: string }[] = []
+export interface TweetReference {
+  id: string
+  xcancelUrl: string
+  retweetedBy?: string
+}
+
+const RETWEETED_BY_RE = /^retweeted-by:\s*(\S.*)$/i
+
+/**
+ * Parse a tweet block's body into ordered references. Each non-empty line is a
+ * tweet URL/id, except a `retweeted-by: <name>` line, which attaches a "retweeted"
+ * header to the most recent tweet.
+ */
+export function parseTweetReferences(body: string): TweetReference[] {
+  const refs: TweetReference[] = []
   for (const rawLine of body.split("\n")) {
     const line = rawLine.trim()
     if (!line) continue
+    const retweet = RETWEETED_BY_RE.exec(line)
+    if (retweet) {
+      const last = refs[refs.length - 1]
+      if (!last) {
+        throw new Error("tweetEmbed: `retweeted-by:` must follow a tweet URL")
+      }
+      last.retweetedBy = retweet[1].trim()
+      continue
+    }
     const id = extractTweetId(line)
     if (!id) {
       throw new Error(`tweetEmbed: no tweet id found in line ${JSON.stringify(line)}`)
@@ -101,10 +122,7 @@ export function clearSnapshotCache(): void {
   snapshotCache.clear()
 }
 
-function resolveSlots(
-  refs: readonly { id: string; xcancelUrl: string }[],
-  dir: string,
-): Promise<TweetSlot[]> {
+function resolveSlots(refs: readonly TweetReference[], dir: string): Promise<TweetSlot[]> {
   return Promise.all(
     refs.map(async (ref) => {
       const snapshot = await loadSnapshot(ref.id, dir)
@@ -114,7 +132,11 @@ function resolveSlots(
             "Run `uv run python scripts/tweet_snapshot.py` to capture it.",
         )
       }
-      return { snapshot: snapshot ?? undefined, xcancelUrl: ref.xcancelUrl }
+      return {
+        snapshot: snapshot ?? undefined,
+        xcancelUrl: ref.xcancelUrl,
+        retweetedBy: ref.retweetedBy,
+      }
     }),
   )
 }

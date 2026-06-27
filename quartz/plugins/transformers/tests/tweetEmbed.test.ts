@@ -88,6 +88,17 @@ describe("parseTweetReferences", () => {
   it("throws when a line has no tweet id", () => {
     expect(() => parseTweetReferences("https://example.com/nope")).toThrow(/no tweet id/)
   })
+
+  it("attaches retweeted-by to the preceding tweet", () => {
+    const refs = parseTweetReferences("https://x.com/u/status/10001\nretweeted-by:  Jeff Dean \n")
+    expect(refs).toEqual([
+      { id: "10001", xcancelUrl: "https://xcancel.com/u/status/10001", retweetedBy: "Jeff Dean" },
+    ])
+  })
+
+  it("throws when retweeted-by has no preceding tweet", () => {
+    expect(() => parseTweetReferences("retweeted-by: Jeff Dean")).toThrow(/must follow a tweet/)
+  })
 })
 
 describe("tweetBlockBody", () => {

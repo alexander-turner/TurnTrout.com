@@ -486,10 +486,11 @@ Equation and table nested in a list item (gaps must not stack with `<p>` margins
 
 # Tweet embeds
 
-A single tweet, rendered from a self-hosted snapshot:
+A single tweet, rendered from a self-hosted snapshot, with an optional retweet indicator:
 
 ```tweet
 https://xcancel.com/Turn_Trout/status/2064426233769742627
+retweeted-by: Jeff Dean
 ```
 
 A thread (one URL per line) renders as a connected stack:

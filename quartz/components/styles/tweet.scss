@@ -144,6 +144,47 @@
   font-style: italic;
 }
 
+.tweet-retweet-context {
+  display: flex;
+  align-items: center;
+  gap: calc(0.5 * $base-margin);
+  margin-bottom: $base-margin;
+  padding-left: calc(2 * $base-margin);
+  color: var(--midground);
+  font-size: var(--font-size-minus-1);
+  font-weight: 600;
+}
+
+.tweet-retweet-icon {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  fill: var(--midground);
+  margin: 0;
+}
+
+.tweet-metrics {
+  display: flex;
+  gap: calc(3 * $base-margin);
+  margin-top: $base-margin;
+  color: var(--midground);
+  font-size: var(--font-size-minus-1);
+}
+
+.tweet-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(0.5 * $base-margin);
+}
+
+.tweet-metric-icon {
+  width: calc(2 * $base-margin);
+  height: calc(2 * $base-margin);
+  flex: 0 0 auto;
+  fill: var(--midground);
+  margin: 0;
+}
+
 // Threads: stack the cards and run a continuous rail through the avatars.
 .tweet-thread {
   display: flex;
