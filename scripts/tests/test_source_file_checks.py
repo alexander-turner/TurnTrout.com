@@ -173,6 +173,36 @@ def test_check_cover_image_alt(
 
 
 @pytest.mark.parametrize(
+    "metadata,expected_errors",
+    [
+        ({}, []),
+        ({"date_published": "2024-01-01"}, []),
+        ({"date_updated": "2024-01-01"}, []),
+        (
+            {"date-published": "2024-01-01"},
+            ["Frontmatter key 'date-published' should be 'date_published'"],
+        ),
+        (
+            {"date-updated": "2024-01-01"},
+            ["Frontmatter key 'date-updated' should be 'date_updated'"],
+        ),
+        (
+            {"date-published": "2024-01-01", "date-updated": "2024-01-02"},
+            [
+                "Frontmatter key 'date-published' should be 'date_published'",
+                "Frontmatter key 'date-updated' should be 'date_updated'",
+            ],
+        ),
+    ],
+)
+def test_check_frontmatter_key_casing(
+    metadata: dict[str, str], expected_errors: list[str]
+):
+    errors = source_file_checks.check_frontmatter_key_casing(metadata)
+    assert set(errors) == set(expected_errors)
+
+
+@pytest.mark.parametrize(
     "metadata",
     [
         # Test case 1: Valid JPEG under 300KB from assets.turntrout.com
