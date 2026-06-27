@@ -15,7 +15,7 @@ aliases:
 card_image_alt: TurnTrout, wearing a skydiving harness inside a small plane, smiles and makes a peace sign at the camera. Another man behind him makes a funny face and also flashes a peace sign.
 ---
 
-Hi! I'm `TurnTrout`, but the United States government insists on calling me "Alexander Matt Turner." I like writing about lots of stuff and learning about lots of stuff. For more about my professional life, check out [my research](/research). ^first-para
+Hi! I'm `TurnTrout`, but the United States government insists on calling me "Alexander Matt Turner." I like writing about lots of stuff and learning about lots of stuff. For more about my professional life, check out [@title](/research). ^first-para
 
 ![TurnTrout, wearing a skydiving harness inside a small plane, smiles and makes a peace sign at the camera. Another man behind him makes a funny face and also flashes a peace sign.](https://assets.turntrout.com/static/images/posts/about-me.avif)
 

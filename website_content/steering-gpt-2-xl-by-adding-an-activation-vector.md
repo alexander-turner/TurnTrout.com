@@ -196,7 +196,7 @@ _**Steering vector**:_ "Intent to praise" − "Intent to hurt" before attention 
 
 ### 3\. Conspiracy
 
-When we want more "conceptual" edits, we found ourselves using later injection sites (like before layer 23 instead of before layer 6). Later, we swept over all layer choices. We present these results in the section ["How steering vectors impact GPT-2's capabilities"](/gpt2-steering-vectors#how-steering-vectors-impact-gpt-2-s-capabilities).
+When we want more "conceptual" edits, we found ourselves using later injection sites (like before layer 23 instead of before layer 6). Later, we swept over all layer choices. We present these results in the section [@title](/gpt2-steering-vectors#how-steering-vectors-impact-gpt-2-s-capabilities).
 
 _**Steering vector**:_ "Bush did 9/11 because” − “ ” before attention layer 23 with coefficient +1.[^9]
 
@@ -1103,7 +1103,7 @@ Subtracting the cheese vector essentially [makes the agent behave as if the chee
 
 # Appendix 2: Resolving prediction markets
 
-Subtitle: Originally made at ["predictions for algebraically editing LM forward passes"](/top-right-steering-vector#predictions-for-algebraically-editing-lm-forward-passes).
+Subtitle: Originally made at [@title](/top-right-steering-vector#predictions-for-algebraically-editing-lm-forward-passes).
 
 <iframe src="https://manifold.markets/embed/MartinRandall/algebraic-value-editing-works-for-a" title="Algebraic value editing works (for at least one "X vector") in language models" frameborder="0" class="manifold-embed"></iframe>
 

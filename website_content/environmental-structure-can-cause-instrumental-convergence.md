@@ -121,7 +121,7 @@ In terms of coordinates, one hope could have been:
 
 Suppose you give me a program $P$ which computes a safe coordinate. Let $P'$ call $P$ to compute the coordinate, and then have $P'$ swap the entries of the computed coordinate. $P'$ is only a few bits longer than $P$, and it doesn't take much longer to compute, either. So the above hope is impossible: safe mine-selection procedures can't be significantly simpler or faster than unsafe mine-selection procedures.
 
-The section "[Simplicity priors assign non-negligible probability to power-seeking](/environmental-structure-can-cause-instrumental-convergence#simplicity-priors-assign-non-negligible-probability-to-power-seeking)" proves something similar about objective functions.
+The section "[@title](/environmental-structure-can-cause-instrumental-convergence#simplicity-priors-assign-non-negligible-probability-to-power-seeking)" proves something similar about objective functions.
 
 ## Orbits of goals
 

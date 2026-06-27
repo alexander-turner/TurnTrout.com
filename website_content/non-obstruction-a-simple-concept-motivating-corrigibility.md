@@ -181,7 +181,7 @@ What happens if we turn on a paperclip-maximizer? We lose control over the futur
 ![A graph showing how a paperclip-maximizer AI affects "Human attainable utility" across various "Goals P." The green line (AI off) shows a consistent level of utility for goals like "Paperclips," "Human values," and "Blue paint." The red line (AI on) shows a massive spike in utility for the "Paperclips" goal but drops to near zero for all other goals, illustrating that the AI obstructs the human's ability to achieve anything else.](https://assets.turntrout.com/static/images/posts/paperclipper_au.avif)
 <br/>Figure: The paperclipper is incorrigible and obstructs us for all goals except paperclip production.
 
-I think most reward-maximizing optimal policies affect the landscape like this (see also: [the catastrophic convergence conjecture](/the-catastrophic-convergence-conjecture)), which is _why_ it’s so hard to get hard maximizers not to ruin everything. You have to _a)_ hit a tiny target in the AU landscape and _b)_ hit that for the _human’s_ AU, not for the AI’s. The spikiness is bad and, seemingly, hard to deal with.
+I think most reward-maximizing optimal policies affect the landscape like this (see also: [@title](/the-catastrophic-convergence-conjecture)), which is _why_ it’s so hard to get hard maximizers not to ruin everything. You have to _a)_ hit a tiny target in the AU landscape and _b)_ hit that for the _human’s_ AU, not for the AI’s. The spikiness is bad and, seemingly, hard to deal with.
 
 Furthermore, consider how the above graph changes as `pol` gets smarter and smarter. If we were actually super-superintelligent ourselves, then activating a superintelligent paperclipper might not even a big deal, and most of our AUs are probably unchanged. The AI policy isn't good enough to negatively impact us, and so it _can't_ obstruct us. Spikiness depends on both the AI's policy, _and_ on `pol`.
 
@@ -292,7 +292,7 @@ To be confident that this holds empirically, it sure seems like you want high er
 
 - [Low impact](https://www.lesswrong.com/tag/impact-measures): find a maximization criterion which leads to non-spikiness.
   - Goal of methods: to regularize decrease from green line (for **off**) for true unknown goal $P_\text{true}$; since we don’t know $P_\text{true}$, we aim to just regularize decrease from the green line in general (to avoid decreasing the human’s ability to achieve various goals).
-  - The first two-thirds of [Reframing Impact](/posts#reframing-impact) argued that power-seeking incentives play a big part in making AI alignment hard. In the utility-maximization AI design paradigm, instrumental subgoals are always lying in wait. They're always waiting for one mistake, one misspecification in your explicit reward signal, and then _bang_ - the AU landscape is spiky. Game over.
+  - The first two-thirds of [@title](/posts#reframing-impact) argued that power-seeking incentives play a big part in making AI alignment hard. In the utility-maximization AI design paradigm, instrumental subgoals are always lying in wait. They're always waiting for one mistake, one misspecification in your explicit reward signal, and then _bang_ - the AU landscape is spiky. Game over.
 
 - [Mild optimization](https://www.lesswrong.com/tag/mild-optimization): avoid spikiness by avoiding maximization, thereby avoiding steering the future too hard.
 - If you have non-obstruction for lots of goals, you don’t have spikiness!
@@ -357,7 +357,7 @@ Maybe there’s a higher-level theory for what kinds of policies induce spikines
 The attainable utility concept has led to other concepts which I find exciting and useful:
 
 - Impact as absolute change in attainable utility
-  - [Reframing Impact](/posts#reframing-impact)
+  - [@title](/posts#reframing-impact)
   - [_Conservative Agency via Attainable Utility Preservation_](https://arxiv.org/abs/1902.09725) (AIES 2020)
   - [_Avoiding Side Effects in Complex Environments_](https://arxiv.org/abs/2006.06547) (NeurIPS 2020)
 

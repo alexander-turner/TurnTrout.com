@@ -45,7 +45,7 @@ createBibtex: true
 If we have a safe impact measure, we may have arbitrarily intelligent unaligned agents which do _small_ (bad) things instead of _big_ (bad) things.
 
 > [!note]
-> For the abridged experience, read up to ["Notation"](#notation), skip to ["Experimental Results"](#experimental-results), and then to ["Desiderata"](#desiderata).
+> For the abridged experience, read up to [@title](#notation), skip to [@title](#experimental-results), and then to [@title](#desiderata).
 
 # What _is_ "Impact"?
 

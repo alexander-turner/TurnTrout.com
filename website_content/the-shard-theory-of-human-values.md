@@ -81,7 +81,7 @@ The shard theory of human values makes three main assumptions. We think each ass
 > [!abstract] Assumption 1: The cortex[^1] is basically (locally) randomly initialized
 > According to this assumption, [most](https://www.alignmentforum.org/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in#2_4_My_hypothesis__the_telencephalon_and_cerebellum_learn_from_scratch__the_hypothalamus_and_brainstem_don_t) of the cortical circuits in the brain are [learned from scratch](https://www.alignmentforum.org/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in), in the sense of being mostly randomly initialized and not mostly genetically hard-coded. While the high-level topology of the brain may be genetically determined, we think that the local connectivity is not primarily genetically determined. For more clarification, see [\[Intro to brain-like-AGI safety\] 2. “Learning from scratch” in the brain](https://www.alignmentforum.org/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in).
 >
-> Thus, we infer that [human values & biases are inaccessible to the genome](/human-values-and-biases-are-inaccessible-to-the-genome):
+> Thus, we infer that [@title-lower](/human-values-and-biases-are-inaccessible-to-the-genome):
 >
 > > [!quote]
 > >
@@ -344,7 +344,7 @@ Before this post was published, many people read draft documents explaining shar
     2. Typical shard theory questions:
         1. “What is the mechanistic process by which a few people developed preferences over what happens [under different laws of physics](https://en.wikipedia.org/wiki/Multiverse#Level_IV:_Ultimate_ensemble)?”
         2. “What is the mechanistic basis of certain shards (e.g. people respecting you) being ‘reflectively endorsed’, while other shards (e.g. avoiding spiders) can be consciously ‘planned around’ (e.g. going to exposure therapy so that you stop embarrassingly startling when you see a spider)?” (_Thanks to Thane Ruthenis for this example._)
-        3. “Why do humans have good [general alignment properties](/general-alignment-properties), like robustness to ontological shifts?”
+        3. “Why do humans have good [@title](/general-alignment-properties), like robustness to ontological shifts?”
 2. The shard paradigm/theory/frame of AI alignment analyzes the value formation processes which will occur in deep learning, and tries to figure out their properties.
     1. Typical questions asked under this paradigm/frame:
         1. “How can we predictably control the way in which a policy network generalizes? For example, under what training regimes and reinforcement schedules would [a CoinRun agent generalize](https://arxiv.org/abs/2105.14111) to pursuing coins instead of the right end of the level? What quantitative relationships and considerations govern this process?”
