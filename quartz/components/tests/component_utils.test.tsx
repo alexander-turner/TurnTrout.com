@@ -3,6 +3,7 @@
  */
 
 import type { Parent } from "hast"
+import type { Element, Text } from "hast"
 
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
@@ -11,6 +12,7 @@ import {
   processKatex,
   processSmallCaps,
   processTextWithArrows,
+  renderInlineFormatting,
 } from "../component_utils"
 import { debounce } from "../scripts/component_script_utils"
 
@@ -102,6 +104,52 @@ describe("processSmallCaps", () => {
       },
       { type: "text", value: " and Statistical Functionals" },
     ])
+  })
+})
+
+describe("renderInlineFormatting", () => {
+  const nodes = (text: string) => renderInlineFormatting(text)
+  const findByTag = (out: (Text | Element)[], tag: string): Element[] => {
+    const found: Element[] = []
+    const walk = (n: Text | Element) => {
+      if (n.type === "element") {
+        if (n.tagName === tag) found.push(n)
+        ;(n.children as (Text | Element)[]).forEach(walk)
+      }
+    }
+    out.forEach(walk)
+    return found
+  }
+
+  it("converts emoji to a Twemoji <img>", () => {
+    const imgs = findByTag(nodes("Other fish in the sea 🐟"), "img")
+    expect(imgs).toHaveLength(1)
+    expect((imgs[0].properties?.className as string[]) ?? []).toContain("emoji")
+    expect(imgs[0].properties?.alt).toBe("🐟")
+  })
+
+  it("wraps acronyms in a small-caps <abbr>", () => {
+    const abbrs = findByTag(nodes("Thoughts on LLM training"), "abbr")
+    expect(abbrs).toHaveLength(1)
+    expect((abbrs[0].properties?.className as string[]) ?? []).toContain("small-caps")
+    expect((abbrs[0].children[0] as Text).value).toBe("llm")
+  })
+
+  it("applies both emoji and small-caps transforms together", () => {
+    const out = nodes("LLM safety 🐟")
+    expect(findByTag(out, "abbr")).toHaveLength(1)
+    expect(findByTag(out, "img")).toHaveLength(1)
+  })
+
+  it("returns a single text node when nothing matches", () => {
+    const out = nodes("nothing to transform here")
+    expect(out).toMatchObject([{ type: "text", value: "nothing to transform here" }])
+  })
+
+  it("treats HTML markup as literal text (callers must parse HTML first)", () => {
+    const out = nodes("<i>hi</i>")
+    expect(findByTag(out, "i")).toHaveLength(0)
+    expect(out).toMatchObject([{ type: "text", value: "<i>hi</i>" }])
   })
 })
 

@@ -479,14 +479,14 @@
       "title": "Attainable Utility Preservation: Scaling to Superhuman"
     },
     {
-      "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "research",
-      "title": "My research"
-    },
-    {
       "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
       "permalink": "attainable-utility-preservation-paper",
       "title": "Penalizing Impact via Attainable Utility Preservation"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
     }
   ],
   "attainable-utility-preservation-paper": [
@@ -3485,14 +3485,14 @@
       "title": "Impact Measure Desiderata"
     },
     {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
+    },
+    {
       "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
       "permalink": "conclusion-to-reframing-impact",
       "title": "Conclusion to 'Reframing Impact'"
-    },
-    {
-      "excerpt": "Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.",
-      "permalink": "problem-relaxation-as-a-tactic",
-      "title": "Problem relaxation as a tactic"
     }
   ],
   "toy-instrumental-convergence-paper-walkthrough": [

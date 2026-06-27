@@ -2,6 +2,7 @@ import type { Element, Root, Text } from "hast"
 
 import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
+import { visit } from "unist-util-visit"
 
 import { normalizeNbsp } from "../../../components/constants"
 import { type QuartzPluginData } from "../../vfile"
@@ -16,6 +17,15 @@ import {
 import { createOrnamentNode } from "../trout_hr"
 
 const ornamentNode = createOrnamentNode()
+
+/** Recursively collects every `<img>` (e.g. Twemoji emoji) under a node. */
+const collectImgs = (node: Element): Element[] => {
+  const imgs: Element[] = []
+  visit(node, "element", (el: Element) => {
+    if (el.tagName === "img") imgs.push(el)
+  })
+  return imgs
+}
 
 describe("renderSequenceTitle", () => {
   it.each([
@@ -61,6 +71,19 @@ describe("renderSequenceTitle", () => {
     expect(thirdChild.properties?.href).toBe("/test-sequence")
     expect(thirdChild.properties?.className).toStrictEqual(["internal", "can-trigger-popover"])
     expect(thirdChild.children).toStrictEqual([{ type: "text", value: "Test Sequence" }])
+  })
+
+  it("transforms emoji in the sequence title into a Twemoji <img>", () => {
+    const fileData = {
+      frontmatter: {
+        "lw-sequence-title": "Risks from Learned Optimization 🐟",
+        "sequence-link": "/test-sequence",
+      },
+    } as unknown as QuartzPluginData
+    const link = renderSequenceTitle(fileData)?.children[2] as Element
+    const imgs = collectImgs(link)
+    expect(imgs).toHaveLength(1)
+    expect(imgs[0].properties?.alt).toBe("🐟")
   })
 
   it("should handle missing sequence-link", () => {
@@ -139,6 +162,20 @@ describe("renderPreviousPost", () => {
     expect(result).not.toBeNull()
     expect((result?.children[2] as Element).children).toStrictEqual([{ type: "text", value: "" }])
   })
+
+  it("transforms emoji in the previous-post title into a Twemoji <img>", () => {
+    const fileData = {
+      frontmatter: {
+        "prev-post-slug": "prev-post",
+        "prev-post-title": "Other fish in the sea 🐟",
+      },
+    } as QuartzPluginData
+    const link = renderPreviousPost(fileData)?.children[2] as Element
+    const imgs = collectImgs(link)
+    expect(imgs).toHaveLength(1)
+    expect(imgs[0].properties?.className).toContain("emoji")
+    expect(imgs[0].properties?.alt).toBe("🐟")
+  })
 })
 
 describe("renderNextPost", () => {
@@ -202,6 +239,20 @@ describe("renderNextPost", () => {
     const result = renderNextPost(fileData)
     expect(result).not.toBeNull()
     expect((result?.children[2] as Element).children).toStrictEqual([{ type: "text", value: "" }])
+  })
+
+  it("transforms emoji in the next-post title into a Twemoji <img>", () => {
+    const fileData = {
+      frontmatter: {
+        "next-post-slug": "next-post",
+        "next-post-title": "Is it you? 💘",
+      },
+    } as QuartzPluginData
+    const link = renderNextPost(fileData)?.children[2] as Element
+    const imgs = collectImgs(link)
+    expect(imgs).toHaveLength(1)
+    expect(imgs[0].properties?.className).toContain("emoji")
+    expect(imgs[0].properties?.alt).toBe("💘")
   })
 })
 
