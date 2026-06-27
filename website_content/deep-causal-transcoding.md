@@ -6,6 +6,7 @@ tags:
   - activation-engineering
   - AI
   - mats-program
+  - interpretability
 description: Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.
 authors:
   - Andrew Mack
@@ -16,7 +17,7 @@ aliases:
   - melbo-framework
   - dct
 date_published: 2024-12-04
-date_updated: 2026-05-22
+date_updated: 2026-06-26
 original_url: https://www.lesswrong.com/posts/fSRg5qs9TPbNy3sm5/deep-causal-transcoding-a-framework-for-mechanistically
 ---
 

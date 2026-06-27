@@ -1,5 +1,6 @@
 ---
 permalink: bruce-wayne-and-the-cost-of-inaction
+no_dropcap_color: true
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"

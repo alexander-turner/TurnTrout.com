@@ -8,6 +8,7 @@ tags:
   - open-source
   - understanding-the-world
   - community
+  - privacy
 description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
 authors:
   - Alex Turner
@@ -20,7 +21,7 @@ next-post-slug: advanced-privacy
 lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
 date_published: 2025-10-28
-date_updated: 2026-05-08
+date_updated: 2026-06-26
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 

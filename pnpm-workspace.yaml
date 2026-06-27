@@ -13,7 +13,7 @@ overrides:
   micromatch: 4.0.8
   trim: 1.0.1
   jest-worker: 30.2.0
-  puppeteer: $puppeteer
+  puppeteer: 25.0.2
   path-to-regexp: 3.3.0
   lodash-es: 4.18.1
   lodash: 4.18.1
@@ -77,10 +77,18 @@ patchedDependencies:
   pa11y@9.0.1: patches/pa11y@9.0.1.patch
   pa11y@9.1.1: patches/pa11y@9.1.1.patch
 
-# Dependency build scripts pnpm is permitted to run during install.
+onlyBuiltDependencies:
+  - "@parcel/watcher"
+  - esbuild
+  - puppeteer
+  - sharp
+  # Transitive dep of wrangler, installed ad hoc by the Cloudflare deploy jobs.
+  - workerd
+
 allowBuilds:
-  '@parcel/watcher': true
+  "@parcel/watcher": true
   esbuild: true
   puppeteer: true
   sharp: true
+  workerd: true
   unrs-resolver: true

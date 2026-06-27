@@ -20,9 +20,9 @@ title: "Inner and outer alignment decompose one hard problem into two extremely 
 lw-latest-edit: 2023-01-24T00:43:58.097000Z
 lw-is-linkpost: "false"
 tags:
-  - "shard-theory"
-  - "AI"
-  - "critique"
+  - shard-theory
+  - AI
+  - critique
 aliases:
   - "inner-and-outer-alignment-decompose-one-hard-problem-into"
 sequence-link: posts#shard-theory
@@ -35,7 +35,7 @@ date_published: 2022-12-02
 original_url: https://www.lesswrong.com/posts/gHefoxiznGfsbiAu9/inner-and-outer-alignment-decompose-one-hard-problem-into
 skip_import: true
 description: Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.
-date_updated: 2026-05-08
+date_updated: 2026-06-26
 createBibtex: true
 ---
 

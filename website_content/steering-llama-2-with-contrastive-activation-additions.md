@@ -32,6 +32,7 @@ tags:
   - AI
   - activation-engineering
   - mats-program
+  - language-models
 aliases:
   - steering-llama-2-with-contrastive-activation-additions
 lw-reward-post-warning: "false"
@@ -40,7 +41,7 @@ date_published: 2024-01-02
 original_url: https://www.lesswrong.com/posts/v7f8ayBxLhmMFRzpa/steering-llama-2-with-contrastive-activation-additions
 skip_import: true
 description: Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 createBibtex: true
 ---
 

@@ -26,6 +26,7 @@ tags:
   - AI
   - mats-program
   - shard-theory
+  - interpretability
 aliases:
   - behavioural-statistics-for-a-maze-solving-agent
 sequence-link: posts#interpreting-a-maze-solving-network
@@ -39,7 +40,7 @@ original_url: https://www.lesswrong.com/posts/eowhY5NaCaqY6Pkj9/behavioural-stat
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.jpg
 description: Closeness to cheese and the top-right corner both influence a maze-solving AI, suggesting a "shard-like" decision-making process.
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 card_image_alt: A scatter plot showing a strong positive correlation between two maze distance metrics. The x-axis is "Euclidean distance between cheese and decision square" and the y-axis is "Steps between cheese and decision square."
 ---
 
