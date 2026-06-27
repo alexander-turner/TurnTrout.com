@@ -1,4 +1,5 @@
-"""Generate per-section visual-regression fixtures from ``test-page.md``.
+"""
+Generate per-section visual-regression fixtures from ``test-page.md``.
 
 The monolithic test page is the single human-edited source of truth. This
 script slices it on top-level (``# ``) headings and writes one fixture page per
@@ -37,7 +38,8 @@ def _is_continuation(line: str) -> bool:
 
 
 def extract_footnote_defs(content: str) -> tuple[str, dict[str, str]]:
-    """Strip footnote definitions from ``content``, returning (stripped, defs).
+    """
+    Strip footnote definitions from ``content``, returning (stripped, defs).
 
     A definition spans its ``[^label]:`` line plus following indented/blank lines
     up to the next non-indented line. Trailing blank lines are not absorbed.
@@ -81,7 +83,8 @@ def referenced_footnotes(section: str, defs: dict[str, str]) -> list[str]:
 
 
 def slugify(heading: str) -> str:
-    """Reduce a heading to a stable URL slug (drop markdown, keep word chars)."""
+    """Reduce a heading to a stable URL slug (drop markdown, keep word
+    chars)."""
     text = re.sub(r"`([^`]*)`", r"\1", heading)  # inline code
     text = re.sub(r"[*_]", "", text)  # emphasis markers
     text = text.strip().lower()
@@ -90,7 +93,8 @@ def slugify(heading: str) -> str:
 
 
 def split_sections(body: str) -> list[tuple[str, str]]:
-    """Return ``(heading, section_markdown)`` pairs for each top-level heading."""
+    """Return ``(heading, section_markdown)`` pairs for each top-level
+    heading."""
     matches = list(H1_PATTERN.finditer(body))
     sections: list[tuple[str, str]] = []
     for index, match in enumerate(matches):
@@ -118,7 +122,8 @@ def fixture_frontmatter(heading: str, slug: str) -> str:
 
 
 def build_fixtures(source_markdown: str) -> dict[str, str]:
-    """Return ``{filename: file_contents}`` for every section fixture.
+    """
+    Return ``{filename: file_contents}`` for every section fixture.
 
     Pure function (no filesystem writes) so the drift test can compare against
     the committed fixtures.

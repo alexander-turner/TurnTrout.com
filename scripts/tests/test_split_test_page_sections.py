@@ -11,7 +11,8 @@ from ..split_test_page_sections import (
 
 
 def test_committed_fixtures_match_generator() -> None:
-    """Re-running the generator must reproduce the committed fixtures exactly."""
+    """Re-running the generator must reproduce the committed fixtures
+    exactly."""
     expected = build_fixtures(SOURCE.read_text(encoding="utf-8"))
     committed = {p.name: p.read_text(encoding="utf-8") for p in OUTPUT_DIR.glob("*.md")}
     assert committed == expected, (
