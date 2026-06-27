@@ -119,11 +119,7 @@ export default defineConfig({
         command: process.env.CI
           ? "pnpm serve public -l 8080 > /tmp/webserver.log 2>&1"
           : "INCLUDE_FIXTURES=true pnpm start",
-        // Probe a concrete, always-built page rather than the bare site root.
-        // The homepage is published under a permalink, so the CI static server
-        // answers `/` with 404; a 404 never satisfies the readiness check, so
-        // probing `/` stalls startup until the 7-minute timeout fires.
-        url: `${baseURL}/test-page`,
+        url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 7 * 60 * 1000, // 7 minutes
       },
