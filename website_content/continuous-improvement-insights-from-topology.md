@@ -39,7 +39,7 @@ original_url: https://www.lesswrong.com/posts/TSLnckszv4Tb5cHmt/continuous-impro
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/k6b4WRE.jpg
 description: Reviewing Munkres' "Topology", reflecting on compactness, homotopy, and what I was even doing with my life before understanding homeomorphisms.
-date_updated: 2026-06-26
+date_updated: 2026-06-27
 card_image_alt: A diagram illustrating the definition of continuity for a function f from a domain X to a codomain Y. In X, a sequence of points x_n converges to a point x. The function f maps this to Y, where the corresponding sequence f(x_n) converges to f(x), visually demonstrating topological convergence.
 ---
 
@@ -111,7 +111,7 @@ Once you fix the initial point, the lift corresponds to the unique path in the c
 
 ## Homotopy
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.mp4" type="video/mp4; codecs=hvc1">
+<video aria-label="An animated diagram illustrates path homotopy. A solid blue line connecting two fixed points continuously deforms its path, smoothly transforming between different shapes within a dashed boundary, without breaking." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.mp4" type="video/mp4; codecs=hvc1"/></video>
 <source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.webm" type="video/webm"></video>
 
 This concept yields amazing insight into such profound topics as the deeper nature of jump rope. Under the standard subspace topology of $\mathbb{R}^3$, consider the space swept out by a rope held at fixed endpoints and tautness. All paths between the endpoints are path homotopic! You can think about movements of the rope (either clockwise or counterclockwise) as homotopies in this space.

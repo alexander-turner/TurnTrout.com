@@ -39,7 +39,7 @@ date_published: 2020-04-04
 original_url: https://www.lesswrong.com/posts/jqME8gHyC9maaH7Rp/a-kernel-of-truth-insights-from-a-friendly-approach-to
 skip_import: true
 description: 'Functional analysis: infinite dimensions, discontinuous linear functions, and the headache-inducing functional derivative.'
-date_updated: 2026-06-26
+date_updated: 2026-06-27
 ---
 
 What is functional analysis? A satisfactory answer requires going back to where it all started.
@@ -117,7 +117,7 @@ Alex
 
 : An interesting concept that comes to mind is thinking about a functional derivative with respect to e.g. a straight-line [homotopy](https://en.wikipedia.org/wiki/Homotopy), where you really _could_ say how a function is changing at every point with respect to time. But I don't think that's the same concept.
 
-  <video class="float-right" autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.webm" type="video/webm"></video>
+ <video aria-label="An animation illustrating a homotopy, where a solid blue line connecting two points continuously deforms between two different paths, which are outlined by dashed lines." autoplay="" class="float-right" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.webm" type="video/webm"/></video>
 
 `TheMajor`
 : The concept is as follows:

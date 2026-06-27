@@ -30,7 +30,7 @@ date_published: 2023-06-20
 original_url: https://www.lesswrong.com/posts/8CvkNa6FKSrK4Nj83/ban-development-of-unpredictable-powerful-models
 skip_import: true
 description: "A proposal for a government regulation of AI: Developers must be able to accurately predict the model's output. "
-date_updated: 2026-06-26
+date_updated: 2026-06-27
 ---
 
 > [!warning]
@@ -65,7 +65,7 @@ Partially incentivizes labs to do alignment research for us.
 
 ## Drawbacks
 
-Most notably, this test seems _extremely strict_, perhaps beyond even the strict standards we will want to demand of those looking to deploy potentially world-changing models. I'll discuss a few drawbacks in the next section.
+Most notably, this test seems _extremely strict_, perhaps beyond even the strict standards we will want to demand of those looking to deploy potentially world-changing models. I'll discuss a few drawbacks in [the next section](#anticipated-questions).
 
 ## Anticipated questions
 

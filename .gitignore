@@ -53,6 +53,8 @@ quartz/static/images/posts
 *.mp4_original
 website_content/asset_staging
 asset_queue.json
+asset_captions.json
+suggested_alts.json
 
 # Content
 website_content/drafts
