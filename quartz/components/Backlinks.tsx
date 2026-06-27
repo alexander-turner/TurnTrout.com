@@ -18,7 +18,7 @@ function processBacklinkTitle(title: string): Parent {
   return htmlAst as unknown as Parent
 }
 
-/** Joins a hast `className` property (always an array) into a class string. */
+/** Joins a hast `className` (an array, or absent) into a class string. */
 function classNameString(properties: Element["properties"]): string {
   const className = properties?.className
   return Array.isArray(className) ? className.map(String).join(" ") : ""

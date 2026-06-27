@@ -22,16 +22,13 @@ export function formatTitle(title: string): string {
 
 /**
  * Single source of truth for the site's node-producing inline transforms:
- * emoji → Twemoji `<img>` (matching the main `Twemoji` pass) and acronym
- * small-caps (matching `TagSmallcaps`), applied in pipeline order over an
- * existing hast subtree in place.
+ * emoji → Twemoji `<img>` and acronym small-caps, applied in pipeline order
+ * (Twemoji before TagSmallcaps) over an existing hast subtree in place.
  *
- * Smart-quote / arrow / nbsp transforms are string-level and must be applied
- * upstream by the caller (`formatTitle` for titles, `applyTextTransforms` for
- * descriptions). This exists because content injected late in the pipeline
- * (the "Similar posts" block, sequence links, backlinks) is built *after* the
- * `Twemoji` and `TagSmallcaps` passes have already run, so those two transforms
- * would otherwise never touch it.
+ * Content injected after those two passes have run (the "Similar posts" block,
+ * sequence links, backlinks) must re-apply them here. Smart-quote / arrow /
+ * nbsp transforms are string-level and belong upstream in the caller
+ * (`formatTitle` for titles, `applyTextTransforms` for descriptions).
  */
 export function applyInlineFormattingTransforms(tree: Root | Element): void {
   processTwemojiTree(tree as unknown as Root)
