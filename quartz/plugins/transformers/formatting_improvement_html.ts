@@ -527,6 +527,12 @@ export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
 }
 
 const ordinalSuffixRegex = /(?<![-−])(?<number>[\d,]+)(?<suffix>st|nd|rd|th)/gu
+
+// A day adjacent to a year (e.g. "26th, 2026") is a calendar date: tag its
+// number .date-ordinal-num so it renders in oldstyle figures matching the year.
+// Every other ordinal keeps lining figures so it stays full cap height.
+const trailingYearRegex = /^,?\s+\d{4}\b/
+
 export function formatOrdinalSuffixes(tree: Root): void {
   visitParents(tree, "text", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent
@@ -534,7 +540,12 @@ export function formatOrdinalSuffixes(tree: Root): void {
 
     const index = parent.children.indexOf(node as ElementContent)
     replaceRegex(node, index, parent, ordinalSuffixRegex, (match: RegExpMatchArray) => {
-      const numSpan = h("span.ordinal-num", match.groups?.number ?? /* istanbul ignore next */ "")
+      const matchEnd = (match.index ?? /* istanbul ignore next */ 0) + match[0].length
+      const followedByYear = trailingYearRegex.test(
+        match.input?.slice(matchEnd) ?? /* istanbul ignore next */ "",
+      )
+      const numSelector = followedByYear ? "span.date-ordinal-num" : "span.ordinal-num"
+      const numSpan = h(numSelector, match.groups?.number ?? /* istanbul ignore next */ "")
       const suffixSpan = h(
         "sup.ordinal-suffix",
         match.groups?.suffix ?? /* istanbul ignore next */ "",

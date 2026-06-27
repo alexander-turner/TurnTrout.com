@@ -20,7 +20,7 @@ title: "Overcoming Clinginess in Impact Measures"
 lw-latest-edit: 2018-06-30T22:51:29.065000Z
 lw-is-linkpost: "false"
 tags:
-  - "impact-regularization"
+  - impact-regularization
 aliases:
   - "overcoming-clinginess-in-impact-measures"
 lw-reward-post-warning: "false"
@@ -29,7 +29,7 @@ date_published: 2018-06-30
 original_url: https://www.lesswrong.com/posts/DvmhXysefEyEvXuXS/overcoming-clinginess-in-impact-measures
 skip_import: true
 description: Impact measures incentivize agents to avoid side effects, but what about the side effects of ★other agents★?
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 ---
 
 > [!quote]Taylor et al., _[Alignment for Advanced Machine Learning Systems](https://intelligence.org/files/AlignmentMachineLearning.pdf)_

@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - scholarship-&-learning
   - understanding-the-world
+  - mathematics
 aliases:
   - insights-from-euclid-s-elements
 lw-sequence-title: Becoming Stronger
@@ -39,7 +40,7 @@ original_url: https://www.lesswrong.com/posts/Wpf3Gsa8A89mmjkk8/insights-from-eu
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/euler.jpg
 description: Euclid's "Elements", but made beautiful. A colorful exploration of geometric proofs and the power of visual learning.
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 card_image_alt: A geometry proof uses colored lines and symbols instead of letters to visually demonstrate that the triangle's sides are equal.
 ---
 

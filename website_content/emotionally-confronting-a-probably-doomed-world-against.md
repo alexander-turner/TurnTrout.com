@@ -1,5 +1,6 @@
 ---
 permalink: emotionally-confronting-doom
+no_dropcap_color: true
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
@@ -31,7 +32,7 @@ date_published: 2022-04-10
 original_url: https://www.lesswrong.com/posts/Cf2zBkoocqcjnrNFD/emotionally-confronting-a-probably-doomed-world-against
 skip_import: true
 description: Rejecting defeatism in the face of potential AI doom.  We shouldn't seek a “dignified” death—let's fight for a future worth living.
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 ---
 
 > [!note]

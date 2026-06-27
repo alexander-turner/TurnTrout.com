@@ -20,8 +20,8 @@ title: "MDP models are determined by the agent architecture and the environmenta
 lw-latest-edit: 2021-06-02T18:31:04.668000Z
 lw-is-linkpost: "false"
 tags:
-  - "instrumental-convergence"
-  - "AI"
+  - instrumental-convergence
+  - AI
 aliases:
   - "mdp-models-are-determined-by-the-agent-architecture-and-the"
 lw-sequence-title: "The Causes of Power-seeking and Instrumental Convergence"
@@ -38,7 +38,7 @@ date_published: 2021-05-26
 original_url: https://www.lesswrong.com/posts/XkXL96H6GknCbT5QH/mdp-models-are-determined-by-the-agent-architecture-and-the
 skip_import: true
 description: "Agent architecture and environmental dynamics determine Markov Decision Processes. Power-seeking tendencies are not subjective."
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 ---
 
 [_Seeking Power is Often Robustly Instrumental in MDPs_](/seeking-power-is-often-convergently-instrumental-in-mdps) relates the structure of the agent's environment (the "Markov decision process (MDP)[^POMDP] model") to the tendencies of optimal policies for different reward functions in that environment ("instrumental convergence"). The results tell us what optimal decision-making "tends to look like" in a given environment structure, formalizing reasoning that says e.g. that most agents stay alive because that helps them achieve their goals.

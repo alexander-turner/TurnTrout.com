@@ -21,6 +21,7 @@ lw-latest-edit: 2019-12-17T22:27:13.803000Z
 lw-is-linkpost: 'false'
 tags:
   - AI
+  - existential-risk
 aliases:
   - thoughts-on-human-compatible
 lw-reward-post-warning: 'true'
@@ -29,7 +30,7 @@ date_published: 2019-10-10
 original_url: https://www.lesswrong.com/posts/FuGDYNvA6qh4qyFah/thoughts-on-human-compatible
 skip_import: true
 description: Stuart Russell's "Human Compatible" makes the case for aligning AI with human values and sketches a research agenda based on uncertainty.
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 ---
 
 > [!quote] [_Human Compatible_](https://www.amazon.com/Human-Compatible-Artificial-Intelligence-Problem/dp/0525558616)

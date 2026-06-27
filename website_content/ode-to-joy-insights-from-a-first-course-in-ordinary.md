@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - scholarship-&-learning
   - understanding-the-world
+  - mathematics
 aliases:
   - ode-to-joy-insights-from-a-first-course-in-ordinary
 lw-sequence-title: Becoming Stronger
@@ -39,7 +40,7 @@ original_url: https://www.lesswrong.com/posts/o3aTqo5zp6phkuiRw/ode-to-joy-insig
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/eb2E5Eg.jpg
 description: "Textbook insights into differential equations: how to express systems in terms of change, equilibria and stability, resonance, and more. "
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 card_image_alt: '"Unstable": A ball at the peak of a hill rolls away when nudged. "Locally Stable": A ball in a small dip atop a larger hill is stable only within a small "ε-neighborhood". "Globally Stable": A ball at the bottom of a U-shaped valley will always roll back to its resting point.'
 ---
 
