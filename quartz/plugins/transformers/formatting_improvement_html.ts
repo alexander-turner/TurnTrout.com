@@ -359,7 +359,7 @@ export function applyTextTransforms(text: string, options: { useNbsp?: boolean }
   return text
 }
 
-export const l_pRegex = /(?<prefix>\s|^)L(?<number>\d+)\b(?!\.)/g
+export const lPRegex = /(?<prefix>\s|^)L(?<number>\d+)\b(?!\.)/g
 /**
  * Converts L-numbers (like "L1", "L42") to use subscript numbers with lining numerals
  * @param tree - The HTML AST to process
@@ -376,7 +376,7 @@ export function formatLNumbers(tree: Root): void {
     let lastIndex = 0
     const newNodes: (Text | Element)[] = []
 
-    while ((match = l_pRegex.exec(node.value)) !== null) {
+    while ((match = lPRegex.exec(node.value)) !== null) {
       // Add text before the match
       if (match.index > lastIndex) {
         newNodes.push({
@@ -405,7 +405,7 @@ export function formatLNumbers(tree: Root): void {
         children: [{ type: "text", value: number }],
       })
 
-      lastIndex = l_pRegex.lastIndex
+      lastIndex = lPRegex.lastIndex
     }
 
     // Add remaining text

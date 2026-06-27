@@ -47,7 +47,7 @@ tests/visual-baselines/*.png
 *zopfli*
 **.faviconUrls.txt
 **.faviconCounts.txt
-quartz/static/images/external-favicons/*.png
+quartz/static/images/external-favicons/
 quartz/static/images/posts
 *.avif_original
 *.mp4_original

@@ -29,7 +29,7 @@ import {
   HTMLFormattingImprovement,
   identifyLinkNode,
   improveFormatting,
-  l_pRegex,
+  lPRegex,
   massTransformText,
   moveQuotesBeforeLink,
   rearrangeLinkPunctuation,
@@ -1393,7 +1393,7 @@ describe("L-number formatting", () => {
   function testMatch(input: string): string[] {
     const matches: string[] = []
     let match
-    while ((match = l_pRegex.exec(input)) !== null) {
+    while ((match = lPRegex.exec(input)) !== null) {
       matches.push(match[2]) // Push the captured number
     }
     return matches

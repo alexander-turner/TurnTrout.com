@@ -21,7 +21,7 @@ lw-latest-edit: 2018-05-03T22:56:27.057000Z
 lw-is-linkpost: 'false'
 tags:
   - summaries
-  - scholarship-&-learning
+  - scholarship-and-learning
   - mathematics
 aliases:
   - confounded-no-longer-insights-from-all-of-statistics
@@ -155,8 +155,7 @@ Random variables are functions $Y:\Omega\to\mathbb{R}$, assigning a number to ea
 
 Fairly straightforward.
 
-<video aria-label="An animated graph illustrating the Central Limit Theorem. As the sample size 'n' increases from 1, the shape of a probability distribution transforms from a flat rectangle to a triangle, and then smoothly converges into a taller, narrower bell curve (normal distribution)." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/converge_distribution.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/converge_distribution.webm" type="video/webm"></video>
+<video aria-label="An animated graph illustrating the Central Limit Theorem. As the sample size 'n' increases from 1, the shape of a probability distribution transforms from a flat rectangle to a triangle, and then smoothly converges into a taller, narrower bell curve (normal distribution)." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/converge_distribution.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/converge_distribution.webm" type="video/webm" /></video>
 
 A similar [^1] geometric intuition:
 

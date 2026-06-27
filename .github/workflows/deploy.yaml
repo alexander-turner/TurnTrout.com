@@ -115,11 +115,13 @@ jobs:
             const prNumber = parseInt(process.env.PR_NUMBER);
             const sha = context.sha.substring(0, 7);
             const deployUrl = `https://pr-${prNumber}.turntrout.pages.dev`;
+            const testPageUrl = `${deployUrl}/test-page`;
 
             const body = [
               marker,
               `**Preview deployed** for commit ${sha}:`,
-              deployUrl,
+              `- Test page (visual-element showcase): ${testPageUrl}`,
+              `- Site root: ${deployUrl}`,
               '',
               'This preview updates automatically on each push to this PR.'
             ].join('\n');

@@ -20,7 +20,7 @@ title: "ODE to Joy: Insights from 'A First Course in Ordinary Differential Equat
 lw-latest-edit: 2020-03-25T22:12:25.494000Z
 lw-is-linkpost: "false"
 tags:
-  - scholarship-&-learning
+  - scholarship-and-learning
   - understanding-the-world
   - mathematics
 aliases:
@@ -46,8 +46,7 @@ card_image_alt: '"Unstable": A ball at the peak of a hill rolls away when nudged
 
 Sometimes, it's easier to say how things change than to say how things are.
 
-<video aria-label="An animation visualizes a pendulum's motion in state space. As a pendulum swings (inset), a corresponding point on a graph traces an elliptical path, plotting the pendulum's angle (x-axis) against its angular velocity (y-axis)." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/WCYZkZ4.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/WCYZkZ4.webm" type="video/webm"></video>
+<video aria-label="An animation visualizes a pendulum's motion in state space. As a pendulum swings (inset), a corresponding point on a graph traces an elliptical path, plotting the pendulum's angle (x-axis) against its angular velocity (y-axis)." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/WCYZkZ4.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/WCYZkZ4.webm" type="video/webm" /></video>
 
 Figure: From [3Blue1Brown: Differential Equations](https://www.youtube.com/watch?v=p_di4Zn4wz4)
 
