@@ -1,0 +1,52 @@
+name: Refresh tweet snapshots
+
+# Keeps the R2 fallback for embedded tweets current. On every push to main that
+# touches the content or the snapshot script, re-fetch each referenced tweet from
+# X's cookie-free syndication endpoint and re-upload the normalized snapshot JSON
+# (plus avatar/media) to R2 at static/tweets/<id>/. A later takedown then can't
+# break the build: tweetEmbed.ts renders from the committed snapshot, and the CDN
+# copy is the durable backup. Unresolvable tweets are skipped, never fatal.
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "website_content/**/*.md"
+      - "scripts/tweet_snapshot.py"
+      - "scripts/r2_sync.py"
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-tweet-snapshots
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+
+      - name: Setup Python
+        uses: ./.github/actions/setup-site
+        with:
+          install-node-deps: "false"
+          install-python: "true"
+
+      - name: Install rclone
+        uses: ./.github/actions/retry-external
+        with:
+          max-attempts: "3"
+          timeout-minutes: "5"
+          command: sudo apt-get update && sudo apt-get install -y rclone
+
+      - name: Refresh snapshots on R2
+        env:
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+        run: uv run python scripts/tweet_snapshot.py --write --force

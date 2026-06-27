@@ -1,0 +1,247 @@
+/**
+ * @jest-environment node
+ */
+import type { Element } from "hast"
+
+import { describe, expect, it } from "@jest/globals"
+import { toHtml } from "hast-util-to-html"
+
+import {
+  buildTweetCard,
+  buildTweetEmbed,
+  buildUnavailableCard,
+  formatTweetDate,
+  linkifyTweetText,
+  type TweetSnapshot,
+} from "../tweetCard"
+
+const baseSnapshot: TweetSnapshot = {
+  id: "123",
+  url: "https://xcancel.com/turntrout/status/123",
+  author: {
+    name: "Alex Turner",
+    handle: "turntrout",
+    verified: true,
+    avatarSrc: "https://assets.turntrout.com/static/tweets/123/avatar.jpg",
+  },
+  createdAt: "2025-01-21T17:32:00.000Z",
+  text: "Hello world",
+  urls: [],
+  media: [],
+  snapshotAt: "2026-06-27T00:00:00+00:00",
+}
+
+const render = (node: Element): string => toHtml(node)
+
+describe("formatTweetDate", () => {
+  it("formats a valid ISO timestamp in UTC", () => {
+    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("5:32 PM · Jan 21, 2025")
+  })
+
+  it("uses 12 for midnight and noon", () => {
+    expect(formatTweetDate("2025-06-15T00:05:00.000Z")).toBe("12:05 AM · Jun 15, 2025")
+    expect(formatTweetDate("2025-06-15T12:00:00.000Z")).toBe("12:00 PM · Jun 15, 2025")
+  })
+
+  it("returns empty string for an unparseable timestamp", () => {
+    expect(formatTweetDate("not a date")).toBe("")
+  })
+})
+
+describe("linkifyTweetText", () => {
+  it("links t.co entities to their expanded URL with display text", () => {
+    const nodes = linkifyTweetText("see https://t.co/abc now", [
+      { url: "https://t.co/abc", display: "example.com", expanded: "https://example.com" },
+    ])
+    const html = nodes.map((n) => (typeof n === "string" ? n : render(n))).join("")
+    expect(html).toContain('href="https://example.com"')
+    expect(html).toContain(">example.com<")
+    expect(html).not.toContain("t.co/abc")
+  })
+
+  it("links mentions, hashtags, and cashtags to xcancel", () => {
+    const nodes = linkifyTweetText("@bob loves #ai and $TSLA", [])
+    const html = nodes.map((n) => (typeof n === "string" ? n : render(n))).join("")
+    expect(html).toContain('href="https://xcancel.com/bob"')
+    expect(html).toContain("https://xcancel.com/search?q=%23ai")
+    expect(html).toContain("https://xcancel.com/search?q=%24TSLA")
+  })
+
+  it("turns newlines into <br> and preserves surrounding text", () => {
+    const nodes = linkifyTweetText("line one\nline two", [])
+    const html = nodes.map((n) => (typeof n === "string" ? n : render(n))).join("")
+    expect(html).toBe("line one<br>line two")
+  })
+
+  it("leaves entity URLs that do not appear in the text untouched", () => {
+    const nodes = linkifyTweetText("plain text", [
+      { url: "https://t.co/missing", display: "x", expanded: "https://x.test" },
+    ])
+    expect(nodes).toEqual(["plain text"])
+  })
+
+  it("handles consecutive newlines without emitting empty text nodes", () => {
+    const nodes = linkifyTweetText("a\n\nb", [])
+    expect(nodes.filter((n) => n === "")).toHaveLength(0)
+  })
+
+  it("drops the empty leading segment when an entity starts the text", () => {
+    const nodes = linkifyTweetText("https://t.co/abc done", [
+      { url: "https://t.co/abc", display: "x.test", expanded: "https://x.test" },
+    ])
+    expect(nodes.filter((n) => n === "")).toHaveLength(0)
+    const html = nodes.map((n) => (typeof n === "string" ? n : render(n))).join("")
+    expect(html).toContain('href="https://x.test"')
+  })
+
+  it("linkifies a text that is only a mention", () => {
+    const nodes = linkifyTweetText("@bob", [])
+    expect(nodes).toHaveLength(1)
+    expect(render(nodes[0] as Element)).toContain("https://xcancel.com/bob")
+  })
+})
+
+describe("buildTweetCard", () => {
+  it("renders author, handle, body, and a date linking to xcancel", () => {
+    const html = render(buildTweetCard(baseSnapshot))
+    expect(html).toContain("Alex Turner")
+    expect(html).toContain("@turntrout")
+    expect(html).toContain("Hello world")
+    expect(html).toContain("5:32 PM · Jan 21, 2025")
+    expect(html).toContain('href="https://xcancel.com/turntrout/status/123"')
+    expect(html).toContain('data-tweet-id="123"')
+  })
+
+  it("shows the verified badge only when verified", () => {
+    expect(render(buildTweetCard(baseSnapshot))).toContain("tweet-verified")
+    const unverified = { ...baseSnapshot, author: { ...baseSnapshot.author, verified: false } }
+    expect(render(buildTweetCard(unverified))).not.toContain("tweet-verified")
+  })
+
+  it("omits the date line when the timestamp is unparseable", () => {
+    const undated = { ...baseSnapshot, createdAt: "" }
+    expect(render(buildTweetCard(undated))).not.toContain("tweet-date")
+  })
+
+  it("renders a photo with its dimensions and alt text", () => {
+    const withPhoto: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [
+        {
+          type: "photo",
+          src: "https://assets.turntrout.com/static/tweets/123/p.jpg",
+          width: 800,
+          height: 400,
+          alt: "a photo",
+        },
+      ],
+    }
+    const html = render(buildTweetCard(withPhoto))
+    expect(html).toContain('width="800"')
+    expect(html).toContain('alt="a photo"')
+    expect(html).toContain("tweet-media-count-1")
+  })
+
+  it("renders a looping video with a poster and a source element", () => {
+    const withVideo: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [
+        {
+          type: "video",
+          src: "https://assets.turntrout.com/static/tweets/123/v.mp4",
+          poster: "https://assets.turntrout.com/static/tweets/123/poster.jpg",
+          loop: true,
+        },
+      ],
+    }
+    const html = render(buildTweetCard(withVideo))
+    expect(html).toContain("<video")
+    expect(html).toContain("loop")
+    expect(html).toContain('type="video/mp4"')
+    expect(html).toContain("poster=")
+  })
+
+  it("renders a video's width and height when present", () => {
+    const withVideo: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [
+        {
+          type: "video",
+          src: "https://assets.turntrout.com/static/tweets/123/v.mp4",
+          width: 640,
+          height: 360,
+        },
+      ],
+    }
+    const html = render(buildTweetCard(withVideo))
+    expect(html).toContain('width="640"')
+    expect(html).toContain('height="360"')
+  })
+
+  it("renders a non-looping video without width/height when absent", () => {
+    const withVideo: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [{ type: "video", src: "https://assets.turntrout.com/static/tweets/123/v.mp4" }],
+    }
+    const html = render(buildTweetCard(withVideo))
+    expect(html).toContain('no-vsc" controls playsinline>')
+  })
+
+  it("renders a photo without width/height/alt when absent", () => {
+    const withPhoto: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [{ type: "photo", src: "https://assets.turntrout.com/static/tweets/123/p.jpg" }],
+    }
+    const html = render(buildTweetCard(withPhoto))
+    expect(html).toContain('alt="" loading="lazy"></div>')
+  })
+
+  it("caps the media-count class at 4", () => {
+    const photo = (n: number) => ({
+      type: "photo" as const,
+      src: `https://assets.turntrout.com/static/tweets/123/p${n}.jpg`,
+    })
+    const many: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [photo(1), photo(2), photo(3), photo(4), photo(5)],
+    }
+    expect(render(buildTweetCard(many))).toContain("tweet-media-count-4")
+  })
+})
+
+describe("buildUnavailableCard", () => {
+  it("links to xcancel and is marked unavailable", () => {
+    const html = render(buildUnavailableCard("https://xcancel.com/turntrout/status/999"))
+    expect(html).toContain("tweet-card-unavailable")
+    expect(html).toContain('href="https://xcancel.com/turntrout/status/999"')
+    expect(html).toContain("View it on XCancel")
+  })
+})
+
+describe("buildTweetEmbed", () => {
+  it("wraps a single resolved tweet without the thread class", () => {
+    const html = render(buildTweetEmbed([{ snapshot: baseSnapshot, xcancelUrl: baseSnapshot.url }]))
+    expect(html).toContain("tweet-embed")
+    expect(html).not.toContain("tweet-thread")
+  })
+
+  it("renders multiple tweets as a thread", () => {
+    const html = render(
+      buildTweetEmbed([
+        { snapshot: baseSnapshot, xcancelUrl: baseSnapshot.url },
+        { snapshot: { ...baseSnapshot, id: "124" }, xcancelUrl: baseSnapshot.url },
+      ]),
+    )
+    expect(html).toContain("tweet-thread")
+    expect(html).toContain('data-tweet-id="123"')
+    expect(html).toContain('data-tweet-id="124"')
+  })
+
+  it("stubs slots without a snapshot", () => {
+    const html = render(
+      buildTweetEmbed([{ xcancelUrl: "https://xcancel.com/turntrout/status/777" }]),
+    )
+    expect(html).toContain("tweet-card-unavailable")
+    expect(html).toContain("status/777")
+  })
+})

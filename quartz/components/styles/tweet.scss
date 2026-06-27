@@ -1,0 +1,185 @@
+@use "../../styles/variables.scss" as *;
+
+// Self-hosted, tracking-free tweet embeds (see plugins/transformers/tweetEmbed.ts).
+// The card derives its palette from the site tokens so it themes light/dark for
+// free; no inversion is applied to avatars or media.
+
+.tweet-embed {
+  max-width: 32rem;
+  margin: calc(2 * $base-margin) auto;
+}
+
+.tweet-card {
+  border: 1px solid var(--midground-faint);
+  border-radius: calc(2 * $border-radius);
+  padding: calc(1.5 * $base-margin);
+  background-color: var(--background);
+  overflow-wrap: break-word;
+
+  // Source link in the corner; lets the avatar/name links sit normally.
+  position: relative;
+}
+
+.tweet-header {
+  display: flex;
+  align-items: center;
+  gap: $base-margin;
+}
+
+.tweet-card .tweet-avatar-link {
+  flex: 0 0 auto;
+  background-color: transparent;
+  line-height: 0;
+}
+
+.tweet-card img.tweet-avatar {
+  width: calc(6 * $base-margin);
+  height: calc(6 * $base-margin);
+  border-radius: 50%;
+  margin: 0;
+  object-fit: cover;
+  mix-blend-mode: normal;
+}
+
+.tweet-author {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.tweet-name-link,
+.tweet-handle {
+  background-color: transparent;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tweet-name-link {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(0.5 * $base-margin);
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.tweet-handle {
+  color: var(--midground);
+  font-size: var(--font-size-minus-1);
+}
+
+.tweet-verified {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  fill: var(--blue);
+  margin: 0;
+}
+
+.tweet-source-link {
+  position: absolute;
+  top: calc(1.5 * $base-margin);
+  right: calc(1.5 * $base-margin);
+  background-color: transparent;
+  line-height: 0;
+}
+
+.tweet-x-logo {
+  width: calc(2.5 * $base-margin);
+  height: calc(2.5 * $base-margin);
+  fill: var(--midground);
+  margin: 0;
+}
+
+.tweet-body {
+  margin: $base-margin 0 0;
+  color: var(--foreground);
+  white-space: normal;
+}
+
+.tweet-body .tweet-entity {
+  color: var(--color-link);
+}
+
+.tweet-media-grid {
+  display: grid;
+  gap: calc(0.5 * $base-margin);
+  margin-top: $base-margin;
+  border-radius: calc(2 * $border-radius);
+  overflow: hidden;
+
+  &.tweet-media-count-1 {
+    grid-template-columns: 1fr;
+  }
+
+  &.tweet-media-count-2,
+  &.tweet-media-count-3,
+  &.tweet-media-count-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.tweet-card .tweet-media {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  object-fit: cover;
+  mix-blend-mode: normal;
+  border-radius: 0;
+}
+
+.tweet-date {
+  display: inline-block;
+  margin-top: $base-margin;
+  color: var(--midground);
+  font-size: var(--font-size-minus-1);
+  background-color: transparent;
+  text-decoration: none;
+}
+
+.tweet-card-unavailable {
+  color: var(--midground);
+  font-style: italic;
+}
+
+// Threads: stack the cards and run a continuous rail through the avatars.
+.tweet-thread {
+  display: flex;
+  flex-direction: column;
+
+  .tweet-card {
+    border-radius: 0;
+
+    &:first-child {
+      border-top-left-radius: calc(2 * $border-radius);
+      border-top-right-radius: calc(2 * $border-radius);
+    }
+
+    &:last-child {
+      border-bottom-left-radius: calc(2 * $border-radius);
+      border-bottom-right-radius: calc(2 * $border-radius);
+    }
+
+    &:not(:first-child) {
+      border-top: none;
+    }
+  }
+
+  // Vertical connector from one avatar down to the next card's avatar.
+  .tweet-card:not(:last-child) .tweet-avatar-link {
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: calc(6 * $base-margin);
+      bottom: calc(-3 * $base-margin);
+      width: 2px;
+      transform: translateX(-50%);
+      background-color: var(--midground-faint);
+    }
+  }
+}

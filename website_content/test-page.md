@@ -484,6 +484,21 @@ Equation and table nested in a list item (gaps must not stack with `<p>` margins
 
 <div class="centered"><audio src="https://assets.turntrout.com/static/audio/batman.mp3" controls> </audio></div>
 
+# Tweet embeds
+
+A single tweet, rendered from a self-hosted snapshot:
+
+```tweet
+https://x.com/turntrout/status/1700000000000000001
+```
+
+A thread (one URL per line) renders as a connected stack:
+
+```tweet
+https://x.com/turntrout/status/1700000000000000002
+https://x.com/turntrout/status/1700000000000000003
+```
+
 # Images
 
 ![Sample complexity of different kinds of DCTs. The x-axis is "number of training instructions" and the y-axis is "average of logits('Sure') - logits('Sorry')." All conditions are basically flat along the x-dimension. Exponential, quadratic, and linear-projected conditions cluster around a logit difference of 8. Linear has a difference of -6.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif)

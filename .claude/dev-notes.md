@@ -240,6 +240,43 @@ The manifest is produced by a separate writer (ArchiveBox + R2), shipped in its
 own PR. Canonicalization uses the WHATWG `new URL` parser; the writer mirrors it
 with the same `ada` parser so the keys match.
 
+## Tweet embeds (self-hosted, tracking-free)
+
+Author a tweet with a ` ```tweet ` fenced block holding one tweet URL per line
+(several lines render as a connected thread):
+
+````md
+```tweet
+https://x.com/turntrout/status/1881825910040702979
+```
+````
+
+`quartz/plugins/transformers/tweetEmbed.ts` (registered before
+`SyntaxHighlighting`) replaces each block with a site-native card built in
+`tweetCard.ts`. The build is fully decoupled from Twitter: it reads a normalized
+JSON snapshot from `quartz/plugins/transformers/.tweet_snapshots/<id>.json` and
+renders from that. A tweet with no snapshot degrades to an xcancel-link stub, so
+a missing snapshot never breaks the build.
+
+Snapshots are captured by `scripts/tweet_snapshot.py`, which fetches the post
+from X's cookie-free syndication endpoint, mirrors the avatar + photos/video to
+R2 under `static/tweets/<id>/`, rewrites every media URL to `assets.turntrout.com`
+(the only media host `built_site_checks` allows), and writes the snapshot JSON.
+Resolution order: a pinned (already-present) snapshot is authoritative; otherwise
+live fetch then public CDN (`static/tweets/<id>.json`) then skip (stub).
+
+- **Add a tweet locally:** `uv run python scripts/tweet_snapshot.py` (no `--write`
+  pulls/creates snapshots without touching R2). With R2 env vars + `--write` it
+  also uploads. Commit the resulting `<id>.json` with `git add -f` (the
+  `.tweet_snapshots/` dir is gitignored) to pin it; pinned tweets render with
+  zero Twitter/R2 dependency.
+- **R2 refresh:** `.github/workflows/refresh-tweet-snapshots.yaml` runs
+  `tweet_snapshot.py --write --force` on every push to `main` that touches content
+  or the script, keeping the R2 backup (JSON + media) current without git churn.
+- The committed example fixtures under `.tweet_snapshots/` drive the `test-page.md`
+  examples and their `(screenshot)` baselines; their avatar/media point at existing
+  CDN assets so the visual build is deterministic offline.
+
 ## Lessons learned
 
 - When making interface array properties `readonly`, also update downstream function signatures to accept `readonly` arrays. `.map()`/`.filter()`/`.some()`/`.includes()` work on readonly; `.sort()`/`.push()` don’t—copy first: `[...arr].sort()`.

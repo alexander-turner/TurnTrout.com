@@ -1,0 +1,29 @@
+{
+  "id": "1700000000000000001",
+  "url": "https://xcancel.com/turntrout/status/1700000000000000001",
+  "author": {
+    "name": "Alex Turner",
+    "handle": "turntrout",
+    "verified": true,
+    "avatarSrc": "https://assets.turntrout.com/static/images/posts/alex_rainbow_2.avif"
+  },
+  "createdAt": "2025-01-21T17:32:00.000Z",
+  "text": "I just shipped self-hosted, tracking-free tweet embeds for the blog. Light and dark mode, robust against deletion, and every link points at https://t.co/example instead of X. #webdev @turntrout",
+  "urls": [
+    {
+      "url": "https://t.co/example",
+      "display": "turntrout.com/design",
+      "expanded": "https://turntrout.com/design"
+    }
+  ],
+  "media": [
+    {
+      "type": "photo",
+      "src": "https://assets.turntrout.com/static/images/posts/goose-majestic.avif",
+      "width": 1200,
+      "height": 800,
+      "alt": "A majestic goose."
+    }
+  ],
+  "snapshotAt": "2026-06-27T00:00:00+00:00"
+}
