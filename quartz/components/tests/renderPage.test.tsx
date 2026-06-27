@@ -928,13 +928,17 @@ describe("optimizeLcpImage", () => {
 
   it("promotes both images of an img-comparison-slider", () => {
     const html =
-      '<html><head></head><body><article><figure><img-comparison-slider>' +
+      "<html><head></head><body><article><figure><img-comparison-slider>" +
       '<img slot="first" src="https://cdn.example.com/before.avif" loading="lazy">' +
       '<img slot="second" src="https://cdn.example.com/after.avif" loading="lazy">' +
       "</img-comparison-slider></figure></article></body></html>"
     const result = optimizeLcpImage(html)
-    expect(result).toContain('slot="first" src="https://cdn.example.com/before.avif" loading="eager"')
-    expect(result).toContain('slot="second" src="https://cdn.example.com/after.avif" loading="eager"')
+    expect(result).toContain(
+      'slot="first" src="https://cdn.example.com/before.avif" loading="eager"',
+    )
+    expect(result).toContain(
+      'slot="second" src="https://cdn.example.com/after.avif" loading="eager"',
+    )
     expect(result).not.toContain('loading="lazy"')
     expect((result.match(/fetchpriority="high"/g) ?? []).length).toBe(2)
     expect(result).toContain(
@@ -947,7 +951,7 @@ describe("optimizeLcpImage", () => {
 
   it("does not promote images in a later slider when the LCP image is outside it", () => {
     const html =
-      '<html><head></head><body><article>' +
+      "<html><head></head><body><article>" +
       '<img src="hero.avif" loading="lazy">' +
       '<img-comparison-slider><img slot="first" src="a.avif" loading="lazy">' +
       '<img slot="second" src="b.avif" loading="lazy"></img-comparison-slider>' +
