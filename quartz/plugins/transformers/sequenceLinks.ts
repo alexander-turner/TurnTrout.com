@@ -5,7 +5,7 @@ import { visit } from "unist-util-visit"
 
 import type { QuartzPluginData } from "../vfile"
 
-import { formatTitle } from "../../components/component_utils"
+import { formatTitle, renderInlineFormatting } from "../../components/component_utils"
 import { troutContainerId } from "./trout_hr"
 
 // Main components:
@@ -39,7 +39,7 @@ export const renderSequenceTitle = (fileData: QuartzPluginData) => {
     h(
       "a",
       { href: sequenceLink, className: "internal can-trigger-popover", style: "cursor: pointer;" },
-      { type: "text", value: sequence } as RootContent,
+      renderInlineFormatting(sequence),
     ),
   ])
 }
@@ -56,7 +56,7 @@ export const renderPreviousPost = (fileData: QuartzPluginData) => {
   const linkElement = h(
     "a",
     { href: `./${prevPostSlug}`, className: "internal can-trigger-popover" },
-    prevPostTitleFormatted,
+    renderInlineFormatting(prevPostTitleFormatted),
   )
 
   return h("p", [h("em", "Previous"), h("br"), linkElement])
@@ -74,7 +74,7 @@ export const renderNextPost = (fileData: QuartzPluginData) => {
   const linkElement = h(
     "a",
     { href: `./${nextPostSlug}`, className: "internal can-trigger-popover" },
-    nextPostTitleFormatted,
+    renderInlineFormatting(nextPostTitleFormatted),
   )
 
   return h("p", [h("em", "Next"), h("br"), linkElement])
