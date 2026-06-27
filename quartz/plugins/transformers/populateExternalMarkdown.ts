@@ -207,7 +207,7 @@ function getContent(name: string, source: MarkdownSource): string {
   const transformed = source.transform ? source.transform(content) : content
 
   contentCache.set(cacheKey, transformed)
-  logger.info(`Cached content for "${name}" from ${label}`)
+  logger.debug(`Cached content for "${name}" from ${label}`)
 
   return transformed
 }

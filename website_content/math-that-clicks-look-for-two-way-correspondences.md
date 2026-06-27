@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - rationality
   - understanding-the-world
+  - mathematics
 aliases:
   - math-that-clicks-look-for-two-way-correspondences
 lw-reward-post-warning: 'false'
@@ -30,7 +31,7 @@ date_published: 2020-10-02
 original_url: https://www.lesswrong.com/posts/Lotih2o2pkR2aeusW/math-that-clicks-look-for-two-way-correspondences
 skip_import: true
 description: 'Good formalizations are two-way correspondences: the math suggests the concept it formalizes.'
-date_updated: 2026-05-08
+date_updated: 2026-06-26
 ---
 
 > [!thanks]

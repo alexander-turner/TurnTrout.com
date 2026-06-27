@@ -1,5 +1,12 @@
 // Playwright configuration for cross-browser testing
 import { defineConfig, devices } from "@playwright/test"
+import { dirname, resolve } from "path"
+import { fileURLToPath } from "url"
+
+// Playwright resolves a relative `webServer.command` path against
+// `webServer.cwd`, which defaults to this config file's directory. The built
+// site lives at the repo root (`public/`), so pin the server's cwd there.
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
 
 interface DeviceConfig {
   name: string
@@ -119,6 +126,7 @@ export default defineConfig({
         command: process.env.CI
           ? "pnpm serve public -l 8080 > /tmp/webserver.log 2>&1"
           : "INCLUDE_FIXTURES=true pnpm start",
+        cwd: repoRoot,
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 7 * 60 * 1000, // 7 minutes

@@ -284,8 +284,16 @@ if [ ! -d "$PROJECT_DIR/.timestamps/.git" ]; then
 fi
 
 # Configure .timestamps push access using GH_TOKEN (the local proxy only
-# authorizes the main repo, so .timestamps needs direct GitHub auth)
-if [ -d "$PROJECT_DIR/.timestamps/.git" ] && [ -n "${GH_TOKEN:-}" ]; then
+# authorizes the main repo, so .timestamps needs direct GitHub auth).
+# A token-free remote URL means the user has a credential helper
+# (GCM/osxkeychain) wired up — leave that setup alone.
+ts_remote_url=$(git -C "$PROJECT_DIR/.timestamps" remote get-url origin 2>/dev/null || true)
+ts_needs_token_override=true
+if [ -n "$ts_remote_url" ] && [[ "$ts_remote_url" != *"x-access-token"* ]]; then
+	ts_needs_token_override=false
+fi
+if [ "$ts_needs_token_override" = true ] && \
+   [ -d "$PROJECT_DIR/.timestamps/.git" ] && [ -n "${GH_TOKEN:-}" ]; then
 	git -C "$PROJECT_DIR/.timestamps" remote set-url origin \
 		"https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps.git"
 	# Web sessions lack CA certs for direct GitHub access; disable SSL
@@ -376,7 +384,17 @@ if [ -f "$PROJECT_DIR/package.json" ]; then
 	if command -v pnpm &>/dev/null; then
 		# Skip Puppeteer browser download — sandboxed environments can't reach
 		# storage.googleapis.com and Playwright browsers are used instead.
-		PUPPETEER_SKIP_DOWNLOAD=true pnpm install --silent || warn "Failed to install Node dependencies"
+		#
+		# --config.confirm-modules-purge=false: the container's pre-provisioned
+		# node_modules can be inconsistent with the lockfile, so pnpm wants to
+		# purge and reinstall it. Without this flag that prompt aborts under no
+		# TTY (ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY), leaving node_modules
+		# stale — which then makes every later `pnpm exec` (e.g. the pre-push
+		# checks) fail the same way. Letting the purge proceed here leaves a
+		# consistent tree so subsequent `pnpm exec` runs skip the reinstall.
+		PUPPETEER_SKIP_DOWNLOAD=true pnpm install --silent \
+			--config.confirm-modules-purge=false ||
+			warn "Failed to install Node dependencies"
 	elif command -v npm &>/dev/null; then
 		npm install --silent || warn "Failed to install Node dependencies"
 	fi

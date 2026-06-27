@@ -99,6 +99,7 @@ function createSearchIndex(): InstanceType<typeof documentType> {
 
 interface Frontmatter {
   no_dropcap?: boolean | string
+  no_dropcap_color?: boolean | string
 }
 
 /**
@@ -109,6 +110,15 @@ interface Frontmatter {
  */
 export function shouldUseDropcap(frontmatter: Frontmatter): boolean {
   return frontmatter.no_dropcap !== true && frontmatter.no_dropcap !== "true"
+}
+
+/**
+ * Whether a page's dropcap opts out of the random color flourish. Returns true
+ * only when `no_dropcap_color` is explicitly truthy (boolean `true` or string
+ * `"true"`). Mirrors the canonical interpretation in `Content.tsx`.
+ */
+export function noDropcapColor(frontmatter: Frontmatter): boolean {
+  return frontmatter.no_dropcap_color === true || frontmatter.no_dropcap_color === "true"
 }
 
 interface FetchResult {
@@ -424,6 +434,7 @@ export class PreviewManager {
 
       const useDropcap: boolean = shouldUseDropcap(frontmatter)
       this.inner.setAttribute("data-use-dropcap", useDropcap.toString())
+      this.inner.setAttribute("data-no-dropcap-color", noDropcapColor(frontmatter).toString())
 
       // Create a document fragment to build content off-screen
       const fragment = document.createDocumentFragment()

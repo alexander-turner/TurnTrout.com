@@ -8,10 +8,12 @@ import sizeOf from "image-size"
 import path from "path"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
+import { VFile } from "vfile"
 
 import type { BuildCtx } from "../../util/ctx"
 
 import { createWinstonLogger } from "../../util/log"
+import { isDraftPath } from "../filters/draft"
 
 export const logger = createWinstonLogger("assetDimensions")
 
@@ -510,7 +512,12 @@ export const addAssetDimensionsFromSrc = () => {
       const offline = ctx.argv.offline ?? false
       return [
         () => {
-          return async (tree: Root) => {
+          return async (tree: Root, file: VFile) => {
+            // Drafts are stripped by RemoveDrafts before emission, so don't fail
+            // the build over a draft that references an asset not yet on disk.
+            if (isDraftPath(file.data.filePath ?? file.path ?? "")) {
+              return
+            }
             const currentDimensionsCache = await assetProcessor.maybeLoadDimensionCache()
             const assetsToProcess = assetProcessor.collectAssetNodes(tree)
 

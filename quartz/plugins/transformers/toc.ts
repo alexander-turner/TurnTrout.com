@@ -7,7 +7,7 @@ import { visitParents } from "unist-util-visit-parents"
 import type { QuartzTransformerPlugin } from "../types"
 import type { TocEntry } from "../vfile"
 
-import { footnoteHeadingId, normalizeNbsp } from "../../components/constants"
+import { footnoteHeadingId, normalizeNbsp, tocMaxDepth } from "../../components/constants"
 import { createWinstonLogger } from "../../util/log"
 import { applyTextTransforms } from "./formatting_improvement_html"
 import { resetSlugger, slugify } from "./gfm"
@@ -30,7 +30,9 @@ export interface Options {
 }
 
 const defaultOptions: Options = {
-  maxDepth: 2,
+  // Deepest heading level shown; shared with the built-site checker via
+  // config/constants.json so the two can't disagree on the cutoff.
+  maxDepth: tocMaxDepth as Options["maxDepth"],
   minEntries: 1,
   showByDefault: true,
   collapseByDefault: false,

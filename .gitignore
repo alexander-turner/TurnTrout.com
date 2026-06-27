@@ -78,6 +78,7 @@ scripts/*.json
 AGENTS.md
 .gh-resolved
 .pnpm-store
+.claude-tooling
 
 # Mutation & property testing artifacts
 .stryker-tmp/

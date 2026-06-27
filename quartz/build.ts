@@ -16,6 +16,7 @@ import type { FilePath, FullSlug } from "./util/path"
 import cfg from "../config/quartz/quartz.config"
 import DepGraph from "./depgraph"
 import { getStaticResourcesFromPlugins } from "./plugins"
+import { isDraftPath } from "./plugins/filters/draft"
 import { countAllFavicons } from "./plugins/transformers/countFavicons"
 import { emitContent } from "./processors/emit"
 import { filterContent } from "./processors/filter"
@@ -92,7 +93,14 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
     console.log(`Cleaned output directory \`${output}\` in ${perf.timeSince("clean")}`)
 
     perf.addEvent("glob")
-    const allFiles = await glob("**/*.*", argv.directory, cfg.configuration.ignorePatterns)
+    // In serve (dev) mode, ignore .gitignore so gitignored content such as
+    // `drafts/` is discovered and previewed locally.
+    const allFiles = await glob(
+      "**/*.*",
+      argv.directory,
+      cfg.configuration.ignorePatterns,
+      !argv.serve,
+    )
     const fps = allFiles.filter((fp) => fp.endsWith(".md")).sort()
     console.log(
       `Found ${fps.length} input files from \`${argv.directory}\` in ${perf.timeSince("glob")}`,
@@ -211,8 +219,10 @@ async function partialRebuildFromEntrypoint(
   const { ctx, ignored, dependencies, contentMap, mut, toRemove } = buildData
   const { argv, cfg } = ctx
 
-  // don't do anything for gitignored files
-  if (ignored(filepath)) {
+  // Drafts live under a gitignored `drafts/` directory but must still hot-rebuild
+  // in serve (dev) mode so the preview reflects edits; everything else that is
+  // gitignored stays ignored.
+  if (ignored(filepath) && !(argv.serve && isDraftPath(toPosixPath(filepath)))) {
     return
   }
 
@@ -411,8 +421,10 @@ async function rebuildFromEntrypoint(
 
   const { argv } = ctx
 
-  // don't do anything for gitignored files
-  if (ignored(fp)) {
+  // Drafts live under a gitignored `drafts/` directory but must still hot-rebuild
+  // in serve (dev) mode so the preview reflects edits; everything else that is
+  // gitignored stays ignored.
+  if (ignored(fp) && !(argv.serve && isDraftPath(toPosixPath(fp)))) {
     return
   }
 

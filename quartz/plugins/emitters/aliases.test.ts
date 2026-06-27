@@ -330,6 +330,22 @@ describe("AliasRedirects", () => {
     })
   })
 
+  it("roots aliases for drafts so they resolve at the site root, not under drafts/", async () => {
+    const vfile = createTestVFile({
+      path: "/content/drafts/my-draft.md",
+      filePath: "/content/drafts/my-draft.md" as FilePath,
+      frontmatter: { title: "Draft", aliases: ["draft-alias"] },
+    })
+    const content = createMockContent(vfile)
+
+    const graph = await testDependencyGraph(plugin, mockCtx, content, [
+      "public/draft-alias.html" as FilePath,
+    ])
+    expect(graph.hasNode("public/drafts/draft-alias.html" as FilePath)).toBe(false)
+
+    await testEmitFiles(plugin, mockCtx, content, ["draft-alias.html"])
+  })
+
   it("should handle missing slug gracefully", async () => {
     const vfile = createTestVFile({
       path: "/content/test-no-slug.md",

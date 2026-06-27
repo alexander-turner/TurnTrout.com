@@ -49,6 +49,7 @@ from scripts.utils import (
     RIGHT_DOUBLE_QUOTE,
     RIGHT_GUILLEMET,
     RIGHT_SINGLE_QUOTE,
+    TOC_MAX_DEPTH,
     WORD_JOINER,
     ZERO_WIDTH_NBSP,
     ZERO_WIDTH_SPACE,
@@ -1663,8 +1664,12 @@ def _build_included_favicon_domains(
     ``{"apple_com", "openai_com", "scholar_google_com"}``).
     """
     script = str(git_root / "scripts" / "compute_favicon_lists.ts")
+    # Invoke tsx directly rather than via ``pnpm exec``: pnpm 11's
+    # deps-status check can recreate node_modules and print install chatter
+    # to stdout, which would corrupt the JSON parsed below.
+    tsx_bin = str(git_root / "node_modules" / ".bin" / "tsx")
     result = subprocess.run(  # skipcq: BAN-B607
-        ["pnpm", "exec", "tsx", script],
+        [tsx_bin, script],
         capture_output=True,
         text=True,
         cwd=str(git_root),
@@ -2046,6 +2051,86 @@ def check_related_posts(
     return []
 
 
+_HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
+
+
+def _ordered_toc_slugs(toc_content: Tag) -> list[str]:
+    """Slug of each TOC anchor, in document order."""
+    slugs: list[str] = []
+    for anchor in toc_content.find_all("a", attrs={"data-for": True}):
+        slug = anchor.get("data-for")
+        if isinstance(slug, str):
+            slugs.append(slug)
+    return slugs
+
+
+class _HeadingMeta(NamedTuple):
+    """Where an article heading sits and how deep it is."""
+
+    position: int  # document order among article headings
+    level: int  # heading level (1-6)
+
+
+def _article_heading_index(article: Tag) -> dict[str, _HeadingMeta]:
+    """Map each article heading id to its document position and level."""
+    index: dict[str, _HeadingMeta] = {}
+    for order, heading in enumerate(article.find_all(_HEADING_TAGS)):
+        heading_id = heading.get("id")
+        if isinstance(heading_id, str) and heading_id not in index:
+            index[heading_id] = _HeadingMeta(order, int(heading.name[1]))
+    return index
+
+
+def check_toc_ordering(soup: BeautifulSoup) -> list[str]:
+    """
+    Verify the table of contents agrees with the article's headings.
+
+    Two invariants, keyed off the shared TOC config (``TOC_MAX_DEPTH``) so the
+    checker can't drift from the transformer that builds the TOC:
+
+    * **Order** — every entry is listed in the order its target heading appears
+      in the document. The injected "Similar posts" entry is included: its block
+      is rendered before the first appendix (or footnotes), so its heading
+      really does sit where the entry is listed.
+    * **Depth cutoff** — no entry targets a heading deeper than
+      ``TOC_MAX_DEPTH`` (e.g. an h3 leaking into an h1/h2 TOC).
+
+    Nesting is intentionally not checked. The TOC nests by depth *relative* to
+    the article's top heading, not by absolute ``<hN>`` level, so a page whose
+    body sections are ``<h2>`` lists them at the same top level as the injected
+    ``<h1>`` "Similar posts" entry — correct, yet indistinguishable from a bug
+    by tag name alone.
+    """
+    toc_content = soup.find(id="toc-content")
+    article = soup.find("article")
+    if toc_content is None or article is None:
+        return []
+
+    headings = _article_heading_index(article)
+    issues: list[str] = []
+    previous_slug: str | None = None
+    previous_position = -1
+
+    for slug in _ordered_toc_slugs(toc_content):
+        target = headings.get(slug)
+        if target is None:
+            continue  # entry targets something other than an article heading
+        if target.level > TOC_MAX_DEPTH:
+            issues.append(
+                f"TOC entry '#{slug}' targets an <h{target.level}>, deeper than "
+                f"tocMaxDepth={TOC_MAX_DEPTH}"
+            )
+        if previous_slug is not None and target.position <= previous_position:
+            issues.append(
+                f"TOC entry '#{slug}' is out of document order (listed after "
+                f"'#{previous_slug}', which appears later in the article)"
+            )
+        previous_slug = slug
+        previous_position = target.position
+
+    return issues
+
+
 def check_file_for_issues(
     soup: BeautifulSoup,
     file_path: Path,
@@ -2135,6 +2220,7 @@ def check_file_for_issues(
         "invalid_tengwar_characters": check_tengwar_characters(soup),
         "invalid_class_names": check_invalid_class_names(soup),
         "orphaned_subfigures": check_orphaned_subfigures(soup),
+        "toc_ordering": check_toc_ordering(soup),
     }
 
     if opts.favicon_included_domains is not None:
@@ -2752,6 +2838,11 @@ def _compare_base_paths(src1: str, src2: str, video_preview: str) -> list[str]:
     return []
 
 
+def _video_open_tag(video: Tag) -> str:
+    """The opening ``<video ...>`` tag string, without children."""
+    return str(video).split(">", 1)[0] + ">"
+
+
 def _check_single_video(
     video: Tag, expected_sources: list[tuple[str, str]]
 ) -> list[str]:
@@ -2763,7 +2854,7 @@ def _check_single_video(
         for child in video.children
         if isinstance(child, Tag) and child.name == "source"
     ]
-    open_tag = str(video).split(">", 1)[0] + ">"
+    open_tag = _video_open_tag(video)
 
     if len(sources) < len(expected_sources):
         _append_to_list(
@@ -2879,6 +2970,72 @@ def check_video_caption_tracks(soup: BeautifulSoup) -> list[str]:
         issue = _video_caption_issue(video)
         if issue is not None:
             issues.append(issue)
+    return issues
+
+
+# Generic labels that don't describe the video's content, so they don't
+# satisfy the accessibility requirement.
+_PLACEHOLDER_VIDEO_LABELS: frozenset[str] = frozenset(
+    {"video", "movie", "clip", "media", "content", "placeholder"}
+)
+
+# Attributes that, when present and descriptive, give a <video> a text
+# alternative for assistive technology. ``alt`` follows the repo's GIF
+# conversion convention; the rest mirror the alt-text-llm scanner.
+_VIDEO_LABEL_ATTRS: tuple[str, ...] = (
+    "alt",
+    "aria-label",
+    "title",
+    "aria-describedby",
+)
+
+
+def _video_label_is_meaningful(value: object) -> bool:
+    """True iff *value* is a non-placeholder, non-empty label string."""
+    if not isinstance(value, str):
+        return False
+    stripped = value.strip().lower()
+    return bool(stripped) and stripped not in _PLACEHOLDER_VIDEO_LABELS
+
+
+def _video_is_decorative(video: Tag) -> bool:
+    """
+    A <video> explicitly marked decorative is exempt from needing a label.
+
+    Decorative markers mirror the image convention: an empty ``alt=""`` or
+    ``aria-hidden="true"`` signals the video carries no information for
+    assistive technology.
+    """
+    if video.get("aria-hidden") == "true":
+        return True
+    alt = video.get("alt")
+    return isinstance(alt, str) and alt.strip() == ""
+
+
+def check_video_accessibility(soup: BeautifulSoup) -> list[str]:
+    """
+    Every <video> must carry a text alternative or be marked decorative.
+
+    A video passes when it has a meaningful ``alt``/``aria-label``/``title``,
+    or is explicitly marked decorative (``alt=""`` or ``aria-hidden="true"``).
+    Videos with neither are reported so the gap surfaces in CI rather than
+    only in the local pre-push alt-text scan. The persistent ``#pond-video``
+    is not special-cased here: it passes on its own ``aria-hidden="true"``.
+    """
+    issues: list[str] = []
+    for video in _tags_only(soup.find_all("video")):
+        if _video_is_decorative(video):
+            continue
+        if any(
+            _video_label_is_meaningful(video.get(attr))
+            for attr in _VIDEO_LABEL_ATTRS
+        ):
+            continue
+        issues.append(
+            "<video> missing accessibility label "
+            "(alt/aria-label/title) or decorative marker "
+            f'(alt="" / aria-hidden="true"): {_video_open_tag(video)}'
+        )
     return issues
 
 

@@ -41,11 +41,11 @@ export function maybeInsertOrnament(
 
   // Check for "Appendix" headings
   if (node.tagName === "h1" || node.tagName === "h2") {
-    /** Case-insensitive check that `text` begins with "appendix". */
-    const startsWithAppendix = (text: string) => text.toLowerCase().startsWith("appendix")
-
     // Check direct text children
-    if (node.children[0]?.type === "text" && startsWithAppendix(node.children[0].value)) {
+    if (
+      node.children[0]?.type === "text" &&
+      node.children[0].value.toLowerCase().startsWith("appendix")
+    ) {
       parent.children.splice(index, 0, createOrnamentNode())
       return true
     }
@@ -56,7 +56,7 @@ export function maybeInsertOrnament(
     if (firstChildIsLink) {
       const anchorText = firstChild.children[0]
       const anchorStartsWithAppendix =
-        anchorText?.type === "text" && startsWithAppendix(anchorText.value)
+        anchorText?.type === "text" && anchorText.value.toLowerCase().startsWith("appendix")
       if (anchorStartsWithAppendix) {
         parent.children.splice(index, 0, createOrnamentNode())
         return true

@@ -173,6 +173,12 @@ For PR runs the workflow pushes an empty commit to the PR branch so visual-
 
 **Shard status vs. overall status.** Individual `visual-testing-(linux|macos)` shards stay green when the only failures are new or updated screenshots—those are expected outcomes that the diff-gallery + approve button is designed for, and red shards turn into noise. Each shard runs `scripts/classify_visual_failures.py` over its blob report and only exits non-zero for real failures (timeouts, page errors, exceptions before the screenshot assertion). The `aggregate-visual-results` job collects per-shard status artifacts and the overall `visual-testing` status + `publish-visual-report` deploy carry the snapshot-diff signal forward.
 
+## Commit timestamping (OpenTimestamps, async)
+
+`git commit` enqueues the commit hash and hands off to a **detached** background worker (`.hooks/post-commit` → `.hooks/timestamp-worker.sh`), so the commit returns immediately instead of blocking ~3s on network I/O. The worker holds a single `mkdir` lock (portable; `flock` is absent on macOS), drains every queued hash, creates each OpenTimestamps proof (`ots stamp`), commits it into the `.timestamps` repo, then pushes the whole batch in **one** pull/push.
+
+State lives under `$(git rev-parse --git-dir)/ots-timestamps/`: `queue` (pending hashes), `lock.d/` (worker lock), `worker.log` (errors only—a clean success writes nothing). Best-effort by design: a failed stamp re-queues its hash, a failed push leaves the proof committed-but-unpushed, and the next commit's worker retries via `has_unpushed`. A commit is never rolled back, so no commit loses its eventual proof. Skipped entirely when `CI=true`. If proofs are missing, check `worker.log`; re-trigger by committing, or run the worker directly with `OTS_GIT_ROOT`/`OTS_STATE_DIR` set.
+
 ## Pre-push validation pipeline
 
 When pushing to main, `scripts/run_push_checks.py` runs:

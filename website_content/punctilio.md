@@ -9,11 +9,12 @@ description: Meticulously beautify your text using my "punctilio" library. No in
 tags:
   - website
   - open-source
+  - writing
 aliases:
   - prettify
   - text-prettify
   - punctilio-demo
-date_updated: 2026-06-23
+date_updated: 2026-06-26
 ---
 
 Tired of the incomplete smart quote abilities offered by 2024's JavaScript libraries, I created my own. I christened the library "`punctilio`" - the "precise observance of formalities".  As of publication, [`punctilio`](https://github.com/alexander-turner/punctilio) is the best library for prettifying text.

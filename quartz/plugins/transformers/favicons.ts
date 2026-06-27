@@ -395,24 +395,6 @@ export function normalizeUrl(href: string): string {
   return href
 }
 
-/**
- * Thrown when an external link should receive a favicon (passes the count
- * threshold or is allowlisted, and isn't blocklisted) but no SVG file exists
- * for the hostname either locally or on the CDN. Failing the build forces
- * the author to either add the SVG or blocklist the domain.
- */
-export class MissingFaviconError extends Error {
-  constructor(hostname: string, expectedPath: string, count: number) {
-    const expectedUrl = getFaviconUrl(expectedPath)
-    super(
-      `Missing favicon SVG for ${hostname}: expected at ${expectedUrl} ` +
-        `(count=${count}, threshold=${minFaviconCount}). ` +
-        "Upload the SVG to the CDN or add the domain to faviconSubstringBlocklist in config/constants.json.",
-    )
-    this.name = "MissingFaviconError"
-  }
-}
-
 async function handleLink(
   href: string,
   node: Element,
@@ -433,10 +415,13 @@ async function handleLink(
     return
   }
 
+  // When no SVG exists yet (locally or on the CDN), render the link without a
+  // favicon rather than failing the build. The built-site checks
+  // (`check_external_links_have_favicons` in scripts/built_site_checks.py)
+  // flag any included domain still missing its favicon.
   const found = await findFaviconPath(finalURL.hostname)
   if (found === null) {
-    const count = faviconCounts.get(countKey) ?? 0
-    throw new MissingFaviconError(finalURL.hostname, faviconPath, count)
+    return
   }
 
   // Always emit the full CDN URL so downstream consumers (asset dimension

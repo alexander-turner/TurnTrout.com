@@ -10,15 +10,18 @@ import { VFile } from "vfile"
 
 import type { QuartzTransformerPluginInstance } from "../types"
 
+import { footnoteHeadingId } from "../../components/constants"
+import { AfterArticle } from "./afterArticle"
 import {
   buildRelatedPostsBlock,
+  insertSimilarPostsTocEntry,
   loadRelatedPosts,
   parseRelatedPosts,
   type RelatedPost,
   RelatedPosts,
   similarPostsTocEntry,
 } from "./relatedPosts"
-import { troutContainerId } from "./trout_hr"
+import { insertOrnamentNode, troutContainerId } from "./trout_hr"
 
 const samplePosts: RelatedPost[] = [
   { permalink: "first-post", title: "First Post", excerpt: "About the first thing." },
@@ -148,7 +151,70 @@ describe("buildRelatedPostsBlock", () => {
   })
 })
 
+describe("insertSimilarPostsTocEntry", () => {
+  const intro = { depth: 0, text: "Introduction", slug: "introduction" }
+  const appendix = { depth: 0, text: "Appendix: Notes", slug: "appendix-notes" }
+  const appendixDeep = { depth: 2, text: "ApPeNdix C", slug: "appendix-c" }
+  const footnotes = { depth: 1, text: "Footnotes", slug: footnoteHeadingId }
+
+  it.each([
+    ["empty toc", [], [similarPostsTocEntry]],
+    ["no closing section, appends", [intro], [intro, similarPostsTocEntry]],
+    ["before the first appendix", [intro, appendix], [intro, similarPostsTocEntry, appendix]],
+    [
+      "before an appendix at any depth, matching mixed case",
+      [intro, appendixDeep],
+      [intro, similarPostsTocEntry, appendixDeep],
+    ],
+    ["before the Footnotes entry", [intro, footnotes], [intro, similarPostsTocEntry, footnotes]],
+    [
+      "before whichever closing section comes first",
+      [intro, appendix, footnotes],
+      [intro, similarPostsTocEntry, appendix, footnotes],
+    ],
+  ])("places the entry %s", (_label, input, expected) => {
+    expect(insertSimilarPostsTocEntry(input)).toEqual(expected)
+  })
+
+  it("leaves the input array unmutated", () => {
+    const toc = [intro, appendix]
+    insertSimilarPostsTocEntry(toc)
+    expect(toc).toEqual([intro, appendix])
+  })
+})
+
 describe("RelatedPosts transformer", () => {
+  it("renders the block before the first appendix (full ornament pipeline)", async () => {
+    const filePath = await writeTempMap({ "post-a": samplePosts })
+    // No pre-built ornament: TroutOrnamentHr places it before the appendix,
+    // AfterArticle adds the subscription box after it, then RelatedPosts adds
+    // the block after that — so the block must land before the appendix.
+    const tree = h(null, [
+      h("h1", { id: "intro" }, "Intro"),
+      h("p", "body"),
+      h("h1", { id: "appendix-a" }, "Appendix A"),
+      h("p", "appendix body"),
+    ]) as Root
+
+    insertOrnamentNode(tree)
+    const afterFactory = AfterArticle().htmlPlugins?.({} as never)?.[0]
+    if (!afterFactory) throw new Error("no after-article plugin")
+    const afterFile = new VFile({ value: "" })
+    afterFile.data.frontmatter = { permalink: "post-a" } as never
+    await (afterFactory as unknown as () => (t: Root, f: VFile) => Promise<void>)()(tree, afterFile)
+    await runTransform(RelatedPosts({ filePath }), tree, "post-a")
+
+    const topLevel = (tree.children as Element[]).filter((n) => n.type === "element")
+    const similarIdx = topLevel.findIndex(
+      (n) => n.tagName === "h1" && n.properties?.id === "similar-posts",
+    )
+    const appendixIdx = topLevel.findIndex(
+      (n) => n.tagName === "h1" && n.properties?.id === "appendix-a",
+    )
+    expect(similarIdx).toBeGreaterThanOrEqual(0)
+    expect(appendixIdx).toBeGreaterThan(similarIdx)
+  })
+
   it("inserts the block after the subscription box, reusing one read across pages", async () => {
     const filePath = await writeTempMap({ "post-a": samplePosts })
     const plugin = RelatedPosts({ filePath })
@@ -177,13 +243,15 @@ describe("RelatedPosts transformer", () => {
     expect(elementsWithClass(tree2, "related-post")).toHaveLength(2)
   })
 
-  it("appends the ToC entry when the file already has a toc", async () => {
+  it("routes an existing toc through insertSimilarPostsTocEntry", async () => {
     const filePath = await writeTempMap({ "post-a": samplePosts })
-    const existingEntry = { depth: 0, text: "Introduction", slug: "introduction" }
+    const intro = { depth: 0, text: "Introduction", slug: "introduction" }
+    const appendix = { depth: 0, text: "Appendix A", slug: "appendix-a" }
     const { file } = await runTransform(RelatedPosts({ filePath }), treeWithOrnament(), "post-a", [
-      existingEntry,
+      intro,
+      appendix,
     ])
-    expect(file.data.toc).toEqual([existingEntry, similarPostsTocEntry])
+    expect(file.data.toc).toEqual([intro, similarPostsTocEntry, appendix])
   })
 
   it("does not create a toc when the file has none", async () => {

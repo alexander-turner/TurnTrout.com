@@ -38,7 +38,7 @@ date_published: 2020-04-22
 original_url: https://www.lesswrong.com/posts/JcpwEKbmNHdwhpq5n/problem-relaxation-as-a-tactic
 skip_import: true
 description: Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.
-date_updated: 2026-05-08
+date_updated: 2026-06-27
 ---
 
 > [!warning]
@@ -84,7 +84,7 @@ I'm staring at the whiteboard.
 
 A minute passes.
 
-59 more minutes pass.
+Fifty-nine more minutes pass.
 
 I'd been thinking about how, in hindsight, it was so important that Shannon had first written a perfect chess-playing algorithm which required infinite compute, that Hutter had written an AGI algorithm which required infinite compute. I didn't know how to solve impact under all the constraints, but what if I assumed something here?
 
@@ -120,7 +120,7 @@ I'm staring at the whiteboard.
 
 A minute passes.
 
-29 more minutes pass.
+Twenty-nine more minutes pass.
 
 I'm reminded of a paper my advisor had me read for my qualifying exam. The paper talked about a dual formulation for reinforcement learning environments, where you consider the available trajectories through the future instead of the available policies. I take a picture of the whiteboard and head back to my office.
 

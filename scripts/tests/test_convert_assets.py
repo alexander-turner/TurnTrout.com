@@ -267,6 +267,54 @@ def test_strip_video_metadata(ext: str, setup_test_env):
         assert "Test Copyright" not in exif_output.decode()
 
 
+@pytest.mark.parametrize(
+    "tags, expected",
+    [
+        ({"File:FileName": "x.webm", "Matroska:CodecID": "V_VP9"}, {}),
+        (
+            {"Matroska:Artist": "Alex", "Matroska:CodecID": "V_VP9"},
+            {"Matroska:Artist": "Alex"},
+        ),
+        (
+            {"GPS:GPSLatitude": "37.7749 N", "File:FileSize": "1 MB"},
+            {"GPS:GPSLatitude": "37.7749 N"},
+        ),
+        (
+            {"Composite:GPSPosition": "37.77 N, 122.42 W"},
+            {"Composite:GPSPosition": "37.77 N, 122.42 W"},
+        ),
+        (
+            {"Matroska:Title": "secret.mov", "Matroska:Comment": "hi"},
+            {"Matroska:Title": "secret.mov", "Matroska:Comment": "hi"},
+        ),
+    ],
+)
+def test_webm_pii_tags(
+    tags: dict[str, object], expected: dict[str, object]
+) -> None:
+    assert convert_assets._webm_pii_tags(tags) == expected
+
+
+def test_assert_webm_clean_raises_on_pii(
+    setup_test_env, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    asset_path = Path(setup_test_env) / "quartz" / "static" / "asset.webm"
+    asset_path.write_bytes(b"")
+
+    def fake_run(*_args, **_kwargs):
+        return subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout=b'[{"Matroska:Artist": "Alex", "Matroska:CodecID": "V_VP9"}]',
+            stderr=b"",
+        )
+
+    monkeypatch.setattr(convert_assets.subprocess, "run", fake_run)
+
+    with pytest.raises(RuntimeError, match="source-derived metadata"):
+        convert_assets._assert_webm_clean(asset_path)
+
+
 def test_ignores_unsupported_file_types(setup_test_env):
     asset_path = Path(setup_test_env) / "quartz" / "static" / "unsupported.txt"
 
@@ -364,7 +412,7 @@ _ASSET_PATTERN = convert_assets.ASSET_STAGING_PATTERN
     [
         (
             Path("animation.gif"),
-            rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
+            rf"\!?\[(?P<markdown_alt_text>[^\]]*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
             rf"animation\.gif\)(?P<attributes_parens>\{{[^}}]*\}})?|"
             rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\]\"]*)"
             rf"animation\.gif\]\](?P<attributes_brackets>\{{[^}}]*\}})?|"
@@ -380,7 +428,7 @@ _ASSET_PATTERN = convert_assets.ASSET_STAGING_PATTERN
     + [
         (
             Path(f"video{ext}"),
-            rf"\!?\[(?P<markdown_alt_text>.*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
+            rf"\!?\[(?P<markdown_alt_text>[^\]]*?)\]\({_ASSET_PATTERN}(?P<link_parens>[^\)\]\"]*)"
             rf"video\{ext}\)(?P<attributes_parens>\{{[^}}]*\}})?|"
             rf"\!?\[\[{_ASSET_PATTERN}(?P<link_brackets>[^\)\]\"]*)"
             rf"video\{ext}\]\](?P<attributes_brackets>\{{[^}}]*\}})?|"
@@ -799,6 +847,38 @@ def test_markdown_video_with_alt_text(ext: str, setup_test_env):
     tags_to_use = f" {convert_assets.GIF_ATTRIBUTES}" if ext == ".gif" else ""
     expected_html = (
         f'<video{tags_to_use} alt="{alt_text}">'
+        f'<source src="{asset_name}.mp4" type="video/mp4; codecs=hvc1">'
+        f'<source src="{asset_name}.webm" type="video/webm">'
+        "</video>"
+    )
+
+    assert converted_content.strip() == expected_html
+
+
+def test_admonition_directive_before_video_link_is_preserved(setup_test_env):
+    """A `[!quote]` directive before a video link must not be swallowed into the
+    converted video's alt text."""
+    test_dir = Path(setup_test_env)
+    content_dir = test_dir / "website_content"
+    asset_name = "prune_still-easy_trajectories"
+    asset_filename = f"{asset_name}.mp4"
+    dummy_video_path: Path = test_dir / "quartz" / "static" / asset_filename
+    test_md_path: Path = content_dir / "test_admonition.md"
+
+    alt_text = "Stuart Russell's final remarks"
+    input_markdown = f"> [!quote] [{alt_text}]({asset_filename})"
+
+    test_utils.create_test_video(dummy_video_path)
+    test_md_path.write_text(input_markdown)
+
+    convert_assets.convert_asset(
+        dummy_video_path, md_references_dir=content_dir
+    )
+
+    converted_content = test_md_path.read_text(encoding="utf-8")
+
+    expected_html = (
+        f'> [!quote] <video alt="{alt_text}">'
         f'<source src="{asset_name}.mp4" type="video/mp4; codecs=hvc1">'
         f'<source src="{asset_name}.webm" type="video/webm">'
         "</video>"

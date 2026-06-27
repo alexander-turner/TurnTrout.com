@@ -200,8 +200,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: 5.0.0
-        version: 5.0.0(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5)
+        specifier: 5.0.10
+        version: 5.0.10(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5)
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -7828,8 +7828,8 @@ packages:
   pumpify@2.0.1:
     resolution: {integrity: sha512-m7KOje7jZxrmutanlkS1daj1dS6z6BgslzOXmcSEpIlCxM3VJH7lG5QLeck/6hgF6F4crFf01UtQmNsJfweTAw==}
 
-  punctilio@5.0.0:
-    resolution: {integrity: sha512-pM85cn/FOgRTEnEUDhtjYo+SsPPYhCTOT2HcRprV7S5svwGD1Mp7QpNT8APENb5NwCkzIhc1GN/bhL7yYCwszg==}
+  punctilio@5.0.10:
+    resolution: {integrity: sha512-9Fzp2KgbfFC3Xwl9btC2Vm3jMx3pYljbghWdqIxyj/WqfAGGLgrwrSUDREkzBOk0XH4DMNgKCtpJSH9N4bKlSg==}
     engines: {node: '>=20.0.0'}
     hasBin: true
     peerDependencies:
@@ -18822,7 +18822,7 @@ snapshots:
       inherits: 2.0.4
       pump: 3.0.4
 
-  punctilio@5.0.0(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5):
+  punctilio@5.0.10(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5):
     dependencies:
       cosmiconfig: 9.0.1(typescript@6.0.3)
       escape-string-regexp: 5.0.0

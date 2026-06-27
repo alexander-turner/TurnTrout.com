@@ -57,6 +57,8 @@ export interface Data {
   filePath?: FilePath
   relativePath?: FilePath
   text?: string
+  /** Text counted toward the displayed reading time; excludes collapsed admonitions and appendices. */
+  readingTimeText?: string
   html?: string
   htmlAst?: Root
   tree?: Node
