@@ -11,6 +11,16 @@ if [ -d "$GIT_ROOT/node_modules/.bin" ]; then
   export PATH="$GIT_ROOT/node_modules/.bin:$PATH"
 fi
 
+# Source VOYAGE_API_KEY from the `ai` envchain namespace when it isn't already
+# in the environment, so the related-posts step can run without the key being
+# exported globally. If envchain or the key is unavailable, VOYAGE_API_KEY stays
+# empty and run_push_checks.py skips that step with a warning.
+if [ -z "${VOYAGE_API_KEY:-}" ] && command -v envchain >/dev/null 2>&1; then
+  # shellcheck disable=SC2016  # $VOYAGE_API_KEY must expand in envchain's shell.
+  VOYAGE_API_KEY=$(envchain ai sh -c 'printf %s "$VOYAGE_API_KEY"' 2>/dev/null) || VOYAGE_API_KEY=""
+  export VOYAGE_API_KEY
+fi
+
 RESUME_FLAG=""
 if [ "$RESUME" = "true" ]; then
   echo "Resuming from last failed step."
