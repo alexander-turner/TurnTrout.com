@@ -1994,6 +1994,25 @@ describe("Ordinal Suffixes", () => {
       '<p><span class="ordinal-num">11</span><sup class="ordinal-suffix">th</sup>, <span class="ordinal-num">12</span><sup class="ordinal-suffix">th</sup>, and <span class="ordinal-num">13</span><sup class="ordinal-suffix">th</sup></p>',
     ],
 
+    // A day adjacent to a year is a date: the number gets .date-ordinal-num
+    // (oldstyle figures) so it matches the year instead of .ordinal-num.
+    [
+      "<p>February 26th, 2026</p>",
+      '<p>February <span class="date-ordinal-num">26</span><sup class="ordinal-suffix">th</sup>, 2026</p>',
+    ],
+    [
+      "<p>August 1st 2023</p>", // Year without a comma still counts
+      '<p>August <span class="date-ordinal-num">1</span><sup class="ordinal-suffix">st</sup> 2023</p>',
+    ],
+    [
+      "<p>June 3rd was fun</p>", // Date-shaped but no year → lining
+      '<p>June <span class="ordinal-num">3</span><sup class="ordinal-suffix">rd</sup> was fun</p>',
+    ],
+    [
+      "<p>finished 22nd, 2050 entrants</p>", // A 4-digit non-year still pairs visually
+      '<p>finished <span class="date-ordinal-num">22</span><sup class="ordinal-suffix">nd</sup>, 2050 entrants</p>',
+    ],
+
     // Cases that should not be transformed
     ["<pre>1st</pre>", "<pre>1st</pre>"], // Preformatted text
     ["<code>1st place</code>", "<code>1st place</code>"], // Inside code block

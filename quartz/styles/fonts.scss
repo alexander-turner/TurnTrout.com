@@ -423,21 +423,29 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   }
 }
 
-// EG 1st, 2nd, 3rd
+// EG 1st, 2nd, 3rd. Use the font's true superscript glyphs (designed at the
+// right size, weight, and height) rather than shrinking and raising a normal
+// glyph, so cancel the UA <sup> size/position and let "sups" do the work.
 .ordinal-suffix {
-  vertical-align: calc(0.5 * $base-margin);
-  font-size: 0.75em; // Adapt to the font size
+  font-size: 1em;
+  vertical-align: baseline;
+  font-feature-settings: "sups" 1;
 
   em & {
     margin-left: calc(0.25 * $base-margin);
   }
 }
 
-// Body text ordinals (like "21st place") use lining-nums for visual consistency.
-// Date ordinals (.date-ordinal-num) intentionally have no styling so they
-// inherit oldstyle-nums from body to match the year (e.g., "October 8th, 2025").
-article .ordinal-num {
+// Standalone ordinals (like "21st place") use lining figures so the number
+// keeps full cap height. A day adjacent to a year is tagged .date-ordinal-num
+// instead and uses oldstyle figures so it matches the year (e.g., "October
+// 8th, 2025").
+.ordinal-num {
   font-variant-numeric: lining-nums;
+}
+
+.date-ordinal-num {
+  font-variant-numeric: oldstyle-nums;
 }
 
 // Version labels like "V1", "V2", "V100" — keep digits at cap height so they
