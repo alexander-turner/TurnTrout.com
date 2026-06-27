@@ -75,13 +75,13 @@ Figure: AUP does a great job. The policy avoids the green stuff and hits the red
 >
 > The agent is reinforced for destroying red cells. After enough cells are destroyed, the agent may exit the level.
 >
-&gt; <video aria-label="The Baseline agent on the left causes side effects by destroying green dots. The AUP agent on the right cleanly completes the task by destroying only red dots." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm" /></video>
+> <video aria-label="The Baseline agent on the left causes side effects by destroying green dots. The AUP agent on the right cleanly completes the task by destroying only red dots." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm" /></video>
 >
 > #### `append-still-easy`
 >
 > The agent is reinforced for creating gray cells on light blue tiles. After enough gray cells are present on blue tiles, the agent may exit the level.
 >
-&gt; <video aria-label="The Baseline agent on the left causes side effects by destroying green dots. The AUP agent on the right cleanly completes the task by destroying only red dots." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm" /></video>
+> <video aria-label="The Baseline agent on the left causes side effects by destroying green dots. The AUP agent on the right cleanly completes the task by destroying only red dots." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm" /></video>
 >
 > AUP's first trajectory temporarily stalls, before finishing the episode after the video's 14-second cutoff. AUP's second trajectory does much better.
 >
