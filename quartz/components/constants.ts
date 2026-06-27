@@ -145,8 +145,9 @@ export const SEARCH_MATCH_CLASS = "search-match"
 // Title-binding links: when an internal link's display text is exactly this
 // sentinel, its text is replaced at build time with the up-to-date title of the
 // target page (or the target section heading, for `#anchor` links). See
-// `quartz/plugins/transformers/bindLinkTitles.ts`.
-export const LINK_TITLE_SENTINEL = "@title"
+// `quartz/plugins/transformers/bindLinkTitles.ts`. Shared with the built-site
+// checker via `config/constants.json` so the two can't disagree on the token.
+export const LINK_TITLE_SENTINEL: string = constantsJson.linkTitleSentinel
 
 // UI strings for various components
 export const uiStrings = {
