@@ -48,6 +48,7 @@ tests/visual-baselines/*.png
 **.faviconUrls.txt
 **.faviconCounts.txt
 quartz/static/images/external-favicons/*.png
+quartz/static/images/external-favicons/*.svg
 quartz/static/images/posts
 *.avif_original
 *.mp4_original

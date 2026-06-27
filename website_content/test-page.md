@@ -577,6 +577,8 @@ Here's a link to [another page](/shard-theory) with popover preview. [This same-
 
 Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons) Link to [`x.com`](https://x.com).
 
+Recognizable news and reference sites: [The Washington Post](https://www.washingtonpost.com), [The Guardian](https://www.theguardian.com), [CBS News](https://www.cbsnews.com), [Ars Technica](https://arstechnica.com), [Stack Overflow](https://stackoverflow.com), and [Math Stack Exchange](https://math.stackexchange.com).
+
 <div id="populate-favicon-container" class="no-favicon-span"></div>
 
 ## Favicon kerning iteration
