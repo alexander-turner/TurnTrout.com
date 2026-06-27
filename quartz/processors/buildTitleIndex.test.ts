@@ -54,6 +54,15 @@ describe("computeTitleIndex", () => {
       "---\ntitle: The Real Title\n---\n\n## A Section\n",
     )
     fs.writeFileSync(path.join(dir, "no-title.md"), "no frontmatter here\n")
+    fs.writeFileSync(
+      path.join(dir, "perma.md"),
+      "---\ntitle: Perma Page\npermalink: /perma\naliases:\n  - old-perma\n---\n\nbody",
+    )
+    // permalink equal to its own stem exercises the de-dup branch.
+    fs.writeFileSync(
+      path.join(dir, "selfperma.md"),
+      "---\ntitle: Self\npermalink: selfperma\n---\n\nbody",
+    )
   })
 
   afterAll(() => {
@@ -98,6 +107,19 @@ describe("computeTitleIndex", () => {
     } as unknown as BuildCtx
     const index = await computeTitleIndex(noopCtx, [path.join(dir, "with-title.md") as FilePath])
     expect(index.get("with-title" as FullSlug)?.headings.get("a-section")).toBe("A Section")
+  })
+
+  it("keys a page by its permalink and aliases as well as its slug", async () => {
+    const index = await computeTitleIndex(ctx, [
+      path.join(dir, "perma.md") as FilePath,
+      path.join(dir, "selfperma.md") as FilePath,
+    ])
+    const expected = formatTitle("Perma Page")
+    expect(index.get("perma" as FullSlug)?.title).toBe(expected)
+    expect(index.get("old-perma" as FullSlug)?.title).toBe(expected)
+    expect(index.get("perma.md".replace(".md", "") as FullSlug)?.title).toBe(expected)
+    // selfperma's permalink equals its stem; it resolves without error.
+    expect(index.get("selfperma" as FullSlug)?.title).toBe(formatTitle("Self"))
   })
 
   it("buildTitleIndex writes the index to the cache file", async () => {

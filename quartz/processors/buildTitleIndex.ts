@@ -73,9 +73,23 @@ export async function computeTitleIndex(
 
     const tree = mdParser.parse(transformed) as MdRoot
     const slug = slugifyFilePath(path.posix.relative(ctx.argv.directory, fp) as FilePath)
-    index.set(slug, { title, headings: extractHeadings(tree) })
+    const target: TargetTitles = { title, headings: extractHeadings(tree) }
+    // Key by the filename slug plus every permalink/alias, because a link's
+    // resolved `data-slug` is whichever path the author wrote (often a permalink
+    // that differs from the filename). `aliases.ts` serves all of them.
+    for (const key of [slug, ...permalinkKeys(data)]) {
+      if (!index.has(key)) index.set(key, target)
+    }
   }
   return index
+}
+
+/** Stripped permalink + alias paths a page is also served at. */
+function permalinkKeys(data: Record<string, unknown>): FullSlug[] {
+  const raw = [data.permalink, ...(Array.isArray(data.aliases) ? data.aliases : [data.aliases])]
+  return raw
+    .filter((v): v is string => typeof v === "string" && v.trim() !== "")
+    .map((v) => v.replace(/^\/+/, "").replace(/\/+$/, "") as FullSlug)
 }
 
 /** Serialize the index to its cache file (atomically, via a temp file). */
