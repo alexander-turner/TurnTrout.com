@@ -384,7 +384,17 @@ if [ -f "$PROJECT_DIR/package.json" ]; then
 	if command -v pnpm &>/dev/null; then
 		# Skip Puppeteer browser download — sandboxed environments can't reach
 		# storage.googleapis.com and Playwright browsers are used instead.
-		PUPPETEER_SKIP_DOWNLOAD=true pnpm install --silent || warn "Failed to install Node dependencies"
+		#
+		# --config.confirm-modules-purge=false: the container's pre-provisioned
+		# node_modules can be inconsistent with the lockfile, so pnpm wants to
+		# purge and reinstall it. Without this flag that prompt aborts under no
+		# TTY (ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY), leaving node_modules
+		# stale — which then makes every later `pnpm exec` (e.g. the pre-push
+		# checks) fail the same way. Letting the purge proceed here leaves a
+		# consistent tree so subsequent `pnpm exec` runs skip the reinstall.
+		PUPPETEER_SKIP_DOWNLOAD=true pnpm install --silent \
+			--config.confirm-modules-purge=false ||
+			warn "Failed to install Node dependencies"
 	elif command -v npm &>/dev/null; then
 		npm install --silent || warn "Failed to install Node dependencies"
 	fi
