@@ -1,4 +1,5 @@
-"""Integration tests for the async OpenTimestamps hooks.
+"""
+Integration tests for the async OpenTimestamps hooks.
 
 These drive the real bash scripts (``.hooks/timestamp-worker.sh`` and
 ``.hooks/post-commit``) via subprocess against a throwaway git sandbox. A fake,
@@ -75,7 +76,8 @@ def _proof_pushed(origin_repo: Path, commit_hash: str) -> bool:
 
 
 class _Sandbox:
-    """A throwaway main repo + cloned .timestamps repo wired to a bare origin."""
+    """A throwaway main repo + cloned .timestamps repo wired to a bare
+    origin."""
 
     def __init__(self, tmp_path: Path) -> None:
         self.home = tmp_path / "home"
@@ -121,7 +123,8 @@ class _Sandbox:
         self.log = self.state / "worker.log"
 
     def _write_fake_ots(self) -> None:
-        """Install an offline ``ots`` that writes a stub .ots next to its input.
+        """
+        Install an offline ``ots`` that writes a stub .ots next to its input.
 
         Honours ``FAKE_OTS_FAIL=1`` to simulate a stamping failure.
         """
@@ -376,7 +379,8 @@ class TestPostCommit:
         assert not sandbox.queue.exists()
 
     def test_enqueues_commit_hash(self, sandbox: _Sandbox) -> None:
-        """post-commit appends the commit hash to the queue.
+        """
+        Post-commit appends the commit hash to the queue.
 
         A held lock (live pid) stops the detached worker from draining the
         queue, so the enqueued hash is observable regardless of worker timing.
