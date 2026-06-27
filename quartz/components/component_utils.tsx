@@ -1,9 +1,13 @@
-import { type Element, type Parent, type Text } from "hast"
+import { type Element, type Parent, type Root, type Text } from "hast"
+import { h } from "hastscript"
 import { renderToString } from "katex"
 import { titleCase } from "title-case"
+// skipcq: JS-0257
+import { visitParents } from "unist-util-visit-parents"
 
 import { applyTextTransforms } from "../plugins/transformers/formatting_improvement_html"
 import { replaceSCInNode } from "../plugins/transformers/tagSmallcaps"
+import { processTree as processTwemojiTree } from "../plugins/transformers/twemoji"
 import { locale } from "./constants"
 
 export function formatTitle(title: string): string {
@@ -14,6 +18,28 @@ export function formatTitle(title: string): string {
 
   title = titleCase(title, { locale })
   return title
+}
+
+/**
+ * Single source of truth for rendering an already-string-transformed title or
+ * description into hast inline nodes with the site's node-producing inline
+ * transforms applied: emoji → Twemoji `<img>` (matching the main `Twemoji`
+ * pass) and acronym small-caps (matching `TagSmallcaps`), in pipeline order.
+ *
+ * Smart-quote / arrow / nbsp transforms are string-level and must be applied
+ * upstream by the caller (`formatTitle` for titles, `applyTextTransforms` for
+ * descriptions). This helper exists because content injected late in the
+ * pipeline (e.g. the "Similar posts" block) is added *after* the `Twemoji` and
+ * `TagSmallcaps` passes have already run, so those two transforms would
+ * otherwise never touch it.
+ */
+export function renderInlineFormatting(text: string): (Text | Element)[] {
+  const container = h("span", [{ type: "text", value: text } as Text])
+  processTwemojiTree(container as unknown as Root)
+  visitParents(container, "text", (node: Text, ancestors: Parent[]) => {
+    replaceSCInNode(node, ancestors)
+  })
+  return container.children as (Text | Element)[]
 }
 
 /**
