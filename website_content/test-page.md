@@ -182,7 +182,7 @@ Admonition in a description list
 
 ## Section to transclude
 
-Hi! Am I being transcluded? Here is a within-page link to the [admonitions section](#admonitions); when this section is transcluded above, the link points back to this page and renders as a normal internal link.
+Hi! Am I being transcluded? Here is a within-page link to the [admonitions section](#admonitions); because the transclusion above is from this same page, both copies stay within-page links.
 
 # Admonitions
 

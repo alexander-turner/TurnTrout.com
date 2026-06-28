@@ -194,5 +194,20 @@ describe("normalizeHastElement", () => {
       expect(child.properties?.href).toBe("../other/page#section")
       expect(child.properties?.className).toEqual(["same-page-link"])
     })
+
+    it("keeps the within-page favicon for a same-page transclusion", () => {
+      // curBase === newBase: the anchor still resolves on the host page, so the
+      // link and its anchor favicon must be left untouched.
+      const link = h("a", { href: "#section", className: ["internal", "same-page-link"] }, [
+        h("span", { className: ["favicon-span"] }, ["Link", anchorFavicon()]),
+      ])
+      const result = normalizeHastElement(h("p", [link]), baseSlug, baseSlug)
+      const anchor = result.children[0] as Element
+
+      expect(anchor.properties?.href).toBe("#section")
+      expect(anchor.properties?.className).toEqual(["internal", "same-page-link"])
+      const favicon = (anchor.children[0] as Element).children[1] as Element
+      expect(favicon.properties?.["data-domain"]).toBe("anchor")
+    })
   })
 })

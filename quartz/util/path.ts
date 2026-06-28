@@ -228,6 +228,11 @@ const _rebaseHastElement = (
 
     // Handle anchor-only links (e.g., #section)
     if (attrValue.startsWith("#")) {
+      // A same-page transclusion keeps the link on its own page, so the anchor
+      // still resolves there: leave it (and its within-page favicon) untouched.
+      if (curBase === newBase) {
+        return
+      }
       const relativeToOriginal = resolveRelative(curBase, newBase)
       el.properties[attr] = relativeToOriginal + attrValue
       demoteRebasedAnchorLink(el)
