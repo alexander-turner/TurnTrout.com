@@ -15,6 +15,7 @@ export {
 export { TextFormattingImprovement } from "./formatting_improvement_text"
 export { FrontMatter } from "./frontmatter"
 export { GitHubFlavoredMarkdown } from "./gfm"
+export { InlineCodeSpacing } from "./inlineCodeSpacing"
 export { InvertInDarkMode } from "./invertInDarkMode"
 export { CreatedModifiedDate } from "./lastmod"
 export { Latex } from "./latex"
