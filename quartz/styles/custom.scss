@@ -13,6 +13,11 @@
 // and the footnotes section itself, so the page-bottom rhythm stays balanced.
 $page-end-bottom-margin: calc(3 * $base-margin);
 
+// Distance a footnote block quote is nudged right so its border clears the
+// marker. The same amount is shaved off padding-left so the text stays put;
+// one variable keeps the two from drifting apart.
+$footnote-blockquote-indent: 0.5 * $base-margin;
+
 body {
   min-height: 100vh;
 }
@@ -38,9 +43,11 @@ li > blockquote:first-child {
   margin-top: $base-margin;
 }
 
-// Keep the blockquote border from crowding the footnote marker
-li[id^="user-content-fn-"] > blockquote {
-  margin-left: $base-margin;
+// Keep the block-quote border from crowding the footnote marker. Admonitions
+// are also block quotes but carry their own chrome, so they are excluded.
+li[id^="user-content-fn-"] > blockquote:not(.admonition) {
+  margin-left: $footnote-blockquote-indent;
+  padding-left: calc(2 * $base-margin - $footnote-blockquote-indent);
 }
 
 .footnotes {
