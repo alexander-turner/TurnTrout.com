@@ -714,6 +714,10 @@ def test_check_heading_links(text: str, expected_errors: list[str]):
         ("## (1) Weakly increasing arguments\n", []),
         # A new sentence after `.`/`?`/`!` may be capitalized.
         ("## Robust to noise. Why not?\n", []),
+        # The first word of a quotation may be capitalized.
+        ('## Formalizing "Ability to achieve goals"\n', []),
+        # ...but later words inside the quote are still checked.
+        ('## He said "Hello World" today\n', ["World"]),
         # Whole-heading allowlist entry (a cited book title).
         ("## All of Statistics\n", []),
         # Inline math is stripped before analysis.

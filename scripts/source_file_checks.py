@@ -712,8 +712,9 @@ _HEADING_WORD_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9'’\-]*")
 _NUMBERED_CHAPTER_RE = re.compile(r"^\s*\\?\d+\\?:\s")
 # Leading list enumerators (`1.`, `(2)`) whose following word starts a sentence.
 _ENUMERATOR_RE = re.compile(r"^\s*(?:\(\d+\)|\d+\\?\.)\s+")
-# A new sentence begins after each of these, so the next word may be capitalized.
-_HEADING_SENTENCE_SPLIT_RE = re.compile(r"[:.!?]")
+# A new clause begins after each of these, so the next word may be capitalized:
+# sentence punctuation and double quotes (a quotation's first word may be capped).
+_HEADING_SENTENCE_SPLIT_RE = re.compile(r"[:.!?\"“”]")
 _POSSESSIVE_RE = re.compile(r"['’][a-z]+$")
 
 
