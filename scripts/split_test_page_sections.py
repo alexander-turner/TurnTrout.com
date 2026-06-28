@@ -25,7 +25,9 @@ OUTPUT_DIR = REPO_ROOT / "website_content" / "fixtures" / "test-sections"
 # Sections whose markdown references other sections (self-transclusion,
 # cross-section anchors/footnotes) and therefore cannot render standalone. They
 # stay on the integration page (test-page.md) only.
-SKIP_HEADINGS: frozenset[str] = frozenset({"Transclusion", "Title-binding links"})
+SKIP_HEADINGS: frozenset[str] = frozenset(
+    {"Transclusion", "Title-binding links"}
+)
 
 H1_PATTERN = re.compile(r"^# (?!#)(.*)$", re.MULTILINE)
 FOOTNOTE_DEF_PATTERN = re.compile(r"^\[\^([^\]]+)\]:")
