@@ -112,7 +112,7 @@
 
 // A single image keeps its natural aspect ratio up to this height, so an
 // ordinary photo shows in full; only an unusually tall image is cropped.
-$tweet-media-max-height: 32rem;
+$tweet-media-max-height: 24rem;
 
 .tweet-media-grid {
   display: grid;
