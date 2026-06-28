@@ -19,6 +19,7 @@ import {
   extractMetaRefreshUrl,
   getNavigationOpts,
   handleNavigationScroll,
+  isLocalUrl,
   saveScrollToLocalStorage,
   scrollToUrlTarget,
   updateHeadElements,
@@ -179,6 +180,13 @@ async function handleRedirect(initialFetchResult: FetchResult): Promise<FetchRes
   if (redirectTargetRaw) {
     try {
       const redirectUrl = new URL(redirectTargetRaw, initialUrl)
+      if (!isLocalUrl(redirectUrl.href)) {
+        // A fetched page's meta-refresh must not pull cross-origin content into
+        // the in-place DOM morph; hand the off-origin destination to a full
+        // browser navigation instead.
+        window.location.href = redirectUrl.toString()
+        return { status: "fallback", finalUrl: initialUrl }
+      }
       const redirectFetchResult = await fetchContent(redirectUrl)
 
       if (
