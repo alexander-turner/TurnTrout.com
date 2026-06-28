@@ -33,8 +33,10 @@ test.describe("Tweet embeds", () => {
     const img = link.locator("img.tweet-media")
     const src = await img.getAttribute("src")
     expect(src).toMatch(/assets\.turntrout\.com/)
-    // The link opens the same asset the img shows, in a new tab.
-    await expect(link).toHaveAttribute("href", src as string)
+    // The link opens the same asset the img shows, in a new tab. The build
+    // appends a cache-busting `?v=` to the img src but not the anchor href, so
+    // compare on the asset path with any query stripped.
+    await expect(link).toHaveAttribute("href", (src as string).split("?")[0])
     await expect(link).toHaveAttribute("target", "_blank")
   })
 
