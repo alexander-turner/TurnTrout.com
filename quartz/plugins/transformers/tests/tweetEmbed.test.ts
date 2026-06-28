@@ -52,7 +52,7 @@ let fetchSpy: ReturnType<typeof jest.spyOn>
 beforeEach(() => {
   clearSnapshotCache()
   readFileSpy = jest.spyOn(fs, "readFile")
-  // Default: nothing on R2. Pinned-file tests resolve readFile before this is hit.
+  // Default: nothing on R2 (404).
   fetchSpy = jest.spyOn(global, "fetch").mockResolvedValue(fetchResponse({ status: 404 }) as never)
 })
 afterEach(() => {
@@ -167,9 +167,34 @@ describe("loadSnapshot", () => {
     expect(fetchSpy).toHaveBeenCalledWith("https://assets.turntrout.com/static/tweets/10123.json")
   })
 
-  it("returns null when the snapshot is on neither disk nor R2", async () => {
+  it("returns null without retrying when R2 responds 404", async () => {
     readFileSpy.mockRejectedValue(errno("ENOENT") as never)
     expect(await loadSnapshot("404", "/dir")).toBeNull()
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it("caches a 404 miss so R2 is hit once", async () => {
+    readFileSpy.mockRejectedValue(errno("ENOENT") as never)
+    expect(await loadSnapshot("404", "/dir")).toBeNull()
+    expect(await loadSnapshot("404", "/dir")).toBeNull()
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it("retries then throws when R2 returns malformed JSON", async () => {
+    jest.useFakeTimers()
+    readFileSpy.mockRejectedValue(errno("ENOENT") as never)
+    fetchSpy.mockResolvedValue(
+      fetchResponse({
+        json: () => {
+          throw new Error("invalid json")
+        },
+      }) as never,
+    )
+    const settled = loadSnapshot("10123", "/dir").catch((error: Error) => error)
+    await jest.runAllTimersAsync()
+    expect((await settled).message).toContain("invalid json")
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
+    jest.useRealTimers()
   })
 
   it("falls back to the default snapshot directory", async () => {

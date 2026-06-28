@@ -23,7 +23,7 @@ export const snapshotDir = path.join(
   ".tweet_snapshots",
 )
 
-/** R2 layout: `scripts/tweet_snapshot.py` uploads snapshots here. */
+/** Public CDN URL the build reads a snapshot from (uploaded by `scripts/tweet_snapshot.py`). */
 const snapshotCdnUrl = (id: string): string => `${cdnBaseUrl}/static/tweets/${id}.json`
 
 // Keep in sync with TWEET_ID_RE in scripts/tweet_snapshot.py.
