@@ -186,17 +186,24 @@ export async function parseMarkdown(ctx: BuildCtx, fps: FilePath[]): Promise<Pro
       workerType: "thread",
     })
 
-    const childPromises: WorkerPromise<ProcessedContent[]>[] = []
-    for (const chunk of chunks(fps, CHUNK_SIZE)) {
-      childPromises.push(pool.exec("parseFiles", [argv, chunk, ctx.allSlugs]))
-    }
+    try {
+      const childPromises: WorkerPromise<ProcessedContent[]>[] = []
+      for (const chunk of chunks(fps, CHUNK_SIZE)) {
+        childPromises.push(pool.exec("parseFiles", [argv, chunk, ctx.allSlugs]))
+      }
 
-    const results: ProcessedContent[][] = await WorkerPromise.all(childPromises).catch((err) => {
-      const errString = err.toString().slice("Error:".length)
-      throw new Error(errString)
-    })
-    res = results.flat()
-    await pool.terminate()
+      const results: ProcessedContent[][] = await WorkerPromise.all(childPromises).catch((err) => {
+        const errString = err.toString().slice("Error:".length)
+        throw new Error(errString)
+      })
+      res = results.flat()
+    } catch (err) {
+      throw new Error(`Failed to parse Markdown files with worker pool: ${String(err)}`, {
+        cause: err,
+      })
+    } finally {
+      await pool.terminate()
+    }
   }
 
   log.info(`Parsed ${res.length} Markdown files in ${perf.timeSince()}`)

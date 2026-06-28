@@ -106,15 +106,14 @@ describe("Backlinks", () => {
   // Basic rendering test
   it("renders without crashing", () => {
     const props = createProps(createFileData(), [])
-    const element = preactH(Backlinks, props)
-    expect(element).toBeTruthy()
+    expect(() => render(preactH(Backlinks, props))).not.toThrow()
   })
 
   // Test no backlinks case
   it("returns null when no backlinks exist", () => {
     const props = createProps(createFileData(), [])
-    const element = preactH(Backlinks, props)
-    expect(element).toBeTruthy()
+    const html = render(preactH(Backlinks, props))
+    expect(html).toBe("")
   })
 
   // Test with backlinks
@@ -146,8 +145,8 @@ describe("Backlinks", () => {
     })
 
     const props = createProps(currentFile, [currentFile])
-    const element = preactH(Backlinks, props)
-    expect(element).toBeTruthy()
+    const html = render(preactH(Backlinks, props))
+    expect(html).toBe("")
   })
 
   // Test self-referential links with anchors are excluded
@@ -195,7 +194,11 @@ describe("Backlinks", () => {
   // Test handling of invalid file data
   it("handles files without required properties", () => {
     const currentFile = createFileData({ slug: "target" as FullSlug })
-    const invalidFile = {} as QuartzPluginData // Missing required properties
+    // Links to the target but is missing a frontmatter title.
+    const invalidFile = {
+      slug: "invalid" as FullSlug,
+      links: ["target" as SimpleSlug],
+    } as QuartzPluginData
     const validFile = createFileData({
       slug: "valid" as FullSlug,
       frontmatter: { title: "Valid" },
@@ -203,8 +206,13 @@ describe("Backlinks", () => {
     })
 
     const props = createProps(currentFile, [invalidFile, validFile])
-    const element = preactH(Backlinks, props)
-    expect(element).toBeTruthy()
+    let html = ""
+    expect(() => {
+      html = render(preactH(Backlinks, props))
+    }).not.toThrow()
+    // The valid backlink is rendered; the file missing a title is skipped.
+    expect(normalizeNbsp(html)).toContain("Valid")
+    expect(html.match(/<li/gu)?.length).toBe(1)
   })
 
   // Test empty or undefined slugs
@@ -217,7 +225,7 @@ describe("Backlinks", () => {
     })
 
     const props = createProps(currentFile, [linkingFile])
-    expect(() => preactH(Backlinks, props)).not.toThrow()
+    expect(() => render(preactH(Backlinks, props))).not.toThrow()
   })
 
   // Test abbreviations in titles are processed correctly

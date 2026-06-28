@@ -1323,6 +1323,34 @@ describe("setFirstLetterAttribute", () => {
 
   it.each([
     [
+      "leading inline element holds the first letter",
+      "<p><em>First</em> paragraph</p>",
+      "F",
+      "First",
+      " paragraph",
+    ],
+    [
+      "leading inline single-letter word before apostrophe",
+      "<p><em>I</em>'ll go.</p>",
+      "I",
+      "I",
+      "’ll go.",
+    ],
+  ])(
+    "sets data-first-letter from text content without corrupting text when %s",
+    (_description, input, expectedFirstLetter, expectedInline, expectedTrailingText) => {
+      const processedHtml = testHtmlFormattingImprovement(input, false)
+      expect(processedHtml).toContain(`data-first-letter="${expectedFirstLetter}"`)
+      // The leading inline element's text is untouched...
+      expect(processedHtml).toContain(`<em>${expectedInline}</em>`)
+      // ...and the trailing direct text node is not rewritten (no spurious
+      // space or apostrophe shuffling injected at its start).
+      expect(normalizeNbsp(processedHtml)).toContain(`</em>${expectedTrailingText}`)
+    },
+  )
+
+  it.each([
+    [
       "paragraph is not a direct child of article",
       `
       <div>

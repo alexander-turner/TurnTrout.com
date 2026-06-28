@@ -36,25 +36,25 @@ const render = (node: Element): string => toHtml(node)
 
 describe("formatTweetDate", () => {
   it("formats a valid ISO timestamp in UTC with the date leading", () => {
-    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("Jan 21st, 2025, 5:32 PM")
+    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("January 21st, 2025, 5:32 PM")
   })
 
   it("uses 12 for midnight and noon", () => {
-    expect(formatTweetDate("2025-06-15T00:05:00.000Z")).toBe("Jun 15th, 2025, 12:05 AM")
-    expect(formatTweetDate("2025-06-15T12:00:00.000Z")).toBe("Jun 15th, 2025, 12:00 PM")
+    expect(formatTweetDate("2025-06-15T00:05:00.000Z")).toBe("June 15th, 2025, 12:05 AM")
+    expect(formatTweetDate("2025-06-15T12:00:00.000Z")).toBe("June 15th, 2025, 12:00 PM")
   })
 
   it.each([
-    ["2025-06-01T12:00:00.000Z", "Jun 1st"],
-    ["2025-06-02T12:00:00.000Z", "Jun 2nd"],
-    ["2025-06-03T12:00:00.000Z", "Jun 3rd"],
-    ["2025-06-04T12:00:00.000Z", "Jun 4th"],
-    ["2025-06-11T12:00:00.000Z", "Jun 11th"],
-    ["2025-06-12T12:00:00.000Z", "Jun 12th"],
-    ["2025-06-13T12:00:00.000Z", "Jun 13th"],
-    ["2025-06-21T12:00:00.000Z", "Jun 21st"],
-    ["2025-06-22T12:00:00.000Z", "Jun 22nd"],
-    ["2025-06-23T12:00:00.000Z", "Jun 23rd"],
+    ["2025-06-01T12:00:00.000Z", "June 1st"],
+    ["2025-06-02T12:00:00.000Z", "June 2nd"],
+    ["2025-06-03T12:00:00.000Z", "June 3rd"],
+    ["2025-06-04T12:00:00.000Z", "June 4th"],
+    ["2025-06-11T12:00:00.000Z", "June 11th"],
+    ["2025-06-12T12:00:00.000Z", "June 12th"],
+    ["2025-06-13T12:00:00.000Z", "June 13th"],
+    ["2025-06-21T12:00:00.000Z", "June 21st"],
+    ["2025-06-22T12:00:00.000Z", "June 22nd"],
+    ["2025-06-23T12:00:00.000Z", "June 23rd"],
   ])("applies an ordinal suffix to the day for %s", (iso, expected) => {
     expect(formatTweetDate(iso)).toContain(expected)
   })
@@ -123,7 +123,7 @@ describe("buildTweetCard", () => {
     expect(html).toContain("Alex Turner")
     expect(html).toContain("@turntrout")
     expect(html).toContain("Hello world")
-    expect(html).toContain('<span class="tweet-date">Jan 21st, 2025, 5:32 PM</span>')
+    expect(html).toContain('<span class="tweet-date">January 21st, 2025, 5:32 PM</span>')
     expect(html).toContain('data-tweet-id="123"')
   })
 

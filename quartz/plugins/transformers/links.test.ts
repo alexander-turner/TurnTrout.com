@@ -152,6 +152,14 @@ describe("CrawlLinks anchor processing", () => {
     expect(result.links).toHaveLength(1)
   })
 
+  it("throws an attributed error for an internal link with malformed percent-encoding", async () => {
+    // A stray "%" reaches decodeURIComponent and would otherwise abort the whole
+    // build with a bare "URI malformed"; the link and file must be named instead.
+    await expect(processHtml('<a href="/foo%bar">Broken</a>', { slug: "my-post" })).rejects.toThrow(
+      /Malformed internal link "\/foo%bar" in my-post/,
+    )
+  })
+
   it.each([
     ["external", '<a href="https://example.com">Example</a>'],
     ["anchor-only", '<a href="#section">Section</a>'],

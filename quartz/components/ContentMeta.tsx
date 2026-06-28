@@ -139,6 +139,10 @@ export const renderReadingTime = (fileData: QuartzPluginData): JSX.Element => {
   const text = (fileData.readingTimeText ?? fileData.text) as string
   const { minutes } = readingTime(text)
   const displayedTime = processReadingTime(Math.ceil(minutes))
+  if (!displayedTime) {
+    // skipcq: JS-0424
+    return <></>
+  }
 
   return <span className="reading-time">Read time: {displayedTime}</span>
 }

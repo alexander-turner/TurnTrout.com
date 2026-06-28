@@ -1015,6 +1015,42 @@ describe("PopulateContainers", () => {
 
         expect(stats).toEqual(MOCK_STATS)
       })
+
+      it("degrades a failing cosmetic counter to the sentinel instead of aborting", async () => {
+        // Every stat command fails (e.g. no `.venv`, no `git`): the build must
+        // still produce a full RepoStats object with sentinel counts.
+        mockExecSync.mockImplementation(() => {
+          throw new Error("command not found")
+        })
+
+        const stats = await populateModule.computeRepoStats()
+
+        expect(stats).toEqual({
+          commitCount: populateModule.STAT_UNAVAILABLE,
+          aiCommitCount: populateModule.STAT_UNAVAILABLE,
+          jsTestCount: populateModule.STAT_UNAVAILABLE,
+          playwrightTestCount: populateModule.STAT_UNAVAILABLE,
+          pytestCount: populateModule.STAT_UNAVAILABLE,
+          linesOfCode: populateModule.STAT_UNAVAILABLE,
+        })
+      })
+    })
+
+    describe("safeStatCount", () => {
+      it("returns the counter result when it succeeds", () => {
+        expect(populateModule.safeStatCount("ok", () => 42)).toBe(42)
+      })
+
+      it("returns the sentinel and does not throw when the counter throws", () => {
+        const throwingCounter = () => {
+          throw new Error("boom")
+        }
+
+        expect(() => populateModule.safeStatCount("boom", throwingCounter)).not.toThrow()
+        expect(populateModule.safeStatCount("boom", throwingCounter)).toBe(
+          populateModule.STAT_UNAVAILABLE,
+        )
+      })
     })
 
     describe("htmlFileToSlug", () => {

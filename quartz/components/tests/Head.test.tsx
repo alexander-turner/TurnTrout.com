@@ -55,6 +55,7 @@ describe("Head Component", () => {
     slug: "test-page" as FullSlug,
     frontmatter: mockFrontmatter,
     usedAdmonitionIcons: ["note"],
+    usesKatex: true,
     data: {
       frontmatter: mockFrontmatter,
     },
@@ -302,6 +303,25 @@ describe("Head Component", () => {
       const html = render(h(Head, propsNoIcons))
 
       expect(html).not.toContain("/static/icons/")
+    })
+
+    it("loads the katex stylesheet only when the page uses katex", () => {
+      const html = render(h(Head, mockProps))
+
+      expect(html).toContain('href="/static/styles/katex.min.css"')
+    })
+
+    it.each([false, undefined])("omits the katex stylesheet when usesKatex is %p", (usesKatex) => {
+      const propsNoKatex = {
+        ...mockProps,
+        fileData: {
+          ...mockFileData,
+          usesKatex,
+        } as QuartzPluginData,
+      }
+      const html = render(h(Head, propsNoKatex))
+
+      expect(html).not.toContain("/static/styles/katex.min.css")
     })
   })
 
