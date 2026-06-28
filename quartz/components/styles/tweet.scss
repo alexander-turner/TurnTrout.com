@@ -122,14 +122,18 @@
   // full image still opens via the source link.
   aspect-ratio: 16 / 9;
 
-  // Fade the bottom edge into the card so a clipped portrait trails off there
-  // instead of ending on a hard line — the same fade overflowing equations and
-  // tables get where their content is cut.
-  mask-image: linear-gradient(
-    to bottom,
-    var(--background) calc(100% - 4 * $base-margin),
-    transparent 100%
-  );
+  // Fade the bottom edge into the card when a clipped portrait trails off there,
+  // so it ends on a soft edge instead of a hard line — the same fade overflowing
+  // equations and tables get where their content is cut. Only added when the
+  // bottom of the frame actually cuts through image content (see tweetCard.ts);
+  // a side-cropped landscape keeps its real bottom edge and gets no fade.
+  &.tweet-media-grid-fade-bottom {
+    mask-image: linear-gradient(
+      to bottom,
+      var(--background) calc(100% - 4 * $base-margin),
+      transparent 100%
+    );
+  }
 
   &.tweet-media-count-1 {
     grid-template-columns: 1fr;

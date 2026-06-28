@@ -227,6 +227,77 @@ describe("buildTweetCard", () => {
     expect(html).toContain('alt="" loading="lazy"></div>')
   })
 
+  it("fades the bottom edge when a single photo is taller than its 16:9 cell", () => {
+    const tall: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [
+        {
+          type: "photo",
+          src: "https://assets.turntrout.com/static/tweets/123/p.jpg",
+          width: 2738,
+          height: 1818, // aspect 1.51 < 16/9, so cover-cropped top and bottom
+        },
+      ],
+    }
+    expect(render(buildTweetCard(tall))).toContain("tweet-media-grid-fade-bottom")
+  })
+
+  it("does not fade when a single photo is wider than its 16:9 cell", () => {
+    const wide: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [
+        {
+          type: "photo",
+          src: "https://assets.turntrout.com/static/tweets/123/p.jpg",
+          width: 800,
+          height: 400, // aspect 2.0 > 16/9, so cropped left and right, not top/bottom
+        },
+      ],
+    }
+    expect(render(buildTweetCard(wide))).not.toContain("tweet-media-grid-fade-bottom")
+  })
+
+  it("does not fade when a photo's dimensions are unknown", () => {
+    const unknown: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [{ type: "photo", src: "https://assets.turntrout.com/static/tweets/123/p.jpg" }],
+    }
+    expect(render(buildTweetCard(unknown))).not.toContain("tweet-media-grid-fade-bottom")
+  })
+
+  it("ignores a top-row clip when deciding whether to fade a 3-up grid's bottom edge", () => {
+    // Indices: 0 = left (spans both rows, cell 8:9), 1 = right-top, 2 = right-bottom.
+    // Only the right-top cell holds a vertically clipped image, and it never
+    // touches the grid's bottom edge, so no fade.
+    const square = (n: number, width: number, height: number) => ({
+      type: "photo" as const,
+      src: `https://assets.turntrout.com/static/tweets/123/p${n}.jpg`,
+      width,
+      height,
+    })
+    const grid: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [square(0, 1600, 900), square(1, 900, 1600), square(2, 1600, 900)],
+    }
+    expect(render(buildTweetCard(grid))).not.toContain("tweet-media-grid-fade-bottom")
+  })
+
+  it("fades a 3-up grid when a bottom-edge cell is clipped vertically", () => {
+    const square = (n: number, width: number, height: number) => ({
+      type: "photo" as const,
+      src: `https://assets.turntrout.com/static/tweets/123/p${n}.jpg`,
+      width,
+      height,
+    })
+    // The right-bottom cell (16:9) holds a portrait image, taller than the cell,
+    // and sits on the grid's bottom edge, so the grid fades.
+    const grid: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [square(0, 1600, 900), square(1, 1600, 900), square(2, 900, 1600)],
+    }
+    expect(render(buildTweetCard(grid))).toContain("tweet-media-grid-fade-bottom")
+  })
+
   it("caps the media-count class at 4", () => {
     const photo = (n: number) => ({
       type: "photo" as const,
