@@ -293,7 +293,7 @@ live fetch then public CDN (`static/tweets/<id>.json`) then skip (stub).
 
 `website_content/test-page.md` is the single human-edited source of truth for
 visual-regression content. `scripts/split_test_page_sections.py` slices it on
-top-level (`# `) headings into one fixture page per section under
+top-level headings (a `#` followed by a space) into one fixture page per section under
 `website_content/fixtures/test-sections/` (permalink `test-section-<slug>`).
 Each section is its own page, so a Playwright screenshot of one section is
 unaffected by edits to—or reordering of—any other section
@@ -312,14 +312,29 @@ is still needed by every element-scoped screenshot taken on a shared page
 (popovers, search previews, sidebar, etc.); it is only redundant _on the fixture
 pages themselves_, where nothing else is on the page to hide.
 
-**After editing `test-page.md`, regenerate and commit the fixtures:**
+The fixtures under `website_content/fixtures/test-sections/` are **not tracked
+in git** (`.gitignore`) — they're pure derivatives of `test-page.md`, so
+committing them only created churn and a drift surface. They're regenerated
+wherever they're needed:
+
+- **CI**: the reusable `generate-fixtures.yaml` workflow runs the generator
+  once and uploads a `section-fixtures` artifact. The `build` job and every
+  Playwright shard (visual, playwright-tests, flake-check) depend on that job
+  and pull the artifact via the `download-section-fixtures` composite action.
+  Even non-screenshot shards need it: Playwright collects
+  `section-fixtures.spec.ts` (then grep-filters it out) and that spec reads the
+  directory at module load.
+- **Locally**: the Playwright `webServer` command regenerates them before
+  `pnpm start`, so `pnpm test:visual` works from a clean checkout.
+
+So after editing `test-page.md` there's nothing to commit for the fixtures — just
+run the generator if you want to preview locally:
 
 ```bash
 uv run python scripts/split_test_page_sections.py
 ```
 
-`scripts/tests/test_split_test_page_sections.py` fails if the committed
-fixtures drift from the generator output. The generator pulls each section's
-referenced footnote definitions in (transitively) so sections render
-standalone; sections that reference other sections (e.g. `Transclusion`) are
-listed in `SKIP_HEADINGS` and live only on the integration page.
+The generator pulls each section's referenced footnote definitions in
+(transitively) so sections render standalone; sections that reference other
+sections (e.g. `Transclusion`) are listed in `SKIP_HEADINGS` and live only on
+the integration page.

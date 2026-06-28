@@ -89,10 +89,10 @@ li[id^="user-content-fn-"] {
 a[id*="fnref-"] {
   // When scrolling back to a footnote, scroll up farther than default
   scroll-margin-top: calc(2 * $base-margin);
-
-  // Dotted border signals "click for interaction" (same pattern as Elvish text)
   background-color: var(--midground-faintest);
   padding: 0 calc(0.125 * $base-margin);
+  margin: 0 calc(0.125 * $base-margin);
+  border-radius: $border-radius;
 
   @media all and (max-width: $max-mobile-width) {
     scroll-margin-top: calc(7 * $base-margin);
@@ -451,6 +451,11 @@ figcaption {
   max-width: 90%;
   margin-left: auto;
   margin-right: auto;
+
+  // `pretty` (not `balance`) so the favicon nowrap-span at a caption's end
+  // can't strand on its own line; `balance` is silently disabled by the
+  // browser for taller captions, which reintroduces the orphan.
+  text-wrap: pretty;
 }
 
 img,

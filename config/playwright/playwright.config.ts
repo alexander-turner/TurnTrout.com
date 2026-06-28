@@ -121,11 +121,13 @@ export default defineConfig({
     ? undefined
     : {
         // Local dev rebuilds via `pnpm start`; fixtures must be included so the
-        // visual tests can hover/preview them. CI consumes a pre-built `public/`
-        // that already had INCLUDE_FIXTURES=true at build time.
+        // visual tests can hover/preview them. The per-section fixtures aren't
+        // tracked in git, so regenerate them from test-page.md first. CI
+        // consumes a pre-built `public/` that already had INCLUDE_FIXTURES=true
+        // at build time and downloads the fixtures via the generate-fixtures job.
         command: process.env.CI
           ? "pnpm serve public -l 8080 > /tmp/webserver.log 2>&1"
-          : "INCLUDE_FIXTURES=true pnpm start",
+          : "uv run python scripts/split_test_page_sections.py && INCLUDE_FIXTURES=true pnpm start",
         cwd: repoRoot,
         url: baseURL,
         reuseExistingServer: !process.env.CI,

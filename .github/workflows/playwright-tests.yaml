@@ -45,17 +45,31 @@ jobs:
               - "pnpm-lock.yaml"
               - ".github/actions/**"
 
+  # Regenerate the per-section fixtures (not tracked in git) and publish them
+  # as an artifact. Even the non-screenshot shards need them present: Playwright
+  # collects section-fixtures.spec.ts (then grep-filters it out), and that spec
+  # reads the fixture directory at module load.
+  generate-fixtures:
+    name: playwright-generate-fixtures
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
+    uses: ./.github/workflows/generate-fixtures.yaml
+
   build:
     name: playwright-build
-    needs: should-run
+    needs: [should-run, generate-fixtures]
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
     with:
       include-fixtures: true
+    secrets:
+      ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+      SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+      S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
 
   # Linux Chromium + Firefox.
   playwright-tests-linux:
-    needs: [build, should-run]
+    needs: [build, should-run, generate-fixtures]
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -94,6 +108,9 @@ jobs:
           path: public/
           key: site-build-${{ github.sha }}-fixtures-true
           fail-on-cache-miss: true
+
+      - name: Download section fixtures
+        uses: ./.github/actions/download-section-fixtures
 
       - name: Run Playwright tests
         id: playwright
@@ -157,7 +174,7 @@ jobs:
   # Linux WebKit (WPE) has known flakiness issues with timing, localStorage,
   # and module loading that don't reproduce on real Safari.
   playwright-tests-macos:
-    needs: [build, should-run]
+    needs: [build, should-run, generate-fixtures]
     if: needs.should-run.outputs.run-macos == 'true'
     runs-on: macos-15
     strategy:
@@ -202,6 +219,9 @@ jobs:
           path: public/
           key: site-build-${{ github.sha }}-fixtures-true
           fail-on-cache-miss: true
+
+      - name: Download section fixtures
+        uses: ./.github/actions/download-section-fixtures
 
       - name: Run Playwright tests
         id: playwright

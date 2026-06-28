@@ -97,12 +97,31 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
     perf.addEvent("glob")
     // In serve (dev) mode, ignore .gitignore so gitignored content such as
     // `drafts/` is discovered and previewed locally.
-    const allFiles = await glob(
+    const trackedFiles = await glob(
       "**/*.*",
       argv.directory,
       cfg.configuration.ignorePatterns,
       !argv.serve,
     )
+    // The per-section visual fixtures under `fixtures/` are gitignored
+    // (regenerated from `test-page.md`, never committed), so the
+    // gitignore-aware glob above skips them in build mode. When building
+    // fixtures for the test suites, discover the `fixtures/` tree separately
+    // with .gitignore disabled; `RemoveFixtures` still decides what publishes.
+    const allFiles =
+      process.env.INCLUDE_FIXTURES === "true"
+        ? [
+            ...new Set([
+              ...trackedFiles,
+              ...(await glob(
+                "fixtures/**/*.*",
+                argv.directory,
+                cfg.configuration.ignorePatterns,
+                false,
+              )),
+            ]),
+          ]
+        : trackedFiles
     const fps = allFiles.filter((fp) => fp.endsWith(".md")).sort()
     console.log(
       `Found ${fps.length} input files from \`${argv.directory}\` in ${perf.timeSince("glob")}`,

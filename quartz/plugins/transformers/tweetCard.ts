@@ -207,6 +207,10 @@ function mediaNode(media: TweetMedia): Element {
   })
 }
 
+// Whether a grid's bottom edge cuts through clipped image content—and therefore
+// fades into the card—is decided at runtime by tweet-media-fade.inline.ts, which
+// measures the rendered cells against each image's intrinsic aspect ratio. The
+// width/height attributes on each media element feed that measurement.
 function mediaGrid(media: readonly TweetMedia[]): Element[] {
   if (media.length === 0) return []
   return [
