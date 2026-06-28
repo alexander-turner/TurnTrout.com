@@ -771,6 +771,13 @@ Each emoji stays glued to its preceding character and never wraps alone to the s
 
 This text omits a detail.[^footnote] This sentence has multiple footnotes.[^1][^2]
 
+This footnote opens with a block quote.[^fn-blockquote]
+
+[^fn-blockquote]:
+    > A block quote inside a footnote should not crowd the footnote marker.
+
+    Trailing text after the block quote.
+
 Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 
 [^spam1]: Make sure we hit double-digit footnotes to test formatting.

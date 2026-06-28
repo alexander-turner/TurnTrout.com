@@ -38,6 +38,11 @@ li > blockquote:first-child {
   margin-top: $base-margin;
 }
 
+// Keep the blockquote border from crowding the footnote marker
+li[id^="user-content-fn-"] > blockquote {
+  margin-left: $base-margin;
+}
+
 .footnotes {
   margin-bottom: $page-end-bottom-margin;
 
