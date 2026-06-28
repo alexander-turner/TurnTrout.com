@@ -18,6 +18,17 @@ on:
         required: false
         type: boolean
         default: false
+    secrets:
+      # R2 media credentials for uploading any newly referenced tweet's
+      # snapshot + media before the build measures them. Optional so callers
+      # without the secrets (e.g. forks) still build; the upload step is
+      # continue-on-error and existing tweets resolve from the public CDN.
+      ACCESS_KEY_ID_TURNTROUT_MEDIA:
+        required: false
+      SECRET_ACCESS_TURNTROUT_MEDIA:
+        required: false
+      S3_ENDPOINT_ID_TURNTROUT_MEDIA:
+        required: false
 
 permissions:
   actions: read
