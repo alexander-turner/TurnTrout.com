@@ -125,6 +125,7 @@ def fixture_frontmatter(heading: str, slug: str) -> str:
         f'title: "Test section: {heading}"\n'
         f"permalink: test-section-{slug}\n"
         'no_dropcap: "true"\n'
+        "avoidIndexing: true\n"
         "tags:\n  - website\n"
         f"description: Auto-generated isolated section fixture ({heading}) for "
         "per-section visual regression testing. Edit website_content/test-page.md "

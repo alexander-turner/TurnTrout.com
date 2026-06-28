@@ -2,6 +2,7 @@
 title: "Test section: Header 1 (`inline_code`)"
 permalink: test-section-header-1-inlinecode
 no_dropcap: "true"
+avoidIndexing: true
 tags:
   - website
 description: Auto-generated isolated section fixture (Header 1 (`inline_code`)) for per-section visual regression testing. Edit website_content/test-page.md and regenerate; do not edit by hand.

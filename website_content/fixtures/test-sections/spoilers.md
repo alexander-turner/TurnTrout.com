@@ -2,6 +2,7 @@
 title: "Test section: Spoilers"
 permalink: test-section-spoilers
 no_dropcap: "true"
+avoidIndexing: true
 tags:
   - website
 description: Auto-generated isolated section fixture (Spoilers) for per-section visual regression testing. Edit website_content/test-page.md and regenerate; do not edit by hand.

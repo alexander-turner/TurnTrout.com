@@ -2,6 +2,7 @@
 title: "Test section: Link features"
 permalink: test-section-link-features
 no_dropcap: "true"
+avoidIndexing: true
 tags:
   - website
 description: Auto-generated isolated section fixture (Link features) for per-section visual regression testing. Edit website_content/test-page.md and regenerate; do not edit by hand.

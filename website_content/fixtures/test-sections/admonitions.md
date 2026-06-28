@@ -2,6 +2,7 @@
 title: "Test section: Admonitions"
 permalink: test-section-admonitions
 no_dropcap: "true"
+avoidIndexing: true
 tags:
   - website
 description: Auto-generated isolated section fixture (Admonitions) for per-section visual regression testing. Edit website_content/test-page.md and regenerate; do not edit by hand.

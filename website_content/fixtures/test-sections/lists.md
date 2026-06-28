@@ -2,6 +2,7 @@
 title: "Test section: Lists"
 permalink: test-section-lists
 no_dropcap: "true"
+avoidIndexing: true
 tags:
   - website
 description: Auto-generated isolated section fixture (Lists) for per-section visual regression testing. Edit website_content/test-page.md and regenerate; do not edit by hand.

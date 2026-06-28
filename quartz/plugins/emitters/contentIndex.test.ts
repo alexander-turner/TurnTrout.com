@@ -205,6 +205,24 @@ describe("ContentIndex", () => {
     expect(index["test-post"]).toBeDefined()
   })
 
+  it("excludes avoidIndexing pages from the content index", async () => {
+    const plugin = ContentIndex({ enableSiteMap: false, enableRSS: false })
+    const content: ProcessedContent[] = [
+      defaultProcessedContent({
+        slug: "fixture-page" as FullSlug,
+        filePath: "content/fixture.md" as FilePath,
+        frontmatter: { title: "Fixture", tags: [], avoidIndexing: true },
+        text: "Should not be indexed",
+      }),
+      ...makeContent("Real Post", { slug: "real-post" as FullSlug }),
+    ]
+    await plugin.emit(mockCtx, content, mockResources)
+
+    const index = JSON.parse(getWriteCall("contentIndex")[0].content)
+    expect(index["fixture-page"]).toBeUndefined()
+    expect(index["real-post"]).toBeDefined()
+  })
+
   it("content index JSON strips description and date", async () => {
     const plugin = ContentIndex({ enableSiteMap: false, enableRSS: false })
     await plugin.emit(mockCtx, makeContent("Post", { description: "A description" }), mockResources)

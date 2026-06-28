@@ -2,6 +2,7 @@
 title: "Test section: What are your timelines?"
 permalink: test-section-what-are-your-timelines
 no_dropcap: "true"
+avoidIndexing: true
 tags:
   - website
 description: Auto-generated isolated section fixture (What are your timelines?) for per-section visual regression testing. Edit website_content/test-page.md and regenerate; do not edit by hand.

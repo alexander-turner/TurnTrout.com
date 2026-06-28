@@ -2,6 +2,7 @@
 title: "Test section: Color palette"
 permalink: test-section-color-palette
 no_dropcap: "true"
+avoidIndexing: true
 tags:
   - website
 description: Auto-generated isolated section fixture (Color palette) for per-section visual regression testing. Edit website_content/test-page.md and regenerate; do not edit by hand.

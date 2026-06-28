@@ -2,6 +2,7 @@
 title: "Test section: Typography"
 permalink: test-section-typography
 no_dropcap: "true"
+avoidIndexing: true
 tags:
   - website
 description: Auto-generated isolated section fixture (Typography) for per-section visual regression testing. Edit website_content/test-page.md and regenerate; do not edit by hand.
