@@ -20,7 +20,7 @@ aliases:
   - consistency
   - activation-training
 date_published: 2025-11-06
-date_updated: 2026-06-26
+date_updated: 2026-06-28
 createBibtex: true
 ---
 
@@ -39,7 +39,7 @@ Consistency training doesn’t involve stale datasets or separate target-respons
 
 # Methods
 
-## Bias-augmented Consistency Training
+## Bias-augmented consistency training
 
 BCT enforces consistency at the output token level: teaching the model *what to say*.
 
@@ -52,7 +52,7 @@ Figure: [Chua et al. (2025)](https://arxiv.org/pdf/2403.05518v3)'s Figure 2 expl
 
 ![[https://assets.turntrout.com/static/images/posts/consistency-training-20251103155338.avif|A diagram illustrating the Bias-augmented Consistency Training objective.]]
 
-## Activation Consistency Training
+## Activation consistency training
 
 We designed this method to try to teach the model *how to think*.
 

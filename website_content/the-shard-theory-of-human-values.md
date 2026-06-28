@@ -47,7 +47,7 @@ original_url: https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/human_shards.jpg
 description: Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.
-date_updated: 2026-05-22
+date_updated: 2026-06-28
 card_image_alt: A silhouette of a human head in profile, its brain composed of vibrant, glowing crystalline shards—a visual metaphor for the components of decision-making in shard theory.
 createBibtex: true
 ---
@@ -335,7 +335,7 @@ Different shard compositions can produce similar urges
 Shards are just collections of subshards
 : One subshard of your family-shard might steer towards futures where your family is happy, while another subshard may influence decisions so that your mother is proud of you. On my (`TurnTrout`’s) current understanding, “family shard” is just an abstraction of a set of heterogeneous subshards which are downstream of similar historical reinforcement events (e.g. related to spending time with your family). By and large, subshards of the same shard do not all steer towards the same kind of future.
 
-## “Shard Theory”
+## “Shard theory”
 
 Before this post was published, many people read draft documents explaining shard theory. However, in the absence of a canonical public document explaining the ideas and defining terms, “shard theory” has become overloaded. Here, then, are several definitions.
 

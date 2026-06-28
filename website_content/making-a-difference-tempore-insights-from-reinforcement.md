@@ -39,7 +39,7 @@ original_url: https://www.lesswrong.com/posts/BGv98aKicyT8eH4AY/making-a-differe
 no_dropcap: "true"
 skip_import: true
 description: "A deep dive into reinforcement learning, covering algorithms, exploration vs. exploitation, and the importance of safe AI development."
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 ---
 
 > [!quote] Reinforcement Learning: An Introduction
@@ -67,7 +67,7 @@ _Policy evaluation, policy improvement, policy iteration, value iteration, gener
 
 _Prediction, control, and importance sampling._
 
-### Importance Sampling
+### Importance sampling
 
 After gathering data with our behavior policy $b$, we then want to approximate the value function for the target policy $\pi$. In off-policy methods, the policy we use to gather the data is different from the one whose value $v_\pi$ we're trying to learn; in other words, the distribution of states we sample is different. This gives us a skewed picture of $v_\pi$, so we must overcome this bias.
 
@@ -93,7 +93,7 @@ $$
 V(s):=\frac{\sum_{t \in \mathcal{T}(s)} \rho_{t:T(t)-1}G_t}{\sum_{t \in \mathcal{T}(s)} \rho_{t:T(t)-1}}.
 $$
 
-### Death and Discounting
+### Death and discounting
 
 Instead of viewing the discount factor $\gamma$ as measuring how much we care about the future, think of it as encoding the probability we don't terminate on any given step. That is, we expect with $1-\gamma$ probability to die on the next turn, so we discount rewards accordingly.
 
@@ -103,7 +103,7 @@ This intuition hugs pre-theoretic understanding much more closely; if you have j
 
 _The tabular triple threat:_ $\text{TD(0)}$, `SARSA`_, and Q-learning._
 
-### Learning TD Learning
+### Learning TD learning
 
 $$
 V(S_t) \gets V(S_t) + \alpha \Big[\underbrace{\overbrace{R_{t+1} + \gamma V(S_{t+1})}^\text{TD target} - V(S_t)}_\text{TD error} \Big]
@@ -144,7 +144,7 @@ $n$-_step everything._
 
 _Models, prioritized sweeping, expected vs. sample updates, MCTS, and rollout algorithms._
 
-### Roles Models Play
+### Roles models play
 
 _Distribution_ models include the full range of possible futures and their probabilities. For example, a distribution model for two fair coins:
 
@@ -182,7 +182,7 @@ _The policy gradient theorem, REINFORCE, and actor-critic._
 
 _Creating a partial mapping between reinforcement learning and psychology._
 
-### Mental, Territorial
+### Mental, territorial
 
 There was a word I was looking for that "mental model" didn't quite seem to fit: "the model with respect to which we mentally simulate courses of action". CFAR's "inner sim" terminology didn't quite map either, as to me, that points to the _system-in-motion_ more than _that-on-which-the-system-runs_. The literature dubs this a cognitive map.
 
@@ -212,7 +212,7 @@ _From checkers to checkmate._
 
 _Temporal abstraction, designing reward signals, and the future of reinforcement learning. In particular, the idea I had for having a whitelist-enabled agent predict expected object-level transitions is actually one of the frontiers: general value functions. Rad._
 
-### Pandora's AI Boxing
+### Pandora's AI boxing
 
 > The rapid pace of advances in AI has led to warnings that AI poses serious threats to our societies, even to humanity itself.
 
@@ -228,7 +228,7 @@ I don't think it's impossible, but it's going to be extremely hard to get formal
 
 The above constitutes _one_ of the [many](https://arbital.com/p/advanced_safety/) [open problems in alignment theory](https://arbital.com/p/taskagi_open_problems). If that's not enough, there are always the unknown unknowns...
 
-## Final Thoughts
+## Final thoughts
 
 I read the "nearly complete" [draft of the second edition](http://incompleteideas.net/book/the-book-2nd.html). It was pretty good, but I did find most of the exercises either too easy or requiring considerable programming investment to set up the environment described. The former makes sense, as I've already taken a course on this, and I'm probably a bit above the introductory level.
 
@@ -260,7 +260,7 @@ I'll be finishing _Analysis II_ before moving on to Jaynes's _Probability Theory
 
 Recently, OpenAI [made waves with their OpenAI Five Dota 2 bot](https://blog.openai.com/openai-five/). To REINFORCE what I just learned and solidified, I might make a post in the near future breaking down how _Five_ differs from the _Alpha(Go) Zero_ approach, quantifying my expectations for _The International_ for [calibration](https://en.wikipedia.org/wiki/Brier_score).
 
-## No Longer a Spectator
+## No longer a spectator
 
 Four months and one week ago, [I started my journey](/set-theory-textbook-review) through the MIRI reading list. In those dark days, attempting a proof induced a stupor similar to that I encountered approaching a crush in grade school, my words and thoughts leaving me.
 

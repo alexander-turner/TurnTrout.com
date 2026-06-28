@@ -36,7 +36,7 @@ date_published: 2020-11-21
 original_url: https://www.lesswrong.com/posts/Xts5wm3akbemk4pDa/non-obstruction-a-simple-concept-motivating-corrigibility
 skip_import: true
 description: "Non-obstruction: how do we design AI that doesn't limit our ability to achieve our goals, even if we misspecified its programming?"
-date_updated: 2026-05-08
+date_updated: 2026-06-28
 ---
 
 I present a unified mathematical frame for understanding corrigibility’s _benefits_, what it “is”, and what it isn’t. This frame is precisely understood by graphing the human overseer’s ability to achieve various goals (their [_attainable utility (AU) landscape_](/attainable-utility-landscape)). I argue that corrigibility’s benefits are secretly a form of counterfactual alignment (alignment with a set of goals the human may want to pursue).
@@ -72,7 +72,7 @@ We certainly shouldn’t keep using 2+ definitions for both alignment and corrig
 
 Evan Hubinger recently wrote a [great FAQ on inner alignment terminology](https://www.lesswrong.com/posts/SzecSPYxqRa5GCaSF/clarifying-inner-alignment-terminology). We won't be talking about inner/outer alignment today, but I intend for my usage of "impact alignment" to roughly map onto his "alignment", and "intent alignment" to map onto his usage of "intent alignment." Similarly, my usage of "impact/intent alignment" directly aligns with the definitions from Andrew Critch's recent post, [_Some AI research areas and their relevance to existential safety_](https://www.lesswrong.com/posts/hvGoYXi2kgnS3vxqb/some-ai-research-areas-and-their-relevance-to-existential-1#AI_alignment__definition_).
 
-# A Simple Concept Motivating Corrigibility
+# A simple concept motivating corrigibility
 
 ## Two conceptual clarifications
 
@@ -228,7 +228,7 @@ Non-obstruction is important for a (singleton) AI we build: we get more than one
 
 Most importantly, this frame collapses the alignment and corrigibility desiderata into _just alignment_; while impact alignment doesn’t imply corrigibility, corrigibility’s benefits can be understood as a kind of weak counterfactual impact alignment with many possible human goals.
 
-# Theoretically, It’s All About Alignment
+# Theoretically, it’s all about alignment
 
 > [!idea] Main idea
 > We only care about how the agent affects our abilities to pursue different goals (our AU landscape) in the two-player game, and not how that happens. AI alignment subproblems (such as corrigibility, intent alignment, low impact, and mild optimization) are all instrumental avenues for making AIs which affect this AU landscape in specific desirable ways.
@@ -297,7 +297,7 @@ To be confident that this holds empirically, it sure seems like you want high er
 - [Mild optimization](https://www.lesswrong.com/tag/mild-optimization): avoid spikiness by avoiding maximization, thereby avoiding steering the future too hard.
 - If you have non-obstruction for lots of goals, you don’t have spikiness!
 
-# What Do We Want?
+# What do we want?
 
 > [!idea] Main idea
 > We want good things to happen; there may be more ways to do this than previously considered.[^Rohin]
@@ -332,7 +332,7 @@ For example, I really liked the idea of [approval-directed agents](https://ai-al
 
 Maybe there’s a higher-level theory for what kinds of policies induce spikiness in our AU landscape. By the nature of spikiness, these $\pi^{AI}$ must decrease human power ([as I’ve formalized it](/power-as-easily-exploitable-opportunities)). So, I'd start there by looking at concepts like [enfeeblement](http://acritch.com/media/arches.pdf#subsubsection.3.2.3), manipulation, power-seeking, and resource accumulation.
 
-# Future Directions
+# Future directions
 
 - Given an AI policy, could we prove a high probability of non-obstruction, given conservative assumptions about how smart `pol` is? (h/t Abram Demski, Rohin Shah)
   - Any irreversible action makes some goal unachievable, but irreversible actions need not impede most meaningful goals.:

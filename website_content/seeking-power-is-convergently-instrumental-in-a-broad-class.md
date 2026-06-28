@@ -38,7 +38,7 @@ date_published: 2021-08-08
 original_url: https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
 skip_import: true
 description: "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions. "
-date_updated: 2026-05-12
+date_updated: 2026-06-28
 ---
 
  
@@ -132,7 +132,7 @@ I often give life-vs-death examples because they're particularly easy to reason 
 
 For example, if $a_1$ restricts the agent to two effective actions at each time step (it can only flip one of the first two pixels) – instead of "killing" the agent, then $a_2$ is still convergently instrumental over $a_1$. After taking action $a_1$, there are $2^{49}\approx 5.6×10^{14}\geq 10^{14}$ observation histories available. These observation histories can be embedded at least $\frac{10^{196}}{10^{14}}=10^{182}$ times into the observation histories available after taking action $a_2$. Then for every u<sub>OH</sub>, at least $\frac{10^{182}}{10^{182}+1}$ of its permuted variants (weakly) prefer flipping the second pixel at $t=1$, over flipping the first pixel at $t=1$.
 
-# Instrumental Convergence Disappears For Utility Functions Over Action-Observation Histories
+# Instrumental convergence disappears for utility functions over action-observation histories
 
 Let's consider utility functions over action-observation histories (u<sub>AOH</sub>).
 
@@ -153,7 +153,7 @@ And even if the environment is stochastic, I think that there won't be any kind 
 
 **Conclusion:** Optimal policies for u<sub>AOH</sub> will tend to look like _random twitching_. For example, if you generate some u<sub>AOH</sub> by uniformly randomly assigning each AOH utility from the unit interval $[0,1]$, there's no predictable regularity to the optimal actions for this utility function. In this setting and under our assumptions, there is _no_ instrumental convergence without further structural assumptions.
 
-# How Structural Assumptions On Utility Affect Instrumental Convergence
+# How structural assumptions on utility affect instrumental convergence
 
 Consider the $n=2$ pixel-flipping case (with $T=50$ still). Action $a_1$ still leads to a single OH, while $a_2$ leads to $(2×2)^{49}=4^{49}\approx 10^{29}$ OHs. So we have instrumental convergence for $\frac{10^{29}}{10^{29}+1}$ of all u<sub>OH</sub> variants.
 

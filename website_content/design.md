@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-06-27
+date_updated: 2026-06-28
 no_dropcap: false
 createBibtex: true
 ---
@@ -1154,7 +1154,7 @@ cd .timestamps
 ots --no-bitcoin verify "files/ABC012.txt.ots"
 ```
 
-# Github Actions
+# GitHub Actions
 
 When I `push` commits to [the `main` branch on GitHub](https://github.com/alexander-turner/TurnTrout.com), an Action generates the webpages. Before these pages are sent off to Cloudflare, they must pass yet another gauntlet of tests:
 

@@ -27,7 +27,7 @@ date_published: 2022-02-22
 original_url: https://www.lesswrong.com/posts/z3xTDPDsndJBmHLFH/elk-proposal-thinking-via-a-human-imitator
 skip_import: 'true'
 description: "A proposal to solve ELK by routing an AI's knowledge through a simulated human mind, forcing interpretability as an instrumental subgoal. "
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 ---
 
 I want to use the AI’s intelligence to figure out how to translate into the human ontology. The hope is to route a smart entity's performance through a dumb entity's understanding and thereby get the smart entity to solve interpretability-by-the-dumb-entity. While my proposed current architecture overcomes a class of counterexamples in a manner which I find elegant, it is still broken by several plausible counterexamples.
@@ -75,7 +75,7 @@ The direct translator minimizes training loss because it answers all questions c
 
 The direct translator solves ELK for narrowly defined questions, like "is the diamond still in the room?". How do we get it?
 
-# Thinking Via A Human Imitator
+# Thinking via a human imitator
 
 I want to structure the problem so that direct translation is _instrumentally required_ for minimizing predictive training loss. To that end: What if the AI had to do some proportion $p$  of its thinking in the human net?
 

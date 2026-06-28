@@ -32,7 +32,7 @@ date_published: 2020-07-12
 original_url: https://www.lesswrong.com/posts/8LEPDY36jBYpijrSw/what-counts-as-defection
 skip_import: true
 description: "A game-theoretic formalism of “defection”, analyzing whether an action is self-serving at the expense of the group."
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 ---
 
 > [!quote] Vignette
@@ -105,7 +105,7 @@ In private communication, Joel Leibo points out that Theorems 1 and 2 formalize 
 
 > [!math] Proposition 4: Pareto improvements are never defections
 
-# Game Theorems
+# Game theorems
 
 We can prove that formal defection exists in the trifecta of famous games. Expand the admonitions to view the proofs if you're interested.
 

@@ -23,7 +23,7 @@ aliases:
   - bidpo-steering
 original_url: https://www.lesswrong.com/posts/WqjkqrEyFDXoHzz9K/steering-gemini-with-bidpo
 date_published: 2025-01-30
-date_updated: 2026-06-26
+date_updated: 2026-06-28
 other_urls:
   - https://deepmindsafetyresearch.medium.com/steering-gemini-using-bidpo-vectors-8a0e7e1da1c9
 createBibtex: true
@@ -154,7 +154,7 @@ This process continues until the entire dataset is exhausted. We may repeat this
 
 When evaluating BIDPO vectors mid-training, we “renormalized” them to have a norm equal to about 5% of the average norm of the residual stream at that part of the forward pass.
 
-## LORA training
+## LoRA training
 
 Our LORAs are trained with rank 1, a learning rate of $10^{-4}$, and a batch size of 16. We evaluate the trained LORAs every 50 steps and evaluate validation accuracy on the checkpoint with lowest validation loss.
 

@@ -38,7 +38,7 @@ date_published: 2018-03-25
 original_url: https://www.lesswrong.com/posts/usEZRkMPJBr534vto/the-art-of-the-artificial-insights-from-artificial
 skip_import: true
 description: My review of "Artificial Intelligence, A Modern Approach" & how I read hundreds of pages in 3 days.
-date_updated: 2026-06-27
+date_updated: 2026-06-28
 ---
 
     
@@ -57,13 +57,13 @@ One of the fruits of growing older is revisiting your old favorites, whether the
 
 My process for the first 60% of this 1,052-page behemoth was fairly normal: an hour or two of studying per day over the course of a few weeks. The last bit went a little differently.
 
-### Whatever It Takes
+### Whatever it takes
 
 Two days ago, my winter trimester ended; I had upwards of 400 pages to go, half of this post to write, and dozens of exercises to complete. I found myself with three full days to spare before my research resumed the proceeding week. I did what any young man in his early twenties would do - I concocted a plan for studying upwards of 30 hours in that time span.
 
 I knew that this plan was preposterous; in all likelihood, I'd finish 3 chapters and burn out. That's why I wheeled out [Murphyjitsu](https://www.lesswrong.com/posts/N47M3JiHveHfwdbFg/hammertime-day-10-murphyjitsu).
 
-#### Preparing for Failure Modes
+#### Preparing for failure modes
 
 **Burnout** was prepared for by:
 
@@ -89,7 +89,7 @@ I knew that this plan was preposterous; in all likelihood, I'd finish 3 chapters
 
 **Wanting to do other things** was mitigated by setting aside an hour or two where I'd go to the dojo or spend time with friends. I also took a bit of time for myself each night, calling my family as usual.
 
-#### The Outcome
+#### The outcome
 
 Not only did I do it, but I finished a day early. The Murphyjitsu was invaluable; the failure modes I predicted came up and were dealt with by my precautions.
 
@@ -107,13 +107,13 @@ _In which the authors define rationality (no, IEEE Computing Edge, [books do not
 
 _In which the authors broadly define agent frameworks, environmental attributes, and the nature of learning._
 
-### Wireheading Cameo
+### Wireheading cameo
 
 > Notice that we said \[agent performance is graded on\] _environment_ states, not _agent_ states. If we define success in terms of agent's (sic) opinion of its own performance, an agent could achieve perfect rationality simply by deluding itself that its performance was perfect.
 
 Of course, this division only works if there is a [Cartesian boundary](http://lesswrong.com/lw/jlg/bridge_collapse_reductionism_as_engineering/) between that-which-grades and that-which-acts. Which there isn't.
 
-### Charming Philosophical Tangents
+### Charming philosophical tangents
 
 > The notion of "clean floor"... is based on average cleanliness over time. Yet the same average cleanliness can be achieved by two different agents, one of which does a mediocre job all the time while the other cleans energetically but takes long breaks... Which is better - a reckless life of highs and lows, or a safe but humdrum existence? Which is better - an economy where everyone lives in moderate poverty, or one in which some live in plenty while others are poor? We leave these questions as an exercise for the diligent reader.
 
@@ -123,7 +123,7 @@ I don't know if I can answer the first question without more information, but as
 
 _In which the authors teach us to find what we're looking for._
 
-### Admissibility and Consistency
+### Admissibility and consistency
 
 Heuristics are functions which estimate distance to the goal. Let $g(s)$ be the cost to reach $s$ in the current path, let the path cost of reaching state $s'$ from $s$ via action $a$ be $c(s,a,s')$, and let $h$ be a heuristic. The total distance function is then:
 
@@ -181,7 +181,7 @@ Problem relaxation is a great way of finding admissible heuristics, and it's als
 
 _In which the authors introduce ways to search using local information._
 
-### And-Or
+### And-or
 
 Applying And-Or search can seem tricky, but it's really not. When an agent is operating under _partial observability_ (it isn't sure about the exact state of the world), it maintains a _belief state_ (in this chapter, the set of all states the agent could be in). To be sure it will be in the goal state after following its plan, we whip out And-Or search: **for each** state we could be in now (∧), we need to find **at least one** solution ( $\lor$).
 
@@ -195,7 +195,7 @@ _In which the authors demonstrate how to search when the world really **is** out
 
 I won't babble about $\alpha\beta$\-pruning - just [practice](http://inst.eecs.berkeley.edu/~cs61b/fa14/ta-materials/apps/ab_tree_practice/). For me, it was deceptively intuitive - I "got it" so "easily" that I neglected to follow the actual algorithm in a practice problem.
 
-### Patchwork Progress
+### Patchwork progress
 
 I don't think it's a good idea to spend substantial time on quick fixes which slightly improve performance but don't scale in the limit. Elegant algorithms are often superior for reasons exceeding their aesthetic appeal.
 
@@ -245,7 +245,7 @@ _Arc consistency_ can be viewed in a similar light; a variable $X_i$ is arc-cons
 
 _In which the authors invent a formal language called "propositional logic" as a pretext for introducing us to the richest fantasy realm ever imagined: the Wumpus world._
 
-### Impish Implications
+### Impish implications
 
 This chapter was my first time formally learning propositional logic. One thing that confused me at first: for two propositions $\alpha,\beta$, $\alpha \Rightarrow \beta$ is `true` as long as it isn't the case that $\{\alpha=true,\beta=\textit{false}\}$ in some model of our knowledge base. This means that even if $\alpha$ is _total bogus_, the implication holds.
 
@@ -261,7 +261,7 @@ _In which the authors generalize their newly minted "propositional logic"._
 
 _In which the authors incrementally introduce inference for first-order logic._
 
-### Logic Made-To-Order
+### Logic made-to-order
 
 When converting to conjunctive normal form, follow the steps in order. Yes, I know you _can't wait_ to Skolemize, but tame your baser instincts and move your negations inwards like a good rationalist.
 
@@ -293,7 +293,7 @@ _In which the authors share a sampling of the fruits picked by Bayes and Kolmogo
 
 _In which the authors shift their unhealthy obsession from cavities to burglaries; Bayesian networks are introduced, Markov blankets are furnished free of charge, and complimentary Monte Carlo algorithm samples are provided._
 
-### Gibbs Sampling
+### Gibbs sampling
 
 As a member of the Markov chain Monte Carlo algorithm family, Gibbs sampling starts from a random variable assignment (consistent with observed evidence $\textbf{e}$) and stochastically makes tweaks. The idea is to approximate the posterior distribution for whatever variable in which we are interested (the query variable).
 
@@ -355,7 +355,7 @@ _In which the authors introduce entropy and the supervised learning techniques o
 
 > \[Here\], we have the simplest method of all, known informally as "connect-the-dots", and superciliously as "piecewise-linear non-parametric regression".
 
-### Bayes-Structure
+### Bayes-structure
 
 In supervised learning, we grade hypotheses by their likelihood given the data:
 
@@ -405,7 +405,7 @@ _In which the authors outline traditional approaches to text classification, inf
 
 _In which the authors outline logical and probabilistic techniques for natural language processing._
 
-### Avoiding Confusion
+### Avoiding confusion
 
 Let's revisit the point I made in Ch. 5 and discuss how easy it is to avoid confusion by optimizing based on what you know how to do _now_ - this seems to be a common and serious failure mode. Half of this chapter is about efforts to contort English to fit inside hard-and-fast syntactic and semantic rules (which are either provided or learned).
 
@@ -441,7 +441,7 @@ $$
 
 Imagine you're driving a car on a Cartesian plane. Your car can reach any $(x,y)$ point and end up in any orientation $\theta$ you so choose, giving it three effective degrees of freedom (even though you can only turn and drive forwards / backwards). Cars are then non-holonomic, since $3\not=2$ (the proof of which is left as an exercise to the dedicated reader). A car which could also move _sideways_ would be holonomic.
 
-### Alignment, Solved
+### Alignment, solved
 
 I bring ye good tidings! Russell and Norvig introduce a full solution to the control problem: the alignment method.
 
@@ -453,13 +453,13 @@ Oh.
 
 _In which the authors consider a range of ethical and philosophical quandries in AI._
 
-### Underestimating Books in the Chinese Room
+### Underestimating books in the Chinese Room
 
 > The rule book and the stacks of paper, being just pieces of paper, do not understand Chinese.
 
 John Searle obviously doesn't read [IEEE Computing Edge](https://www.computer.org/csdl/mags/co/2017/05/mco2017050116.html).
 
-### No Universal Arguments
+### No universal arguments
 
 > One can hope that a robot that is smart enough to figure out how to terminate the human race is also smart enough to figure out that that was not the intended utility function.
 
@@ -472,7 +472,7 @@ _In which the authors introduce one last concept, asymptotic bounded optimality,
 <div class="centered">"We can see only a short distance ahead, but we can see that much remains to be done." - Alan Turing
 </div>
 
-## Final Thoughts
+## Final thoughts
 
 The authors wield light-hearted prose regularly and to great effect; I often found myself chuckling heartily. Although the pages are packed and the book is big, fear not: if you pay attention and become invested in the task at hand, reading _AI: AMA_ constitutes quite the enjoyable journey.
 
@@ -493,7 +493,7 @@ This seems like a good book to read early on in the [MIRI reading list](https://
 
 For the first half of the book, I didn't write each chapter's commentary immediately after reading. This was a mistake. Skimming half of a thousand-page book to remember what I got stuck on is **not** my idea of a good time.
 
-### Conceptual Issues
+### Conceptual issues
 
 **Proofs** remain inordinately difficult for me, although I have noticed a small improvement. To do MIRI-relevant math, proofs will need to become second nature. Depending on how I feel as I progress through my next book (which will likely be a proof-centric linear algebra tome), I'll start trying different supplemental approaches for improving my proof prowess.
 
@@ -501,7 +501,7 @@ I have resolved that by the completion of my next book review, proofs will be on
 
 **Theoretical machine learning** is another area in which I still notice pangs of confusion. I didn't stop to work on this too much, as I plan to revisit formal machine learning after developing more mathematical sophistication. I'm comfortable with deep learning and its broad-strokes conceptual backdrop, but I don't like not having my gears-level comprehension in order.
 
-### Study Group
+### Study group
 
 If you're interested in working through this book (or other books on the reading list) with me or others, there is a MIRIx Discord run by `Diffractor`. For an invite link, feel free to message [me](https://www.lesswrong.com/users/turntrout)!
 
@@ -521,7 +521,7 @@ As I've worked to increase my scholarship and understanding of the (computationa
 
 I feel a bit like a kid in a candy shop.
 
-### On "Difficulty"
+### On "difficulty"
 
 I am convinced that _there are no hard concepts_, only concepts which take different amounts of time to learn. [^5] This is not trivial; dissolving the seemingly ontologically basic "difficult for me" attribute goes a long way towards having the persistence to figure things out.
 

@@ -37,7 +37,7 @@ original_url: https://www.lesswrong.com/posts/sHpiiZS2gPgoPnijX/conclusion-to-re
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/C0o5g91.jpg
 description: The "Reframing Impact" sequence concludes with probability estimates for key claims.
-date_updated: 2026-05-22
+date_updated: 2026-06-28
 card_image_alt: 'Mt. Doom erupts in the distance, as viewed from the White Tower of Gondor. The White Tree begins to blossom. Text: "Thanks for reading."'
 ---
 
@@ -72,7 +72,7 @@ I've made many claims in these posts. All views are my own.
 > [!note]
 > [The LessWrong version of this post](https://www.lesswrong.com/posts/sHpiiZS2gPgoPnijX/conclusion-to-reframing-impact) contained probability estimates from other users.
 
-# Appendix: Easter Eggs
+# Appendix: Easter eggs
 
 The big art pieces (and especially the last illustration in this post) were designed to convey a specific meaning, the interpretation of which I leave to the reader.
 

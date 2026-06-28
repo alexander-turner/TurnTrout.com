@@ -40,7 +40,7 @@ original_url: https://www.lesswrong.com/posts/b6jJddSvWMdZHJHh3/environmental-st
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/78ceb0300f76784b6d8d043afb15587fb25a50dd52a42e21.png
 description: The structure of environments, not just reward functions, contributes to power-seeking in AI agents.
-date_updated: 2026-06-27
+date_updated: 2026-06-28
 card_image_alt: A cartoon titled "Orbit of Fortune" illustrates the hypothesized difficulty of AI alignment. A blindfolded robot faces a game wheel surrounded by 12 possible reward functions in an "orbit." Ten of the functions are on fire with devil horns, representing misaligned, power-seeking objectives.
 ---
 
@@ -70,7 +70,7 @@ card_image_alt: A cartoon titled "Orbit of Fortune" illustrates the hypothesized
 > [!thanks]
 >Thanks to `TheMajor`, Rafe Kennedy, and John Wentworth for feedback on this post. Thanks for Rohin Shah and Adam Shimi for feedback on the simplicity prior result.
 
-# Orbits Contain All Permutations of an Objective Function
+# Orbits contain all permutations of an objective function
 
 ## The Minesweeper analogy for power-seeking risks
 
@@ -148,7 +148,7 @@ Table: Different reward functions and the rewards they assign to states.
 
 My new theorems prove that in many situations, for _every_ reward function, power-seeking is incentivized by most (at least half) of its orbit elements.
 
-# In All Orbits, Most Elements Incentivize Power-Seeking
+# In all orbits, most elements incentivize power-seeking
 
 In [_Seeking Power is Often Robustly Instrumental in MDPs_](/seeking-power-is-often-convergently-instrumental-in-mdps), the last example involved gems and dragons and (most exciting of all) subgraph isomorphisms:
 

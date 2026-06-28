@@ -29,7 +29,7 @@ date_published: 2018-09-02
 original_url: https://www.lesswrong.com/posts/c2oM7qytRByv6ZFtz/impact-measure-desiderata
 skip_import: true
 description: Desirable properties of impact measures for safe and beneficial AI development.
-date_updated: 2026-06-27
+date_updated: 2026-06-28
 ---
 
 If we can penalize some quantity of "impact on the world", we can have unaligned agents whose impact - and thereby negative effect - is small.
@@ -141,7 +141,7 @@ No approaches to date meet these standards. What do we even require of an impact
 >
 > _Example:_ "Suppose there's some way of gaming the impact measure, but because of  $X$, $Y$, and $Z$, we know this is penalized as well".
 
-# Previous Proposals
+# Previous proposals
 
 [Krakovna et al. propose four desiderata](https://arxiv.org/abs/1806.01186):
 

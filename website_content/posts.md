@@ -10,7 +10,7 @@ hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/test_library.jpg
 description: A selection of the best posts which I've written.
 date_published: 2024-10-27
-date_updated: 2026-06-27
+date_updated: 2026-06-28
 tags:
   - website
 card_image_alt: An anime-style illustration of a grand library bathed in sunlight. Bright light streams through large, arched windows, illuminating floor-to-ceiling bookshelves packed with books and a study table in the foreground, creating a warm and scholarly atmosphere.
@@ -34,7 +34,7 @@ If you want, [try going a little further back](/all-posts) to see all of my post
 
 Originally, my content [was hosted on LessWrong](https://www.lesswrong.com/users/turntrout). Much of that content was meant to be consumed as part of a series - or "sequence" - of blog posts.
 
-## Becoming Stronger
+## Becoming stronger
 
 In early 2018, I became convinced that [the AI alignment problem](https://en.wikipedia.org/wiki/AI_alignment) needed to be solved. Who, though, would solve it?
 
@@ -70,7 +70,7 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 19. [Looking Back on my Alignment PhD](./alignment-phd)
 20. [Insights from "The Manga Guide to Physiology"](./insights-from-physiology)
 
-## Reframing Impact
+## Reframing impact
 
 > [!quote] Original sequence description
 > Why do some things seem like really big deals to us? Do most agents best achieve their goals by seeking power? How might we avert catastrophic incentives in the utility maximization framework?
@@ -101,7 +101,7 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 4. [Reasons for Excitement about Impact of Impact Measure Research](./excitement-about-impact-measures)
 5. [Conclusion to "Reframing Impact"](./conclusion-to-reframing-impact)
 
-## The Causes of Power-Seeking and Instrumental Convergence
+## The causes of power-seeking and instrumental convergence
 
 This sequence generalizes the math of [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps). The posts follow up on [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps) and [@title](./the-catastrophic-convergence-conjecture).
 
@@ -127,7 +127,7 @@ This sequence generalizes the math of [Seeking Power is Often Convergently Instr
 10. [Instrumental Convergence for Realistic Agent Objectives](./instrumental-convergence-for-realistic-agent-objectives)
 11. [@title](./parametrically-retargetable-power-seeking)
 
-## Thoughts on Corrigibility
+## Thoughts on corrigibility
 
 <figure class="float-right desktop-only" style="margin-top:-1rem; width: 80%;">
 <img src="https://assets.turntrout.com/static/images/posts/hal_9000.avif" alt="A close-up of the HAL 9000 computer's iconic camera eye. A glowing red orb with a bright yellow center is set within a silver metallic ring, representing the concept of a non-corrigible AI." loading="lazy" style="width: 80%;">
@@ -142,7 +142,7 @@ This sequence generalizes the math of [Seeking Power is Often Convergently Instr
 3. [A Certain Formalization of Corrigibility is VNM-Incoherent](./a-certain-formalization-of-corrigibility-is-vnm-incoherent)
 4. [Formalizing Policy Modification Corrigibility](./formalizing-policy-modification-corrigibility)
 
-## Shard Theory
+## Shard theory
 
 In early 2022, [Quintin Pope](https://www.linkedin.com/in/quintin-pope/) and I noticed glaring problems at the heart of "classical" alignment arguments. We thought through the problem with fresh eyes and derived _shard theory_.
 
@@ -169,7 +169,7 @@ Thus, [it seems OK if our AIs don't have "perfect" shard mixtures](./alignment-w
 11. [Alignment Allows "Nonrobust" Decision-Influences and Doesn't Require Robust Grading](./alignment-without-total-robustness)
 12. [@title](./against-inner-outer-alignment)
 
-## Interpreting a Maze-Solving Network
+## Interpreting a maze-solving network
 
 My work with my MATS 3.0 scholars, [Ulisse Mini](https://uli.rocks) and [Peli Grietzer](https://thegradientpub.substack.com/p/peli-grietzer-a-mathematized-philosophy)!
 
