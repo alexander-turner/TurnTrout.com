@@ -36,6 +36,9 @@ test.describe("Test page section fixtures", () => {
     for (const theme of THEMES) {
       test(`section ${slug} in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
         await gotoPage(page, `http://localhost:8080/test-section-${slug}`)
+        // Fail loudly if the fixture page didn't build (404s to "Page Not
+        // Found") instead of silently screenshotting the 404 page as a diff.
+        await expect(page).toHaveTitle(/^Test section:/)
         await setTheme(page, theme)
         const article = page.locator("article").first()
         await expect(article).toBeVisible()
