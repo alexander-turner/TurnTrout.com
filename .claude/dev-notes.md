@@ -261,8 +261,9 @@ cookie-free endpoint doesn't expose retweet or view counts, so those are omitted
 `SyntaxHighlighting`) replaces each block with a site-native card built in
 `tweetCard.ts`. The build is fully decoupled from Twitter: it reads a normalized
 JSON snapshot from `quartz/plugins/transformers/.tweet_snapshots/<id>.json` and
-renders from that. A tweet with no snapshot degrades to an xcancel-link stub, so
-a missing snapshot never breaks the build.
+renders from that. A referenced tweet with no snapshot **fails the build** (so a
+forgotten capture can't silently ship a degraded card); prefix the line with
+`unavailable:` to opt a deleted-before-capture tweet into the xcancel-link stub.
 
 Snapshots are captured by `scripts/tweet_snapshot.py`, which fetches the post
 from X's cookie-free syndication endpoint, mirrors the avatar + photos/video to
@@ -308,8 +309,8 @@ screenshotted each section in-place on one page. The per-section fixtures do tha
 job with true isolation, so those helpers were removed. **DOM isolation
 (`performDOMIsolation` / `elementToScreenshot` / `preserveSiblings`) stays** — it
 is still needed by every element-scoped screenshot taken on a shared page
-(popovers, search previews, sidebar, etc.); it is only redundant *on the fixture
-pages themselves*, where nothing else is on the page to hide.
+(popovers, search previews, sidebar, etc.); it is only redundant _on the fixture
+pages themselves_, where nothing else is on the page to hide.
 
 **After editing `test-page.md`, regenerate and commit the fixtures:**
 

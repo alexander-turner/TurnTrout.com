@@ -99,6 +99,13 @@ describe("parseTweetReferences", () => {
   it("throws when retweeted-by has no preceding tweet", () => {
     expect(() => parseTweetReferences("retweeted-by: Jeff Dean")).toThrow(/must follow a tweet/)
   })
+
+  it("marks an `unavailable:`-prefixed line and parses its url", () => {
+    const refs = parseTweetReferences("unavailable:  https://x.com/u/status/10001 \n")
+    expect(refs).toEqual([
+      { id: "10001", xcancelUrl: "https://xcancel.com/u/status/10001", unavailable: true },
+    ])
+  })
 })
 
 describe("tweetBlockBody", () => {
@@ -174,9 +181,15 @@ describe("replaceTweetBlocks", () => {
     expect(html).not.toContain("<pre>")
   })
 
-  it("renders a stub when the snapshot is missing", async () => {
+  it("throws when a snapshot is missing and the tweet is not marked unavailable", async () => {
     readFileSpy.mockRejectedValue(errno("ENOENT") as never)
     const root = tree(tweetBlock("https://x.com/turntrout/status/10123\n"))
+    await expect(replaceTweetBlocks(root, "/dir")).rejects.toThrow(/no snapshot for tweet 10123/)
+  })
+
+  it("renders a stub when a missing tweet is marked unavailable", async () => {
+    readFileSpy.mockRejectedValue(errno("ENOENT") as never)
+    const root = tree(tweetBlock("unavailable: https://x.com/turntrout/status/10123\n"))
     await replaceTweetBlocks(root, "/dir")
     expect(toHtml(root)).toContain("tweet-card-unavailable")
   })

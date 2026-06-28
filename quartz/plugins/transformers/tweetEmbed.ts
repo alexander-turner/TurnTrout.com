@@ -6,10 +6,8 @@ import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { createWinstonLogger, findGitRoot } from "../../util/log"
+import { findGitRoot } from "../../util/log"
 import { buildTweetEmbed, type TweetSlot, type TweetSnapshot } from "./tweetCard"
-
-const logger = createWinstonLogger("tweetEmbed")
 
 /** Directory the snapshot script populates and this transformer reads. */
 export const snapshotDir = path.join(
@@ -43,14 +41,19 @@ export interface TweetReference {
   id: string
   xcancelUrl: string
   retweetedBy?: string
+  /** Snapshot is intentionally absent (tweet deleted before capture); stub is OK. */
+  unavailable?: boolean
 }
 
 const RETWEETED_BY_RE = /^retweeted-by:\s*(\S.*)$/i
+const UNAVAILABLE_RE = /^unavailable:\s*(\S.*)$/i
 
 /**
  * Parse a tweet block's body into ordered references. Each non-empty line is a
  * tweet URL/id, except a `retweeted-by: <name>` line, which attaches a "retweeted"
- * header to the most recent tweet.
+ * header to the most recent tweet. Prefixing a line with `unavailable:` marks
+ * that tweet as deliberately snapshot-less (deleted before it could be captured),
+ * so a missing snapshot degrades to a stub instead of failing the build.
  */
 export function parseTweetReferences(body: string): TweetReference[] {
   const refs: TweetReference[] = []
@@ -66,11 +69,15 @@ export function parseTweetReferences(body: string): TweetReference[] {
       last.retweetedBy = retweet[1].trim()
       continue
     }
-    const id = extractTweetId(line)
+    const unavailable = UNAVAILABLE_RE.exec(line)
+    const urlText = unavailable ? unavailable[1].trim() : line
+    const id = extractTweetId(urlText)
     if (!id) {
       throw new Error(`tweetEmbed: no tweet id found in line ${JSON.stringify(line)}`)
     }
-    refs.push({ id, xcancelUrl: toXcancelUrl(line) })
+    const ref: TweetReference = { id, xcancelUrl: toXcancelUrl(urlText) }
+    if (unavailable) ref.unavailable = true
+    refs.push(ref)
   }
   return refs
 }
@@ -126,10 +133,11 @@ function resolveSlots(refs: readonly TweetReference[], dir: string): Promise<Twe
   return Promise.all(
     refs.map(async (ref) => {
       const snapshot = await loadSnapshot(ref.id, dir)
-      if (!snapshot) {
-        logger.warn(
-          `No snapshot for tweet ${ref.id}; rendering an xcancel stub. ` +
-            "Run `uv run python scripts/tweet_snapshot.py` to capture it.",
+      if (!snapshot && !ref.unavailable) {
+        throw new Error(
+          `tweetEmbed: no snapshot for tweet ${ref.id} (${ref.xcancelUrl}). ` +
+            "Run `uv run python scripts/tweet_snapshot.py --write` to capture it, or " +
+            "prefix the line with `unavailable:` if the tweet is gone and can't be snapshotted.",
         )
       }
       return {
