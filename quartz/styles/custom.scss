@@ -16,7 +16,7 @@ $page-end-bottom-margin: calc(3 * $base-margin);
 // Distance a footnote block quote is nudged right so its border clears the
 // marker. The same amount is shaved off padding-left so the text stays put;
 // one variable keeps the two from drifting apart.
-$footnote-blockquote-indent: 0.25rem;
+$footnote-blockquote-indent: 0.5 * $base-margin;
 
 body {
   min-height: 100vh;
