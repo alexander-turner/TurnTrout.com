@@ -35,7 +35,7 @@ I want to use the AI’s intelligence to figure out how to translate into the hu
 # Previously, on ELK
 
 > [!info]
-> This section summarizes ELK. Skip to the section [Thinking Via A Human Imitator](#thinking-via-a-human-imitator) if you’re already familiar.
+> This section summarizes ELK. Skip to the section [@title](#thinking-via-a-human-imitator) if you’re already familiar.
 
 In the mythos of [Eliciting Latent Knowledge](https://docs.google.com/document/d/1WwsnJQstPq91_Yh-Ch2XRL8H_EpsnjrC1dwZXR37PC8/), there exists a forbidden vault locking away an enormous diamond:
 

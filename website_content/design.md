@@ -109,7 +109,7 @@ I wrote [a script](https://github.com/alexander-turner/TurnTrout.com/blob/main/s
 2. Copies the assets to my local mirror of the CDN content;
 3. Removes the assets so they aren't tracked by my `git` repo.
 
-I later describe my [deployment pipeline](#deployment-pipeline) in more detail.
+I later describe my [@title-lower](#deployment-pipeline) in more detail.
 
 # Color scheme
 
@@ -183,7 +183,7 @@ When designing visual content, I consider where the reader's eyes go. People vis
 
 During the build process, I convert all naive CSS assignments of `color:red` (<span class="ignore-pa11y" style="color:rgb(255,0,0);">imagine if I made you read this</span>) to <span style="color:red">the site's red</span>. Lots of my old equations used raw `red` / `green` / `blue` colors because that's all that my old blog allowed; these colors are converted to the site theme. I even override and standardize the colors used for syntax highlighting in the code blocks.
 
-I color [inline favicons](#inline-favicons) using muted shades from the site's palette. For sites like [YouTube](https://youtube.com) and [Google Drive](https://drive.google.com), colored favicons enhance recognition and orient the reader.
+I color [@title-lower](#inline-favicons) using muted shades from the site's palette. For sites like [YouTube](https://youtube.com) and [Google Drive](https://drive.google.com), colored favicons enhance recognition and orient the reader.
 
 # Site responsiveness
 
@@ -496,7 +496,7 @@ Undirected quote marks (`"test"`) look bad to me. Call me extra (I _am_ extra), 
 
 Sadly, there wasn't. GitHub-flavored Markdown includes a `smartypants` option, but honestly, it's sloppy. So I wrote a bit of code.
 
-> [!quote] [Punctilio for meticulous typography](/open-source#punctilio-for-meticulous-typography)
+> [!quote] [@title](/open-source#punctilio-for-meticulous-typography)
 > ![[/open-source#punctilio-for-meticulous-typography]]
 
 ### Hyphen replacement
@@ -736,12 +736,12 @@ Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thin
 
 ## Accessibility
 
-I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also enforce strict [Lighthouse](#lighthouse) scores across all four audit categories. Here are some highlights from my accessibility pipeline.
+I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also enforce strict [@title](#lighthouse) scores across all four audit categories. Here are some highlights from my accessibility pipeline.
 
 Asset accessibility
 : I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
 
-> [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
+> [!quote]- [@title](/open-source#automatic-alt-text-generation)
 > ![[/open-source#automatic-alt-text-generation]]
 
 I also subtitled the 22-minute [@title](/alignment-tier-list).
@@ -750,7 +750,7 @@ Color contrast
 : I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context.
 
 ID uniqueness
-: In, [Mermaid diagrams](#mermaid-diagrams) didn't scope their HTML `id`s. Therefore, a page with multiple diagrams would have `id` collisions, causing rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410). Mermaid merged the PR.
+: In, [@title](#mermaid-diagrams) didn't scope their HTML `id`s. Therefore, a page with multiple diagrams would have `id` collisions, causing rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410). Mermaid merged the PR.
 
 Skip-to-content link
 : A hidden link lets keyboard and screen reader users skip the navigation and jump straight to the main content. The link text is rendered via a CSS `::after` pseudo-element so that it doesn't appear in Ctrl+F search results.
@@ -952,7 +952,7 @@ I lint my Markdown links for probable errors. I found that I might mangle a Mark
 >
 > 1. Each article's metadata has required fields filled in (like `title` and `description`).
 > 2. No pages attempt to share a URL.
-> 3. [Sequences](/posts#sequences) are well-defined. Post $n$ should link backwards to a post $n-1$ which marks post $n$ as its successor. Similar logic should hold for posts $n$ and $n-1$.
+> 3. [@title](/posts#sequences) are well-defined. Post $n$ should link backwards to a post $n-1$ which marks post $n$ as its successor. Similar logic should hold for posts $n$ and $n-1$.
 > 4. Filenames do not contain spaces.
 > 5. Preview card image URLs are valid, end with `.jpg`, are hosted on my CDN, and are at most <span id="populate-max-size-card"></span>KB.
 >
@@ -1023,7 +1023,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 
 ### Linking by title
 
-Sometimes I link by the title of a post, like "[Towards A New Impact Measure](/towards-a-new-impact-measure)." But what if I change that title later? The linked title is just text in a Markdown file. To prevent drift, I write `@title` as the link text. Then the build fills in the target's current title.
+Sometimes I link by the title of a post, like "[@title](/towards-a-new-impact-measure)." But what if I change that title later? The linked title is just text in a Markdown file. To prevent drift, I write `@title` as the link text. Then the build fills in the target's current title.
 
 ### Validating the emitted HTML files
 
@@ -1164,7 +1164,7 @@ Site functionality
 I run these tests using 8 Linux shards (plus 5 macOS shards) for functional tests and 3 Linux shards (plus 2 macOS) for visual regression tests. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
 
 Lighthouse audits
-: I enforce strict [Lighthouse](#lighthouse) thresholds across all four audit categories, plus dedicated layout-shift checks on desktop and mobile.
+: I enforce strict [@title](#lighthouse) thresholds across all four audit categories, plus dedicated layout-shift checks on desktop and mobile.
 
 Quality gates
 : CI is the primary quality gate for checks that don't require local credentials or auto-fixing — linting, type-checking, tests, spellcheck, and link validation across the Python, TypeScript, and SCSS stacks. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed.

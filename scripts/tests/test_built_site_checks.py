@@ -2274,6 +2274,8 @@ def test_check_invalid_internal_links(html, expected_count):
         # Sentinel left in link text (binding never resolved).
         ('<a href="https://example.com">@title</a>', 1),
         ('<a href="/page">@title</a>', 1),
+        # The lowercase variant must also be caught.
+        ('<a href="/page">@title-lower</a>', 1),
         # Sentinel on a link with no href at all.
         ("<a>@title</a>", 1),
         # Whitespace around the sentinel still counts.

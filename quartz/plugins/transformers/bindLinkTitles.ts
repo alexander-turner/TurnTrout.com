@@ -7,7 +7,7 @@ import { visit } from "unist-util-visit"
 import type { TitleIndex } from "../../processors/buildTitleIndex"
 import type { QuartzTransformerPlugin } from "../types"
 
-import { LINK_TITLE_SENTINEL } from "../../components/constants"
+import { LINK_TITLE_LOWER_SENTINEL, LINK_TITLE_SENTINEL } from "../../components/constants"
 import { titleIndexFile } from "../../components/constants.server"
 import { type FullSlug, splitAnchor } from "../../util/path"
 
@@ -71,7 +71,10 @@ export function bindTitlesInTree(
     if (node.tagName !== "a") return
 
     const onlyChild = node.children.length === 1 ? node.children[0] : undefined
-    if (onlyChild?.type !== "text" || onlyChild.value.trim() !== LINK_TITLE_SENTINEL) return
+    if (onlyChild?.type !== "text") return
+    const sentinel = onlyChild.value.trim()
+    const lower = sentinel === LINK_TITLE_LOWER_SENTINEL
+    if (sentinel !== LINK_TITLE_SENTINEL && !lower) return
 
     const href = node.properties.href
     if (typeof href !== "string") return
@@ -93,6 +96,7 @@ export function bindTitlesInTree(
     }
 
     const anchor = splitAnchor(href)[1]
+    let resolved: string
     if (anchor) {
       const id = anchor.slice(1)
       const headingText = target.headings.get(id)
@@ -101,10 +105,11 @@ export function bindTitlesInTree(
           `Title-bound link in ${source} points at missing heading "#${id}" on page "${targetSlug}".`,
         )
       }
-      onlyChild.value = headingText
+      resolved = headingText
     } else {
-      onlyChild.value = target.title
+      resolved = target.title
     }
+    onlyChild.value = lower ? resolved.toLowerCase() : resolved
   })
 }
 

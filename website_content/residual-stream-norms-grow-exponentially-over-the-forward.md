@@ -251,7 +251,7 @@ For example, if $g=1.05$, then the norms of the attention and MLP contributions 
 
 # Appendix 2: Explaining the difference between `attn_out` and `mlp_out`
 
-Remembering the two plots from [Theories for the source of the growth](#theories-for-the-source-of-the-growth), we notice a surprisingly large y-axis difference between the norms. We repeat those norm curves here:
+Remembering the two plots from [@title](#theories-for-the-source-of-the-growth), we notice a surprisingly large y-axis difference between the norms. We repeat those norm curves here:
 
 ![A log-scale plot of L2 norm versus layer index for GPT-2-XL activations. The norms for `resid_mid` and `resid_post` show clear exponential growth from about 30 to over 200. The `mlp_out` norm also grows exponentially from about 10 to 100. The `attn_out` norm is lower and fluctuates erratically.](https://assets.turntrout.com/static/images/posts/xoddfbotuqd8f7r06dl0.avif)
 

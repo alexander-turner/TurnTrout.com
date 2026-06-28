@@ -72,6 +72,12 @@ FORCE_HSL_INVERT_CLASS: str = script_utils.load_shared_constants()[
 LINK_TITLE_SENTINEL: str = script_utils.load_shared_constants()[
     "linkTitleSentinel"
 ]
+LINK_TITLE_LOWER_SENTINEL: str = script_utils.load_shared_constants()[
+    "linkTitleLowerSentinel"
+]
+LINK_TITLE_SENTINELS: frozenset[str] = frozenset(
+    {LINK_TITLE_SENTINEL, LINK_TITLE_LOWER_SENTINEL}
+)
 
 _IssuesDict = dict[str, list[str] | list[Tag] | bool]
 
@@ -361,7 +367,8 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
 
 def check_unrendered_title_sentinel(soup: BeautifulSoup) -> list[str]:
     """
-    Check for links whose visible text is still the ``@title`` sentinel.
+    Check for links whose visible text is still a title sentinel (``@title`` or
+    ``@title-lower``).
 
     A surviving sentinel means the build-time title binding never resolved (e.g.
     the sentinel was placed on an external or unresolvable link), leaking the
@@ -369,9 +376,10 @@ def check_unrendered_title_sentinel(soup: BeautifulSoup) -> list[str]:
     """
     leaked: list[str] = []
     for link in _tags_only(soup.find_all("a")):
-        if link.get_text(strip=True) == LINK_TITLE_SENTINEL:
+        text = link.get_text(strip=True)
+        if text in LINK_TITLE_SENTINELS:
             href = link.get("href", "")
-            leaked.append(f"{LINK_TITLE_SENTINEL} as link text (href={href})")
+            leaked.append(f"{text} as link text (href={href})")
     return leaked
 
 
