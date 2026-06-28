@@ -1,15 +1,12 @@
 import type { Root } from "mdast"
 
-import matter from "gray-matter"
-import { JSON_SCHEMA, load as loadYAML } from "js-yaml"
 import remarkFrontmatter from "remark-frontmatter"
-import toml from "toml"
 import { VFile } from "vfile"
 
 import type { QuartzTransformerPlugin } from "../types"
 import type { QuartzPluginData } from "../vfile"
 
-import { uiStrings } from "../../components/constants"
+import { parseFrontmatter, resolveTitle } from "../../util/frontmatter"
 import { slugTag } from "../../util/path"
 import { gatherAllText, gatherReadingTimeText, processGatheredText } from "./extractText"
 
@@ -64,19 +61,8 @@ export const FrontMatter: QuartzTransformerPlugin<Partial<Options> | undefined> 
         () => {
           return (tree: Root, file: VFile) => {
             const fileContent = file.value?.toString() ?? ""
-            const { data } = matter(fileContent, {
-              ...opts,
-              engines: {
-                yaml: (s) => loadYAML(s, { schema: JSON_SCHEMA }) as object,
-                toml: (s) => toml.parse(s) as object,
-              },
-            })
-
-            if (data.title && data.title.toString() !== "") {
-              data.title = data.title.toString()
-            } else {
-              data.title = file.stem ?? uiStrings.propertyDefaults.title
-            }
+            const data = parseFrontmatter(fileContent, opts)
+            data.title = resolveTitle(data, file.stem)
 
             const tags = coerceToArray(coalesceAliases(data, ["tags", "tag"]) || [])
             const lowerCaseTags = tags?.map((tag: string) => transformTag(tag))

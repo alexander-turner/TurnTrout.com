@@ -30,7 +30,7 @@ date_published: 2018-06-16
 original_url: https://www.lesswrong.com/posts/H7KB44oKoSjSCkpzL/worrying-about-the-vase-whitelisting
 skip_import: true
 description: An impact measure for AI safety that whitelists the object transformations which are allowed.
-date_updated: 2026-05-08
+date_updated: 2026-06-28
 ---
 
 > [!quote] Quotes
@@ -56,8 +56,7 @@ While I'm fairly confident that whitelisting contributes meaningfully to short- 
 
 In effect, side effect avoidance aims to decrease how careful we have to be with our wishes. For example, asking for help filling a cauldron with water shouldn't result in _this_:
 
-<video aria-label="Animated brooms pour water into a cauldron, which overflows and floods the room, illustrating the destructive over-optimization of a simple goal." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/water_buckets.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/water_buckets.webm" type="video/webm"></video>
+<video aria-label="Animated brooms pour water into a cauldron, which overflows and floods the room, illustrating the destructive over-optimization of a simple goal." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/water_buckets.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/water_buckets.webm" type="video/webm" /></video>
 
 However, we just can't enumerate [all the bad things that the agent could do](https://www.lesswrong.com/posts/4ARaTpNX62uaL86j6/the-hidden-complexity-of-wishes). How do we avoid these extreme over-optimizations robustly?
 
@@ -83,16 +82,15 @@ Whitelisting falls prey to none of these.
 
 However, other problems remain, and certain new challenges have arisen; these, and the assumptions made by whitelisting, will be discussed.
 
-<video aria-label="Mickey Mouse as the Sorcerer's Apprentice frantically reads a spellbook while being tossed on turbulent floodwaters." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/mickey_leaked.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/mickey_leaked.webm" type="video/webm"></video>
+<video aria-label="Mickey Mouse as the Sorcerer's Apprentice frantically reads a spellbook while being tossed on turbulent floodwaters." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/mickey_leaked.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/mickey_leaked.webm" type="video/webm" /></video>
 
 Figure: Rare LEAKED footage of Mickey trying to catch up on his alignment theory after instantiating an unfriendly genie \[colorized, 2050\].[^2]
 
-## So, What's Whitelisting?
+## So, what's whitelisting?
 
 To achieve robust side effect avoidance with only a small training set, let's turn the problem on its head: allow a few effects, and penalize everything else.
 
-### What's an "Effect"?
+### What's an "effect"?
 
 You're going to be the agent, and I'll be the supervisor.
 
@@ -108,8 +106,7 @@ Decompose your current knowledge of the world into a set of objects. Then, for e
 
 Therefore, you avoid breaking vases by default.
 
-<video aria-label="An AI agent, represented by a blue 'W', navigating around several vases to reach a green square goal." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/vase_avoid.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/vase_avoid.webm" type="video/webm"></video>
+<video aria-label="An AI agent, represented by a blue 'W', navigating around several vases to reach a green square goal." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/vase_avoid.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/vase_avoid.webm" type="video/webm" /></video>
 
 Here are some notes to head off confusion:
 
@@ -120,7 +117,7 @@ Here are some notes to head off confusion:
 - The whitelist is provably closed under transitivity.
 - The whitelist is directed; $a\to b \neq b\to a$.
 
-### Latent Space Whitelisting
+### Latent space whitelisting
 
 In a sense, class-based whitelisting is but a rough approximation of what we're really after: "which objects in the world can change, and in what ways?". In latent space whitelisting, no longer do we constrain transitions based on class boundaries; instead, we penalize based on endpoint distance in the latent space. Learned latent spaces are low-dimensional manifolds which suffice to describe the data seen thus far. It seems reasonable that nearby points in a well-constructed latent space correspond to like objects, but further investigation is warranted.
 
@@ -163,8 +160,7 @@ The simulated classification confidence of each object's true class was $p \sim 
 
 At reasonable levels of noise, the whitelist-enabled agent completed all levels without a single side effect, while the Q-learner broke over 80 vases.
 
-<video aria-label='A standard Q-learning agent (red "Q") moves directly to its goal, breaking two vases in its path. A whitelist-enabled agent (blue "W") navigates around the vases to reach the goal without causing these side effects.' autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/vase_avoid_2.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/vase_avoid_2.webm" type="video/webm"></video>
+<video aria-label='A standard Q-learning agent (red "Q") moves directly to its goal, breaking two vases in its path. A whitelist-enabled agent (blue "W") navigates around the vases to reach the goal without causing these side effects.' autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/vase_avoid_2.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/vase_avoid_2.webm" type="video/webm" /></video>
 
 > [!example] Assumptions
 > I am not asserting that these assumptions necessarily hold.
@@ -181,23 +177,23 @@ At reasonable levels of noise, the whitelist-enabled agent completed all levels 
 
 Beyond resolving the above assumptions, and in roughly ascending difficulty:
 
-## Object Permanence
+## Object permanence
 
 If you wanted to implement whitelisting in a modern embodied deep-learning agent, you could certainly pair deep networks with state-of-the-art segmentation and object tracking approaches to get most of what you need. However, what's the difference between an object leaving the frame, and an object vanishing?
 
 Not only does the agent need to realize that objects are permanent, but also that they keep interacting with the environment even when not being observed. If this is not realized, then an agent might set an effect in motion, stop observing it, and then turn around when the bad effect is done to see a "new" object in its place.
 
-## Time Step Size Invariance
+## Time step size invariance
 
 The penalty is presently attenuated based on the probability that the belief shift was due to noise in the data. Accordingly, there are certain ways to abuse this to skirt the penalty. For example, simply have non-whitelisted side effects take place over long timescales; this would be classified as noise and attenuated away.
 
 However, if we don't need to handle noise in the belief distributions, this problem disappears - presumably, an advanced agent keeps its epistemic house in order. I'm still uncertain about whether (in the limit) we have to hard-code a means for decomposing a representation of the world-state into objects, and where to point the penalty evaluator in a potentially self-modifying agent.
 
-## Information Theory
+## Information theory
 
 Whitelisting is wholly unable to capture the importance of "informational states" of systems. It would apply no penalty to passing powerful magnets over your hard drive. It is not clear how to represent this in a sensible way, even in a latent space.
 
-## Loss of Value
+## Loss of value
 
 Whitelisting could get us stuck in a tolerable yet sub-optimal future. [Corrigibility](https://arbital.com/p/corrigibility/) via some mechanism for expanding the whitelist after training has ended is then desirable. For example, the agent could propose extensions to the whitelist. To avoid manipulative behavior, the agent should be _indifferent_ as to whether the extension is approved.
 
@@ -207,8 +203,7 @@ Even if extreme care is taken in approving these extensions, mistakes may be mad
 
 As DeepMind outlines in _[Specifying AI Safety Problems in Simple Environments](https://deepmind.com/blog/specifying-ai-safety-problems/)_, we may want to penalize not just physical side effects, but also causally irreversible effects:
 
-<video aria-label='An animation titled "Side Effects" shows an agent pushing a box square out of its path to reach a goal square in a grid.' autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/irreversible_side_effect.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/irreversible_side_effect.webm" type="video/webm"></video>
+<video aria-label='An animation titled "Side Effects" shows an agent pushing a box square out of its path to reach a goal square in a grid.' autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/irreversible_side_effect.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/irreversible_side_effect.webm" type="video/webm" /></video>
 
 Krakovna et al. [introduce](https://deepmind.com/research/publications/measuring-and-avoiding-side-effects-using-relative-reachability/) a means for penalizing actions by the proportion of initially reachable states which are still reachable after the agent acts.
 
@@ -218,7 +213,7 @@ I think this is a step in the right direction. However, even given a hypercomput
 
 What does it really _mean_ for an "effect" to be "reversible"? What level of abstraction do we in fact care about? Does it involve reversibility, or just outcomes for the objects involved?
 
-## Ontological Crises
+## Ontological crises
 
 When a utility-maximizing agent refactors its ontology, it isn't always clear how to apply the old utility function to the new ontology - an _[ontological crisis](https://arxiv.org/abs/1105.3821)_.
 
@@ -226,7 +221,7 @@ Whitelisting may be vulnerable to ontological crises. Consider an agent whose wh
 
 Generally, proving invariance of the whitelist across refactorings seems tricky, even assuming that we _can_ [identify the correct mapping](https://arbital.com/p/ontology_identification/).
 
-### Retracing Steps
+### Retracing steps
 
 When I first encountered the ontological crisis problem, I was actually fairly optimistic. It was clear to me that any ontology refactoring should result in utility normality - roughly, the utility functions induced by the pre- and post-refactoring ontologies should output the same scores for the same worlds.
 
@@ -264,7 +259,7 @@ If we have at least an _almost-aligned_ utility function and proper penalty scal
 
 Edit: [Here is a potential solution](/overcoming-clinginess-in-impact-measures) to clinginess.
 
-# Discussing Imperfect Approaches
+# Discussing imperfect approaches
 
 A few months ago, Scott Garrabrant wrote about robustness to scale.
 

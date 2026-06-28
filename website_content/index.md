@@ -11,7 +11,7 @@ hideSubscriptionLinks: true
 toc: false
 description: Writings on AI, self-improvement, and living a good life.
 date_published: 2024-10-27
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 tags:
   - website
 ---

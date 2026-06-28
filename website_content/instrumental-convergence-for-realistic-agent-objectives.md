@@ -38,7 +38,7 @@ date_published: 2022-01-22
 original_url: https://www.lesswrong.com/posts/W22Btd7NmGuucFejc/instrumental-convergence-for-realistic-agent-objectives
 skip_import: true
 description: Realistic AI objectives aren't random utility functions. I explore instrumental convergence for objectives defined over features of the environment.
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 ---
 
 ---
@@ -52,7 +52,7 @@ For example, Pac-Man eats dots and gains points. A football AI scores a touchdow
 
 I explore how instrumental convergence works in this case. I also walk through how these new results retrodict the fact that [instrumental convergence basically disappears for agents with utility functions over action-observation histories](/power-seeking-beyond-MDPs).
 
-# Case Studies
+# Case studies
 
 ## Gridworld
 
@@ -166,7 +166,7 @@ What the theorems say
 
 The analysis so far is nice to make a bit more formally, but it isn't really pointing out anything that we couldn't have figured out pre-theoretically. I think I can sketch out more novel reasoning, but I'll leave that to a future post.
 
-# Beyond The Featurized Case
+# Beyond the featurized case
 
 Consider some arbitrary set $\mathfrak{D}\subseteq \mathbb{R}^d$ of "plausible" utility functions over $d$ outcomes. If we have the usual big set $B$ of outcome lotteries (which possibilities are, in the view of this theory, often attained via "power-seeking"), and $B$ contains $n$ copies of some smaller set $A$ via environmental symmetries $\phi_1,\ldots, \phi_n$, then when are there orbit-level incentives _within_ $\mathfrak{D}$—when will most reasonable variants of utility functions make the agent more likely to select $B$ rather than $A$?
 
@@ -176,7 +176,7 @@ This covers the totally general case of arbitrary sets of utility function class
 
 The general result highlights how $\mathfrak{D} := \{ \text{plausible objective functions}\}$ affects what conclusions we can draw about orbit-level incentives. All else equal, being able to specify more plausible objective functions for which $f(B \mid u) \geq f(A \mid u)$ means that we're more likely to ensure closure under certain permutations. Similarly, adding plausible $A$\-dispreferring objectives makes it harder to satisfy $f(B \mid u) < f(A \mid u) \implies \phi_i\cdot u \in \mathfrak{D}$, which makes it harder to ensure closure under certain permutations, which makes it harder to prove instrumental convergence.
 
-# Revisiting How The Environment Structure Affects Power-Seeking Incentive Strength
+# Revisiting how the environment structure affects power-seeking incentive strength
 
 > [!quote] [Seeking Power is Convergently Instrumental in a Broad Class of Environments](/power-seeking-beyond-MDPs)
 > Structural assumptions on utility really do matter when it comes to instrumental convergence:

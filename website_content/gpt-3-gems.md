@@ -30,7 +30,7 @@ date_published: 2020-07-23
 original_url: https://www.lesswrong.com/posts/uu8FwG5XPQ6zpFaEN/gpt-3-gems
 skip_import: true
 description: "GPT-3's output: sometimes insightful, sometimes silly. Read my favorite interactions with this intriguing, flawed network."
-date_updated: 2026-06-26
+date_updated: 2026-06-28
 ---
 
 GPT-3 is captivating, and not just because of its [potential reasoning abilities](/to-what-extent-is-gpt3-capable-of-reasoning). This post will be a living collection of my favorite experiences with the network.
@@ -38,9 +38,9 @@ GPT-3 is captivating, and not just because of its [potential reasoning abilities
 > [!note]
 > Bold text is my input; square brackets contain my italicized commentary.
 
-# Long-form Writing
+# Long-form writing
 
-## _Beisutsukai_ Class Project: Solve Intent Alignment
+## _Beisutsukai_ class project: Solve intent alignment
 
 > [!quote] GPT-3
 >
@@ -253,7 +253,7 @@ I provided a context containing two real Sequences posts. No rerolls.
 >
 > THE END
 
-## Elrond's Sacred Hot Spring
+## Elrond's sacred hot spring
 
 I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a little different.
 
@@ -317,7 +317,7 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 >
 > Aragorn said nothing more; he simply sat back in his sofa and continued to watch the captivating display in silence. The shadows grew longer and darker until they finally swallowed up the light altogether and the dancing stopped.
 
-## Concerning the Two Trees
+## Concerning the two trees
 
 > [!quote]
 >
@@ -337,7 +337,7 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 >
 > 'But it is hard to kill innocence. Though many fell along the way, some survived, and they found a land that was empty and waiting for folk such as they, and they settled in it, and most happily they lived.
 
-## Lórien, Unstained
+## Lórien, unstained
 
 > [!quote]
 >
@@ -373,7 +373,7 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 >
 > Sam sighed, and nodded. He got to his feet, and followed his master back to the road.
 
-## Bilbo the Deceiver
+## Bilbo the deceiver
 
 > [!quote]
 >
@@ -393,7 +393,7 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 >
 > But now it was in the very shape of a cloaked figure, a tall and evil shadow. It grew and grew to a menacing size, mightier than any of the dark things that had gathered in the East Morh. Even Gandalf seemed little compared to its height as it rose up and stared down at them. But suddenly it was stricken. Frodo was amazed to see a light, white and dazzling, shine down on the bridge and flow into the shadow of darkness. The figure melted before his eyes and then shimmered like a rainbow, turned to water on the air. It collapsed with a gentle tinkling sound, that seemed sad and sweet to the ears. Beams of light now shone upon the water in rings and teardrops.
 
-## Gildor Inglorion's Fountain
+## Gildor Inglorion's fountain
 
 > [!quote]
 >
@@ -459,7 +459,7 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 
 Strangely, the context for this was _also_ two posts from the Sequences. I was trying to get GPT-3<sub>Eliezer</sub> to write about why Shrek is crucial to rationality, and, well, this came out instead. Not complaining.
 
-## GPT-3 Visits MIRI
+## GPT-3 visits MIRI
 
 > [!quote]
 >
@@ -487,7 +487,7 @@ Strangely, the context for this was _also_ two posts from the Sequences. I was t
 >
 > You don't have a good response to that.
 
-## GPT-3 Solves Alignment
+## GPT-3 solves alignment
 
 > [!quote]
 >
@@ -507,7 +507,7 @@ Strangely, the context for this was _also_ two posts from the Sequences. I was t
 >
 > What really happened was that Stuart and Eliezer worked on AI alignment for another decade or so before giving up in frustration. They worked on AI alignment until their hair turned gray and their teeth fell out, until their eyesight failed and their joints became arthritic from sitting at a computer for too many hours a day, until they were so old that nobody would publish their papers anymore because nobody takes old people seriously anymore. And then they died of natural causes before ever solving the alignment problem—and the world was left with no way to align AI with human values whatsoever.
 
-## Bill's Dog
+## Bill's dog
 
 > [!quote]
 >
@@ -523,12 +523,12 @@ Strangely, the context for this was _also_ two posts from the Sequences. I was t
 >
 > At this point the dog was already half asleep. She would've agreed to going bungee jumping without checking the cords first if he suggested it. "Tomorrow," Bill told her, "we'll wake up early and take a drive out into the country, just you and me. Like we used to.
 
-## The Canine Betrayal
+## The canine betrayal
 
 > [!quote]
 > It was a dark day in the city of Datum. The feral dogs had taken over, and spread over the world. Humans could only watch as some of man's greatest companions succumbed to madness and twisted into beings of pure evil. One man, however, refused to give up. Professor James Gregory, short and with wild black hair on his head and belly, stood at the top of the Rockefeller Center with a shotgun in his hands. He was prepared to defend the Earth from this dog crusade with his dying breath.
 
-# Non-Fiction Tasks
+# Non-fiction tasks
 
 ## Another (outer) alignment failure story
 
@@ -582,7 +582,7 @@ I used nucleus sampling with $p=.76$, but apparently that was insufficient to pr
 >
 > The government is in a tough spot because the investment boom is really powerful and there is a lot of money on the line. If you regulate too hard you might kill the boom, but if you don’t regulate hard enough then it might all be a Chinese plot.
 
-## Title Sensationalization
+## Title sensationalization
 
 No rerolls, excepting the restarts marked by **\[...\]**.
 
@@ -659,7 +659,7 @@ No rerolls, excepting the restarts marked by **\[...\]**.
 
 # Interview
 
-## Computer Science
+## Computer science
 
 > [!quote]
 >
@@ -913,7 +913,7 @@ For more, see [_To what extent is GPT-3 capable of reasoning?_](/to-what-extent-
 >
 > Hawking: "Er... nevermind. Let's move on to geothermal energy. \[_lol_\]
 
-## Machine Learning
+## Machine learning
 
 > [!quote]
 >
@@ -1007,7 +1007,7 @@ Its proofs are definitely awful.
 >
 > Now, we want to prove that this is a direct product. To do this, we must show that given any element g in the group, there exists an index i such that $g = a_i  a_{i+1}  \dots  a_{n-1}$. Then we must show that the sequence can be reversed. Given any index j, we must show that there exists an element g such that $g = a_j  a_{j+1}  \dots  a_{n-1}$. Then we're done, because g will be equal to $a_j  a_{j+1}  \dots  a_{n-2}  a_{n-1}$, which is the product of the $a_j$'s." \[_nice try, GPT-3_\]
 
-## Martial Arts
+## Martial arts
 
 > [!quote]
 >

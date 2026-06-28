@@ -39,7 +39,7 @@ date_published: 2021-11-18
 original_url: https://www.lesswrong.com/posts/nZY8Np759HYFawdjH/satisficers-tend-to-seek-power-instrumental-convergence-via
 skip_import: true
 description: Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 ---
 
 Why exactly should smart agents tend to usurp their creators? Previous results only apply to optimal agents tending to stay alive and preserve their future options. I extend the power-seeking theorems to apply to many kinds of policy-selection procedures, ranging from planning agents which choose plans with expected utility closest to a randomly generated number, to satisficers, to policies trained by some reinforcement learning algorithms. The key property is not agent optimality—as previously supposed—but is instead the _retargetability of the policy-selection procedure_. These results hint at which kinds of agent cognition and of agent-producing processes are dangerous by default.
@@ -227,8 +227,7 @@ For example, if agents trained on objectives $R$ tend to go right, switching rew
 
 Suppose we're training an RL agent to go right in MuJoCo, with reward equal to its $x$\-coordinate.
 
-<video aria-label="A simulated, one-legged robot, controlled by a reinforcement learning agent, hops continuously to the right across a checkerboard floor, demonstrating a policy trained to maximize its forward movement." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/hopper.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/hopper.webm" type="video/webm"></video>
+<video aria-label="A simulated, one-legged robot, controlled by a reinforcement learning agent, hops continuously to the right across a checkerboard floor, demonstrating a policy trained to maximize its forward movement." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/hopper.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/hopper.webm" type="video/webm" /></video>
 
 Figure: If you permute the reward so that high $y$\-values are rewarded, the trained policies should nearly perfectly symmetrically reflect that change. Insofar as $x$\-maximizing policies were trained, now $y$\-maximizing policies will be trained.
 

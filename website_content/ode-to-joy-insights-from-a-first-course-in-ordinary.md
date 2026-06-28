@@ -20,7 +20,7 @@ title: "ODE to Joy: Insights from 'A First Course in Ordinary Differential Equat
 lw-latest-edit: 2020-03-25T22:12:25.494000Z
 lw-is-linkpost: "false"
 tags:
-  - scholarship-&-learning
+  - scholarship-and-learning
   - understanding-the-world
   - mathematics
 aliases:
@@ -40,14 +40,13 @@ original_url: https://www.lesswrong.com/posts/o3aTqo5zp6phkuiRw/ode-to-joy-insig
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/eb2E5Eg.jpg
 description: "Textbook insights into differential equations: how to express systems in terms of change, equilibria and stability, resonance, and more. "
-date_updated: 2026-06-26
+date_updated: 2026-06-27
 card_image_alt: '"Unstable": A ball at the peak of a hill rolls away when nudged. "Locally Stable": A ball in a small dip atop a larger hill is stable only within a small "ε-neighborhood". "Globally Stable": A ball at the bottom of a U-shaped valley will always roll back to its resting point.'
 ---
 
 Sometimes, it's easier to say how things change than to say how things are.
 
-<video aria-label="An animation visualizes a pendulum's motion in state space. As a pendulum swings (inset), a corresponding point on a graph traces an elliptical path, plotting the pendulum's angle (x-axis) against its angular velocity (y-axis)." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/WCYZkZ4.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/WCYZkZ4.webm" type="video/webm"></video>
+<video aria-label="An animation visualizes a pendulum's motion in state space. As a pendulum swings (inset), a corresponding point on a graph traces an elliptical path, plotting the pendulum's angle (x-axis) against its angular velocity (y-axis)." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/WCYZkZ4.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/WCYZkZ4.webm" type="video/webm" /></video>
 
 Figure: From [3Blue1Brown: Differential Equations](https://www.youtube.com/watch?v=p_di4Zn4wz4)
 

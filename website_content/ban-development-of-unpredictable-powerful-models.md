@@ -30,7 +30,7 @@ date_published: 2023-06-20
 original_url: https://www.lesswrong.com/posts/8CvkNa6FKSrK4Nj83/ban-development-of-unpredictable-powerful-models
 skip_import: true
 description: "A proposal for a government regulation of AI: Developers must be able to accurately predict the model's output. "
-date_updated: 2026-06-26
+date_updated: 2026-06-27
 ---
 
 > [!warning]

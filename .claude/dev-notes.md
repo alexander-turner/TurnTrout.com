@@ -240,7 +240,86 @@ The manifest is produced by a separate writer (ArchiveBox + R2), shipped in its
 own PR. Canonicalization uses the WHATWG `new URL` parser; the writer mirrors it
 with the same `ada` parser so the keys match.
 
+## Tweet embeds (self-hosted, tracking-free)
+
+Author a tweet with a ` ```tweet ` fenced block holding one tweet URL per line
+(several lines render as a connected thread):
+
+````md
+```tweet
+https://x.com/turntrout/status/1881825910040702979
+retweeted-by: Jeff Dean
+```
+````
+
+An optional `retweeted-by: <name>` line attaches a "<name> retweeted" header to
+the tweet above it (the API can't supply retweet context, so it's manual). The
+card also shows the reply and like counts captured at snapshot time; the
+cookie-free endpoint doesn't expose retweet or view counts, so those are omitted.
+
+`quartz/plugins/transformers/tweetEmbed.ts` (registered before
+`SyntaxHighlighting`) replaces each block with a site-native card built in
+`tweetCard.ts`. The build is fully decoupled from Twitter: it reads a normalized
+JSON snapshot from `quartz/plugins/transformers/.tweet_snapshots/<id>.json` and
+renders from that. A referenced tweet with no snapshot **fails the build** (so a
+forgotten capture can't silently ship a degraded card); prefix the line with
+`unavailable:` to opt a deleted-before-capture tweet into the xcancel-link stub.
+
+Snapshots are captured by `scripts/tweet_snapshot.py`, which fetches the post
+from X's cookie-free syndication endpoint, mirrors the avatar + photos/video to
+R2 under `static/tweets/<id>/`, rewrites every media URL to `assets.turntrout.com`
+(the only media host `built_site_checks` allows), and writes the snapshot JSON.
+Resolution order: a pinned (already-present) snapshot is authoritative; otherwise
+live fetch then public CDN (`static/tweets/<id>.json`) then skip (stub).
+
+- **Add a tweet locally:** `uv run python scripts/tweet_snapshot.py` (no `--write`
+  pulls/creates snapshots without touching R2). With R2 env vars + `--write` it
+  also uploads. Commit the resulting `<id>.json` with `git add -f` (the
+  `.tweet_snapshots/` dir is gitignored) to pin it; pinned tweets render with
+  zero Twitter/R2 dependency.
+- **R2 refresh:** `.github/workflows/refresh-tweet-snapshots.yaml` runs
+  `tweet_snapshot.py --write --force` on every push to `main` that touches content
+  or the script, keeping the R2 backup (JSON + media) current without git churn.
+- The committed example fixtures under `.tweet_snapshots/` drive the `test-page.md`
+  examples and their `(screenshot)` baselines; their avatar/media point at existing
+  CDN assets so the visual build is deterministic offline.
+
 ## Lessons learned
 
 - When making interface array properties `readonly`, also update downstream function signatures to accept `readonly` arrays. `.map()`/`.filter()`/`.some()`/`.includes()` work on readonly; `.sort()`/`.push()` don’t—copy first: `[...arr].sort()`.
 - **Cloudflare Speed Brain refuses `<link rel="prefetch">` to cross-origin assets.** Browsers send `Sec-Purpose: prefetch` for `rel="prefetch"`; CF intercepts at the edge and returns a bare 503 with `cf-speculation-refused: prefetch refused: not eligible`, which Chromium surfaces as a CORS error (the 503 has no `Access-Control-Allow-Origin`). Local Playwright tests and direct `curl` probes never hit this path—only real browsers going through the CF edge do. Use `rel="preload"` for current-page assets you’d otherwise prefetch; preload doesn’t carry the `Sec-Purpose` header and isn’t intercepted. Symptom to watch for in DevTools Network: status 503, `Cf-Speculation-Refused` response header, `Vary: sec-purpose`, `Server: cloudflare`.
+
+## Per-section visual fixtures
+
+`website_content/test-page.md` is the single human-edited source of truth for
+visual-regression content. `scripts/split_test_page_sections.py` slices it on
+top-level (`# `) headings into one fixture page per section under
+`website_content/fixtures/test-sections/` (permalink `test-section-<slug>`).
+Each section is its own page, so a Playwright screenshot of one section is
+unaffected by edits to—or reordering of—any other section
+(`quartz/components/tests/section-fixtures.spec.ts` screenshots each in both
+themes). `test-page.md` itself stays the integration shot: the `Normal page in
+{theme}` test in `visual-regression.spec.ts` takes a single viewport screenshot
+of its top (cross-section / header coverage), **not** a `fullPage` capture — no
+test in the suite passes `fullPage`, so a bare `takeRegressionScreenshot` shoots
+only the viewport.
+
+This replaced the old `getH1Screenshots` / `wrapH1SectionsInSpans` helpers, which
+screenshotted each section in-place on one page. The per-section fixtures do that
+job with true isolation, so those helpers were removed. **DOM isolation
+(`performDOMIsolation` / `elementToScreenshot` / `preserveSiblings`) stays** — it
+is still needed by every element-scoped screenshot taken on a shared page
+(popovers, search previews, sidebar, etc.); it is only redundant _on the fixture
+pages themselves_, where nothing else is on the page to hide.
+
+**After editing `test-page.md`, regenerate and commit the fixtures:**
+
+```bash
+uv run python scripts/split_test_page_sections.py
+```
+
+`scripts/tests/test_split_test_page_sections.py` fails if the committed
+fixtures drift from the generator output. The generator pulls each section's
+referenced footnote definitions in (transitively) so sections render
+standalone; sections that reference other sections (e.g. `Transclusion`) are
+listed in `SKIP_HEADINGS` and live only on the integration page.

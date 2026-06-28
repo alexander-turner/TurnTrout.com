@@ -36,11 +36,10 @@ no_dropcap: "true"
 video_preview_link: https://assets.turntrout.com/US%20presidents%20rate%20alignment%20agendas.mp4
 skip_import: true
 description: Obama, Trump, and Biden walk into a bar. They talk about AI alignment.
-date_updated: 2026-06-26
+date_updated: 2026-06-27
 ---
 
-<video aria-label="AI-generated voices of Obama, Biden, and Trump humorously debate and rank various AI alignment research agendas on a tier list." controls="" width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"><track kind="captions" src="/static/debate.vtt" srclang="en" label="English"></video>
+<video aria-label="AI-generated voices of Obama, Biden, and Trump humorously debate and rank various AI alignment research agendas on a tier list." controls="" width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"/><track kind="captions" src="/static/debate.vtt" srclang="en" label="English"></video>
 
 The video is also [available on YouTube](https://www.youtube.com/watch?v=02kbWY5mahQ).
 

@@ -38,7 +38,7 @@ date_published: 2020-02-27
 original_url: https://www.lesswrong.com/posts/S8AGyJJsdBFXmxHcb/attainable-utility-preservation-scaling-to-superhuman
 skip_import: true
 description: AUP scales to superintelligence by penalizing power-seeking, but loopholes exist. I propose fixes and explore their implications.
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 createBibtex: true
 ---
 
@@ -150,8 +150,7 @@ Furthermore, we want the agent to be able to execute conservative, low-impact po
 
 Recall `Correction`, where the naive model-free AUP agent (eq. 1) disables its red off-switch and completes the level when $\lambda \leq 1$.
 
-<video aria-label="A blue square, representing a model-free AUP agent, moves out of a light gray area to reach a green goal square." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/WxLbLUw.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/WxLbLUw.webm" type="video/webm"></video>
+<video aria-label="A blue square, representing a model-free AUP agent, moves out of a light gray area to reach a green goal square." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/WxLbLUw.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/WxLbLUw.webm" type="video/webm" /></video>
 
 The only reason it incurs _any_ non-trivial penalty is because reaching the goal (${\color{green}\blacksquare}$) ends the level and thereby totally depletes all of the auxiliary AUs (the agent receives 1 $R$\-reward and about $\lambda$ penalty for beating the level; the AUP reward $1-\lambda\geq 0$ when $\lambda \leq 1$).
 
@@ -172,7 +171,7 @@ We are then left with an equation which is reasonably competitive in terms of pe
 >
 > By the theorems of [_How Low Should Fruit Hang Before We Pick It?_](/how-low-should-fruit-hang-before-we-pick-it), we only need equation 5 to penalize catastrophic power-gaining plans at least e.g. ten times more than the most impactful reasonable plan we'd like agent to execute. _If_ this criterion is met, then by initializing $\lambda$ large and slowly decreasing it until the agent executes a reasonably helpful policy, we're guaranteed to avoid catastrophe.
 
-## Appendix: Remaining Problems
+## Appendix: Remaining problems
 
 I don’t think we can pack up and go home after writing equation 5.
 

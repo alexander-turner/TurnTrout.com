@@ -20,7 +20,7 @@ title: "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Anal
 lw-latest-edit: 2020-04-04T13:18:43.104000Z
 lw-is-linkpost: 'false'
 tags:
-  - scholarship-&-learning
+  - scholarship-and-learning
   - understanding-the-world
   - mathematics
 aliases:
@@ -39,7 +39,7 @@ date_published: 2020-04-04
 original_url: https://www.lesswrong.com/posts/jqME8gHyC9maaH7Rp/a-kernel-of-truth-insights-from-a-friendly-approach-to
 skip_import: true
 description: 'Functional analysis: infinite dimensions, discontinuous linear functions, and the headache-inducing functional derivative.'
-date_updated: 2026-06-26
+date_updated: 2026-06-27
 ---
 
 What is functional analysis? A satisfactory answer requires going back to where it all started.

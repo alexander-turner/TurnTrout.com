@@ -29,7 +29,7 @@ date_published: 2018-06-30
 original_url: https://www.lesswrong.com/posts/DvmhXysefEyEvXuXS/overcoming-clinginess-in-impact-measures
 skip_import: true
 description: Impact measures incentivize agents to avoid side effects, but what about the side effects of ★other agents★?
-date_updated: 2026-06-26
+date_updated: 2026-06-28
 ---
 
 > [!quote]Taylor et al., _[Alignment for Advanced Machine Learning Systems](https://intelligence.org/files/AlignmentMachineLearning.pdf)_
@@ -71,7 +71,7 @@ Clinginess arises in part because we fail to model agents as anything other than
 
 To account for environmental changes already set in motion, a naive counterfactual framework [was proposed](https://arxiv.org/abs/1606.06565) in which impact is measured with respect to the counterfactual where the agent did nothing. We will explore how this fails, and how to do better.
 
-# Thought Experiments
+# Thought experiments
 
 We're going to isolate the effects for which the agent is responsible over the course of three successively more general environment configurations: _one-off_ (make one choice and then do nothing), _stationary iterative_ (make $T$ choices, but your options and their effects don't change), and _iterative_ (the real world, basically).
 
@@ -193,7 +193,7 @@ _Note:_ The number of counterfactual simulations grows as $O(T)$ - crucially, _n
 
 Here, we remove the constraint that side effects be identified by "object identifiers", allowing like side effects to be treated as exchangeable. It is then trivial to implement probabilistic class-based whitelisting with the iterative counterfactual penalty using basic vector arithmetic, $\min$, and $\max$. I don't want to bore the reader with the details, but I'm fairly confident this can be done rather easily.
 
-### Latent Spaces
+### Latent spaces
 
 We now do away with the assumption of discrete side effects. Because we're dealing with exact counterfactuals (by assumption) and because side effects either take place in the actual outcome or they don't, we can extract the relevant step-wise latent space transitions via the iterative formulation. We then penalize only these effects.
 

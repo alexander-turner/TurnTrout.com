@@ -7,6 +7,7 @@
 @use "print";
 @use "../components/styles/punctilioDemo";
 @use "../components/styles/relatedPosts";
+@use "../components/styles/tweet";
 
 // Shared bottom-margin for the after-article box, the footnotes heading,
 // and the footnotes section itself, so the page-bottom rhythm stays balanced.
@@ -420,7 +421,7 @@ p:has(+ .subtitle),
   color: var(--midground);
   margin-top: calc(0.25 * $base-margin);
   font-size: var(--font-size-minus-1);
-  text-wrap: balance;
+  text-wrap: pretty;
 
   .admonition & {
     color: color-mix(in srgb, var(--midground) 60%, var(--color));

@@ -39,7 +39,7 @@ date_published: 2021-11-20
 original_url: https://www.lesswrong.com/posts/WCX3EwnWAx7eyucqH/a-certain-formalization-of-corrigibility-is-vnm-incoherent
 skip_import: true
 description: Formal analysis showing that, for agents optimizing a reward function, corrigibility is rare and perhaps even incoherent.
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 ---
 
 <hr/>

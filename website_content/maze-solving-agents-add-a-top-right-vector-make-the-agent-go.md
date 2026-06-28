@@ -44,7 +44,7 @@ original_url: https://www.lesswrong.com/posts/gRp6FAWcQiCWkouN5/maze-solving-age
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/lteqnk5fbayr0jixir5z.jpg
 description: Adding a "top-right vector" makes a maze-solver go to the top-right. We show composition with other vectors, like the "cheese vector."
-date_updated: 2026-06-26
+date_updated: 2026-06-27
 card_image_alt: Vector fields showing effects of interventions. The cheese vector makes the agent ignore the cheese. The top-right vector attracts the agent to the top-right corner. Applying both at once combines the effects!
 createBibtex: true
 ---
@@ -259,8 +259,7 @@ Seed 0's vector seems to transfer quite well. However, top-right vectors from sm
 
 Subtracting the cheese vector often makes the agent (nearly) ignore the cheese, and adding the top-right vector often attracts the agent to the top-right corner. It turns out that you can mix and match these effects by adding one or both vectors halfway through the forward pass.
 
-<video aria-label='A demonstration of combining AI behavioral modifications. It cycles through three vector fields in a maze: applying a "top-right vector" directs the agent to the top-right; subtracting a "cheese vector makes it ignore cheese; applying both combines the effects, making it ignore cheese while heading top-right.' autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/w_940.mp4" type="video/mp4; codecs=hvc1"/></video>
-<source src="https://assets.turntrout.com/static/images/posts/w_940.webm" type="video/webm"></video>
+<video aria-label='A demonstration of combining AI behavioral modifications. It cycles through three vector fields in a maze: applying a "top-right vector" directs the agent to the top-right; subtracting a "cheese vector makes it ignore cheese; applying both combines the effects, making it ignore cheese while heading top-right.' autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/w_940.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/w_940.webm" type="video/webm" /></video>
 
 Figure: **Different x-vectors have roughly additive effects.** The indicated modification(s) are applied by adding the relevant vector(s) to the activations at [the second Impala block's first residual addition](https://assets.turntrout.com/static/images/posts/gxvochz2uulosefsmuif.avif).
 

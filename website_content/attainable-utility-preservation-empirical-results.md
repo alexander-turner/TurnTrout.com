@@ -41,13 +41,13 @@ date_published: 2020-02-22
 original_url: https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utility-preservation-empirical-results
 skip_import: true
 description: The AUP technique encourages low-impact behavior in both simple and complex environments.
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 createBibtex: true
 ---
 
 _Reframing Impact_ has focused on supplying the right intuitions and framing. Now we can see how these intuitions about power and the AU landscape both predict and explain AUP's empirical success thus far.
 
-# Conservative Agency in Gridworlds
+# Conservative agency in gridworlds
 
 Let's start with the known and the easy: avoiding side effects[^1] in the small [AI safety gridworlds](https://github.com/side-grids/ai-safety-gridworlds) (for the full writeup on these experiments, see [_Conservative Agency_](https://arxiv.org/abs/1902.09725)). The point isn't to get too into the weeds, but rather to see how the weeds still add up to the normality predicted by our AU landscape reasoning.
 
@@ -258,7 +258,7 @@ Maybe we provide additional information in the form of specific reward functions
 > [!info] Edited 6/15/21
 > These results [were later accepted as a spotlight paper in NeurIPS 2020](/avoiding-side-effects-in-complex-environments).
 
-# Appendix: The Reward Specification Game
+# Appendix: The reward specification game
 
 When we're trying to get the RL agent to do what we want, we're trying to specify the right reward function.
 

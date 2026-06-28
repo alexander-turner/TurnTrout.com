@@ -18,7 +18,7 @@ aliases:
   - mats-team
   - mentorship
 date_published: 2025-12-23
-date_updated: 2026-05-22
+date_updated: 2026-06-27
 lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
 
@@ -40,7 +40,7 @@ Our mentees now fill impactful roles.
 
 We likewise have a strong track record in [research outputs](https://turntrout.com/tags/mats-program), including:
 
-1. Pioneering steering vectors for use in LLMs ([Steering GPT-2-XL by Adding an Activation Vector](/gpt2-steering-vectors), [Steering LLAMA-2 With Contrastive Activation Additions](/llama2-steering-vectors)),
+1. Pioneering steering vectors for use in LLMs ([@title](/gpt2-steering-vectors), [Steering LLAMA-2 With Contrastive Activation Additions](/llama2-steering-vectors)),
 2. [Masking Gradients to Localize Computation in Neural Networks](/gradient-routing),
 3. [Distillation Robustifies Unlearning](/unlearn-and-distill) (NeurIPS 2025 spotlight!), and
 4. [Output Supervision Can Obfuscate the Chain of Thought](/output-supervision-cot).
@@ -59,7 +59,7 @@ Figure: In MATS 9.0, I led program-wide lifting sessions. Here we stand assemble
 # Testimonials
 
 > [!quote] [Lisa Thiergart](https://www.linkedin.com/in/lisathiergart/)
-> Subtitle: MATS 3.0, [Steering GPT-2-XL by Adding an Activation Vector](/gpt2-steering-vectors)
+> Subtitle: MATS 3.0, [@title](/gpt2-steering-vectors)
 > ![A blonde woman smiles confidently.](https://assets.turntrout.com/static/images/posts/team-shard-12222025-3.avif){.float-right}
 >
 > Team Shard helped me break into the AI safety world, building my connections but also my understanding of the research process and valuable areas to focus on. Alex \[Turner\] encouraged me to take my ideas seriously and to develop them further. I quite enjoyed working with him! \[Working with Team Shard\] has made a life-changing difference.
@@ -72,14 +72,14 @@ Figure: In MATS 9.0, I led program-wide lifting sessions. Here we stand assemble
 > Being a member of Team Shard helped me grow tremendously as a researcher. It gave me the necessary skills and confidence to work in AI Safety full-time.
 
 > [!quote] [Bruce Lee](https://brucewlee.com/)
-> Subtitle: MATS 7.0, [Distillation Robustifies Unlearning](/distillation-robustifies-unlearning)
+> Subtitle: MATS 7.0, [@title](/distillation-robustifies-unlearning)
 >
 > ![A Korean man flashes a grin.](https://assets.turntrout.com/static/images/posts/team-shard-12222025-2.avif){.float-right .testimonial-maybe-negative-margin}
 >
 > I learned how to make progress when everyone in the room is uncertain. If you're interested in learning what making progress on a hard problem actually feels like, Team Shard is where you want to be.
 
 > [!quote] [Alex Infanger](https://alexinfanger.github.io/)
-> Subtitle: MATS 7.0, [Distillation Robustifies Unlearning](/distillation-robustifies-unlearning)
+> Subtitle: MATS 7.0, [@title](/distillation-robustifies-unlearning)
 >
 > ![[https://assets.turntrout.com/static/images/posts/team-shard-01052026.avif|Alex Infanger smiles at the camera wearing a maroon zip-up hoodie featuring the MATS program logo.]]{.float-right}
 >

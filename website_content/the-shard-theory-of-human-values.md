@@ -47,7 +47,7 @@ original_url: https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/human_shards.jpg
 description: Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.
-date_updated: 2026-05-22
+date_updated: 2026-06-28
 card_image_alt: A silhouette of a human head in profile, its brain composed of vibrant, glowing crystalline shards—a visual metaphor for the components of decision-making in shard theory.
 createBibtex: true
 ---
@@ -81,7 +81,7 @@ The shard theory of human values makes three main assumptions. We think each ass
 > [!abstract] Assumption 1: The cortex[^1] is basically (locally) randomly initialized
 > According to this assumption, [most](https://www.alignmentforum.org/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in#2_4_My_hypothesis__the_telencephalon_and_cerebellum_learn_from_scratch__the_hypothalamus_and_brainstem_don_t) of the cortical circuits in the brain are [learned from scratch](https://www.alignmentforum.org/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in), in the sense of being mostly randomly initialized and not mostly genetically hard-coded. While the high-level topology of the brain may be genetically determined, we think that the local connectivity is not primarily genetically determined. For more clarification, see [\[Intro to brain-like-AGI safety\] 2. “Learning from scratch” in the brain](https://www.alignmentforum.org/posts/wBHSYwqssBGCnwvHg/intro-to-brain-like-agi-safety-2-learning-from-scratch-in).
 >
-> Thus, we infer that [human values & biases are inaccessible to the genome](/human-values-and-biases-are-inaccessible-to-the-genome):
+> Thus, we infer that [@title-lower](/human-values-and-biases-are-inaccessible-to-the-genome):
 >
 > > [!quote]
 > >
@@ -335,7 +335,7 @@ Different shard compositions can produce similar urges
 Shards are just collections of subshards
 : One subshard of your family-shard might steer towards futures where your family is happy, while another subshard may influence decisions so that your mother is proud of you. On my (`TurnTrout`’s) current understanding, “family shard” is just an abstraction of a set of heterogeneous subshards which are downstream of similar historical reinforcement events (e.g. related to spending time with your family). By and large, subshards of the same shard do not all steer towards the same kind of future.
 
-## “Shard Theory”
+## “Shard theory”
 
 Before this post was published, many people read draft documents explaining shard theory. However, in the absence of a canonical public document explaining the ideas and defining terms, “shard theory” has become overloaded. Here, then, are several definitions.
 
@@ -344,7 +344,7 @@ Before this post was published, many people read draft documents explaining shar
     2. Typical shard theory questions:
         1. “What is the mechanistic process by which a few people developed preferences over what happens [under different laws of physics](https://en.wikipedia.org/wiki/Multiverse#Level_IV:_Ultimate_ensemble)?”
         2. “What is the mechanistic basis of certain shards (e.g. people respecting you) being ‘reflectively endorsed’, while other shards (e.g. avoiding spiders) can be consciously ‘planned around’ (e.g. going to exposure therapy so that you stop embarrassingly startling when you see a spider)?” (_Thanks to Thane Ruthenis for this example._)
-        3. “Why do humans have good [general alignment properties](/general-alignment-properties), like robustness to ontological shifts?”
+        3. “Why do humans have good [@title-lower](/general-alignment-properties), like robustness to ontological shifts?”
 2. The shard paradigm/theory/frame of AI alignment analyzes the value formation processes which will occur in deep learning, and tries to figure out their properties.
     1. Typical questions asked under this paradigm/frame:
         1. “How can we predictably control the way in which a policy network generalizes? For example, under what training regimes and reinforcement schedules would [a CoinRun agent generalize](https://arxiv.org/abs/2105.14111) to pursuing coins instead of the right end of the level? What quantitative relationships and considerations govern this process?”

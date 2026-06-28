@@ -2267,6 +2267,33 @@ def test_check_invalid_internal_links(html, expected_count):
 
 
 @pytest.mark.parametrize(
+    "html,expected_count",
+    [
+        # Resolved bound link: sentinel replaced with the real title.
+        ('<a href="/page">Real Title</a>', 0),
+        # Sentinel left in link text (binding never resolved).
+        ('<a href="https://example.com">@title</a>', 1),
+        ('<a href="/page">@title</a>', 1),
+        # The lowercase variant must also be caught.
+        ('<a href="/page">@title-lower</a>', 1),
+        # Sentinel on a link with no href at all.
+        ("<a>@title</a>", 1),
+        # Whitespace around the sentinel still counts.
+        ('<a href="/page">  @title  </a>', 1),
+        # Sentinel as ordinary (non-link) text must be ignored.
+        ("<p><code>@title</code> is the sentinel.</p>", 0),
+        # Multiple leaked links.
+        ('<a href="/a">@title</a><a href="/b">@title</a>', 2),
+    ],
+)
+def test_check_unrendered_title_sentinel(html, expected_count):
+    """The check flags only links whose visible text is the bare sentinel."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_unrendered_title_sentinel(soup)
+    assert len(result) == expected_count
+
+
+@pytest.mark.parametrize(
     "md_content,expected_counts",
     [
         # Basic Markdown Image

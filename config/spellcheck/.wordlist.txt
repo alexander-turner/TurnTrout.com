@@ -1938,6 +1938,7 @@ dropcap
 dropcaps
 dt
 dualble
+dualing
 dwarves
 dx
 décor
@@ -2783,6 +2784,7 @@ reddit
 redeclared
 rederive
 redirectability
+redpilling
 redstone
 reductionism
 redux

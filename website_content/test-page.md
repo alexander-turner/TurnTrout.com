@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-06-16
+date_updated: 2026-06-28
 createBibtex: true
 ---
 
@@ -40,6 +40,10 @@ This line of text verifies that adding content to a section only updates that se
 Subtitle: I am a subtitle with [a link](/test-page).
 
 Subtitle: MATS (starting with smallcaps).
+
+# Title-binding links
+
+The `@title` sentinel ties a link's text to its target's current title at build time: [@title](/test-page) renders this page's title, and [@title](#header-4) renders the current text of the "Header 4" section.
 
 # Lists
 
@@ -182,7 +186,7 @@ Admonition in a description list
 
 ## Section to transclude
 
-Hi! Am I being transcluded?
+Hi! Am I being transcluded? Here is a within-page link to the [admonitions section](#admonitions); because this section is transcluded from the same page above, both copies stay within-page links.
 
 # Admonitions
 
@@ -484,6 +488,22 @@ Equation and table nested in a list item (gaps must not stack with `<p>` margins
 
 <div class="centered"><audio src="https://assets.turntrout.com/static/audio/batman.mp3" controls> </audio></div>
 
+# Tweet embeds
+
+A single tweet, rendered from a self-hosted snapshot, with an optional retweet indicator:
+
+```tweet
+https://xcancel.com/Turn_Trout/status/2064426233769742627
+retweeted-by: Shrek
+```
+
+A thread (one URL per line) renders as a connected stack:
+
+```tweet
+https://xcancel.com/Turn_Trout/status/2055343603224879417
+https://xcancel.com/Turn_Trout/status/2055343603958878231
+```
+
 # Images
 
 ![Sample complexity of different kinds of DCTs. The x-axis is "number of training instructions" and the y-axis is "average of logits('Sure') - logits('Sorry')." All conditions are basically flat along the x-dimension. Exponential, quadratic, and linear-projected conditions cluster around a logit difference of 8. Linear has a difference of -6.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif)
@@ -691,7 +711,7 @@ He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._ October 5th, 1
 
 Each emoji stays glued to its preceding character and never wraps alone to the start of a new line:
 
-(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿.
+(🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿.
 
 ## Emoji comparison
 
@@ -766,6 +786,10 @@ Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 # Code blocks
 
 Inline code ligature kerning: `$var` must be interpolated into `#{$var}`. See also `===`, `!==`, `=>`, and `custom-property-no-missing-interpolation`.
+
+Inline code left spacing after a crowding glyph: with the help of [`TomSmith`](#code-blocks), I got feedback from experts in military and surveillance law. In particular, I got feedback from the foremost expert on the law behind human / AI integration in war—a former chief judge on the US military appeals court. He said my Framework was "actually pretty good" 🙂 and suggested improvements. The monospace keeps a small gap mid-line but stays flush when it wraps to the start of a line.
+
+Inline code flush against a glued delimiter: parentheses (`code`), brackets \[`code`\], braces \{`code`\}, quotes "`code`", a slash AI/`code`, a hyphen re-`code`, and equals x=`code` all hug the code, while a space `the regex` or an em dash—`code` keeps the small gap.
 
 ```json
 "lint-staged": {

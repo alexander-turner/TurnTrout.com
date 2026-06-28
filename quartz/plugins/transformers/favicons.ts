@@ -240,6 +240,9 @@ export function insertFavicon(imgPath: string | null, node: Element): void {
 // hooks/crossbars, tall punctuation) and which therefore visually crowd the
 // favicon without extra spacing.
 export const charsToSpace = ["!", "?", "|", "]", '"', "”", "’", "'", "f", "q", ":", ";", "/"]
+// Distinct from the shared INLINE_PASSTHROUGH_TAGS (utils.ts) on purpose:
+// favicon placement descends into `<code>` and excludes `<a>` (links handled
+// separately), so its membership differs from the generic inline-wrapper set.
 export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "ins", "abbr"]
 
 /**
@@ -350,14 +353,18 @@ function hasFavicon(node: Element): boolean {
   return false
 }
 
-function shouldSkipFavicon(node: Element, href: string): boolean {
-  const samePage =
-    (typeof node.properties.className === "string" &&
-      node.properties.className.includes("same-page-link")) ||
-    (Array.isArray(node.properties.className) &&
-      node.properties.className.includes("same-page-link"))
+function linkHasClass(node: Element, className: string): boolean {
+  const classes = node.properties.className
+  if (typeof classes === "string") return classes.split(/\s+/).includes(className)
+  return Array.isArray(classes) && classes.includes(className)
+}
 
-  return samePage || isAssetLink(href)
+function shouldSkipFavicon(node: Element, href: string): boolean {
+  // `no-favicon` lets a component opt a link out of the site-wide favicon pass
+  // (e.g. the tweet card, which would otherwise stamp an X icon on every link).
+  return (
+    linkHasClass(node, "same-page-link") || linkHasClass(node, "no-favicon") || isAssetLink(href)
+  )
 }
 
 /**

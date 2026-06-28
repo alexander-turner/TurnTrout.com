@@ -3,6 +3,8 @@ import type { Element as HastElement } from "hast"
 import { slug as slugAnchor } from "github-slugger"
 import rfdc from "rfdc"
 
+import { specialFaviconPaths } from "../components/constants"
+
 export const clone = rfdc()
 
 // this file must be isomorphic so it can't use node libs (e.g. path)
@@ -171,6 +173,42 @@ export function normalizeRelativeURLs(el: Element | Document, destination: strin
   )
 }
 
+/** Rewrites an anchor (same-page) favicon descendant in place to the internal turntrout favicon. */
+function retargetAnchorFaviconToInternal(el: HastElement): void {
+  if (el.tagName === "svg" && el.properties?.["data-domain"] === "anchor") {
+    el.properties["data-domain"] = "turntrout_com"
+    el.properties.style = `--mask-url: url(${specialFaviconPaths.turntrout});`
+  }
+  for (const child of el.children) {
+    if ((child as HastElement).type === "element") {
+      retargetAnchorFaviconToInternal(child as HastElement)
+    }
+  }
+}
+
+/**
+ * An author-written `[text](#section)` link is decorated as a same-page link at
+ * its source page's transform stage. Once transcluded, it is rebased to a
+ * cross-page link back to the source, so demote it to a normal internal link:
+ * drop the `same-page-link` class (which otherwise suppresses navigation) and
+ * swap its anchor favicon for the internal turntrout favicon.
+ */
+function demoteRebasedAnchorLink(el: HastElement): void {
+  if (el.tagName !== "a") return
+  // Same-page links carry their classes as an array (markdown links) or a
+  // space-separated string (footnote backrefs from rehype-gfm); handle both.
+  const classes = el.properties?.className
+  if (Array.isArray(classes)) {
+    el.properties.className = classes.filter((c) => String(c) !== "same-page-link")
+  } else if (typeof classes === "string") {
+    el.properties.className = classes
+      .split(/\s+/)
+      .filter((c) => c && c !== "same-page-link")
+      .join(" ")
+  }
+  retargetAnchorFaviconToInternal(el)
+}
+
 /**
  * Rebases a HAST element's attribute to a new base slug
  *
@@ -190,8 +228,14 @@ const _rebaseHastElement = (
 
     // Handle anchor-only links (e.g., #section)
     if (attrValue.startsWith("#")) {
+      // A same-page transclusion keeps the link on its own page, so the anchor
+      // still resolves there: leave it (and its within-page favicon) untouched.
+      if (curBase === newBase) {
+        return
+      }
       const relativeToOriginal = resolveRelative(curBase, newBase)
       el.properties[attr] = relativeToOriginal + attrValue
+      demoteRebasedAnchorLink(el)
       return
     }
 

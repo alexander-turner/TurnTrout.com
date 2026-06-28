@@ -43,7 +43,7 @@ date_published: 2023-05-13
 original_url: https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-xl-by-adding-an-activation-vector
 skip_import: true
 description: Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.
-date_updated: 2026-06-26
+date_updated: 2026-06-28
 createBibtex: true
 ---
 
@@ -196,7 +196,7 @@ _**Steering vector**:_ "Intent to praise" − "Intent to hurt" before attention 
 
 ### 3\. Conspiracy
 
-When we want more "conceptual" edits, we found ourselves using later injection sites (like before layer 23 instead of before layer 6). Later, we swept over all layer choices. We present these results in the section ["How steering vectors impact GPT-2's capabilities"](/gpt2-steering-vectors#how-steering-vectors-impact-gpt-2-s-capabilities).
+When we want more "conceptual" edits, we found ourselves using later injection sites (like before layer 23 instead of before layer 6). Later, we swept over all layer choices. We present these results in the section [@title](/gpt2-steering-vectors#how-steering-vectors-impact-gpt-2-s-capabilities).
 
 _**Steering vector**:_ "Bush did 9/11 because” − “ ” before attention layer 23 with coefficient +1.[^9]
 
@@ -864,8 +864,8 @@ Alex gets mileage out of _not_ thinking about the model as "trying to predict ne
 
 Activation additions have _already_ helped us find representations in a model. Activation additions are how we [found the cheese-tracking channels in the maze-solving network, which then let us retarget the network](/understanding-and-controlling-a-maze-solving-policy-network):
 
-> [!quote] [Understanding and Controlling a Maze-Solving Policy Network](./understanding-and-controlling-a-maze-solving-policy-network)
-&gt; <video aria-label="An AI agent, represented as a mouse in a maze, has its goal dynamically redirected. Instead of seeking the cheese, the mouse follows a moving red dot." autoplay="" loop="" muted="" playsinline="" style="width:60%;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"/></video>
+> [!quote] [@title](./understanding-and-controlling-a-maze-solving-policy-network)
+> <video aria-label="An AI agent, represented as a mouse in a maze, has its goal dynamically redirected. Instead of seeking the cheese, the mouse follows a moving red dot." autoplay="" loop="" muted="" playsinline="" style="width:60%;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"/></video>
 >
 > Figure: **Locally retargeting the search by modifying a single activation.** We found a residual channel halfway through a maze-solving network. When we set one of the channel activations to +5.5, the agent often navigates to the maze location (shown above in red) implied by that positive activation. This allows limited on-the-fly redirection of the net's goals.
 
@@ -1103,7 +1103,7 @@ Subtracting the cheese vector essentially [makes the agent behave as if the chee
 
 # Appendix 2: Resolving prediction markets
 
-Subtitle: Originally made at ["predictions for algebraically editing LM forward passes"](/top-right-steering-vector#predictions-for-algebraically-editing-lm-forward-passes).
+Subtitle: Originally made at [@title](/top-right-steering-vector#predictions-for-algebraically-editing-lm-forward-passes).
 
 <iframe src="https://manifold.markets/embed/MartinRandall/algebraic-value-editing-works-for-a" title="Algebraic value editing works (for at least one "X vector") in language models" frameborder="0" class="manifold-embed"></iframe>
 
