@@ -110,6 +110,10 @@
   color: var(--color-link);
 }
 
+// A single image keeps its natural aspect ratio up to this height, so an
+// ordinary photo shows in full; only an unusually tall image is cropped.
+$tweet-media-max-height: 40rem;
+
 .tweet-media-grid {
   display: grid;
   gap: calc(0.5 * $base-margin);
@@ -117,16 +121,12 @@
   border-radius: calc(2 * $border-radius);
   overflow: hidden;
 
-  // Pin every layout to a fixed 16:9 frame so an oversized portrait image can't
-  // dominate the card; each image cover-crops into its cell, mirroring X. The
-  // full image still opens via the source link.
-  aspect-ratio: 16 / 9;
-
-  // Fade the bottom edge into the card when a clipped portrait trails off there,
-  // so it ends on a soft edge instead of a hard line — the same fade overflowing
-  // equations and tables get where their content is cut. Only added when the
-  // bottom of the frame actually cuts through image content (see tweetCard.ts);
-  // a side-cropped landscape keeps its real bottom edge and gets no fade.
+  // Fade the bottom edge into the card when a clipped image trails off there, so
+  // it ends on a soft edge instead of a hard line — the same fade overflowing
+  // equations and tables get where their content is cut. The class is toggled by
+  // tweet-media-fade.inline.ts, which measures whether the bottom of the frame
+  // actually cuts through image content; a fully-visible image keeps its real
+  // bottom edge and gets no fade.
   &.tweet-media-grid-fade-bottom {
     mask-image: linear-gradient(
       to bottom,
@@ -135,8 +135,23 @@
     );
   }
 
+  // A lone image sizes to its natural aspect ratio, capped at a max height.
   &.tweet-media-count-1 {
     grid-template-columns: 1fr;
+
+    .tweet-media {
+      height: auto;
+      max-height: $tweet-media-max-height;
+    }
+  }
+
+  // Multi-image layouts pin to a fixed 16:9 frame so one oversized portrait
+  // can't dominate the card; each image cover-crops into its cell, mirroring X.
+  // The full image still opens via the source link.
+  &.tweet-media-count-2,
+  &.tweet-media-count-3,
+  &.tweet-media-count-4 {
+    aspect-ratio: 16 / 9;
   }
 
   &.tweet-media-count-2 {

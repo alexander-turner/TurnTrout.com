@@ -207,58 +207,16 @@ function mediaNode(media: TweetMedia): Element {
   })
 }
 
-// Each cell cover-crops into the 16:9 grid. A photo is clipped along its top
-// and bottom only when it's *taller* than its cell (aspect ratio below the
-// cell's); a wider photo is clipped left-and-right instead, so its bottom edge
-// is the real edge of the image.
-const GRID_ASPECT = 16 / 9
-
-/** Per-cell aspect ratio and whether the cell touches the grid's bottom edge, keyed by media count (1–4). */
-interface CellGeometry {
-  aspect: number
-  onBottomEdge: boolean
-}
-
-const CELL_LAYOUTS: Readonly<Record<number, readonly CellGeometry[]>> = {
-  1: [{ aspect: GRID_ASPECT, onBottomEdge: true }],
-  2: [
-    { aspect: GRID_ASPECT / 2, onBottomEdge: true },
-    { aspect: GRID_ASPECT / 2, onBottomEdge: true },
-  ],
-  3: [
-    { aspect: GRID_ASPECT / 2, onBottomEdge: true }, // left, spans both rows
-    { aspect: GRID_ASPECT, onBottomEdge: false }, // right, top
-    { aspect: GRID_ASPECT, onBottomEdge: true }, // right, bottom
-  ],
-  4: [
-    { aspect: GRID_ASPECT, onBottomEdge: false },
-    { aspect: GRID_ASPECT, onBottomEdge: false },
-    { aspect: GRID_ASPECT, onBottomEdge: true },
-    { aspect: GRID_ASPECT, onBottomEdge: true },
-  ],
-}
-
-/**
- * Whether the grid's bottom edge cuts through clipped image content. True when a
- * cell sitting on that edge holds media taller than the cell, so the crop trails
- * off mid-image and warrants a fade into the card.
- */
-function clipsGridBottom(media: readonly TweetMedia[]): boolean {
-  const layout = CELL_LAYOUTS[Math.min(media.length, 4)]
-  return media.slice(0, layout.length).some((m, i) => {
-    const cell = layout[i]
-    if (!cell.onBottomEdge || m.width == null || m.height == null) return false
-    return m.width / m.height < cell.aspect
-  })
-}
-
+// Whether a grid's bottom edge cuts through clipped image content—and therefore
+// fades into the card—is decided at runtime by tweet-media-fade.inline.ts, which
+// measures the rendered cells against each image's intrinsic aspect ratio. The
+// width/height attributes on each media element feed that measurement.
 function mediaGrid(media: readonly TweetMedia[]): Element[] {
   if (media.length === 0) return []
-  const fade = clipsGridBottom(media) ? " tweet-media-grid-fade-bottom" : ""
   return [
     h(
       "div",
-      { className: `tweet-media-grid tweet-media-count-${Math.min(media.length, 4)}${fade}` },
+      { className: `tweet-media-grid tweet-media-count-${Math.min(media.length, 4)}` },
       media.map(mediaNode),
     ),
   ]
