@@ -35,13 +35,13 @@ const baseSnapshot: TweetSnapshot = {
 const render = (node: Element): string => toHtml(node)
 
 describe("formatTweetDate", () => {
-  it("formats a valid ISO timestamp in UTC", () => {
-    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("5:32 PM, Jan 21st, 2025")
+  it("formats a valid ISO timestamp in UTC with the date leading", () => {
+    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("Jan 21st, 2025, 5:32 PM")
   })
 
   it("uses 12 for midnight and noon", () => {
-    expect(formatTweetDate("2025-06-15T00:05:00.000Z")).toBe("12:05 AM, Jun 15th, 2025")
-    expect(formatTweetDate("2025-06-15T12:00:00.000Z")).toBe("12:00 PM, Jun 15th, 2025")
+    expect(formatTweetDate("2025-06-15T00:05:00.000Z")).toBe("Jun 15th, 2025, 12:05 AM")
+    expect(formatTweetDate("2025-06-15T12:00:00.000Z")).toBe("Jun 15th, 2025, 12:00 PM")
   })
 
   it.each([
@@ -123,7 +123,7 @@ describe("buildTweetCard", () => {
     expect(html).toContain("Alex Turner")
     expect(html).toContain("@turntrout")
     expect(html).toContain("Hello world")
-    expect(html).toContain('<span class="tweet-date">5:32 PM, Jan 21st, 2025</span>')
+    expect(html).toContain('<span class="tweet-date">Jan 21st, 2025, 5:32 PM</span>')
     expect(html).toContain('data-tweet-id="123"')
   })
 
