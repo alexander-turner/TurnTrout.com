@@ -58,6 +58,14 @@ jobs:
           cache-playwright: "true"
           cache-puppeteer: "true"
 
+      # The per-section fixtures aren't tracked in git; fetch them from the
+      # generate-fixtures job so the fixture pages render into public/. Only
+      # needed for fixture builds, and only when actually building (a cache
+      # hit already has them baked into the restored public/).
+      - name: Download section fixtures
+        if: steps.cache.outputs.cache-hit != 'true' && inputs.include-fixtures
+        uses: ./.github/actions/download-section-fixtures
+
       - name: Build site
         if: steps.cache.outputs.cache-hit != 'true'
         run: pnpm build

@@ -1,26 +1,51 @@
-"""Guards that committed section fixtures stay in sync with test-page.md."""
+"""
+Tests for the per-section fixture generator.
 
+The fixtures are not tracked in git (CI regenerates them from test-page.md via
+the generate-fixtures job), so these tests cover the generator itself rather
+than any committed output.
+"""
+
+from pathlib import Path
+
+import pytest
+
+from .. import split_test_page_sections
 from ..split_test_page_sections import (
-    OUTPUT_DIR,
     SOURCE,
     build_fixtures,
     extract_footnote_defs,
+    generate,
     referenced_footnotes,
     slugify,
 )
 
 
-def test_committed_fixtures_match_generator() -> None:
-    """Re-running the generator must reproduce the committed fixtures
-    exactly."""
+def test_generate_writes_what_build_fixtures_returns(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``generate()`` writes exactly the files ``build_fixtures()`` returns."""
+    monkeypatch.setattr(split_test_page_sections, "OUTPUT_DIR", tmp_path)
+    written = generate()
     expected = build_fixtures(SOURCE.read_text(encoding="utf-8"))
-    committed = {
-        p.name: p.read_text(encoding="utf-8") for p in OUTPUT_DIR.glob("*.md")
+    assert set(written) == set(expected)
+    on_disk = {
+        p.name: p.read_text(encoding="utf-8") for p in tmp_path.glob("*.md")
     }
-    assert committed == expected, (
-        "Section fixtures are stale. Run "
-        "`uv run python scripts/split_test_page_sections.py` and commit the result."
-    )
+    assert on_disk == expected
+
+
+def test_generate_clears_stale_fixtures(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A regenerate removes stale fixtures while writing the current ones."""
+    monkeypatch.setattr(split_test_page_sections, "OUTPUT_DIR", tmp_path)
+    stale = tmp_path / "no-longer-a-section.md"
+    stale.write_text("stale", encoding="utf-8")
+    written = generate()
+    assert not stale.exists()
+    assert written
+    assert {p.name for p in tmp_path.glob("*.md")} == set(written)
 
 
 def test_footnote_defs_extracted_with_nested_refs() -> None:

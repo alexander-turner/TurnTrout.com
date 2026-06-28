@@ -32,16 +32,23 @@ jobs:
           REPEAT_EACH: ${{ github.event.inputs.repeat-each || '3' }}
         run: echo "repeat=$REPEAT_EACH" >> "$GITHUB_OUTPUT"
 
+  # Regenerate the per-section fixtures (not tracked in git) and publish them
+  # as an artifact for the build and every shard to consume.
+  generate-fixtures:
+    name: flake-check-generate-fixtures
+    needs: setup
+    uses: ./.github/workflows/generate-fixtures.yaml
+
   build:
     name: flake-check-build
-    needs: setup
+    needs: [setup, generate-fixtures]
     uses: ./.github/workflows/build-site.yaml
     with:
       include-fixtures: true
 
   # Chromium + Firefox flake check on Linux
   flake-check-linux:
-    needs: [setup, build]
+    needs: [setup, build, generate-fixtures]
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     strategy:
@@ -71,6 +78,9 @@ jobs:
           path: public/
           key: site-build-${{ github.sha }}-fixtures-true
           fail-on-cache-miss: true
+
+      - name: Download section fixtures
+        uses: ./.github/actions/download-section-fixtures
 
       - name: Run Playwright tests (repeat-each=${{ needs.setup.outputs.repeat }})
         id: playwright
@@ -140,7 +150,7 @@ jobs:
 
   # WebKit flake check on macOS
   flake-check-macos:
-    needs: [setup, build]
+    needs: [setup, build, generate-fixtures]
     runs-on: macos-15
     timeout-minutes: 90
     strategy:
@@ -180,6 +190,9 @@ jobs:
           path: public/
           key: site-build-${{ github.sha }}-fixtures-true
           fail-on-cache-miss: true
+
+      - name: Download section fixtures
+        uses: ./.github/actions/download-section-fixtures
 
       - name: Run Playwright tests (repeat-each=${{ needs.setup.outputs.repeat }})
         id: playwright
