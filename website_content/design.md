@@ -109,7 +109,7 @@ I wrote [a script](https://github.com/alexander-turner/TurnTrout.com/blob/main/s
 2. Copies the assets to my local mirror of the CDN content;
 3. Removes the assets so they aren't tracked by my `git` repo.
 
-I later describe my [@title](#deployment-pipeline) in more detail.
+I later describe my [@title-lower](#deployment-pipeline) in more detail.
 
 # Color scheme
 
@@ -183,7 +183,7 @@ When designing visual content, I consider where the reader's eyes go. People vis
 
 During the build process, I convert all naive CSS assignments of `color:red` (<span class="ignore-pa11y" style="color:rgb(255,0,0);">imagine if I made you read this</span>) to <span style="color:red">the site's red</span>. Lots of my old equations used raw `red` / `green` / `blue` colors because that's all that my old blog allowed; these colors are converted to the site theme. I even override and standardize the colors used for syntax highlighting in the code blocks.
 
-I color [@title](#inline-favicons) using muted shades from the site's palette. For sites like [YouTube](https://youtube.com) and [Google Drive](https://drive.google.com), colored favicons enhance recognition and orient the reader.
+I color [@title-lower](#inline-favicons) using muted shades from the site's palette. For sites like [YouTube](https://youtube.com) and [Google Drive](https://drive.google.com), colored favicons enhance recognition and orient the reader.
 
 # Site responsiveness
 

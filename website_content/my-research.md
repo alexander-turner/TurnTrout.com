@@ -220,7 +220,7 @@ I really enjoyed working with Quintin to generate shard theory. That said, in th
 > [!quote] Andrew Critch (according to my memory)
 > If you want people to buy your models \[of how the world works\], go and do something they don't know how to do. Then come back and show them what you can do. Someone will ask you how you did it, and that's the point where you can say "well, thanks to shard theory..."
 
-And that's when I came up with [@title](#steering-vectors)!
+And that's when I came up with [@title-lower](#steering-vectors)!
 
 # Mechanistic interpretability
 
