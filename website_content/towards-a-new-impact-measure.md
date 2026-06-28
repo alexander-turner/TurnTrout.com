@@ -174,7 +174,7 @@ We now formalize impact as _change in attainable utility_. One might imagine thi
 
 <div class="centered">the agent's ability to achieve goals ≈ our ability to achieve goals.</div>
 
-### Formalizing "Ability to achieve goals"
+### Formalizing "ability to achieve goals"
 
 > [!note] English translation
 > How well could we possibly maximize $u$ from this vantage point?
@@ -486,7 +486,7 @@ leading to a final $u'_A$\-utility of -1.
 
 After the first step, the agent does nothing – entering the closet (literally) closes doors, while gaining no $u_A$\-utility.
 
-## Anti-"Survival incentive" incentive
+## Anti-"survival incentive" incentive
 
 > [!quote] Stuart Russell
 >

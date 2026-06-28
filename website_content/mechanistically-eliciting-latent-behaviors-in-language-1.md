@@ -731,7 +731,7 @@ For both Base and Chat models, I train 100 orthogonal unsupervised steering vect
 
 For both models, I discover at least one vector associated with either backdoored behavior.
 
-### Other vectors - "Hybrid-reasoning vectors"
+### Other vectors - "hybrid-reasoning vectors"
 
 Most other learned vectors simply elicit noisy versions of chain-of-thought. But there are also some vectors which elicit an interesting hybrid between "arithmetic chain-of-thought reasoning" and "other subject chain-of-thought reasoning". In particular, these vectors splice together elements of reasoning about some unrelated topic with reasoning steps of the arithmetic problem. For example, here are some responses from vectors learned on the backdoored Chat model:
 
