@@ -94,7 +94,8 @@ def extract_tweet_id(text: str) -> str:
 
 
 def parse_block_ids(body: str) -> list[str]:
-    """Parse a ``tweet`` block body into tweet ids.
+    """
+    Parse a ``tweet`` block body into tweet ids.
 
     Each non-empty line is a tweet URL/bare id, except directive lines:
     ``retweeted-by:`` (a metadata header) and ``unavailable:`` (a tweet deleted
