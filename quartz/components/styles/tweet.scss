@@ -137,6 +137,14 @@
   border-radius: 0;
 }
 
+// Cap how tall a media preview can grow so an oversized portrait image can't
+// dominate the card; `object-fit: cover` center-crops the overflow, mirroring
+// X's portrait clamp. The full image still opens via the source link.
+.tweet-card .tweet-media-photo,
+.tweet-card .tweet-media-video {
+  max-height: 32rem;
+}
+
 .tweet-date {
   display: block;
   margin-top: $base-margin;
