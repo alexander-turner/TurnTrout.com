@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-06-27
+date_updated: 2026-06-28
 createBibtex: true
 ---
 
@@ -186,7 +186,7 @@ Admonition in a description list
 
 ## Section to transclude
 
-Hi! Am I being transcluded?
+Hi! Am I being transcluded? Here is a within-page link to the [admonitions section](#admonitions); because this section is transcluded from the same page above, both copies stay within-page links.
 
 # Admonitions
 
