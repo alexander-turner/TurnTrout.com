@@ -199,6 +199,10 @@ $search-panel-max-height: 100vh - $search-space-top-offset - $search-modal-botto
         overflow-y: auto;
         margin-left: calc(2 * $base-margin);
 
+        // Avoid orphaning a lone trailing word/favicon-span onto its own line
+        // in the narrow preview column (e.g. a favicon-span's nowrap unit).
+        text-wrap: pretty;
+
         // Padding to keep scrollbar from hugging the right edge
         padding-right: calc(2 * $base-margin);
         cursor: pointer;
@@ -282,6 +286,10 @@ $search-panel-max-height: 100vh - $search-space-top-offset - $search-modal-botto
             margin-top: $base-margin;
             border-top: 1px solid var(--midground-faint);
             padding-top: $base-margin;
+
+            // Match the preview panel: avoid orphaning a lone trailing
+            // word/favicon-span onto its own line in the narrow card column.
+            text-wrap: pretty;
 
             // Fade in at the top (hides abrupt content start) and out at the bottom
             mask-image: linear-gradient(

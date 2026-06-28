@@ -451,6 +451,18 @@ test.describe("Search accuracy", () => {
     await expect(preview).toContainText("wife")
   })
 
+  test("Preview uses text-wrap: pretty to avoid orphaning trailing words", async ({
+    page,
+  }, testInfo) => {
+    // `text-wrap: pretty` is a progressive enhancement; only Chromium reliably
+    // reports the computed longhand. It degrades to normal wrapping elsewhere.
+    test.skip(!testInfo.project.name.includes("Chrome"), "text-wrap-style is Chromium-only")
+    await search(page, "test")
+
+    const preview = await waitForArticlePreview(page)
+    await expect(preview).toHaveCSS("text-wrap-style", "pretty")
+  })
+
   test("Nothing shows up for nonsense search terms", async ({ page }) => {
     await search(page, "feiwopqclvxk")
 
