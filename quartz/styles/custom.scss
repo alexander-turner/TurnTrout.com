@@ -91,9 +91,8 @@ a[id*="fnref-"] {
   scroll-margin-top: calc(2 * $base-margin);
 
   // Dotted border signals "click for interaction" (same pattern as Elvish text)
-  border: 1px dotted var(--midground-fainter);
-  padding: 0 calc(0.25 * $base-margin);
-  border-radius: $border-radius;
+  background-color: var(--midground-faintest);
+  padding: 0 calc(0.125 * $base-margin);
 
   @media all and (max-width: $max-mobile-width) {
     scroll-margin-top: calc(7 * $base-margin);
@@ -370,6 +369,24 @@ figure,
   }
 }
 
+// Render both subfigures at an identical size. The source images differ slightly
+// in aspect ratio, so crop to a shared ratio rather than distorting. They sit
+// side by side on desktop and stack only at mobile width.
+#ice-killings {
+  .subfigure img {
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 731 / 878;
+    object-fit: cover;
+  }
+
+  @media all and (width <= 530px) {
+    .subfigure {
+      flex: 1 1 100%;
+    }
+  }
+}
+
 #article-title,
 .page-listing-title,
 .related-post > a {
@@ -434,7 +451,6 @@ figcaption {
   max-width: 90%;
   margin-left: auto;
   margin-right: auto;
-  text-wrap: balance;
 }
 
 img,
