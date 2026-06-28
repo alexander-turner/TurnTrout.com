@@ -970,6 +970,7 @@ I lint my Markdown links for probable errors. I found that I might mangle a Mark
 > 5. Avoid error patterns from incorrectly mixing Markdown into a line with raw HTML.
 > 6. Headings should not contain Markdown links (like `## Title [link](...)`).
 > 7. After a definition title in a definition list, continuation paragraphs should be indented properly.
+> 8. Headings use sentence case (only the first word and proper nouns are capitalized), with acronyms and the titles of cited works left as-is.
 >
 > **Typography:**
 >

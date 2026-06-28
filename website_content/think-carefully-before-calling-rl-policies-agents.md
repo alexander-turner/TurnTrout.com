@@ -86,13 +86,13 @@ Overall, I do lean towards "RL is a way of tying together pretrained cognition i
 
 # Appendix: Other bad RL terminology
 
-## ~~"Reward"~~ → "Reinforcement"
+## ~~"Reward"~~ → "reinforcement"
 
 "Reward" has absurd and inappropriate pleasurable connotations which suggest that the ~~agent~~ policy will seek out this "rewarding" quantity.
 
 I prefer "reinforcement" because it's more accurate (at least for the policy gradient algorithms I care about) and is overall a neutral word. The cost is that "reinforcement function" is somewhat nonstandard, requiring extra explanation. I think this is often worth it in personal and blog-post communication, and maybe even in conference papers.
 
-## ~~"Optimal policy"~~ → "Reinforcement-maximizing policy"
+## ~~"Optimal policy"~~ → "reinforcement-maximizing policy"
 
 Saying "optimal" makes the policy sound _good_ and _smart_, and suggests that the reinforcement function is something which should be _optimized over_. As I discussed [in a recent comment](https://www.lesswrong.com/posts/fLpuusx9wQyyEBtkJ/power-seeking-can-be-probable-and-predictive-for-trained?commentId=ndmFcktFiGRLkRMBW), I think that's muddying and misleading. In my internal language, "optimal policy" translates to "reinforcement-maximizing policy." I will probably adopt this for some communication.
 
