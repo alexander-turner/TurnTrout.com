@@ -490,7 +490,7 @@ A single tweet, rendered from a self-hosted snapshot, with an optional retweet i
 
 ```tweet
 https://xcancel.com/Turn_Trout/status/2064426233769742627
-retweeted-by: Jeff Dean
+retweeted-by: Shrek
 ```
 
 A thread (one URL per line) renders as a connected stack:

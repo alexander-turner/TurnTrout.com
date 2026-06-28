@@ -26,9 +26,8 @@
   gap: $base-margin;
 }
 
-.tweet-card .tweet-avatar-link {
+.tweet-card .tweet-avatar-wrap {
   flex: 0 0 auto;
-  background-color: transparent;
   line-height: 0;
 }
 
@@ -68,6 +67,7 @@
 .tweet-handle {
   color: var(--midground);
   font-size: var(--font-size-minus-1);
+  font-family: var(--font-monospace);
 }
 
 .tweet-verified {
@@ -131,12 +131,10 @@
 }
 
 .tweet-date {
-  display: inline-block;
+  display: block;
   margin-top: $base-margin;
   color: var(--midground);
   font-size: var(--font-size-minus-1);
-  background-color: transparent;
-  text-decoration: none;
 }
 
 .tweet-card-unavailable {
@@ -149,7 +147,6 @@
   align-items: center;
   gap: calc(0.5 * $base-margin);
   margin-bottom: $base-margin;
-  padding-left: calc(2 * $base-margin);
   color: var(--midground);
   font-size: var(--font-size-minus-1);
   font-weight: 600;
@@ -209,7 +206,7 @@
   }
 
   // Vertical connector from one avatar down to the next card's avatar.
-  .tweet-card:not(:last-child) .tweet-avatar-link {
+  .tweet-card:not(:last-child) .tweet-avatar-wrap {
     position: relative;
 
     &::after {

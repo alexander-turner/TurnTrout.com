@@ -77,7 +77,7 @@ const MONTHS = [
 ] as const
 
 /**
- * Format a tweet's ISO timestamp as `h:mm AM/PM · Mon D, YYYY` in UTC.
+ * Format a tweet's ISO timestamp as `h:mm AM/PM, Mon D, YYYY` in UTC.
  * UTC keeps the output deterministic across build machines. Returns "" for an
  * unparseable timestamp so the date line is simply omitted.
  */
@@ -89,7 +89,7 @@ export function formatTweetDate(iso: string): string {
   const hours12 = hours24 % 12 || 12
   const minutes = String(date.getUTCMinutes()).padStart(2, "0")
   const month = MONTHS[date.getUTCMonth()]
-  return `${hours12}:${minutes} ${meridiem} · ${month} ${date.getUTCDate()}, ${date.getUTCFullYear()}`
+  return `${hours12}:${minutes} ${meridiem}, ${month} ${date.getUTCDate()}, ${date.getUTCFullYear()}`
 }
 
 const MENTION_OR_TAG = /[@#$]\w+/g
@@ -263,31 +263,29 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
     )
   }
 
-  const authorLabel = `${author.name} (@${author.handle})`
+  // The avatar, name, and handle point at the author's profile; the X logo is
+  // the permalink to the post. `no-favicon` opts these out of the site favicon
+  // pass (which would otherwise stamp an X icon on every link).
+  const profileUrl = `${XCANCEL_BASE}/${author.handle}`
   const header = h("div", { className: "tweet-header" }, [
-    externalAnchor(
-      snapshot.url,
-      [
-        h("img", {
-          className: "tweet-avatar",
-          src: author.avatarSrc,
-          alt: "",
-          loading: "lazy",
-          width: 48,
-          height: 48,
-        }),
-      ],
-      "tweet-avatar-link",
-      authorLabel,
-    ),
+    h("span", { className: "tweet-avatar-wrap" }, [
+      h("img", {
+        className: "tweet-avatar",
+        src: author.avatarSrc,
+        alt: "",
+        loading: "lazy",
+        width: 48,
+        height: 48,
+      }),
+    ]),
     h("div", { className: "tweet-author" }, [
-      externalAnchor(snapshot.url, nameChildren, "tweet-name-link"),
-      externalAnchor(snapshot.url, [`@${author.handle}`], "tweet-handle"),
+      externalAnchor(profileUrl, nameChildren, "tweet-name-link no-favicon"),
+      externalAnchor(profileUrl, [`@${author.handle}`], "tweet-handle no-favicon"),
     ]),
     externalAnchor(
       snapshot.url,
       [icon(X_LOGO_PATH, "tweet-x-logo")],
-      "tweet-source-link",
+      "tweet-source-link no-favicon",
       "View post on X",
     ),
   ])
@@ -300,7 +298,7 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
 
   const formatted = formatTweetDate(snapshot.createdAt)
   if (formatted) {
-    children.push(externalAnchor(snapshot.url, [formatted], "tweet-date"))
+    children.push(h("span", { className: "tweet-date" }, formatted))
   }
   children.push(...metricsRow(snapshot.metrics))
 

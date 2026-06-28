@@ -587,6 +587,16 @@ describe("ModifyNode", () => {
     },
   )
 
+  it.each([
+    ["array className", ["other", "no-favicon"]],
+    ["string className", "other no-favicon"],
+  ])("skips links opted out with a no-favicon class (%s)", async (_label, className) => {
+    const node = h("a", { href: "https://example.com", className })
+    const parent = h("div", [node])
+    await favicons.ModifyNode(node, parent, faviconCounts)
+    expect(node.children.length).toBe(0)
+  })
+
   it("skips links that already have a favicon", async () => {
     const node = h("a", { href: "https://example.com" }, [
       h("span", {}, [h("svg", { className: "favicon" })]),

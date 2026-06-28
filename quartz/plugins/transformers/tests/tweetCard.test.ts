@@ -36,12 +36,12 @@ const render = (node: Element): string => toHtml(node)
 
 describe("formatTweetDate", () => {
   it("formats a valid ISO timestamp in UTC", () => {
-    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("5:32 PM · Jan 21, 2025")
+    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("5:32 PM, Jan 21, 2025")
   })
 
   it("uses 12 for midnight and noon", () => {
-    expect(formatTweetDate("2025-06-15T00:05:00.000Z")).toBe("12:05 AM · Jun 15, 2025")
-    expect(formatTweetDate("2025-06-15T12:00:00.000Z")).toBe("12:00 PM · Jun 15, 2025")
+    expect(formatTweetDate("2025-06-15T00:05:00.000Z")).toBe("12:05 AM, Jun 15, 2025")
+    expect(formatTweetDate("2025-06-15T12:00:00.000Z")).toBe("12:00 PM, Jun 15, 2025")
   })
 
   it("returns empty string for an unparseable timestamp", () => {
@@ -103,20 +103,29 @@ describe("linkifyTweetText", () => {
 })
 
 describe("buildTweetCard", () => {
-  it("renders author, handle, body, and a date linking to xcancel", () => {
+  it("renders author, handle, body, and a plain-text date", () => {
     const html = render(buildTweetCard(baseSnapshot))
     expect(html).toContain("Alex Turner")
     expect(html).toContain("@turntrout")
     expect(html).toContain("Hello world")
-    expect(html).toContain("5:32 PM · Jan 21, 2025")
-    expect(html).toContain('href="https://xcancel.com/turntrout/status/123"')
+    expect(html).toContain('<span class="tweet-date">5:32 PM, Jan 21, 2025</span>')
     expect(html).toContain('data-tweet-id="123"')
   })
 
-  it("gives the icon-only avatar and source links accessible names", () => {
+  it("links the name and handle to the profile, and the source to the post", () => {
     const html = render(buildTweetCard(baseSnapshot))
-    expect(html).toContain('aria-label="Alex Turner (@turntrout)"')
-    expect(html).toContain('aria-label="View post on X"')
+    // Name and handle point at the profile (no trailing /status/...).
+    expect(html).toContain('href="https://xcancel.com/turntrout"')
+    expect(html).toContain('class="tweet-name-link no-favicon"')
+    expect(html).toContain('class="tweet-handle no-favicon"')
+    // The X-logo source link points at the post permalink.
+    expect(html).toContain('href="https://xcancel.com/turntrout/status/123"')
+    // The avatar is a plain image, not a link.
+    expect(html).toContain('<span class="tweet-avatar-wrap"><img')
+  })
+
+  it("gives the icon-only source link an accessible name", () => {
+    expect(render(buildTweetCard(baseSnapshot))).toContain('aria-label="View post on X"')
   })
 
   it("shows the verified badge only when verified", () => {
