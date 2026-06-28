@@ -240,6 +240,14 @@ describe("renderReadingTime", () => {
     const result = renderReadingTime(fileData)
     expect(result.props?.children).toEqual(["Read time: ", expected])
   })
+
+  it("renders no reading-time label when text is empty", () => {
+    const fileData = createFileData() as QuartzPluginData
+    fileData.text = ""
+    const result = renderReadingTime(fileData)
+    expect(result.props?.children).toBeFalsy()
+    expect(result.props?.className).toBeUndefined()
+  })
 })
 
 describe("renderLinkpostInfo", () => {
