@@ -2,8 +2,9 @@
 Capture self-hosted, tracking-free snapshots of X/Twitter posts.
 
 The render side (``quartz/plugins/transformers/tweetEmbed.ts``) never talks to
-Twitter: it reads a normalized JSON snapshot from a local directory. This script
-is what populates that directory. For each tweet id referenced by a ``tweet``
+Twitter: it reads a normalized JSON snapshot, hydrating it from R2 at build time
+(``static/tweets/<id>.json``) unless a copy is pinned in the local cache dir.
+This script is what populates R2. For each tweet id referenced by a ``tweet``
 fenced block in the content, it:
 
   1. Fetches the post from X's cookie-free syndication endpoint
@@ -13,11 +14,12 @@ fenced block in the content, it:
      and rewrites the snapshot's media URLs to ``assets.turntrout.com`` (the only
      media host ``built_site_checks`` permits).
   3. Writes the snapshot JSON to the local cache and, in ``--write`` mode, to R2
-     at ``static/tweets/<id>.json`` so a later takedown can't break the build.
+     at ``static/tweets/<id>.json`` so the build can hydrate it and a later
+     takedown can't break the site.
 
-Resolution order per tweet, so the build is robust and deterministic:
+Resolution order per tweet, so the run is robust and deterministic:
 
-  * A *pinned* snapshot (a JSON already committed in the cache dir) is
+  * A *pinned* snapshot (a JSON force-committed in the cache dir) is
     authoritative and is never re-fetched or overwritten — pin a tweet to make
     its embed fully independent of both Twitter and R2.
   * Otherwise: live fetch → existing R2 snapshot → hard error.
