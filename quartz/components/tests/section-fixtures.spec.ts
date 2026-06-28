@@ -38,7 +38,9 @@ test.describe("Test page section fixtures", () => {
         await gotoPage(page, `http://localhost:8080/test-section-${slug}`)
         // Fail loudly if the fixture page didn't build (404s to "Page Not
         // Found") instead of silently screenshotting the 404 page as a diff.
-        await expect(page).toHaveTitle(/^Test section:/)
+        // The title is title-cased on render ("Test Section: …"), so match
+        // case-insensitively.
+        await expect(page).toHaveTitle(/^test section:/i)
         await setTheme(page, theme)
         const article = page.locator("article").first()
         await expect(article).toBeVisible()
