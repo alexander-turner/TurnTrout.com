@@ -9570,5 +9570,33 @@
   "https://assets.turntrout.com/static/images/posts/eb2E5Eg.avif?v=1": {
     "width": 1937,
     "height": 925
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/stackexchange_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/twemoji/1f9c0.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/twemoji/1f916.svg": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/tweets/2064426233769742627/avatar.jpg?v=1": {
+    "width": 400,
+    "height": 400
+  },
+  "https://assets.turntrout.com/static/tweets/2064426233769742627/media-0.jpg?v=1": {
+    "width": 1200,
+    "height": 797
+  },
+  "https://assets.turntrout.com/static/tweets/2055343603224879417/avatar.jpg?v=1": {
+    "width": 400,
+    "height": 400
+  },
+  "https://assets.turntrout.com/static/tweets/2055343603958878231/avatar.jpg?v=1": {
+    "width": 400,
+    "height": 400
   }
 }
