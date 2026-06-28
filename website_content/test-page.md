@@ -497,6 +497,12 @@ https://xcancel.com/Turn_Trout/status/2064426233769742627
 retweeted-by: Shrek
 ```
 
+A tall image keeps its natural aspect ratio up to a height cap, so it shows in full instead of cropping into a fixed frame:
+
+```tweet
+https://xcancel.com/TechEmails/status/2071254764558676130
+```
+
 A thread (one URL per line) renders as a connected stack:
 
 ```tweet
