@@ -30,7 +30,7 @@ original_url: https://www.lesswrong.com/posts/pYg6RRBvkcMcsMYLq/unyielding-yoda-
 no_dropcap: true
 skip_import: true
 description: Three short essays written against the clock on instrumental rationality, confusion identification, and emotion propagation.
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 ---
 
 > [!quote] [The Hammertime Final Exam](https://www.lesswrong.com/posts/Q7MsMshzbzhEs729s/hammertime-final-exam)
@@ -49,7 +49,7 @@ date_updated: 2026-04-20
 
 I have one "spirit" which I regard as being the best version of myself and which I can trust to reliably make good choices. Unfortunately, when I'm making decisions, another spirit is often more or less in charge. One approach to mitigating this is making a TAP wherein you simulate my _post facto_ opinion of the (usually bad) choice you're about to make. This interpolates between your current spirit and the normatively correct one. Pretending to be someone else / another version of yourself is, in my experience, surprisingly effective.
 
-# Confusion Identification
+# Confusion identification
 
 > [!question] Challenge
 > Introduce a rationality framework.
@@ -60,7 +60,7 @@ One approach is to set a Yoda Timer for 5 minutes; write down a broad-strokes ex
 
 Be on the lookout for any mental bumps, any areas you gloss over with a trace of discomfort. These dark crevices beckon to you; into them you must descend if you are to emerge solution in hand.
 
-# Emotion Propagation
+# Emotion propagation
 
 > [!question] Challenge
 > Describe a cognitive defect.

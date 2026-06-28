@@ -38,7 +38,7 @@ date_published: 2020-02-27
 original_url: https://www.lesswrong.com/posts/S8AGyJJsdBFXmxHcb/attainable-utility-preservation-scaling-to-superhuman
 skip_import: true
 description: AUP scales to superintelligence by penalizing power-seeking, but loopholes exist. I propose fixes and explore their implications.
-date_updated: 2026-06-27
+date_updated: 2026-06-28
 createBibtex: true
 ---
 
@@ -171,7 +171,7 @@ We are then left with an equation which is reasonably competitive in terms of pe
 >
 > By the theorems of [_How Low Should Fruit Hang Before We Pick It?_](/how-low-should-fruit-hang-before-we-pick-it), we only need equation 5 to penalize catastrophic power-gaining plans at least e.g. ten times more than the most impactful reasonable plan we'd like agent to execute. _If_ this criterion is met, then by initializing $\lambda$ large and slowly decreasing it until the agent executes a reasonably helpful policy, we're guaranteed to avoid catastrophe.
 
-## Appendix: Remaining Problems
+## Appendix: Remaining problems
 
 I don’t think we can pack up and go home after writing equation 5.
 

@@ -39,14 +39,14 @@ original_url: https://www.lesswrong.com/posts/LfGzAduBWzY5gq6FE/how-low-should-f
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/4bIPf6o.jpg
 description: How to choose an AI's impact limit to get the best results without triggering a catastrophe.
-date_updated: 2026-05-20
+date_updated: 2026-06-28
 card_image_alt: A diagram illustrating how a search radius constrains an AI's choices. On the left, a cartoon AI is at the center of concentric circles representing increasing impact. Several pink circles (good plans) are at different distances—the farther a circle is, the darker its pink color (higher utility). A distant, mischievous pink smiley face represents a catastrophic plan. On the right, a line labeled "Search radius" shows that as the radius increases from "nothing," the AI can select progressively farther, higher-utility plans.
 ---
 
 > [!info] Summary
 > Even if we can measure how impactful an agent's actions are, how impactful do we let the agent be? This post uncovers a surprising fact: Armed with just four numbers, we can set the impact level so that the agent chooses a reasonable, non-catastrophic plan on the first try. This understanding increases the competitiveness of impact-limited agents and helps us judge impact measures. Furthermore, the results help us better understand diminishing returns and cost-benefit tradeoffs.
 
-In _[Reframing Impact](/reframing-impact)_, we meet Frank (a capable AI), whom we’ve programmed to retrieve the pinkest object he can find (execute an optimal plan, according to the specified utility function). Because we can’t ask Frank to do _exactly_ what we want, sometimes he chooses a dangerous object (executes a catastrophically bad plan). We asked after an “impact measure” which grades plans and has three properties:
+In _[@title](/reframing-impact)_, we meet Frank (a capable AI), whom we’ve programmed to retrieve the pinkest object he can find (execute an optimal plan, according to the specified utility function). Because we can’t ask Frank to do _exactly_ what we want, sometimes he chooses a dangerous object (executes a catastrophically bad plan). We asked after an “impact measure” which grades plans and has three properties:
 
 ![Three target properties for an AI impact measure: 1. Is easy to specify, 2. Puts catastrophes far away, 3. Puts reasonable plans nearby. Next to the list, a 'no' symbol covers a sad robot and a dangerous glowing pink devil, symbolizing the prevention of catastrophe.](https://assets.turntrout.com/static/images/posts/w0DbNcB.avif)
 
@@ -71,7 +71,7 @@ As $R$ increases, high-impact plans become increasingly appealing, and Frank bec
 >
 > We take $R$ to divide the impact in the scaled formulation so as to make Frank act more cautiously as $R$ increases for both formulations. The downside is that some explanations become less intuitive. I will cite various results which are proven in [the appendix](#appendix-math).
 >
-> In _[Attainable Utility Preservation: Empirical Results](/attainable-utility-preservation-empirical-results),_ $\lambda $ plays the same role as $R,$ except low $\lambda$ means high $R$; $\lambda := R^{-1}$. To apply this post's theorems to the reinforcement learning setting, we would take "utility" to be the discounted return for an optimal policy from the starting state, and "impact" to be the total discounted penalty over the course of that policy (before incorporating $\lambda$).
+> In _[@title](/attainable-utility-preservation-empirical-results),_ $\lambda $ plays the same role as $R,$ except low $\lambda$ means high $R$; $\lambda := R^{-1}$. To apply this post's theorems to the reinforcement learning setting, we would take "utility" to be the discounted return for an optimal policy from the starting state, and "impact" to be the total discounted penalty over the course of that policy (before incorporating $\lambda$).
 >
 > In both cases, Frank goes from 0 to 60 - eventually. For sufficiently small $R,$ doing nothing is optimal (Lemma 5: the first subinterval is the best plan with minimal impact). For sufficiently large $R,$ Frank acts like a normal maximizer (Corollary 7: low-impact agents are naive maximizers in the limit).
 
@@ -404,7 +404,7 @@ This obsoletes the lower bound provided by Theorem 6: Individual appearance boun
 >
 > > ! The largest such $\alpha$ is $13.$
 
-## Even More Math
+## Even more math
 
 > [!math] Proposition: Invariances
 > Let $\mathcal{P}$ be an impact partition induced by $(\bar{A},{\color{Red}u}, {\color{blue}I})$.

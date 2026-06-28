@@ -17,7 +17,7 @@ aliases:
   - software
   - OSS
 date_published: 2025-10-28
-date_updated: 2026-05-14
+date_updated: 2026-06-27
 ---
 
 # Punctilio for meticulous typography
@@ -66,7 +66,7 @@ Subtitle: Install with `pip install easy-dataset-share`.
 
 I helped fund this project. Here's the introduction to an article I wrote:
 
-> [!quote] [We Built a Tool to Protect Your Dataset From Simple Scrapers](/dataset-protection)
+> [!quote] [@title](/dataset-protection)
 > ![[dataset-protection#]]
 
 # Automated setup

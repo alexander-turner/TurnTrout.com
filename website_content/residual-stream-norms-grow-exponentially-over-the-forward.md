@@ -34,7 +34,7 @@ original_url: https://www.lesswrong.com/posts/8mizBCm3dyc432nK8/residual-stream-
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/hpgem17ggmbpgnwcvdut.jpg
 description: Residual stream norms grow, perhaps due to layer normalization making it hard to delete information and easier to overshadow it.
-date_updated: 2026-06-26
+date_updated: 2026-06-28
 card_image_alt: A line chart plots the log norm of the residual stream for each token in a prompt. The norm for the tokens "M", "ATS", "is", "really", and "cool" grows exponentially (appearing as a near-straight line on the log scale) with the layer number. The `<|endoftext|>` token's norm is an outlier, rising much more steeply to a higher peak before declining.
 ---
 
@@ -153,7 +153,7 @@ We know that both `attn_out` and `mlp_out` grow exponentially. In the next two s
 > [!note] Summary
 > We _do_ find evidence for exponentially increasing weights in both sub-layers, although in both cases we are somewhat confused what is happening.
 
-## Analyzing the Attention weights
+## Analyzing the attention weights
 
 **What do we want to get evidence on?**
 : We want to know why `attn_out` grows exponentially with layer number: Is the growth a property inherent to the Attention weights in each of the layers (theory 1), or is the growth relying on properties of the residual stream (theory 2).
@@ -251,7 +251,7 @@ For example, if $g=1.05$, then the norms of the attention and MLP contributions 
 
 # Appendix 2: Explaining the difference between `attn_out` and `mlp_out`
 
-Remembering the two plots from [Theories for the source of the growth](#theories-for-the-source-of-the-growth), we notice a surprisingly large y-axis difference between the norms. We repeat those norm curves here:
+Remembering the two plots from [@title](#theories-for-the-source-of-the-growth), we notice a surprisingly large y-axis difference between the norms. We repeat those norm curves here:
 
 ![A log-scale plot of L2 norm versus layer index for GPT-2-XL activations. The norms for `resid_mid` and `resid_post` show clear exponential growth from about 30 to over 200. The `mlp_out` norm also grows exponentially from about 10 to 100. The `attn_out` norm is lower and fluctuates erratically.](https://assets.turntrout.com/static/images/posts/xoddfbotuqd8f7r06dl0.avif)
 

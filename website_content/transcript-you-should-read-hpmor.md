@@ -34,7 +34,7 @@ original_url: https://www.lesswrong.com/posts/HL6x8zHo9BkuK3tic/transcript-you-s
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/grinnell.jpg
 description: Why you should read “Harry Potter and the Methods of Rationality” to live more ethically and effectively.
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 card_image_alt: A panoramic view of the Grinnell College campus on a sunny autumn day. A large green lawn sits in the foreground before a line of trees with yellow and orange fall foliage, behind which stands a large, ornate brick building under a blue sky.
 ---
 
@@ -65,7 +65,7 @@ At Grinnell, I exemplified a lot of values I now look down on. I was extremely m
 
 Why did this happen, and what do I think has changed?
 
-# On Caring
+# On caring
 
 First, I was disconnected from what I would have really cared about upon honest, unflinching reflection. I thought I wanted Impressive Material Things. I thought I wanted a Respectable Life. I didn’t care about the bible, but I brought it with me to my dorm anyways so that I’d be more “wholesome” according to my cultural background. Chasing something someone convinced me to believe I wanted, but which I don’t care about.
 
@@ -83,7 +83,7 @@ You’ll notice that CS-151 doesn’t start off with a [category theoretic-motiv
 
 As far as I know, HPMOR is the media which imparts the strongest "lived experience" of _gut-level caring about hammering the world into better shape_.
 
-# On Foolishness
+# On foolishness
 
 Second, in 2016, I was enthusiastic, optimistic, and hard-working. I was willing to swim against social convention. I was also foolish.
 

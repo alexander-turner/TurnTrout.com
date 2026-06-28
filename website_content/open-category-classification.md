@@ -29,7 +29,7 @@ date_published: 2018-03-28
 original_url: https://www.lesswrong.com/posts/txGJZAPjraYEQfHq2/open-category-classification
 skip_import: '"true"'
 description: 'Open-category classification: How can we penalize classifiers which overgeneralize from their training data?'
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 ---
 
 # Introduction
@@ -56,7 +56,7 @@ In short, we'd like our machine learning algorithms to learn explanations which 
 > - [Unforeseen maximum](https://arbital.com/p/unforeseen_maximum/) \- if we stick to things very similar to already positively classified instances, we won't automatically go into the unimagined parts of the graph.
 > - [Context disaster](https://arbital.com/p/context_disaster/) - a sufficiently conservative optimizer might go on using options similar to previously whitelisted ones even if large new sections of planning space opened up.
 
-# Prior Work
+# Prior work
 
 [Taylor et al.](https://agentfoundations.org/item?id=467) provide an overview of relevant research. [Taylor also introduced an approach](https://agentfoundations.org/item?id=467) for rejecting examples from distributions too far from the training distribution.
 
@@ -64,7 +64,7 @@ In short, we'd like our machine learning algorithms to learn explanations which 
 
 [The Knows What It Knows](https://dl.acm.org/citation.cfm?id=1390228) framework allows a learner to avoid making mistakes by deferring judgment to a human some polynomial number of times. However, this framework makes the unrealistically strong assumption that the data are _i.i.d._; furthermore, efficient KWIK algorithms are not known for complex hypothesis classes (such as those explored in neural network-based approaches).
 
-# Penalizing Volume
+# Penalizing volume
 
 If we want a robust `cat` / `unknown` classifier, we should indeed cleave the space in two, but with the vast majority of the space being allocated to `unknown`. In other words, we're searching for the smallest, simplest volume which encapsulates the cat training data.
 
@@ -91,11 +91,11 @@ $$
 \argmin_{\theta} \mathbb{E}_{x,y\sim X}\left[\mathcal{L}(y,f_\theta(x)) + \lambda_1R(\theta) + \lambda_2 \hat{V}(f_\theta)\right].
 $$
 
-# Tractable Approximations
+# Tractable approximations
 
 Exhaustively enumerating the input space to calculate $V$ is intractable - the space of $256×256$ RGB images is of size $256^{3^{256×256}}$. How do we measure or approximate the volume taken up by the non-`unknown` classes?
 
-## Black Box
+## Black box
 
 - Random image sampling wouldn't be informative (beyond answering "is this class extending indefinitely along arbitrary dimensions?").
 - [Yu et al.'s results](https://arxiv.org/abs/1705.08722) weakly suggest that adversarial approaches can approximate the hypersurface of the class boundaries.
@@ -116,7 +116,7 @@ Since the output of a one hidden-layer neural network can be represented as the 
 
 All this is getting a bit silly. After all, what we really care about is the proportion of the input space taken up by non-`unknown` classes; we don't necessarily need to know exactly _which_ inputs correspond to each output.
 
-## White Box
+## White box
 
 Let's treat this as a prediction problem. Take $n$ randomly generated images and run them through the first layer of the network, recording the values for the activation of node $k$ in the first layer ($a_{1k}$); assume we incur some approximation error $\epsilon$ due to having insufficiently sampled the true distribution. Derive a PDF over the activation values for each node.
 
@@ -124,7 +124,7 @@ Repeat this for each of the $l$ network layers, sampling input values from the P
 
 However, this may only yield results comparable to random image sampling, as many node activations may not occur often for arbitrary data. While this would be descriptive of the input space as a whole, it would be unlikely to sample any `cat` images, for example.
 
-## Blessing of Dimensionality
+## Blessing of dimensionality
 
 In my opinion, the most promising approach involves abusing the properties of high-dimensional volumes; in particular, the well-known [Curse of Dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality).
 
@@ -157,7 +157,7 @@ We should be able to provably bound our error as a function of the latent space 
 
 This approach requires that the latent space have enough dimensions to allow for `unknown` inputs to not be encoded to areas occupied by known classes. If this is not feasible, there are other architectural choices available. Note that we need not compute the exact proportion of `unknown`\-labeled inputs, but rather an approximation; therefore, as long as the latent space has a reasonable number of features, it likely doesn't need to encode _all_ relevant features.
 
-# Future Directions
+# Future directions
 
 Extremely small input spaces allow for enumerative calculation of volume. By pitting a volume-penalizing classifier against its vanilla counterpart in such a space, one could quickly gauge the promise of this idea.
 

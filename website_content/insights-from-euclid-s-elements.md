@@ -40,7 +40,7 @@ original_url: https://www.lesswrong.com/posts/Wpf3Gsa8A89mmjkk8/insights-from-eu
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/euler.jpg
 description: Euclid's "Elements", but made beautiful. A colorful exploration of geometric proofs and the power of visual learning.
-date_updated: 2026-06-26
+date_updated: 2026-06-28
 card_image_alt: A geometry proof uses colored lines and symbols instead of letters to visually demonstrate that the triangle's sides are equal.
 ---
 
@@ -70,7 +70,7 @@ Welcome to Oliver Byrne's rendition of Euclid's _Elements_, [digitized and freel
 >
 > Thus an averſion is created in the mind of the pupil, and a ſubject fo calculated to improve the reaſoning powers, and give the habit of cloſe thinking, is degraded by a dry and rigid courſe of inſtruction into an unintereſting exerciſe of the memory.
 
-## Equality and Similarity
+## Equality and similarity
 
 Old mathematical writing lacks modern precision. Euclid says that two triangles are "equal", without specifying what that means. It means that one triangle can be turned into another via an [isometric transformation](https://en.wikipedia.org/wiki/Euclidean_plane_isometry). That is, if you rotate, translate, and/or reflect triangle $A$, it turns into triangle $B$.
 

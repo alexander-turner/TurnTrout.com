@@ -41,6 +41,10 @@ Subtitle: I am a subtitle with [a link](/test-page).
 
 Subtitle: MATS (starting with smallcaps).
 
+# Title-binding links
+
+The `@title` sentinel ties a link's text to its target's current title at build time: [@title](/test-page) renders this page's title, and [@title](#header-4) renders the current text of the "Header 4" section.
+
 # Lists
 
 This sentence is a baseline-scoping probe: it sits in the Lists section, so only the Lists screenshots should change.
@@ -766,6 +770,10 @@ Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 # Code blocks
 
 Inline code ligature kerning: `$var` must be interpolated into `#{$var}`. See also `===`, `!==`, `=>`, and `custom-property-no-missing-interpolation`.
+
+Inline code left spacing after a crowding glyph: with the help of [`TomSmith`](#code-blocks), I got feedback from experts in military and surveillance law. In particular, I got feedback from the foremost expert on the law behind human / AI integration in war—a former chief judge on the US military appeals court. He said my Framework was "actually pretty good" 🙂 and suggested improvements. The monospace keeps a small gap mid-line but stays flush when it wraps to the start of a line.
+
+Inline code flush against a glued delimiter: parentheses (`code`), brackets \[`code`\], braces \{`code`\}, quotes "`code`", a slash AI/`code`, a hyphen re-`code`, and equals x=`code` all hug the code, while a space `the regex` or an em dash—`code` keeps the small gap.
 
 ```json
 "lint-staged": {

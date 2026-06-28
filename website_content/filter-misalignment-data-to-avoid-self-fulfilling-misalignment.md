@@ -17,7 +17,7 @@ aliases:
   - pretrained-misalignment
   - filter-misalignment-data
 date_published: 2025-03-01
-date_updated: 2026-05-15
+date_updated: 2026-06-28
 card_image_alt: A person says "AI will be evil", causing a later AI to think it's evil.
 ---
 
@@ -236,7 +236,7 @@ Data concerns
 : By default, we'd lose out on a bit of high-quality data, the model would know less about the filtered areas, and the model would be worse at continuing existing alignment reasoning. Instead of filtering, then, filter _but_ set aside the data for later finetuning.
 
 How can we selectively filter content within a document?
-: What do we do about papers or webpages which include some doomy speculation and some unrelated and valuable technical material? I think that chucking the whole document would be a waste. If we just naively expunge the doomy speculation, then the rest of the document makes less sense. That means that the AI will learn to infer what was said anyhow. Possibly there's an elegant filtering-based workaround. Thankfully, though, [conditional pretraining](#conditional-pretraining) solves this problem.
+: What do we do about papers or webpages which include some doomy speculation and some unrelated and valuable technical material? I think that chucking the whole document would be a waste. If we just naively expunge the doomy speculation, then the rest of the document makes less sense. That means that the AI will learn to infer what was said anyhow. Possibly there's an elegant filtering-based workaround. Thankfully, though, [@title-lower](#conditional-pretraining) solves this problem.
 
 How thorough do we have to be?
 : Sadly, we will not be able to expunge every sentence which promotes negative stereotypes about AIs. If some datapoints slip by, then the filtering might not work well. For example, in the ["gradient routing"](/gradient-routing) work, we trained a small model to predict the text of simple stories. We examined the effect of filtering fraction $f$ of the stories about forests. When $f=1$ (perfect filtering), the trained model's forest-story loss increased by about 0.37 nats. However, when $f=.9$ (90% filtered), the trained model's loss only increased by about 0.09 nats. Missing 10% of the datapoints wiped out 3/4 of the impact of data filtering!

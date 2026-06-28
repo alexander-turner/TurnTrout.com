@@ -8,6 +8,7 @@ import {
   Assets,
   AutoCode,
   Bibtex,
+  BindLinkTitles,
   ColorVariables,
   ComponentResources,
   ContentIndex,
@@ -19,6 +20,7 @@ import {
   GitHubFlavoredMarkdown,
   githubReadmeSource,
   HTMLFormattingImprovement,
+  InlineCodeSpacing,
   InvertInDarkMode,
   Latex,
   NotFoundPage,
@@ -139,6 +141,10 @@ const config: QuartzConfig = {
       HTMLFormattingImprovement(),
       Latex(),
       CrawlLinks({ lazyLoad: true, markdownLinkResolution: "shortest" }),
+      // After CrawlLinks so `data-slug`/`href` are resolved, and before
+      // AddFavicons so the favicon is woven into the resolved title rather than
+      // the `@title` sentinel.
+      BindLinkTitles(),
       // After CrawlLinks so it sees normalized https:// hrefs + the "external"
       // class; swaps confirmed-dead outbound links for their archived copy.
       ArchiveLinks(),
@@ -151,6 +157,9 @@ const config: QuartzConfig = {
       // After AddFavicons because favicon insertion can rewrite link
       // content and reintroduce leading whitespace inside an <a>.
       StripInlineBoundaryWhitespace(),
+      // After whitespace stripping so the preceding-character check sees the
+      // final inline structure (a glued "(" isn't separated by stray text).
+      InlineCodeSpacing(),
       ColorVariables(),
       TableOfContents({ minEntries: 3 }),
       addAssetDimensionsFromSrc(),

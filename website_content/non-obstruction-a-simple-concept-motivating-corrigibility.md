@@ -36,7 +36,7 @@ date_published: 2020-11-21
 original_url: https://www.lesswrong.com/posts/Xts5wm3akbemk4pDa/non-obstruction-a-simple-concept-motivating-corrigibility
 skip_import: true
 description: "Non-obstruction: how do we design AI that doesn't limit our ability to achieve our goals, even if we misspecified its programming?"
-date_updated: 2026-05-08
+date_updated: 2026-06-28
 ---
 
 I present a unified mathematical frame for understanding corrigibility’s _benefits_, what it “is”, and what it isn’t. This frame is precisely understood by graphing the human overseer’s ability to achieve various goals (their [_attainable utility (AU) landscape_](/attainable-utility-landscape)). I argue that corrigibility’s benefits are secretly a form of counterfactual alignment (alignment with a set of goals the human may want to pursue).
@@ -72,7 +72,7 @@ We certainly shouldn’t keep using 2+ definitions for both alignment and corrig
 
 Evan Hubinger recently wrote a [great FAQ on inner alignment terminology](https://www.lesswrong.com/posts/SzecSPYxqRa5GCaSF/clarifying-inner-alignment-terminology). We won't be talking about inner/outer alignment today, but I intend for my usage of "impact alignment" to roughly map onto his "alignment", and "intent alignment" to map onto his usage of "intent alignment." Similarly, my usage of "impact/intent alignment" directly aligns with the definitions from Andrew Critch's recent post, [_Some AI research areas and their relevance to existential safety_](https://www.lesswrong.com/posts/hvGoYXi2kgnS3vxqb/some-ai-research-areas-and-their-relevance-to-existential-1#AI_alignment__definition_).
 
-# A Simple Concept Motivating Corrigibility
+# A simple concept motivating corrigibility
 
 ## Two conceptual clarifications
 
@@ -181,7 +181,7 @@ What happens if we turn on a paperclip-maximizer? We lose control over the futur
 ![A graph showing how a paperclip-maximizer AI affects "Human attainable utility" across various "Goals P." The green line (AI off) shows a consistent level of utility for goals like "Paperclips," "Human values," and "Blue paint." The red line (AI on) shows a massive spike in utility for the "Paperclips" goal but drops to near zero for all other goals, illustrating that the AI obstructs the human's ability to achieve anything else.](https://assets.turntrout.com/static/images/posts/paperclipper_au.avif)
 <br/>Figure: The paperclipper is incorrigible and obstructs us for all goals except paperclip production.
 
-I think most reward-maximizing optimal policies affect the landscape like this (see also: [the catastrophic convergence conjecture](/the-catastrophic-convergence-conjecture)), which is _why_ it’s so hard to get hard maximizers not to ruin everything. You have to _a)_ hit a tiny target in the AU landscape and _b)_ hit that for the _human’s_ AU, not for the AI’s. The spikiness is bad and, seemingly, hard to deal with.
+I think most reward-maximizing optimal policies affect the landscape like this (see also: [@title](/the-catastrophic-convergence-conjecture)), which is _why_ it’s so hard to get hard maximizers not to ruin everything. You have to _a)_ hit a tiny target in the AU landscape and _b)_ hit that for the _human’s_ AU, not for the AI’s. The spikiness is bad and, seemingly, hard to deal with.
 
 Furthermore, consider how the above graph changes as `pol` gets smarter and smarter. If we were actually super-superintelligent ourselves, then activating a superintelligent paperclipper might not even a big deal, and most of our AUs are probably unchanged. The AI policy isn't good enough to negatively impact us, and so it _can't_ obstruct us. Spikiness depends on both the AI's policy, _and_ on `pol`.
 
@@ -228,7 +228,7 @@ Non-obstruction is important for a (singleton) AI we build: we get more than one
 
 Most importantly, this frame collapses the alignment and corrigibility desiderata into _just alignment_; while impact alignment doesn’t imply corrigibility, corrigibility’s benefits can be understood as a kind of weak counterfactual impact alignment with many possible human goals.
 
-# Theoretically, It’s All About Alignment
+# Theoretically, it’s all about alignment
 
 > [!idea] Main idea
 > We only care about how the agent affects our abilities to pursue different goals (our AU landscape) in the two-player game, and not how that happens. AI alignment subproblems (such as corrigibility, intent alignment, low impact, and mild optimization) are all instrumental avenues for making AIs which affect this AU landscape in specific desirable ways.
@@ -292,12 +292,12 @@ To be confident that this holds empirically, it sure seems like you want high er
 
 - [Low impact](https://www.lesswrong.com/tag/impact-measures): find a maximization criterion which leads to non-spikiness.
   - Goal of methods: to regularize decrease from green line (for **off**) for true unknown goal $P_\text{true}$; since we don’t know $P_\text{true}$, we aim to just regularize decrease from the green line in general (to avoid decreasing the human’s ability to achieve various goals).
-  - The first two-thirds of [Reframing Impact](/posts#reframing-impact) argued that power-seeking incentives play a big part in making AI alignment hard. In the utility-maximization AI design paradigm, instrumental subgoals are always lying in wait. They're always waiting for one mistake, one misspecification in your explicit reward signal, and then _bang_ - the AU landscape is spiky. Game over.
+  - The first two-thirds of [@title](/posts#reframing-impact) argued that power-seeking incentives play a big part in making AI alignment hard. In the utility-maximization AI design paradigm, instrumental subgoals are always lying in wait. They're always waiting for one mistake, one misspecification in your explicit reward signal, and then _bang_ - the AU landscape is spiky. Game over.
 
 - [Mild optimization](https://www.lesswrong.com/tag/mild-optimization): avoid spikiness by avoiding maximization, thereby avoiding steering the future too hard.
 - If you have non-obstruction for lots of goals, you don’t have spikiness!
 
-# What Do We Want?
+# What do we want?
 
 > [!idea] Main idea
 > We want good things to happen; there may be more ways to do this than previously considered.[^Rohin]
@@ -332,7 +332,7 @@ For example, I really liked the idea of [approval-directed agents](https://ai-al
 
 Maybe there’s a higher-level theory for what kinds of policies induce spikiness in our AU landscape. By the nature of spikiness, these $\pi^{AI}$ must decrease human power ([as I’ve formalized it](/power-as-easily-exploitable-opportunities)). So, I'd start there by looking at concepts like [enfeeblement](http://acritch.com/media/arches.pdf#subsubsection.3.2.3), manipulation, power-seeking, and resource accumulation.
 
-# Future Directions
+# Future directions
 
 - Given an AI policy, could we prove a high probability of non-obstruction, given conservative assumptions about how smart `pol` is? (h/t Abram Demski, Rohin Shah)
   - Any irreversible action makes some goal unachievable, but irreversible actions need not impede most meaningful goals.:
@@ -357,7 +357,7 @@ Maybe there’s a higher-level theory for what kinds of policies induce spikines
 The attainable utility concept has led to other concepts which I find exciting and useful:
 
 - Impact as absolute change in attainable utility
-  - [Reframing Impact](/posts#reframing-impact)
+  - [@title](/posts#reframing-impact)
   - [_Conservative Agency via Attainable Utility Preservation_](https://arxiv.org/abs/1902.09725) (AIES 2020)
   - [_Avoiding Side Effects in Complex Environments_](https://arxiv.org/abs/2006.06547) (NeurIPS 2020)
 

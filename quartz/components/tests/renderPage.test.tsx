@@ -926,6 +926,66 @@ describe("optimizeLcpImage", () => {
     expect(result).not.toContain('fetchpriority="low"')
   })
 
+  it("promotes both images of an img-comparison-slider", () => {
+    const html =
+      "<html><head></head><body><article><figure><img-comparison-slider>" +
+      '<img slot="first" src="https://cdn.example.com/before.avif" loading="lazy">' +
+      '<img slot="second" src="https://cdn.example.com/after.avif" loading="lazy">' +
+      "</img-comparison-slider></figure></article></body></html>"
+    const result = optimizeLcpImage(html)
+    expect(result).toContain(
+      'slot="first" src="https://cdn.example.com/before.avif" loading="eager"',
+    )
+    expect(result).toContain(
+      'slot="second" src="https://cdn.example.com/after.avif" loading="eager"',
+    )
+    expect(result).not.toContain('loading="lazy"')
+    expect((result.match(/fetchpriority="high"/g) ?? []).length).toBe(2)
+    expect(result).toContain(
+      '<link rel="preload" href="https://cdn.example.com/before.avif" as="image" crossorigin="anonymous"/>',
+    )
+    expect(result).toContain(
+      '<link rel="preload" href="https://cdn.example.com/after.avif" as="image" crossorigin="anonymous"/>',
+    )
+  })
+
+  it("does not promote images in a later slider when the LCP image is outside it", () => {
+    const html =
+      "<html><head></head><body><article>" +
+      '<img src="hero.avif" loading="lazy">' +
+      '<img-comparison-slider><img slot="first" src="a.avif" loading="lazy">' +
+      '<img slot="second" src="b.avif" loading="lazy"></img-comparison-slider>' +
+      "</article></body></html>"
+    const result = optimizeLcpImage(html)
+    expect(result).toContain('src="hero.avif" loading="eager"')
+    expect(result).toContain('src="a.avif" loading="lazy"')
+    expect(result).toContain('src="b.avif" loading="lazy"')
+  })
+
+  it("only promotes slider images, not a content image after the slider", () => {
+    const html =
+      "<html><head></head><body><article><img-comparison-slider>" +
+      '<img slot="first" src="a.avif" loading="lazy">' +
+      '<img slot="second" src="b.avif" loading="lazy"></img-comparison-slider>' +
+      '<img src="after.avif" loading="lazy"></article></body></html>'
+    const result = optimizeLcpImage(html)
+    expect(result).toContain('src="a.avif" loading="eager"')
+    expect(result).toContain('src="b.avif" loading="eager"')
+    expect(result).toContain('src="after.avif" loading="lazy"')
+  })
+
+  it("treats a content image after a non-content slider as the lone LCP image", () => {
+    const html =
+      "<html><head></head><body><article><img-comparison-slider>" +
+      '<img class="favicon" slot="first" src="icon.svg">' +
+      "</img-comparison-slider>" +
+      '<img src="hero.avif" loading="lazy"></article></body></html>'
+    const result = optimizeLcpImage(html)
+    expect(result).toContain('class="favicon" slot="first" src="icon.svg"')
+    expect(result).toContain('src="hero.avif" loading="eager"')
+    expect(result).toContain('fetchpriority="high"')
+  })
+
   it("ignores images outside the article boundary", () => {
     const html =
       '<html><head></head><body><article>no images here</article><img src="outside.avif" loading="lazy"></body></html>'

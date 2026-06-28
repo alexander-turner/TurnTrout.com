@@ -67,6 +67,17 @@ INVERT_CLASS: str = script_utils.load_shared_constants()[
 FORCE_HSL_INVERT_CLASS: str = script_utils.load_shared_constants()[
     "forceHslInvertClass"
 ]
+# Sentinel that opts a link into build-time title binding. If it survives into
+# the emitted HTML as link text, the binding never resolved.
+LINK_TITLE_SENTINEL: str = script_utils.load_shared_constants()[
+    "linkTitleSentinel"
+]
+LINK_TITLE_LOWER_SENTINEL: str = script_utils.load_shared_constants()[
+    "linkTitleLowerSentinel"
+]
+LINK_TITLE_SENTINELS: frozenset[str] = frozenset(
+    {LINK_TITLE_SENTINEL, LINK_TITLE_LOWER_SENTINEL}
+)
 
 _IssuesDict = dict[str, list[str] | list[Tag] | bool]
 
@@ -352,6 +363,24 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
             invalid_internal_links.append(link)
 
     return invalid_internal_links
+
+
+def check_unrendered_title_sentinel(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for links whose visible text is still a title sentinel (``@title`` or
+    ``@title-lower``).
+
+    A surviving sentinel means the build-time title binding never resolved (e.g.
+    the sentinel was placed on an external or unresolvable link), leaking the
+    raw token into the page instead of the target's title.
+    """
+    leaked: list[str] = []
+    for link in _tags_only(soup.find_all("a")):
+        text = link.get_text(strip=True)
+        if text in LINK_TITLE_SENTINELS:
+            href = link.get("href", "")
+            leaked.append(f"{text} as link text (href={href})")
+    return leaked
 
 
 def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
@@ -2158,6 +2187,7 @@ def check_file_for_issues(
     issues: _IssuesDict = {
         "localhost_links": check_localhost_links(soup),
         "invalid_internal_links": check_invalid_internal_links(soup),
+        "unrendered_title_sentinel": check_unrendered_title_sentinel(soup),
         "invalid_anchors": check_invalid_anchors(soup, base_dir),
         "malformed_hrefs": check_malformed_hrefs(soup),
         "problematic_paragraphs": paragraphs_contain_canary_phrases(soup),

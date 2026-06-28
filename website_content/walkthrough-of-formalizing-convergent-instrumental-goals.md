@@ -30,7 +30,7 @@ date_published: 2018-02-26
 original_url: https://www.lesswrong.com/posts/KXMqckn9avvY4Zo9W/walkthrough-of-formalizing-convergent-instrumental-goals
 skip_import: true
 description: "Proof of instrumental convergence: Even if an AI's goals seem unrelated to humanity, it may still turn us into paperclips. "
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 ---
 
 # Introduction
@@ -39,7 +39,7 @@ I found _[Formalizing Convergent Instrumental Goals](https://intelligence.org/fi
 
 This paper involves the mathematical formulation and proof of [instrumental convergence](https://en.wikipedia.org/wiki/Instrumental_convergence) within the aforementioned toy model. Instrumental convergence says that an agent  $\mathcal{A}$ with utility function  $U$ will pursue instrumentally relevant subgoals, even though this pursuit may not bear directly on  $U$. Imagine that  $U$ involves the proof of the [Riemann hypothesis](https://en.wikipedia.org/wiki/Riemann_hypothesis).  $\mathcal{A}$ will probably want to gain access to lots of computronium. What if  $\mathcal{A}$ turns _us_ into [computronium](https://en.wikipedia.org/wiki/Computronium)? Well, there's plenty of matter in the universe;  $\mathcal{A}$ could just let us be, right? Wrong. Let's see how to prove it.
 
-## My Background
+## My background
 
 I'm a second-year CS PhD student. I've recently started working through the [MIRI research guide](https://intelligence.org/research-guide/); I'm nearly finished with [Naïve Set Theory](http://smile.amazon.com/Naive-Set-Theory-Paul-Halmos/dp/1614271313/), which I intend to review soon. To expose my understanding to criticism, I'm going to summarize this paper and its technical sections in a somewhat informal fashion. I'm aware that the paper isn't particularly difficult for those with a mathematical background. However, I think this result is important, and I couldn't find much discussion of it.
 
@@ -92,7 +92,7 @@ Utility functions evaluate states of the universe;  $U$ evaluates each region an
 
  $\mathcal{A}$ chooses the best possible strategy - that is, the one that maximizes the  $U$ of the final state of the universe-history:  $\mathcal{A}:= \text{argmax}_{\langle \bar{a}^k \rangle \in \texttt{Feasible}} U(\langle \bar{a}^k \rangle)$. Note that this definition implies a Cartesian boundary between the agent and the universe; that is,  $\mathcal{A}$ doesn't model itself as part of the environment (it [isn't naturalized](https://www.lesswrong.com/posts/ethRJh2E7mSSjzCay/building-phenomenological-bridges)).
 
-# Seizing the Means of Cartesian Production
+# Seizing the means of Cartesian production
 
 Let's talk about the situations in which  $\mathcal{A}$ will seize resources; that is, when  $\mathcal{A}$ will take actions to increase its resource pool.
 
@@ -101,7 +101,7 @@ Let's talk about the situations in which  $\mathcal{A}$ will seize resources; th
 
 Define a _null action_ to be any action which doesn't produce new resources. It's easy to see that null actions are never instrumentally valuable. What we want to show is that  $\mathcal{A}$ will take non-null actions in regions to which  $U$ is indifferent; regions like  $h$, where we live, grow, and love. Regions full of instrumentally valuable resources.
 
-## Discounted Lunches
+## Discounted lunches
 
 An action _preserves_ resources if the input resources are strictly contained in the outputs (nothing is lost, and resources are sometimes gained). A _cheap lunch_ is a feasible partial strategy in some subset of squares  $J$, which is feasible given resources  $\langle R^k \rangle$ and whose constituent actions preserve resources. A _free lunch_ is cheap lunch that doesn't require resources.
 
@@ -110,7 +110,7 @@ An action _preserves_ resources if the input resources are strictly contained in
 
 A cheap lunch is _compatible with_ a global strategy if the resources required for the lunch are available for use in  $J$ at each time step. Basically, at no point does the partial strategy require resources already being used elsewhere.
 
-## Possibility of Non-Null Actions
+## Possibility of non-null actions
 
 We show that it's really hard to assert that  $\mathcal{A}$ won't chow down on a lunch of an atom or two (or  $1.3×10^{50}$).
 
@@ -153,18 +153,18 @@ We show that as long as  $\mathcal{A}$ can extract useful resources (resources w
 > [!quote] Formalizing convergent instrumental goals
 > We interpret Theorem 3 as a partial confirmation of Omohundro's thesis in the following sense. If there are actions in the real world that produce more resources than they consume, and the resources gained by taking those actions allow agents the freedom to take various other actions, then we can justifiably call these actions "convergent instrumental goals." Most agents will have a strong incentive to pursue these goals, and an agent will refrain from doing so only if it has a utility function over the relevant region that strongly disincentivizes those actions.
 
-# The Bit Universe
+# The bit universe
 
 The authors introduce a toy model and use the freshly proven theorems to illustrate how  $\mathcal{A}$ takes non-null actions in our precious  $S_h$ (both when it is indifferent to  $h$ and when it is not). This isn't good; the vast majority of utility-maximizing agents will not steer us towards futures we find desirable. If you're interested, I recommend reading this section for yourself, even if you aren't comfortable with math.
 
-# Our Universe
+# Our universe
 
 > [!quote] Formalizing convergent instrumental goals
 > The path that our model shows is untenable is the path of designing powerful agents intended to autonomously have large effects on the world, maximizing goals that do not capture all the complexities of human values. If such systems are built, we cannot expect them to cooperate with or ignore humans, by default.
 
 We have much work to do. The risks are enormous and the challenges "[impossible](http://lesswrong.com/lw/up/shut_up_and_do_the_impossible/)", but we have time on the clock. [AI safety research is primarily talent-constrained](https://80000hours.org/career-reviews/artificial-intelligence-risk-research/). If you've been sitting on the sidelines, wondering whether you're good enough to learn the material - well, I can't make any promises. But if you feel the burning desire to _do something_, [to put forth some extraordinary effort](http://lesswrong.com/lw/uo/make_an_extraordinary_effort/), [to become stronger](http://lesswrong.com/lw/h8/tsuyoku_naritai_i_want_to_become_stronger/) - I invite you to contact me so we can work through the material together.
 
-# Appendix: Questions and Errata
+# Appendix: Questions and errata
 
 - Page 4, left column, last line: why is that  $\cup \:P^t$ - shouldn't we take the union of the outputs and whatever resources _weren't_ used at time  $t$?
 - Page 8, right column, second full paragraph, last line: should be "we have two options available _to_ us".

@@ -42,7 +42,7 @@ original_url: https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/xveuJm2.jpg
 description: A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.
-date_updated: 2026-06-27
+date_updated: 2026-06-28
 card_image_alt: A Markov decision process showing a robot agent's choice. One path via red gems leads to a small network of states. The other path via blue gems leads to a larger, more complex network and treasure, illustrating a choice that provides more future options.
 createBibtex: true
 ---
@@ -82,7 +82,7 @@ The table’s convergently instrumental strategies are about maintaining, gainin
 > [!info] Prior work
 > [_Formalizing Convergent Instrumental Goals_](https://intelligence.org/files/FormalizingConvergentGoals.pdf) suggests that the vast majority of utility functions incentivize the agent to exert a lot of control over the future, _assuming_ that these utility functions depend on “resources.” This assumption is significant: what are “resources”, and why must the AI’s utility function depend on them? We drop this assumption, assuming only unstructured reward functions over a finite Markov decision process (MDP), and show from first principles how power-seeking can often be optimal.
 
-# Formalizing the Environment
+# Formalizing the environment
 
 My theorems apply to finite MDPs; for the unfamiliar, I’ll illustrate with Pac-Man.
 
@@ -105,7 +105,7 @@ When playing the game, the agent has to choose an action at each state. This dec
 
 By the end of this post, we’ll be able to answer questions like “with respect to a ‘neutral’ distribution over reward functions, do optimal policies have a high probability of avoiding ghosts?”.[^2]
 
-# Power as Average Optimal Value
+# Power as average optimal value
 
 When people say "power" in everyday speech, I think they’re often referring to _one’s ability to achieve goals in general_. This accords with a major philosophical school of thought on the meaning of "power":
 
@@ -221,7 +221,7 @@ Generally, my theorems assume that reward is independently and identically distr
 > [!note] Note, 7/21/21
 > As explained in [_Environmental Structure Can Cause Instrumental Convergence_](/environmental-structure-can-cause-instrumental-convergence), the theorems no longer require the IID assumption. This post refers to v6 of _Optimal Policies Tend To Seek Power_, available on [arXiv](https://arxiv.org/abs/1912.01683).
 
-# When is Seeking POWER Convergently Instrumental?
+# When is seeking POWER convergently instrumental?
 
 ![A diagram of a choice tree starting from a "Start" node. One path leads to a terminal state represented by candy. The other path leads to a "Wait!" node, which then branches into two other terminal states: a chocolate bar and two stick figures hugging.](https://assets.turntrout.com/static/images/posts/ai4vjqncs8t20nad6ktw.avif)
 

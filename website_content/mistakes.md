@@ -7,13 +7,12 @@ tags:
   - website
   - personal
 description: A list of some of my major conceptual mistakes.
-date-published:
 authors:
   - Alex Turner
 hideSubscriptionLinks: false
 card_image:
 date_published: 2024-10-31
-date_updated: 2026-05-15
+date_updated: 2026-06-27
 ---
 
 Inspired by Scott Alexander's [Mistakes](https://www.astralcodexten.com/p/mistakes) page:
@@ -50,7 +49,7 @@ Subtitle: January 30, 2025
 
 In 2023, [I (re?)discovered _steering vectors_](/research#steering-vectors): activation vectors which steer AI outputs to be e.g. more or less friendly ("Look Ma, no prompts!"). The way I saw it, model behavior was determined by two main factors: the abilities and "conversational modes" the model has learned ("[shards](/research#shard-theory)") and which shards are activated by the current situation.[^steering] Clearly - I thought - the model's "truthful mode" isn't always strongly activated. Clearly - I thought - one could more strongly activate that mode, possibly with a "be truthful" steering vector.
 
-> [!quote] [Steering Gemini Using BIDPO Vectors](/gemini-steering)
+> [!quote] [@title](/gemini-steering)
 > A while back, we explored the [“BIDPO”](https://arxiv.org/abs/2406.00045) method for training [steering vectors.](https://arxiv.org/abs/2308.10248) In Gemini 1.5v1 Flash and Pro, bidpo steering vectors boosted TruthfulQA scores by >10% while mostly retaining capabilities. When we [updated to Gemini 1.5v2,](https://developers.googleblog.com/en/updated-gemini-models-reduced-15-pro-pricing-increased-rate-limits-and-more/) prompt-based steering baselines became significantly stronger. BIDPO did not beat the stronger baselines, ending the project.
 
 I'm not sure how, exactly, to change my beliefs. The result is slight negative evidence against both shard theory and (relatedly) against my understanding (circa 2024) of how models work.
