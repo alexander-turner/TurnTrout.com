@@ -39,8 +39,8 @@ test.describe("Tweet embeds", () => {
     await expect
       .poll(() =>
         img.evaluate((el: HTMLImageElement) => {
-          const r = el.getBoundingClientRect()
-          return el.naturalWidth / el.naturalHeight < r.width / r.height - 0.01
+          const box = el.getBoundingClientRect()
+          return el.naturalWidth / el.naturalHeight < box.width / box.height - 0.01
         }),
       )
       .toBe(false)
