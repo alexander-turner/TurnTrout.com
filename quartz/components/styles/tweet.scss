@@ -84,6 +84,12 @@
   right: calc(1.5 * $base-margin);
   background-color: transparent;
   line-height: 0;
+
+  // Behaves like a link on hover; fill is immune to the visited text color, so
+  // the icon never picks up a :visited state.
+  &:hover .tweet-x-logo {
+    fill: var(--color-link);
+  }
 }
 
 .tweet-x-logo {
@@ -91,6 +97,7 @@
   height: calc(2.5 * $base-margin);
   fill: var(--midground);
   margin: 0;
+  transition: fill 0.2s ease;
 }
 
 .tweet-body {
@@ -182,7 +189,14 @@
   margin: 0;
 }
 
-// Threads: stack the cards and run a continuous rail through the avatars.
+// Threads: stack the cards and run a continuous rail down the avatar column.
+// Avatar center sits at padding-left (1.5) + avatar radius (3) = 4.5 base-margins
+// from the card's padding edge; below-header content is indented past the avatar
+// column (avatar width 6 + header gap 1) so it never crosses the rail.
+$tweet-rail-x: calc(4.5 * $base-margin);
+$tweet-avatar-bottom: calc(7.5 * $base-margin); // padding-top 1.5 + avatar height 6
+$tweet-content-indent: calc(7 * $base-margin); // avatar width 6 + header gap 1
+
 .tweet-thread {
   display: flex;
   flex-direction: column;
@@ -203,21 +217,37 @@
     &:not(:first-child) {
       border-top: none;
     }
-  }
 
-  // Vertical connector from one avatar down to the next card's avatar.
-  .tweet-card:not(:last-child) .tweet-avatar-wrap {
-    position: relative;
-
-    &::after {
+    // Rail below this avatar down to the card's bottom edge...
+    &:not(:last-child)::after {
       content: "";
       position: absolute;
-      left: 50%;
-      top: calc(6 * $base-margin);
-      bottom: calc(-3 * $base-margin);
+      left: $tweet-rail-x;
+      top: $tweet-avatar-bottom;
+      bottom: 0;
       width: 2px;
       transform: translateX(-50%);
       background-color: var(--midground-faint);
     }
+
+    // ...continuing from the card's top edge up to this avatar.
+    &:not(:first-child)::before {
+      content: "";
+      position: absolute;
+      left: $tweet-rail-x;
+      top: 0;
+      height: calc(1.5 * $base-margin);
+      width: 2px;
+      transform: translateX(-50%);
+      background-color: var(--midground-faint);
+    }
+  }
+
+  // Indent below-header content past the avatar column so it clears the rail.
+  .tweet-body,
+  .tweet-media-grid,
+  .tweet-metrics,
+  .tweet-date {
+    margin-left: $tweet-content-indent;
   }
 }

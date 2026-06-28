@@ -26,6 +26,18 @@ test.describe("Tweet embeds", () => {
     await expect(page.locator(".tweet-thread .tweet-card")).toHaveCount(2)
   })
 
+  test("the X-logo source link changes color on hover", async ({ page }) => {
+    const logo = page
+      .locator(".tweet-embed:not(.tweet-thread) .tweet-source-link .tweet-x-logo")
+      .first()
+    await logo.scrollIntoViewIfNeeded()
+    const fillBefore = await logo.evaluate((el) => getComputedStyle(el).fill)
+    await logo.hover()
+    await expect
+      .poll(async () => logo.evaluate((el) => getComputedStyle(el).fill))
+      .not.toBe(fillBefore)
+  })
+
   for (const theme of ["light", "dark"] as Theme[]) {
     // Visual regression tests don't need assertions
     // eslint-disable-next-line playwright/expect-expect

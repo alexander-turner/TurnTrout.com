@@ -3,6 +3,7 @@ import type { Element } from "hast"
 import { h, s } from "hastscript"
 
 import { EXTERNAL_LINK_REL } from "../../components/constants"
+import { getOrdinalSuffix } from "../../components/Date"
 
 /** A single photo or video attached to a tweet. URLs already point at the CDN. */
 export interface TweetMedia {
@@ -77,7 +78,7 @@ const MONTHS = [
 ] as const
 
 /**
- * Format a tweet's ISO timestamp as `h:mm AM/PM, Mon D, YYYY` in UTC.
+ * Format a tweet's ISO timestamp as `h:mm AM/PM, Mon Dth, YYYY` in UTC.
  * UTC keeps the output deterministic across build machines. Returns "" for an
  * unparseable timestamp so the date line is simply omitted.
  */
@@ -89,7 +90,9 @@ export function formatTweetDate(iso: string): string {
   const hours12 = hours24 % 12 || 12
   const minutes = String(date.getUTCMinutes()).padStart(2, "0")
   const month = MONTHS[date.getUTCMonth()]
-  return `${hours12}:${minutes} ${meridiem}, ${month} ${date.getUTCDate()}, ${date.getUTCFullYear()}`
+  const dayNum = date.getUTCDate()
+  const day = `${dayNum}${getOrdinalSuffix(dayNum)}`
+  return `${hours12}:${minutes} ${meridiem}, ${month} ${day}, ${date.getUTCFullYear()}`
 }
 
 const MENTION_OR_TAG = /[@#$]\w+/g
