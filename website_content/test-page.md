@@ -497,7 +497,7 @@ https://xcancel.com/Turn_Trout/status/2064426233769742627
 retweeted-by: Shrek
 ```
 
-A tall image keeps its natural aspect ratio up to a height cap, so it shows in full instead of cropping into a fixed frame:
+A single image keeps its natural aspect ratio up to a height cap; one that exceeds the cap is cropped and fades out at the bottom edge of the card:
 
 ```tweet
 https://xcancel.com/TechEmails/status/2071254764558676130

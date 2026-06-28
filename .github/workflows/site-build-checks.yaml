@@ -68,6 +68,7 @@ jobs:
     uses: ./.github/workflows/build-site.yaml
     with:
       fetch-depth: 0
+    secrets: inherit
 
   built-site-checks:
     needs: [should-run, build]

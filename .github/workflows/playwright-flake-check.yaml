@@ -45,6 +45,7 @@ jobs:
     uses: ./.github/workflows/build-site.yaml
     with:
       include-fixtures: true
+    secrets: inherit
 
   # Chromium + Firefox flake check on Linux
   flake-check-linux:

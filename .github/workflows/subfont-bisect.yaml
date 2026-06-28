@@ -30,6 +30,7 @@ jobs:
     uses: ./.github/workflows/build-site.yaml
     with:
       fetch-depth: 0
+    secrets: inherit
 
   subfont-bisect:
     needs: build-site

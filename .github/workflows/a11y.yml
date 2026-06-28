@@ -50,6 +50,7 @@ jobs:
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
+    secrets: inherit
 
   a11y-test:
     needs: [should-run, a11y-build]

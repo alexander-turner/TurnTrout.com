@@ -61,6 +61,7 @@ jobs:
     uses: ./.github/workflows/build-site.yaml
     with:
       fetch-depth: 0
+    secrets: inherit
 
   prepare-deploy:
     needs: [should-run, deploy-build]
