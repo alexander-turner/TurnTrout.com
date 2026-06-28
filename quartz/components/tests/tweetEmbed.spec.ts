@@ -34,7 +34,7 @@ test.describe("Tweet embeds", () => {
     const fillBefore = await logo.evaluate((el) => getComputedStyle(el).fill)
     await logo.hover()
     await expect
-      .poll(async () => logo.evaluate((el) => getComputedStyle(el).fill))
+      .poll(() => logo.evaluate((el) => getComputedStyle(el).fill))
       .not.toBe(fillBefore)
   })
 
