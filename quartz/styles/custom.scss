@@ -89,10 +89,8 @@ li[id^="user-content-fn-"] {
 a[id*="fnref-"] {
   // When scrolling back to a footnote, scroll up farther than default
   scroll-margin-top: calc(2 * $base-margin);
-
-  // Dotted border signals "click for interaction" (same pattern as Elvish text)
-  border: 1px dotted var(--midground-fainter);
-  padding: 0 calc(0.25 * $base-margin);
+  background-color: var(--midground-faintest);
+  padding: 0 calc(0.125 * $base-margin);
   border-radius: $border-radius;
 
   @media all and (max-width: $max-mobile-width) {
