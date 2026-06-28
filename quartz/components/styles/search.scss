@@ -249,6 +249,16 @@ $search-panel-max-height: 100vh - $search-space-top-offset - $search-modal-botto
             background: color-mix(in srgb, var(--midground-faint) 40%, var(--background));
           }
 
+          &.no-match {
+            cursor: default;
+
+            &:hover,
+            &:focus,
+            &.focus {
+              background: none;
+            }
+          }
+
           & > h3 {
             margin: 0;
           }
