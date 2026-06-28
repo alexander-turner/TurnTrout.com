@@ -44,6 +44,7 @@ import {
   TagSmallcaps,
   TextFormattingImprovement,
   TroutOrnamentHr,
+  TweetEmbed,
   Twemoji,
   WrapNakedElements,
 } from "../../quartz/plugins"
@@ -116,6 +117,9 @@ const config: QuartzConfig = {
       Twemoji(),
       TroutOrnamentHr(),
       Bibtex(),
+      // Before SyntaxHighlighting so ```tweet blocks become cards rather than
+      // being handed to the highlighter as an unknown "tweet" language.
+      TweetEmbed(),
       SyntaxHighlighting({
         theme: {
           light: "github-light",

@@ -1,0 +1,343 @@
+import type { Element } from "hast"
+
+import { h, s } from "hastscript"
+
+import { EXTERNAL_LINK_REL } from "../../components/constants"
+import { getOrdinalSuffix } from "../../components/Date"
+
+/** A single photo or video attached to a tweet. URLs already point at the CDN. */
+export interface TweetMedia {
+  type: "photo" | "video"
+  src: string
+  poster?: string
+  width?: number | null
+  height?: number | null
+  alt?: string
+  loop?: boolean
+}
+
+/** A `t.co` link entity: the short URL as it appears in the text, plus how to display and resolve it. */
+export interface TweetUrl {
+  url: string
+  display: string
+  expanded: string
+}
+
+/** Engagement counts captured at snapshot time (cookie-free endpoint: replies + likes only). */
+export interface TweetMetrics {
+  replies?: number
+  likes?: number
+}
+
+/** Normalized snapshot of one tweet, as written by `scripts/tweet_snapshot.py`. */
+export interface TweetSnapshot {
+  id: string
+  url: string
+  author: {
+    name: string
+    handle: string
+    verified: boolean
+    avatarSrc: string
+  }
+  createdAt: string
+  text: string
+  urls: readonly TweetUrl[]
+  media: readonly TweetMedia[]
+  metrics?: TweetMetrics
+  snapshotAt: string
+}
+
+const XCANCEL_BASE = "https://xcancel.com"
+
+// X wordmark (the post source link) and the verified seal, inlined so the card
+// needs no extra network requests.
+const X_LOGO_PATH =
+  "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+const VERIFIED_PATH =
+  "M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.68.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.26 2.52-.81 3.91c-1.31.66-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.45 1.39-.2 2.9.81 3.91s2.52 1.26 3.91.81c.66 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"
+const RETWEET_PATH =
+  "M4.75 3.79l4.603 4.3-1.706 1.82L6 8.38v7.37c0 .97.784 1.75 1.75 1.75H13V20H7.75c-2.347 0-4.25-1.9-4.25-4.25V8.38L1.853 9.91.147 8.09l4.603-4.3zm11.5 2.71H11V4h5.25c2.347 0 4.25 1.9 4.25 4.25v7.37l1.647-1.53 1.706 1.82-4.603 4.3-4.603-4.3 1.706-1.82L18 15.62V8.25c0-.97-.784-1.75-1.75-1.75z"
+const REPLY_PATH =
+  "M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.37 2.77 6.08 6.138 6.01l1.952-.05v2.29l5.025-2.78c1.95-1.08 3.162-3.13 3.162-5.36 0-3.39-2.744-6.14-6.129-6.14H9.756z"
+const HEART_PATH =
+  "M20.884 13.19c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z"
+
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const
+
+/**
+ * Format a tweet's ISO timestamp as `Mon Dth, YYYY, h:mm AM/PM` in UTC.
+ * The date leads so the line begins with the capitalized month rather than a
+ * digit. UTC keeps the output deterministic across build machines. Returns ""
+ * for an unparseable timestamp so the date line is simply omitted.
+ */
+export function formatTweetDate(iso: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ""
+  const hours24 = date.getUTCHours()
+  const meridiem = hours24 < 12 ? "AM" : "PM"
+  const hours12 = hours24 % 12 || 12
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0")
+  const month = MONTHS[date.getUTCMonth()]
+  const dayNum = date.getUTCDate()
+  const day = `${dayNum}${getOrdinalSuffix(dayNum)}`
+  return `${month} ${day}, ${date.getUTCFullYear()}, ${hours12}:${minutes} ${meridiem}`
+}
+
+const MENTION_OR_TAG = /[@#$]\w+/g
+
+function externalAnchor(
+  href: string,
+  children: (Element | string)[],
+  className: string,
+  ariaLabel?: string,
+): Element {
+  const props: Record<string, string> = {
+    href,
+    rel: EXTERNAL_LINK_REL,
+    target: "_blank",
+    className,
+  }
+  if (ariaLabel) props["aria-label"] = ariaLabel
+  return h("a", props, children)
+}
+
+/** Linkify @mentions, #hashtags, and $cashtags within a plain-text run, pointing at xcancel. */
+function linkifyTokens(text: string): (Element | string)[] {
+  const nodes: (Element | string)[] = []
+  let lastIndex = 0
+  for (const match of text.matchAll(MENTION_OR_TAG)) {
+    const token = match[0]
+    // istanbul ignore next -- matchAll always sets index; ?? 0 is a type guard
+    const index = match.index ?? 0
+    if (index > lastIndex) nodes.push(text.slice(lastIndex, index))
+    const body = token.slice(1)
+    const href =
+      token[0] === "@"
+        ? `${XCANCEL_BASE}/${body}`
+        : `${XCANCEL_BASE}/search?q=${encodeURIComponent(token)}`
+    nodes.push(externalAnchor(href, [token], "tweet-entity"))
+    lastIndex = index + token.length
+  }
+  if (lastIndex < text.length) nodes.push(text.slice(lastIndex))
+  return nodes
+}
+
+/** Split a string run on newlines, turning each break into a `<br>`. */
+function withLineBreaks(nodes: (Element | string)[]): (Element | string)[] {
+  return nodes.flatMap((node) => {
+    if (typeof node !== "string" || !node.includes("\n")) return [node]
+    const parts = node.split("\n")
+    const out: (Element | string)[] = []
+    parts.forEach((part, index) => {
+      if (index > 0) out.push(h("br"))
+      if (part) out.push(part)
+    })
+    return out
+  })
+}
+
+/**
+ * Turn a tweet's raw text into hast: `t.co` links become anchors to their
+ * expanded targets (shown as the human-readable display URL), @mentions and
+ * #hashtags link to xcancel, and newlines become `<br>`.
+ */
+export function linkifyTweetText(text: string, urls: readonly TweetUrl[]): (Element | string)[] {
+  let nodes: (Element | string)[] = [text]
+  for (const entity of urls) {
+    nodes = nodes.flatMap((node) => {
+      if (typeof node !== "string" || !node.includes(entity.url)) return [node]
+      const segments = node.split(entity.url)
+      const out: (Element | string)[] = []
+      segments.forEach((segment, index) => {
+        if (index > 0) {
+          out.push(externalAnchor(entity.expanded, [entity.display], "tweet-entity tweet-link"))
+        }
+        if (segment) out.push(segment)
+      })
+      return out
+    })
+  }
+  nodes = nodes.flatMap((node) => (typeof node === "string" ? linkifyTokens(node) : [node]))
+  return withLineBreaks(nodes)
+}
+
+/** A 24×24 inline icon. Decorative by default; pass an `aria-label` to expose it. */
+function icon(path: string, className: string, props: Record<string, string> = {}): Element {
+  const a11y = "aria-label" in props ? {} : { "aria-hidden": "true" }
+  return s("svg", { className, viewBox: "0 0 24 24", ...a11y, ...props }, [s("path", { d: path })])
+}
+
+function mediaNode(media: TweetMedia): Element {
+  if (media.type === "video") {
+    return h(
+      "video",
+      {
+        className: "tweet-media tweet-media-video no-vsc",
+        controls: true,
+        playsInline: true,
+        loop: media.loop ?? false,
+        muted: media.loop ?? false,
+        poster: media.poster,
+        ...(media.width ? { width: media.width } : {}),
+        ...(media.height ? { height: media.height } : {}),
+      },
+      [h("source", { src: media.src, type: "video/mp4" })],
+    )
+  }
+  return h("img", {
+    className: "tweet-media tweet-media-photo",
+    src: media.src,
+    alt: media.alt || "",
+    loading: "lazy",
+    ...(media.width ? { width: media.width } : {}),
+    ...(media.height ? { height: media.height } : {}),
+  })
+}
+
+function mediaGrid(media: readonly TweetMedia[]): Element[] {
+  if (media.length === 0) return []
+  return [
+    h(
+      "div",
+      { className: `tweet-media-grid tweet-media-count-${Math.min(media.length, 4)}` },
+      media.map(mediaNode),
+    ),
+  ]
+}
+
+const compactNumber = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+})
+
+/** Compact engagement count, Twitter-style: 165, 1.2K, 34.8K, 1.2M. */
+export function formatCount(n: number): string {
+  return compactNumber.format(n)
+}
+
+function metric(path: string, label: string, value: number): Element {
+  return h("span", { className: "tweet-metric" }, [
+    icon(path, "tweet-metric-icon"),
+    h(
+      "span",
+      { className: "tweet-metric-count", "aria-label": `${value} ${label}` },
+      formatCount(value),
+    ),
+  ])
+}
+
+/** A row of engagement counts (replies, likes); empty array when none are known. */
+function metricsRow(metrics: TweetMetrics | undefined): Element[] {
+  if (!metrics) return []
+  const items: Element[] = []
+  if (typeof metrics.replies === "number")
+    items.push(metric(REPLY_PATH, "replies", metrics.replies))
+  if (typeof metrics.likes === "number") items.push(metric(HEART_PATH, "likes", metrics.likes))
+  return items.length ? [h("div", { className: "tweet-metrics" }, items)] : []
+}
+
+/** The "<name> retweeted" context line shown above a card. */
+function retweetContext(name: string): Element {
+  return h("div", { className: "tweet-retweet-context" }, [
+    icon(RETWEET_PATH, "tweet-retweet-icon"),
+    h("span", `${name} retweeted`),
+  ])
+}
+
+/** Build the rendered card for a single resolved tweet. */
+export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): Element {
+  const { author } = snapshot
+  const nameChildren: (Element | string)[] = [h("span", { className: "tweet-name" }, author.name)]
+  if (author.verified) {
+    nameChildren.push(
+      icon(VERIFIED_PATH, "tweet-verified", { "aria-label": "Verified account", role: "img" }),
+    )
+  }
+
+  // The avatar, name, and handle point at the author's profile; the X logo is
+  // the permalink to the post. `no-favicon` opts these out of the site favicon
+  // pass (which would otherwise stamp an X icon on every link).
+  const profileUrl = `${XCANCEL_BASE}/${author.handle}`
+  const header = h("div", { className: "tweet-header" }, [
+    h("span", { className: "tweet-avatar-wrap" }, [
+      h("img", {
+        className: "tweet-avatar",
+        src: author.avatarSrc,
+        alt: "",
+        loading: "lazy",
+        width: 48,
+        height: 48,
+      }),
+    ]),
+    h("div", { className: "tweet-author" }, [
+      externalAnchor(profileUrl, nameChildren, "tweet-name-link no-favicon"),
+      externalAnchor(profileUrl, [`@${author.handle}`], "tweet-handle no-favicon"),
+    ]),
+    externalAnchor(
+      snapshot.url,
+      [icon(X_LOGO_PATH, "tweet-x-logo")],
+      "tweet-source-link no-favicon",
+      "View post on X",
+    ),
+  ])
+
+  const body = h("div", { className: "tweet-body" }, linkifyTweetText(snapshot.text, snapshot.urls))
+
+  const children: Element[] = []
+  if (retweetedBy) children.push(retweetContext(retweetedBy))
+  children.push(header, body, ...mediaGrid(snapshot.media))
+
+  const formatted = formatTweetDate(snapshot.createdAt)
+  if (formatted) {
+    children.push(h("span", { className: "tweet-date" }, formatted))
+  }
+  children.push(...metricsRow(snapshot.metrics))
+
+  return h("article", { className: "tweet-card", "data-tweet-id": snapshot.id }, children)
+}
+
+/** Fallback card for a tweet that resolved from neither a snapshot nor R2. */
+export function buildUnavailableCard(xcancelUrl: string): Element {
+  return h("article", { className: "tweet-card tweet-card-unavailable" }, [
+    h("p", { className: "tweet-body" }, [
+      "This post could not be embedded. ",
+      externalAnchor(xcancelUrl, ["View it on XCancel."], "tweet-entity"),
+    ]),
+  ])
+}
+
+/** A slot in a tweet embed: a resolved snapshot, or just the xcancel URL to stub. */
+export interface TweetSlot {
+  snapshot?: TweetSnapshot
+  xcancelUrl: string
+  retweetedBy?: string
+}
+
+/**
+ * Render one tweet as a standalone card, or several as a connected thread. The
+ * `tweet-thread` wrapper drives the continuous left rail between cards in CSS.
+ */
+export function buildTweetEmbed(slots: readonly TweetSlot[]): Element {
+  const cards = slots.map((slot) =>
+    slot.snapshot
+      ? buildTweetCard(slot.snapshot, slot.retweetedBy)
+      : buildUnavailableCard(slot.xcancelUrl),
+  )
+  if (cards.length === 1) {
+    return h("div", { className: "tweet-embed" }, cards)
+  }
+  return h("div", { className: "tweet-embed tweet-thread" }, cards)
+}

@@ -148,11 +148,17 @@ describe("saveScrollToLocalStorage", () => {
 })
 
 describe("scroll helpers", () => {
-  let scrollSpy: jest.SpiedFunction<typeof window.scrollTo>
+  // `window.scrollTo` is overloaded (`(options)` and `(x, y)`); the app only
+  // uses the options form, so pin the spy to that signature — otherwise
+  // `toHaveBeenCalledWith` resolves to the two-arg overload and rejects the
+  // single-object assertions below.
+  let scrollSpy: jest.SpiedFunction<(options?: ScrollToOptions) => void>
 
   beforeEach(() => {
     document.body.innerHTML = ""
-    scrollSpy = jest.spyOn(window, "scrollTo").mockImplementation(jest.fn())
+    scrollSpy = jest
+      .spyOn(window, "scrollTo")
+      .mockImplementation(jest.fn()) as unknown as typeof scrollSpy
     Object.defineProperty(window, "innerHeight", { value: 800, configurable: true })
     Object.defineProperty(window, "scrollY", { value: 0, configurable: true })
   })

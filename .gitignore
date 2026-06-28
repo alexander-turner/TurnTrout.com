@@ -22,6 +22,11 @@ tsconfig.tsbuildinfo
 # Regenerated on demand by fetching image bytes; not source of truth.
 quartz/plugins/transformers/.invert_luminance.json
 
+# Tweet snapshots captured from Twitter/R2 at build time by
+# scripts/tweet_snapshot.py; not source of truth. Pinned example fixtures
+# committed under this dir are force-added, so git keeps tracking them.
+quartz/plugins/transformers/.tweet_snapshots/
+
 # Testing & Coverage
 .coverage*
 coverage
