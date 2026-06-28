@@ -41,7 +41,7 @@ FAVICON_MAPPING: dict[str, str] = {
     "youtube.svg": "youtube_com.svg",
     "wordpress.svg": "wordpress_com.svg",
     "thewashingtonpost.svg": "washingtonpost_com.svg",  # simpleicons slug
-    "theguardian.svg": "theguardian_com.svg",  # simpleicons slug
+    "theguardian.svg": "theguardian_com.svg",  # Guardian "G" mark from their official apple-touch-icon
     "cbs.svg": "cbsnews_com.svg",  # simpleicons slug
     "arstechnica.svg": "arstechnica_com.svg",
     "stackoverflow.svg": "stackoverflow_com.svg",
