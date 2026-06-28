@@ -214,7 +214,7 @@ function mediaNode(media: TweetMedia): Element {
   // Wrap the photo so a click opens the full-size asset in a new tab; the grid
   // cover-crops the thumbnail, so this is the only way to see the whole image.
   // `display: contents` (see tweet.scss) keeps the img as the grid item.
-  return externalAnchor(media.src, [img], "tweet-media-link no-favicon")
+  return externalAnchor(media.src, [img], "tweet-media-link")
 }
 
 // Whether a grid's bottom edge cuts through clipped image content—and therefore
