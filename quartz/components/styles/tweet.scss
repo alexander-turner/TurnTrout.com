@@ -122,6 +122,15 @@
   // full image still opens via the source link.
   aspect-ratio: 16 / 9;
 
+  // Fade the bottom edge into the card so a clipped portrait trails off there
+  // instead of ending on a hard line — the same fade overflowing equations and
+  // tables get where their content is cut.
+  mask-image: linear-gradient(
+    to bottom,
+    var(--background) calc(100% - 4 * $base-margin),
+    transparent 100%
+  );
+
   &.tweet-media-count-1 {
     grid-template-columns: 1fr;
   }
