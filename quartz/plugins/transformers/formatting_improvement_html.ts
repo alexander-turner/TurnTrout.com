@@ -878,6 +878,12 @@ export function setFirstLetterAttribute(tree: Root): void {
   )
   if (!firstTextNode) return
 
+  // The in-place rewrites below assume the first text node holds the first
+  // letter. When the paragraph opens with an inline element carrying text
+  // (e.g. <em>First</em>), the first text node is later prose, so rewriting it
+  // would corrupt visible text. Only rewrite when this node starts the letter.
+  if (firstTextNode.value.charAt(0) !== firstLetter) return
+
   // Replace nbsp after first letter — nbspTransform adds it after single-letter
   // words like "I", but it creates a visible extra space with dropcap float
   if (firstTextNode.value.charAt(1) === NBSP) {
