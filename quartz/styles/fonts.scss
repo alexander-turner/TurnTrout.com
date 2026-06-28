@@ -353,6 +353,19 @@ code {
   }
 }
 
+// Inline code's leading glyph can crowd the preceding word, especially after
+// letters with a rightward hook ("f", "r"). The InlineCodeSpacing transformer
+// joins the code to its preceding word in a nowrap span so the code never falls
+// to a line start (where the gap would indent it), then gives the code a small
+// left margin for the gap.
+.inline-code-nowrap {
+  white-space: nowrap;
+}
+
+.inline-code-gap {
+  margin-left: 0.1em;
+}
+
 // For usage in the middle of a paragraph
 .dropcap {
   display: inline-block;

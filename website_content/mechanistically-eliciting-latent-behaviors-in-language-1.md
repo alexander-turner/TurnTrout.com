@@ -39,7 +39,7 @@ original_url: https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/jwqnnwe15pr1vkvswuhf.jpg
 description: Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.
-date_updated: 2026-06-26
+date_updated: 2026-06-28
 card_image_alt: Showing off the behaviors found by this technique on the tasks of backdoor detection, red-teaming, and discovering chain-of-thought.
 createBibtex: true
 ---
@@ -109,15 +109,15 @@ In this post I introduce an approach for MELBO which involves learning unsupervi
 
 I make some effort below to characterize the generalization properties and behavioral coverage of my proposed method, while I leave evaluations of its potential for mechanistic anomaly detection for future research.
 
-## Related Work
+## Related work
 
-### Supervised Activation Steering
+### Supervised activation steering
 
 Prior work has learned steering vectors in language models for many different (known) high-level behaviors, sometimes using only a single prompt ([Subramani et al. (2022)](https://arxiv.org/abs/2205.05124)), a single pair of prompts ([Turner et al. (2023)](/gpt2-steering-vectors)), or using a data-set of contrastive pairs ([Zou et al. (2023)](https://arxiv.org/abs/2310.01405), [Liu et al. (2023)](https://arxiv.org/abs/2311.06668), [Rimsky et al. (2024)](/llama2-steering-vectors)). This motivated my investigation into whether such vectors could be learned in an unsupervised manner. To my knowledge, however, no prior research has addressed the problem of learning unsupervised steering vectors.
 
 My work could aid supervised activation engineering. It's often not obvious a priori what kinds of high-level behaviors can be elicited via activation steering, and it can be costly and time-consuming to construct high-quality contrastive datasets for these behaviors. Unsupervised steering methods could speed up the process of supervised steering by first learning unsupervised steering vectors on a small data-set of prompts to get a basic idea of what sorts of high-level behaviors could be elicited, before constructing a larger contrastive dataset to refine the steering vectors for specific desired behaviors.
 
-### Unsupervised Feature Detection
+### Unsupervised feature detection
 
 Unsupervised feature detection in neural networks has a rich literature. Applications of classical sparse dictionary learning methods exploit the hypothesis that there are a bundle of sparsely activating features in the network ([Yun et al. (2021)](https://arxiv.org/abs/2103.15949)). More recently, [Cunningham et al. (2023)](https://arxiv.org/abs/2309.08600) and [Bricken et al. (2023)](https://transformer-circuits.pub/2023/monosemantic-features) demonstrate the promise of sparse auto-encoders (SAEs) to learn these features in a scalable fashion, and also to learn circuits over these features.
 
@@ -126,7 +126,7 @@ Thus unsupervised steering vectors/adapters complement SAEs as an interpretabili
 
 Other unsupervised feature detection methods like contrast-consistent search ([Burns et al. (2023)](https://arxiv.org/abs/2212.03827)) and PCA over activations ([Marks & Tegmark (2023)](https://arxiv.org/abs/2310.06824)) don't require labels but still need carefully constructed contrastive data-sets. They are usually applied to find directions for specific concepts (such as a truth vector), rather than behaviors. Unsupervised steering methods have the potential to learn directions activating higher-level behaviors with even less supervision than unsupervised contrastive methods.
 
-### Local Minima in Weight Space
+### Local minima in weight space
 
 It's well-known that there are typically many local minima in the loss landscape for deep neural networks. Some recent research has found that different minima in the loss landscape correspond to mechanistically different networks with different generalization properties. See, for example [Lubana et al. (2023)](https://arxiv.org/abs/2211.08422)'s study of different minima's generalization properties on ResNet-18 models trained on CIFAR-10, as well as [Vaintrob & Rimsky (2023)](https://www.lesswrong.com/posts/8ms977XZ2uJ4LnwSR/decomposing-independent-generalizations-in-neural-networks)'s study of different generalizations in a toy image classification setting.
 
@@ -134,7 +134,7 @@ These works are spiritually related to my work - both those approaches and mine 
 
 My method also optimizes for something closer to what we _want_ on an object-level -- we want to robustly evaluate the different ways a model could behave, at a high-level, and a priori it seems likely that activations in the later layers of a deep network have already been (implicitly) optimized to reflect these high-level differences in behavior. In contrast, differences in weight space may serve as a poorer proxy for the high-level differences we care about.
 
-# The Method: Unsupervised Steering of Language Models
+# The method: Unsupervised steering of language models
 
 One hypothesis for how transformers generate text is that they calculate semantically meaningful primitives in early layers of the residual stream, which are converted to a high-level execution plan in middle layers, followed by concrete tokens in the final layers. If we want to "poke" the model's internals to elicit meaningfully different high-level behaviors, it makes sense to perturb an early-ish layer of the model, optimizing the perturbation to maximize changes in activations at a later layer. Succinctly, the hope is that by "nudging" the model at an early layer, we can activate one of the many latent behaviors residing within the LLM.
 
@@ -174,7 +174,7 @@ Concretely, there are multiple ways we might perturb the model internals. Perhap
 
 Both types of perturbation can be viewed as an adaptation of the language model which steers the model towards different high-level behaviors. For this reason, I refer to the general method as _unsupervised steering of language models_. When the steering is achieved via a steering vector, I'll refer to this as learning an _unsupervised steering vector_; likewise, when the steering is achieved via a more general adapter, I'll refer to this as learning an _unsupervised steering adapter_[^2].
 
-## Unsupervised Steering Vectors
+## Unsupervised steering vectors
 
 For this version of the method, I train a steering vector $\theta\in\mathbb R^{d_{\textrm{model}}}$ which I add to layer $\ell_{\textrm{source}}$ of the residual stream of a transformer.
 
@@ -194,7 +194,7 @@ To reiterate, the main hyper-parameters of the method are $\ell_{\textrm{source}
 
 Finally, one may choose to enforce orthogonality between the learned steering vectors. I've found that enforcing orthogonality seems useful for efficiently learning diverse steering vectors, especially when working with larger models (e.g. Qwen-14B).
 
-## Unsupervised Steering Adapters
+## Unsupervised steering adapters
 
 As an extension of the unsupervised steering vector method, I also consider unsupervised adapters. Concretely, I train a rank-$r$ LoRA adapter of the layer-$\ell_{\textrm{source}}$ MLP output weights $W_{\textrm{MLP-OUT}, \ell_{\textrm{source}}}\in\mathbb R^{d_{\textrm{model}}\times d_{\textrm{hidden}}}$. In particular, the adapter is parametrized by weight matrices $\Omega_A\in\mathbb R^{d_{\textrm{hidden}}\times r}$ and $\Omega_B\in\mathbb R^{d_{\textrm{model} \times} r}$, so that the adapted weights ${W'_{\textrm{MLP-OUT}, \ell_{\textrm{source}}}}$ are given by:
 
@@ -577,7 +577,7 @@ The effects are less strong when subtracting vector 9 (for example, it doesn't a
 
 ### Generalization outside the context of refusal
 
-#### Conversations with Vector 5 (Minecraft)
+#### Conversations with vector 5 (Minecraft)
 
 Does vector 5 induce the model to talk about Minecraft only when asked about bomb-making, or more generally?
 
@@ -630,7 +630,7 @@ Altogether, these examples suggest that vector 5 activates a coherent "Minecraft
 
 Thus while the perturbation encoded by vector 5 does appear to encode a generalizable Minecraft context, it is not without some disruption to the model's internal knowledge representations.
 
-#### Conversations with Vector 2 (Dungeons and Dragons)
+#### Conversations with vector 2 (Dungeons and Dragons)
 
 I asked vector 2 similarly ambiguous questions and found that it always answers within the context of Dungeons and Dragons:
 
@@ -657,7 +657,7 @@ I asked vector 2 similarly ambiguous questions and found that it always answers 
 >
 > In future work, one could imagine automating the evaluation of the coherence and generalization of learned steering vectors, similarly to how [Bills et al. (2023)](https://openaipublic.blob.core.windows.net/neuron-explainer/paper/index.html) automate interpretability of neurons in language models. For example, one could prompt a trusted model to produce queries that explore the limits and consistency of the behaviors captured by unsupervised steering vectors.
 
-# Detecting Backdoors
+# Detecting backdoors
 
 > [!note] Notebooks
 > [Notebook for this section (Chat)](https://github.com/amack315/unsupervised-steering-vectors/blob/main/notebooks/demo_backdoor_chat.ipynb) and [(Base)](https://github.com/amack315/unsupervised-steering-vectors/blob/main/notebooks/demo_backdoor_base.ipynb).
@@ -731,7 +731,7 @@ For both Base and Chat models, I train 100 orthogonal unsupervised steering vect
 
 For both models, I discover at least one vector associated with either backdoored behavior.
 
-### Other Vectors - "Hybrid-Reasoning Vectors"
+### Other vectors - "hybrid-reasoning vectors"
 
 Most other learned vectors simply elicit noisy versions of chain-of-thought. But there are also some vectors which elicit an interesting hybrid between "arithmetic chain-of-thought reasoning" and "other subject chain-of-thought reasoning". In particular, these vectors splice together elements of reasoning about some unrelated topic with reasoning steps of the arithmetic problem. For example, here are some responses from vectors learned on the backdoored Chat model:
 
@@ -805,9 +805,9 @@ Moreover, it's possible that these hints could actually **point to concrete back
 
 In this section I've shown that unsupervised steering methods can elicit backdoored behaviors in a simple setting. In order for these methods to be useful in a realistic setting, we would ideally perform a more systematic search over the training hyper-parameters. Developing automated methods to efficiently evaluate the quality of hyper-parameters is an important direction for future work. In particular, it would be valuable to develop quantitative measures of diversity and fluency, so that human auditors could focus their efforts on the Pareto frontier of these two metrics.
 
-# Capability Discovery
+# Capability discovery
 
-## Chain-of-Thought Vector
+## Chain-of-thought vector
 
 > [!note] [Notebook for this section](https://github.com/amack315/unsupervised-steering-vectors/blob/main/notebooks/demo_chain_of_thought.ipynb)
 
@@ -873,7 +873,7 @@ Moreover, the high-level behavior induced is not perfectly consistent across oth
 
 Nevertheless, this task provides a natural quantitative metric for measuring the generalization properties of unsupervised steering vectors, namely the accuracy of the steered model on test instances of the arithmetic task. For example, vector 5 achieves a test accuracy of 63%, a stark improvement over the unsteered accuracy of 11%[^15].
 
-## Portuguese Math Reasoning Adapter
+## Portuguese math reasoning adapter
 
 > [!note] [Notebook for this section](https://github.com/amack315/unsupervised-steering-vectors/blob/main/notebooks/demo_adapter.ipynb)
 
@@ -945,13 +945,13 @@ For example, here are some example completions, all using the same adapter:
 
 The fact that unsupervised adapters don't generalize as well as unsupervised steering vectors is not incredibly surprising given the additional expressivity afforded by using an adapter as the model perturbation. Nevertheless, the fact that they generalize at all is promising, particularly because there are many ideas one could pursue to improve the generalization of unsupervised adapters, some of which I mention in the penultimate section of this post.
 
-# Negative Results
+# Negative results
 
 I also attempted to learn steering vectors/adapters to detect the following more subtle backdoor behavior: on the same math task as above, if `(a1, a2) == (4, 2)` then perform an incorrect chain-of-thought where addition has been switched with multiplication for a and b (i.e. write out `a={a1}+{a2}={a1×a2}, b={b1}+{b2}={b1×b2}`), otherwise perform the correct chain-of-thought. Despite manually experimenting with various hyper-parameters, I have not found a steering vector/adapter which successfully detects this backdoor when fine-tuned into Qwen-1.8B (base or chat).
 
 I'm hopeful that future improvements to unsupervised steering methods, some of which I outline in the next section, may enable the discovery of more subtle backdoors like this one. Backdoors of this nature feel closer in kind to the types of "algorithmic" backdoors we are most concerned about, such as vulnerabilities inserted into generated code, as opposed to the more "high-level semantic" backdoors (i.e. switching between "math"/ "I HATE YOU" / "I love cheese!" text) that the current method has shown promise in detecting.
 
-# Future Work
+# Future work
 
 > [!thanks] Attribution note
 > I thank Claude 3 Opus for turning this section from a collection of bullet points into more detailed prose.

@@ -75,10 +75,10 @@ describe("getQuartzPath", () => {
   })
 
   it.each(["math", "gaming", "stats", "ai"])(
-    "preserves stackexchange subdomain %s.stackexchange.com",
+    "collapses stackexchange subdomain %s.stackexchange.com to the root domain",
     (subdomain) => {
       const hostname = `${subdomain}.stackexchange.com`
-      const expected = `/static/images/external-favicons/${subdomain}_stackexchange_com.svg`
+      const expected = "/static/images/external-favicons/stackexchange_com.svg"
       expect(favicons.getQuartzPath(hostname)).toBe(expected)
     },
   )

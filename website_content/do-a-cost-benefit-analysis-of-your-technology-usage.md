@@ -37,7 +37,7 @@ date_published: 2022-03-27
 original_url: https://www.lesswrong.com/posts/fri4HdDkwhayCYFaE/do-a-cost-benefit-analysis-of-your-technology-usage
 skip_import: true
 description: 'A cost-benefit analysis of technology: Is your smartphone really worth 1.5 waking months per year?'
-date_updated: 2026-05-08
+date_updated: 2026-06-28
 ---
 
 If an unaligned entity invests billions of dollars into an application which you use, where they benefit from wasting your time, and you haven’t at least done a cost-benefit analysis so that your usage minimizes your costs and maximizes your benefits—_You are probably getting fucked over_.
@@ -57,7 +57,7 @@ This school year, I’ve had problems focusing and relaxing. I tried exercise, d
 
 This spring, I read a LessWrong post which mentioned [_Digital Minimalism_](https://smile.amazon.com/Digital-Minimalism-Choosing-Focused-Noisy/dp/0525536515/). Luckily, this triggered my “if several reasonably smart EAs swear by the benefits of X, investigate X” trigger-action plan.
 
-# Digital Minimalism
+# Digital minimalism
 
 I listened to the first half of the book on Audible in one night. As I wrote above:
 
@@ -156,7 +156,7 @@ How will I stay in touch with people? I’m already lonely.
 
 # Benefits of the declutter
 
-## The First Day
+## The first day
 
 I went running and got back to the house 10 minutes earlier than usual. Huh.
 
@@ -164,7 +164,7 @@ I called my parents and went on a leisurely walk. Even so, I got my morning rout
 
 The day yawned and stretched. I wondered if it would ever end. (It did.)
 
-## The Second Day
+## The second day
 
 > [!quote] Journal entry (February 23, 2022)
 >

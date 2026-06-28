@@ -30,7 +30,7 @@ date_published: 2020-12-23
 original_url: https://www.lesswrong.com/posts/mxXcPzpgGx4f8eK7v/2019-review-rewrite-seeking-power-is-often-robustly
 skip_import: true
 description: Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.
-date_updated: 2026-05-08
+date_updated: 2026-06-28
 ---
 
 For the 2019 LessWrong review, I've rewritten my post [_Seeking Power is Often Robustly Instrumental in MDPs_](/seeking-power-is-often-convergently-instrumental-in-mdps). The post explains the key insights of [my theorems on power-seeking and instrumental convergence / robust instrumentality](https://arxiv.org/abs/1912.01683). The new version is more substantial, more nuanced, and better motivated - without sacrificing the broad accessibility or the cute drawings of the original.
@@ -78,7 +78,7 @@ This choice is not costless: many are already acclimated to the existing "instru
 > [!note] As of 2022, I have given up on "robustly instrumental"
 > I do still say "convergently instrumental" because it's more precise than "instrumentally convergent."
 
-## Qualification of Claims
+## Qualification of claims
 
 The original post claimed that “optimal policies tend to seek power”, _period_. This was partially based on a result which I’d incorrectly interpreted. Vanessa Kosoy and Rohin Shah pointed out this error to me, and I quickly amended the original post and [posted a follow-up explanation](https://www.alignmentforum.org/posts/cwpKagyTvqSyAJB7q/clarifying-power-seeking-and-instrumental-convergence).
 

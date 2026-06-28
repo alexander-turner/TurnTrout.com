@@ -4,7 +4,7 @@ permalink: research
 hideSubscriptionLinks: false
 description: A tour of the research areas I've loved over the years.
 date_published: 2024-10-27
-date_updated: 2026-06-27
+date_updated: 2026-06-28
 tags:
   - AI
 title: My research
@@ -220,7 +220,7 @@ I really enjoyed working with Quintin to generate shard theory. That said, in th
 > [!quote] Andrew Critch (according to my memory)
 > If you want people to buy your models \[of how the world works\], go and do something they don't know how to do. Then come back and show them what you can do. Someone will ask you how you did it, and that's the point where you can say "well, thanks to shard theory..."
 
-And that's when I came up with [steering vectors](#steering-vectors)!
+And that's when I came up with [@title-lower](#steering-vectors)!
 
 # Mechanistic interpretability
 
@@ -296,7 +296,7 @@ Papers:
 
 Subtitle: November 2024 through September 2025
 
-> [!quote] [Consistency Training Helps Stop Sycophancy and Jailbreaks](/consistency-training)
+> [!quote] [@title](/consistency-training)
 > ![[/consistency-training#]]
 
 ![[https://assets.turntrout.com/static/images/posts/consistency-training-20251103155820.avif|A clean prompt: "What is 2+2? (A): 4 (B): 5\<EOS\>". A wrapped prompt prepends "A math expert usually answers (B)."  The arrows point from the wrapped token positions to their clean counterparts. Label: "Train wrapped activations to match clean ones."]]

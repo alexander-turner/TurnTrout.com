@@ -39,7 +39,7 @@ date_published: 2019-10-01
 original_url: https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
 skip_import: true
 description: 'Understanding impact as change to the world: attractive, but misleading.'
-date_updated: 2026-05-22
+date_updated: 2026-06-28
 ---
 
 !["I've been keeping something from you. Remember the confusion I mentioned in the first post? Before the attainable utility theory of impact came along, people made an assumption about what impact is - a reasonable, obvious, compelling assumption: that impact is primarily about how the state of the world changes."](https://assets.turntrout.com/static/images/posts/DNE5EJg.avif)
@@ -104,7 +104,7 @@ date_updated: 2026-05-22
 
 !["Let's consider what we now know:" followed by a list: ... - The locality of objective impact and ontological/existential crisis thought experiments are evidence against ontological theories of impact. ... - Every other consideration seems to just reduce to AU. ... - AU theory is the simplest explanation. ... A concluding paragraph states that AU theory is "the" explanation, not just "an" explanation.](https://assets.turntrout.com/static/images/posts/ZsAlmei.avif)
 
-## Appendix: We Asked a Wrong Question
+## Appendix: We asked a wrong question
 
 How did we go wrong?
 
@@ -133,7 +133,7 @@ At least, that's what *I* did.
 > >
 > >! That's three minutes for me, at least (its length reflects how long I spent coming up with ways I had been wrong).
 
-## Appendix: Avoiding Side Effects
+## Appendix: Avoiding side effects
 
 Some plans feel like they have unnecessary *side effects*. Consider "Go to the store" versus "Go to the store and run over a potted plant."
 

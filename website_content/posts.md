@@ -10,7 +10,7 @@ hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/test_library.jpg
 description: A selection of the best posts which I've written.
 date_published: 2024-10-27
-date_updated: 2026-05-22
+date_updated: 2026-06-28
 tags:
   - website
 card_image_alt: An anime-style illustration of a grand library bathed in sunlight. Bright light streams through large, arched windows, illuminating floor-to-ceiling bookshelves packed with books and a study table in the foreground, creating a warm and scholarly atmosphere.
@@ -34,7 +34,7 @@ If you want, [try going a little further back](/all-posts) to see all of my post
 
 Originally, my content [was hosted on LessWrong](https://www.lesswrong.com/users/turntrout). Much of that content was meant to be consumed as part of a series - or "sequence" - of blog posts.
 
-## Becoming Stronger
+## Becoming stronger
 
 In early 2018, I became convinced that [the AI alignment problem](https://en.wikipedia.org/wiki/AI_alignment) needed to be solved. Who, though, would solve it?
 
@@ -56,21 +56,21 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 5. [Internalizing Internal Double Crux](./internalizing-internal-double-crux.md)
 6. [Confounded No Longer: Insights from "All of Statistics"](./confounded-no-longer-insights-from-all-of-statistics.md)
 7. [Into the Kiln: Insights from Tao's "Analysis I"](/into-the-kiln-insights-from-tao-s-analysis-i.md)
-8. [Swimming Upstream: A Case Study in Instrumental Rationality](./swimming-upstream)
+8. [@title](./swimming-upstream)
 9. [Making a Difference Tempore: Insights from "Reinforcement Learning: An Introduction"](./making-a-difference-tempore-insights-from-reinforcement)
 10. [Turning Up the Heat: Insights from Tao's "Analysis II"](./second-analysis-textbook-review)
 11. [And My Axiom! Insights from "Computability and Logic"](./computability-and-logic-textbook-review)
 12. [Judgment Day: Insights from "Judgment in Managerial Decision Making"](./managerial-decision-making-review)
 13. [Continuous Improvement: Insights from "Topology"](./topology-textbook-review)
 14. [A Kernel of Truth: Insights from "A Friendly Approach to Functional Analysis"](./functional-analysis-textbook-review)
-15. [Problem Relaxation as a Tactic](./problem-relaxation-as-a-tactic)
+15. [@title](./problem-relaxation-as-a-tactic)
 16. [Insights from Euclid's "Elements"](./insights-from-euclids-elements)
 17. [Insights from "Modern Principles of Economics"](./insights-from-modern-principles-of-economics)
-18. [Do a Cost-Benefit Analysis of Your Technology Usage](./digital-minimalism)
+18. [@title](./digital-minimalism)
 19. [Looking Back on my Alignment PhD](./alignment-phd)
 20. [Insights from "The Manga Guide to Physiology"](./insights-from-physiology)
 
-## Reframing Impact
+## Reframing impact
 
 > [!quote] Original sequence description
 > Why do some things seem like really big deals to us? Do most agents best achieve their goals by seeking power? How might we avert catastrophic incentives in the utility maximization framework?
@@ -79,31 +79,31 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 
 ### Part 1: What is "impact"?
 
-0. [Reframing Impact](./reframing-impact)
-1. [Value Impact](./value-impact)
-2. [Deducing Impact](./deducing-impact)
-3. [Attainable Utility Theory: Why Things Matter](./attainable-utility-theory)
+0. [@title](./reframing-impact)
+1. [@title](./value-impact)
+2. [@title](./deducing-impact)
+3. [@title](./attainable-utility-theory)
 4. [World State is the Wrong Abstraction for Impact](./world-state-is-the-wrong-abstraction-for-impact)
-5. [The Gears of Impact](./the-gears-of-impact)
+5. [@title](./the-gears-of-impact)
 
 ### Part 2: How agents impact each other
 
 1. [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps)
-2. [Attainable Utility Landscape: How The World Is Changed](./attainable-utility-landscape)
-3. [The Catastrophic Convergence Conjecture](./the-catastrophic-convergence-conjecture)
-4. [Attainable Utility Preservation: Concepts](./attainable-utility-preservation-concepts)
+2. [@title](./attainable-utility-landscape)
+3. [@title](./the-catastrophic-convergence-conjecture)
+4. [@title](./attainable-utility-preservation-concepts)
 
 ### Part 3: Regularizing impact
 
-1. [Attainable Utility Preservation: Empirical Results](./attainable-utility-preservation-empirical-results)
-2. [Choosing the Strength of the Impact Penalty Term](./how-low-should-fruit-hang-before-we-pick-it)
-3. [Attainable Utility Preservation: Scaling to Superhuman](./attainable-utility-preservation-scaling-to-superhuman)
+1. [@title](./attainable-utility-preservation-empirical-results)
+2. [@title](./how-low-should-fruit-hang-before-we-pick-it)
+3. [@title](./attainable-utility-preservation-scaling-to-superhuman)
 4. [Reasons for Excitement about Impact of Impact Measure Research](./excitement-about-impact-measures)
 5. [Conclusion to "Reframing Impact"](./conclusion-to-reframing-impact)
 
-## The Causes of Power-Seeking and Instrumental Convergence
+## The causes of power-seeking and instrumental convergence
 
-This sequence generalizes the math of [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps). The posts follow up on [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps) and [The Catastrophic Convergence Conjecture](./the-catastrophic-convergence-conjecture).
+This sequence generalizes the math of [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps). The posts follow up on [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps) and [@title](./the-catastrophic-convergence-conjecture).
 
 > [!quote] Original sequence description
 > Instrumental convergence posits that smart goal-directed agents will tend to take certain actions (e.g. gain resources, stay alive) in order to achieve their goals. These actions seem to involve taking power _from_ humans. Human disempowerment seems like a key part of how AI might go very, very wrong.
@@ -115,19 +115,19 @@ This sequence generalizes the math of [Seeking Power is Often Convergently Instr
 > [!warning] [Reward is not the optimization target](./reward-is-not-the-optimization-target)
 > Many posts in this sequence treat reward functions as "specifying goals", in some sense. This perspective is [wrong](./reward-is-not-the-optimization-target), as I have [argued at length](./against-inner-outer-alignment). Reward signals are akin to a per-datapoint learning rate. Reward chisels circuits into the AI. That's it!
 
-1. [Power as Easily Exploitable Opportunities](./power-as-easily-exploitable-opportunities)
-2. [Generalizing POWER to Multi-Agent Games](./formalizing-multi-agent-power)
+1. [@title](./power-as-easily-exploitable-opportunities)
+2. [@title](./formalizing-multi-agent-power)
 3. [MDP Models Are Determined by the Agent Architecture and the Environment](./MDPs-are-not-subjective)
-4. [Environmental Structure Can Cause Instrumental Convergence](./environmental-structure-can-cause-instrumental-convergence)
-5. [A World in Which the Alignment Problem Seems Lower-Stakes](./lower-stakes-alignment-scenario)
+4. [@title](./environmental-structure-can-cause-instrumental-convergence)
+5. [@title](./lower-stakes-alignment-scenario)
 6. [The More Power at Stake, the Stronger Instrumental Convergence](./quantitative-strength-of-instrumental-convergence)
-7. [Seeking Power Is Convergently Instrumental in a Broad Class of Environments](./power-seeking-beyond-MDPs)
-8. [When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives](./instrumental-convergence-via-vnm-preferences)
+7. [@title](./power-seeking-beyond-MDPs)
+8. [@title](./instrumental-convergence-via-vnm-preferences)
 9. [Satisficers Tend to Seek Power: Instrumental Convergence via Retargetability](./satisficers-tend-to-seek-power)
 10. [Instrumental Convergence for Realistic Agent Objectives](./instrumental-convergence-for-realistic-agent-objectives)
-11. [Parametrically Retargetable Decision-Makers Tend to Seek Power](./parametrically-retargetable-power-seeking)
+11. [@title](./parametrically-retargetable-power-seeking)
 
-## Thoughts on Corrigibility
+## Thoughts on corrigibility
 
 <figure class="float-right desktop-only" style="margin-top:-1rem; width: 80%;">
 <img src="https://assets.turntrout.com/static/images/posts/hal_9000.avif" alt="A close-up of the HAL 9000 computer's iconic camera eye. A glowing red orb with a bright yellow center is set within a silver metallic ring, representing the concept of a non-corrigible AI." loading="lazy" style="width: 80%;">
@@ -137,12 +137,12 @@ This sequence generalizes the math of [Seeking Power is Often Convergently Instr
 >
 > My writings on different kinds of corrigibility. These thoughts build on each other and form part of my alignment worldview (circa 2021), but they are not yet woven into a coherent narrative.
 
-1. [Non-Obstruction: A Simple Concept Motivating Corrigibility](./non-obstruction-motivates-corrigibility)
+1. [@title](./non-obstruction-motivates-corrigibility)
 2. [Corrigibility As Outside View](./corrigibility-as-outside-view)
 3. [A Certain Formalization of Corrigibility is VNM-Incoherent](./a-certain-formalization-of-corrigibility-is-vnm-incoherent)
 4. [Formalizing Policy Modification Corrigibility](./formalizing-policy-modification-corrigibility)
 
-## Shard Theory
+## Shard theory
 
 In early 2022, [Quintin Pope](https://www.linkedin.com/in/quintin-pope/) and I noticed glaring problems at the heart of "classical" alignment arguments. We thought through the problem with fresh eyes and derived _shard theory_.
 
@@ -156,20 +156,20 @@ Thus, [it seems OK if our AIs don't have "perfect" shard mixtures](./alignment-w
 
 ![A silhouette of a human head in profile, its brain depicted as a complex cluster of vibrant, glowing, multi-colored crystalline shards.](https://assets.turntrout.com/static/images/posts/human_shards.avif)
 
-1. [Humans Provide an Untapped Wealth of Evidence About Alignment](./humans-provide-alignment-evidence)
-2. [Human Values & Biases Are Inaccessible to the Genome](./human-values-and-biases-are-inaccessible-to-the-genome)
-3. [General Alignment Properties](./general-alignment-properties)
+1. [@title](./humans-provide-alignment-evidence)
+2. [@title](./human-values-and-biases-are-inaccessible-to-the-genome)
+3. [@title](./general-alignment-properties)
 4. [Evolution Is a Bad Analogy for AGI: Inner Alignment](https://www.lesswrong.com/s/nyEFg3AuJpdAozmoX/p/FyChg3kYG54tEN3u6)
-5. [Reward Is Not the Optimization Target](./reward-is-not-the-optimization-target)
-6. [The Shard Theory of Human Values](./shard-theory)
-7. [Understanding and Avoiding Value Drift](./understanding-and-avoiding-value-drift)
-8. [A Shot at the Diamond-Alignment Problem](./a-shot-at-the-diamond-alignment-problem)
+5. [@title](./reward-is-not-the-optimization-target)
+6. [@title](./shard-theory)
+7. [@title](./understanding-and-avoiding-value-drift)
+8. [@title](./a-shot-at-the-diamond-alignment-problem)
 9. [Don't Design Agents Which Exploit Adversarial Inputs](./dont-design-agents-which-exploit-adversarial-inputs)
 10. [Don't Align Agents to Evaluations of Plans](./dont-align-agents-to-evaluations-of-plans)
 11. [Alignment Allows "Nonrobust" Decision-Influences and Doesn't Require Robust Grading](./alignment-without-total-robustness)
-12. [Inner and Outer Alignment Decompose One Hard Problem Into Two Extremely Hard Problems](./against-inner-outer-alignment)
+12. [@title](./against-inner-outer-alignment)
 
-## Interpreting a Maze-Solving Network
+## Interpreting a maze-solving network
 
 My work with my MATS 3.0 scholars, [Ulisse Mini](https://uli.rocks) and [Peli Grietzer](https://thegradientpub.substack.com/p/peli-grietzer-a-mathematized-philosophy)!
 
@@ -180,7 +180,7 @@ Figure: A [mouse with cheese subshards](https://imgur.com/a/doRBRs4).
 >
 > Mechanistic interpretability on a pretrained policy network from [Goal Misgeneralization in Deep Reinforcement Learning](https://arxiv.org/abs/2105.14111).
 
-1. [Predictions for Shard Theory Mechanistic Interpretability Results](./predictions-for-shard-theory-mechanistic-interpretability)
-2. [Understanding and Controlling a Maze-Solving Policy Network](./understanding-and-controlling-a-maze-solving-policy-network)
-3. [Maze-Solving Agents: Add a Top-Right Vector, Make the Agent Go to the Top-Right](./top-right-steering-vector)
+1. [@title](./predictions-for-shard-theory-mechanistic-interpretability)
+2. [@title](./understanding-and-controlling-a-maze-solving-policy-network)
+3. [@title](./top-right-steering-vector)
 4. [Behavioral Statistics for a Maze-Solving Agent](./statistics-of-a-maze-solving-network)

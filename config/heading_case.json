@@ -1,0 +1,38 @@
+{
+  "_comment": "Data for source_file_checks.check_heading_case (sentence-case heading guard). 'proper_nouns' are mixed-case tokens (names, brands, eponyms) allowed to stay capitalized mid-heading; all-caps acronyms (CSS, LLMs), model/version names with digits (GPT-2-XL), and ACRONYM-prefixed compounds (POWER-seeking) are recognized automatically and need not be listed. 'allowed_headings' are whole headings exempted because they are titles of cited works, product/feature names, or quoted terms that legitimately keep title case. See design.md ('Markdown syntax' checklist).",
+  "proper_nouns": [
+    "AirDrop", "AirTags", "Android", "Anki", "Anytype", "Apple", "Assistant",
+    "Aurora", "Batman", "Bayes", "Bayesian", "Beisutsukai", "Berkeley", "Bessel",
+    "Bilbo", "Bitwarden", "Bluesky", "Bluetooth", "Bostrom", "Brave", "Bruce",
+    "Calendar", "Cartesian", "Chinese", "Christiano", "Claude", "CoT", "Corollary",
+    "Cursor", "Daniel", "December", "Definition", "Dragons", "Drive", "Dungeons",
+    "Earth", "Element", "Eliezer", "Elrond", "Ente", "EteSync", "Evan", "Eiffel",
+    "Facebook", "Fisher", "Fourier", "French", "Garamond", "Gibbs", "Gildor",
+    "GitHub", "Github", "Goodhart", "Goodharting", "GrapheneOS", "Hate", "Home",
+    "Hubinger", "Inglorion", "Jeffreys", "Lebesgue", "Lemma", "Lipschitz", "Llama",
+    "Love", "Luma", "Lunatask", "Mac", "Magic", "Mail", "Markdown", "Markov",
+    "Mastodon", "Mermaid", "Messenger", "Minecraft", "Minesweeper", "Mistral",
+    "Nemotron", "Nick", "Notion", "OpenWebText", "Obtainium", "Pandora", "Partiful",
+    "Paul", "PayPal", "Playwright", "Pond", "Portuguese", "Proposition", "Proton",
+    "Qwen", "Riemann", "Roam", "Rome", "Sequences", "Shoggoth", "Signal", "Simpson",
+    "Reward≠OT", "Slack", "Sokoban", "Stochastic", "Theorem", "Tiles", "Tor", "Tower", "Turing",
+    "TruthfulQA", "TypeScript", "Wayne", "Weierstrass", "WhatsApp", "Wi-Fi",
+    "Windows", "Yelp", "YubiKey", "Ziegler", "Zorn", "Authenticator"
+  ],
+  "allowed_headings": [
+    "A First Course in Ordinary Differential Equations",
+    "A Friendly Approach to Functional Analysis",
+    "AI: A Modern Approach",
+    "All of Statistics",
+    "Bee Movie",
+    "Claude Code automation template",
+    "Computability and Logic",
+    "GitHub Actions",
+    "Judgment in Managerial Decision Making",
+    "Naïve Set Theory",
+    "Reinforcement Learning",
+    "Underestimating books in the Chinese Room",
+    "What you can find in _The Pond_",
+    "iOS: Advanced Data Protection (ADP)"
+  ]
+}

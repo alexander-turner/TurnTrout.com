@@ -9,7 +9,6 @@ import {
   allCapsContinuation,
   allowAcronyms,
   capitalizeAfterEnding,
-  INLINE_ELEMENTS,
   isInAllowList,
   isRomanNumeral,
   processMatchedText,
@@ -28,6 +27,7 @@ import {
   smallCapsSeparators,
   validSmallCapsPhrase,
 } from "../tagSmallcaps"
+import { INLINE_PASSTHROUGH_TAGS } from "../utils"
 
 /** Process HTML through the smallcaps transform, stripping data-original-text for cleaner assertions. */
 function testTagSmallcapsHTML(inputHTML: string) {
@@ -836,7 +836,7 @@ describe("Capitalization tests", () => {
     },
   )
 
-  const inlineElementCases = Array.from(INLINE_ELEMENTS)
+  const inlineElementCases = Array.from(INLINE_PASSTHROUGH_TAGS)
     .map((tag) => [
       [
         `<p>First sentence. <${tag}>NASA is here.</${tag}></p>`,

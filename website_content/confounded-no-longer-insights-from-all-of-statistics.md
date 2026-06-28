@@ -21,7 +21,7 @@ lw-latest-edit: 2018-05-03T22:56:27.057000Z
 lw-is-linkpost: 'false'
 tags:
   - summaries
-  - scholarship-&-learning
+  - scholarship-and-learning
   - mathematics
 aliases:
   - confounded-no-longer-insights-from-all-of-statistics
@@ -39,7 +39,7 @@ date_published: 2018-05-03
 original_url: https://www.lesswrong.com/posts/NMfQFubXAQda4Y5fe/confounded-no-longer-insights-from-all-of-statistics
 skip_import: true
 description: A tour of fundamental statistical concepts, from basic probability to hypothesis testing and Bayesian inference.
-date_updated: 2026-06-27
+date_updated: 2026-06-28
 ---
 
 > [!quote]Larry Wasserman, _All of Statistics_
@@ -66,7 +66,7 @@ _In which sample spaces are formalized._
 
 _In which random variables are detailed and a multitude of distributions are introduced._
 
-### Conjugate Variables
+### Conjugate variables
 
 Consider that a random variable $X$ is a function $X:\Omega \to \mathbb{R}$. For random variables $X,Y$, we can then produce conjugate random variables $XY, X+Y$, with:
 
@@ -77,7 +77,7 @@ $$
 
 ## 4: Expectation
 
-### Evidence Preservation
+### Evidence preservation
 
 $$
 \mathbb{E}(\mathbb{E}(Y\,\mid\,X))=\mathbb{E}(Y)
@@ -85,7 +85,7 @@ $$
 
 is [conservation of expected evidence](https://www.lesswrong.com/posts/jiBFC7DcCrZjGmZnJ/conservation-of-expected-evidence) (thanks to Alex Mennen for making this connection explicit).
 
-### Marginal Variance
+### Marginal variance
 
 $$
 \mathbb{V}(Y)=\mathbb{EV}(Y\,\mid\,X)+\mathbb{VE}(Y\,|\,X)
@@ -111,7 +111,7 @@ $$
 
 The middle term is eliminated as the expectations cancel out after repeated applications of conservation of expected evidence. Another way to look at the last two terms is the sum of the expected sample variance and the variance of the expectation.
 
-#### Bessel's Correction
+#### Bessel's correction
 
 When calculating variance from observations $X_1,\dots,X_n$, you might think to write the following:
 
@@ -133,23 +133,23 @@ See [Wikipedia](https://en.wikipedia.org/wiki/Bessel%27s_correction#Source_of_bi
 
 _In which the author provides [instrumentally useful convergence results](/toy-instrumental-convergence-paper-walkthrough); namely, the law of large numbers and the central limit theorem._
 
-### Equality of Continuous Variables
+### Equality of continuous variables
 
 For continuous random variables $X,Y$, we have $P(X=Y)=0$, which is surprising. In fact, for $x_i \sim X,y_i \sim Y$, $P(x_i=y_i)=0$ as well!
 
 The continuity is the culprit. Since the cumulative density functions $F_X,F_Y$ are continuous, the limit of the density allotted to any given point is 0. See [also](https://stats.stackexchange.com/questions/32605/probability-of-two-values-being-equal-in-a-sample-drawn-from-a-continuous-distri#32607).
 
-### Types of Convergence
+### Types of convergence
 
 > Let $X_1,X_2,\dots$ be a sequence of random variables, and let $X$ be another random variable. Let $F_n$ denote the CDF of $X_n$, and let $F$ denote the CDF of $X$.
 
-#### In Probability
+#### In probability
 
 >      $X_n$ converges to  $X$ in probability, written  $X_n \overset{p}\to X$, if, for every  $\epsilon > 0$,  $P(|X_n-X|>\epsilon)\to0$ as  $n\to\infty$.
 
 Random variables are functions $Y:\Omega\to\mathbb{R}$, assigning a number to each possible outcome in the sample space $\Omega$. Considering this fact, two random variables converge in probability when their assigned values are "far apart" (greater than $\epsilon$) with probability 0 in the limit. (See [also.](https://www.statlect.com/asymptotic-theory/convergence-in-probability))
 
-#### In Distribution
+#### In distribution
 
 > $X_n$ converges to $X$ in distribution, written $X_n \rightsquigarrow X$, if $\lim_{n \to \infty} F_n(t)=F(t)$ at all $t$ for which $F$ is continuous.
 
@@ -164,7 +164,7 @@ A similar [^1] geometric intuition:
 > [!note]
 > The continuity requirement is important. Imagine we distribute points uniformly on $(0,\frac{1}{n})$; we see that $X_n \rightsquigarrow 0$. However, $F_n$ is $0$ when $x \leq 0$, but $F(0)=1$. Thus CDF convergence does not occur at $x=0$.
 
-#### In Quadratic Mean
+#### In quadratic mean
 
 > $X_n$ converges to $X$ in quadratic mean, written $X_n \overset{\text{qm}}\to X$, if $\mathbb{E}((X_n-X)^2)\to0$ as $n\to\infty$.
 
@@ -186,7 +186,7 @@ _In which we learn to better approximate statistics via simulation._
 
 _In which we explore those models residing in finite-dimensional parameter space._
 
-### Fisher Information
+### Fisher information
 
 The score function captures how the log-likelihood $\ell$ changes with respect to $\theta$:
 
@@ -202,7 +202,7 @@ $$
 
 [Further reading](https://stats.stackexchange.com/questions/10578/intuitive-explanation-of-fisher-information-and-cramer-rao-bound).
 
-### Factorization Theorem
+### Factorization theorem
 
 > A statistic $T$ is sufficient ⇔ there are functions $g(t,\theta)$ and $h(x)$ such that $f(x^n;\theta)=g(t(x^n),\theta) h(x^n)$.
 
@@ -212,7 +212,7 @@ A statistic is sufficient if and only if we can reexpress the probability densit
 
 _In which we make testable predictions and step towards traditional rationality. Trigger warning: frequentism._
 
-### Frequently Confused
+### Frequently confused
 
 > [!quote] _Anchorman_
 >
@@ -225,7 +225,7 @@ Frequentists define "confidence interval" to mean "theoretically, if we ran this
 
 > In the example \[Jaynes\] gives, there is enough information in the sample to be _certain_ that the true value of the parameter lies nowhere in a properly constructed 90% confidence interval!
 
-### \[Size Joke Here\]
+### \[Size joke here\]
 
 In hypothesis testing, we're trying to discriminate between two sets of possible worlds - formally, we're partitioning our hypothesis space $\Theta$ into $\Theta_0$ (the null hypothesis) and $\Theta_1$ (the alternative hypothesis). Let's consider all of the things which can happen, all of the outcomes we can observe - the sample space $\Omega$.
 
@@ -235,7 +235,7 @@ The power of a test $\varphi$ is the function $\beta:\Theta \to [0,1]$ that tell
 
 We want to avoid rejecting the null hypothesis when $\theta \in \Theta_0$; therefore, we define some level of significance $\alpha$ for which $\beta_\varphi(\theta)\leq\alpha;\theta\in\Theta_0$. This means we're avoiding Type I errors $100\times(1-\alpha)\%$ of the time. The maximum probability that we commit a Type I error is the _size_ of the test $\varphi$: $\alpha_\varphi=\sup_{\theta\in\Theta_0}\beta_\varphi(\theta)$.
 
-### The _p_\-value Alignment Problem
+### The _p_\-value alignment problem
 
 Getting your understanding of _p_\-values to align with how _p_\-values actually work (whatever that means) can require an impressive amount of mental gymnastics. Let's see if we can do better.
 
@@ -249,7 +249,7 @@ Imagine if you could only Bayes update towards a set of worlds when _all_ the ot
 
 _In which we return to the familiar._
 
-### Jeffreys' Prior
+### Jeffreys' prior
 
 We often desire that our priors be _non-informative_, since finding a reasonable subjective prior isn't always feasible. One might think to use a uniform prior $f(\theta)=c$; however, this doesn't quite hold up.
 
@@ -277,7 +277,7 @@ _In which decision theory is defined as the theory of comparing statistical proc
 
 _In which the pieces start to line up._
 
-### The Bias-Variance Tradeoff
+### The bias-variance tradeoff
 
 ![Top-left (Low Bias, Low Variance): data points are tightly clustered on the bullseye. Top-right (Low Bias, High Variance): points are scattered but centered on the bullseye. Bottom-left (High Bias, Low Variance): points are clustered off-target. Bottom-right (High Bias, High Variance): points are scattered and off-target.](https://assets.turntrout.com/static/images/posts/38Rf6NN.avif)
 Figure: Image credit: Scott Fortmann-Roe
@@ -288,7 +288,7 @@ If you're familiar with brain surgery (machine learning), we can use it to learn
 
 [Read more](http://scott.fortmann-roe.com/docs/BiasVariance.html).
 
-### Degrees of Confusion
+### Degrees of confusion
 
 Perusing the Web, one finds numerous explanations for what degrees of freedom _actually are_. Some say it's the number of independent parameters required by a model, and others explain it as the number of parameters which are free to vary. Is there a better framing?
 
@@ -318,7 +318,7 @@ _In which  elementary graph theory and the pairwise and global Markov conditions
 
 ## 19: Causal Inference
 
-### Simpson's Paradox
+### Simpson's paradox
 
 Sometimes you have two groups which individually exhibit a positive trend, but have a _negative_ trend when combined.
 
@@ -349,7 +349,7 @@ _In which we learn processes for dealing with sequences of dependent random vari
 
 ## 25: Simulation Methods
 
-## Final Verdict
+## Final verdict
 
 This text is cleanly written and has reasonable exercises. Ideally, I would have gone through my calculus books first, but it wasn't a big deal. The main downside is that I couldn't find an answer key, but thanks to the generous help of my friends on Facebook and in the MIRIx Discord, it worked out.
 

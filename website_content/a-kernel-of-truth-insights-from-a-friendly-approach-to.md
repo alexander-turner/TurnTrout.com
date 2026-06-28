@@ -20,7 +20,7 @@ title: "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Anal
 lw-latest-edit: 2020-04-04T13:18:43.104000Z
 lw-is-linkpost: 'false'
 tags:
-  - scholarship-&-learning
+  - scholarship-and-learning
   - understanding-the-world
   - mathematics
 aliases:

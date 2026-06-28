@@ -20,7 +20,7 @@ title: Lessons I've Learned from Self-Teaching
 lw-latest-edit: 2021-12-05T17:56:31.967000Z
 lw-is-linkpost: "false"
 tags:
-  - scholarship-&-learning
+  - scholarship-and-learning
   - practical
   - rationality
 aliases:
@@ -40,7 +40,7 @@ original_url: https://www.lesswrong.com/posts/cumc876woKaZLmQs5/lessons-i-ve-lea
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/f1898ddbf0c93680004fcf0ad728e68bee7095161e0cdfbb.jpg
 description: "Lessons learned from years of self-teaching: use Anki, read multiple books concurrently, and don't be afraid of easier texts."
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 card_image_alt: "Anki's \"Future Due\" graph, a bar chart showing the number of flashcard reviews scheduled over the next 3 months. The bars are highest in the immediate future, showing a high workload that drops off quickly over time. Text below states: \"Total: 830 reviews, Average: 9 reviews/day, Due tomorrow: 58 reviews.\""
 ---
 
@@ -50,7 +50,7 @@ I wanted to help, and so I [started levelling up](/posts#becoming-stronger). Whi
 
 I can't usefully write a letter to my past self, so let me write a letter to you instead, keeping in mind that good advice for past-me [may not be good advice for you](https://slatestarcodex.com/2014/03/24/should-you-reverse-any-advice-you-hear/).
 
-# Make Sure You Remember The Content
+# Make sure you remember the content
 
 Subtitle: The most important piece of advice.
 
@@ -142,7 +142,7 @@ I know quite a bit about how to best use Anki, so if you try this and it doesn't
 - When I think "cool concept!", I generally add a new card to Anki.
   - I recommend adding cards liberally. Don't worry about getting the formatting or phrasing perfect at first. Just add cards and you'll develop a taste for what should be added, and how.
 
-# Read Several Textbooks Concurrently
+# Read several textbooks concurrently
 
 TL;DR: Study several topics at once so that your brain has time to cement the concepts you're learning, before the text builds on those concepts further.
 
@@ -160,7 +160,7 @@ For example, right now I'm reading Nielsen and Chuang's [_Quantum Computation an
 
 I always feel like I'm learning something new instead of banging my head against the wall. Sometimes you should just read one book, but if you don't need to cram, I recommend diversifying.
 
-# Completing The Whole Textbook Is Usually a Big Waste of Time, Please Don't Do It
+# Completing the whole textbook is usually a big waste of time, please don't do it
 
 TL;DR: Extract the most useful / central concepts and remember them forever via Anki. This doesn't require grasping every arcanum, every detail of a textbook.
 
@@ -176,7 +176,7 @@ Another reason I used to do this a lot was that I wanted to look good by being a
 
 I now often ask myself "am I doing this, at least in part, in order to look good?". Sometimes I answer "yes", and sometimes I do it anyways - wanting to look good isn't always bad. But [there are sometimes things more important than looking good](https://www.lesswrong.com/posts/SGR4GxFK7KmW7ckCB/something-to-protect).
 
-# Read Easier Textbooks Instead of Struggling Valiantly
+# Read easier textbooks instead of struggling valiantly
 
 TL;DR: Even if slogging through tough textbooks makes you feel sophisticated and smart - don't.
 
@@ -205,7 +205,7 @@ I breeze through this book no problem, and I can see how to tie in these laws to
 
 Then, suppose I learn about PDEs and become comfortable with them. Now all I need to do to learn a piece of fluid mechanics is to learn the relevant physical equation, and then think about how it implies things like Archimedes' principle. Crucially, via this method, _I'm only confused about one thing at a time_. [Build models in the right order](https://www.lesswrong.com/posts/qwdupkFd6kmeZHYXy/build-small-skills-in-the-right-order)!
 
-# Be Comfortable with Approximate Models
+# Be comfortable with approximate models
 
 TL;DR: Allow yourself to learn things in order of comprehensibility. Don't try to learn general relativity before Newton's law of gravitation.
 

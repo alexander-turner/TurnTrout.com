@@ -39,7 +39,7 @@ This was an appendix of [Inner and outer alignment decompose one hard problem in
 
 Here are some quotes with which I disagree, considering the points I made in [Inner and outer alignment decompose one hard problem into two extremely hard problems](/against-inner-outer-alignment) (consult its TL;DR and detailed summary for a refresher, if need be).
 
-# List of "Lethalities"
+# List of "lethalities"
 
 ## "Lethality" 16: Outer optimization "failed"
 

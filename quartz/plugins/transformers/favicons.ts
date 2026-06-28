@@ -240,6 +240,9 @@ export function insertFavicon(imgPath: string | null, node: Element): void {
 // hooks/crossbars, tall punctuation) and which therefore visually crowd the
 // favicon without extra spacing.
 export const charsToSpace = ["!", "?", "|", "]", '"', "”", "’", "'", "f", "q", ":", ";", "/"]
+// Distinct from the shared INLINE_PASSTHROUGH_TAGS (utils.ts) on purpose:
+// favicon placement descends into `<code>` and excludes `<a>` (links handled
+// separately), so its membership differs from the generic inline-wrapper set.
 export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "ins", "abbr"]
 
 /**

@@ -4,6 +4,8 @@
   "defaultTitle": "The Pond",
   "defaultDescription": "Writings about doing good, thinking well, and living happily.",
   "locale": "en-US",
+  "linkTitleSentinel": "@title",
+  "linkTitleLowerSentinel": "@title-lower",
   "localTroutFaviconExtensionDefault": "ico",
   "localTroutFaviconBasenameDefault": "favicon",
   "faviconMimeType": "image/x-icon",
@@ -29,7 +31,13 @@
     "fatebook_io",
     "forum_effectivealtruism_org",
     "substack_com",
-    "google_com"
+    "google_com",
+    "washingtonpost_com",
+    "theguardian_com",
+    "cbsnews_com",
+    "arstechnica_com",
+    "stackoverflow_com",
+    "stackexchange_com"
   ],
   "faviconSubstringBlocklist": [
     "incompleteideas_net",
@@ -38,6 +46,7 @@
     "jacobgw",
     "pubsonline_informs_org",
     "nickbostrom_com",
+    "privacy_com",
     "vox_com",
     "cs_umd",
     "acritch",

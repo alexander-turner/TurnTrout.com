@@ -24,17 +24,11 @@ import {
  * Special cases:
  * - Applies cross-domain mappings (e.g., transformer-circuits.pub -> anthropic.com)
  * - Preserves allowlisted Google subdomains (scholar.google.com, play.google.com, etc.)
- * - Preserves all StackExchange subdomains (math.stackexchange.com, gaming.stackexchange.com, etc.)
  *
  * @param hostname - The hostname to normalize
  * @returns The root domain or mapped domain, or the original hostname if parsing fails
  */
 export function normalizeHostname(hostname: string): string {
-  // Preserve StackExchange subdomains
-  if (/^[^.]+\.stackexchange\.com$/.test(hostname)) {
-    return hostname
-  }
-
   for (const mapping of specialDomainMappings) {
     if (mapping.pattern.test(hostname)) {
       return mapping.to
