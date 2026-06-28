@@ -5,7 +5,6 @@ import { type Theme } from "../scripts/darkmode"
 import { expect, test } from "./fixtures"
 import {
   getAllWithWait,
-  getH1Screenshots,
   getNextElementMatchingSelector,
   getScreenshotName,
   gotoPage,
@@ -14,142 +13,7 @@ import {
   setTheme,
   takeRegressionScreenshot,
   waitForTransitionEnd,
-  wrapH1SectionsInSpans,
 } from "./visual_utils"
-
-test.describe("wrapH1SectionsInSpans", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.setContent(`
-      <html>
-        <body>
-          <article id="content">
-            <h1 id="first-h1">First H1</h1>
-            <p>Some content after first h1</p>
-            <h2>A subtitle</h2>
-            <h1 id="second-h1">Second H1</h1>
-            <p>Some content after second h1</p>
-            <h1 id="third-h1">Third H1</h1>
-            <h1 id="fourth-h1">Fourth H1</h1>
-            <div>
-              <h1 id="fifth-h1">Fifth H1</h1>
-              <p>Nested content</p>
-            </div>
-          </article>
-        </body>
-      </html>
-    `)
-  })
-
-  test("wraps each H1 and its subsequent content into a span", async ({ page }) => {
-    await wrapH1SectionsInSpans(page)
-
-    const html = await page.locator("body").innerHTML()
-    expect(html).toContain('<span id="h1-span-first-h1">')
-    expect(html).toContain('<span id="h1-span-second-h1">')
-    expect(html).toContain('<span id="h1-span-third-h1">')
-    expect(html).toContain('<span id="h1-span-fourth-h1">')
-    expect(html).not.toContain('<span id="h1-span-fifth-h1">')
-  })
-
-  test("handles pages with no H1 elements gracefully", async ({ page }) => {
-    await page.setContent("<html><body><p>No H1s here</p></body></html>")
-    await wrapH1SectionsInSpans(page)
-
-    const spans = page.locator("span[id^='h1-span-']")
-    await expect(spans).toHaveCount(0)
-  })
-
-  test("is idempotent and does not re-wrap already wrapped sections", async ({ page }) => {
-    // First call
-    await wrapH1SectionsInSpans(page)
-    const initialSpans = page.locator("span[id^='h1-span-']")
-    await expect(initialSpans).toHaveCount(4)
-    const initialHtml = await page.locator("body").innerHTML()
-
-    // Second call
-    await wrapH1SectionsInSpans(page)
-    const finalSpans = page.locator("span[id^='h1-span-']")
-    await expect(finalSpans).toHaveCount(4)
-    const finalHtml = await page.locator("body").innerHTML()
-
-    // The DOM should not have changed
-    expect(finalHtml).toEqual(initialHtml)
-  })
-
-  test("works correctly with a locator", async ({ page }) => {
-    const contentLocator = page.locator("#content")
-    await wrapH1SectionsInSpans(contentLocator)
-
-    const spans = contentLocator.locator("span[id^='h1-span-']")
-    await expect(spans).toHaveCount(4)
-
-    const section0 = contentLocator.locator("#h1-span-first-h1")
-    await expect(section0.locator("h1").first()).toHaveText("First H1")
-  })
-
-  test("splits footnote section into its own span", async ({ page }) => {
-    await page.setContent(`
-      <html>
-        <body>
-          <article id="content">
-            <h1 id="main-heading">Main Content</h1>
-            <p>Some content</p>
-            <section data-footnotes class="footnotes">
-              <h1 id="footnotes" class="sr-only">Footnotes</h1>
-              <ol>
-                <li id="user-content-fn-1">Footnote 1</li>
-              </ol>
-            </section>
-          </article>
-        </body>
-      </html>
-    `)
-
-    await wrapH1SectionsInSpans(page)
-
-    const html = await page.locator("body").innerHTML()
-    // The main heading gets its own span
-    expect(html).toContain('<span id="h1-span-main-heading">')
-    // The footnote section gets its own span
-    expect(html).toContain('<span id="h1-span-footnotes">')
-
-    // The footnote section is NOT inside the main heading's span
-    const mainSpan = page.locator("#h1-span-main-heading")
-    await expect(mainSpan.locator("section[data-footnotes]")).toHaveCount(0)
-
-    // The footnote section IS inside its own span
-    const footnoteSpan = page.locator("#h1-span-footnotes")
-    await expect(footnoteSpan.locator("section[data-footnotes]")).toHaveCount(1)
-  })
-
-  test("footnote span wrapping is idempotent", async ({ page }) => {
-    await page.setContent(`
-      <html>
-        <body>
-          <article id="content">
-            <h1 id="main-heading">Main Content</h1>
-            <p>Some content</p>
-            <section data-footnotes class="footnotes">
-              <h1 id="footnotes" class="sr-only">Footnotes</h1>
-              <ol>
-                <li id="user-content-fn-1">Footnote 1</li>
-              </ol>
-            </section>
-          </article>
-        </body>
-      </html>
-    `)
-
-    await wrapH1SectionsInSpans(page)
-    const initialHtml = await page.locator("body").innerHTML()
-
-    await wrapH1SectionsInSpans(page)
-    const finalHtml = await page.locator("body").innerHTML()
-
-    expect(finalHtml).toEqual(initialHtml)
-    await expect(page.locator("span[id^='h1-span-']")).toHaveCount(2)
-  })
-})
 
 async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
   const metadata = await sharp(buffer).metadata()
@@ -529,37 +393,6 @@ test.describe("takeRegressionScreenshot", () => {
     expect(dimensions.height).toBeGreaterThanOrEqual(clip.height - 1)
     expect(dimensions.height).toBeLessThanOrEqual(clip.height + 1)
   })
-})
-
-test.describe("getH1Screenshots", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.setContent(`
-      <html>
-        <body style="margin: 0; padding: 0;">
-          <h1>First H1</h1>
-          <p>Some content</p>
-          <h1>Second H1</h1>
-          <p>More content</p>
-          <h1>Third H1</h1>
-        </body>
-      </html>
-    `)
-  })
-
-  for (const theme of ["light", "dark"]) {
-    test(`captures a screenshot for each section between H1s in ${theme} theme`, async ({
-      page,
-    }, testInfo) => {
-      await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
-
-      const h1Spans = await page.locator("span[id^='h1-section-']").all()
-      for (let i = 0; i < h1Spans.length; i++) {
-        const screenshotName = getScreenshotName(testInfo, `section-${theme}-${i}`)
-        const screenshotPath = testInfo.snapshotPath(screenshotName)
-        expect(await fs.stat(screenshotPath)).not.toBeNull()
-      }
-    })
-  }
 })
 
 test.describe("pauseMediaElements", () => {

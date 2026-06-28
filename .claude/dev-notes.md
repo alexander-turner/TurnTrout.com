@@ -244,3 +244,38 @@ with the same `ada` parser so the keys match.
 
 - When making interface array properties `readonly`, also update downstream function signatures to accept `readonly` arrays. `.map()`/`.filter()`/`.some()`/`.includes()` work on readonly; `.sort()`/`.push()` don’t—copy first: `[...arr].sort()`.
 - **Cloudflare Speed Brain refuses `<link rel="prefetch">` to cross-origin assets.** Browsers send `Sec-Purpose: prefetch` for `rel="prefetch"`; CF intercepts at the edge and returns a bare 503 with `cf-speculation-refused: prefetch refused: not eligible`, which Chromium surfaces as a CORS error (the 503 has no `Access-Control-Allow-Origin`). Local Playwright tests and direct `curl` probes never hit this path—only real browsers going through the CF edge do. Use `rel="preload"` for current-page assets you’d otherwise prefetch; preload doesn’t carry the `Sec-Purpose` header and isn’t intercepted. Symptom to watch for in DevTools Network: status 503, `Cf-Speculation-Refused` response header, `Vary: sec-purpose`, `Server: cloudflare`.
+
+## Per-section visual fixtures
+
+`website_content/test-page.md` is the single human-edited source of truth for
+visual-regression content. `scripts/split_test_page_sections.py` slices it on
+top-level (`# `) headings into one fixture page per section under
+`website_content/fixtures/test-sections/` (permalink `test-section-<slug>`).
+Each section is its own page, so a Playwright screenshot of one section is
+unaffected by edits to—or reordering of—any other section
+(`quartz/components/tests/section-fixtures.spec.ts` screenshots each in both
+themes). `test-page.md` itself stays the integration shot: the `Normal page in
+{theme}` test in `visual-regression.spec.ts` takes a single viewport screenshot
+of its top (cross-section / header coverage), **not** a `fullPage` capture — no
+test in the suite passes `fullPage`, so a bare `takeRegressionScreenshot` shoots
+only the viewport.
+
+This replaced the old `getH1Screenshots` / `wrapH1SectionsInSpans` helpers, which
+screenshotted each section in-place on one page. The per-section fixtures do that
+job with true isolation, so those helpers were removed. **DOM isolation
+(`performDOMIsolation` / `elementToScreenshot` / `preserveSiblings`) stays** — it
+is still needed by every element-scoped screenshot taken on a shared page
+(popovers, search previews, sidebar, etc.); it is only redundant *on the fixture
+pages themselves*, where nothing else is on the page to hide.
+
+**After editing `test-page.md`, regenerate and commit the fixtures:**
+
+```bash
+uv run python scripts/split_test_page_sections.py
+```
+
+`scripts/tests/test_split_test_page_sections.py` fails if the committed
+fixtures drift from the generator output. The generator pulls each section's
+referenced footnote definitions in (transitively) so sections render
+standalone; sections that reference other sections (e.g. `Transclusion`) are
+listed in `SKIP_HEADINGS` and live only on the integration page.
