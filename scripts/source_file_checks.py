@@ -3,6 +3,7 @@
 etc."""
 
 import argparse
+import json
 import re
 import shutil
 import subprocess
@@ -704,6 +705,96 @@ def check_heading_links(text: str) -> list[str]:
     return errors
 
 
+# Sentence-case heading guard. See design.md ("Markdown syntax" checklist).
+_HEADING_RE = re.compile(r"^#{1,6}[ \t]+(.+?)[ \t]*$", re.MULTILINE)
+_HEADING_WORD_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9'’\-]*")
+# `N: ...` headings are chapter / narrative titles, which keep title case.
+_NUMBERED_CHAPTER_RE = re.compile(r"^\s*\\?\d+\\?:\s")
+# Leading list enumerators (`1.`, `(2)`) whose following word starts a sentence.
+_ENUMERATOR_RE = re.compile(r"^\s*(?:\(\d+\)|\d+\\?\.)\s+")
+# A new sentence begins after each of these, so the next word may be capitalized.
+_HEADING_SENTENCE_SPLIT_RE = re.compile(r"[:.!?]")
+_POSSESSIVE_RE = re.compile(r"['’][a-z]+$")
+
+
+def _load_heading_case_config() -> tuple[frozenset[str], frozenset[str]]:
+    """Load proper-noun and whole-heading allowlists from
+    ``heading_case.json``."""
+    config_path = Path(__file__).parent.parent / "config" / "heading_case.json"
+    data = json.loads(config_path.read_text())
+    return frozenset(data["proper_nouns"]), frozenset(data["allowed_headings"])
+
+
+_HEADING_PROPER_NOUNS, _HEADING_ALLOWLIST = _load_heading_case_config()
+
+
+def _heading_word_keeps_caps(word: str, proper_nouns: frozenset[str]) -> bool:
+    """Whether a non-initial heading word may legitimately stay capitalized."""
+    if any(char.isdigit() for char in word):
+        return True  # model / version identifiers, e.g. GPT-2-XL, Llama-2-13B
+    bare = _POSSESSIVE_RE.sub("", word.rstrip(".,?!:;"))
+    leading_segment = bare.split("-")[0]
+    if leading_segment.isalpha() and leading_segment.isupper():
+        return True  # ACRONYM-prefixed compound, e.g. POWER-seeking, VNM-incoherence
+    core = bare.replace("-", "").rstrip("s")
+    if bare.isupper() or (core.isalpha() and core.isupper()):
+        return True  # acronym, optionally pluralized: CSS, LLMs, AI's
+    if not (word[0].isupper() and any(char.islower() for char in word)):
+        return True  # not a Title-Case word in the first place
+    return bare in proper_nouns
+
+
+def _heading_case_offenders(
+    heading: str, proper_nouns: frozenset[str]
+) -> list[str]:
+    """Title-Case words in ``heading`` that should be lowercase."""
+    if _NUMBERED_CHAPTER_RE.match(heading):
+        return []
+    stripped = re.sub(r"\$[^$]*\$", " ", heading)
+    stripped = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", stripped)
+    stripped = stripped.replace("~~", "").replace("*", "").replace("_", "")
+    stripped = _ENUMERATOR_RE.sub("", stripped)
+    offenders = []
+    for segment in _HEADING_SENTENCE_SPLIT_RE.split(stripped):
+        words = _HEADING_WORD_RE.findall(segment)
+        for index, word in enumerate(words):
+            if index == 0 or not word[0].isalpha():
+                continue  # first word of each sentence may be capitalized
+            if not _heading_word_keeps_caps(word, proper_nouns):
+                offenders.append(word)
+    return offenders
+
+
+def check_heading_case(
+    text: str,
+    proper_nouns: frozenset[str] = _HEADING_PROPER_NOUNS,
+    allowed_headings: frozenset[str] = _HEADING_ALLOWLIST,
+) -> list[str]:
+    """
+    Headings should use sentence case, not Title Case.
+
+    Flags ATX headings with non-initial Title-Case words. The first word of
+    each sentence (after ``:`` ``.`` ``?`` ``!`` or a list enumerator),
+    acronyms, model/version names, and listed proper nouns stay capitalized.
+    ``N: ...`` chapter headings and headings in ``allowed_headings`` (titles
+    of cited works, product names, quoted terms) are exempt.
+    """
+    errors = []
+    stripped_text = remove_code(text)
+    for match in _HEADING_RE.finditer(stripped_text):
+        heading = match.group(1).strip()
+        if heading in allowed_headings:
+            continue
+        offenders = _heading_case_offenders(heading, proper_nouns)
+        if offenders:
+            line_num = stripped_text[: match.start()].count("\n") + 1
+            errors.append(
+                f"Heading should be sentence case at line {line_num}: "
+                f"{heading!r} (should be lowercase: {', '.join(offenders)})"
+            )
+    return errors
+
+
 def extract_footnote_line_numbers(text: str) -> dict[str, int]:
     """
     Extract all footnote definitions from text.
@@ -969,6 +1060,7 @@ def check_file_data(
         ),
         "html_braces": check_html_with_braces(text),
         "heading_links": check_heading_links(text),
+        "heading_case": check_heading_case(text),
         "footnote_references": check_footnote_references(text),
         "self_closing_non_void": check_self_closing_non_void_elements(text),
         "sentence_initial_numerals": check_sentence_initial_numerals(text),

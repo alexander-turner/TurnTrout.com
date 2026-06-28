@@ -689,6 +689,72 @@ def test_check_heading_links(text: str, expected_errors: list[str]):
     assert errors == expected_errors
 
 
+@pytest.mark.parametrize(
+    "text,expected_offenders",
+    [
+        # Plain Title-Case heading is flagged (first word stays capitalized).
+        ("## Information Theory\n", ["Theory"]),
+        ("## Foo Bar Baz\n", ["Bar", "Baz"]),
+        # Acronyms (all-caps, optionally pluralized) keep their case.
+        ("## Inlining critical CSS\n", []),
+        ("## Working with LLMs\n", []),
+        # Proper nouns and possessives of them.
+        ("## Switch to Proton Mail\n", []),
+        ("## Bessel's correction\n", []),
+        # Possessive of an acronym (AI's -> AI).
+        ("## The AI's goal\n", []),
+        # ACRONYM-prefixed compounds and model/version names.
+        ("## POWER-seeking dynamics\n", []),
+        ("## Speculation on X-vectors\n", []),
+        ("## Using GPT-2-XL today\n", []),
+        # Numbered chapter headings keep title case.
+        ("## 2: The Natural Numbers\n", []),
+        # List enumerators: the following word begins a sentence.
+        ("## 1\\. Activation additions preserve perplexity\n", []),
+        ("## (1) Weakly increasing arguments\n", []),
+        # A new sentence after `.`/`?`/`!` may be capitalized.
+        ("## Robust to noise. Why not?\n", []),
+        # Whole-heading allowlist entry (a cited book title).
+        ("## All of Statistics\n", []),
+        # Inline math is stripped before analysis.
+        ("## Calibrating $R$\n", []),
+        # Markdown links contribute only their visible text.
+        ("## Read [more stuff](https://x.com)\n", []),
+        # A non-alpha word mid-heading is skipped, the next word is not.
+        ("## Foo 3rd Bar\n", ["Bar"]),
+    ],
+)
+def test_check_heading_case(text: str, expected_offenders: list[str]):
+    """Heading-case guard flags Title-Case words but honors every exemption."""
+    errors = source_file_checks.check_heading_case(text)
+    if not expected_offenders:
+        assert errors == []
+    else:
+        assert len(errors) == 1
+        assert (
+            f"should be lowercase: {', '.join(expected_offenders)}" in errors[0]
+        )
+
+
+def test_check_heading_case_reports_line_and_ignores_code_blocks():
+    """Line numbers are reported and headings inside code fences are ignored."""
+    text = "intro\n\n## Bad Heading Here\n\n```\n# Not A Real Heading\n```\n"
+    errors = source_file_checks.check_heading_case(text)
+    assert errors == [
+        "Heading should be sentence case at line 3: 'Bad Heading Here' "
+        "(should be lowercase: Heading, Here)"
+    ]
+
+
+def test_load_heading_case_config():
+    """The shipped config loads into two non-empty frozensets."""
+    proper_nouns, allowed = source_file_checks._load_heading_case_config()
+    assert isinstance(proper_nouns, frozenset) and proper_nouns
+    assert isinstance(allowed, frozenset) and allowed
+    assert "GitHub" in proper_nouns
+    assert "All of Statistics" in allowed
+
+
 def test_integration_with_main(
     scss_scenarios,
     setup_font_test: Callable,
