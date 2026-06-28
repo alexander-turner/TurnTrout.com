@@ -26,6 +26,32 @@ test.describe("Tweet embeds", () => {
     await expect(page.locator(".tweet-thread .tweet-card")).toHaveCount(2)
   })
 
+  test("an image that fits the height cap renders in full without a fade", async ({ page }) => {
+    const grid = page.locator(".tweet-embed:not(.tweet-thread) .tweet-media-grid").first()
+    await grid.scrollIntoViewIfNeeded()
+    const img = grid.locator("img.tweet-media").first()
+    // Wait for the image to load so the fade script has measured the final layout.
+    await img.evaluate(
+      (el: HTMLImageElement) =>
+        el.complete ||
+        new Promise((resolve) => el.addEventListener("load", () => resolve(null), { once: true })),
+    )
+    // A landscape photo fits under the 40rem cap at its natural aspect ratio, so the
+    // frame's bottom edge is the real edge of the image and no fade is applied.
+    await expect(grid).not.toHaveClass(/tweet-media-grid-fade-bottom/)
+  })
+
+  test("an image clipped by the height cap fades into the card at the bottom", async ({ page }) => {
+    const grid = page.locator(".tweet-embed:not(.tweet-thread) .tweet-media-grid").first()
+    await grid.scrollIntoViewIfNeeded()
+    // Force a tiny cap so the image must cover-crop its top and bottom. Shrinking
+    // the grid trips the ResizeObserver, which re-measures and adds the fade.
+    await page.addStyleTag({
+      content: ".tweet-media-count-1 .tweet-media { max-height: 4rem !important; }",
+    })
+    await expect(grid).toHaveClass(/tweet-media-grid-fade-bottom/)
+  })
+
   test("the X-logo source link changes color on hover", async ({ page }) => {
     const logo = page
       .locator(".tweet-embed:not(.tweet-thread) .tweet-source-link .tweet-x-logo")
