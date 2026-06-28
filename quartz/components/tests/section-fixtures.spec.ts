@@ -10,8 +10,9 @@ const THEMES = ["light", "dark"] as const
 // Per-section fixtures are generated from website_content/test-page.md by
 // scripts/split_test_page_sections.py. Each section is its own page, so a
 // screenshot of one section is unaffected by edits to (or reordering of) any
-// other section. The generator's drift test keeps these in sync with the
-// source page.
+// other section. The files are not tracked in git; CI's generate-fixtures job
+// (and the local Playwright server) regenerate them, so this directory is
+// always present and current when the tests collect.
 const fixturesDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../../../website_content/fixtures/test-sections",

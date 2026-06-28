@@ -49,9 +49,17 @@ jobs:
               - "pnpm-lock.yaml"
               - ".github/actions/**"
 
+  # Regenerate the per-section fixtures (not tracked in git) and publish them
+  # as an artifact. The build and every screenshot shard wait on this job.
+  generate-fixtures:
+    name: visual-testing-generate-fixtures
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
+    uses: ./.github/workflows/generate-fixtures.yaml
+
   build:
     name: visual-testing-build
-    needs: should-run
+    needs: [should-run, generate-fixtures]
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
     with:
@@ -59,7 +67,7 @@ jobs:
 
   # Linux Chromium + Firefox.
   visual-testing-linux:
-    needs: [build, should-run]
+    needs: [build, should-run, generate-fixtures]
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -102,6 +110,9 @@ jobs:
           S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
         run: uv run python scripts/r2_baselines.py download
 
+      - name: Download section fixtures
+        uses: ./.github/actions/download-section-fixtures
+
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
@@ -119,7 +130,7 @@ jobs:
 
   # WebKit (Safari) visual tests on macOS for real Safari fidelity
   visual-testing-macos:
-    needs: [build, should-run]
+    needs: [build, should-run, generate-fixtures]
     if: needs.should-run.outputs.run-macos == 'true'
     runs-on: macos-15
     strategy:
@@ -171,6 +182,9 @@ jobs:
           SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
           S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
         run: uv run python scripts/r2_baselines.py download
+
+      - name: Download section fixtures
+        uses: ./.github/actions/download-section-fixtures
 
       - name: Run Playwright tests
         id: playwright

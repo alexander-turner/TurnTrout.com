@@ -8,9 +8,10 @@ its own page so a Playwright screenshot of one section is unaffected by edits to
 any other section (and by section reordering, since fixture names derive from the
 heading slug, not position).
 
-Run via ``uv run python scripts/split_test_page_sections.py``. The visual test
-suite re-runs this and asserts the output matches what is committed, so the
-fixtures can never drift from ``test-page.md``.
+Run via ``uv run python scripts/split_test_page_sections.py``. The output is
+not tracked in git: CI regenerates it in the ``generate-fixtures`` job (and the
+local Playwright server regenerates it before ``pnpm start``), so the fixtures
+are always derived fresh from ``test-page.md`` and cannot drift from it.
 """
 
 from __future__ import annotations
