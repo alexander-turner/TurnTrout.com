@@ -218,13 +218,20 @@ $tweet-content-indent: calc(7 * $base-margin); // avatar width 6 + header gap 1
       border-top: none;
     }
 
-    // Rail below this avatar down to the card's bottom edge...
+    // Inner dividers between chained tweets are fainter than the outer border.
+    &:not(:last-child) {
+      border-bottom-color: var(--midground-fainter);
+    }
+
+    // Rail below this avatar down past the card's bottom edge, overlapping the
+    // inner divider so the connector reads as continuous over the border.
     &:not(:last-child)::after {
       content: "";
       position: absolute;
+      z-index: 1;
       left: $tweet-rail-x;
       top: $tweet-avatar-bottom;
-      bottom: 0;
+      bottom: -1px;
       width: 2px;
       transform: translateX(-50%);
       background-color: var(--midground-faint);
@@ -234,6 +241,7 @@ $tweet-content-indent: calc(7 * $base-margin); // avatar width 6 + header gap 1
     &:not(:first-child)::before {
       content: "";
       position: absolute;
+      z-index: 1;
       left: $tweet-rail-x;
       top: 0;
       height: calc(1.5 * $base-margin);
