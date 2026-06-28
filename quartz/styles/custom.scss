@@ -91,6 +91,7 @@ a[id*="fnref-"] {
   scroll-margin-top: calc(2 * $base-margin);
   background-color: var(--midground-faintest);
   padding: 0 calc(0.125 * $base-margin);
+  margin: 0 calc(0.125 * $base-margin);
   border-radius: $border-radius;
 
   @media all and (max-width: $max-mobile-width) {
