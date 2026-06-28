@@ -293,7 +293,7 @@ live fetch then public CDN (`static/tweets/<id>.json`) then skip (stub).
 
 `website_content/test-page.md` is the single human-edited source of truth for
 visual-regression content. `scripts/split_test_page_sections.py` slices it on
-top-level (`#`) headings into one fixture page per section under
+top-level headings (a `#` followed by a space) into one fixture page per section under
 `website_content/fixtures/test-sections/` (permalink `test-section-<slug>`).
 Each section is its own page, so a Playwright screenshot of one section is
 unaffected by edits to—or reordering of—any other section

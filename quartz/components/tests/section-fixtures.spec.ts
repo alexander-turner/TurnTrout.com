@@ -1,4 +1,5 @@
-import { readdirSync } from "node:fs"
+import { execFileSync } from "node:child_process"
+import { existsSync, readdirSync } from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -10,13 +11,21 @@ const THEMES = ["light", "dark"] as const
 // Per-section fixtures are generated from website_content/test-page.md by
 // scripts/split_test_page_sections.py. Each section is its own page, so a
 // screenshot of one section is unaffected by edits to (or reordering of) any
-// other section. The files are not tracked in git; CI's generate-fixtures job
-// (and the local Playwright server) regenerate them, so this directory is
-// always present and current when the tests collect.
-const fixturesDir = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../../../website_content/fixtures/test-sections",
-)
+// other section. The files are not tracked in git.
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..")
+const fixturesDir = path.resolve(repoRoot, "website_content/fixtures/test-sections")
+
+// Playwright collects this spec before the webServer (which regenerates the
+// fixtures) starts, so a clean local checkout has no directory to read yet.
+// Generate it here. In CI the generate-fixtures job already supplied the files
+// via artifact, so a missing directory there is a wiring bug we let surface.
+if (!process.env.CI && !existsSync(fixturesDir)) {
+  execFileSync("uv", ["run", "python", "scripts/split_test_page_sections.py"], {
+    cwd: repoRoot,
+    stdio: "inherit",
+  })
+}
+
 const sectionSlugs = readdirSync(fixturesDir)
   .filter((name) => name.endsWith(".md"))
   .map((name) => name.replace(/\.md$/, ""))

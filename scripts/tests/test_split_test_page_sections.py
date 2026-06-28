@@ -38,12 +38,14 @@ def test_generate_writes_what_build_fixtures_returns(
 def test_generate_clears_stale_fixtures(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """A regenerate removes fixtures that no longer correspond to a section."""
+    """A regenerate removes stale fixtures while writing the current ones."""
     monkeypatch.setattr(split_test_page_sections, "OUTPUT_DIR", tmp_path)
     stale = tmp_path / "no-longer-a-section.md"
     stale.write_text("stale", encoding="utf-8")
-    generate()
+    written = generate()
     assert not stale.exists()
+    assert written
+    assert {p.name for p in tmp_path.glob("*.md")} == set(written)
 
 
 def test_footnote_defs_extracted_with_nested_refs() -> None:
