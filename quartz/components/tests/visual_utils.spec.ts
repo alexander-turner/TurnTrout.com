@@ -363,7 +363,7 @@ test.describe("takeRegressionScreenshot", () => {
     expect(dimensions.height).toBeLessThanOrEqual(elementBox!.height + 1)
   })
 
-  test("clip option respects specified dimensions", async ({ page }, testInfo) => {
+  test("clip option respects specified dimensions (screenshot)", async ({ page }, testInfo) => {
     const clip = { x: 0, y: 0, width: 200, height: 150 }
 
     const screenshot = await takeRegressionScreenshot(page, testInfo, "clip-test", {

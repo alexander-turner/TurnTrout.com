@@ -14,6 +14,12 @@ pre:hover > .clipboard-button,
   transition: opacity $transition-duration-quick;
 }
 
+@media (hover: none), (pointer: coarse) {
+  .clipboard-button {
+    opacity: 1;
+  }
+}
+
 .clipboard-button {
   display: flex;
   position: absolute;
