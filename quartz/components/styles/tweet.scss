@@ -122,13 +122,11 @@
   // full image still opens via the source link.
   aspect-ratio: 16 / 9;
 
-  // Fade the top and bottom edges into the card so a clipped portrait trails
-  // off instead of ending on a hard line — the same fade overflowing equations
-  // and tables get where their content is cut.
+  // Fade the bottom edge into the card so a clipped portrait trails off there
+  // instead of ending on a hard line — the same fade overflowing equations and
+  // tables get where their content is cut.
   mask-image: linear-gradient(
     to bottom,
-    transparent 0,
-    var(--background) calc(4 * $base-margin),
     var(--background) calc(100% - 4 * $base-margin),
     transparent 100%
   );
