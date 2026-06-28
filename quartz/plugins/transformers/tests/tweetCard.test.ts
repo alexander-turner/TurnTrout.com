@@ -115,6 +115,17 @@ describe("linkifyTweetText", () => {
     expect(nodes).toHaveLength(1)
     expect(render(nodes[0] as Element)).toContain("https://xcancel.com/bob")
   })
+
+  it("marks body entity links no-favicon so the favicon pass skips them", () => {
+    const nodes = linkifyTweetText("@bob see https://t.co/abc", [
+      { url: "https://t.co/abc", display: "example.com", expanded: "https://example.com" },
+    ])
+    const anchors = nodes.filter((n): n is Element => typeof n !== "string")
+    expect(anchors.length).toBeGreaterThan(0)
+    for (const anchor of anchors) {
+      expect(render(anchor)).toContain("no-favicon")
+    }
+  })
 })
 
 describe("buildTweetCard", () => {
@@ -294,6 +305,7 @@ describe("buildUnavailableCard", () => {
     expect(html).toContain("tweet-card-unavailable")
     expect(html).toContain('href="https://xcancel.com/turntrout/status/999"')
     expect(html).toContain("View it on XCancel")
+    expect(html).toContain("no-favicon")
   })
 })
 

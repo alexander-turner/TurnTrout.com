@@ -104,11 +104,13 @@ function externalAnchor(
   className: string,
   ariaLabel?: string,
 ): Element {
+  // Every link inside a tweet embed opts out of the site favicon pass, which
+  // would otherwise stamp an X icon on each one.
   const props: Record<string, string> = {
     href,
     rel: EXTERNAL_LINK_REL,
     target: "_blank",
-    className,
+    className: `${className} no-favicon`,
   }
   if (ariaLabel) props["aria-label"] = ariaLabel
   return h("a", props, children)
@@ -272,8 +274,7 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
   }
 
   // The avatar, name, and handle point at the author's profile; the X logo is
-  // the permalink to the post. `no-favicon` opts these out of the site favicon
-  // pass (which would otherwise stamp an X icon on every link).
+  // the permalink to the post.
   const profileUrl = `${XCANCEL_BASE}/${author.handle}`
   const header = h("div", { className: "tweet-header" }, [
     h("span", { className: "tweet-avatar-wrap" }, [
@@ -287,13 +288,13 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
       }),
     ]),
     h("div", { className: "tweet-author" }, [
-      externalAnchor(profileUrl, nameChildren, "tweet-name-link no-favicon"),
-      externalAnchor(profileUrl, [`@${author.handle}`], "tweet-handle no-favicon"),
+      externalAnchor(profileUrl, nameChildren, "tweet-name-link"),
+      externalAnchor(profileUrl, [`@${author.handle}`], "tweet-handle"),
     ]),
     externalAnchor(
       snapshot.url,
       [icon(X_LOGO_PATH, "tweet-x-logo")],
-      "tweet-source-link no-favicon",
+      "tweet-source-link",
       "View post on X",
     ),
   ])
