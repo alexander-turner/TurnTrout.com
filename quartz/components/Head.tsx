@@ -147,7 +147,9 @@ export default (() => {
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex, nofollow" />
         )}
-        <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
+        {fileData.usesKatex && (
+          <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
+        )}
         {iconPreloads}
         {fontPreloads}
         <script defer src="/static/scripts/collapsible-listeners.js" spa-preserve />

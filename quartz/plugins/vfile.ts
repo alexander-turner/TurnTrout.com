@@ -73,6 +73,12 @@ export interface Data {
    * transformer; consumed by `<Head>` to scope prefetch hints.
    */
   usedAdmonitionIcons?: readonly string[]
+  /**
+   * True when the page actually contains rendered math (KaTeX output).
+   * Populated by the Latex transformer; consumed by `<Head>` to load the
+   * render-blocking katex stylesheet only on pages that need it.
+   */
+  usesKatex?: boolean
   [key: string]: unknown
 }
 
