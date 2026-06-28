@@ -224,7 +224,37 @@ describe("buildTweetCard", () => {
       media: [{ type: "photo", src: "https://assets.turntrout.com/static/tweets/123/p.jpg" }],
     }
     const html = render(buildTweetCard(withPhoto))
-    expect(html).toContain('alt="" loading="lazy"></div>')
+    expect(html).toContain('alt="" loading="lazy"></a></div>')
+  })
+
+  it("wraps a photo in a new-tab link to the full-size asset", () => {
+    const src = "https://assets.turntrout.com/static/tweets/123/p.jpg"
+    const withPhoto: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [{ type: "photo", src, alt: "a photo" }],
+    }
+    const html = render(buildTweetCard(withPhoto))
+    expect(html).toContain(
+      `<a href="${src}" rel="noopener noreferrer" target="_blank" class="tweet-media-link no-favicon">`,
+    )
+    // A captioned photo takes its accessible name from the img alt, not a label.
+    expect(html).not.toContain('aria-label="View image"')
+  })
+
+  it("labels an alt-less photo link so it has an accessible name", () => {
+    const withPhoto: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [{ type: "photo", src: "https://assets.turntrout.com/static/tweets/123/p.jpg" }],
+    }
+    expect(render(buildTweetCard(withPhoto))).toContain('aria-label="View image"')
+  })
+
+  it("does not wrap a video in a media link", () => {
+    const withVideo: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [{ type: "video", src: "https://assets.turntrout.com/static/tweets/123/v.mp4" }],
+    }
+    expect(render(buildTweetCard(withVideo))).not.toContain("tweet-media-link")
   })
 
   it("caps the media-count class at 4", () => {

@@ -197,7 +197,7 @@ function mediaNode(media: TweetMedia): Element {
       [h("source", { src: media.src, type: "video/mp4" })],
     )
   }
-  return h("img", {
+  const img = h("img", {
     className: "tweet-media tweet-media-photo",
     src: media.src,
     alt: media.alt || "",
@@ -205,6 +205,17 @@ function mediaNode(media: TweetMedia): Element {
     ...(media.width ? { width: media.width } : {}),
     ...(media.height ? { height: media.height } : {}),
   })
+  // Wrap the photo so a click opens the full-size asset in a new tab; the grid
+  // cover-crops the thumbnail, so this is the only way to see the whole image.
+  // `display: contents` (see tweet.scss) keeps the img as the grid item. The
+  // link's accessible name falls back to "View image" only when alt is empty,
+  // so a captioned photo isn't double-announced.
+  return externalAnchor(
+    media.src,
+    [img],
+    "tweet-media-link no-favicon",
+    media.alt ? undefined : "View image",
+  )
 }
 
 // Whether a grid's bottom edge cuts through clipped image content—and therefore
