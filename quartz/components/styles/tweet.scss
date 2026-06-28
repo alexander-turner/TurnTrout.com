@@ -180,6 +180,17 @@ $tweet-media-max-height: 24rem;
   border-radius: 0;
 }
 
+// The photo link generates no box of its own, so the wrapped img stays the grid
+// item and every grid/fade rule keeps applying unchanged.
+.tweet-media-link {
+  display: contents;
+
+  // Signal that the photo opens its full-size asset on click.
+  .tweet-media-photo {
+    cursor: zoom-in;
+  }
+}
+
 .tweet-date {
   display: block;
   margin-top: $base-margin;
