@@ -434,7 +434,11 @@ figcaption {
   max-width: 90%;
   margin-left: auto;
   margin-right: auto;
-  text-wrap: balance;
+
+  // `pretty` (not `balance`) so the favicon nowrap-span at a caption's end
+  // can't strand on its own line; `balance` is silently disabled by the
+  // browser for taller captions, which reintroduces the orphan.
+  text-wrap: pretty;
 }
 
 img,
