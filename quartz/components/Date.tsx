@@ -92,7 +92,12 @@ interface DateElementProps {
 // local time so display and the `datetime` attribute don't shift by one day in
 // timezones behind UTC.
 const parseDate = (date: Date | string): Date => {
-  if (date instanceof Date) return date
+  // YAML parses `date: 2024-01-15` to a Date at UTC midnight. Rebuild it at
+  // local midnight from its UTC calendar fields so the rendered day-of-month
+  // and the `datetime` attribute don't shift by one in timezones behind UTC.
+  if (date instanceof Date) {
+    return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  }
   const match = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})$/.exec(date)
   if (match?.groups) {
     const { year, month, day } = match.groups
