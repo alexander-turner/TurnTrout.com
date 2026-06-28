@@ -3,6 +3,7 @@ import type { Element, Root } from "hast"
 import rehypeKatex from "rehype-katex"
 import remarkMath from "remark-math"
 import { visit } from "unist-util-visit"
+import { VFile } from "vfile"
 
 import type { QuartzTransformerPlugin } from "../types"
 
@@ -50,7 +51,7 @@ export const Latex: QuartzTransformerPlugin = () => {
           rehypeKatex,
           { output: "htmlAndMathml", strict: false, trust: true, macros, colorIsTextColor: true },
         ],
-        () => (tree: Root) => {
+        () => (tree: Root, file: VFile) => {
           // Add tabindex="0" to .katex-display spans so they satisfy the axe
           // scrollable-region-focusable rule in static HTML (before JS runs).
           // CSS gives .katex-display `overflow: auto hidden`, making it scrollable.
@@ -58,7 +59,13 @@ export const Latex: QuartzTransformerPlugin = () => {
           // removing tabindex from elements that don't actually overflow.
           visit(tree, "element", (node: Element) => {
             const classes = node.properties?.className
-            if (Array.isArray(classes) && classes.includes("katex-display")) {
+            if (!Array.isArray(classes)) return
+            if (classes.includes("katex") || classes.includes("katex-display")) {
+              // Flag the page so `<Head>` loads the katex stylesheet, which is
+              // render-blocking and otherwise wasted on math-free pages.
+              file.data.usesKatex = true
+            }
+            if (classes.includes("katex-display")) {
               node.properties.tabIndex = 0
               node.properties.role = "group"
             }

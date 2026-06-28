@@ -104,6 +104,26 @@ interface GitCountOptions {
   grep?: string
 }
 
+/**
+ * Sentinel returned for a cosmetic stat whose underlying command failed. These
+ * counts feed decorative badges only, so a missing tool (no `.venv`, no `git`,
+ * an unexpected output format) must degrade gracefully rather than abort the
+ * whole build.
+ */
+export const STAT_UNAVAILABLE = 0
+
+/** Runs a cosmetic stat counter, degrading to {@link STAT_UNAVAILABLE} on any failure. */
+export function safeStatCount(label: string, counter: () => number): number {
+  try {
+    return counter()
+  } catch (err) {
+    logger.warn(
+      `Stat counter "${label}" failed; using sentinel ${STAT_UNAVAILABLE}: ${String(err)}`,
+    )
+    return STAT_UNAVAILABLE
+  }
+}
+
 /** True if the current git working tree is a shallow clone. */
 export function isShallowClone(): boolean {
   return execSync("git rev-parse --is-shallow-repository", { encoding: "utf-8" }).trim() === "true"
@@ -174,16 +194,20 @@ export interface RepoStats {
   linesOfCode: number
 }
 
-/** Gathers commit, test, and code-size statistics about this repo in parallel. */
+/**
+ * Gathers commit, test, and code-size statistics about this repo in parallel.
+ * Each counter is cosmetic, so a single failure degrades to {@link STAT_UNAVAILABLE}
+ * rather than aborting the build.
+ */
 export async function computeRepoStats(): Promise<RepoStats> {
   const [commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
     await Promise.all([
-      countGitCommits({ author: "Alex Turner" }),
-      countGitCommits({ grep: "claude.ai/code/session" }),
-      countJsTests(),
-      countPlaywrightTests(),
-      countPythonTests(),
-      countLinesOfCode(),
+      safeStatCount("git-commits", () => countGitCommits({ author: "Alex Turner" })),
+      safeStatCount("ai-git-commits", () => countGitCommits({ grep: "claude.ai/code/session" })),
+      safeStatCount("js-tests", countJsTests),
+      safeStatCount("playwright-tests", countPlaywrightTests),
+      safeStatCount("pytest", countPythonTests),
+      safeStatCount("lines-of-code", countLinesOfCode),
     ])
 
   return { commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
