@@ -27,6 +27,10 @@ quartz/plugins/transformers/.invert_luminance.json
 # committed under this dir are force-added, so git keeps tracking them.
 quartz/plugins/transformers/.tweet_snapshots/
 
+# Slug -> {title, heading text} index built by quartz/processors/buildTitleIndex.ts
+# and consumed by the bindLinkTitles transformer. Regenerated on every build.
+quartz/plugins/transformers/.titleIndex.json
+
 # Testing & Coverage
 .coverage*
 coverage
