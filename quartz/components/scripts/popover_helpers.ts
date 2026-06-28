@@ -168,6 +168,7 @@ export async function fetchWithMetaRedirect(
   customFetch: typeof fetch = fetch,
   maxRedirects = 3,
 ): Promise<Response> {
+  const initialOrigin = url.origin
   let currentUrl = url
   let redirectCount = 0
 
@@ -198,7 +199,18 @@ export async function fetchWithMetaRedirect(
       return response
     }
 
-    currentUrl = new URL(urlMatch.groups.url, currentUrl)
+    const nextUrl = new URL(urlMatch.groups.url, currentUrl)
+    if (nextUrl.origin !== initialOrigin) {
+      // The caller injects this HTML into the live page, so a meta-refresh that
+      // leaves the originating site's origin must not be followed and rendered.
+      // Stop here and return the same-origin page we already have.
+      return new Response(html, {
+        headers: response.headers,
+        status: response.status,
+        statusText: response.statusText,
+      })
+    }
+    currentUrl = nextUrl
     redirectCount++
   }
 

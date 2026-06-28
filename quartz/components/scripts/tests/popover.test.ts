@@ -880,6 +880,24 @@ describe("fetchWithMetaRedirect", () => {
     expect(window.fetch).toHaveBeenNthCalledWith(2, "http://example.com/page2")
   })
 
+  it("should not follow a meta refresh that leaves the origin", async () => {
+    const firstPage = '<meta http-equiv="refresh" content="0;url=https://evil.example.net/landing">'
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "Content-Type": "text/html" }),
+      text: () => Promise.resolve(firstPage),
+    }))
+
+    const response = await fetchWithMetaRedirect(new URL("http://example.com/page1"), window.fetch)
+
+    // The cross-origin redirect target is never fetched...
+    expect(window.fetch).toHaveBeenCalledTimes(1)
+    expect(window.fetch).toHaveBeenNthCalledWith(1, "http://example.com/page1")
+    // ...and the same-origin page we already have is returned instead.
+    expect(await response.text()).toBe(firstPage)
+  })
+
   it("should handle non-HTML responses", async () => {
     ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
