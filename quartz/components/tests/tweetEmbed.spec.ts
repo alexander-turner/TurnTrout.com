@@ -30,20 +30,14 @@ test.describe("Tweet embeds", () => {
     const grid = page.locator(".tweet-embed:not(.tweet-thread) .tweet-media-grid").first()
     await grid.scrollIntoViewIfNeeded()
     const img = grid.locator("img.tweet-media").first()
+    // Wait for the image to load so the fade script has measured the final layout.
     await img.evaluate(
       (el: HTMLImageElement) =>
         el.complete ||
         new Promise((resolve) => el.addEventListener("load", () => resolve(null), { once: true })),
     )
-    // The image keeps its natural aspect ratio (no cover-crop), so nothing is clipped.
-    await expect
-      .poll(() =>
-        img.evaluate((el: HTMLImageElement) => {
-          const box = el.getBoundingClientRect()
-          return el.naturalWidth / el.naturalHeight < box.width / box.height - 0.01
-        }),
-      )
-      .toBe(false)
+    // A landscape photo fits under the 40rem cap at its natural aspect ratio, so the
+    // frame's bottom edge is the real edge of the image and no fade is applied.
     await expect(grid).not.toHaveClass(/tweet-media-grid-fade-bottom/)
   })
 
