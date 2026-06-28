@@ -113,7 +113,7 @@ I later describe my [@title-lower](#deployment-pipeline) in more detail.
 
 ## Embedding tweets
 
-I allow rich, tracking-free embeds of tweets. Each card renders from a snapshot which I host on my own CDN, so it leaks nothing to X and still displays even if the original tweet is deleted. I also point the links at [`xcancel.com`](https://xcancel.com) rather than `x.com`, as I [avoid X for ethical reasons.](/advanced-privacy#gradually-migrate-your-social-network-away-from-x)
+I enable tracking-free embeds of tweets, rendered in my site's style. Each card renders from a tweet-info JSON which I host on my own CDN, so it leaks nothing to X and still displays even if the original tweet is deleted. I also point the links at [`xcancel.com`](https://xcancel.com) rather than `x.com`, as I [avoid X for ethical reasons.](/advanced-privacy#gradually-migrate-your-social-network-away-from-x)
 
 ```tweet
 https://xcancel.com/Turn_Trout/status/2064426233769742627
