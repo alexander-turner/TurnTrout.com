@@ -71,6 +71,9 @@ TWEET_BLOCK_RE = re.compile(
 # Pull the numeric status id out of an x.com / twitter.com / xcancel.com URL,
 # or accept a bare id. Keep in sync with TWEET_ID_RE in tweetEmbed.ts.
 TWEET_ID_RE = re.compile(r"(?:status(?:es)?/)?(?P<id>\d{5,25})")
+# Non-tweet directive lines inside a ``tweet`` block (a metadata header or an
+# opt-in stub). Keep in sync with RETWEETED_BY_RE / UNAVAILABLE_RE in tweetEmbed.ts.
+DIRECTIVE_RE = re.compile(r"^(?:retweeted-by|unavailable):\s*\S", re.IGNORECASE)
 
 
 class TweetUnavailableError(RuntimeError):
@@ -91,12 +94,19 @@ def extract_tweet_id(text: str) -> str:
 
 
 def parse_block_ids(body: str) -> list[str]:
-    """Parse a ``tweet`` block body (one URL or bare id per line) into ids."""
+    """Parse a ``tweet`` block body into tweet ids.
+
+    Each non-empty line is a tweet URL/bare id, except directive lines:
+    ``retweeted-by:`` (a metadata header) and ``unavailable:`` (a tweet deleted
+    before it could be captured) reference no snapshot to refresh and are
+    skipped. Keep in sync with ``parseTweetReferences`` in ``tweetEmbed.ts``.
+    """
     ids: list[str] = []
     for raw_line in body.splitlines():
         line = raw_line.strip()
-        if line:
-            ids.append(extract_tweet_id(line))
+        if not line or DIRECTIVE_RE.match(line):
+            continue
+        ids.append(extract_tweet_id(line))
     return ids
 
 
