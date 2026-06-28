@@ -148,7 +148,12 @@ def test_extract_tweet_id() -> None:
 
 
 def test_parse_block_ids() -> None:
-    body = "https://x.com/u/status/11111\n\n  https://x.com/u/status/22222 \n"
+    body = (
+        "https://x.com/u/status/11111\n"
+        "retweeted-by: Shrek\n\n"
+        "  https://x.com/u/status/22222 \n"
+        "unavailable: https://x.com/u/status/33333\n"
+    )
     assert ts.parse_block_ids(body) == ["11111", "22222"]
 
 
