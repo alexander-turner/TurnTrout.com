@@ -26,23 +26,34 @@ const tree = (...nodes: Element[]): Root => ({ type: "root", children: nodes })
 const tweetBlock = (body: string): Element =>
   h("pre", [h("code", { className: ["language-tweet"] }, body)])
 
-const snapshotJson = (id: string): string =>
-  JSON.stringify({
-    id,
-    url: `https://xcancel.com/turntrout/status/${id}`,
-    author: { name: "Alex", handle: "turntrout", verified: false, avatarSrc: "a.jpg" },
-    createdAt: "2025-01-21T17:32:00.000Z",
-    text: "hi",
-    urls: [],
-    media: [],
-    snapshotAt: "2026-06-27T00:00:00+00:00",
-  })
+const snapshotObject = (id: string): Record<string, unknown> => ({
+  id,
+  url: `https://xcancel.com/turntrout/status/${id}`,
+  author: { name: "Alex", handle: "turntrout", verified: false, avatarSrc: "a.jpg" },
+  createdAt: "2025-01-21T17:32:00.000Z",
+  text: "hi",
+  urls: [],
+  media: [],
+  snapshotAt: "2026-06-27T00:00:00+00:00",
+})
+
+const snapshotJson = (id: string): string => JSON.stringify(snapshotObject(id))
+
+const fetchResponse = (init: { status?: number; json?: () => unknown }): Response =>
+  ({
+    status: init.status ?? 200,
+    ok: (init.status ?? 200) < 400,
+    json: init.json ?? (() => snapshotObject("0")),
+  }) as unknown as Response
 
 let readFileSpy: ReturnType<typeof jest.spyOn>
+let fetchSpy: ReturnType<typeof jest.spyOn>
 
 beforeEach(() => {
   clearSnapshotCache()
   readFileSpy = jest.spyOn(fs, "readFile")
+  // Default: nothing on R2. Pinned-file tests resolve readFile before this is hit.
+  fetchSpy = jest.spyOn(global, "fetch").mockResolvedValue(fetchResponse({ status: 404 }) as never)
 })
 afterEach(() => {
   jest.restoreAllMocks()
@@ -141,13 +152,22 @@ describe("tweetBlockBody", () => {
 })
 
 describe("loadSnapshot", () => {
-  it("returns the parsed snapshot", async () => {
+  it("returns the parsed pinned snapshot without touching R2", async () => {
     readFileSpy.mockResolvedValue(snapshotJson("10123") as never)
     const snapshot = await loadSnapshot("10123", "/dir")
     expect(snapshot?.id).toBe("10123")
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 
-  it("returns null when the file is missing", async () => {
+  it("hydrates from R2 when no pinned file exists", async () => {
+    readFileSpy.mockRejectedValue(errno("ENOENT") as never)
+    fetchSpy.mockResolvedValue(fetchResponse({ json: () => snapshotObject("10123") }) as never)
+    const snapshot = await loadSnapshot("10123", "/dir")
+    expect(snapshot?.id).toBe("10123")
+    expect(fetchSpy).toHaveBeenCalledWith("https://assets.turntrout.com/static/tweets/10123.json")
+  })
+
+  it("returns null when the snapshot is on neither disk nor R2", async () => {
     readFileSpy.mockRejectedValue(errno("ENOENT") as never)
     expect(await loadSnapshot("404", "/dir")).toBeNull()
   })
@@ -162,7 +182,33 @@ describe("loadSnapshot", () => {
     await expect(loadSnapshot("123", "/dir")).rejects.toThrow("EACCES")
   })
 
-  it("caches results so the file is read once", async () => {
+  it("retries a transient R2 failure, then succeeds", async () => {
+    jest.useFakeTimers()
+    readFileSpy.mockRejectedValue(errno("ENOENT") as never)
+    fetchSpy
+      .mockRejectedValueOnce(new Error("network") as never)
+      .mockResolvedValueOnce(fetchResponse({ json: () => snapshotObject("10123") }) as never)
+    const promise = loadSnapshot("10123", "/dir")
+    await jest.runAllTimersAsync()
+    expect((await promise)?.id).toBe("10123")
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
+    jest.useRealTimers()
+  })
+
+  it("throws after exhausting R2 retries", async () => {
+    jest.useFakeTimers()
+    readFileSpy.mockRejectedValue(errno("ENOENT") as never)
+    fetchSpy.mockResolvedValue(fetchResponse({ status: 503 }) as never)
+    const settled = loadSnapshot("10123", "/dir").catch((error: Error) => error)
+    await jest.runAllTimersAsync()
+    const result = await settled
+    expect(result).toBeInstanceOf(Error)
+    expect((result as Error).message).toContain("Failed to fetch tweet snapshot")
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
+    jest.useRealTimers()
+  })
+
+  it("caches results so disk and R2 are hit once", async () => {
     readFileSpy.mockResolvedValue(snapshotJson("10123") as never)
     await loadSnapshot("123", "/dir")
     await loadSnapshot("123", "/dir")
