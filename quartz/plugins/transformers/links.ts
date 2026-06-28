@@ -96,7 +96,7 @@ function resolveInternalLink(
     throw new Error(
       `Malformed internal link ${JSON.stringify(dest)} in ${curSlug}: ` +
         `${(err as Error).message}. Check the percent-encoding (a stray "%" or an ` +
-        `incomplete escape like "%zz" must be written as "%25").`,
+        'incomplete escape like "%zz" must be written as "%25").',
     )
   }
   outgoing.add(simplifySlug(full))
