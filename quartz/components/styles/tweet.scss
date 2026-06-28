@@ -117,14 +117,29 @@
   border-radius: calc(2 * $border-radius);
   overflow: hidden;
 
+  // Pin every layout to a fixed 16:9 frame so an oversized portrait image can't
+  // dominate the card; each image cover-crops into its cell, mirroring X. The
+  // full image still opens via the source link.
+  aspect-ratio: 16 / 9;
+
   &.tweet-media-count-1 {
     grid-template-columns: 1fr;
   }
 
-  &.tweet-media-count-2,
+  &.tweet-media-count-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
   &.tweet-media-count-3,
   &.tweet-media-count-4 {
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  // Three-up mosaic: the first image fills the left column while the other two
+  // stack on the right.
+  &.tweet-media-count-3 > :first-child {
+    grid-row: 1 / span 2;
   }
 }
 
@@ -135,14 +150,6 @@
   object-fit: cover;
   mix-blend-mode: normal;
   border-radius: 0;
-}
-
-// Cap how tall a media preview can grow so an oversized portrait image can't
-// dominate the card; `object-fit: cover` center-crops the overflow, mirroring
-// X's portrait clamp. The full image still opens via the source link.
-.tweet-card .tweet-media-photo,
-.tweet-card .tweet-media-video {
-  max-height: 32rem;
 }
 
 .tweet-date {
