@@ -117,14 +117,40 @@
   border-radius: calc(2 * $border-radius);
   overflow: hidden;
 
+  // Pin every layout to a fixed 16:9 frame so an oversized portrait image can't
+  // dominate the card; each image cover-crops into its cell, mirroring X. The
+  // full image still opens via the source link.
+  aspect-ratio: 16 / 9;
+
+  // Fade the top and bottom edges into the card so a clipped portrait trails
+  // off instead of ending on a hard line — the same fade overflowing equations
+  // and tables get where their content is cut.
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    var(--background) calc(4 * $base-margin),
+    var(--background) calc(100% - 4 * $base-margin),
+    transparent 100%
+  );
+
   &.tweet-media-count-1 {
     grid-template-columns: 1fr;
   }
 
-  &.tweet-media-count-2,
+  &.tweet-media-count-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
   &.tweet-media-count-3,
   &.tweet-media-count-4 {
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  // Three-up mosaic: the first image fills the left column while the other two
+  // stack on the right.
+  &.tweet-media-count-3 > :first-child {
+    grid-row: 1 / span 2;
   }
 }
 
