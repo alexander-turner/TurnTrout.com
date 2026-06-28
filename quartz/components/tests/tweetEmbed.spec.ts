@@ -33,9 +33,7 @@ test.describe("Tweet embeds", () => {
     await logo.scrollIntoViewIfNeeded()
     const fillBefore = await logo.evaluate((el) => getComputedStyle(el).fill)
     await logo.hover()
-    await expect
-      .poll(() => logo.evaluate((el) => getComputedStyle(el).fill))
-      .not.toBe(fillBefore)
+    await expect.poll(() => logo.evaluate((el) => getComputedStyle(el).fill)).not.toBe(fillBefore)
   })
 
   for (const theme of ["light", "dark"] as Theme[]) {
