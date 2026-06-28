@@ -71,21 +71,34 @@ function resolveInternalLink(
   transformOptions: TransformOptions,
   outgoing: Set<SimpleSlug>,
 ): void {
-  const resolved = (node.properties.href = transformLink(
-    file.data.slug as FullSlug,
-    dest,
-    transformOptions,
-  ))
+  let full: FullSlug
+  try {
+    const resolved = (node.properties.href = transformLink(
+      file.data.slug as FullSlug,
+      dest,
+      transformOptions,
+    ))
 
-  // Dummy hostname required by WHATWG URL constructor; only the pathname is used
-  const url = new URL(resolved, `https://base.com/${stripSlashes(curSlug, true)}`)
-  let canonicalPath = splitAnchor(url.pathname)[0]
-  if (canonicalPath.endsWith("/")) {
-    canonicalPath += "index"
+    // Dummy hostname required by WHATWG URL constructor; only the pathname is used
+    const url = new URL(resolved, `https://base.com/${stripSlashes(curSlug, true)}`)
+    let canonicalPath = splitAnchor(url.pathname)[0]
+    if (canonicalPath.endsWith("/")) {
+      canonicalPath += "index"
+    }
+
+    // decodeURIComponent needed because WHATWG URL percent-encodes everything
+    full = decodeURIComponent(stripSlashes(canonicalPath, true)) as FullSlug
+  } catch (err) {
+    // A malformed percent-escape (a stray "%" in an authored link) makes
+    // decodeURI/decodeURIComponent throw a bare "URI malformed", which would
+    // abort the whole build with no indication of the culprit. Rethrow naming the
+    // page + link so the author can find and fix it.
+    throw new Error(
+      `Malformed internal link ${JSON.stringify(dest)} in ${curSlug}: ` +
+        `${(err as Error).message}. Check the percent-encoding (a stray "%" or an ` +
+        'incomplete escape like "%zz" must be written as "%25").',
+    )
   }
-
-  // decodeURIComponent needed because WHATWG URL percent-encodes everything
-  const full = decodeURIComponent(stripSlashes(canonicalPath, true)) as FullSlug
   outgoing.add(simplifySlug(full))
   node.properties["data-slug"] = full
 }
