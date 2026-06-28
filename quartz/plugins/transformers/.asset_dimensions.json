@@ -9598,5 +9598,9 @@
   "https://assets.turntrout.com/static/tweets/2055343603958878231/avatar.jpg?v=1": {
     "width": 400,
     "height": 400
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/theguardian_com.svg": {
+    "width": 24,
+    "height": 24
   }
 }
