@@ -224,7 +224,9 @@ describe("buildTweetCard", () => {
       media: [{ type: "photo", src: "https://assets.turntrout.com/static/tweets/123/p.jpg" }],
     }
     const html = render(buildTweetCard(withPhoto))
-    expect(html).toContain('alt="" loading="lazy"></a></div>')
+    // An alt-less photo falls back to a non-empty alt so the link it sits in has
+    // an accessible name (WCAG H30).
+    expect(html).toContain('alt="View image" loading="lazy"></a></div>')
   })
 
   it("wraps a photo in a new-tab link to the full-size asset", () => {
@@ -237,16 +239,16 @@ describe("buildTweetCard", () => {
     expect(html).toContain(
       `<a href="${src}" rel="noopener noreferrer" target="_blank" class="tweet-media-link no-favicon">`,
     )
-    // A captioned photo takes its accessible name from the img alt, not a label.
-    expect(html).not.toContain('aria-label="View image"')
+    // A captioned photo keeps its own alt as the link's accessible name.
+    expect(html).toContain('alt="a photo"')
   })
 
-  it("labels an alt-less photo link so it has an accessible name", () => {
+  it("gives an alt-less photo a fallback alt so its link has an accessible name", () => {
     const withPhoto: TweetSnapshot = {
       ...baseSnapshot,
       media: [{ type: "photo", src: "https://assets.turntrout.com/static/tweets/123/p.jpg" }],
     }
-    expect(render(buildTweetCard(withPhoto))).toContain('aria-label="View image"')
+    expect(render(buildTweetCard(withPhoto))).toContain('alt="View image"')
   })
 
   it("does not wrap a video in a media link", () => {

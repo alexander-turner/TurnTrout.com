@@ -197,25 +197,22 @@ function mediaNode(media: TweetMedia): Element {
       [h("source", { src: media.src, type: "video/mp4" })],
     )
   }
+  // The img is the link's only content, so its alt is what conveys the link's
+  // purpose (WCAG H30). It must be non-empty: fall back to "View image" when the
+  // tweet supplies no alt text, otherwise a screen reader announces an unlabeled
+  // link.
   const img = h("img", {
     className: "tweet-media tweet-media-photo",
     src: media.src,
-    alt: media.alt || "",
+    alt: media.alt || "View image",
     loading: "lazy",
     ...(media.width ? { width: media.width } : {}),
     ...(media.height ? { height: media.height } : {}),
   })
   // Wrap the photo so a click opens the full-size asset in a new tab; the grid
   // cover-crops the thumbnail, so this is the only way to see the whole image.
-  // `display: contents` (see tweet.scss) keeps the img as the grid item. The
-  // link's accessible name falls back to "View image" only when alt is empty,
-  // so a captioned photo isn't double-announced.
-  return externalAnchor(
-    media.src,
-    [img],
-    "tweet-media-link no-favicon",
-    media.alt ? undefined : "View image",
-  )
+  // `display: contents` (see tweet.scss) keeps the img as the grid item.
+  return externalAnchor(media.src, [img], "tweet-media-link no-favicon")
 }
 
 // Whether a grid's bottom edge cuts through clipped image content—and therefore
