@@ -5,6 +5,12 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
+import {
+  ELLIPSIS,
+  RIGHT_DOUBLE_QUOTE,
+  RIGHT_GUILLEMET,
+  RIGHT_SINGLE_QUOTE,
+} from "../../components/constants"
 import { addClass, INLINE_PASSTHROUGH_TAGS } from "./utils"
 
 // Inline code gets a hair of leading space so its monospace glyph doesn't crowd
@@ -39,8 +45,12 @@ export const NO_GAP_PREDECESSORS: ReadonlySet<string> = new Set([
 // `");"` between two adjacent code spans) belongs to the earlier content, not
 // this code. Pulling it into the code's nowrap unit opens a break right before
 // it, so the punctuation can orphan onto the code's line; leaving the code
-// unwrapped keeps the punctuation attached to what it closes.
-const CLOSING_PUNCTUATION_ONLY = /^[)\]};:,.!?"'”’»…]+\s*$/u
+// unwrapped keeps the punctuation attached to what it closes. Smart characters
+// come from the typography SSOT in `config/constants.json`.
+const CLOSING_PUNCTUATION_ONLY = new RegExp(
+  `^[)\\]};:,.!?"'${RIGHT_SINGLE_QUOTE}${RIGHT_DOUBLE_QUOTE}${RIGHT_GUILLEMET}${ELLIPSIS}]+\\s*$`,
+  "u",
+)
 
 // Last rendered character of a node (recursing into inline children), or null
 // when it contributes no text.
