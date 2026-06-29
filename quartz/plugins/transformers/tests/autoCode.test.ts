@@ -111,6 +111,41 @@ describe("rehypeAutoCode", () => {
     })
   })
 
+  describe("repo-doc filenames", () => {
+    it.each([
+      [
+        "wraps bare README",
+        "<p>See the README for setup.</p>",
+        "<p>See the <code>README</code> for setup.</p>",
+      ],
+      [
+        "wraps README.md as a single unit (longest-first)",
+        "<p>Edit README.md now.</p>",
+        "<p>Edit <code>README.md</code> now.</p>",
+      ],
+      [
+        "wraps THREAT-MODEL.md including the extension",
+        "<p>Read THREAT-MODEL.md first.</p>",
+        "<p>Read <code>THREAT-MODEL.md</code> first.</p>",
+      ],
+      [
+        "wraps bare SECURITY and CONTRIBUTING",
+        "<p>See SECURITY and CONTRIBUTING.</p>",
+        "<p>See <code>SECURITY</code> and <code>CONTRIBUTING</code>.</p>",
+      ],
+    ])("%s", (_label, input, expected) => {
+      expect(runAutoCode(input)).toBe(expected)
+    })
+
+    it.each([
+      ["lowercase 'security'", "<p>The security policy applies.</p>"],
+      ["lowercase 'contributing'", "<p>Thanks for contributing today.</p>"],
+      ["Title-case 'Readme'", "<p>The Readme explains it.</p>"],
+    ])("leaves prose words untouched: %s", (_label, input) => {
+      expect(runAutoCode(input)).toBe(input)
+    })
+  })
+
   describe("skip rules", () => {
     it("does not transform inside an existing <code>", () => {
       expect(runAutoCode("<p>Already coded: <code>punctilio</code>.</p>")).toBe(

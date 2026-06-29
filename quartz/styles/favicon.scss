@@ -216,3 +216,16 @@ svg.favicon[data-domain="amazon_com"] {
     --color-percentage: 100%;
   }
 }
+
+// Four captions across squeeze each into a column too narrow for phrases like
+// "is a radial-gradient:", so the atomic code wraps awkwardly. Cap at two
+// columns, and one on mobile, so each caption has room to wrap naturally.
+#big-favicon-demo .subfigure {
+  flex-basis: 45%;
+}
+
+@media all and (max-width: $mobile-breakpoint) {
+  #big-favicon-demo .subfigure {
+    flex-basis: 100%;
+  }
+}
