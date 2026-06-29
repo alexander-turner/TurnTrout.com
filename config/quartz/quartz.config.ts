@@ -75,7 +75,7 @@ const config: QuartzConfig = {
         sources: {
           punctilio: githubReadmeSource("alexander-turner", "punctilio"),
           "ci-truth-serum": githubReadmeSource("alexander-turner", "ci-truth-serum", {
-            maxSections: 2,
+            maxSections: 1,
           }),
           "agent-input-sanitizer": githubReadmeSource("alexander-turner", "agent-input-sanitizer", {
             maxSections: 1,
