@@ -41,6 +41,16 @@
   &.close-text {
     margin-left: calc(0.3125 * #{$base-margin});
   }
+
+  // After inline code, the monospace cell's trailing sidebearing leaves the
+  // favicon floating away from the word, while the favicon's own right edge
+  // crowds whatever closing punctuation follows the link. Sit it midway
+  // between the default gap and the code edge, and add a right gap so a
+  // trailing ")" / "]" isn't cramped.
+  code & {
+    margin-left: calc(0.0125 * #{$base-margin});
+    margin-right: calc(0.15 * #{$base-margin});
+  }
 }
 
 // SVG-specific styling using masks for color control
