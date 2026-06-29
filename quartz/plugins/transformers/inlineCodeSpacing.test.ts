@@ -65,6 +65,34 @@ describe("InlineCodeSpacing", () => {
     })
   })
 
+  describe("does not pull closing punctuation onto the code's line", () => {
+    it("leaves a second code unwrapped when only closing punctuation precedes it", async () => {
+      const out = await processHtmlWithPlugin("<p>see <code>one</code>); <code>two</code> ok</p>")
+      expect(out).toBe(
+        '<p><span class="inline-code-nowrap">see <code class="inline-code-gap">one</code></span>); ' +
+          "<code>two</code> ok</p>",
+      )
+    })
+
+    it.each([
+      ["semicolon-close", "); "],
+      ["bracket-close", "] "],
+      ["comma", ", "],
+      ["period", ". "],
+    ])("skips the gap when the preceding token is only %s", async (_label, sep) => {
+      const out = await processHtmlWithPlugin(`<p>x <code>a</code>${sep}<code>b</code></p>`)
+      expect(out).toContain("<code>b</code>")
+      expect(out).not.toContain(`${sep}<span`)
+    })
+
+    it("still joins when a real word follows the closing punctuation", async () => {
+      const out = await processHtmlWithPlugin("<p>a <code>one</code>); then <code>two</code></p>")
+      expect(out).toContain(
+        '<span class="inline-code-nowrap">then <code class="inline-code-gap">two</code></span>',
+      )
+    })
+  })
+
   describe("adds no gap", () => {
     it.each([...NO_GAP_PREDECESSORS])("when code is glued behind %s", async (char) => {
       const out = await processHtmlWithPlugin(`<p>${char}<code>grep</code></p>`)
