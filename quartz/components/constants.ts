@@ -15,6 +15,7 @@ export const {
   appleTouchIconUrl,
   faviconBasePath,
   minFaviconCount,
+  maxAtomicInlineCodeLength,
   googleSubdomainAllowlist,
   faviconCountAllowlist,
   faviconSubstringBlocklist,

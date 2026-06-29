@@ -12,6 +12,7 @@
   "appleTouchIconUrl": "https://assets.turntrout.com/static/images/apple-icon.png",
   "faviconBasePath": "https://assets.turntrout.com/static/images/external-favicons",
   "minFaviconCount": 6,
+  "maxAtomicInlineCodeLength": 30,
   "googleSubdomainAllowlist": ["scholar", "play", "docs", "drive", "mail", "colab.research"],
   "faviconCountAllowlist": [
     "apple_com",

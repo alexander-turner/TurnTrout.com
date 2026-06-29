@@ -11,6 +11,7 @@ import {
   lastTextChar,
   NO_GAP_PREDECESSORS,
   precedingBoundary,
+  textLength,
 } from "./inlineCodeSpacing"
 
 const processHtmlWithPlugin = async (html: string): Promise<string> => {
@@ -30,32 +31,57 @@ describe("InlineCodeSpacing", () => {
   describe("gives the preceding word a gap", () => {
     it("wraps the trailing word in a gap span, leaving the code in place", async () => {
       const out = await processHtmlWithPlugin("<p>of <code>grep</code></p>")
-      expect(out).toBe('<p><span class="inline-code-gap">of</span> <code>grep</code></p>')
+      expect(out).toBe(
+        '<p><span class="inline-code-gap">of</span> <code class="inline-code-atomic">grep</code></p>',
+      )
     })
 
     it("leaves earlier text in place, marking only the trailing word", async () => {
       const out = await processHtmlWithPlugin("<p>help of <code>grep</code></p>")
-      expect(out).toBe('<p>help <span class="inline-code-gap">of</span> <code>grep</code></p>')
+      expect(out).toBe(
+        '<p>help <span class="inline-code-gap">of</span> <code class="inline-code-atomic">grep</code></p>',
+      )
     })
 
     it("marks the word before a wrapping link, not the link or its code", async () => {
       const out = await processHtmlWithPlugin('<p>help of <a href="#"><code>grep</code></a></p>')
       expect(out).toBe(
-        '<p>help <span class="inline-code-gap">of</span> <a href="#"><code>grep</code></a></p>',
+        '<p>help <span class="inline-code-gap">of</span> <a href="#"><code class="inline-code-atomic">grep</code></a></p>',
       )
     })
 
     it("keeps the gap when the code abuts non-hugging punctuation", async () => {
       const out = await processHtmlWithPlugin("<p>war—<code>grep</code></p>")
-      expect(out).toBe('<p><span class="inline-code-gap">war—</span><code>grep</code></p>')
+      expect(out).toBe(
+        '<p><span class="inline-code-gap">war—</span><code class="inline-code-atomic">grep</code></p>',
+      )
     })
 
     it("handles several codes sharing a parent", async () => {
       const out = await processHtmlWithPlugin("<p>a <code>one</code> b <code>two</code></p>")
       expect(out).toBe(
-        '<p><span class="inline-code-gap">a</span> <code>one</code> ' +
-          '<span class="inline-code-gap">b</span> <code>two</code></p>',
+        '<p><span class="inline-code-gap">a</span> <code class="inline-code-atomic">one</code> ' +
+          '<span class="inline-code-gap">b</span> <code class="inline-code-atomic">two</code></p>',
       )
+    })
+  })
+
+  describe("marks short codes atomic so they don't break mid-token", () => {
+    it("marks a short hyphenated code atomic", async () => {
+      const out = await processHtmlWithPlugin("<p>a <code>conic-gradient</code></p>")
+      expect(out).toContain('<code class="inline-code-atomic">conic-gradient</code>')
+    })
+
+    it("leaves a long code breakable (no atomic class)", async () => {
+      const long = "alexander-turner/claude-automation-template"
+      const out = await processHtmlWithPlugin(`<p>see <code>${long}</code></p>`)
+      expect(out).not.toContain("inline-code-atomic")
+      expect(out).toContain(`<code>${long}</code>`)
+    })
+
+    it("does not mark block code inside <pre>", async () => {
+      const out = await processHtmlWithPlugin("<pre><code>grep</code></pre>")
+      expect(out).not.toContain("inline-code-atomic")
     })
   })
 
@@ -93,6 +119,20 @@ describe("InlineCodeSpacing", () => {
     it("leaves non-code elements untouched", async () => {
       const out = await processHtmlWithPlugin("<p>run <em>grep</em></p>")
       expect(out).not.toContain("inline-code")
+    })
+  })
+
+  describe("textLength", () => {
+    it("counts the characters of a text node", () => {
+      expect(textLength({ type: "text", value: "abc" })).toBe(3)
+    })
+
+    it("sums text across element children", () => {
+      expect(textLength(h("code", ["con", h("span", "ic")]) as Element)).toBe(5)
+    })
+
+    it("returns 0 for a non-text, non-element node", () => {
+      expect(textLength({ type: "comment", value: "x" })).toBe(0)
     })
   })
 

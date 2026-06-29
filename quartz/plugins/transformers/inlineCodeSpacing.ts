@@ -5,7 +5,22 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { INLINE_PASSTHROUGH_TAGS } from "./utils"
+import { maxAtomicInlineCodeLength } from "../../components/constants"
+import { addClass, INLINE_PASSTHROUGH_TAGS } from "./utils"
+
+// A short inline code reads as one token, so it wraps to the next line whole
+// rather than breaking at an internal hyphen (e.g. `conic-gradient`). Longer
+// codes stay breakable so they can't overflow a narrow container.
+const ATOMIC_CODE_MAX_LENGTH = maxAtomicInlineCodeLength
+
+// Total rendered text length of a node (recursing into inline children).
+export function textLength(node: RootContent): number {
+  if (node.type === "text") return (node as Text).value.length
+  if (node.type === "element") {
+    return (node as Element).children.reduce((sum, child) => sum + textLength(child), 0)
+  }
+  return 0
+}
 
 // Inline code's monospace glyph can crowd the word before it, so that word gets
 // a hair of trailing space: a `margin-right` on a span wrapping the word (class
@@ -88,17 +103,20 @@ interface GapOp {
 }
 
 /**
- * Rehype plugin that gives the word preceding inline `<code>` a small
- * right-margin gap (class `inline-code-gap`) so the monospace glyph doesn't
- * crowd it. Adds no gap when the code follows a hugging delimiter (see
- * `NO_GAP_PREDECESSORS`), a bare separator with no word to crowd, or starts its
- * block; block code (inside `<pre>`) is untouched.
+ * Rehype plugin for inline `<code>` (block code inside `<pre>` is untouched):
+ *   - marks a short code `inline-code-atomic` so it wraps whole instead of
+ *     breaking at an internal hyphen;
+ *   - gives the word preceding a code a small right-margin gap (class
+ *     `inline-code-gap`) so the monospace glyph doesn't crowd it. Adds no gap
+ *     when the code follows a hugging delimiter (see `NO_GAP_PREDECESSORS`), a
+ *     bare separator with no word to crowd, or starts its block.
  */
 export const rehypeInlineCodeSpacing: Plugin = () => {
   return (tree: Node) => {
     const ops: GapOp[] = []
     visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
       if (node.tagName !== "code" || isInPre(ancestors)) return
+      if (textLength(node) <= ATOMIC_CODE_MAX_LENGTH) addClass(node, "inline-code-atomic")
       const boundary = precedingBoundary(node, ancestors)
       if (!boundary || NO_GAP_PREDECESSORS.has(boundary.char)) return
       // `index` is always >= 1 here (the boundary char was found at a lower

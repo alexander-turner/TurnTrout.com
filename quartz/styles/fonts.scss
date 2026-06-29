@@ -361,6 +361,12 @@ code {
   margin-right: 0.1em;
 }
 
+// A short code is one token: it wraps to the next line whole instead of breaking
+// at an internal hyphen. Longer codes stay breakable (see InlineCodeSpacing).
+.inline-code-atomic {
+  white-space: nowrap;
+}
+
 // For usage in the middle of a paragraph
 .dropcap {
   display: inline-block;
