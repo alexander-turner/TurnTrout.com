@@ -5,15 +5,12 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { addClass, INLINE_PASSTHROUGH_TAGS } from "./utils"
+import { INLINE_PASSTHROUGH_TAGS } from "./utils"
 
-// Inline code gets a hair of leading space so its monospace glyph doesn't crowd
-// the preceding word. The space is a `margin-left` on the code, but the code
-// (and its preceding word) are wrapped in a `white-space: nowrap` span so the
-// code can never fall to the start of a line — where the margin would indent
-// it. A left margin alone is not enough: at a soft wrap some engines keep it
-// and some drop it, so the only cross-engine guarantee is to keep the code off
-// the line start entirely.
+// Inline code's monospace glyph can crowd the word before it, so that word gets
+// a hair of trailing space: a `margin-right` on a span wrapping the word (class
+// `inline-code-gap`). A trailing margin collapses at a line end, so when the
+// code wraps to the start of a line it sits flush there with no indent.
 //
 // These characters should instead hug the code that immediately follows them,
 // so no gap is added: opening delimiters and the binding operators
@@ -84,62 +81,59 @@ function isInPre(ancestors: readonly Parent[]): boolean {
   )
 }
 
-interface JoinOp {
+interface GapOp {
   parent: Parent
   index: number
   prevText: Text
-  unit: Element
 }
 
 /**
- * Rehype plugin that keeps inline `<code>` on its preceding word's line and
- * gives it a small left-margin gap. The preceding word and the code's inline
- * unit are moved into a `white-space: nowrap` span; the code (or its wrapping
- * link) carries `inline-code-gap`. No gap is added when the code is glued to a
- * hugging delimiter (see `NO_GAP_PREDECESSORS`) or starts its block, and block
- * code (inside `<pre>`) is untouched.
+ * Rehype plugin that gives the word preceding inline `<code>` a small
+ * right-margin gap (class `inline-code-gap`) so the monospace glyph doesn't
+ * crowd it. Adds no gap when the code follows a hugging delimiter (see
+ * `NO_GAP_PREDECESSORS`), a bare separator with no word to crowd, or starts its
+ * block; block code (inside `<pre>`) is untouched.
  */
 export const rehypeInlineCodeSpacing: Plugin = () => {
   return (tree: Node) => {
-    const ops: JoinOp[] = []
+    const ops: GapOp[] = []
     visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
       if (node.tagName !== "code" || isInPre(ancestors)) return
       const boundary = precedingBoundary(node, ancestors)
       if (!boundary || NO_GAP_PREDECESSORS.has(boundary.char)) return
       // `index` is always >= 1 here (the boundary char was found at a lower
-      // sibling), so both neighbours exist; the unit is the element we ascended
-      // through (or the code itself).
+      // sibling), so the preceding text node exists.
       const prev = boundary.parent.children[boundary.index - 1] as RootContent
-      const unit = boundary.parent.children[boundary.index] as Element
       if (prev.type !== "text" || !/\S/u.test(prev.value)) return
-      ops.push({ parent: boundary.parent, index: boundary.index, prevText: prev, unit })
+      ops.push({ parent: boundary.parent, index: boundary.index, prevText: prev })
     })
     // Splice from the highest index down so earlier rewrites don't shift the
     // positions recorded for later ones.
     ops.sort((a, b) => b.index - a.index)
-    for (const { parent, index, prevText, unit } of ops) {
-      // The trailing word (plus any space separating it from the code) joins the
-      // code; earlier text stays put so a break can still occur before the word.
-      const match = /(\S+\s*)$/u.exec(prevText.value)
+    for (const { parent, index, prevText } of ops) {
+      const match = /(\S+)(\s*)$/u.exec(prevText.value)
       // istanbul ignore next -- the \S guard above guarantees a match
       if (!match) continue
-      const tail = match[1]
+      const [, word, trailingSpace] = match
       // A bare separator between two inline units — the ", " in `a`, `b`, `c`,
-      // or a lone dash — has no word for the code to crowd. Gluing it drags the
-      // separator onto the next line ahead of the code (an orphaned ", clean"),
-      // so leave it unglued: the separator stays put, the code wraps on its own,
-      // and its trailing space already keeps the two apart.
-      if (!/[\p{L}\p{N}]/u.test(tail)) continue
-      const head = prevText.value.slice(0, prevText.value.length - tail.length)
-      addClass(unit, "inline-code-gap")
-      const span: Element = {
+      // or a lone dash — has no word for the code to crowd, so add no gap.
+      if (!/[\p{L}\p{N}]/u.test(word)) continue
+      const head = prevText.value.slice(
+        0,
+        prevText.value.length - word.length - trailingSpace.length,
+      )
+      // Only the word carries the gap; the space between it and the code stays
+      // text so the code can still wrap to the next line on its own.
+      const replacement: ElementContent[] = []
+      if (head) replacement.push({ type: "text", value: head })
+      replacement.push({
         type: "element",
         tagName: "span",
-        properties: { className: ["inline-code-nowrap"] },
-        children: [{ type: "text", value: tail }, unit],
-      }
-      const replacement: ElementContent[] = head ? [{ type: "text", value: head }, span] : [span]
-      parent.children.splice(index - 1, 2, ...replacement)
+        properties: { className: ["inline-code-gap"] },
+        children: [{ type: "text", value: word }],
+      })
+      if (trailingSpace) replacement.push({ type: "text", value: trailingSpace })
+      parent.children.splice(index - 1, 1, ...replacement)
     }
   }
 }

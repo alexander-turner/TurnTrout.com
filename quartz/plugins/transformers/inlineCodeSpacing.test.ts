@@ -27,40 +27,34 @@ const processHtmlWithPlugin = async (html: string): Promise<string> => {
 }
 
 describe("InlineCodeSpacing", () => {
-  describe("joins the code to its preceding word with a gap", () => {
-    it("wraps the word + code in a nowrap span and marks the code", async () => {
+  describe("gives the preceding word a gap", () => {
+    it("wraps the trailing word in a gap span, leaving the code in place", async () => {
       const out = await processHtmlWithPlugin("<p>of <code>grep</code></p>")
-      expect(out).toBe(
-        '<p><span class="inline-code-nowrap">of <code class="inline-code-gap">grep</code></span></p>',
-      )
+      expect(out).toBe('<p><span class="inline-code-gap">of</span> <code>grep</code></p>')
     })
 
-    it("leaves earlier text in place, joining only the trailing word", async () => {
+    it("leaves earlier text in place, marking only the trailing word", async () => {
       const out = await processHtmlWithPlugin("<p>help of <code>grep</code></p>")
-      expect(out).toBe(
-        '<p>help <span class="inline-code-nowrap">of <code class="inline-code-gap">grep</code></span></p>',
-      )
+      expect(out).toBe('<p>help <span class="inline-code-gap">of</span> <code>grep</code></p>')
     })
 
-    it("marks the wrapping link and joins it, not the inner code", async () => {
+    it("marks the word before a wrapping link, not the link or its code", async () => {
       const out = await processHtmlWithPlugin('<p>help of <a href="#"><code>grep</code></a></p>')
       expect(out).toBe(
-        '<p>help <span class="inline-code-nowrap">of <a href="#" class="inline-code-gap"><code>grep</code></a></span></p>',
+        '<p>help <span class="inline-code-gap">of</span> <a href="#"><code>grep</code></a></p>',
       )
     })
 
-    it("keeps the gap when glued behind non-hugging punctuation", async () => {
+    it("keeps the gap when the code abuts non-hugging punctuation", async () => {
       const out = await processHtmlWithPlugin("<p>war—<code>grep</code></p>")
-      expect(out).toBe(
-        '<p><span class="inline-code-nowrap">war—<code class="inline-code-gap">grep</code></span></p>',
-      )
+      expect(out).toBe('<p><span class="inline-code-gap">war—</span><code>grep</code></p>')
     })
 
     it("handles several codes sharing a parent", async () => {
       const out = await processHtmlWithPlugin("<p>a <code>one</code> b <code>two</code></p>")
       expect(out).toBe(
-        '<p><span class="inline-code-nowrap">a <code class="inline-code-gap">one</code></span> ' +
-          '<span class="inline-code-nowrap">b <code class="inline-code-gap">two</code></span></p>',
+        '<p><span class="inline-code-gap">a</span> <code>one</code> ' +
+          '<span class="inline-code-gap">b</span> <code>two</code></p>',
       )
     })
   })

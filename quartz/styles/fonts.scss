@@ -353,17 +353,12 @@ code {
   }
 }
 
-// Inline code's leading glyph can crowd the preceding word, especially after
-// letters with a rightward hook ("f", "r"). The InlineCodeSpacing transformer
-// joins the code to its preceding word in a nowrap span so the code never falls
-// to a line start (where the gap would indent it), then gives the code a small
-// left margin for the gap.
-.inline-code-nowrap {
-  white-space: nowrap;
-}
-
+// Inline code's monospace glyph can crowd the word before it (especially after
+// letters with a rightward hook, "f"/"r"). The InlineCodeSpacing transformer
+// wraps that word so it can carry a trailing gap. A trailing margin collapses at
+// a line end, so when the code wraps to a line start it stays flush there.
 .inline-code-gap {
-  margin-left: 0.1em;
+  margin-right: 0.1em;
 }
 
 // For usage in the middle of a paragraph
