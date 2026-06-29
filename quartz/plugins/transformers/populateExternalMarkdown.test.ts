@@ -207,7 +207,7 @@ describe("PopulateExternalMarkdown", () => {
       const source = githubReadmeSource("owner", "repo", { maxSections: 0 })
       expect(source.transform?.("Use the [CLI](#cli).\n\n## CLI\n\nbody")).toBe(
         wrap(
-          'Use the [CLI](https://github.com/owner/repo#cli).\n\n' +
+          "Use the [CLI](https://github.com/owner/repo#cli).\n\n" +
             '<div class="centered">\n\n[Read the rest on GitHub →](https://github.com/owner/repo)\n\n</div>',
         ),
       )
