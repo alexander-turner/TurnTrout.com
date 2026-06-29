@@ -124,6 +124,12 @@ export const rehypeInlineCodeSpacing: Plugin = () => {
       // istanbul ignore next -- the \S guard above guarantees a match
       if (!match) continue
       const tail = match[1]
+      // A bare separator between two inline units — the ", " in `a`, `b`, `c`,
+      // or a lone dash — has no word for the code to crowd. Gluing it drags the
+      // separator onto the next line ahead of the code (an orphaned ", clean"),
+      // so leave it unglued: the separator stays put, the code wraps on its own,
+      // and its trailing space already keeps the two apart.
+      if (!/[\p{L}\p{N}]/u.test(tail)) continue
       const head = prevText.value.slice(0, prevText.value.length - tail.length)
       addClass(unit, "inline-code-gap")
       const span: Element = {

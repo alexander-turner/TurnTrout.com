@@ -428,6 +428,41 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
   )
 }
 
+// Opening delimiters that sit flush against a following acronym (no space). The
+// pair renders un-kerned across the text/<abbr> boundary, leaving a visible gap
+// (e.g. "(JSON"); pulling the delimiter inside the abbr restores kerning.
+export const OPENING_DELIMITERS_BEFORE_SMALLCAPS = /[([{“‘"]$/u
+
+/**
+ * Moves an opening delimiter that directly precedes a small-caps `<abbr>` inside
+ * the abbr so the font kerns it against the first small-cap glyph. Also prepends
+ * it to `data-original-text` so clipboard restoration keeps the delimiter.
+ */
+export function absorbLeadingDelimiterIntoAbbr(node: Element, parent: Parent): void {
+  const index = parent.children.indexOf(node)
+  if (index <= 0) return
+  const prev = parent.children[index - 1]
+  if (prev.type !== "text") return
+  const match = OPENING_DELIMITERS_BEFORE_SMALLCAPS.exec(prev.value)
+  if (!match) return
+
+  const delimiter = match[0]
+  prev.value = prev.value.slice(0, -delimiter.length)
+
+  const first = node.children[0]
+  if (first && first.type === "text") {
+    first.value = delimiter + first.value
+  } else {
+    node.children.unshift({ type: "text", value: delimiter })
+  }
+
+  // hast stores `data-original-text` under the normalized `dataOriginalText` key.
+  const original = node.properties.dataOriginalText
+  if (typeof original === "string") {
+    node.properties.dataOriginalText = delimiter + original
+  }
+}
+
 /**
  * Rehype plugin that visits text nodes and replaces
  * detected all-caps or acronyms with smallcaps <abbr>.
@@ -436,6 +471,11 @@ export const rehypeTagSmallcaps: Plugin = () => {
   return (tree: Node) => {
     visitParents(tree, "text", (node: Text, ancestors: Parent[]) => {
       replaceSCInNode(node, ancestors)
+    })
+    visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
+      if (node.tagName === "abbr" && hasClass(node, "small-caps")) {
+        absorbLeadingDelimiterIntoAbbr(node, ancestors[ancestors.length - 1])
+      }
     })
   }
 }

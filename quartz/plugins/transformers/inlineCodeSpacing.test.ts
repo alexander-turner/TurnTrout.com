@@ -82,6 +82,15 @@ describe("InlineCodeSpacing", () => {
       expect(out).not.toContain("inline-code-gap")
     })
 
+    it.each([
+      ["a comma separator between two codes", "<p><code>a</code>, <code>b</code></p>"],
+      ["an em-dash separator between two codes", "<p><code>a</code>—<code>b</code></p>"],
+    ])("for %s (no word to crowd the code)", async (_label, html) => {
+      const out = await processHtmlWithPlugin(html)
+      expect(out).not.toContain("inline-code-gap")
+      expect(out).not.toContain("inline-code-nowrap")
+    })
+
     it("ignores block code inside <pre>", async () => {
       const out = await processHtmlWithPlugin("<p>run </p><pre><code>grep</code></pre>")
       expect(out).not.toContain("inline-code-gap")
