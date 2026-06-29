@@ -216,3 +216,12 @@ svg.favicon[data-domain="amazon_com"] {
     --color-percentage: 100%;
   }
 }
+
+// On mobile the four-up demo squeezes each caption into a ~half-width column,
+// too narrow for phrases like "is a radial-gradient:" — stack one per row so the
+// captions get full width.
+@media all and (max-width: $mobile-breakpoint) {
+  #big-favicon-demo .subfigure {
+    flex-basis: 100%;
+  }
+}
