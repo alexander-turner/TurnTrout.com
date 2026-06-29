@@ -15,7 +15,7 @@ warn() {
 	echo "WARNING: $1" >&2
 	SETUP_WARNINGS=$((SETUP_WARNINGS + 1))
 }
-is_root() { [ "$(id -u)" = "0" ]; }
+is_root() { [[ "$(id -u)" = "0" ]]; }
 
 # Install a command via uv if missing
 uv_install_if_missing() {
@@ -60,6 +60,7 @@ vale_install_if_missing() {
 # $1 = command name, $2 = optional webi package specifier (e.g. tool@version)
 # Hardened: HTTPS-only, shebang validation, version pinning via $2
 webi_install_if_missing() {
+<<<<<<< local
 	local cmd="$1" pkg="${2:-$1}"
 	if ! command -v "$cmd" &>/dev/null; then
 		local installer
@@ -75,15 +76,74 @@ webi_install_if_missing() {
 		fi
 		rm -f "$installer"
 	fi
+=======
+  local cmd="$1" pkg="${2:-$1}"
+  if ! command -v "$cmd" &>/dev/null; then
+    local installer
+    installer=$(mktemp "${TMPDIR:-/tmp}/webi-${cmd}-XXXXXX.sh")
+    # webi.sh serves a per-tool bootstrap generated on the fly, so there is no
+    # stable digest to pin; we harden with HTTPS-only (--proto =https), the
+    # shebang check below, and a version-pinned $pkg instead.
+    # pin-exempt: webi.sh bootstrap is generated per-request, no stable digest
+    if curl --proto '=https' -fsSL "https://webi.sh/$pkg" -o "$installer" 2>/dev/null; then
+      if head -n 1 "$installer" | grep -q '^#!'; then
+        sh "$installer" >/dev/null 2>&1 || warn "Failed to install $cmd"
+      else
+        warn "Installer for $cmd is not a shell script (missing shebang) — skipping"
+      fi
+    else
+      warn "Failed to download installer for $cmd"
+    fi
+    rm -f "$installer"
+  fi
+>>>>>>> template
 }
+
+#######################################
+# Hook syntax validation
+#######################################
+
+# A hook script with a syntax error (e.g. unresolved merge conflict markers)
+# exits non-zero before any logic runs, which Claude Code treats as a block.
+# Surface broken hooks at session start so they can be fixed before the first
+# tool call dies with no explanation.
+_check_hook_syntax() {
+  local dir file out
+  for dir in "$PROJECT_DIR/.claude/hooks" "$PROJECT_DIR/.hooks"; do
+    [[ -d "$dir" ]] || continue
+    while IFS= read -r -d '' file; do
+      case "$file" in
+      *.sh | *.bash)
+        if ! out=$(bash -n "$file" 2>&1); then
+          warn "hook has bash syntax error: ${file#"$PROJECT_DIR/"}"
+          [[ -n "$out" ]] && echo "$out" >&2
+        fi
+        ;;
+      *.py)
+        if command -v python3 &>/dev/null && ! out=$(python3 -m py_compile "$file" 2>&1); then
+          warn "hook has python syntax error: ${file#"$PROJECT_DIR/"}"
+          [[ -n "$out" ]] && echo "$out" >&2
+        fi
+        ;;
+      esac
+    done < <(find "$dir" -maxdepth 1 -type f -print0)
+  done
+}
+
+_check_hook_syntax
 
 #######################################
 # PATH setup
 #######################################
 
 export PATH="$HOME/.local/bin:$PATH"
+<<<<<<< local
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
 	echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
+=======
+if [[ -n "${CLAUDE_ENV_FILE:-}" ]]; then
+  echo "export PATH=\"\$HOME/.local/bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
+>>>>>>> template
 fi
 
 #######################################
@@ -190,6 +250,14 @@ RCLONE_EOF
 	chmod 600 "$RCLONE_CONFIG_DIR/rclone.conf"
 fi
 
+# Python projects: the pre-commit and pre-push hooks shell out to ruff, which
+# isn't a project dependency. Install it (pinned to match .pre-commit-config.yaml
+# so local hooks format identically to CI). Skip for non-Python repos.
+if { [[ -f "$PROJECT_DIR/pyproject.toml" ]] || [[ -f "$PROJECT_DIR/uv.lock" ]]; } && command -v uv &>/dev/null; then
+  uv_install_if_missing ruff "ruff==0.14.5"
+  uv_install_if_missing zizmor "zizmor==1.25.2"
+fi
+
 #######################################
 # Git setup
 #######################################
@@ -199,9 +267,15 @@ git config core.hooksPath .hooks
 
 # Pre-fetch the base branch so diffs against $CLAUDE_CODE_BASE_REF work
 # immediately (e.g. when creating PRs). Failure is non-fatal.
+<<<<<<< local
 if [ -n "${CLAUDE_CODE_BASE_REF:-}" ]; then
 	git fetch origin "$CLAUDE_CODE_BASE_REF" --quiet 2>/dev/null ||
 		warn "Failed to fetch base branch $CLAUDE_CODE_BASE_REF"
+=======
+if [[ -n "${CLAUDE_CODE_BASE_REF:-}" ]]; then
+  git fetch origin "$CLAUDE_CODE_BASE_REF" --quiet 2>/dev/null ||
+    warn "Failed to fetch base branch $CLAUDE_CODE_BASE_REF"
+>>>>>>> template
 fi
 
 #######################################
@@ -209,9 +283,15 @@ fi
 #######################################
 
 if ! command -v gh &>/dev/null; then
+<<<<<<< local
 	warn "gh CLI not found"
 elif [ -z "${GH_TOKEN:-}" ]; then
 	warn "GH_TOKEN is not set — GitHub CLI requires authentication"
+=======
+  warn "gh CLI not found"
+elif [[ -z "${GH_TOKEN:-}" ]]; then
+  warn "GH_TOKEN is not set — GitHub CLI requires authentication"
+>>>>>>> template
 fi
 
 #######################################
@@ -223,6 +303,7 @@ fi
 # The gh CLI can't detect the GitHub repo from this, so we extract
 # owner/repo and export GH_REPO to make all gh commands work.
 
+<<<<<<< local
 if [ -z "${GH_REPO:-}" ]; then
 	remote_url=$(git -C "$PROJECT_DIR" remote get-url origin 2>/dev/null || true)
 	if [[ "$remote_url" =~ /git/([^/]+/[^/]+)$ ]]; then
@@ -366,12 +447,57 @@ if ! command -v ots >/dev/null 2>&1; then
 elif ! ots --version >/dev/null 2>&1; then
 	echo "ERROR: ots --version failed; post-commit hook may misbehave" >&2
 	die_ots
+=======
+if [[ -z "${GH_REPO:-}" ]]; then
+  remote_url=$(git -C "$PROJECT_DIR" remote get-url origin 2>/dev/null)
+  if [[ "$remote_url" =~ /git/([^/]+/[^/]+)$ ]]; then
+    GH_REPO="${BASH_REMATCH[1]}"
+    GH_REPO="${GH_REPO%.git}"
+    export GH_REPO
+    if [[ -n "${CLAUDE_ENV_FILE:-}" ]]; then
+      echo "export GH_REPO=\"$GH_REPO\"" >>"$CLAUDE_ENV_FILE"
+    fi
+  fi
+>>>>>>> template
+fi
+
+#######################################
+# Web-session permissions
+#######################################
+
+# In web sessions (detected by proxy remote URL), grant Claude Code
+# permission to modify its own .claude/ folder without prompting.
+remote_url="${remote_url:-$(git -C "$PROJECT_DIR" remote get-url origin 2>/dev/null)}"
+if [[ "$remote_url" =~ 127\.0\.0\.1.*/git/ ]]; then
+  local_settings="$PROJECT_DIR/.claude/settings.local.json"
+  if [[ ! -f "$local_settings" ]]; then
+    cat >"$local_settings" <<'SETTINGS'
+{
+  "permissions": {
+    "allow": [
+      "Edit(.claude/**)",
+      "Write(.claude/**)",
+      "Read(.claude/**)",
+      "Bash(pnpm build)",
+      "Bash(pnpm check:*)",
+      "Bash(pnpm format)",
+      "Bash(pnpm install)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pre-commit run:*)",
+      "Bash(uv run pytest:*)"
+    ]
+  }
+}
+SETTINGS
+  fi
 fi
 
 #######################################
 # Project dependencies
 #######################################
 
+<<<<<<< local
 if [ -f "$PROJECT_DIR/package.json" ]; then
 	# Always run install (git hooks are configured in package.json postinstall)
 	# Skip Puppeteer's Chrome download — sandboxed environments can't reach
@@ -420,4 +546,28 @@ fi
 
 if [ "$SETUP_WARNINGS" -gt 0 ]; then
 	echo "Setup done with $SETUP_WARNINGS warning(s) — see above" >&2
+=======
+if [[ -f "$PROJECT_DIR/package.json" ]]; then
+  # Always run install (git hooks are configured in package.json postinstall)
+  if command -v pnpm &>/dev/null; then
+    pnpm install --silent || warn "Failed to install Node dependencies"
+  elif command -v npm &>/dev/null; then
+    npm install --silent || warn "Failed to install Node dependencies"
+  fi
+fi
+
+if [[ -f "$PROJECT_DIR/uv.lock" ]] && command -v uv &>/dev/null; then
+  uv sync --quiet || warn "Failed to sync Python dependencies"
+  # Add .venv/bin to PATH so Python tools are available to hooks
+  if [[ -d "$PROJECT_DIR/.venv/bin" ]]; then
+    export PATH="$PROJECT_DIR/.venv/bin:$PATH"
+    if [[ -n "${CLAUDE_ENV_FILE:-}" ]]; then
+      echo "export PATH=\"$PROJECT_DIR/.venv/bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
+    fi
+  fi
+fi
+
+if [[ "$SETUP_WARNINGS" -gt 0 ]]; then
+  echo "Setup done with $SETUP_WARNINGS warning(s) — see above" >&2
+>>>>>>> template
 fi

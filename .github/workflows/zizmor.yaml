@@ -1,0 +1,33 @@
+name: zizmor
+
+# Security audit of GitHub Actions workflows and composite actions.
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/**"
+  pull_request: # not-required-check: single advisory job, path-gated, no required reporter
+    paths:
+      - ".github/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  zizmor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+
+      - name: Run zizmor
+        run: uvx zizmor==1.25.2 .github/

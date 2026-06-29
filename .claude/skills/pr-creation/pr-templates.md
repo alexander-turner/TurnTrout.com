@@ -59,6 +59,7 @@ Use imperative mood with a Conventional Commits type prefix:
 - List concrete changes
 - Note any breaking changes
 - Include a “Lessons Learned” section if you discovered generalizable insights that could improve the template (this triggers the phone-home workflow). Each lesson must specify **what** to change, **where**, and **why**—vague observations get ignored. Delete the section entirely if there are no lessons.
+- **Skip the Lessons Learned section entirely when the PR targets the `claude-automation-template` repo itself.** Phone-home propagates lessons _from_ downstream repos _into_ the template; a change made directly in the template is already there, so the section propagates nothing and is just noise.
 
 ## Updating PR Description After Additional Commits
 
@@ -96,7 +97,11 @@ pnpm lint         # Run linter
 **Python:**
 
 ```bash
+<<<<<<< local
 pyright
+=======
+pyright <changed_files>
+>>>>>>> template
 pylint <changed_files>
 ruff check <changed_files>
 pytest <test_files>

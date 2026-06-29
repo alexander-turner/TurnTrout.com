@@ -51,7 +51,35 @@ env:
   #
   # NOTE: If the target repo already has its own test/lint/format CI workflows,
   # exclude the template's equivalents here to avoid duplicate CI jobs.
+<<<<<<< local
   EXCLUDE_PATHS: ".github/actions/setup-base-env .github/scripts/check-existing-security-pr.sh .github/scripts/check-symlinks.sh .github/scripts/fetch-security-report.sh .github/scripts/list-dependabot-prs.sh .github/scripts/script-configured.sh .github/workflows/dependabot-auto-merge.yaml .github/workflows/format-check.yaml .github/workflows/lint.yaml .github/workflows/node-tests.yaml .github/workflows/pre-commit.yaml .github/workflows/validate-config.yaml"
+=======
+  # Common candidates: .github/workflows/node-tests.yaml,
+  # .github/workflows/lint.yaml, .github/workflows/format-check.yaml
+  #
+  # VERSIONED-APP-ONLY: the release flow below only makes sense for a repo that
+  # is published to npm. auto-version.yaml runs on EVERY push to the default
+  # branch and, for a real (non-private) package, decides a Conventional-Commits
+  # semver bump and runs `pnpm publish` (OIDC provenance — no NPM_TOKEN). The
+  # template's own package.json sets "private": true, so version-bump.sh skips
+  # publishing there; a downstream repo opts in by dropping `private` and setting
+  # a real, publishable name. A repo that is not an npm package at all (e.g. a
+  # website like TurnTrout.com) should list these here to opt out entirely:
+  #   .github/workflows/auto-version.yaml
+  #   .github/scripts/version-bump.sh
+  #   .github/scripts/promote-changelog.mjs
+  #   .github/scripts/lib/retry.bash
+  # (CHANGELOG.md lives outside SYNC_PATHS and never syncs, so a versioned
+  # consumer must create it to bootstrap the flow.)
+  # The security-vulnerability-scan workflow + prompt are intentionally NOT
+  # propagated to downstream repos; each consumer owns its own security-scan
+  # cadence and model pin, so the template stops overwriting them on sync.
+  EXCLUDE_PATHS: ".github/workflows/security-vulnerability-scan.yaml .github/prompts/security-vulnerability-scan.md"
+
+concurrency:
+  group: template-sync
+  cancel-in-progress: false
+>>>>>>> template
 
 permissions:
   contents: write
@@ -59,6 +87,7 @@ permissions:
 
 jobs:
   sync:
+<<<<<<< local
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
@@ -69,23 +98,45 @@ jobs:
 
       - name: Checkout template repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+=======
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout child repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+
+      - name: Checkout template repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+>>>>>>> template
         with:
           repository: ${{ env.TEMPLATE_REPO }}
           path: _template
           token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+<<<<<<< local
+=======
+          filter: blob:none
+          persist-credentials: false
+>>>>>>> template
 
       - name: Check token workflow scope
         env:
           TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
-        run: bash _template/.github/scripts/check-token-scope.sh
+        # Run the child repo's own copy — never execute scripts directly from
+        # the template checkout. Template script updates arrive via sync PRs
+        # and go through human review before they can execute.
+        run: bash .github/scripts/check-token-scope.sh
 
       - name: Sync template files with conflict detection
         id: sync
         env:
           SYNC_PATHS: ${{ env.SYNC_PATHS }}
           EXCLUDE_PATHS: ${{ env.EXCLUDE_PATHS }}
-        run: bash _template/.github/scripts/template-sync.sh
+        run: bash .github/scripts/template-sync.sh
 
       - name: Show diff (dry run)
         if: inputs.dry-run == 'true' && steps.sync.outputs.has_changes == 'true'
