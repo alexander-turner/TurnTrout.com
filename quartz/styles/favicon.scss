@@ -44,10 +44,11 @@
 
   // After inline code, the monospace cell's trailing sidebearing leaves the
   // favicon floating away from the word, while the favicon's own right edge
-  // crowds whatever closing punctuation follows the link. Pull it back toward
-  // the code and add a right gap so a trailing ")" / "]" isn't cramped.
+  // crowds whatever closing punctuation follows the link. Sit it midway
+  // between the default gap and the code edge, and add a right gap so a
+  // trailing ")" / "]" isn't cramped.
   code & {
-    margin-left: calc(-0.1 * #{$base-margin});
+    margin-left: calc(0.0125 * #{$base-margin});
     margin-right: calc(0.15 * #{$base-margin});
   }
 }
