@@ -664,7 +664,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 | descender + \} | g\} j\} p\} q\} y\} |
 | caps + close | T) T] V) V] Y) Y] |
 | In context | f(x), (glyph), (jpg), (query), [typography] |
-| close + comma/semicolon | \[1\]; \{2\}; (3); \[a\], \{b\}, (c), |
+| close + ;, | \[1\]; \{2\}; (3); \[a\], \{b\}, (c), |
 | In context | the staff(s) called if’d a “buff” (Wolf) |
 | In context | the clipping (probably) happened (just) quickly |
 
