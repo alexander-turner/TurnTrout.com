@@ -7,7 +7,7 @@ import { gotoPage } from "./visual_utils"
 // other checks, so each gets its own probe:
 //
 //  1. Document-level horizontal scroll — a box wider than the viewport pushes a
-//     horizontal scrollbar onto the whole page. Checked down to a 320px floor.
+//     horizontal scrollbar onto the whole page.
 //  2. Content clipped by an `overflow: hidden`/`clip` container — no scrollbar
 //     appears, so the content is silently cut off and both the document-scroll
 //     probe and pixel-diff screenshots miss it. (This is how the
@@ -15,21 +15,21 @@ import { gotoPage } from "./visual_utils"
 //     admonition.)
 //
 // Assertion-based, so unlike visual regression it is baseline-independent: it
-// catches pre-existing overflow, not just regressions.
+// catches pre-existing overflow, not just regressions. Each test runs once per
+// browser/device project at that project's viewport — the same device list the
+// rest of the suite uses (config/playwright/playwright.config.ts: iPhone 12 =
+// 390, iPad Pro 11 = 834, Desktop = 1920), so the audit asserts at exactly the
+// widths we support, with no hardcoded sizes of its own.
 
 // High-overflow-risk pages: long inline code, transcluded external README
 // content, wide tables, and the visual kitchen-sink test page.
 const PAGES_TO_CHECK: readonly string[] = ["/", "/test-page", "/design", "/research", "/posts"]
 
-// The clipped-content probe runs at tablet/desktop widths. Below ~375px the
-// site still has known narrow-width clips (long inline code / unbreakable
-// tokens inside list items and definition terms); those are tracked separately,
-// so widening this floor would assert something not yet true.
-const CLIP_WIDTHS: readonly number[] = [768, 1280]
-
-// The page must never grow a horizontal scrollbar, even one notch below the
-// narrowest supported device (iPhone 12, 390px).
-const SCROLL_WIDTHS: readonly number[] = [320, 375, ...CLIP_WIDTHS]
+// The clipped-content probe runs at tablet/desktop viewports only. The mobile
+// viewport still has known pre-existing clips (long inline code / unbreakable
+// tokens inside list items and definition terms), tracked separately, so
+// asserting clip-freedom there would assert something not yet true.
+const CLIP_MIN_WIDTH = 700
 
 // Subpixel rounding can report a 1px phantom overflow; require a real one.
 const TOLERANCE_PX = 2
@@ -70,15 +70,16 @@ function collectClipped([tolerance, svgNamespace]: readonly [number, string]): O
 
     let clipped: Element | null = null
     const stack: Element[] = Array.from(el.children)
-    while (stack.length > 0) {
-      const descendant = stack.pop() as Element
+    while (stack.length > 0 && clipped === null) {
+      const descendant = stack.pop()
+      if (!descendant) break
       if (descendant.namespaceURI === svgNamespace || isScrollable(descendant)) continue
       const descendantRect = descendant.getBoundingClientRect()
       if (descendantRect.width > 0 && descendantRect.right > contentRight + tolerance) {
         clipped = descendant
-        break
+      } else {
+        stack.push(...Array.from(descendant.children))
       }
-      stack.push(...Array.from(descendant.children))
     }
 
     if (clipped) {
@@ -98,10 +99,17 @@ function documentOverflow(): number {
   return root.scrollWidth - root.clientWidth
 }
 
+// Polled inside `page.waitForFunction`, so it survives the SPA's initial `nav`
+// (a bare `page.evaluate` here can hit a destroyed execution context). True once
+// webfonts have swapped and the client-side pass has wrapped wide tables/KaTeX
+// into scroll containers — measuring before that lands reports them as overflow.
 /* istanbul ignore next -- executed in the browser, not under Jest */
-function scrollablesAreWrapped(): boolean {
+function pageSettled(): boolean {
+  if (document.fonts && document.fonts.status !== "loaded") return false
   const scrollables = Array.from(document.querySelectorAll(".table-container, .katex-display"))
-  return scrollables.length === 0 || scrollables.every((el) => el.closest(".scroll-indicator"))
+  return (
+    scrollables.length === 0 || scrollables.every((el) => el.closest(".scroll-indicator") !== null)
+  )
 }
 
 function describeOffenders(offenders: readonly Offender[]): string {
@@ -110,23 +118,9 @@ function describeOffenders(offenders: readonly Offender[]): string {
     .join("\n  ")
 }
 
-// One run per browser engine is enough; the audit drives its own viewport
-// widths, so re-running across the mobile/tablet device projects would only
-// repeat identical measurements.
-test.beforeEach(({}, testInfo) => {
-  test.skip(
-    !testInfo.project.name.startsWith("Desktop"),
-    "overflow audit drives its own viewport widths",
-  )
-})
-
-async function settle(page: Page, url: string, width: number) {
-  await page.setViewportSize({ width, height: 900 })
+async function settle(page: Page, url: string) {
   await gotoPage(page, url)
-  await page.evaluate(() => document.fonts.ready)
-  // Wide tables/KaTeX get wrapped into scroll containers by a client-side `nav`
-  // pass; measuring before it lands reports that content as overflow.
-  await page.waitForFunction(scrollablesAreWrapped, undefined, { timeout: 5000 })
+  await page.waitForFunction(pageSettled, undefined, { timeout: 10_000 })
   await page.evaluate(
     () =>
       new Promise<void>((resolve) =>
@@ -136,25 +130,27 @@ async function settle(page: Page, url: string, width: number) {
 }
 
 for (const url of PAGES_TO_CHECK) {
-  for (const width of SCROLL_WIDTHS) {
-    test(`no horizontal page scroll on ${url} at ${width}px`, async ({ page }) => {
-      await settle(page, url, width)
-      const overflow = await page.evaluate(documentOverflow)
-      expect(
-        overflow,
-        `Page scrolls horizontally by ${overflow}px at ${width}px.`,
-      ).toBeLessThanOrEqual(TOLERANCE_PX)
-    })
-  }
+  test(`no horizontal page scroll on ${url}`, async ({ page }) => {
+    await settle(page, url)
+    const width = page.viewportSize()?.width
+    const overflow = await page.evaluate(documentOverflow)
+    expect(
+      overflow,
+      `Page scrolls horizontally by ${overflow}px at ${width}px.`,
+    ).toBeLessThanOrEqual(TOLERANCE_PX)
+  })
 
-  for (const width of CLIP_WIDTHS) {
-    test(`no clipped overflow on ${url} at ${width}px`, async ({ page }) => {
-      await settle(page, url, width)
-      const clipped = await page.evaluate(collectClipped, [TOLERANCE_PX, SVG_NAMESPACE] as const)
-      expect(
-        clipped,
-        `Content overflows clipping container(s) at ${width}px:\n  ${describeOffenders(clipped)}`,
-      ).toEqual([])
-    })
-  }
+  test(`no clipped overflow on ${url}`, async ({ page }) => {
+    const width = page.viewportSize()?.width ?? 0
+    test.skip(
+      width < CLIP_MIN_WIDTH,
+      "mobile viewport has known pre-existing clips, tracked separately",
+    )
+    await settle(page, url)
+    const clipped = await page.evaluate(collectClipped, [TOLERANCE_PX, SVG_NAMESPACE] as const)
+    expect(
+      clipped,
+      `Content overflows clipping container(s) at ${width}px:\n  ${describeOffenders(clipped)}`,
+    ).toEqual([])
+  })
 }
