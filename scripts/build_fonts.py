@@ -5,7 +5,8 @@ Applies two modifications to EBGaramond08-Regular and EBGaramond12-Regular:
 1. Bracket/brace harmonization: affine-maps Y coordinates of bracketleft,
    bracketright, braceleft, braceright so their yMin/yMax match parenleft.
 2. GPOS kerning: adds a PairPos Format 1 lookup to the kern feature
-   for f-variant glyphs x punctuation and open-punct x descender letters.
+   for f-variant glyphs x punctuation, open-punct x descender letters, and
+   close-punct x comma/semicolon (tightened to undo a wide left sidebearing).
 
 Usage:
     python scripts/build_fonts.py           # Build and verify
@@ -110,6 +111,17 @@ _CLOSE_DESCENDER_KERN: Final[dict[str, int]] = {
     "y": 40,
 }
 _CAP_CLOSE_KERN: Final[int] = 80
+
+# Comma-family punctuation carries a wide left sidebearing in the 08 master,
+# so it floats after a closing bracket (e.g. the ");" bigram). Pull it back so
+# its left gap matches a lowercase letter's, using "n" as the reference glyph.
+# The 12 master already sets these tightly, so the computed value clamps to 0
+# there and leaves it untouched.
+_TIGHTEN_REFERENCE_GLYPH: Final[str] = "n"
+_TIGHTEN_TARGET_GLYPHS: Final[tuple[str, ...]] = (
+    "comma",
+    "semicolon",
+)
 
 
 def _get_f_glyphs(font: TTFont) -> tuple[str, ...]:
@@ -231,6 +243,35 @@ def _add_overhang_kern_pairs(
             )
 
 
+def _add_lsb_tighten_pairs(
+    builder: PairPosBuilder,
+    font: TTFont,
+    sources: tuple[str, ...],
+    targets: tuple[str, ...],
+) -> None:
+    """
+    Add negative kern pairs that normalize each target's left sidebearing down
+    to the reference glyph's.
+
+    Only tightens (never loosens), so targets already tighter than the reference
+    are skipped.
+    """
+    glyf_table = font["glyf"]
+    reference_lsb = glyf_table[_TIGHTEN_REFERENCE_GLYPH].xMin
+    for src in sources:
+        for tgt in targets:
+            kern = min(0, reference_lsb - glyf_table[tgt].xMin)
+            if kern == 0:
+                continue
+            builder.addGlyphPair(
+                None,
+                src,
+                buildValue({"XAdvance": kern}),
+                tgt,
+                None,
+            )
+
+
 def _add_fixed_kern_pairs(
     builder: PairPosBuilder,
     sources: tuple[str, ...],
@@ -263,6 +304,9 @@ def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
     _add_overhang_kern_pairs(builder, font, f_glyphs)
     for sources, targets, values in _FIXED_KERN_SPECS:
         _add_fixed_kern_pairs(builder, sources, targets, values)
+    _add_lsb_tighten_pairs(
+        builder, font, _CLOSE_PUNCT_GLYPHS, _TIGHTEN_TARGET_GLYPHS
+    )
 
     lookup = builder.build()
 
