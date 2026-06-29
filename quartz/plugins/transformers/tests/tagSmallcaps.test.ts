@@ -6,13 +6,11 @@ import seedrandom from "seedrandom"
 
 import { NBSP } from "../../../components/constants"
 import {
-  absorbLeadingDelimiterIntoAbbr,
   allCapsContinuation,
   allowAcronyms,
   capitalizeAfterEnding,
   isInAllowList,
   isRomanNumeral,
-  OPENING_DELIMITERS_BEFORE_SMALLCAPS,
   processMatchedText,
   PUNCTUATION_BEFORE_MATCH,
   REGEX_ABBREVIATION,
@@ -1337,109 +1335,5 @@ describe("data-original-text attribute", () => {
     const matches = [...raw.matchAll(/data-original-text="(?<text>[^"]*)"/g)]
     expect(matches).toHaveLength(3)
     expect(matches.map((m) => m.groups?.text)).toEqual(["NASA", "FBI", "100KM"])
-  })
-})
-
-describe("OPENING_DELIMITERS_BEFORE_SMALLCAPS", () => {
-  it.each(["(", "[", "{", "“", "‘", '"'])("matches a trailing %s", (char) => {
-    expect(OPENING_DELIMITERS_BEFORE_SMALLCAPS.test(`x${char}`)).toBe(true)
-  })
-
-  it.each([" ", ")", "a", "—"])("does not match a trailing %s", (char) => {
-    expect(OPENING_DELIMITERS_BEFORE_SMALLCAPS.test(`x${char}`)).toBe(false)
-  })
-})
-
-describe("absorbLeadingDelimiterIntoAbbr", () => {
-  it.each(["(", "[", "{", "“", "‘", '"'])(
-    "moves a flush leading %s inside the abbr and updates data-original-text",
-    (delim) => {
-      const abbr = h("abbr.small-caps", { "data-original-text": "JSON" }, "json")
-      const parent = h("p", [`see ${delim}`, abbr])
-      absorbLeadingDelimiterIntoAbbr(abbr, parent)
-      expect((parent.children[0] as Text).value).toBe("see ")
-      expect(abbr.children).toEqual([{ type: "text", value: `${delim}json` }])
-      expect(abbr.properties.dataOriginalText).toBe(`${delim}JSON`)
-    },
-  )
-
-  it("returns early when the abbr is the parent's first child", () => {
-    const abbr = h("abbr.small-caps", { "data-original-text": "JSON" }, "json")
-    const parent = h("p", [abbr])
-    absorbLeadingDelimiterIntoAbbr(abbr, parent)
-    expect(abbr.children).toEqual([{ type: "text", value: "json" }])
-  })
-
-  it("does nothing when the preceding sibling is not a text node", () => {
-    const abbr = h("abbr.small-caps", "json")
-    const parent = h("p", [h("em", "x"), abbr])
-    absorbLeadingDelimiterIntoAbbr(abbr, parent)
-    expect(abbr.children).toEqual([{ type: "text", value: "json" }])
-  })
-
-  it("does nothing when the preceding text has no opening delimiter", () => {
-    const abbr = h("abbr.small-caps", "json")
-    const parent = h("p", ["see ", abbr])
-    absorbLeadingDelimiterIntoAbbr(abbr, parent)
-    expect((parent.children[0] as Text).value).toBe("see ")
-    expect(abbr.children).toEqual([{ type: "text", value: "json" }])
-  })
-
-  it("does nothing when the delimiter hugs a preceding letter (e.g. P(SGD)", () => {
-    const abbr = h("abbr.small-caps", { "data-original-text": "SGD" }, "sgd")
-    const parent = h("p", ["P(", abbr])
-    absorbLeadingDelimiterIntoAbbr(abbr, parent)
-    expect((parent.children[0] as Text).value).toBe("P(")
-    expect(abbr.children).toEqual([{ type: "text", value: "sgd" }])
-    expect(abbr.properties.dataOriginalText).toBe("SGD")
-  })
-
-  it("unshifts a text node when the abbr's first child is not text", () => {
-    const abbr = h("abbr.small-caps", [h("span", "json")])
-    const parent = h("p", ["see (", abbr])
-    absorbLeadingDelimiterIntoAbbr(abbr, parent)
-    expect(abbr.children[0]).toEqual({ type: "text", value: "(" })
-    expect((parent.children[0] as Text).value).toBe("see ")
-  })
-
-  it("unshifts a text node when the abbr has no children", () => {
-    const abbr = h("abbr.small-caps", [])
-    const parent = h("p", ["see (", abbr])
-    absorbLeadingDelimiterIntoAbbr(abbr, parent)
-    expect(abbr.children).toEqual([{ type: "text", value: "(" }])
-  })
-
-  it("leaves data-original-text absent when the abbr has none", () => {
-    const abbr = h("abbr.small-caps", "json")
-    const parent = h("p", ["see (", abbr])
-    absorbLeadingDelimiterIntoAbbr(abbr, parent)
-    expect(abbr.properties.dataOriginalText).toBeUndefined()
-    expect((abbr.children[0] as Text).value).toBe("(json")
-  })
-})
-
-describe("kerning: opening delimiter absorbed into a following abbr", () => {
-  it("pulls a flush ( inside the small-caps abbr", () => {
-    expect(testTagSmallcapsHTML("<p>see (JSON here)</p>")).toBe(
-      '<p>see <abbr class="small-caps">(json</abbr> here)</p>',
-    )
-  })
-
-  it("prepends the delimiter to data-original-text for clipboard restoration", () => {
-    expect(testTagSmallcapsHTMLRaw("<p>see (JSON here)</p>")).toContain(
-      'data-original-text="(JSON"',
-    )
-  })
-
-  it("leaves a delimiter separated from the abbr by a space alone", () => {
-    expect(testTagSmallcapsHTML("<p>see ( JSON here)</p>")).toBe(
-      '<p>see ( <abbr class="small-caps">json</abbr> here)</p>',
-    )
-  })
-
-  it("does not absorb a delimiter that hugs a preceding letter (P(SGD)", () => {
-    expect(testTagSmallcapsHTML("<p>approximating P(SGD) here</p>")).toBe(
-      '<p>approximating P(<abbr class="small-caps">sgd</abbr>) here</p>',
-    )
   })
 })

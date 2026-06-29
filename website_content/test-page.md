@@ -636,7 +636,7 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 
 ## Smallcaps
 
-The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar to that of normal text (in that a sentence's first letter should be full-height). Here are _italicized SMALLCAPS_. An acronym flush against an opening delimiter kerns tightly: (JSON), [HTML], {API}, and "NASA".
+The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar to that of normal text (in that a sentence's first letter should be full-height). Here are _italicized SMALLCAPS_.
 
 <!--spellchecker-disable-->
 
