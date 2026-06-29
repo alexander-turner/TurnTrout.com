@@ -74,7 +74,9 @@ const config: QuartzConfig = {
       PopulateExternalMarkdown({
         sources: {
           punctilio: githubReadmeSource("alexander-turner", "punctilio"),
-          "ci-truth-serum": githubReadmeSource("alexander-turner", "ci-truth-serum"),
+          "ci-truth-serum": githubReadmeSource("alexander-turner", "ci-truth-serum", {
+            maxSections: 2,
+          }),
           "agent-input-sanitizer": githubReadmeSource("alexander-turner", "agent-input-sanitizer", {
             maxSections: 1,
           }),
