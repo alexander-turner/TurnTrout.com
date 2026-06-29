@@ -35,6 +35,13 @@ export const NO_GAP_PREDECESSORS: ReadonlySet<string> = new Set([
   "=",
 ])
 
+// A code's would-be preceding "word" that is only closing punctuation (e.g.
+// `");"` between two adjacent code spans) belongs to the earlier content, not
+// this code. Pulling it into the code's nowrap unit opens a break right before
+// it, so the punctuation can orphan onto the code's line; leaving the code
+// unwrapped keeps the punctuation attached to what it closes.
+const CLOSING_PUNCTUATION_ONLY = /^[)\]};:,.!?"'”’»…]+\s*$/u
+
 // Last rendered character of a node (recursing into inline children), or null
 // when it contributes no text.
 export function lastTextChar(node: RootContent): string | null {
@@ -124,6 +131,7 @@ export const rehypeInlineCodeSpacing: Plugin = () => {
       // istanbul ignore next -- the \S guard above guarantees a match
       if (!match) continue
       const tail = match[1]
+      if (CLOSING_PUNCTUATION_ONLY.test(tail)) continue
       const head = prevText.value.slice(0, prevText.value.length - tail.length)
       addClass(unit, "inline-code-gap")
       const span: Element = {

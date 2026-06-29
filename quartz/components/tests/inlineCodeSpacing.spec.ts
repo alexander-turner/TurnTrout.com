@@ -51,4 +51,53 @@ test.describe("inline code spacing", () => {
     // The code carries the leading-gap margin.
     expect(measured.marginLeft).toBeGreaterThan(0)
   })
+
+  // Closing punctuation between two inline codes ("`a`); `b`") must stay on the
+  // first code's line. The transformer leaves "); " as plain text after the
+  // first code's nowrap span, so when the column forces a wrap only the second
+  // code drops down — the ");" hugs what it closes instead of orphaning.
+  test("keeps closing punctuation on the first code's line when the next code wraps", async ({
+    page,
+  }) => {
+    await gotoPage(page, "http://localhost:8080/test-page")
+
+    const measured = await page.evaluate(() => {
+      const host = document.createElement("div")
+      host.style.overflowWrap = "anywhere"
+      host.innerHTML =
+        '<div id="ics-orphan"><span class="inline-code-nowrap"><span>word</span> ' +
+        '<code class="inline-code-gap">one</code></span><span id="ics-semi">); </span>' +
+        '<code id="ics-two">two</code></div>'
+
+      const article = document.querySelector("article") ?? document.body
+      article.appendChild(host)
+
+      const rect = (sel: string): DOMRect => {
+        const el = host.querySelector<HTMLElement>(sel)
+        if (!el) throw new Error(`missing fixture ${sel}`)
+        return el.getBoundingClientRect()
+      }
+
+      const span1 = rect(".inline-code-nowrap").width
+      const semi = rect("#ics-semi").width
+      const two = rect("#ics-two").width
+      // Fits "word one); " but not the trailing "two", forcing only it to wrap.
+      const container = document.getElementById("ics-orphan")
+      if (!container) throw new Error("missing fixture container")
+      container.style.width = `${Math.ceil(span1 + semi + two * 0.4)}px`
+
+      const span1Top = rect(".inline-code-nowrap").top
+      const result = {
+        twoDroppedBy: rect("#ics-two").top - span1Top,
+        semiDelta: Math.abs(rect("#ics-semi").top - span1Top),
+      }
+      host.remove()
+      return result
+    })
+
+    // The column really forced the second code onto a new line.
+    expect(measured.twoDroppedBy).toBeGreaterThan(5)
+    // ...yet the closing ");" stayed on the first code's line.
+    expect(measured.semiDelta).toBeLessThan(5)
+  })
 })
