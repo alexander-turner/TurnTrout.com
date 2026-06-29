@@ -447,7 +447,13 @@ export function absorbLeadingDelimiterIntoAbbr(node: Element, parent: Parent): v
   if (!match) return
 
   const delimiter = match[0]
-  prev.value = prev.value.slice(0, -delimiter.length)
+  const beforeDelimiter = prev.value.slice(0, -delimiter.length)
+  // Only absorb a delimiter that follows whitespace, so the abbr stays preceded
+  // by a space. Pulling in a delimiter that hugs a letter (e.g. the "P" in
+  // "P(SGD") would leave the abbr jammed against that letter, which reads wrong
+  // and trips the built-site inline-spacing check.
+  if (!/\s$/u.test(beforeDelimiter)) return
+  prev.value = beforeDelimiter
 
   const first = node.children[0]
   if (first && first.type === "text") {

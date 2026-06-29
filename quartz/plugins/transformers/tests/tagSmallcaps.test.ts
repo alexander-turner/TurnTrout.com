@@ -1385,24 +1385,33 @@ describe("absorbLeadingDelimiterIntoAbbr", () => {
     expect(abbr.children).toEqual([{ type: "text", value: "json" }])
   })
 
+  it("does nothing when the delimiter hugs a preceding letter (e.g. P(SGD)", () => {
+    const abbr = h("abbr.small-caps", { "data-original-text": "SGD" }, "sgd")
+    const parent = h("p", ["P(", abbr])
+    absorbLeadingDelimiterIntoAbbr(abbr, parent)
+    expect((parent.children[0] as Text).value).toBe("P(")
+    expect(abbr.children).toEqual([{ type: "text", value: "sgd" }])
+    expect(abbr.properties.dataOriginalText).toBe("SGD")
+  })
+
   it("unshifts a text node when the abbr's first child is not text", () => {
     const abbr = h("abbr.small-caps", [h("span", "json")])
-    const parent = h("p", ["(", abbr])
+    const parent = h("p", ["see (", abbr])
     absorbLeadingDelimiterIntoAbbr(abbr, parent)
     expect(abbr.children[0]).toEqual({ type: "text", value: "(" })
-    expect((parent.children[0] as Text).value).toBe("")
+    expect((parent.children[0] as Text).value).toBe("see ")
   })
 
   it("unshifts a text node when the abbr has no children", () => {
     const abbr = h("abbr.small-caps", [])
-    const parent = h("p", ["(", abbr])
+    const parent = h("p", ["see (", abbr])
     absorbLeadingDelimiterIntoAbbr(abbr, parent)
     expect(abbr.children).toEqual([{ type: "text", value: "(" }])
   })
 
   it("leaves data-original-text absent when the abbr has none", () => {
     const abbr = h("abbr.small-caps", "json")
-    const parent = h("p", ["(", abbr])
+    const parent = h("p", ["see (", abbr])
     absorbLeadingDelimiterIntoAbbr(abbr, parent)
     expect(abbr.properties.dataOriginalText).toBeUndefined()
     expect((abbr.children[0] as Text).value).toBe("(json")
@@ -1425,6 +1434,12 @@ describe("kerning: opening delimiter absorbed into a following abbr", () => {
   it("leaves a delimiter separated from the abbr by a space alone", () => {
     expect(testTagSmallcapsHTML("<p>see ( JSON here)</p>")).toBe(
       '<p>see ( <abbr class="small-caps">json</abbr> here)</p>',
+    )
+  })
+
+  it("does not absorb a delimiter that hugs a preceding letter (P(SGD)", () => {
+    expect(testTagSmallcapsHTML("<p>approximating P(SGD) here</p>")).toBe(
+      '<p>approximating P(<abbr class="small-caps">sgd</abbr>) here</p>',
     )
   })
 })
