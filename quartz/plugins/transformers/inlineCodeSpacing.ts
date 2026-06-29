@@ -134,7 +134,8 @@ export const rehypeInlineCodeSpacing: Plugin = () => {
       if (!match) continue
       const [, word, trailingSpace] = match
       // A bare separator between two inline units — the ", " in `a`, `b`, `c`,
-      // or a lone dash — has no word for the code to crowd, so add no gap.
+      // a lone dash, or closing punctuation like "); " — has no word for the
+      // code to crowd, so add no gap.
       if (!/[\p{L}\p{N}]/u.test(word)) continue
       const head = prevText.value.slice(
         0,

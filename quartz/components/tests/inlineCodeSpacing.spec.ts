@@ -51,4 +51,52 @@ test.describe("inline code spacing", () => {
     // as a leading indent on the code.
     expect(Math.abs(measured.codeIndent - measured.wordIndent)).toBeLessThan(1)
   })
+
+  // Closing punctuation between two inline codes ("`a`); `b`") must stay on the
+  // first code's line. The transformer gives closing punctuation no gap, so it
+  // remains plain text hugging the code it follows (no space between them); when
+  // the column forces a wrap, only the second code drops down.
+  test("keeps closing punctuation on the first code's line when the next code wraps", async ({
+    page,
+  }) => {
+    await gotoPage(page, "http://localhost:8080/test-page")
+
+    const measured = await page.evaluate(() => {
+      const host = document.createElement("div")
+      host.style.overflowWrap = "anywhere"
+      host.innerHTML =
+        '<div id="ics-orphan"><span class="inline-code-gap">word</span> ' +
+        '<code id="ics-one">one</code><span id="ics-semi">); </span>' +
+        '<code id="ics-two">two</code></div>'
+
+      const article = document.querySelector("article") ?? document.body
+      article.appendChild(host)
+
+      const rect = (sel: string): DOMRect => {
+        const el = host.querySelector<HTMLElement>(sel)
+        if (!el) throw new Error(`missing fixture ${sel}`)
+        return el.getBoundingClientRect()
+      }
+
+      const container = document.getElementById("ics-orphan")
+      if (!container) throw new Error("missing fixture container")
+      // Width fits "word one); " but not the trailing "two", forcing only it to
+      // wrap. Measured while unconstrained, then applied.
+      const width = Math.ceil(rect("#ics-semi").right - rect("#ics-orphan").left + 2)
+      container.style.width = `${width}px`
+
+      const oneTop = rect("#ics-one").top
+      const result = {
+        twoDroppedBy: rect("#ics-two").top - oneTop,
+        semiDelta: Math.abs(rect("#ics-semi").top - oneTop),
+      }
+      host.remove()
+      return result
+    })
+
+    // The column really forced the second code onto a new line.
+    expect(measured.twoDroppedBy).toBeGreaterThan(5)
+    // ...yet the closing ");" stayed on the first code's line.
+    expect(measured.semiDelta).toBeLessThan(5)
+  })
 })

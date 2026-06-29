@@ -85,6 +85,34 @@ describe("InlineCodeSpacing", () => {
     })
   })
 
+  describe("does not give closing punctuation a gap", () => {
+    it("leaves closing punctuation as plain text before the next code", async () => {
+      const out = await processHtmlWithPlugin("<p>see <code>one</code>); <code>two</code> ok</p>")
+      expect(out).toBe(
+        '<p><span class="inline-code-gap">see</span> <code class="inline-code-atomic">one</code>); ' +
+          '<code class="inline-code-atomic">two</code> ok</p>',
+      )
+    })
+
+    it.each([
+      ["semicolon-close", "); "],
+      ["bracket-close", "] "],
+      ["comma", ", "],
+      ["period", ". "],
+    ])("skips the gap when the preceding token is only %s", async (_label, sep) => {
+      const out = await processHtmlWithPlugin(`<p>x <code>a</code>${sep}<code>b</code></p>`)
+      // The separator stays plain text — no gap span is inserted after it.
+      expect(out).not.toContain(`${sep}<span`)
+    })
+
+    it("still gaps a real word that follows the closing punctuation", async () => {
+      const out = await processHtmlWithPlugin("<p>a <code>one</code>); then <code>two</code></p>")
+      expect(out).toContain(
+        '<span class="inline-code-gap">then</span> <code class="inline-code-atomic">two</code>',
+      )
+    })
+  })
+
   describe("adds no gap", () => {
     it.each([...NO_GAP_PREDECESSORS])("when code is glued behind %s", async (char) => {
       const out = await processHtmlWithPlugin(`<p>${char}<code>grep</code></p>`)
