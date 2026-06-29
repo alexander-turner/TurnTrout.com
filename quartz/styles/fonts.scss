@@ -353,6 +353,15 @@ code {
   }
 }
 
+// Inline code (not `pre > code`, which scrolls) may break an over-long token as a
+// last resort rather than clip or force horizontal scroll on narrow viewports.
+// `break-word` only breaks when the token wouldn't otherwise fit, so it never
+// splits code that already fits; `.inline-code-nowrap` units stay atomic since
+// `overflow-wrap` is inert under `white-space: nowrap`.
+:not(pre) > code {
+  overflow-wrap: break-word;
+}
+
 // Inline code's leading glyph can crowd the preceding word, especially after
 // letters with a rightward hook ("f", "r"). The InlineCodeSpacing transformer
 // joins the code to its preceding word in a nowrap span so the code never falls
