@@ -203,6 +203,16 @@ describe("PopulateExternalMarkdown", () => {
       )
     })
 
+    it("repoints surviving same-page anchors to the GitHub README when truncating", () => {
+      const source = githubReadmeSource("owner", "repo", { maxSections: 0 })
+      expect(source.transform?.("Use the [CLI](#cli).\n\n## CLI\n\nbody")).toBe(
+        wrap(
+          "Use the [CLI](https://github.com/owner/repo#cli).\n\n" +
+            '<div class="centered">\n\n[Read the rest on GitHub →](https://github.com/owner/repo)\n\n</div>',
+        ),
+      )
+    })
+
     it("omits the read-more link when maxSections covers the whole README", () => {
       const source = githubReadmeSource("owner", "repo", { maxSections: 5 })
       expect(source.transform?.("# Title\n\nIntro\n\n## Only\n\nbody")).toBe(

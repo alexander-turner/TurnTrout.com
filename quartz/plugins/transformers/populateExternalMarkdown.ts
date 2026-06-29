@@ -202,9 +202,10 @@ export interface GithubReadmeSourceOptions {
  * Builds a GitHub README source: strips badges, drops a leading H1 (when it
  * leads the file) that would duplicate the embedding page's own section
  * heading, rewrites relative links to absolute blob URLs, optionally truncates
- * to the first `maxSections` sections (with a link to the full README on
- * GitHub), renders the result inside a `[!quote]` admonition titled with the
- * repo link, and wraps it so its heading ids stay unique on the host page.
+ * to the first `maxSections` sections (repointing surviving same-page anchors to
+ * the GitHub README and appending a link to the full README on GitHub), renders
+ * the result inside a `[!quote]` admonition titled with the repo link, and wraps
+ * it so its heading ids stay unique on the host page.
  */
 export function githubReadmeSource(
   owner: string,
@@ -222,10 +223,17 @@ export function githubReadmeSource(
       const stripped = rewriteLinks(stripLeadingH1(stripBadges(content)))
       const truncated =
         maxSections === undefined ? stripped : truncateToSections(stripped, maxSections)
+      if (truncated === stripped) {
+        return wrapExternalReadme(asQuoteAdmonition(stripped, title), repo)
+      }
+      // Truncation drops sections the surviving preamble may link to via
+      // same-page anchors; repoint those to the GitHub README so they resolve
+      // instead of dangling against ids that no longer exist on the page.
+      const externalized = truncated.replace(/\]\(#/g, `](${repoUrl}#`)
       // Blank lines around the link let it parse as markdown inside the raw div
       // (and inside the surrounding quote callout), matching wrapExternalReadme.
       const readMore = `<div class="centered">\n\n[Read the rest on GitHub →](${repoUrl})\n\n</div>`
-      const body = truncated === stripped ? stripped : `${truncated}\n${readMore}`
+      const body = `${externalized}\n${readMore}`
       return wrapExternalReadme(asQuoteAdmonition(body, title), repo)
     },
   }
