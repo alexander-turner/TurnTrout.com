@@ -9606,5 +9606,17 @@
   "https://assets.turntrout.com/static/images/external-favicons/stackoverflow_com.svg": {
     "width": 16,
     "height": 18
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/arstechnica_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/tweets/2071254764558676130/avatar.jpg?v=1": {
+    "width": 400,
+    "height": 400
+  },
+  "https://assets.turntrout.com/static/tweets/2071254764558676130/media-0.png?v=1": {
+    "width": 680,
+    "height": 736
   }
 }
