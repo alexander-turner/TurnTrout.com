@@ -217,9 +217,13 @@ svg.favicon[data-domain="amazon_com"] {
   }
 }
 
-// On mobile the four-up demo squeezes each caption into a ~half-width column,
-// too narrow for phrases like "is a radial-gradient:" — stack one per row so the
-// captions get full width.
+// Four captions across squeeze each into a column too narrow for phrases like
+// "is a radial-gradient:", so the atomic code wraps awkwardly. Cap at two
+// columns, and one on mobile, so each caption has room to wrap naturally.
+#big-favicon-demo .subfigure {
+  flex-basis: 45%;
+}
+
 @media all and (max-width: $mobile-breakpoint) {
   #big-favicon-demo .subfigure {
     flex-basis: 100%;
