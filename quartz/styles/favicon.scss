@@ -42,11 +42,12 @@
     margin-left: calc(0.3125 * #{$base-margin});
   }
 
-  // A favicon appended after inline code sits inside the <code>, so its right
-  // edge crowds whatever closing punctuation follows the link. Keep the
-  // default left gap to the word and add a right gap so a trailing ")" / "]"
-  // isn't cramped.
+  // A favicon appended after inline code sits inside the <code>, so the
+  // monospace cell tightens the gap to the word; widen the left margin to
+  // 0.1rem so it sits clear of the code. The right gap keeps a trailing
+  // ")" / "]" from cramping.
   code & {
+    margin-left: calc(0.2 * #{$base-margin});
     margin-right: calc(0.15 * #{$base-margin});
   }
 }
