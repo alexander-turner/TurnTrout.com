@@ -278,30 +278,30 @@ export function addClass(node: Element, className: string): void {
 }
 
 // Remove a class from a node, preserving the shape of any remaining classes
-// (string-form className stays a string; array stays an array). No-op when the
-// class is absent.
+// (string-form stays a string; array stays an array). Handles both the
+// `className` and `class` property forms that `hasClass` honors, so a class
+// found by `hasClass` is always strippable. No-op when the class is absent.
 export function removeClass(node: Element, className: string): void {
-  const existing = node.properties?.className
-  const setKept = (kept: string[]): void => {
+  for (const key of ["className", "class"] as const) {
+    const existing = node.properties?.[key]
+    const kept =
+      typeof existing === "string"
+        ? existing
+            .split(/\s+/)
+            .filter(Boolean)
+            .filter((c) => c !== className)
+        : Array.isArray(existing)
+          ? existing.map(String).filter((c) => c !== className)
+          : undefined
+    if (kept === undefined) continue
+
     const next = { ...node.properties }
     if (kept.length === 0) {
-      delete next.className
+      delete next[key]
     } else {
-      next.className = typeof existing === "string" ? kept.join(" ") : kept
+      next[key] = typeof existing === "string" ? kept.join(" ") : kept
     }
     node.properties = next
-  }
-  if (typeof existing === "string") {
-    setKept(
-      existing
-        .split(/\s+/)
-        .filter(Boolean)
-        .filter((c) => c !== className),
-    )
-    return
-  }
-  if (Array.isArray(existing)) {
-    setKept(existing.map(String).filter((c) => c !== className))
   }
 }
 

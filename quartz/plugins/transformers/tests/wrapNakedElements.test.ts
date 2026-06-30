@@ -467,6 +467,11 @@ describe("WrapNakedElements Plugin Tests", () => {
         '<figure class="float-right"><img src="test.jpg"><figcaption>Alex, 2024.</figcaption></figure>',
       ],
       [
+        "preserves the child's other classes when promoting",
+        '<figure><img class="float-right transparent-image" src="test.jpg"></figure>',
+        '<figure class="float-right"><img class="transparent-image" src="test.jpg"></figure>',
+      ],
+      [
         "picture-wrapped img + figcaption",
         '<figure><picture><img class="float-right" src="test.jpg"></picture><figcaption>Cap</figcaption></figure>',
         '<figure class="float-right"><picture><img src="test.jpg"></picture><figcaption>Cap</figcaption></figure>',

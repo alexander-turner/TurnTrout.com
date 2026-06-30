@@ -466,6 +466,22 @@ describe("removeClass", () => {
     removeClass(node, toRemove)
     expect(node.properties.className).toEqual(expected)
   })
+
+  // `hasClass` honors the `class` property too, so `removeClass` must strip it.
+  const classNode = (klass: string): Element => ({
+    type: "element",
+    tagName: "div",
+    properties: { class: klass },
+    children: [],
+  })
+
+  it.each<[string, Element, string, string | undefined]>([
+    ["removes from the class property", classNode("a b"), "a", "b"],
+    ["drops the class property when it empties", classNode("a"), "a", undefined],
+  ])("%s", (_d, node, toRemove, expected) => {
+    removeClass(node, toRemove)
+    expect(node.properties.class).toEqual(expected)
+  })
 })
 
 describe("hasAncestor", () => {
