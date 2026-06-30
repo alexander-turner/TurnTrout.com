@@ -1604,9 +1604,10 @@ async function initializeSearch(): Promise<void> {
         data = (await withTimeout(getContentIndex(), CONTENT_INDEX_TIMEOUT_MS)) ?? undefined
         // A backgrounded/frozen tab can leave the prefetched request hung in the
         // cache so it never settles; force a fresh fetch so search recovers
-        // without a full page reload.
+        // without a full page reload. Bound the retry too so a still-wedged tab
+        // can't block the search UI indefinitely.
         if (!data) {
-          data = (await getContentIndex(true)) ?? undefined
+          data = (await withTimeout(getContentIndex(true), CONTENT_INDEX_TIMEOUT_MS)) ?? undefined
         }
       }
       if (data) {
