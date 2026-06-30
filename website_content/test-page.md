@@ -513,7 +513,7 @@ https://xcancel.com/Turn_Trout/status/2055343603958878231
 A quote-tweet renders the quoted post as a nested card:
 
 ```tweet
-https://xcancel.com/JeffDean/status/2026566490619879574
+https://xcancel.com/ChrisMurphyCT/status/2071998353664000365
 ```
 
 # Images

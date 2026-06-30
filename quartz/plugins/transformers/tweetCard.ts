@@ -323,8 +323,10 @@ function quotedCard(quoted: QuotedTweet): Element {
       width: 24,
       height: 24,
     }),
-    authorNameRow(quoted.author, profileUrl),
-    externalAnchor(profileUrl, [`@${quoted.author.handle}`], "tweet-handle"),
+    h("div", { className: "tweet-author" }, [
+      authorNameRow(quoted.author, profileUrl),
+      externalAnchor(profileUrl, [`@${quoted.author.handle}`], "tweet-handle"),
+    ]),
   ])
   const body = h("div", { className: "tweet-body" }, linkifyTweetText(quoted.text, quoted.urls))
   return h("div", { className: "tweet-quoted", "data-tweet-id": quoted.id }, [

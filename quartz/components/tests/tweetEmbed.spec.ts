@@ -31,7 +31,7 @@ test.describe("Tweet embeds", () => {
     await quoted.scrollIntoViewIfNeeded()
     await expect(quoted).toBeVisible()
     // The nested card carries the quoted author's name and a self-hosted avatar.
-    await expect(quoted.locator(".tweet-name")).toContainText("Boaz Barak")
+    await expect(quoted.locator(".tweet-name")).toContainText("Seung Min Kim")
     await expect(quoted.locator("img.tweet-quoted-avatar")).toHaveAttribute(
       "src",
       /assets\.turntrout\.com/,
