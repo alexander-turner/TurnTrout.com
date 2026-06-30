@@ -76,6 +76,9 @@ const config: QuartzConfig = {
           punctilio: githubReadmeSource("alexander-turner", "punctilio", {
             maxSections: 0,
           }),
+          "claude-guard": githubReadmeSource("alexander-turner", "claude-guard", {
+            maxSections: 0,
+          }),
           "ci-truth-serum": githubReadmeSource("alexander-turner", "ci-truth-serum", {
             maxSections: 1,
           }),
