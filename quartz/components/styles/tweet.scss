@@ -292,11 +292,17 @@ $tweet-media-max-height: 24rem;
   gap: calc(0.5 * $base-margin);
 }
 
+// Stroked outlines (not filled) at one shared weight so the reply and like
+// icons read identically — see REPLY_PATH/HEART_PATH in tweetCard.ts.
 .tweet-metric-icon {
   width: calc(2 * $base-margin);
   height: calc(2 * $base-margin);
   flex: 0 0 auto;
-  fill: var(--midground);
+  fill: none;
+  stroke: var(--midground);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   margin: 0;
 }
 
