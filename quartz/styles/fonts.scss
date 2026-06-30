@@ -353,6 +353,15 @@ code {
   }
 }
 
+// Inline code (not `pre > code`, which scrolls) may break an over-long token as a
+// last resort rather than clip or force horizontal scroll on narrow viewports.
+// `break-word` only breaks when the token wouldn't otherwise fit; a short code
+// (`.inline-code-atomic`) stays whole since `overflow-wrap` is inert under
+// `white-space: nowrap`.
+:not(pre) > code {
+  overflow-wrap: break-word;
+}
+
 // Inline code's monospace glyph can crowd the word before it (especially after
 // letters with a rightward hook, "f"/"r"). The InlineCodeSpacing transformer
 // wraps that word so it can carry a trailing gap. A trailing margin collapses at
