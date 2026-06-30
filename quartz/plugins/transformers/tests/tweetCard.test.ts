@@ -160,6 +160,16 @@ describe("buildTweetCard", () => {
     expect(render(buildTweetCard(unverified))).not.toContain("tweet-verified")
   })
 
+  it("keeps the verified badge outside the name anchor", () => {
+    const html = render(buildTweetCard(baseSnapshot))
+    // The anchor wraps only the name span and closes before the seal, which
+    // then sits in the name row beside the now-closed anchor.
+    expect(html).toContain(
+      '<span class="tweet-name">Alex Turner</span></a><svg class="tweet-verified"',
+    )
+    expect(html).toContain('class="tweet-name-row"')
+  })
+
   it("omits the date line when the timestamp is unparseable", () => {
     const undated = { ...baseSnapshot, createdAt: "" }
     expect(render(buildTweetCard(undated))).not.toContain("tweet-date")
@@ -280,6 +290,53 @@ describe("buildTweetCard", () => {
       media: [photo(1), photo(2), photo(3), photo(4), photo(5)],
     }
     expect(render(buildTweetCard(many))).toContain("tweet-media-count-4")
+  })
+})
+
+describe("quote tweets", () => {
+  const quoted: TweetSnapshot["quoted"] = {
+    id: "456",
+    url: "https://xcancel.com/boazbaraktcs/status/456",
+    author: {
+      name: "Boaz Barak",
+      handle: "boazbaraktcs",
+      verified: false,
+      avatarSrc: "https://assets.turntrout.com/static/tweets/123/quoted-avatar.jpg",
+    },
+    createdAt: "2025-01-20T10:00:00.000Z",
+    text: "the original take @someone",
+    urls: [],
+    media: [],
+  }
+
+  it("renders the embedded quoted tweet's author, handle, and body", () => {
+    const html = render(buildTweetCard({ ...baseSnapshot, quoted }))
+    expect(html).toContain("tweet-quoted")
+    expect(html).toContain('data-tweet-id="456"')
+    expect(html).toContain("Boaz Barak")
+    expect(html).toContain('href="https://xcancel.com/boazbaraktcs"')
+    expect(html).toContain("the original take")
+    // The quoted avatar is self-hosted, linkified mentions point at xcancel.
+    expect(html).toContain("tweet-quoted-avatar")
+    expect(html).toContain('href="https://xcancel.com/someone"')
+  })
+
+  it("renders media inside the quoted card", () => {
+    const withMedia = {
+      ...quoted,
+      media: [
+        {
+          type: "photo" as const,
+          src: "https://assets.turntrout.com/static/tweets/123/quoted-media-0.jpg",
+        },
+      ],
+    }
+    const html = render(buildTweetCard({ ...baseSnapshot, quoted: withMedia }))
+    expect(html).toMatch(/tweet-quoted[\s\S]*tweet-media-count-1/)
+  })
+
+  it("omits the quoted card when there is no quote", () => {
+    expect(render(buildTweetCard(baseSnapshot))).not.toContain("tweet-quoted")
   })
 })
 

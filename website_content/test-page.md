@@ -510,6 +510,12 @@ https://xcancel.com/Turn_Trout/status/2055343603224879417
 https://xcancel.com/Turn_Trout/status/2055343603958878231
 ```
 
+A quote-tweet renders the quoted post as a nested card:
+
+```tweet
+https://xcancel.com/JeffDean/status/2026566490619879574
+```
+
 # Images
 
 ![Sample complexity of different kinds of DCTs. The x-axis is "number of training instructions" and the y-axis is "average of logits('Sure') - logits('Sorry')." All conditions are basically flat along the x-dimension. Exponential, quadratic, and linear-projected conditions cluster around a logit difference of 8. Linear has a difference of -6.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif)

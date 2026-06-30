@@ -127,6 +127,47 @@ RAW_TWEET: dict = {
 }
 
 
+RAW_QUOTE_TWEET: dict = {
+    "__typename": "Tweet",
+    "user": {
+        "name": "Quoter",
+        "screen_name": "quoter",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/2/q_normal.jpg",
+        "is_blue_verified": True,
+    },
+    "created_at": "2025-02-25T12:00:00.000Z",
+    "text": "my take https://t.co/QUOTE",
+    "entities": {
+        "urls": [
+            {
+                "url": "https://t.co/QUOTE",
+                "display_url": "letter.com",
+                "expanded_url": "https://letter.com",
+            }
+        ]
+    },
+    "quoted_tweet": {
+        "id_str": "888",
+        "user": {
+            "name": "Original",
+            "screen_name": "original",
+            "profile_image_url_https": "https://pbs.twimg.com/profile_images/3/o_normal.jpg",
+        },
+        "created_at": "2025-02-24T20:17:13.000Z",
+        "text": "the original take",
+        "entities": {"urls": []},
+        "mediaDetails": [
+            {
+                "type": "photo",
+                "media_url_https": "https://pbs.twimg.com/media/q.jpg",
+                "original_info": {"width": 100, "height": 80},
+                "ext_alt_text": "quoted photo",
+            }
+        ],
+    },
+}
+
+
 @pytest.fixture(autouse=True)
 def _frozen_now(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
@@ -308,6 +349,42 @@ def test_normalize_animated_gif_and_skipped_video() -> None:
     assert snapshot["author"]["verified"] is False
     # No counts in this payload → no metrics.
     assert snapshot["metrics"] == {}
+
+
+def test_normalize_quoted_tweet() -> None:
+    snapshot = ts.normalize(RAW_QUOTE_TWEET, "999")
+    quoted = snapshot["quoted"]
+    assert quoted["id"] == "888"
+    assert quoted["url"] == "https://xcancel.com/original/status/888"
+    assert quoted["author"]["name"] == "Original"
+    # No verified flag in the quoted user → not verified.
+    assert quoted["author"]["verified"] is False
+    assert quoted["text"] == "the original take"
+    assert quoted["media"][0]["alt"] == "quoted photo"
+    # The quoting tweet keeps its own fields, including its t.co link.
+    assert snapshot["urls"][0]["expanded"] == "https://letter.com"
+
+
+def test_normalize_without_quote_omits_key() -> None:
+    assert "quoted" not in ts.normalize(RAW_TWEET, "1")
+
+
+def test_localize_media_quoted(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        ts,
+        "download_file",
+        lambda url, target, session: target.write_bytes(b"x"),
+    )
+    snapshot = ts.normalize(RAW_QUOTE_TWEET, "555")
+    staging = tmp_path / "555"
+    ts.localize_media(snapshot, staging, FakeSession([]))  # type: ignore[arg-type]
+    cdn = f"{ts.CDN_BASE_URL}/static/tweets/555"
+    assert snapshot["author"]["avatarSrc"] == f"{cdn}/avatar.jpg"
+    quoted = snapshot["quoted"]
+    assert quoted["author"]["avatarSrc"] == f"{cdn}/quoted-avatar.jpg"
+    assert quoted["media"][0]["src"] == f"{cdn}/quoted-media-0.jpg"
 
 
 def test_download_file_success(tmp_path: Path) -> None:

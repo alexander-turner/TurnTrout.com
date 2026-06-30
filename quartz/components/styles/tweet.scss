@@ -56,10 +56,16 @@
   text-overflow: ellipsis;
 }
 
-.tweet-name-link {
-  display: inline-flex;
+// The display-name link and the verified seal share a row; the seal is a sibling
+// of the anchor, so only the name is clickable.
+.tweet-name-row {
+  display: flex;
   align-items: center;
   gap: calc(0.5 * $base-margin);
+  min-width: 0;
+}
+
+.tweet-name-link {
   color: var(--foreground);
   font-weight: 600;
 }
@@ -108,6 +114,33 @@
 
 .tweet-body .tweet-entity {
   color: var(--color-link);
+}
+
+// The embedded quote-tweet: a bordered mini-card under the quoting tweet's body.
+.tweet-quoted {
+  margin-top: $base-margin;
+  border: 1px solid var(--midground-faint);
+  border-radius: calc(2 * $border-radius);
+  padding: $base-margin;
+}
+
+.tweet-quoted-header {
+  display: flex;
+  align-items: center;
+  gap: calc(0.5 * $base-margin);
+}
+
+.tweet-card img.tweet-quoted-avatar {
+  width: calc(3 * $base-margin);
+  height: calc(3 * $base-margin);
+  border-radius: 50%;
+  margin: 0;
+  object-fit: cover;
+  mix-blend-mode: normal;
+}
+
+.tweet-quoted .tweet-body {
+  margin-top: calc(0.5 * $base-margin);
 }
 
 // A single image keeps its natural aspect ratio up to this height, so an
@@ -306,10 +339,13 @@ $tweet-content-indent: calc(7 * $base-margin); // avatar width 6 + header gap 1
   }
 
   // Indent below-header content past the avatar column so it clears the rail.
-  .tweet-body,
-  .tweet-media-grid,
-  .tweet-metrics,
-  .tweet-date {
+  // Direct children only, so a quoted card's own body/media stay un-indented
+  // within their nested frame.
+  .tweet-card > .tweet-body,
+  .tweet-card > .tweet-media-grid,
+  .tweet-card > .tweet-quoted,
+  .tweet-card > .tweet-metrics,
+  .tweet-card > .tweet-date {
     margin-left: $tweet-content-indent;
   }
 }

@@ -29,20 +29,38 @@ export interface TweetMetrics {
   likes?: number
 }
 
-/** Normalized snapshot of one tweet, as written by `scripts/tweet_snapshot.py`. */
-export interface TweetSnapshot {
+/** The post author, as shown in the card header. */
+export interface TweetAuthor {
+  name: string
+  handle: string
+  verified: boolean
+  avatarSrc: string
+}
+
+/**
+ * The tweet a quote-tweet embeds. Rendered as a nested card; it carries no
+ * metrics row of its own (X doesn't show one) and never quotes a further tweet.
+ */
+export interface QuotedTweet {
   id: string
   url: string
-  author: {
-    name: string
-    handle: string
-    verified: boolean
-    avatarSrc: string
-  }
+  author: TweetAuthor
   createdAt: string
   text: string
   urls: readonly TweetUrl[]
   media: readonly TweetMedia[]
+}
+
+/** Normalized snapshot of one tweet, as written by `scripts/tweet_snapshot.py`. */
+export interface TweetSnapshot {
+  id: string
+  url: string
+  author: TweetAuthor
+  createdAt: string
+  text: string
+  urls: readonly TweetUrl[]
+  media: readonly TweetMedia[]
+  quoted?: QuotedTweet
   metrics?: TweetMetrics
   snapshotAt: string
 }
@@ -59,8 +77,10 @@ const RETWEET_PATH =
   "M4.75 3.79l4.603 4.3-1.706 1.82L6 8.38v7.37c0 .97.784 1.75 1.75 1.75H13V20H7.75c-2.347 0-4.25-1.9-4.25-4.25V8.38L1.853 9.91.147 8.09l4.603-4.3zm11.5 2.71H11V4h5.25c2.347 0 4.25 1.9 4.25 4.25v7.37l1.647-1.53 1.706 1.82-4.603 4.3-4.603-4.3 1.706-1.82L18 15.62V8.25c0-.97-.784-1.75-1.75-1.75z"
 const REPLY_PATH =
   "M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.37 2.77 6.08 6.138 6.01l1.952-.05v2.29l5.025-2.78c1.95-1.08 3.162-3.13 3.162-5.36 0-3.39-2.744-6.14-6.129-6.14H9.756z"
+// Outline (un-filled) heart: two oppositely-wound subpaths leave the interior
+// hollow, so the like count reads as a count rather than a tweet the reader liked.
 const HEART_PATH =
-  "M20.884 13.19c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z"
+  "M12 21.638h-.014C9.403 21.59 1.95 14.856 1.95 8.478c0-3.064 2.525-5.754 5.403-5.754 2.29 0 3.83 1.58 4.646 2.73.814-1.148 2.354-2.73 4.645-2.73 2.88 0 5.404 2.69 5.404 5.755 0 6.376-7.454 13.11-10.037 13.157H12zM7.354 4.225c-2.08 0-3.903 1.988-3.903 4.255 0 5.74 7.035 11.596 8.55 11.658 1.52-.062 8.55-5.917 8.55-11.658 0-2.267-1.822-4.255-3.902-4.255-2.528 0-3.94 2.936-3.952 2.965-.23.562-1.156.562-1.387 0-.014-.03-1.425-2.965-3.954-2.965z"
 
 const MONTHS = [
   "January",
@@ -271,15 +291,52 @@ function retweetContext(name: string): Element {
   ])
 }
 
-/** Build the rendered card for a single resolved tweet. */
-export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): Element {
-  const { author } = snapshot
-  const nameChildren: (Element | string)[] = [h("span", { className: "tweet-name" }, author.name)]
+/**
+ * The name line: the display name links to the profile, the verified seal sits
+ * beside it. The seal stays outside the anchor so only the name is the link.
+ */
+function authorNameRow(author: TweetAuthor, profileUrl: string): Element {
+  const children: (Element | string)[] = [
+    externalAnchor(
+      profileUrl,
+      [h("span", { className: "tweet-name" }, author.name)],
+      "tweet-name-link",
+    ),
+  ]
   if (author.verified) {
-    nameChildren.push(
+    children.push(
       icon(VERIFIED_PATH, "tweet-verified", { "aria-label": "Verified account", role: "img" }),
     )
   }
+  return h("span", { className: "tweet-name-row" }, children)
+}
+
+/** Nested card for the tweet a quote-tweet embeds: a compact header plus body and media. */
+function quotedCard(quoted: QuotedTweet): Element {
+  const profileUrl = `${XCANCEL_BASE}/${quoted.author.handle}`
+  const header = h("div", { className: "tweet-quoted-header" }, [
+    h("img", {
+      className: "tweet-quoted-avatar",
+      src: quoted.author.avatarSrc,
+      alt: "",
+      loading: "lazy",
+      width: 24,
+      height: 24,
+    }),
+    authorNameRow(quoted.author, profileUrl),
+    externalAnchor(profileUrl, [`@${quoted.author.handle}`], "tweet-handle"),
+  ])
+  const body = h("div", { className: "tweet-body" }, linkifyTweetText(quoted.text, quoted.urls))
+  return h("div", { className: "tweet-quoted", "data-tweet-id": quoted.id }, [
+    header,
+    body,
+    ...mediaGrid(quoted.media),
+  ])
+}
+
+/** Build the rendered card for a single resolved tweet. */
+export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): Element {
+  const { author } = snapshot
 
   // The avatar, name, and handle point at the author's profile; the X logo is
   // the permalink to the post.
@@ -296,7 +353,7 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
       }),
     ]),
     h("div", { className: "tweet-author" }, [
-      externalAnchor(profileUrl, nameChildren, "tweet-name-link"),
+      authorNameRow(author, profileUrl),
       externalAnchor(profileUrl, [`@${author.handle}`], "tweet-handle"),
     ]),
     externalAnchor(
@@ -312,6 +369,7 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
   const children: Element[] = []
   if (retweetedBy) children.push(retweetContext(retweetedBy))
   children.push(header, body, ...mediaGrid(snapshot.media))
+  if (snapshot.quoted) children.push(quotedCard(snapshot.quoted))
 
   const formatted = formatTweetDate(snapshot.createdAt)
   if (formatted) {
