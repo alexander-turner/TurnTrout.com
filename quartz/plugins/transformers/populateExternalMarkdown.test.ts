@@ -198,7 +198,7 @@ describe("PopulateExternalMarkdown", () => {
       const source = githubReadmeSource("owner", "repo", { maxSections: 1 })
       expect(source.transform?.("# Title\n\nIntro\n\n## Keep\n\na\n\n## Drop\n\nb")).toBe(
         wrap(
-          'Intro\n\n## Keep\n\na\n\n<div class="centered">\n\n[Read the rest on GitHub →](https://github.com/owner/repo)\n\n</div>',
+          'Intro\n\n## Keep\n\na\n\n<div class="centered">\n\n[Read the rest on GitHub](https://github.com/owner/repo)\n\n</div>',
         ),
       )
     })
@@ -208,7 +208,7 @@ describe("PopulateExternalMarkdown", () => {
       expect(source.transform?.("Use the [CLI](#cli).\n\n## CLI\n\nbody")).toBe(
         wrap(
           "Use the [CLI](https://github.com/owner/repo#cli).\n\n" +
-            '<div class="centered">\n\n[Read the rest on GitHub →](https://github.com/owner/repo)\n\n</div>',
+            '<div class="centered">\n\n[Read the rest on GitHub](https://github.com/owner/repo)\n\n</div>',
         ),
       )
     })
