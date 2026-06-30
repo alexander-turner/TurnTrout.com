@@ -558,6 +558,19 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 <!--spellchecker-enable-->
 
+## Floating image right with caption
+
+<!-- vale off -->
+![[https://assets.turntrout.com/static/images/posts/alex_rainbow_2.avif|Alex smiling at the camera; rainbow colored light splays off the wall in the background.]]{.float-right style="width:20%;"}
+Figure: The caption floats with the image instead of stranding above the following text.
+<!-- vale on -->
+
+<!--spellchecker-disable-->
+
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+
+<!--spellchecker-enable-->
+
 # Spoilers
 
 > Normal blockquote
