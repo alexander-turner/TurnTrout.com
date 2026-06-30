@@ -31,13 +31,18 @@
   line-height: 0;
 }
 
-.tweet-card img.tweet-avatar {
-  width: calc(6 * $base-margin);
-  height: calc(6 * $base-margin);
+// Both avatars share the circular, cover-cropped treatment; only the size differs.
+.tweet-card img.tweet-avatar,
+.tweet-card img.tweet-quoted-avatar {
   border-radius: 50%;
   margin: 0;
   object-fit: cover;
   mix-blend-mode: normal;
+}
+
+.tweet-card img.tweet-avatar {
+  width: calc(6 * $base-margin);
+  height: calc(6 * $base-margin);
 }
 
 .tweet-author {
@@ -133,10 +138,18 @@
 .tweet-card img.tweet-quoted-avatar {
   width: calc(3 * $base-margin);
   height: calc(3 * $base-margin);
-  border-radius: 50%;
-  margin: 0;
-  object-fit: cover;
-  mix-blend-mode: normal;
+}
+
+// The post date trails the handle, Twitter-style, with a middot separator. It
+// shares the main date's muted color/size (see .tweet-date).
+.tweet-quoted-date {
+  flex: 0 0 auto;
+  white-space: nowrap;
+
+  &::before {
+    content: "·";
+    margin-right: calc(0.5 * $base-margin);
+  }
 }
 
 .tweet-quoted .tweet-body {
@@ -224,11 +237,17 @@ $tweet-media-max-height: 24rem;
   }
 }
 
+// Muted timestamp, shared by the main card (block, below the body) and the
+// quoted header (inline). Layout-specific rules live with each class.
+.tweet-date,
+.tweet-quoted-date {
+  color: var(--midground);
+  font-size: var(--font-size-minus-1);
+}
+
 .tweet-date {
   display: block;
   margin-top: $base-margin;
-  color: var(--midground);
-  font-size: var(--font-size-minus-1);
 }
 
 .tweet-card-unavailable {

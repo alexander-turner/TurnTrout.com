@@ -309,7 +309,7 @@ describe("quote tweets", () => {
     media: [],
   }
 
-  it("renders the embedded quoted tweet's author, handle, and body", () => {
+  it("renders the embedded quoted tweet's author, handle, date, and body", () => {
     const html = render(buildTweetCard({ ...baseSnapshot, quoted }))
     expect(html).toContain("tweet-quoted")
     expect(html).toContain('data-tweet-id="456"')
@@ -319,6 +319,15 @@ describe("quote tweets", () => {
     // The quoted avatar is self-hosted, linkified mentions point at xcancel.
     expect(html).toContain("tweet-quoted-avatar")
     expect(html).toContain('href="https://xcancel.com/someone"')
+    // The post date trails the handle in the header.
+    expect(html).toContain('<span class="tweet-quoted-date">January 20th, 2025, 10:00 AM</span>')
+  })
+
+  it("omits the quoted date line when the timestamp is unparseable", () => {
+    const undated = { ...quoted, createdAt: "" }
+    expect(render(buildTweetCard({ ...baseSnapshot, quoted: undated }))).not.toContain(
+      "tweet-quoted-date",
+    )
   })
 
   it("renders media inside the quoted card", () => {

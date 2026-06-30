@@ -309,12 +309,12 @@ function authorNameRow(author: TweetAuthor, profileUrl: string): Element {
 }
 
 /**
- * Nested card for the tweet a quote-tweet embeds: a compact header plus body
- * and media. The date is intentionally omitted to keep the nested card compact.
+ * Nested card for the tweet a quote-tweet embeds. The header is a single
+ * Twitter-style row: avatar, name, `@handle`, then the post date.
  */
 function quotedCard(quoted: QuotedTweet): Element {
   const profileUrl = `${XCANCEL_BASE}/${quoted.author.handle}`
-  const header = h("div", { className: "tweet-quoted-header" }, [
+  const headerChildren: (Element | string)[] = [
     h("img", {
       className: "tweet-quoted-avatar",
       src: quoted.author.avatarSrc,
@@ -323,11 +323,14 @@ function quotedCard(quoted: QuotedTweet): Element {
       width: 24,
       height: 24,
     }),
-    h("div", { className: "tweet-author" }, [
-      authorNameRow(quoted.author, profileUrl),
-      externalAnchor(profileUrl, [`@${quoted.author.handle}`], "tweet-handle"),
-    ]),
-  ])
+    authorNameRow(quoted.author, profileUrl),
+    externalAnchor(profileUrl, [`@${quoted.author.handle}`], "tweet-handle"),
+  ]
+  const formattedDate = formatTweetDate(quoted.createdAt)
+  if (formattedDate) {
+    headerChildren.push(h("span", { className: "tweet-quoted-date" }, formattedDate))
+  }
+  const header = h("div", { className: "tweet-quoted-header" }, headerChildren)
   const body = h("div", { className: "tweet-body" }, linkifyTweetText(quoted.text, quoted.urls))
   return h("div", { className: "tweet-quoted", "data-tweet-id": quoted.id }, [
     header,
