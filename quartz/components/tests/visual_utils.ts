@@ -164,7 +164,9 @@ export async function waitForImagesInElement(scope: Locator): Promise<void> {
                   // query params; the cache-buster forces a fresh fetch.
                   url.searchParams.set("__visualRetry", String(Math.trunc(performance.now())))
                   el.addEventListener("load", attempt, { once: true })
-                  el.addEventListener("error", () => window.setTimeout(attempt, 250), { once: true })
+                  el.addEventListener("error", () => window.setTimeout(attempt, 250), {
+                    once: true,
+                  })
                   el.src = url.toString()
                 })
               }
