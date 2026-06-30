@@ -955,7 +955,10 @@ _SENTENCE_INITIAL_MID_RE = re.compile(
     r"(?<!\.)([.!?])[ \t]+[" + _LEADING_QUOTE_CHARS + r"]*\d"
 )
 _TRAILING_WORD_RE = re.compile(r"([A-Za-z.]+)$")
-_LIST_MARKER_RE = re.compile(r"^\s*([-*+]\s+|\d+[.)]\s+)")
+# A bullet or numbered enumerator, with or without inline body: an item whose
+# text wraps to the next line leaves only the marker (``1.``) on this line, and
+# that bare enumerator is not sentence-initial prose.
+_LIST_MARKER_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])(?:\s+|$)")
 _FOOTNOTE_DEFINITION_RE = re.compile(r"^\[\^[^\]]+\]:\s*")
 # Leading markers that introduce authorial prose; each is stripped so the
 # numeral check runs on the text the reader actually sees. A definition or

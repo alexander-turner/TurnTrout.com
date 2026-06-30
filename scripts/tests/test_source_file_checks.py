@@ -2757,6 +2757,12 @@ def test_void_elements_are_allowed_self_closing(tag: str):
         # numbered list nested inside a definition line
         ("1. Some reasons here", []),
         (": 1.  The error tolerance is too high", []),
+        # A bare enumerator (the item's text wraps to the next line) is the
+        # marker alone, not sentence-initial prose
+        ("1.", []),
+        ("12.", []),
+        ("256)", []),
+        ("1.\n   wrapped item text", []),
         # A footnote definition whose body continues on the next line
         ("[^note]:", []),
         # A numeral rendered from a KaTeX equation is acceptable, even when it
