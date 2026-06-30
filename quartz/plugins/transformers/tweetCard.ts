@@ -37,10 +37,7 @@ export interface TweetAuthor {
   avatarSrc: string
 }
 
-/**
- * The tweet a quote-tweet embeds. Rendered as a nested card; it carries no
- * metrics row of its own (X doesn't show one) and never quotes a further tweet.
- */
+/** The tweet a quote-tweet embeds: a nested card with no metrics row of its own. */
 export interface QuotedTweet {
   id: string
   url: string

@@ -335,6 +335,12 @@ describe("quote tweets", () => {
     expect(html).toMatch(/tweet-quoted[\s\S]*tweet-media-count-1/)
   })
 
+  it("shows the verified seal on a verified quoted author", () => {
+    const verifiedQuote = { ...quoted, author: { ...quoted.author, verified: true } }
+    const html = render(buildTweetCard({ ...baseSnapshot, quoted: verifiedQuote }))
+    expect(html).toMatch(/tweet-quoted[\s\S]*tweet-verified/)
+  })
+
   it("omits the quoted card when there is no quote", () => {
     expect(render(buildTweetCard(baseSnapshot))).not.toContain("tweet-quoted")
   })

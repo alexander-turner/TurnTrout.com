@@ -369,6 +369,19 @@ def test_normalize_without_quote_omits_key() -> None:
     assert "quoted" not in ts.normalize(RAW_TWEET, "1")
 
 
+@pytest.mark.parametrize(
+    "quoted_tweet",
+    [
+        {"id_str": "888"},  # missing user
+        {"user": RAW_QUOTE_TWEET["quoted_tweet"]["user"]},  # missing id_str
+    ],
+)
+def test_normalize_drops_malformed_quote(quoted_tweet: dict) -> None:
+    # A broken quote degrades to a plain card rather than crashing the snapshot.
+    raw = {**RAW_TWEET, "quoted_tweet": quoted_tweet}
+    assert "quoted" not in ts.normalize(raw, "1")
+
+
 def test_localize_media_quoted(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

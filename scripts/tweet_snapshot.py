@@ -326,15 +326,22 @@ def _build_urls(entities: dict) -> list[dict]:
     ]
 
 
-def _normalize_quoted(quoted: dict) -> dict:
-    """Normalize a payload's ``quoted_tweet`` into the nested quote schema."""
-    handle = quoted["user"]["screen_name"]
-    quoted_id = quoted.get("id_str", "")
+def _normalize_quoted(quoted: dict) -> dict | None:
+    """
+    Normalize a payload's ``quoted_tweet`` into the nested quote schema.
+
+    Returns ``None`` for a malformed quote (missing the user object or the id),
+    so a broken quote drops to a plain card instead of failing the whole snapshot.
+    """
+    user = quoted.get("user")
+    quoted_id = quoted.get("id_str")
+    if not user or not quoted_id:
+        return None
     entities = quoted.get("entities", {}) or {}
     return {
         "id": quoted_id,
-        "url": f"https://xcancel.com/{handle}/status/{quoted_id}",
-        "author": _build_author(quoted["user"]),
+        "url": f"https://xcancel.com/{user['screen_name']}/status/{quoted_id}",
+        "author": _build_author(user),
         "createdAt": quoted.get("created_at", ""),
         "text": _display_text(quoted, entities),
         "urls": _build_urls(entities),
@@ -363,9 +370,10 @@ def normalize(raw: dict, tweet_id: str) -> dict:
         "metrics": _build_metrics(raw),
         "snapshotAt": _now().isoformat(),
     }
-    quoted = raw.get("quoted_tweet")
+    raw_quoted = raw.get("quoted_tweet")
+    quoted = _normalize_quoted(raw_quoted) if raw_quoted else None
     if quoted:
-        snapshot["quoted"] = _normalize_quoted(quoted)
+        snapshot["quoted"] = quoted
     return snapshot
 
 
