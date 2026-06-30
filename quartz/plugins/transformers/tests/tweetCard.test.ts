@@ -35,9 +35,8 @@ const baseSnapshot: TweetSnapshot = {
 const render = (node: Element): string => toHtml(node)
 
 describe("formatTweetDate", () => {
-  it("formats a valid ISO timestamp as month and day in UTC", () => {
-    // The time crosses midnight UTC only when interpreted locally; UTC keeps the day stable.
-    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("January 21st")
+  it("formats a valid ISO timestamp as month, day, and year in UTC", () => {
+    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("January 21st, 2025")
   })
 
   it.each([
@@ -52,7 +51,7 @@ describe("formatTweetDate", () => {
     ["2025-06-22T12:00:00.000Z", "June 22nd"],
     ["2025-06-23T12:00:00.000Z", "June 23rd"],
   ])("applies an ordinal suffix to the day for %s", (iso, expected) => {
-    expect(formatTweetDate(iso)).toBe(expected)
+    expect(formatTweetDate(iso)).toContain(expected)
   })
 
   it("returns empty string for an unparseable timestamp", () => {
@@ -130,7 +129,7 @@ describe("buildTweetCard", () => {
     expect(html).toContain("Alex Turner")
     expect(html).toContain("@turntrout")
     expect(html).toContain("Hello world")
-    expect(html).toContain('<span class="tweet-date">January 21st</span>')
+    expect(html).toContain('<span class="tweet-date">January 21st, 2025</span>')
     expect(html).toContain('data-tweet-id="123"')
   })
 
@@ -325,7 +324,7 @@ describe("quote tweets", () => {
     expect(html).toContain("tweet-quoted-avatar")
     expect(html).toContain('href="https://xcancel.com/someone"')
     // The post date trails the handle in the header.
-    expect(html).toContain('<span class="tweet-quoted-date">January 20th</span>')
+    expect(html).toContain('<span class="tweet-quoted-date">January 20th, 2025</span>')
   })
 
   it("omits the quoted date line when the timestamp is unparseable", () => {

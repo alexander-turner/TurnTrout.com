@@ -96,9 +96,9 @@ const MONTHS = [
 ] as const
 
 /**
- * Format a tweet's ISO timestamp as `Month Dth` in UTC (e.g. `June 30th`). UTC
- * keeps the output deterministic across build machines. Returns "" for an
- * unparseable timestamp so the date line is simply omitted.
+ * Format a tweet's ISO timestamp as `Month Dth, YYYY` in UTC (e.g.
+ * `June 30th, 2026`). UTC keeps the output deterministic across build machines.
+ * Returns "" for an unparseable timestamp so the date line is simply omitted.
  */
 export function formatTweetDate(iso: string): string {
   const date = new Date(iso)
@@ -106,7 +106,7 @@ export function formatTweetDate(iso: string): string {
   const month = MONTHS[date.getUTCMonth()]
   const dayNum = date.getUTCDate()
   const day = `${dayNum}${getOrdinalSuffix(dayNum)}`
-  return `${month} ${day}`
+  return `${month} ${day}, ${date.getUTCFullYear()}`
 }
 
 const MENTION_OR_TAG = /[@#$]\w+/g
