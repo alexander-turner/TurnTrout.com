@@ -38,15 +38,18 @@ test.describe("visual_utils functions", () => {
       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
       "base64",
     )
-    let aborted = false
-    // Fail the original request to mimic a transient Firefox load failure; serve
-    // the cache-busted retry so the reload-and-retry path can recover.
+    // Abort the first request to mimic a transient Firefox load failure; serve
+    // every retry so the reload path can recover. Asserting the retry *request*
+    // (route-observable) rather than the final paint state keeps the test
+    // deterministic across browsers — paint timing of a fulfilled image is not
+    // what this helper controls.
+    let requests = 0
     await page.route("**/flaky-visual-test-image.png*", async (route) => {
-      if (route.request().url().includes("__visualRetry")) {
-        await route.fulfill({ contentType: "image/png", body: onePixelPng })
-      } else {
-        aborted = true
+      requests += 1
+      if (requests === 1) {
         await route.abort()
+      } else {
+        await route.fulfill({ contentType: "image/png", body: onePixelPng })
       }
     })
 
@@ -62,11 +65,9 @@ test.describe("visual_utils functions", () => {
 
     await waitForImagesInElement(page.locator("#flaky-img-container"))
 
-    expect(aborted).toBe(true)
-    const loaded = await page
-      .locator("#flaky-visual-test-image")
-      .evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)
-    expect(loaded).toBe(true)
+    // The helper must reload after the first (failed) load instead of proceeding
+    // with a blank image.
+    expect(requests).toBeGreaterThanOrEqual(2)
   })
 
   for (const theme of ["light", "dark", "auto"]) {

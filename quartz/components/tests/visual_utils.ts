@@ -146,31 +146,34 @@ export async function waitForImagesInElement(scope: Locator): Promise<void> {
         .evaluate(
           (el: HTMLImageElement, timeoutMs) =>
             new Promise<void>((resolve) => {
-              // `decode()` resolves only once the image is decoded and
-              // paint-ready. A remote AVIF can intermittently fail to load
-              // (notably Firefox in CI); `decode()` then rejects immediately, so
-              // resolving on rejection captured a blank image and churned the
-              // baseline. Reload-and-retry a failed load until it paints, with a
-              // hard ceiling so a permanently broken image can't hang the run.
+              // A remote AVIF can intermittently fail to load (notably Firefox in
+              // CI); resolving on that failure captured a blank image and churned
+              // the baseline. Reload-and-retry a failed load until it paints, with
+              // a hard ceiling so a permanently broken image can't hang the run.
               const hardStop = window.setTimeout(resolve, timeoutMs)
               const settle = (): void => {
                 window.clearTimeout(hardStop)
                 resolve()
               }
-              const attempt = (): void => {
-                el.decode().then(settle, () => {
-                  const url = new URL(el.currentSrc || el.src, document.baseURI)
-                  // `set` overwrites the prior value, so retries don't accumulate
-                  // query params; the cache-buster forces a fresh fetch.
-                  url.searchParams.set("__visualRetry", String(Math.trunc(performance.now())))
-                  el.addEventListener("load", attempt, { once: true })
-                  el.addEventListener("error", () => window.setTimeout(attempt, 250), {
-                    once: true,
-                  })
-                  el.src = url.toString()
-                })
+              const reload = (): void => {
+                const url = new URL(el.currentSrc || el.src, document.baseURI)
+                // `set` overwrites the prior value, so retries don't accumulate
+                // query params; the cache-buster forces a fresh fetch.
+                url.searchParams.set("__visualRetry", String(Math.trunc(performance.now())))
+                el.src = url.toString()
               }
-              attempt()
+              // A successful (re)load is accepted only once `decode()` confirms it
+              // is paint-ready; a failed load reloads. Listeners persist across
+              // reloads so every retry is re-evaluated until an image paints.
+              el.addEventListener("load", () => {
+                el.decode().then(settle, reload)
+              })
+              el.addEventListener("error", () => window.setTimeout(reload, 250))
+              // The image may have already finished (success or failure) before
+              // the listeners attached.
+              if (el.complete) {
+                el.decode().then(settle, reload)
+              }
             }),
           IMAGE_PAINT_TIMEOUT_MS,
         )
