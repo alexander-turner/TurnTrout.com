@@ -233,12 +233,19 @@ export function pageResources(
   staticResources: StaticResources,
 ): StaticResources {
   const contentIndexPath = joinSegments(baseDir, "static/contentIndex.json")
-  // Lazy-load contentIndex.json only when search is initialized to avoid blocking initial page load
+  // Lazy-load contentIndex.json only when search is initialized to avoid blocking initial page load.
+  // `forceRefresh` discards a cached (possibly hung) promise and re-fetches; an AbortController timeout
+  // keeps a request started in a since-frozen tab from lingering forever.
   const contentIndexScript = `const contentIndexPath = "${contentIndexPath}";
 let fetchData = null;
-function getContentIndex() {
-  if (!fetchData) {
-    fetchData = fetch(contentIndexPath).then(data => data.json()).catch(err => { console.error('[getContentIndex] Failed to load content index:', err); fetchData = null; return null; });
+function getContentIndex(forceRefresh) {
+  if (forceRefresh || !fetchData) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    fetchData = fetch(contentIndexPath, { signal: controller.signal })
+      .then(data => data.json())
+      .catch(err => { console.error('[getContentIndex] Failed to load content index:', err); fetchData = null; return null; })
+      .finally(() => clearTimeout(timeoutId));
   }
   return fetchData;
 }`

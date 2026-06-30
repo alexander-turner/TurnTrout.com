@@ -8,6 +8,7 @@ import { type ContentDetails } from "../../../plugins/vfile"
 import { NBSP, simpleConstants } from "../../constants"
 import {
   compareMatchScore,
+  CONTENT_INDEX_TIMEOUT_MS,
   createMatchSpan,
   descendantsSamePageLinks,
   descendantsWithId,
@@ -32,6 +33,7 @@ import {
   syncSearchLayoutState,
   tokenizeTerm,
   updatePlaceholder,
+  withTimeout,
 } from "../search"
 
 const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
@@ -1082,6 +1084,89 @@ describe("initializeSearch retry after failed fetch", () => {
     expect(state.searchInitialized).toBe(true)
     expect(state.hasData).toBe(true)
     expect(state.hasIndex).toBe(true)
+  })
+})
+
+describe("withTimeout", () => {
+  it("resolves with the value when the promise settles in time", async () => {
+    await expect(withTimeout(Promise.resolve("ok"), 1000)).resolves.toBe("ok")
+  })
+
+  it("resolves with null when the promise rejects", async () => {
+    await expect(withTimeout(Promise.reject(new Error("boom")), 1000)).resolves.toBeNull()
+  })
+
+  it("resolves with null when the promise never settles before the timeout", async () => {
+    jest.useFakeTimers()
+    try {
+      const pending = new Promise<string>(() => {
+        /* never settles */
+      })
+      const raced = withTimeout(pending, 1000)
+      jest.advanceTimersByTime(1000)
+      await expect(raced).resolves.toBeNull()
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+})
+
+describe("initializeSearch recovery from a hung content-index fetch", () => {
+  let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
+
+  beforeEach(() => {
+    // skipcq: JS-0321 -- intentional no-op: suppress console.error noise in tests
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    resetSearchStateForTesting()
+    document.body.innerHTML = `
+      <div id="search-container">
+        <input id="search-bar" type="text" placeholder="Search" />
+        <div id="search-layout" data-preview="false"></div>
+      </div>
+    `
+    setSearchLayoutForTesting(document.getElementById("search-layout"))
+  })
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore()
+    resetSearchStateForTesting()
+    removeGetContentIndex()
+  })
+
+  it("forces a fresh fetch when the cached fetch hangs past the timeout", async () => {
+    jest.useFakeTimers()
+    try {
+      const validData = {
+        "test-slug": {
+          title: "Test Page",
+          content: "Test content for searching",
+          slug: "test-slug",
+          authors: ["Author"],
+        },
+      }
+      let callCount = 0
+      stubGetContentIndex((forceRefresh?: boolean) => {
+        callCount += 1
+        // First (cached) call hangs forever; the forced refresh resolves.
+        return forceRefresh
+          ? Promise.resolve(validData)
+          : new Promise(() => {
+              /* never settles */
+            })
+      })
+
+      const initPromise = initializeSearch()
+      // Let the timeout fire so the hung fetch is abandoned and a forced fetch runs.
+      await jest.advanceTimersByTimeAsync(CONTENT_INDEX_TIMEOUT_MS)
+      await initPromise
+
+      expect(callCount).toBe(2)
+      const state = getSearchStateForTesting()
+      expect(state.searchInitialized).toBe(true)
+      expect(state.hasData).toBe(true)
+    } finally {
+      jest.useRealTimers()
+    }
   })
 })
 

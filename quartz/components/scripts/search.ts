@@ -14,9 +14,10 @@ import { debounce, registerEscapeHandler, removeAllChildren } from "./component_
 import { fetchHTMLContent, processPreviewables } from "./content_renderer"
 import { wrapScrollables } from "./scroll-indicator-utils"
 
-// Global function injected by renderPage.tsx to lazy-load content index
+// Global function injected by renderPage.tsx to lazy-load content index.
+// Pass `forceRefresh` to discard a cached (possibly hung) fetch and start a new one.
 declare global {
-  function getContentIndex(): Promise<{ [key: string]: ContentDetails }>
+  function getContentIndex(forceRefresh?: boolean): Promise<{ [key: string]: ContentDetails }>
   interface Window {
     /** Set by onNav() after search event handlers are fully registered. */
     __searchHandlersReady: boolean
@@ -40,6 +41,33 @@ let currentSearchTerm = ""
 let searchLayout: HTMLElement | null = null
 
 const NBSP_REGEX = new RegExp(NBSP, "gu")
+
+/**
+ * How long to wait for the cached content-index fetch before assuming it is
+ * hung (e.g. the tab was frozen mid-request) and forcing a fresh fetch.
+ */
+export const CONTENT_INDEX_TIMEOUT_MS = 4000
+
+/**
+ * Resolves with the promise's value, or `null` if it rejects or fails to settle
+ * within `ms`. The timeout is always cleared once the promise settles so no
+ * stray timer outlives the race.
+ */
+export function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+  return new Promise<T | null>((resolve) => {
+    const timer = setTimeout(() => resolve(null), ms)
+    promise.then(
+      (value) => {
+        clearTimeout(timer)
+        resolve(value)
+      },
+      () => {
+        clearTimeout(timer)
+        resolve(null)
+      },
+    )
+  })
+}
 
 const documentType = FlexSearch.Document<DocumentData>
 let index: InstanceType<typeof documentType> | null = null
@@ -1573,7 +1601,13 @@ async function initializeSearch(): Promise<void> {
       // Ensure content index is available (fetch started by onNav, cached).
       // getContentIndex is injected by renderPage.tsx and may not exist in unit tests.
       if (!data && typeof getContentIndex === "function") {
-        data = await getContentIndex()
+        data = (await withTimeout(getContentIndex(), CONTENT_INDEX_TIMEOUT_MS)) ?? undefined
+        // A backgrounded/frozen tab can leave the prefetched request hung in the
+        // cache so it never settles; force a fresh fetch so search recovers
+        // without a full page reload.
+        if (!data) {
+          data = (await getContentIndex(true)) ?? undefined
+        }
       }
       if (data) {
         await fillDocument(data)
