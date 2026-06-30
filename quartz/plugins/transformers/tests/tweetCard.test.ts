@@ -115,6 +115,17 @@ describe("linkifyTweetText", () => {
     expect(nodes).toHaveLength(1)
     expect(render(nodes[0] as Element)).toContain("https://xcancel.com/bob")
   })
+
+  it("marks body entity links no-favicon so the favicon pass skips them", () => {
+    const nodes = linkifyTweetText("@bob see https://t.co/abc", [
+      { url: "https://t.co/abc", display: "example.com", expanded: "https://example.com" },
+    ])
+    const anchors = nodes.filter((n): n is Element => typeof n !== "string")
+    expect(anchors.length).toBeGreaterThan(0)
+    for (const anchor of anchors) {
+      expect(render(anchor)).toContain("no-favicon")
+    }
+  })
 })
 
 describe("buildTweetCard", () => {
@@ -224,7 +235,39 @@ describe("buildTweetCard", () => {
       media: [{ type: "photo", src: "https://assets.turntrout.com/static/tweets/123/p.jpg" }],
     }
     const html = render(buildTweetCard(withPhoto))
-    expect(html).toContain('alt="" loading="lazy"></div>')
+    // An alt-less photo falls back to a non-empty alt so the link it sits in has
+    // an accessible name (WCAG H30).
+    expect(html).toContain('alt="View image" loading="lazy"></a></div>')
+  })
+
+  it("wraps a photo in a new-tab link to the full-size asset", () => {
+    const src = "https://assets.turntrout.com/static/tweets/123/p.jpg"
+    const withPhoto: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [{ type: "photo", src, alt: "a photo" }],
+    }
+    const html = render(buildTweetCard(withPhoto))
+    expect(html).toContain(
+      `<a href="${src}" rel="noopener noreferrer" target="_blank" class="tweet-media-link no-favicon">`,
+    )
+    // A captioned photo keeps its own alt as the link's accessible name.
+    expect(html).toContain('alt="a photo"')
+  })
+
+  it("gives an alt-less photo a fallback alt so its link has an accessible name", () => {
+    const withPhoto: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [{ type: "photo", src: "https://assets.turntrout.com/static/tweets/123/p.jpg" }],
+    }
+    expect(render(buildTweetCard(withPhoto))).toContain('alt="View image"')
+  })
+
+  it("does not wrap a video in a media link", () => {
+    const withVideo: TweetSnapshot = {
+      ...baseSnapshot,
+      media: [{ type: "video", src: "https://assets.turntrout.com/static/tweets/123/v.mp4" }],
+    }
+    expect(render(buildTweetCard(withVideo))).not.toContain("tweet-media-link")
   })
 
   it("caps the media-count class at 4", () => {
@@ -294,6 +337,7 @@ describe("buildUnavailableCard", () => {
     expect(html).toContain("tweet-card-unavailable")
     expect(html).toContain('href="https://xcancel.com/turntrout/status/999"')
     expect(html).toContain("View it on XCancel")
+    expect(html).toContain("no-favicon")
   })
 })
 

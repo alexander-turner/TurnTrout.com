@@ -104,11 +104,13 @@ function externalAnchor(
   className: string,
   ariaLabel?: string,
 ): Element {
+  // Every link inside a tweet embed opts out of the site favicon pass, which
+  // would otherwise stamp an X icon on each one.
   const props: Record<string, string> = {
     href,
     rel: EXTERNAL_LINK_REL,
     target: "_blank",
-    className,
+    className: `${className} no-favicon`,
   }
   if (ariaLabel) props["aria-label"] = ariaLabel
   return h("a", props, children)
@@ -197,14 +199,22 @@ function mediaNode(media: TweetMedia): Element {
       [h("source", { src: media.src, type: "video/mp4" })],
     )
   }
-  return h("img", {
+  // The img is the link's only content, so its alt is what conveys the link's
+  // purpose (WCAG H30). It must be non-empty: fall back to "View image" when the
+  // tweet supplies no alt text, otherwise a screen reader announces an unlabeled
+  // link.
+  const img = h("img", {
     className: "tweet-media tweet-media-photo",
     src: media.src,
-    alt: media.alt || "",
+    alt: media.alt || "View image",
     loading: "lazy",
     ...(media.width ? { width: media.width } : {}),
     ...(media.height ? { height: media.height } : {}),
   })
+  // Wrap the photo so a click opens the full-size asset in a new tab; the grid
+  // cover-crops the thumbnail, so this is the only way to see the whole image.
+  // `display: contents` (see tweet.scss) keeps the img as the grid item.
+  return externalAnchor(media.src, [img], "tweet-media-link")
 }
 
 // Whether a grid's bottom edge cuts through clipped image content—and therefore
@@ -272,8 +282,7 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
   }
 
   // The avatar, name, and handle point at the author's profile; the X logo is
-  // the permalink to the post. `no-favicon` opts these out of the site favicon
-  // pass (which would otherwise stamp an X icon on every link).
+  // the permalink to the post.
   const profileUrl = `${XCANCEL_BASE}/${author.handle}`
   const header = h("div", { className: "tweet-header" }, [
     h("span", { className: "tweet-avatar-wrap" }, [
@@ -287,13 +296,13 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
       }),
     ]),
     h("div", { className: "tweet-author" }, [
-      externalAnchor(profileUrl, nameChildren, "tweet-name-link no-favicon"),
-      externalAnchor(profileUrl, [`@${author.handle}`], "tweet-handle no-favicon"),
+      externalAnchor(profileUrl, nameChildren, "tweet-name-link"),
+      externalAnchor(profileUrl, [`@${author.handle}`], "tweet-handle"),
     ]),
     externalAnchor(
       snapshot.url,
       [icon(X_LOGO_PATH, "tweet-x-logo")],
-      "tweet-source-link no-favicon",
+      "tweet-source-link",
       "View post on X",
     ),
   ])

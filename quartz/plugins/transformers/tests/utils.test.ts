@@ -8,6 +8,7 @@ import {
   gatherTextBeforeIndex,
   hasAncestor,
   hasClass,
+  removeClass,
   type ReplaceFnResult,
   replaceRegex,
   shouldCapitalizeNodeText,
@@ -443,6 +444,43 @@ describe("addClass", () => {
   ])("%s", (_d, node, toAdd, expected) => {
     addClass(node, toAdd)
     expect(node.properties.className).toEqual(expected)
+  })
+})
+
+describe("removeClass", () => {
+  const stringNode = (className?: string): Element => ({
+    type: "element",
+    tagName: "div",
+    properties: className === undefined ? {} : { className },
+    children: [],
+  })
+
+  it.each<[string, Element, string, string | string[] | undefined]>([
+    ["removes from array", h("div", { className: ["a", "b"] }), "a", ["b"]],
+    ["removes from string, preserving shape", stringNode("a b"), "a", "b"],
+    ["drops className when array empties", h("div", { className: ["a"] }), "a", undefined],
+    ["drops className when string empties", stringNode("a"), "a", undefined],
+    ["no-op when absent from array", h("div", { className: ["a"] }), "b", ["a"]],
+    ["no-op when className unset", h("div"), "a", undefined],
+  ])("%s", (_d, node, toRemove, expected) => {
+    removeClass(node, toRemove)
+    expect(node.properties.className).toEqual(expected)
+  })
+
+  // `hasClass` honors the `class` property too, so `removeClass` must strip it.
+  const classNode = (klass: string): Element => ({
+    type: "element",
+    tagName: "div",
+    properties: { class: klass },
+    children: [],
+  })
+
+  it.each<[string, Element, string, string | undefined]>([
+    ["removes from the class property", classNode("a b"), "a", "b"],
+    ["drops the class property when it empties", classNode("a"), "a", undefined],
+  ])("%s", (_d, node, toRemove, expected) => {
+    removeClass(node, toRemove)
+    expect(node.properties.class).toEqual(expected)
   })
 })
 

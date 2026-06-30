@@ -26,6 +26,20 @@ test.describe("Tweet embeds", () => {
     await expect(page.locator(".tweet-thread .tweet-card")).toHaveCount(2)
   })
 
+  test("a photo links to its full-size asset in a new tab", async ({ page }) => {
+    const grid = page.locator(".tweet-embed:not(.tweet-thread) .tweet-media-grid").first()
+    await grid.scrollIntoViewIfNeeded()
+    const link = grid.locator("a.tweet-media-link").first()
+    const img = link.locator("img.tweet-media")
+    const src = await img.getAttribute("src")
+    expect(src).toMatch(/assets\.turntrout\.com/)
+    // The link opens the same asset the img shows, in a new tab. The build
+    // appends a cache-busting `?v=` to the img src but not the anchor href, so
+    // compare on the asset path with any query stripped.
+    await expect(link).toHaveAttribute("href", (src as string).split("?")[0])
+    await expect(link).toHaveAttribute("target", "_blank")
+  })
+
   test("an image that fits the height cap renders in full without a fade", async ({ page }) => {
     const grid = page.locator(".tweet-embed:not(.tweet-thread) .tweet-media-grid").first()
     await grid.scrollIntoViewIfNeeded()

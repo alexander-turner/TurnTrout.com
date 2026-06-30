@@ -26,6 +26,8 @@ import {
   generateAllTagsHast,
 } from "./pages/AllTagsContent"
 import PageShellConstructor from "./PageShell"
+// @ts-expect-error Not a module but a bundled inline script string
+import contentIndexLoaderScript from "./scripts/contentIndex.inline"
 import { type QuartzComponent, type QuartzComponentProps } from "./types"
 
 interface RenderComponents {
@@ -233,15 +235,10 @@ export function pageResources(
   staticResources: StaticResources,
 ): StaticResources {
   const contentIndexPath = joinSegments(baseDir, "static/contentIndex.json")
-  // Lazy-load contentIndex.json only when search is initialized to avoid blocking initial page load
-  const contentIndexScript = `const contentIndexPath = "${contentIndexPath}";
-let fetchData = null;
-function getContentIndex() {
-  if (!fetchData) {
-    fetchData = fetch(contentIndexPath).then(data => data.json()).catch(err => { console.error('[getContentIndex] Failed to load content index:', err); fetchData = null; return null; });
-  }
-  return fetchData;
-}`
+  // Expose the page-relative index path as data, then run the bundled, unit-tested
+  // loader (quartz/components/scripts/contentIndexLoader.ts). The loader lazy-fetches
+  // contentIndex.json on demand and self-heals a fetch left hung by a frozen tab.
+  const contentIndexScript = `window.__contentIndexPath = ${JSON.stringify(contentIndexPath)};\n${contentIndexLoaderScript}`
 
   return {
     css: [joinSegments("/", "index.css"), ...staticResources.css],

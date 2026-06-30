@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-06-28
+date_updated: 2026-06-30
 createBibtex: true
 ---
 
@@ -558,6 +558,19 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 <!--spellchecker-enable-->
 
+## Floating image right with caption
+
+<!-- vale off -->
+![[https://assets.turntrout.com/static/images/posts/alex_rainbow_2.avif|Alex smiling at the camera; rainbow colored light splays off the wall in the background.]]{.float-right style="width:20%;"}
+Figure: The caption floats with the image instead of stranding above the following text.
+<!-- vale on -->
+
+<!--spellchecker-disable-->
+
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+
+<!--spellchecker-enable-->
+
 # Spoilers
 
 > Normal blockquote
@@ -664,6 +677,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 | descender + \} | g\} j\} p\} q\} y\} |
 | caps + close | T) T] V) V] Y) Y] |
 | In context | f(x), (glyph), (jpg), (query), [typography] |
+| close + ;, | \[1\]; \{2\}; (3); \[a\], \{b\}, (c), |
 | In context | the staff(s) called if’d a “buff” (Wolf) |
 | In context | the clipping (probably) happened (just) quickly |
 
@@ -771,6 +785,13 @@ Each emoji stays glued to its preceding character and never wraps alone to the s
 
 This text omits a detail.[^footnote] This sentence has multiple footnotes.[^1][^2]
 
+This footnote opens with a block quote.[^fn-blockquote]
+
+[^fn-blockquote]:
+    > A block quote inside a footnote should not crowd the footnote marker.
+
+    Trailing text after the block quote.
+
 Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 
 [^spam1]: Make sure we hit double-digit footnotes to test formatting.
@@ -793,7 +814,7 @@ Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 
 Inline code ligature kerning: `$var` must be interpolated into `#{$var}`. See also `===`, `!==`, `=>`, and `custom-property-no-missing-interpolation`.
 
-Inline code left spacing after a crowding glyph: with the help of [`TomSmith`](#code-blocks), I got feedback from experts in military and surveillance law. In particular, I got feedback from the foremost expert on the law behind human / AI integration in war—a former chief judge on the US military appeals court. He said my Framework was "actually pretty good" 🙂 and suggested improvements. The monospace keeps a small gap mid-line but stays flush when it wraps to the start of a line.
+Inline code left spacing after a crowding glyph: with the help of [`TomSmith`](#code-blocks).
 
 Inline code flush against a glued delimiter: parentheses (`code`), brackets \[`code`\], braces \{`code`\}, quotes "`code`", a slash AI/`code`, a hyphen re-`code`, and equals x=`code` all hug the code, while a space `the regex` or an em dash—`code` keeps the small gap.
 
