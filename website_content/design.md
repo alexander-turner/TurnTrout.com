@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-06-28
+date_updated: 2026-06-30
 no_dropcap: false
 createBibtex: true
 ---
@@ -381,7 +381,7 @@ After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^
 
 If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
 
-[^characters]: 60 characters per line seemed awkwardly narrow to me, so I went for 75 per line.
+[^characters]: 60 characters per line seemed awkwardly narrow to me, so I went for 75 per line.  <!-- lint-ignore sentence-initial-numeral: author's prose, leading numeral kept as written -->
 
 ## Font selection
 

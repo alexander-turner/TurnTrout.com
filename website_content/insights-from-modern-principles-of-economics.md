@@ -38,7 +38,7 @@ original_url: https://www.lesswrong.com/posts/hRa5c5GaMNkNGtnXq/insights-from-mo
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/htfmtdtntpqpmr2mlqxl.jpg
 description: Textbook insights on economic policy, price gouging, and the surprising efficiency of competitive markets.
-date_updated: 2026-04-20
+date_updated: 2026-06-30
 card_image_alt: A scatter plot from Our World in Data showing a strong negative correlation between a country's GDP per capita and the share of its population dissatisfied with their standard of living. Countries with low GDP, like Haiti, show high dissatisfaction (~80%), while wealthy countries, like Luxembourg and Singapore, show low dissatisfaction (<10%).
 ---
 
@@ -270,7 +270,7 @@ Before I talk about the book holistically, here are more snippets:
 # Reflections
 
 - I'm glad that [I've used Anki](/self-teaching-insights). I probably made over 500 cards for this book, not only for the key vocab but also for charts, for brain-teasers, for cool pieces of reasoning the authors used. [Cloze deletions](https://www.ollielovell.com/edtech/anki3/) are fast and convenient for all of these purposes.
-- This book is long. 800 pages long. It covers both micro- and macro-economics, and I was pleasantly surprised by the macro part. I'd heard macro is garbage, but I think it's just less understood than micro.
+- This book is long. Eight hundred pages long. It covers both micro- and macro-economics, and I was pleasantly surprised by the macro part. I'd heard macro is garbage, but I think it's just less understood than micro.
 - [investopedia](https://www.investopedia.com/) and [econlib](https://www.econlib.org/) are great resources for learning about economics.
 - It took a while for me to get comfortable with economics. At first, I felt uncomfortable and reluctant to read more, because everything seemed mildly confusing. Now I can read papers (with great effort) and have a good idea what they're talking about. Learning more is now easy and fun; I've crossed the hump for economics in [the same way I crossed the hump for mathematics](/posts#becoming-stronger).
 - I'm glad I read this book. It's long, and maybe I could have skipped some of it. I didn't get much out of the advanced indifference curve chapter; it wasn't presented clearly. Most of the book was quite clear.
