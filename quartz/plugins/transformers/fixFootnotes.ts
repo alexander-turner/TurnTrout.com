@@ -1,4 +1,5 @@
 import type { Element, ElementContent, Parent, Root } from "hast"
+import type { FootnoteReference, Parent as MdastParent, Root as MdastRoot } from "mdast"
 
 import { h } from "hastscript"
 import { SKIP, visit } from "unist-util-visit"
@@ -44,44 +45,20 @@ export function findFootnoteList(tree: Root): FootnoteLocation | null {
   return footnoteLocation
 }
 
-/** Href prefix of a footnote *reference* anchor (`#user-content-fn-1`). */
-const FOOTNOTE_REF_HREF_PREFIX = "#user-content-fn-"
-
 /**
- * Href prefix shared by both footnote reference (`#user-content-fn-1`) and
- * backref (`#user-content-fnref-1`) anchors. Used to recognize the footnote
- * anchors themselves so they're never treated as links to hoist out of.
+ * Removes `footnoteReference` nodes from `node`'s subtree (in document order)
+ * and appends them to `collected`. Recurses into nested inline wrappers so a
+ * footnote ref inside `_emphasis_`/`**strong**` link text is still extracted.
  */
-const FOOTNOTE_ANCHOR_HREF_PREFIX = "#user-content-fn"
-
-/** True if `element` is a `<sup>` wrapping a footnote-reference anchor. */
-function isFootnoteRefSup(element: Element): boolean {
-  return (
-    element.tagName === "sup" &&
-    element.children.some(
-      (grandchild) =>
-        grandchild.type === "element" &&
-        grandchild.tagName === "a" &&
-        typeof grandchild.properties?.href === "string" &&
-        grandchild.properties.href.startsWith(FOOTNOTE_REF_HREF_PREFIX),
-    )
-  )
-}
-
-/**
- * Removes footnote-reference `<sup>` elements from `node`'s subtree (in document
- * order) and appends them to `collected`. Recurses into nested inline wrappers so
- * a footnote ref inside `<em>`/`<strong>` is still extracted.
- */
-function extractFootnoteRefSups(node: Element, collected: Element[]): void {
-  const kept: ElementContent[] = []
+function extractFootnoteReferences(node: MdastParent, collected: FootnoteReference[]): void {
+  const kept: typeof node.children = []
   for (const child of node.children) {
-    if (child.type === "element") {
-      if (isFootnoteRefSup(child)) {
-        collected.push(child)
-        continue
-      }
-      extractFootnoteRefSups(child, collected)
+    if (child.type === "footnoteReference") {
+      collected.push(child)
+      continue
+    }
+    if ("children" in child) {
+      extractFootnoteReferences(child, collected)
     }
     kept.push(child)
   }
@@ -89,26 +66,23 @@ function extractFootnoteRefSups(node: Element, collected: Element[]): void {
 }
 
 /**
- * Hoists footnote references out of enclosing links. A footnote ref nested
- * inside an `<a>` produces invalid nested anchors (`<a><sup><a>…</a></sup></a>`),
- * which browsers silently split—breaking the link and the footnote's styling.
- * Moving each ref to immediately after its enclosing link yields valid HTML and
- * lets the favicon pass attach to the link's real text.
+ * Hoists footnote references out of enclosing links. A footnote ref authored
+ * inside link text (`[text[^id]](url)`) compiles to invalid nested anchors
+ * (`<a>…<sup><a>…</a></sup>…</a>`); the raw-HTML re-parse later in the pipeline
+ * splits those apart, breaking the link, dropping its trailing text, and
+ * styling the footnote marker as part of the link. Moving each reference to
+ * immediately after its enclosing link—at the markdown stage, before the
+ * re-parse—yields valid HTML and lets the favicon pass attach to the link text.
  */
-export function hoistFootnotesOutOfLinks(tree: Root): void {
-  visit(tree, "element", (node, index, parent) => {
-    if (
-      node.tagName !== "a" ||
-      parent === undefined ||
-      index === undefined ||
-      typeof node.properties?.href !== "string" ||
-      node.properties.href.startsWith(FOOTNOTE_ANCHOR_HREF_PREFIX)
-    ) {
+export function hoistFootnoteReferencesOutOfLinks(tree: MdastRoot): void {
+  visit(tree, "link", (node, index, parent) => {
+    // istanbul ignore next -- a link is never the tree root, so it always has a parent and index
+    if (parent === undefined || index === undefined) {
       return undefined
     }
 
-    const collected: Element[] = []
-    extractFootnoteRefSups(node, collected)
+    const collected: FootnoteReference[] = []
+    extractFootnoteReferences(node, collected)
     if (collected.length > 0) {
       parent.children.splice(index + 1, 0, ...collected)
     }
@@ -245,12 +219,19 @@ export function cleanupIframeFootnoteText(tree: Root): void {
 export const FixFootnotes: QuartzTransformerPlugin = () => {
   return {
     name: "FixFootnotes",
+    markdownPlugins() {
+      return [
+        () => {
+          return (tree: MdastRoot) => {
+            hoistFootnoteReferencesOutOfLinks(tree)
+          }
+        },
+      ]
+    },
     htmlPlugins() {
       return [
         () => {
           return (tree: Root) => {
-            hoistFootnotesOutOfLinks(tree)
-
             const location = findFootnoteList(tree)
 
             if (!location) {
