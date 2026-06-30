@@ -14,9 +14,10 @@ import { debounce, registerEscapeHandler, removeAllChildren } from "./component_
 import { fetchHTMLContent, processPreviewables } from "./content_renderer"
 import { wrapScrollables } from "./scroll-indicator-utils"
 
-// Global function injected by renderPage.tsx to lazy-load content index
+// Global content-index loader injected by renderPage.tsx. Pass `forceRefresh` to
+// discard a cached (possibly hung) fetch and start a new one.
 declare global {
-  function getContentIndex(): Promise<{ [key: string]: ContentDetails }>
+  function getContentIndex(forceRefresh?: boolean): Promise<{ [key: string]: ContentDetails }>
   interface Window {
     /** Set by onNav() after search event handlers are fully registered. */
     __searchHandlersReady: boolean
@@ -1570,8 +1571,9 @@ async function initializeSearch(): Promise<void> {
       // Create the index
       index = createSearchIndex()
 
-      // Ensure content index is available (fetch started by onNav, cached).
-      // getContentIndex is injected by renderPage.tsx and may not exist in unit tests.
+      // Ensure content index is available (fetch started by onNav, cached, and
+      // self-healed on tab refocus by the loader injected in renderPage.tsx).
+      // getContentIndex may not exist in unit tests.
       if (!data && typeof getContentIndex === "function") {
         data = await getContentIndex()
       }
