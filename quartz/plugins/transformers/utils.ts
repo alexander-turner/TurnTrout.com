@@ -277,6 +277,34 @@ export function addClass(node: Element, className: string): void {
   node.properties = { ...node.properties, className: list }
 }
 
+// Remove a class from a node, preserving the shape of any remaining classes
+// (string-form className stays a string; array stays an array). No-op when the
+// class is absent.
+export function removeClass(node: Element, className: string): void {
+  const existing = node.properties?.className
+  const setKept = (kept: string[]): void => {
+    const next = { ...node.properties }
+    if (kept.length === 0) {
+      delete next.className
+    } else {
+      next.className = typeof existing === "string" ? kept.join(" ") : kept
+    }
+    node.properties = next
+  }
+  if (typeof existing === "string") {
+    setKept(
+      existing
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter((c) => c !== className),
+    )
+    return
+  }
+  if (Array.isArray(existing)) {
+    setKept(existing.map(String).filter((c) => c !== className))
+  }
+}
+
 /**
  * Type guard to check if a node is a Text node.
  * @param node - The node to check

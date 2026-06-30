@@ -357,10 +357,10 @@ describe("WrapNakedElements Plugin Tests", () => {
         preservedContent: '<div class="other-class">Content</div>',
       },
       {
-        name: "not wrap figure with float-right content",
+        name: "promote float-right onto a figure rather than wrapping again",
         input: '<figure><div class="float-right">Content</div></figure>',
         shouldWrap: false,
-        preservedContent: '<figure><div class="float-right">Content</div></figure>',
+        preservedContent: '<figure class="float-right"><div>Content</div></figure>',
       },
     ]
 
@@ -456,6 +456,49 @@ describe("WrapNakedElements Plugin Tests", () => {
       expect(result).toMatch(/^<p>/)
       expect(result).toMatch(/<\/p>$/)
       expect(result).toContain("<figure>")
+    })
+  })
+
+  describe("Caption floats with float-right image", () => {
+    it.each([
+      [
+        "img + figcaption (remark-captions output)",
+        '<figure><img class="float-right" src="test.jpg"><figcaption>Alex, 2024.</figcaption></figure>',
+        '<figure class="float-right"><img src="test.jpg"><figcaption>Alex, 2024.</figcaption></figure>',
+      ],
+      [
+        "picture-wrapped img + figcaption",
+        '<figure><picture><img class="float-right" src="test.jpg"></picture><figcaption>Cap</figcaption></figure>',
+        '<figure class="float-right"><picture><img src="test.jpg"></picture><figcaption>Cap</figcaption></figure>',
+      ],
+      [
+        "picture with a leading source before the float-right img",
+        '<figure><picture><source srcset="dark.avif"><img class="float-right" src="test.jpg"></picture></figure>',
+        '<figure class="float-right"><picture><source srcset="dark.avif"><img src="test.jpg"></picture></figure>',
+      ],
+      [
+        "img surrounded by whitespace text nodes",
+        '<figure>  <img class="float-right" src="test.jpg">  </figure>',
+        '<figure class="float-right">  <img src="test.jpg">  </figure>',
+      ],
+    ])("should promote float-right onto the figure for %s", (_, input, expected) => {
+      expect(testWrapNakedElementsHTML(input)).toBe(expected)
+    })
+
+    it("should leave a figure that already carries float-right unchanged", () => {
+      const input =
+        '<figure class="float-right"><img src="test.jpg"><figcaption>Cap</figcaption></figure>'
+      expect(testWrapNakedElementsHTML(input)).toBe(input)
+    })
+
+    it.each([
+      ["plain img", '<figure><img src="test.jpg"><figcaption>Cap</figcaption></figure>'],
+      [
+        "picture without a float-right inner",
+        '<figure><picture><img src="test.jpg"></picture><figcaption>Cap</figcaption></figure>',
+      ],
+    ])("should not touch a figure whose %s has no float-right", (_, input) => {
+      expect(testWrapNakedElementsHTML(input)).toBe(input)
     })
   })
 
