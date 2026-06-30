@@ -8,7 +8,6 @@ import { type ContentDetails } from "../../../plugins/vfile"
 import { NBSP, simpleConstants } from "../../constants"
 import {
   compareMatchScore,
-  CONTENT_INDEX_TIMEOUT_MS,
   createMatchSpan,
   descendantsSamePageLinks,
   descendantsWithId,
@@ -33,7 +32,6 @@ import {
   syncSearchLayoutState,
   tokenizeTerm,
   updatePlaceholder,
-  withTimeout,
 } from "../search"
 
 const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
@@ -45,9 +43,7 @@ jest.mock("../../../styles/variables", () => ({
 /** Set the global getContentIndex stub used by initializeSearch.
  *  The cast is needed because tests return null to simulate fetch failures,
  *  which the production declaration doesn't allow. */
-function stubGetContentIndex(
-  fn: (forceRefresh?: boolean) => Promise<Record<string, unknown> | null>,
-): void {
+function stubGetContentIndex(fn: () => Promise<Record<string, unknown> | null>): void {
   globalThis.getContentIndex = fn as typeof getContentIndex
 }
 
@@ -1087,103 +1083,6 @@ describe("initializeSearch retry after failed fetch", () => {
     expect(state.hasData).toBe(true)
     expect(state.hasIndex).toBe(true)
   })
-})
-
-describe("withTimeout", () => {
-  it.each([
-    ["resolves with the value when the promise settles in time", () => Promise.resolve("ok"), "ok"],
-    ["resolves with null when the promise rejects", () => Promise.reject(new Error("boom")), null],
-  ])("%s and clears its timer", async (_name, makePromise, expected) => {
-    jest.useFakeTimers()
-    try {
-      await expect(withTimeout(makePromise(), 1000)).resolves.toBe(expected)
-      // The load-bearing claim: a settled promise leaves no stray timer behind.
-      expect(jest.getTimerCount()).toBe(0)
-    } finally {
-      jest.useRealTimers()
-    }
-  })
-
-  it("resolves with null when the promise never settles before the timeout", async () => {
-    jest.useFakeTimers()
-    try {
-      const pending = new Promise<string>(() => {
-        /* never settles */
-      })
-      const raced = withTimeout(pending, 1000)
-      jest.advanceTimersByTime(1000)
-      await expect(raced).resolves.toBeNull()
-    } finally {
-      jest.useRealTimers()
-    }
-  })
-})
-
-describe("initializeSearch recovery from a hung content-index fetch", () => {
-  let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
-
-  beforeEach(() => {
-    // skipcq: JS-0321 -- intentional no-op: suppress console.error noise in tests
-    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
-    resetSearchStateForTesting()
-    document.body.innerHTML = `
-      <div id="search-container">
-        <input id="search-bar" type="text" placeholder="Search" />
-        <div id="search-layout" data-preview="false"></div>
-      </div>
-    `
-    setSearchLayoutForTesting(document.getElementById("search-layout"))
-  })
-
-  afterEach(() => {
-    consoleErrorSpy.mockRestore()
-    resetSearchStateForTesting()
-    removeGetContentIndex()
-  })
-
-  const validData = {
-    "test-slug": {
-      title: "Test Page",
-      content: "Test content for searching",
-      slug: "test-slug",
-      authors: ["Author"],
-    },
-  }
-
-  it.each([
-    ["the forced fetch resolves", validData, true],
-    ["the forced fetch also fails", null, false],
-  ])(
-    "forces a fresh fetch when the cached fetch hangs past the timeout (%s)",
-    async (_name, forcedResult, expectInitialized) => {
-      jest.useFakeTimers()
-      try {
-        let callCount = 0
-        stubGetContentIndex((forceRefresh?: boolean) => {
-          callCount += 1
-          // First (cached) call hangs forever; the forced refresh settles.
-          return forceRefresh
-            ? Promise.resolve(forcedResult)
-            : new Promise(() => {
-                /* never settles */
-              })
-        })
-
-        const initPromise = initializeSearch()
-        // Let both timeouts fire so the hung cached fetch is abandoned, the forced
-        // fetch runs, and (when it too hangs) the second race also resolves.
-        await jest.advanceTimersByTimeAsync(CONTENT_INDEX_TIMEOUT_MS * 2)
-        await initPromise
-
-        expect(callCount).toBe(2)
-        const state = getSearchStateForTesting()
-        expect(state.searchInitialized).toBe(expectInitialized)
-        expect(state.hasData).toBe(expectInitialized)
-      } finally {
-        jest.useRealTimers()
-      }
-    },
-  )
 })
 
 describe("shouldUseDropcap", () => {

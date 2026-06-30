@@ -233,22 +233,24 @@ export function pageResources(
   staticResources: StaticResources,
 ): StaticResources {
   const contentIndexPath = joinSegments(baseDir, "static/contentIndex.json")
-  // Lazy-load contentIndex.json only when search is initialized to avoid blocking initial page load.
-  // `forceRefresh` discards a cached (possibly hung) promise and re-fetches; an AbortController timeout
-  // keeps a request started in a since-frozen tab from lingering forever.
+  // Lazy-load contentIndex.json only when search/random-post needs it, to avoid blocking initial page load.
+  // A frozen/backgrounded tab can leave the in-flight fetch hung forever, so the loader re-warms itself
+  // (forceRefresh discards the stale promise) when the tab becomes visible again, until it has loaded once.
   const contentIndexScript = `const contentIndexPath = "${contentIndexPath}";
 let fetchData = null;
+let indexLoaded = false;
 function getContentIndex(forceRefresh) {
   if (forceRefresh || !fetchData) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-    fetchData = fetch(contentIndexPath, { signal: controller.signal })
+    fetchData = fetch(contentIndexPath)
       .then(data => data.json())
-      .catch(err => { console.error('[getContentIndex] Failed to load content index:', err); fetchData = null; return null; })
-      .finally(() => clearTimeout(timeoutId));
+      .then(json => { indexLoaded = true; return json; })
+      .catch(err => { console.error('[getContentIndex] Failed to load content index:', err); fetchData = null; return null; });
   }
   return fetchData;
-}`
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && !indexLoaded) getContentIndex(true);
+});`
 
   return {
     css: [joinSegments("/", "index.css"), ...staticResources.css],
