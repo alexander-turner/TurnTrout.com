@@ -1,5 +1,4 @@
 import type { Element, ElementContent, Parent, Root } from "hast"
-import type { FootnoteReference, Parent as MdastParent, Root as MdastRoot } from "mdast"
 
 import { h } from "hastscript"
 import { SKIP, visit } from "unist-util-visit"
@@ -43,51 +42,6 @@ export function findFootnoteList(tree: Root): FootnoteLocation | null {
   })
 
   return footnoteLocation
-}
-
-/**
- * Removes `footnoteReference` nodes from `node`'s subtree (in document order)
- * and appends them to `collected`. Recurses into nested inline wrappers so a
- * footnote ref inside `_emphasis_`/`**strong**` link text is still extracted.
- */
-function extractFootnoteReferences(node: MdastParent, collected: FootnoteReference[]): void {
-  const kept: typeof node.children = []
-  for (const child of node.children) {
-    if (child.type === "footnoteReference") {
-      collected.push(child)
-      continue
-    }
-    if ("children" in child) {
-      extractFootnoteReferences(child, collected)
-    }
-    kept.push(child)
-  }
-  node.children = kept
-}
-
-/**
- * Hoists footnote references out of enclosing links. A footnote ref authored
- * inside link text (`[text[^id]](url)`) compiles to invalid nested anchors
- * (`<a>…<sup><a>…</a></sup>…</a>`); the raw-HTML re-parse later in the pipeline
- * splits those apart, breaking the link, dropping its trailing text, and
- * styling the footnote marker as part of the link. Moving each reference to
- * immediately after its enclosing link—at the markdown stage, before the
- * re-parse—yields valid HTML and lets the favicon pass attach to the link text.
- */
-export function hoistFootnoteReferencesOutOfLinks(tree: MdastRoot): void {
-  visit(tree, "link", (node, index, parent) => {
-    // istanbul ignore next -- a link is never the tree root, so it always has a parent and index
-    if (parent === undefined || index === undefined) {
-      return undefined
-    }
-
-    const collected: FootnoteReference[] = []
-    extractFootnoteReferences(node, collected)
-    if (collected.length > 0) {
-      parent.children.splice(index + 1, 0, ...collected)
-    }
-    return SKIP
-  })
 }
 
 /** The ID that mdast-util-to-hast hardcodes on the footnotes heading */
@@ -219,15 +173,6 @@ export function cleanupIframeFootnoteText(tree: Root): void {
 export const FixFootnotes: QuartzTransformerPlugin = () => {
   return {
     name: "FixFootnotes",
-    markdownPlugins() {
-      return [
-        () => {
-          return (tree: MdastRoot) => {
-            hoistFootnoteReferencesOutOfLinks(tree)
-          }
-        },
-      ]
-    },
     htmlPlugins() {
       return [
         () => {

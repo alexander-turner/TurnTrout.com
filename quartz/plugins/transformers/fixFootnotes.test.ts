@@ -1,14 +1,9 @@
 import type { Element, ElementContent, Root } from "hast"
-import type { Root as MdastRoot } from "mdast"
 
 import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
 import rehypeParse from "rehype-parse"
-import rehypeRaw from "rehype-raw"
 import rehypeStringify from "rehype-stringify"
-import remarkGfm from "remark-gfm"
-import remarkParse from "remark-parse"
-import remarkRehype from "remark-rehype"
 import { unified } from "unified"
 
 import {
@@ -19,7 +14,6 @@ import {
   findFootnoteList,
   FixFootnotes,
   hasFootnoteHeading,
-  hoistFootnoteReferencesOutOfLinks,
   isAlreadyWrapped,
   isFootnoteListItem,
 } from "./fixFootnotes"
@@ -245,96 +239,6 @@ describe("FixFootnotes helpers", () => {
       expect(location).toBeNull()
     })
   })
-
-  describe("hoistFootnoteReferencesOutOfLinks", () => {
-    // Parse to mdast exactly as the build does (remark-gfm gives footnoteReference
-    // nodes), hoist, then render through remark-rehype + rehype-raw — the raw
-    // re-parse is what splits unhoisted nested anchors, so it must be in the chain.
-    const renderHoisted = async (md: string): Promise<string> => {
-      const file = await unified()
-        .use(remarkParse)
-        .use(remarkGfm)
-        .use(() => hoistFootnoteReferencesOutOfLinks)
-        .use(remarkRehype, { allowDangerousHtml: true })
-        .use(rehypeRaw)
-        .use(rehypeStringify)
-        .process(md)
-      // Drop the generated footnotes <section> so assertions focus on the body.
-      return String(file).split("<section")[0].trim()
-    }
-
-    const footnoteDef = "\n\n[^1]: Footnote body.\n[^2]: Second footnote body."
-
-    it("hoists a footnote ref out of a link so no nested anchors survive the raw re-parse", async () => {
-      const html = await renderHoisted(
-        `A [link[^1] with a tail](https://example.com) ends here.${footnoteDef}`,
-      )
-      // The footnote sup sits after the link; the link keeps all its text.
-      expect(html).toContain(`<a href="https://example.com">link with a tail</a><sup>`)
-      // No empty <sup> orphaned inside the link, and no nested anchor.
-      expect(html).not.toContain("<sup></sup>")
-      expect(html).not.toMatch(/<a[^>]*>[^<]*<sup>/)
-    })
-
-    it("extracts a footnote ref nested inside emphasis within link text", async () => {
-      const html = await renderHoisted(
-        `A [link _stress[^1]_](https://example.com) ends.${footnoteDef}`,
-      )
-      expect(html).toContain(`<a href="https://example.com">link <em>stress</em></a><sup>`)
-      expect(html).not.toContain("<sup></sup>")
-    })
-
-    it("hoists multiple footnote refs out of one link in order", async () => {
-      const html = await renderHoisted(
-        `A [link[^1] and[^2] more](https://example.com) ends.${footnoteDef}`,
-      )
-      const firstFn = html.indexOf("user-content-fn-1")
-      const secondFn = html.indexOf("user-content-fn-2")
-      expect(html).toContain(`<a href="https://example.com">link and more</a><sup>`)
-      expect(firstFn).toBeGreaterThan(html.indexOf("</a>"))
-      expect(secondFn).toBeGreaterThan(firstFn)
-    })
-
-    it("leaves a footnote ref already outside any link untouched", async () => {
-      const html = await renderHoisted(`Text[^1] outside a link.${footnoteDef}`)
-      // The ref stays put: sup directly after the text, not wrapped in any link.
-      expect(html.startsWith("<p>Text<sup>")).toBe(true)
-    })
-
-    it("leaves a plain link without footnotes untouched", async () => {
-      const html = await renderHoisted(`A [plain link](https://example.com) here.`)
-      expect(html).toBe(`<p>A <a href="https://example.com">plain link</a> here.</p>`)
-    })
-
-    it("hoists a footnote ref out of a same-page anchor link", () => {
-      // Direct mdast call: assert the reference becomes a sibling of the link.
-      const tree: MdastRoot = {
-        type: "root",
-        children: [
-          {
-            type: "paragraph",
-            children: [
-              {
-                type: "link",
-                url: "#section",
-                children: [
-                  { type: "text", value: "Jump" },
-                  { type: "footnoteReference", identifier: "1", label: "1" },
-                ],
-              },
-            ],
-          },
-        ],
-      }
-      hoistFootnoteReferencesOutOfLinks(tree)
-      const paragraph = tree.children[0]
-      if (paragraph.type !== "paragraph") throw new Error("expected paragraph")
-      expect(paragraph.children.map((child) => child.type)).toEqual(["link", "footnoteReference"])
-      const link = paragraph.children[0]
-      if (link.type !== "link") throw new Error("expected link")
-      expect(link.children.map((child) => child.type)).toEqual(["text"])
-    })
-  })
 })
 
 describe("FixFootnotes plugin", () => {
@@ -467,25 +371,5 @@ describe("FixFootnotes plugin", () => {
   ])("%s", async (input, assertion) => {
     const result = await processHtmlWithPlugin(input)
     assertion(result)
-  })
-
-  it("hoists footnote refs out of links via its markdownPlugins", async () => {
-    const plugin = FixFootnotes()
-    const markdownPlugins = plugin.markdownPlugins?.({} as never)
-    if (!markdownPlugins || markdownPlugins.length === 0) {
-      throw new Error("No markdown plugin returned")
-    }
-    const html = String(
-      await unified()
-        .use(remarkParse)
-        .use(remarkGfm)
-        .use(markdownPlugins)
-        .use(remarkRehype, { allowDangerousHtml: true })
-        .use(rehypeRaw)
-        .use(rehypeStringify)
-        .process(`A [link[^1] tail](https://example.com) ends.\n\n[^1]: Body.`),
-    )
-    expect(html).toContain(`<a href="https://example.com">link tail</a><sup>`)
-    expect(html).not.toContain("<sup></sup>")
   })
 })

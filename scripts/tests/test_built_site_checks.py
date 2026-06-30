@@ -874,6 +874,47 @@ def test_check_unrendered_footnotes_parametrized(html, expected):
 @pytest.mark.parametrize(
     "html,expected",
     [
+        # Healthy footnote reference: anchor wrapped in <sup>.
+        (
+            '<p>Text<sup><a id="user-content-fnref-1" data-footnote-ref'
+            ' href="#user-content-fn-1">1</a></sup></p>',
+            [],
+        ),
+        # Footnote nested in a link: the HTML re-parse strands the ref anchor
+        # as a sibling of the link (parent is <p>, not <sup>).
+        (
+            '<p><a href="https://example.com">link<sup></sup></a>'
+            '<a id="user-content-fnref-1" data-footnote-ref'
+            ' href="#user-content-fn-1">1</a> tail</p>',
+            ["user-content-fnref-1"],
+        ),
+        # No footnote references at all.
+        ('<p><a href="https://example.com">plain link</a></p>', []),
+    ],
+)
+def test_check_footnote_refs_in_sup(html, expected):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_footnote_refs_in_sup(soup)
+    assert result == expected
+
+
+def test_check_footnote_refs_in_sup_falls_back_to_href_then_text():
+    """A stranded ref without an id is identified by href, then by text."""
+    by_href = BeautifulSoup(
+        '<p><a data-footnote-ref href="#user-content-fn-2">2</a></p>',
+        "html.parser",
+    )
+    assert built_site_checks.check_footnote_refs_in_sup(by_href) == [
+        "#user-content-fn-2"
+    ]
+
+    by_text = BeautifulSoup("<p><a data-footnote-ref>3</a></p>", "html.parser")
+    assert built_site_checks.check_footnote_refs_in_sup(by_text) == ["3"]
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
         # Test basic duplicate ID
         (
             """

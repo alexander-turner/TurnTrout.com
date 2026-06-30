@@ -320,6 +320,28 @@ def check_unrendered_footnotes(soup: BeautifulSoup) -> list[str]:
     return unrendered_footnotes
 
 
+def check_footnote_refs_in_sup(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that every footnote-reference anchor sits inside a ``<sup>``.
+
+    A footnote authored inside link text (``[text[^id]](url)``) compiles to
+    invalid nested anchors. The HTML re-parse splits them apart, stranding the
+    footnote-reference anchor as a sibling of the link instead of a child of its
+    ``<sup>`` (and leaving an empty ``<sup>`` behind in the link). A stranded
+    reference therefore signals a footnote nested in a link, which must be
+    rewritten in the source so the marker sits outside the link.
+
+    Returns a list of stranded footnote-reference identifiers.
+    """
+    stranded: list[str] = []
+    for ref in _tags_only(soup.select("a[data-footnote-ref]")):
+        parent = ref.parent
+        if parent is None or parent.name != "sup":
+            identifier = ref.get("id") or ref.get("href") or ref.get_text()
+            _append_to_list(stranded, str(identifier))
+    return stranded
+
+
 def _check_anchor_classes(
     link: Tag, href: str, invalid_anchors: list[str]
 ) -> None:
@@ -2197,6 +2219,7 @@ def check_file_for_issues(
         "problematic_katex": check_katex_elements_for_errors(soup),
         "unrendered_subtitles": check_unrendered_subtitles(soup),
         "unrendered_footnotes": check_unrendered_footnotes(soup),
+        "footnote_ref_not_in_sup": check_footnote_refs_in_sup(soup),
         "missing_critical_css": not check_critical_css(soup),
         "empty_body": script_utils.body_is_empty(soup),
         "duplicate_ids": check_duplicate_ids(soup),
