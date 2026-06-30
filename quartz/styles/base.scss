@@ -218,6 +218,16 @@ a {
         top: $top-spacing;
         overflow-y: auto;
         max-height: calc(100vh - #{$top-spacing});
+
+        // Keep the scrollbar gutter reserved (no layout shift) but hide the
+        // thumb until the sidebar is hovered.
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+        transition: scrollbar-color $transition-duration-medium ease;
+
+        &:hover {
+          scrollbar-color: var(--midground-fainter) var(--background);
+        }
       }
 
       &#left-sidebar {
