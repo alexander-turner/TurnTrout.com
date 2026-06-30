@@ -374,6 +374,7 @@ def test_normalize_without_quote_omits_key() -> None:
     [
         {"id_str": "888"},  # missing user
         {"user": RAW_QUOTE_TWEET["quoted_tweet"]["user"]},  # missing id_str
+        {"id_str": "888", "user": {"name": "x"}},  # user missing screen_name
     ],
 )
 def test_normalize_drops_malformed_quote(quoted_tweet: dict) -> None:

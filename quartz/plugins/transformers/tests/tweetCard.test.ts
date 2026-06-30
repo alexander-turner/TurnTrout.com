@@ -336,9 +336,15 @@ describe("quote tweets", () => {
   })
 
   it("shows the verified seal on a verified quoted author", () => {
+    // baseSnapshot's author is verified, so match the seal only within the
+    // quoted block (after the marker) and contrast against the unverified quote.
+    expect(render(buildTweetCard({ ...baseSnapshot, quoted }))).not.toMatch(
+      /tweet-quoted[\s\S]*tweet-verified/,
+    )
     const verifiedQuote = { ...quoted, author: { ...quoted.author, verified: true } }
-    const html = render(buildTweetCard({ ...baseSnapshot, quoted: verifiedQuote }))
-    expect(html).toMatch(/tweet-quoted[\s\S]*tweet-verified/)
+    expect(render(buildTweetCard({ ...baseSnapshot, quoted: verifiedQuote }))).toMatch(
+      /tweet-quoted[\s\S]*tweet-verified/,
+    )
   })
 
   it("omits the quoted card when there is no quote", () => {

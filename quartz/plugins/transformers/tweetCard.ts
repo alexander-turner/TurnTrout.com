@@ -308,7 +308,10 @@ function authorNameRow(author: TweetAuthor, profileUrl: string): Element {
   return h("span", { className: "tweet-name-row" }, children)
 }
 
-/** Nested card for the tweet a quote-tweet embeds: a compact header plus body and media. */
+/**
+ * Nested card for the tweet a quote-tweet embeds: a compact header plus body
+ * and media. The date is intentionally omitted to keep the nested card compact.
+ */
 function quotedCard(quoted: QuotedTweet): Element {
   const profileUrl = `${XCANCEL_BASE}/${quoted.author.handle}`
   const header = h("div", { className: "tweet-quoted-header" }, [

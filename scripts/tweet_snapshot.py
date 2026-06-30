@@ -330,12 +330,16 @@ def _normalize_quoted(quoted: dict) -> dict | None:
     """
     Normalize a payload's ``quoted_tweet`` into the nested quote schema.
 
-    Returns ``None`` for a malformed quote (missing the user object or the id),
-    so a broken quote drops to a plain card instead of failing the whole snapshot.
+    Returns ``None`` for a malformed quote (no id, or a user object missing the
+    fields the card needs), so a broken quote drops to a plain card instead of
+    crashing the whole snapshot run.
     """
-    user = quoted.get("user")
+    user = quoted.get("user") or {}
     quoted_id = quoted.get("id_str")
-    if not user or not quoted_id:
+    if not quoted_id or not all(
+        user.get(key)
+        for key in ("screen_name", "name", "profile_image_url_https")
+    ):
         return None
     entities = quoted.get("entities", {}) or {}
     return {
