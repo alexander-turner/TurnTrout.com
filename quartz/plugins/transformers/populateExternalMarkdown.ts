@@ -232,7 +232,7 @@ export function githubReadmeSource(
       const externalized = truncated.replace(/\]\(#/g, `](${repoUrl}#`)
       // Blank lines around the link let it parse as markdown inside the raw div
       // (and inside the surrounding quote callout), matching wrapExternalReadme.
-      const readMore = `<div class="centered">\n\n[Read the rest on GitHub →](${repoUrl})\n\n</div>`
+      const readMore = `<div class="centered">\n\n[Read the rest on GitHub](${repoUrl})\n\n</div>`
       const body = `${externalized}\n${readMore}`
       return wrapExternalReadme(asQuoteAdmonition(body, title), repo)
     },
