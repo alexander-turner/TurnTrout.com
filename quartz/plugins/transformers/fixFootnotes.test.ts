@@ -304,6 +304,12 @@ describe("FixFootnotes helpers", () => {
       hoistFootnotesOutOfLinks(tree)
       expect(stringifyHtml(tree)).toBe(html)
     })
+
+    it("hoists a footnote ref out of an enclosing same-page anchor", () => {
+      const tree = wrap(h("a", { href: "#section" }, ["Jump", refSupNode()]))
+      hoistFootnotesOutOfLinks(tree)
+      expect(stringifyHtml(tree)).toBe(`<p><a href="#section">Jump</a>${refSupHtml()}</p>`)
+    })
   })
 })
 

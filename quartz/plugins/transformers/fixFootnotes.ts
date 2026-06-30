@@ -44,8 +44,15 @@ export function findFootnoteList(tree: Root): FootnoteLocation | null {
   return footnoteLocation
 }
 
-/** Href prefix that identifies a footnote reference anchor (`<sup><a href="#user-content-fn-…">`). */
-const FOOTNOTE_REF_HREF_PREFIX = "#user-content-fn"
+/** Href prefix of a footnote *reference* anchor (`#user-content-fn-1`). */
+const FOOTNOTE_REF_HREF_PREFIX = "#user-content-fn-"
+
+/**
+ * Href prefix shared by both footnote reference (`#user-content-fn-1`) and
+ * backref (`#user-content-fnref-1`) anchors. Used to recognize the footnote
+ * anchors themselves so they're never treated as links to hoist out of.
+ */
+const FOOTNOTE_ANCHOR_HREF_PREFIX = "#user-content-fn"
 
 /** True if `element` is a `<sup>` wrapping a footnote-reference anchor. */
 function isFootnoteRefSup(element: Element): boolean {
@@ -95,7 +102,7 @@ export function hoistFootnotesOutOfLinks(tree: Root): void {
       parent === undefined ||
       index === undefined ||
       typeof node.properties?.href !== "string" ||
-      node.properties.href.startsWith(FOOTNOTE_REF_HREF_PREFIX)
+      node.properties.href.startsWith(FOOTNOTE_ANCHOR_HREF_PREFIX)
     ) {
       return undefined
     }
@@ -103,7 +110,7 @@ export function hoistFootnotesOutOfLinks(tree: Root): void {
     const collected: Element[] = []
     extractFootnoteRefSups(node, collected)
     if (collected.length > 0) {
-      parent.children.splice(index + 1, 0, ...(collected as ElementContent[]))
+      parent.children.splice(index + 1, 0, ...collected)
     }
     return SKIP
   })
