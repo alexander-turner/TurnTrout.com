@@ -14,12 +14,16 @@ function supportsScrollbarColor(page: Page): Promise<boolean> {
   return page.evaluate(() => CSS.supports("scrollbar-color", "red transparent"))
 }
 
+/** A single colour token that resolves to fully transparent. Engines serialize
+ *  `transparent` as the keyword, `rgba(0, 0, 0, 0)`, or `rgb(0 0 0 / 0)`. */
+function isTransparentColor(color: string): boolean {
+  return color === "transparent" || /[,/]\s*0\s*\)$/.test(color)
+}
+
 /** `transparent transparent` resolves to a pair of fully-transparent colours. */
 function isTransparentPair(value: string): boolean {
-  const normalized = value.toLowerCase()
-  if (normalized === "transparent transparent") return true
-  const matches = normalized.match(/rgba?\([^)]*\)/g) ?? []
-  return matches.length === 2 && matches.every((color) => /,\s*0\s*\)$/.test(color))
+  const colors = value.toLowerCase().match(/transparent|rgba?\([^)]*\)/g) ?? []
+  return colors.length === 2 && colors.every(isTransparentColor)
 }
 
 test.beforeEach(async ({ page }) => {
@@ -28,29 +32,31 @@ test.beforeEach(async ({ page }) => {
 })
 
 test.describe("Sidebar scrollbar appears only on hover (desktop)", () => {
-  test("thumb is hidden until the sidebar is hovered", async ({ page }) => {
-    test.skip(!isDesktopViewport(page), "Hover-reveal scrollbar is a desktop-only behavior")
-    test.skip(
-      !(await supportsScrollbarColor(page)),
-      "Browser does not resolve scrollbar-color in computed style",
-    )
+  // The hover-reveal rule targets `.sidebar`, so both sidebars get the behavior.
+  for (const selector of ["#left-sidebar", "#right-sidebar"] as const) {
+    test(`${selector} thumb is hidden until the sidebar is hovered`, async ({ page }) => {
+      test.skip(!isDesktopViewport(page), "Hover-reveal scrollbar is a desktop-only behavior")
+      test.skip(
+        !(await supportsScrollbarColor(page)),
+        "Browser does not resolve scrollbar-color in computed style",
+      )
 
-    const sidebar = page.locator("#left-sidebar")
-    await expect(sidebar).toBeVisible()
+      const sidebar = page.locator(selector)
+      await expect(sidebar).toBeVisible()
 
-    const idleColor = await getScrollbarColor(sidebar)
-    expect(isTransparentPair(idleColor)).toBe(true)
-
-    await sidebar.hover()
-    await expect(async () => {
-      expect(isTransparentPair(await getScrollbarColor(sidebar))).toBe(false)
-    }).toPass()
-
-    await moveMouseToSafePosition(page)
-    await expect(async () => {
       expect(isTransparentPair(await getScrollbarColor(sidebar))).toBe(true)
-    }).toPass()
-  })
+
+      await sidebar.hover()
+      await expect(async () => {
+        expect(isTransparentPair(await getScrollbarColor(sidebar))).toBe(false)
+      }).toPass()
+
+      await moveMouseToSafePosition(page)
+      await expect(async () => {
+        expect(isTransparentPair(await getScrollbarColor(sidebar))).toBe(true)
+      }).toPass()
+    })
+  }
 })
 
 test.describe("Sidebar scrollbar (mobile)", () => {
