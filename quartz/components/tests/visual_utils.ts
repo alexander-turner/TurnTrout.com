@@ -134,25 +134,43 @@ export interface RegressionScreenshotOptions {
   preserveSiblings?: boolean
 }
 
-async function waitForImagesInElement(scope: Locator): Promise<void> {
+// Generous per-image ceiling: long enough to absorb a couple of reload retries
+// of a remote AVIF, short enough that a genuinely dead image can't hang the run.
+const IMAGE_PAINT_TIMEOUT_MS = 15000
+
+export async function waitForImagesInElement(scope: Locator): Promise<void> {
   const images = await scope.locator("img").all()
   await Promise.all(
     images.map((img) =>
       img
         .evaluate(
-          (el: HTMLImageElement) =>
+          (el: HTMLImageElement, timeoutMs) =>
             new Promise<void>((resolve) => {
-              const timer = setTimeout(resolve, 5000)
-              const done = (): void => {
-                clearTimeout(timer)
+              // `decode()` resolves only once the image is decoded and
+              // paint-ready. A remote AVIF can intermittently fail to load
+              // (notably Firefox in CI); `decode()` then rejects immediately, so
+              // resolving on rejection captured a blank image and churned the
+              // baseline. Reload-and-retry a failed load until it paints, with a
+              // hard ceiling so a permanently broken image can't hang the run.
+              const hardStop = window.setTimeout(resolve, timeoutMs)
+              const settle = (): void => {
+                window.clearTimeout(hardStop)
                 resolve()
               }
-              // `decode()` resolves only once the image is decoded and
-              // paint-ready. `complete`/`load` can fire before Firefox has
-              // painted a (remote AVIF) image, so screenshots intermittently
-              // captured a blank image. Resolve on decode success or failure.
-              el.decode().then(done, done)
+              const attempt = (): void => {
+                el.decode().then(settle, () => {
+                  const url = new URL(el.currentSrc || el.src, document.baseURI)
+                  // `set` overwrites the prior value, so retries don't accumulate
+                  // query params; the cache-buster forces a fresh fetch.
+                  url.searchParams.set("__visualRetry", String(Math.trunc(performance.now())))
+                  el.addEventListener("load", attempt, { once: true })
+                  el.addEventListener("error", () => window.setTimeout(attempt, 250), { once: true })
+                  el.src = url.toString()
+                })
+              }
+              attempt()
             }),
+          IMAGE_PAINT_TIMEOUT_MS,
         )
         .catch(() => undefined),
     ),

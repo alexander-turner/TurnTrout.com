@@ -12,6 +12,7 @@ import {
   pauseMediaElements,
   setTheme,
   takeRegressionScreenshot,
+  waitForImagesInElement,
   waitForTransitionEnd,
 } from "./visual_utils"
 
@@ -29,6 +30,43 @@ test.describe("visual_utils functions", () => {
   test.beforeEach(async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
     await page.emulateMedia({ colorScheme: preferredTheme })
+  })
+
+  test("waitForImagesInElement reloads an image whose first load fails", async ({ page }) => {
+    // 1x1 transparent PNG.
+    const onePixelPng = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      "base64",
+    )
+    let aborted = false
+    // Fail the original request to mimic a transient Firefox load failure; serve
+    // the cache-busted retry so the reload-and-retry path can recover.
+    await page.route("**/flaky-visual-test-image.png*", async (route) => {
+      if (route.request().url().includes("__visualRetry")) {
+        await route.fulfill({ contentType: "image/png", body: onePixelPng })
+      } else {
+        aborted = true
+        await route.abort()
+      }
+    })
+
+    await page.evaluate(() => {
+      const container = document.createElement("div")
+      container.id = "flaky-img-container"
+      const img = document.createElement("img")
+      img.id = "flaky-visual-test-image"
+      img.src = "https://assets.turntrout.com/flaky-visual-test-image.png"
+      container.appendChild(img)
+      document.body.appendChild(container)
+    })
+
+    await waitForImagesInElement(page.locator("#flaky-img-container"))
+
+    expect(aborted).toBe(true)
+    const loaded = await page
+      .locator("#flaky-visual-test-image")
+      .evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)
+    expect(loaded).toBe(true)
   })
 
   for (const theme of ["light", "dark", "auto"]) {
