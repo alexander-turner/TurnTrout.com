@@ -779,6 +779,8 @@ This footnote opens with a block quote.[^fn-blockquote]
 
     Trailing text after the block quote.
 
+A footnote nested inside [a link[^nested-in-link] should hoist out of the anchor](https://example.com) so the marker renders outside the link.
+
 Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 
 [^spam1]: Make sure we hit double-digit footnotes to test formatting.
@@ -796,6 +798,8 @@ Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 [^spam7]: Make sure we hit double-digit footnotes to test formatting.
 
 [^spam8]: Make sure we hit double-digit footnotes to test formatting.
+
+[^nested-in-link]: A footnote reference authored inside link text must be hoisted out of the enclosing anchor so the link and footnote marker render correctly.
 
 # Code blocks
 

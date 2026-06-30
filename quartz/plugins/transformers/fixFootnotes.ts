@@ -44,6 +44,71 @@ export function findFootnoteList(tree: Root): FootnoteLocation | null {
   return footnoteLocation
 }
 
+/** Href prefix that identifies a footnote reference anchor (`<sup><a href="#user-content-fn-…">`). */
+const FOOTNOTE_REF_HREF_PREFIX = "#user-content-fn"
+
+/** True if `element` is a `<sup>` wrapping a footnote-reference anchor. */
+function isFootnoteRefSup(element: Element): boolean {
+  return (
+    element.tagName === "sup" &&
+    element.children.some(
+      (grandchild) =>
+        grandchild.type === "element" &&
+        grandchild.tagName === "a" &&
+        typeof grandchild.properties?.href === "string" &&
+        grandchild.properties.href.startsWith(FOOTNOTE_REF_HREF_PREFIX),
+    )
+  )
+}
+
+/**
+ * Removes footnote-reference `<sup>` elements from `node`'s subtree (in document
+ * order) and appends them to `collected`. Recurses into nested inline wrappers so
+ * a footnote ref inside `<em>`/`<strong>` is still extracted.
+ */
+function extractFootnoteRefSups(node: Element, collected: Element[]): void {
+  const kept: ElementContent[] = []
+  for (const child of node.children) {
+    if (child.type === "element") {
+      if (isFootnoteRefSup(child)) {
+        collected.push(child)
+        continue
+      }
+      extractFootnoteRefSups(child, collected)
+    }
+    kept.push(child)
+  }
+  node.children = kept
+}
+
+/**
+ * Hoists footnote references out of enclosing links. A footnote ref nested
+ * inside an `<a>` produces invalid nested anchors (`<a><sup><a>…</a></sup></a>`),
+ * which browsers silently split—breaking the link and the footnote's styling.
+ * Moving each ref to immediately after its enclosing link yields valid HTML and
+ * lets the favicon pass attach to the link's real text.
+ */
+export function hoistFootnotesOutOfLinks(tree: Root): void {
+  visit(tree, "element", (node, index, parent) => {
+    if (
+      node.tagName !== "a" ||
+      parent === undefined ||
+      index === undefined ||
+      typeof node.properties?.href !== "string" ||
+      node.properties.href.startsWith(FOOTNOTE_REF_HREF_PREFIX)
+    ) {
+      return undefined
+    }
+
+    const collected: Element[] = []
+    extractFootnoteRefSups(node, collected)
+    if (collected.length > 0) {
+      parent.children.splice(index + 1, 0, ...(collected as ElementContent[]))
+    }
+    return SKIP
+  })
+}
+
 /** The ID that mdast-util-to-hast hardcodes on the footnotes heading */
 const UPSTREAM_FOOTNOTE_HEADING_ID = "footnote-label"
 
@@ -177,6 +242,8 @@ export const FixFootnotes: QuartzTransformerPlugin = () => {
       return [
         () => {
           return (tree: Root) => {
+            hoistFootnotesOutOfLinks(tree)
+
             const location = findFootnoteList(tree)
 
             if (!location) {

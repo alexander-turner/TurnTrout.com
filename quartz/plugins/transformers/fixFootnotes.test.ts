@@ -14,6 +14,7 @@ import {
   findFootnoteList,
   FixFootnotes,
   hasFootnoteHeading,
+  hoistFootnotesOutOfLinks,
   isAlreadyWrapped,
   isFootnoteListItem,
 } from "./fixFootnotes"
@@ -237,6 +238,71 @@ describe("FixFootnotes helpers", () => {
       const tree = parseHtml(html)
       const location = findFootnoteList(tree)
       expect(location).toBeNull()
+    })
+  })
+
+  describe("hoistFootnotesOutOfLinks", () => {
+    // Build a clean nested footnote-ref sup like mdast-util-to-hast produces
+    // (rehype-parse would pre-split the invalid nested anchors, hiding the bug).
+    const refSupNode = (n = "1") =>
+      h("sup", [
+        h(
+          "a",
+          { href: `#user-content-fn-${n}`, id: `user-content-fnref-${n}`, dataFootnoteRef: true },
+          [n],
+        ),
+      ])
+    const refSupHtml = (n = "1") =>
+      `<sup><a href="#user-content-fn-${n}" id="user-content-fnref-${n}" data-footnote-ref>${n}</a></sup>`
+    const wrap = (...children: Array<ElementContent | string>) =>
+      ({ type: "root", children: [h("p", children)] }) as Root
+
+    it("moves a footnote ref nested in a link to a sibling after the link", () => {
+      const tree = wrap(h("a", { href: "https://example.com" }, ["Title", refSupNode(), " tail"]))
+      hoistFootnotesOutOfLinks(tree)
+      const result = stringifyHtml(tree)
+      expect(result).toBe(`<p><a href="https://example.com">Title tail</a>${refSupHtml()}</p>`)
+      // No anchor still wraps a footnote sup.
+      expect(result).not.toMatch(/<a[^>]*>[^<]*<sup>/)
+    })
+
+    it("extracts a footnote ref nested inside an inline wrapper", () => {
+      const tree = wrap(
+        h("a", { href: "https://example.com" }, ["Title ", h("em", ["emph", refSupNode()])]),
+      )
+      hoistFootnotesOutOfLinks(tree)
+      expect(stringifyHtml(tree)).toBe(
+        `<p><a href="https://example.com">Title <em>emph</em></a>${refSupHtml()}</p>`,
+      )
+    })
+
+    it("hoists multiple footnote refs in document order", () => {
+      const tree = wrap(
+        h("a", { href: "https://example.com" }, ["a", refSupNode("1"), "b", refSupNode("2")]),
+      )
+      hoistFootnotesOutOfLinks(tree)
+      expect(stringifyHtml(tree)).toBe(
+        `<p><a href="https://example.com">ab</a>${refSupHtml("1")}${refSupHtml("2")}</p>`,
+      )
+    })
+
+    it("leaves a footnote ref that is already outside a link untouched", () => {
+      const tree = wrap("Text", refSupNode())
+      hoistFootnotesOutOfLinks(tree)
+      expect(stringifyHtml(tree)).toBe(`<p>Text${refSupHtml()}</p>`)
+    })
+
+    it("leaves a regular link without footnotes untouched", () => {
+      const tree = wrap(h("a", { href: "https://example.com" }, ["Title"]))
+      hoistFootnotesOutOfLinks(tree)
+      expect(stringifyHtml(tree)).toBe(`<p><a href="https://example.com">Title</a></p>`)
+    })
+
+    it("does not treat the footnote backref link as an enclosing link", () => {
+      const html = `<li id="user-content-fn-1"><p>Body <a href="#user-content-fnref-1">↩</a></p></li>`
+      const tree = parseHtml(html)
+      hoistFootnotesOutOfLinks(tree)
+      expect(stringifyHtml(tree)).toBe(html)
     })
   })
 })
