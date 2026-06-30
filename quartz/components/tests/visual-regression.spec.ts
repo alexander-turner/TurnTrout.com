@@ -113,6 +113,29 @@ async function hideForceHslInvertInFirefox(page: Page, testInfo: TestInfo): Prom
   }, forceHslInvertClass)
 }
 
+/**
+ * The desktop sidebar TOC mirrors every heading in test-page.md, so the
+ * whole-page integration screenshot would churn whenever any section is added or
+ * removed — even sections far below the fold. Swap in a fixed stub list so this
+ * shot stays decoupled from the page's heading set; the live TOC's own rendering
+ * is covered by the dedicated "Table of contents" screenshots.
+ */
+const STUB_TOC_OL = `<ol>
+  <li><a href="#stub-one" class="internal same-page-link" data-for="stub-one"><span>First section</span></a></li>
+  <li><a href="#stub-two" class="internal same-page-link" data-for="stub-two"><span>Second section</span></a><ol>
+    <li><a href="#stub-two-a" class="internal same-page-link" data-for="stub-two-a"><span>Nested entry</span></a></li>
+  </ol></li>
+  <li><a href="#stub-three" class="internal same-page-link" data-for="stub-three"><span>Third section</span></a></li>
+</ol>`
+
+async function stubTableOfContents(page: Page): Promise<void> {
+  await page.evaluate((ol) => {
+    document.querySelectorAll("#toc-content, #toc-content-mobile").forEach((el) => {
+      el.innerHTML = ol
+    })
+  }, STUB_TOC_OL)
+}
+
 test.describe("Test page sections", () => {
   THEMES.forEach((theme) => {
     // Per-section detail is covered by the isolated fixtures in
@@ -122,6 +145,7 @@ test.describe("Test page sections", () => {
       await setTheme(page, theme as "light" | "dark")
 
       await hideForceHslInvertInFirefox(page, testInfo)
+      await stubTableOfContents(page)
 
       await takeRegressionScreenshot(page, testInfo, `test-page-normal-${theme}`)
     })
