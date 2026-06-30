@@ -191,56 +191,7 @@ export async function takeRegressionScreenshot(
 ): Promise<Buffer> {
   if (!options?.skipMediaPause) {
     await pauseMediaElements(page, options?.elementToScreenshot)
-
-    // Block until every video has actually painted its frame-0 to the
-    // compositor, not merely reached currentTime === 0. requestVideoFrameCallback
-    // fires only on a real paint; `paused`/`currentTime === 0` are satisfied
-    // even when the engine (notably WebKit) has presented no frame yet, so a
-    // blank, never-painted video would otherwise be screenshotted and diff
-    // against the painted baseline — the source of the flake.
-    const mediaScope = options?.elementToScreenshot ?? page
-    const videos = await mediaScope.locator("video").all()
-    for (const video of videos) {
-      const handle = await video.elementHandle()
-      if (!handle) throw new Error("Could not get element handle for video")
-      await handle.evaluate(
-        (el) =>
-          new Promise<void>((resolve) => {
-            const videoEl = el as HTMLVideoElement & {
-              requestVideoFrameCallback?: (cb: () => void) => number
-            }
-            let settled = false
-            const finish = () => {
-              if (settled) return
-              settled = true
-              resolve()
-            }
-            const waitForPaint = () => {
-              videoEl.pause()
-              if (videoEl.currentTime !== 0) videoEl.currentTime = 0
-              if (typeof videoEl.requestVideoFrameCallback !== "function") {
-                finish()
-                return
-              }
-              // rVFC fires on the real paint of the seeked frame (covers
-              // WebKit's blank → frame-0 transition). The timeout covers the
-              // no-op case where frame 0 is already on screen and no new
-              // presentation occurs, so rVFC would never fire.
-              videoEl.requestVideoFrameCallback(finish)
-              setTimeout(finish, 1500)
-            }
-            if (videoEl.readyState >= 2) {
-              waitForPaint()
-            } else {
-              videoEl.addEventListener("loadeddata", waitForPaint, { once: true })
-              videoEl.load()
-            }
-            // Overall safety net: never hang on a video whose data never
-            // arrives (e.g. a broken source); let the screenshot proceed.
-            setTimeout(finish, 8000)
-          }),
-      )
-    }
+    await waitForVideosPainted(options?.elementToScreenshot ?? page)
   }
 
   // Separate out the element option so we don't pass it to the screenshot API
@@ -492,6 +443,63 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
       await handle.evaluate((el) => el.removeAttribute("autoplay"))
       await handle.dispose()
     }
+  }
+}
+
+/**
+ * Blocks until every video has actually painted its frame-0 to the compositor.
+ *
+ * `pauseMediaElements` seeks videos to currentTime 0, but `paused`/`currentTime
+ * === 0` are satisfied even when the engine (notably WebKit) has presented no
+ * frame yet. Screenshotting that blank, never-painted state diffs against the
+ * painted baseline — the source of the flake. requestVideoFrameCallback fires
+ * only on a real paint, which is the signal we actually need.
+ */
+async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
+  for (const video of await scope.locator("video").all()) {
+    const handle = await video.elementHandle()
+    if (!handle) throw new Error("Could not get element handle for video")
+    await handle.evaluate(
+      (el) =>
+        new Promise<void>((resolve) => {
+          const videoEl = el as HTMLVideoElement & {
+            requestVideoFrameCallback?: (cb: () => void) => number
+          }
+          const timers: ReturnType<typeof setTimeout>[] = []
+          let settled = false
+          const finish = () => {
+            if (settled) return
+            settled = true
+            timers.forEach(clearTimeout)
+            resolve()
+          }
+          const waitForPaint = () => {
+            videoEl.pause()
+            if (videoEl.currentTime !== 0) videoEl.currentTime = 0
+            if (typeof videoEl.requestVideoFrameCallback !== "function") {
+              finish()
+              return
+            }
+            videoEl.requestVideoFrameCallback(finish)
+            // Fallback for the case where frame 0 is already on screen: no new
+            // frame is presented, so rVFC would never fire.
+            timers.push(setTimeout(finish, 1500))
+          }
+          if (videoEl.readyState >= 2) {
+            // HAVE_CURRENT_DATA or better: a frame is decodable now.
+            waitForPaint()
+          } else {
+            videoEl.addEventListener("loadeddata", waitForPaint, { once: true })
+            // Mirror pauseMediaElements: only force a reload when there is no
+            // data at all; for HAVE_METADATA the decode is already in flight.
+            if (videoEl.readyState === 0) videoEl.load()
+          }
+          // Never hang on a video whose data never arrives (e.g. a broken
+          // source); let the screenshot proceed and fail on its own terms.
+          timers.push(setTimeout(finish, 8000))
+        }),
+    )
+    await handle.dispose()
   }
 }
 
