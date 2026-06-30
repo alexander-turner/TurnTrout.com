@@ -83,7 +83,7 @@ The show is _not_ hard sci-fi. Some dude [punches a lion and instantly kills it]
 
 These aren't big problems. [According to infallible Redditors](https://www.reddit.com/r/DrStone/comments/oihl53/is_this_series_scientifically_accurate/), the chemistry and physics (besides the petrification) is nearly all real. Which is awesome - I've learned quite a few fun insights which would have seemed hard to digest. Just accept that the show isn't hard sci-fi _per se_.
 
-[^seconds]: 3,700 years times 4 seasons means that at least 14,800 seasons elapse. If he's off by more than $\frac{1}{14,800}$ (or 0.006757%), then his estimate will be off by at least one season. Later it's implied that Senku counted time _down to the day_, which requires at least 0.000074% precision.
+[^seconds]: At 3,700 years times 4 seasons, at least 14,800 seasons elapse. If he's off by more than $\frac{1}{14,800}$ (or 0.006757%), then his estimate will be off by at least one season. Later it's implied that Senku counted time _down to the day_, which requires at least 0.000074% precision.
 
 # Conclusion
 

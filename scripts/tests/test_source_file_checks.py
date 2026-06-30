@@ -2718,16 +2718,52 @@ def test_void_elements_are_allowed_self_closing(tag: str):
         # Plain prose without a leading numeral
         ("Just some ordinary text.", []),
         # Non-prose contexts are excluded
-        ("> 5 reasons it works", []),
         ("# 5 reasons it works", []),
         ("| 5 | column |", []),
         ("![5 boxes in a diagram](/img.png)", []),
-        (": 5 is the definition", []),
-        ("[^note]: 5 things to note", []),
-        ("- 5 things", []),
-        ("* 5 things", []),
-        ("1. 256-shot prompting", []),
-        ("1) 256-shot prompting", []),
+        # Blockquotes are verbatim quotations, excluded at any nesting and even
+        # when they wrap a list
+        ("> 5 reasons it works", []),
+        (">> 5 reasons nested", []),
+        ("> - 5 things in a quoted list", []),
+        # Rendered authorial prose is checked once its leading marker is peeled
+        (
+            ": 2024 Nobel laureate in Physics and a Turing Award winner.",
+            [
+                "Sentence-initial numeral at line 1: 2024 Nobel laureate in "
+                "Physics and a Turing Award winner."
+            ],
+        ),
+        (
+            ": 5 is the definition",
+            ["Sentence-initial numeral at line 1: 5 is the definition"],
+        ),
+        (
+            "[^note]: 5 things to note",
+            ["Sentence-initial numeral at line 1: 5 things to note"],
+        ),
+        ("- 5 things", ["Sentence-initial numeral at line 1: 5 things"]),
+        ("* 5 things", ["Sentence-initial numeral at line 1: 5 things"]),
+        (
+            "1. 256-shot prompting",
+            ["Sentence-initial numeral at line 1: 256-shot prompting"],
+        ),
+        (
+            "1) 256-shot prompting",
+            ["Sentence-initial numeral at line 1: 256-shot prompting"],
+        ),
+        # A Markdown enumerator is a number kept as written: the ordinal itself
+        # is stripped, so list content opening with a word is fine, including a
+        # numbered list nested inside a definition line
+        ("1. Some reasons here", []),
+        (": 1.  The error tolerance is too high", []),
+        # A footnote definition whose body continues on the next line
+        ("[^note]:", []),
+        # A numeral rendered from a KaTeX equation is acceptable, even when it
+        # opens a definition line
+        (": $2024$ was the year", []),
+        # Image alt text is excluded even when an image opens a definition line
+        (": ![1. boxes, 2. arrows](/img.png)", []),
         # Blank lines are skipped, body numeral still flagged on its line
         (
             "   \n5 cats walked away.",

@@ -79,7 +79,7 @@ Table: Impact of a vector trained for a single step on a single datapoint.
 [Gemini 1.5v2 constituted a moderate upgrade](https://developers.googleblog.com/en/updated-gemini-models-reduced-15-pro-pricing-increased-rate-limits-and-more/). When 1.5v2 landed, nearly all of our positive signs flipped to negative. Gemini Pro 1.5v2 had higher unsteered TruthfulQA performance, while Flash 1.5v2  did not. However, both models seemed significantly better at following instructions and learning from many-shot examples.
 
 1. BIDPO achieved 92.6% on TruthfulQA, a 17.6% boost over the unsteered score of 75%.
-    1. 256-shot prompting achieved 95%, meaning we no longer beat the obvious baseline of multi-shot prompting.
+    1. With 256-shot prompting, we achieved 95%, meaning we no longer beat the obvious baseline of multi-shot prompting.
     2. LORA also achieved at least 95%.
 2. We tried combining BIDPO + LORA, but this no longer boosted performance.
 3. The HaluEval “generalization” result was caused by a data labeling error which flipped the correct answer for each question. At best, the TruthfulQA vectors preserved HaluEval performance.

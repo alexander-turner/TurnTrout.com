@@ -956,7 +956,22 @@ _SENTENCE_INITIAL_MID_RE = re.compile(
 )
 _TRAILING_WORD_RE = re.compile(r"([A-Za-z.]+)$")
 _LIST_MARKER_RE = re.compile(r"^\s*([-*+]\s+|\d+[.)]\s+)")
-_FOOTNOTE_DEFINITION_RE = re.compile(r"^\[\^[^\]]+\]:")
+_FOOTNOTE_DEFINITION_RE = re.compile(r"^\[\^[^\]]+\]:\s*")
+# Leading markers that introduce authorial prose; each is stripped so the
+# numeral check runs on the text the reader actually sees. A definition or
+# subtitle line opens with ``:``.
+_DEFINITION_PREFIX_RE = re.compile(r"^\s*:\s+")
+_PROSE_MARKER_RES = (
+    _FOOTNOTE_DEFINITION_RE,
+    _LIST_MARKER_RE,
+    _DEFINITION_PREFIX_RE,
+)
+# Lines that carry no authorial sentence-initial prose. Blockquotes (``>``,
+# including ``[!quote]`` callouts) are verbatim quotations whose numerals must
+# stay as written. Headings have their own style rule, table rows are data
+# cells, and a leading ``![`` is a standalone image whose alt text is not body
+# prose.
+_NON_PROSE_PREFIXES = (">", "#", "|", "![")
 
 # Abbreviations whose trailing period is not a sentence boundary, so a digit
 # after them ("eq. 5", "e.g. 2", "Fig. 3") is not sentence-initial. Single
@@ -986,15 +1001,30 @@ def _blank_frontmatter_lines(lines: list[str]) -> None:
             return
 
 
-def _is_prose_line(line: str) -> bool:
-    """Whether a line is prose subject to the sentence-initial numeral check."""
+def _prose_content(line: str) -> str | None:
+    """
+    Return the rendered-prose portion of a line, or ``None`` if it has none.
+
+    Structural markers that introduce authorial prose are stripped so the
+    numeral check runs on what the reader actually sees: list bullets, numbered
+    enumerators, definition/subtitle colons, and footnote-definition labels.
+    Markers nest (a definition line may hold a numbered list, an enumerator a
+    sub-list), so they are peeled off repeatedly until prose remains. Lines that
+    carry no authorial prose return ``None``: blockquotes (verbatim
+    quotations), headings, table rows, and standalone images, including when
+    such a marker surfaces only after an outer marker is peeled away.
+    """
     stripped = line.strip()
-    if not stripped or stripped.startswith((">", "#", "|", "![", ":")):
-        return False
-    return not (
-        _FOOTNOTE_DEFINITION_RE.match(stripped)
-        or _LIST_MARKER_RE.match(stripped)
-    )
+    while True:
+        if not stripped or stripped.startswith(_NON_PROSE_PREFIXES):
+            return None
+        for marker in _PROSE_MARKER_RES:
+            match = marker.match(stripped)
+            if match:
+                stripped = stripped[match.end() :].strip()
+                break
+        else:
+            return stripped
 
 
 def check_sentence_initial_numerals(text: str) -> list[str]:
@@ -1003,11 +1033,18 @@ def check_sentence_initial_numerals(text: str) -> list[str]:
 
     English style spells out numbers that open a sentence ("Twenty-six people
     attended", not "26 people attended"). This flags a digit at the start of a
-    paragraph, or after sentence-ending punctuation, within prose. Code, math,
-    YAML frontmatter, headings, tables, blockquotes, list markers, image alt
-    text, and footnote definitions are excluded, as is a digit following an
-    ellipsis (a trailing-off continuation, not a new sentence). A line carrying
-    the "<!-- lint-ignore sentence-initial-numeral -->" marker is skipped so a
+    sentence in any rendered authorial prose: paragraphs, list items, numbered
+    list content, definition/subtitle lines, and footnote-definition bodies.
+
+    The leading structural marker of each context is stripped first, so a list
+    bullet or numbered enumerator (a Markdown number, kept as written) does not
+    itself trip the check. Code and math are blanked before checking, so a
+    numeral rendered from a $\\KaTeX$ equation is also fine. Headings (which
+    have their own style rule), tables, standalone image alt text, and
+    blockquotes (``[!quote]`` callouts and ``>`` quotations, where numerals are
+    verbatim) are excluded, as is a digit following an ellipsis (a trailing-off
+    continuation, not a new sentence). A line carrying the
+    "<!-- lint-ignore sentence-initial-numeral -->" marker is skipped so a
     deliberate leading numeral (e.g. one that refers to a literal figure) can be
     kept with a one-line reason.
     """
@@ -1019,16 +1056,18 @@ def check_sentence_initial_numerals(text: str) -> list[str]:
 
     errors: list[str] = []
     for line_num, line in enumerate(lines, 1):
-        if _SENTENCE_INITIAL_NUMERAL_IGNORE in line or not _is_prose_line(line):
+        if _SENTENCE_INITIAL_NUMERAL_IGNORE in line:
             continue
-        if _SENTENCE_INITIAL_START_RE.match(line):
+        content = _prose_content(line)
+        if content is None:
+            continue
+        if _SENTENCE_INITIAL_START_RE.match(content):
             errors.append(
-                f"Sentence-initial numeral at line {line_num}: "
-                f"{line.strip()[:60]}"
+                f"Sentence-initial numeral at line {line_num}: {content[:60]}"
             )
             continue
-        for match in _SENTENCE_INITIAL_MID_RE.finditer(line):
-            trailing = _TRAILING_WORD_RE.search(line[: match.start() + 1])
+        for match in _SENTENCE_INITIAL_MID_RE.finditer(content):
+            trailing = _TRAILING_WORD_RE.search(content[: match.start() + 1])
             word = (
                 trailing.group(1).replace(".", "").lower() if trailing else ""
             )
@@ -1036,7 +1075,7 @@ def check_sentence_initial_numerals(text: str) -> list[str]:
                 continue
             errors.append(
                 f"Sentence-initial numeral at line {line_num}: "
-                f"{line.strip()[max(0, match.start() - 20) : match.start() + 20]}"
+                f"{content[max(0, match.start() - 20) : match.start() + 20]}"
             )
     return errors
 
