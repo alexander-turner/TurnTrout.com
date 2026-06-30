@@ -4,6 +4,7 @@ import { h, s } from "hastscript"
 
 import { EXTERNAL_LINK_REL } from "../../components/constants"
 import { getOrdinalSuffix } from "../../components/Date"
+import { processTree } from "./twemoji"
 
 /** A single photo or video attached to a tweet. URLs already point at the CDN. */
 export interface TweetMedia {
@@ -95,22 +96,17 @@ const MONTHS = [
 ] as const
 
 /**
- * Format a tweet's ISO timestamp as `Month Dth, YYYY, h:mm AM/PM` in UTC.
- * The date leads so the line begins with the capitalized month rather than a
- * digit. UTC keeps the output deterministic across build machines. Returns ""
- * for an unparseable timestamp so the date line is simply omitted.
+ * Format a tweet's ISO timestamp as `Month Dth` in UTC (e.g. `June 30th`). UTC
+ * keeps the output deterministic across build machines. Returns "" for an
+ * unparseable timestamp so the date line is simply omitted.
  */
 export function formatTweetDate(iso: string): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return ""
-  const hours24 = date.getUTCHours()
-  const meridiem = hours24 < 12 ? "AM" : "PM"
-  const hours12 = hours24 % 12 || 12
-  const minutes = String(date.getUTCMinutes()).padStart(2, "0")
   const month = MONTHS[date.getUTCMonth()]
   const dayNum = date.getUTCDate()
   const day = `${dayNum}${getOrdinalSuffix(dayNum)}`
-  return `${month} ${day}, ${date.getUTCFullYear()}, ${hours12}:${minutes} ${meridiem}`
+  return `${month} ${day}`
 }
 
 const MENTION_OR_TAG = /[@#$]\w+/g
@@ -382,7 +378,11 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
   }
   children.push(...metricsRow(snapshot.metrics))
 
-  return h("article", { className: "tweet-card", "data-tweet-id": snapshot.id }, children)
+  // TweetEmbed runs after the global Twemoji pass, so the card's text (names,
+  // body, quoted text) is built too late to be picked up. Twemojify it here so
+  // emoji in a tweet render as inline images like the rest of the site.
+  const article = h("article", { className: "tweet-card", "data-tweet-id": snapshot.id }, children)
+  return processTree(article) as Element
 }
 
 /** Fallback card for a tweet that resolved from neither a snapshot nor R2. */

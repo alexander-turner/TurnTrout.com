@@ -35,13 +35,9 @@ const baseSnapshot: TweetSnapshot = {
 const render = (node: Element): string => toHtml(node)
 
 describe("formatTweetDate", () => {
-  it("formats a valid ISO timestamp in UTC with the date leading", () => {
-    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("January 21st, 2025, 5:32 PM")
-  })
-
-  it("uses 12 for midnight and noon", () => {
-    expect(formatTweetDate("2025-06-15T00:05:00.000Z")).toBe("June 15th, 2025, 12:05 AM")
-    expect(formatTweetDate("2025-06-15T12:00:00.000Z")).toBe("June 15th, 2025, 12:00 PM")
+  it("formats a valid ISO timestamp as month and day in UTC", () => {
+    // The time crosses midnight UTC only when interpreted locally; UTC keeps the day stable.
+    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("January 21st")
   })
 
   it.each([
@@ -56,7 +52,7 @@ describe("formatTweetDate", () => {
     ["2025-06-22T12:00:00.000Z", "June 22nd"],
     ["2025-06-23T12:00:00.000Z", "June 23rd"],
   ])("applies an ordinal suffix to the day for %s", (iso, expected) => {
-    expect(formatTweetDate(iso)).toContain(expected)
+    expect(formatTweetDate(iso)).toBe(expected)
   })
 
   it("returns empty string for an unparseable timestamp", () => {
@@ -134,7 +130,7 @@ describe("buildTweetCard", () => {
     expect(html).toContain("Alex Turner")
     expect(html).toContain("@turntrout")
     expect(html).toContain("Hello world")
-    expect(html).toContain('<span class="tweet-date">January 21st, 2025, 5:32 PM</span>')
+    expect(html).toContain('<span class="tweet-date">January 21st</span>')
     expect(html).toContain('data-tweet-id="123"')
   })
 
@@ -173,6 +169,15 @@ describe("buildTweetCard", () => {
   it("omits the date line when the timestamp is unparseable", () => {
     const undated = { ...baseSnapshot, createdAt: "" }
     expect(render(buildTweetCard(undated))).not.toContain("tweet-date")
+  })
+
+  it("twemojifies emoji in the card's text", () => {
+    const withEmoji = { ...baseSnapshot, author: { ...baseSnapshot.author, name: "Alex 🟧" } }
+    const html = render(buildTweetCard(withEmoji))
+    // The orange-square glyph becomes an inline twemoji image, glued to its
+    // preceding word so it can't wrap alone.
+    expect(html).toContain('class="emoji"')
+    expect(html).toContain("emoji-span")
   })
 
   it("renders a photo with its dimensions and alt text", () => {
@@ -320,7 +325,7 @@ describe("quote tweets", () => {
     expect(html).toContain("tweet-quoted-avatar")
     expect(html).toContain('href="https://xcancel.com/someone"')
     // The post date trails the handle in the header.
-    expect(html).toContain('<span class="tweet-quoted-date">January 20th, 2025, 10:00 AM</span>')
+    expect(html).toContain('<span class="tweet-quoted-date">January 20th</span>')
   })
 
   it("omits the quoted date line when the timestamp is unparseable", () => {
