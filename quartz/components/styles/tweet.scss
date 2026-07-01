@@ -81,17 +81,14 @@
   font-family: var(--font-monospace);
 }
 
+// The seal is centered against the name by the flex row's align-items: center
+// (see .tweet-name-row) — no manual offset.
 .tweet-verified {
   width: 1em;
   height: 1em;
   flex: 0 0 auto;
   fill: var(--blue);
   margin: 0;
-
-  // The glyph's optical centre sits below the name's cap height; nudge it up so
-  // the seal lines up with the capitals rather than the full line box.
-  position: relative;
-  top: -0.06em;
 }
 
 .tweet-source-link {
