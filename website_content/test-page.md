@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-06-30
+date_updated: 2026-07-01
 createBibtex: true
 ---
 
@@ -508,6 +508,12 @@ A thread (one URL per line) renders as a connected stack:
 ```tweet
 https://xcancel.com/Turn_Trout/status/2055343603224879417
 https://xcancel.com/Turn_Trout/status/2055343603958878231
+```
+
+A quote-tweet renders the quoted post as a nested card:
+
+```tweet
+https://xcancel.com/ChrisMurphyCT/status/2071998353664000365
 ```
 
 # Images

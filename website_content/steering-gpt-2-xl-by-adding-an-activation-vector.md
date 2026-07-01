@@ -43,7 +43,7 @@ date_published: 2023-05-13
 original_url: https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-xl-by-adding-an-activation-vector
 skip_import: true
 description: Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.
-date_updated: 2026-06-28
+date_updated: 2026-06-30
 createBibtex: true
 ---
 
@@ -758,9 +758,9 @@ We used a [dataset](https://github.com/zeynep394/AIZA-NLP-Sentiment-Analysis/blo
 What we did:
 
 1. Mapped each star rating to a simpler sentiment label with:
-   - 1-2: negative
-   - 3: neutral
-   - 4-5: positive
+   - 1-2: negative  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+   - 3: neutral  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+   - 4-5: positive  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
 2. Sampled 100 reviews from each sentiment class.
 3. Split each review into sentences.
 4. For each sentence, we recorded the perplexity for both the modified and unmodified models.

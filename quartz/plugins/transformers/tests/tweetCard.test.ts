@@ -35,13 +35,8 @@ const baseSnapshot: TweetSnapshot = {
 const render = (node: Element): string => toHtml(node)
 
 describe("formatTweetDate", () => {
-  it("formats a valid ISO timestamp in UTC with the date leading", () => {
-    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("January 21st, 2025, 5:32 PM")
-  })
-
-  it("uses 12 for midnight and noon", () => {
-    expect(formatTweetDate("2025-06-15T00:05:00.000Z")).toBe("June 15th, 2025, 12:05 AM")
-    expect(formatTweetDate("2025-06-15T12:00:00.000Z")).toBe("June 15th, 2025, 12:00 PM")
+  it("formats a valid ISO timestamp as month, day, and year in UTC", () => {
+    expect(formatTweetDate("2025-01-21T17:32:00.000Z")).toBe("January 21st, 2025")
   })
 
   it.each([
@@ -134,7 +129,7 @@ describe("buildTweetCard", () => {
     expect(html).toContain("Alex Turner")
     expect(html).toContain("@turntrout")
     expect(html).toContain("Hello world")
-    expect(html).toContain('<span class="tweet-date">January 21st, 2025, 5:32 PM</span>')
+    expect(html).toContain('<span class="tweet-date">January 21st, 2025</span>')
     expect(html).toContain('data-tweet-id="123"')
   })
 
@@ -160,9 +155,28 @@ describe("buildTweetCard", () => {
     expect(render(buildTweetCard(unverified))).not.toContain("tweet-verified")
   })
 
+  it("keeps the verified badge outside the name anchor", () => {
+    const html = render(buildTweetCard(baseSnapshot))
+    // The anchor wraps only the name span and closes before the seal, which
+    // then sits in the name row beside the now-closed anchor.
+    expect(html).toContain(
+      '<span class="tweet-name">Alex Turner</span></a><svg class="tweet-verified"',
+    )
+    expect(html).toContain('class="tweet-name-row"')
+  })
+
   it("omits the date line when the timestamp is unparseable", () => {
     const undated = { ...baseSnapshot, createdAt: "" }
     expect(render(buildTweetCard(undated))).not.toContain("tweet-date")
+  })
+
+  it("twemojifies emoji in the card's text", () => {
+    const withEmoji = { ...baseSnapshot, author: { ...baseSnapshot.author, name: "Alex 🟧" } }
+    const html = render(buildTweetCard(withEmoji))
+    // The orange-square glyph becomes an inline twemoji image, glued to its
+    // preceding word so it can't wrap alone.
+    expect(html).toContain('class="emoji"')
+    expect(html).toContain("emoji-span")
   })
 
   it("renders a photo with its dimensions and alt text", () => {
@@ -280,6 +294,82 @@ describe("buildTweetCard", () => {
       media: [photo(1), photo(2), photo(3), photo(4), photo(5)],
     }
     expect(render(buildTweetCard(many))).toContain("tweet-media-count-4")
+  })
+})
+
+describe("quote tweets", () => {
+  const quoted: TweetSnapshot["quoted"] = {
+    id: "456",
+    url: "https://xcancel.com/boazbaraktcs/status/456",
+    author: {
+      name: "Boaz Barak",
+      handle: "boazbaraktcs",
+      verified: false,
+      avatarSrc: "https://assets.turntrout.com/static/tweets/123/quoted-avatar.jpg",
+    },
+    createdAt: "2025-01-20T10:00:00.000Z",
+    text: "the original take @someone",
+    urls: [],
+    media: [],
+  }
+
+  it("renders the embedded quoted tweet's author, handle, date, and body", () => {
+    const html = render(buildTweetCard({ ...baseSnapshot, quoted }))
+    expect(html).toContain("tweet-quoted")
+    expect(html).toContain('data-tweet-id="456"')
+    expect(html).toContain("Boaz Barak")
+    expect(html).toContain('href="https://xcancel.com/boazbaraktcs"')
+    expect(html).toContain("the original take")
+    // The quoted avatar is self-hosted, linkified mentions point at xcancel.
+    expect(html).toContain("tweet-quoted-avatar")
+    expect(html).toContain('href="https://xcancel.com/someone"')
+    // The post date sits at the bottom of the quoted card (base is Jan 21, quote Jan 20).
+    expect(html).toContain('<span class="tweet-quoted-date">January 20th, 2025</span>')
+  })
+
+  it("omits the quoted date line when the timestamp is unparseable", () => {
+    const undated = { ...quoted, createdAt: "" }
+    expect(render(buildTweetCard({ ...baseSnapshot, quoted: undated }))).not.toContain(
+      "tweet-quoted-date",
+    )
+  })
+
+  it("hides the quoted date when it matches the quoting tweet's date", () => {
+    const sameDate = { ...quoted, createdAt: baseSnapshot.createdAt }
+    const html = render(buildTweetCard({ ...baseSnapshot, quoted: sameDate }))
+    // The quoted card omits its date; only the outer card shows the shared date.
+    expect(html).not.toContain("tweet-quoted-date")
+    expect((html.match(/January 21st, 2025/g) ?? []).length).toBe(1)
+  })
+
+  it("renders media inside the quoted card", () => {
+    const withMedia = {
+      ...quoted,
+      media: [
+        {
+          type: "photo" as const,
+          src: "https://assets.turntrout.com/static/tweets/123/quoted-media-0.jpg",
+        },
+      ],
+    }
+    const html = render(buildTweetCard({ ...baseSnapshot, quoted: withMedia }))
+    expect(html).toMatch(/tweet-quoted[\s\S]*tweet-media-count-1/)
+  })
+
+  it("shows the verified seal on a verified quoted author", () => {
+    // baseSnapshot's author is verified, so match the seal only within the
+    // quoted block (after the marker) and contrast against the unverified quote.
+    expect(render(buildTweetCard({ ...baseSnapshot, quoted }))).not.toMatch(
+      /tweet-quoted[\s\S]*tweet-verified/,
+    )
+    const verifiedQuote = { ...quoted, author: { ...quoted.author, verified: true } }
+    expect(render(buildTweetCard({ ...baseSnapshot, quoted: verifiedQuote }))).toMatch(
+      /tweet-quoted[\s\S]*tweet-verified/,
+    )
+  })
+
+  it("omits the quoted card when there is no quote", () => {
+    expect(render(buildTweetCard(baseSnapshot))).not.toContain("tweet-quoted")
   })
 })
 

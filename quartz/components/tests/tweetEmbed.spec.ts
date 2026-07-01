@@ -26,6 +26,18 @@ test.describe("Tweet embeds", () => {
     await expect(page.locator(".tweet-thread .tweet-card")).toHaveCount(2)
   })
 
+  test("a quote-tweet nests the quoted post as a card", async ({ page }) => {
+    const quoted = page.locator(".tweet-embed .tweet-quoted").first()
+    await quoted.scrollIntoViewIfNeeded()
+    await expect(quoted).toBeVisible()
+    // The nested card carries the quoted author's name and a self-hosted avatar.
+    await expect(quoted.locator(".tweet-name")).toContainText("Seung Min Kim")
+    await expect(quoted.locator("img.tweet-quoted-avatar")).toHaveAttribute(
+      "src",
+      /assets\.turntrout\.com/,
+    )
+  })
+
   test("a photo links to its full-size asset in a new tab", async ({ page }) => {
     const grid = page.locator(".tweet-embed:not(.tweet-thread) .tweet-media-grid").first()
     await grid.scrollIntoViewIfNeeded()
@@ -97,6 +109,17 @@ test.describe("Tweet embeds", () => {
       await thread.waitFor({ state: "visible" })
       await takeRegressionScreenshot(page, testInfo, `tweet-thread-${theme}`, {
         elementToScreenshot: thread,
+      })
+    })
+
+    // eslint-disable-next-line playwright/expect-expect
+    test(`quote tweet ${theme} (screenshot)`, async ({ page }, testInfo) => {
+      await setTheme(page, theme)
+      const quote = page.locator(".tweet-embed:has(.tweet-quoted)").first()
+      await quote.scrollIntoViewIfNeeded()
+      await quote.waitFor({ state: "visible" })
+      await takeRegressionScreenshot(page, testInfo, `tweet-quote-${theme}`, {
+        elementToScreenshot: quote,
       })
     })
   }
