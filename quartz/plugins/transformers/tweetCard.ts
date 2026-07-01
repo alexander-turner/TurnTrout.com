@@ -110,6 +110,34 @@ export function formatTweetDate(iso: string): string {
   return `${month} ${day}, ${date.getUTCFullYear()}`
 }
 
+const NAMED_ENTITIES: Readonly<Record<string, string>> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+}
+
+const HTML_ENTITY_RE = /&(#x[0-9a-f]+|#\d+|[a-z]+);/gi
+
+/**
+ * Decode the HTML entities Twitter's syndication API leaves in tweet text
+ * (`&amp;`, `&lt;`, `&gt;`). The snapshot stores that encoded text verbatim, so
+ * without decoding, a hast text node of `&amp;` has its `&` re-escaped by the
+ * serializer and the card shows a literal `&amp;`. Unknown names are left intact.
+ */
+export function decodeHtmlEntities(text: string): string {
+  return text.replace(HTML_ENTITY_RE, (match, body: string) => {
+    if (body[0] !== "#") {
+      return NAMED_ENTITIES[body.toLowerCase()] ?? match
+    }
+    const isHex = body[1] === "x" || body[1] === "X"
+    const codePoint = parseInt(isHex ? body.slice(2) : body.slice(1), isHex ? 16 : 10)
+    if (codePoint < 1 || codePoint > 0x10ffff) return match
+    return String.fromCodePoint(codePoint)
+  })
+}
+
 const MENTION_OR_TAG = /[@#$]\w+/g
 
 function externalAnchor(
@@ -171,7 +199,7 @@ function withLineBreaks(nodes: (Element | string)[]): (Element | string)[] {
  * #hashtags link to xcancel, and newlines become `<br>`.
  */
 export function linkifyTweetText(text: string, urls: readonly TweetUrl[]): (Element | string)[] {
-  let nodes: (Element | string)[] = [text]
+  let nodes: (Element | string)[] = [decodeHtmlEntities(text)]
   for (const entity of urls) {
     nodes = nodes.flatMap((node) => {
       if (typeof node !== "string" || !node.includes(entity.url)) return [node]
@@ -179,7 +207,13 @@ export function linkifyTweetText(text: string, urls: readonly TweetUrl[]): (Elem
       const out: (Element | string)[] = []
       segments.forEach((segment, index) => {
         if (index > 0) {
-          out.push(externalAnchor(entity.expanded, [entity.display], "tweet-entity tweet-link"))
+          out.push(
+            externalAnchor(
+              entity.expanded,
+              [decodeHtmlEntities(entity.display)],
+              "tweet-entity tweet-link",
+            ),
+          )
         }
         if (segment) out.push(segment)
       })
@@ -220,7 +254,7 @@ function mediaNode(media: TweetMedia): Element {
   const img = h("img", {
     className: "tweet-media tweet-media-photo",
     src: media.src,
-    alt: media.alt || "View image",
+    alt: decodeHtmlEntities(media.alt || "View image"),
     loading: "lazy",
     ...(media.width ? { width: media.width } : {}),
     ...(media.height ? { height: media.height } : {}),
@@ -293,7 +327,7 @@ function authorNameRow(author: TweetAuthor, profileUrl: string): Element {
   const children: (Element | string)[] = [
     externalAnchor(
       profileUrl,
-      [h("span", { className: "tweet-name" }, author.name)],
+      [h("span", { className: "tweet-name" }, decodeHtmlEntities(author.name))],
       "tweet-name-link",
     ),
   ]
