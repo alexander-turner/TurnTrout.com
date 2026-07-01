@@ -100,11 +100,15 @@
 }
 
 // The seal is centered against the name by the flex row's align-items: center
-// (see .tweet-name-row) — no manual offset.
+// (see .tweet-name-row) — no manual offset. Its 1em is anchored to the
+// handle's font-size, not the ambient (larger, unset) name font-size: without
+// this it inherits the display name's size instead, rendering oversized next
+// to the handle it's meant to sit level with.
 .tweet-verified {
   width: 1em;
   height: 1em;
   flex: 0 0 auto;
+  font-size: var(--font-size-minus-1);
   fill: var(--blue);
   margin: 0;
 }
