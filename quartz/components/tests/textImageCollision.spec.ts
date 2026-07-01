@@ -137,7 +137,14 @@ function pageSettled(): boolean {
 }
 
 async function settle(page: Page, url: string) {
-  await gotoPage(page, url)
+  // "load" waits for every sub-resource (including any that never resolve
+  // under CI's network policy) and a few articles hang on it indefinitely —
+  // tripling the test timeout didn't help, confirming a hang, not slowness.
+  // "domcontentloaded" is sufficient here: collision geometry only needs the
+  // DOM parsed and fonts loaded, both independent of the "load" event, and
+  // images already have build-time width/height reserved so their box is
+  // stable before the bytes finish downloading.
+  await gotoPage(page, url, "domcontentloaded")
   await page.waitForFunction(pageSettled, undefined, { timeout: 10_000 })
   await page.evaluate(
     () =>
