@@ -83,6 +83,13 @@
 
   // The name truncates before the handle does, so @handle stays fully legible.
   flex: 1 1 auto;
+
+  // The serif display font's inherited line-height (1.2, from .tweet-author)
+  // reserves more space below the glyphs than the monospace handle or the
+  // verified seal need, so align-items: center visually sinks the name below
+  // its flex siblings. Tightening it to the font's own box re-centers all
+  // three against each other.
+  line-height: 1;
 }
 
 .tweet-handle {
