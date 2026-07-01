@@ -10,9 +10,6 @@
 }
 
 .tweet-card {
-  // Embedded content reads as a quotation, not body prose, so it sits a size
-  // below the surrounding text.
-  font-size: 0.95em;
   border: 1px solid var(--midground-faint);
   border-radius: calc(2 * $border-radius);
   padding: calc(1.5 * $base-margin);
