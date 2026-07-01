@@ -107,6 +107,15 @@ describe("linkifyTweetText", () => {
     expect(nodes).toEqual(["safety filters & aspirational language"])
   })
 
+  it("decodes HTML entities in a t.co link's display text", () => {
+    const nodes = linkifyTweetText("see https://t.co/abc", [
+      { url: "https://t.co/abc", display: "site.com/a&amp;b", expanded: "https://site.com/a&b" },
+    ])
+    const html = nodes.map((n) => (typeof n === "string" ? n : render(n))).join("")
+    expect(html).toContain(">site.com/a&#x26;b<")
+    expect(html).not.toContain("&#x26;amp;")
+  })
+
   it("turns newlines into <br> and preserves surrounding text", () => {
     const nodes = linkifyTweetText("line one\nline two", [])
     const html = nodes.map((n) => (typeof n === "string" ? n : render(n))).join("")
@@ -372,6 +381,13 @@ describe("quote tweets", () => {
     expect(html).toContain('href="https://xcancel.com/someone"')
     // The post date sits at the bottom of the quoted card (base is Jan 21, quote Jan 20).
     expect(html).toContain('<span class="tweet-quoted-date">January 20th, 2025</span>')
+  })
+
+  it("decodes HTML entities in the quoted tweet's body", () => {
+    const withEntity = { ...quoted, text: "quoted R&amp;D note" }
+    const html = render(buildTweetCard({ ...baseSnapshot, quoted: withEntity }))
+    expect(html).toContain("quoted R&#x26;D note")
+    expect(html).not.toContain("&#x26;amp;")
   })
 
   it("omits the quoted date line when the timestamp is unparseable", () => {

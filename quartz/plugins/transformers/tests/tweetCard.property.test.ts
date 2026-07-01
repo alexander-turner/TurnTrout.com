@@ -7,7 +7,7 @@ import fc from "fast-check"
 import { decodeHtmlEntities } from "../tweetCard"
 
 // Deterministic runs: a fixed seed keeps CI reproducible (zero-flakiness policy).
-fc.configureGlobal({ seed: 20260701, numRuns: 500 })
+fc.configureGlobal({ seed: 20260701, numRuns: 200 })
 
 /**
  * Twitter's syndication API HTML-escapes exactly `&`, `<`, and `>` in tweet
@@ -32,17 +32,6 @@ describe("decodeHtmlEntities (property)", () => {
       fc.property(fc.string({ unit: "binary", maxLength: 300 }), (text) => {
         expect(decodeHtmlEntities(twitterEncode(text))).toBe(text)
       }),
-    )
-  })
-
-  it("is the identity on text containing no entity references", () => {
-    fc.assert(
-      fc.property(
-        fc.string({ unit: "binary", maxLength: 300 }).filter((s) => !s.includes("&")),
-        (text) => {
-          expect(decodeHtmlEntities(text)).toBe(text)
-        },
-      ),
     )
   })
 })

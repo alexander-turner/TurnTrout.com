@@ -207,7 +207,13 @@ export function linkifyTweetText(text: string, urls: readonly TweetUrl[]): (Elem
       const out: (Element | string)[] = []
       segments.forEach((segment, index) => {
         if (index > 0) {
-          out.push(externalAnchor(entity.expanded, [entity.display], "tweet-entity tweet-link"))
+          out.push(
+            externalAnchor(
+              entity.expanded,
+              [decodeHtmlEntities(entity.display)],
+              "tweet-entity tweet-link",
+            ),
+          )
         }
         if (segment) out.push(segment)
       })
