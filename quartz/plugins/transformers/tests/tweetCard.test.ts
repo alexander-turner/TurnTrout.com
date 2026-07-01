@@ -145,6 +145,29 @@ describe("buildTweetCard", () => {
     expect(html).toContain('<span class="tweet-avatar-wrap"><img')
   })
 
+  it("renders name, seal, and handle in that order on one row", () => {
+    const html = render(buildTweetCard(baseSnapshot))
+    const rowStart = html.indexOf('class="tweet-name-row"')
+    const nameIndex = html.indexOf(">Alex Turner<", rowStart)
+    const sealIndex = html.indexOf('class="tweet-verified"', rowStart)
+    const handleIndex = html.indexOf('class="tweet-handle no-favicon"', rowStart)
+    expect(rowStart).toBeGreaterThan(-1)
+    expect(nameIndex).toBeGreaterThan(rowStart)
+    expect(sealIndex).toBeGreaterThan(nameIndex)
+    expect(handleIndex).toBeGreaterThan(sealIndex)
+  })
+
+  it("renders name then handle on one row when unverified (no seal between them)", () => {
+    const unverified = { ...baseSnapshot, author: { ...baseSnapshot.author, verified: false } }
+    const html = render(buildTweetCard(unverified))
+    const rowStart = html.indexOf('class="tweet-name-row"')
+    const nameIndex = html.indexOf(">Alex Turner<", rowStart)
+    const handleIndex = html.indexOf('class="tweet-handle no-favicon"', rowStart)
+    expect(html).not.toContain("tweet-verified")
+    expect(nameIndex).toBeGreaterThan(rowStart)
+    expect(handleIndex).toBeGreaterThan(nameIndex)
+  })
+
   it("gives the icon-only source link an accessible name", () => {
     expect(render(buildTweetCard(baseSnapshot))).toContain('aria-label="View post on X"')
   })
@@ -325,6 +348,16 @@ describe("quote tweets", () => {
     expect(html).toContain('href="https://xcancel.com/someone"')
     // The post date sits at the bottom of the quoted card (base is Jan 21, quote Jan 20).
     expect(html).toContain('<span class="tweet-quoted-date">January 20th, 2025</span>')
+  })
+
+  it("renders the quoted author's name then handle on one row (unverified, no seal)", () => {
+    const html = render(buildTweetCard({ ...baseSnapshot, quoted }))
+    const rowStart = html.indexOf('class="tweet-name-row"', html.indexOf("tweet-quoted-header"))
+    const nameIndex = html.indexOf(">Boaz Barak<", rowStart)
+    const handleIndex = html.indexOf('class="tweet-handle no-favicon"', rowStart)
+    expect(rowStart).toBeGreaterThan(-1)
+    expect(nameIndex).toBeGreaterThan(rowStart)
+    expect(handleIndex).toBeGreaterThan(nameIndex)
   })
 
   it("omits the quoted date line when the timestamp is unparseable", () => {
