@@ -137,13 +137,11 @@ function pageSettled(): boolean {
 }
 
 async function settle(page: Page, url: string) {
-  // "load" waits for every sub-resource (including any that never resolve
-  // under CI's network policy) and a few articles hang on it indefinitely —
-  // tripling the test timeout didn't help, confirming a hang, not slowness.
-  // "domcontentloaded" is sufficient here: collision geometry only needs the
-  // DOM parsed and fonts loaded, both independent of the "load" event, and
-  // images already have build-time width/height reserved so their box is
-  // stable before the bytes finish downloading.
+  // "domcontentloaded" is sufficient: collision geometry only needs the DOM
+  // parsed and fonts loaded, and images have build-time width/height
+  // attributes so their boxes are stable before the bytes finish downloading.
+  // Waiting for "load" would add every sub-resource (including third-party
+  // analytics) to a sweep that runs once per article.
   await gotoPage(page, url, "domcontentloaded")
   await page.waitForFunction(pageSettled, undefined, { timeout: 10_000 })
   await page.evaluate(
@@ -169,12 +167,6 @@ for (const slug of ARTICLE_SLUGS) {
       !testInfo.project.name.endsWith("Chrome"),
       "collision geometry doesn't vary by rendering engine",
     )
-    // Article weight varies enormously (some embed several server-rendered
-    // Mermaid diagrams, others carry a dozen-plus images), so the default
-    // 45s budget is too tight for the heaviest pages under CI load. Even
-    // test.slow()'s 3x (135s) wasn't always enough for the single largest
-    // article, so this spec gets its own generous ceiling.
-    test.setTimeout(240_000)
     await settle(page, `/${slug}`)
     const offenders = await page.evaluate(collectTextImageCollisions, [
       TOLERANCE_PX,
