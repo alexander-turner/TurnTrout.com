@@ -97,6 +97,10 @@
   color: var(--midground);
   font-size: var(--font-size-minus-1);
   font-family: var(--font-monospace);
+
+  // Matches .tweet-name-link's tightened line-height so both text items (and
+  // the seal between them) share the same box height to center against.
+  line-height: 1;
 }
 
 // The seal is centered against the name by the flex row's align-items: center
