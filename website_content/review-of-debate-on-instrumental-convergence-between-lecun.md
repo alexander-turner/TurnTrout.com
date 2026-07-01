@@ -40,7 +40,7 @@ Somehow.
 
 I needed to find the right definitions first, and I couldn't even _imagine_ what the [final theorems](https://arxiv.org/abs/1912.01683v6) would say. The fall crept up on me... and found my work incomplete.
 
-Let me tell you: if there's ever been a time when I wished I'd been months ahead on my research agenda, it was September 26, 2019: the day when world-famous AI experts [debated](https://www.facebook.com/story.php?story_fbid=10156248637927143&id=722677142) whether instrumental convergence was a thing, and whether we should worry about it.
+Let me tell you: if there's ever been a time when I wished I'd been months ahead on my research agenda, it was September 26th, 2019: the day when world-famous AI experts [debated](https://www.facebook.com/story.php?story_fbid=10156248637927143&id=722677142) whether instrumental convergence was a thing, and whether we should worry about it.
 
 The debate unfolded below the link-preview: an imposing robot staring the reader down, a title containing 'Terminator', a byline dismissive of AI risk:
 

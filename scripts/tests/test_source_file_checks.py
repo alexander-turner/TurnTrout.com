@@ -2822,3 +2822,68 @@ def test_check_sentence_initial_numerals(text: str, expected_errors: list[str]):
     """Test the check_sentence_initial_numerals function."""
     errors = source_file_checks.check_sentence_initial_numerals(text)
     assert errors == expected_errors
+
+
+@pytest.mark.parametrize(
+    "text, expected_errors",
+    [
+        # Bare cardinal day is flagged
+        (
+            "It happened on January 26, 2026.",
+            ["Date missing ordinal suffix at line 1: January 26, 2026"],
+        ),
+        # Already-ordinal day is fine
+        ("It happened on January 26th, 2026.", []),
+        ("The deal closed on May 1st, 2020.", []),
+        ("She was born on June 2nd, 1990.", []),
+        ("He arrived on March 3rd, 2001.", []),
+        # Abbreviated month, with or without a trailing period
+        (
+            "As of Feb. 19, 2025, the plan changed.",
+            ["Date missing ordinal suffix at line 1: Feb. 19, 2025"],
+        ),
+        ("As of Feb. 19th, 2025, the plan changed.", []),
+        (
+            "As of Sept 3, 2019, it was over.",
+            ["Date missing ordinal suffix at line 1: Sept 3, 2019"],
+        ),
+        # No day-of-month present, just month + year: not a flagged pattern
+        ("Written in October 2024.", []),
+        ("Spring 2018 through June 2022.", []),
+        # Month + day with no year is not flagged (no comma+year to anchor it)
+        ("Meet me May 5 sometime.", []),
+        # Blockquotes are verbatim quotations
+        ("> Edited on August 29, 2022", []),
+        (">> Edited on August 29, 2022", []),
+        # Headings, tables, and images are non-prose contexts
+        ("# November 9, 2024", []),
+        ("| November 9, 2024 | column |", []),
+        ("![Taken November 9, 2024](/img.png)", []),
+        # Raw HTML lines (e.g. component demo fixtures) are excluded
+        ('<p class="subtitle">November 4, 2008</p>', []),
+        # Code and math are stripped before checking
+        ("`January 26, 2026`", []),
+        ("$January 26, 2026$", []),
+        # Two dates on one line both get flagged
+        (
+            "From January 1, 2020 to January 2, 2020.",
+            [
+                "Date missing ordinal suffix at line 1: January 1, 2020",
+                "Date missing ordinal suffix at line 1: January 2, 2020",
+            ],
+        ),
+        # Line number tracking across multiple lines
+        (
+            "Just prose.\nIt happened on January 26, 2026.",
+            ["Date missing ordinal suffix at line 2: January 26, 2026"],
+        ),
+        # Empty input
+        ("", []),
+    ],
+)
+def test_check_dates_missing_ordinal_suffix(
+    text: str, expected_errors: list[str]
+):
+    """Test the check_dates_missing_ordinal_suffix function."""
+    errors = source_file_checks.check_dates_missing_ordinal_suffix(text)
+    assert errors == expected_errors
