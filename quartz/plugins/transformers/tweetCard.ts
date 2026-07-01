@@ -306,12 +306,14 @@ function authorNameRow(author: TweetAuthor, profileUrl: string): Element {
 }
 
 /**
- * Nested card for the tweet a quote-tweet embeds. The header is a single
- * Twitter-style row: avatar, name, `@handle`, then the post date.
+ * Nested card for the tweet a quote-tweet embeds: header (avatar, name,
+ * `@handle`), body, media, and a bottom date. The date is omitted when it
+ * matches the quoting tweet's own date (`outerDate`), since repeating it reads
+ * as noise.
  */
-function quotedCard(quoted: QuotedTweet): Element {
+function quotedCard(quoted: QuotedTweet, outerDate: string): Element {
   const profileUrl = `${XCANCEL_BASE}/${quoted.author.handle}`
-  const headerChildren: (Element | string)[] = [
+  const header = h("div", { className: "tweet-quoted-header" }, [
     h("img", {
       className: "tweet-quoted-avatar",
       src: quoted.author.avatarSrc,
@@ -322,18 +324,14 @@ function quotedCard(quoted: QuotedTweet): Element {
     }),
     authorNameRow(quoted.author, profileUrl),
     externalAnchor(profileUrl, [`@${quoted.author.handle}`], "tweet-handle"),
-  ]
-  const formattedDate = formatTweetDate(quoted.createdAt)
-  if (formattedDate) {
-    headerChildren.push(h("span", { className: "tweet-quoted-date" }, formattedDate))
-  }
-  const header = h("div", { className: "tweet-quoted-header" }, headerChildren)
-  const body = h("div", { className: "tweet-body" }, linkifyTweetText(quoted.text, quoted.urls))
-  return h("div", { className: "tweet-quoted", "data-tweet-id": quoted.id }, [
-    header,
-    body,
-    ...mediaGrid(quoted.media),
   ])
+  const body = h("div", { className: "tweet-body" }, linkifyTweetText(quoted.text, quoted.urls))
+  const children: Element[] = [header, body, ...mediaGrid(quoted.media)]
+  const formattedDate = formatTweetDate(quoted.createdAt)
+  if (formattedDate && formattedDate !== outerDate) {
+    children.push(h("span", { className: "tweet-quoted-date" }, formattedDate))
+  }
+  return h("div", { className: "tweet-quoted", "data-tweet-id": quoted.id }, children)
 }
 
 /** Build the rendered card for a single resolved tweet. */
@@ -371,9 +369,9 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
   const children: Element[] = []
   if (retweetedBy) children.push(retweetContext(retweetedBy))
   children.push(header, body, ...mediaGrid(snapshot.media))
-  if (snapshot.quoted) children.push(quotedCard(snapshot.quoted))
 
   const formatted = formatTweetDate(snapshot.createdAt)
+  if (snapshot.quoted) children.push(quotedCard(snapshot.quoted, formatted))
   if (formatted) {
     children.push(h("span", { className: "tweet-date" }, formatted))
   }

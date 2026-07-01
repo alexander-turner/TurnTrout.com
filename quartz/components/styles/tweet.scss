@@ -145,18 +145,6 @@
   height: calc(3 * $base-margin);
 }
 
-// The post date trails the handle, Twitter-style, with a middot separator. It
-// shares the main date's muted color/size (see .tweet-date).
-.tweet-quoted-date {
-  flex: 0 0 auto;
-  white-space: nowrap;
-
-  &::before {
-    content: "·";
-    margin-right: calc(0.5 * $base-margin);
-  }
-}
-
 .tweet-quoted .tweet-body {
   margin-top: calc(0.5 * $base-margin);
 }
@@ -242,17 +230,14 @@ $tweet-media-max-height: 24rem;
   }
 }
 
-// Muted timestamp, shared by the main card (block, below the body) and the
-// quoted header (inline). Layout-specific rules live with each class.
+// Muted timestamp at the bottom of the main card and, identically, the quoted
+// card.
 .tweet-date,
 .tweet-quoted-date {
-  color: var(--midground);
-  font-size: var(--font-size-minus-1);
-}
-
-.tweet-date {
   display: block;
   margin-top: $base-margin;
+  color: var(--midground);
+  font-size: var(--font-size-minus-1);
 }
 
 .tweet-card-unavailable {

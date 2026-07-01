@@ -323,7 +323,7 @@ describe("quote tweets", () => {
     // The quoted avatar is self-hosted, linkified mentions point at xcancel.
     expect(html).toContain("tweet-quoted-avatar")
     expect(html).toContain('href="https://xcancel.com/someone"')
-    // The post date trails the handle in the header.
+    // The post date sits at the bottom of the quoted card (base is Jan 21, quote Jan 20).
     expect(html).toContain('<span class="tweet-quoted-date">January 20th, 2025</span>')
   })
 
@@ -332,6 +332,14 @@ describe("quote tweets", () => {
     expect(render(buildTweetCard({ ...baseSnapshot, quoted: undated }))).not.toContain(
       "tweet-quoted-date",
     )
+  })
+
+  it("hides the quoted date when it matches the quoting tweet's date", () => {
+    const sameDate = { ...quoted, createdAt: baseSnapshot.createdAt }
+    const html = render(buildTweetCard({ ...baseSnapshot, quoted: sameDate }))
+    // The quoted card omits its date; only the outer card shows the shared date.
+    expect(html).not.toContain("tweet-quoted-date")
+    expect((html.match(/January 21st, 2025/g) ?? []).length).toBe(1)
   })
 
   it("renders media inside the quoted card", () => {
