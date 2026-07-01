@@ -12,6 +12,7 @@ import {
   pauseMediaElements,
   setTheme,
   takeRegressionScreenshot,
+  waitForImagesInElement,
   waitForTransitionEnd,
 } from "./visual_utils"
 
@@ -29,6 +30,44 @@ test.describe("visual_utils functions", () => {
   test.beforeEach(async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
     await page.emulateMedia({ colorScheme: preferredTheme })
+  })
+
+  test("waitForImagesInElement reloads an image whose first load fails", async ({ page }) => {
+    // 1x1 transparent PNG.
+    const onePixelPng = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      "base64",
+    )
+    // Abort the first request to mimic a transient Firefox load failure; serve
+    // every retry so the reload path can recover. Asserting the retry *request*
+    // (route-observable) rather than the final paint state keeps the test
+    // deterministic across browsers — paint timing of a fulfilled image is not
+    // what this helper controls.
+    let requests = 0
+    await page.route("**/flaky-visual-test-image.png*", async (route) => {
+      requests += 1
+      if (requests === 1) {
+        await route.abort()
+      } else {
+        await route.fulfill({ contentType: "image/png", body: onePixelPng })
+      }
+    })
+
+    await page.evaluate(() => {
+      const container = document.createElement("div")
+      container.id = "flaky-img-container"
+      const img = document.createElement("img")
+      img.id = "flaky-visual-test-image"
+      img.src = "https://assets.turntrout.com/flaky-visual-test-image.png"
+      container.appendChild(img)
+      document.body.appendChild(container)
+    })
+
+    await waitForImagesInElement(page.locator("#flaky-img-container"))
+
+    // The helper must reload after the first (failed) load instead of proceeding
+    // with a blank image.
+    expect(requests).toBeGreaterThanOrEqual(2)
   })
 
   for (const theme of ["light", "dark", "auto"]) {
