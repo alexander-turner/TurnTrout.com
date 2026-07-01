@@ -170,9 +170,11 @@ for (const slug of ARTICLE_SLUGS) {
       "collision geometry doesn't vary by rendering engine",
     )
     // Article weight varies enormously (some embed several server-rendered
-    // Mermaid diagrams), so the default 45s budget is too tight for the
-    // heaviest pages under CI load.
-    test.slow()
+    // Mermaid diagrams, others carry a dozen-plus images), so the default
+    // 45s budget is too tight for the heaviest pages under CI load. Even
+    // test.slow()'s 3x (135s) wasn't always enough for the single largest
+    // article, so this spec gets its own generous ceiling.
+    test.setTimeout(240_000)
     await settle(page, `/${slug}`)
     const offenders = await page.evaluate(collectTextImageCollisions, [
       TOLERANCE_PX,
