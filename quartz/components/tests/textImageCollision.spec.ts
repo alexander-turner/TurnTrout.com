@@ -65,17 +65,22 @@ interface Offender {
 // enter the float's box — is never flagged, only text that is genuinely
 // rendered underneath an image.
 /* istanbul ignore next -- executed in the browser, not under Jest */
-function collectTextImageCollisions([tolerance, minImageSize]: readonly [number, number]): Offender[] {
+function collectTextImageCollisions([tolerance, minImageSize]: readonly [
+  number,
+  number,
+]): Offender[] {
   const isVisible = (el: Element): boolean => {
     const style = getComputedStyle(el)
     return style.display !== "none" && style.visibility !== "hidden"
   }
 
-  const images = Array.from(document.body.querySelectorAll<HTMLImageElement>("img")).filter((img) => {
-    if (!isVisible(img)) return false
-    const rect = img.getBoundingClientRect()
-    return rect.width >= minImageSize && rect.height >= minImageSize
-  })
+  const images = Array.from(document.body.querySelectorAll<HTMLImageElement>("img")).filter(
+    (img) => {
+      if (!isVisible(img)) return false
+      const rect = img.getBoundingClientRect()
+      return rect.width >= minImageSize && rect.height >= minImageSize
+    },
+  )
   if (images.length === 0) return []
 
   const offenders: Offender[] = []
@@ -107,8 +112,10 @@ function collectTextImageCollisions([tolerance, minImageSize]: readonly [number,
     for (const img of images) {
       const imgRect = img.getBoundingClientRect()
       for (const textRect of textRects) {
-        const overlapWidth = Math.min(textRect.right, imgRect.right) - Math.max(textRect.left, imgRect.left)
-        const overlapHeight = Math.min(textRect.bottom, imgRect.bottom) - Math.max(textRect.top, imgRect.top)
+        const overlapWidth =
+          Math.min(textRect.right, imgRect.right) - Math.max(textRect.left, imgRect.left)
+        const overlapHeight =
+          Math.min(textRect.bottom, imgRect.bottom) - Math.max(textRect.top, imgRect.top)
         if (overlapWidth > tolerance && overlapHeight > tolerance) {
           offenders.push({
             text: textNode.textContent?.trim().slice(0, 80) ?? "",
