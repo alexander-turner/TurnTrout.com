@@ -46,6 +46,43 @@ def _determine_commit_range(commit_range: str | None) -> str:
     return f"{after_commit}^..{after_commit}"
 
 
+def _revision_exists(git_executable: str, revision: str) -> bool:
+    """Return True if ``revision`` resolves to a commit in the current repo."""
+    try:
+        subprocess.check_output(
+            [
+                git_executable,
+                "rev-parse",
+                "--verify",
+                "--quiet",
+                f"{revision}^{{commit}}",
+            ],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+def _resolve_range(git_executable: str, range_to_check: str) -> str:
+    """
+    Return a diff range whose endpoints exist in the current repo.
+
+    The update-dates CI job amends the pushed commit and force-pushes, so the
+    push event's "before" SHA is orphaned and a fresh checkout can't resolve
+    ``before..after``. When that happens, diff the "after" commit against its
+    own parent: same file set, without depending on the orphaned commit.
+    """
+    if ".." not in range_to_check:
+        return range_to_check
+
+    before, after = range_to_check.split("..", 1)
+    if before and after and not _revision_exists(git_executable, before):
+        return f"{after}^..{after}"
+    return range_to_check
+
+
 def is_file_modified(file_path: Path, commit_range: str | None = None) -> bool:
     """
     Check if file was modified in the relevant commit range.
@@ -63,7 +100,9 @@ def is_file_modified(file_path: Path, commit_range: str | None = None) -> bool:
             than silently treating the file as unmodified.
     """
     git_executable = script_utils.find_executable("git")
-    range_to_check = _determine_commit_range(commit_range)
+    range_to_check = _resolve_range(
+        git_executable, _determine_commit_range(commit_range)
+    )
 
     try:
         git_root = subprocess.check_output(

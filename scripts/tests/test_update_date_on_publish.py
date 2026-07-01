@@ -410,6 +410,86 @@ def test_is_file_modified_invalid_path(mock_git_commands):
         update_lib.is_file_modified(test_file)
 
 
+@pytest.mark.parametrize(
+    ("commit_range", "expected"),
+    [
+        pytest.param(None, "origin/main..HEAD", id="local-unpushed"),
+        pytest.param("abc123", "abc123", id="single-ref-no-range"),
+        pytest.param("aaa..bbb", "aaa..bbb", id="normal-range"),
+        pytest.param(
+            f"{'0' * 40}..def456", "def456^..def456", id="first-push-zeros"
+        ),
+    ],
+)
+def test_determine_commit_range(commit_range, expected):
+    """The CI/local commit range is normalized for each push shape."""
+    assert update_lib._determine_commit_range(commit_range) == expected
+
+
+def test_revision_exists_true():
+    """A resolvable revision reports as existing."""
+    with patch(
+        "scripts.update_date_on_publish.subprocess.check_output",
+        return_value="deadbeef\n",
+    ) as mock_check:
+        assert update_lib._revision_exists("git", "deadbeef") is True
+    mock_check.assert_called_once()
+
+
+def test_revision_exists_false():
+    """An unresolvable (orphaned) revision reports as missing, not an error."""
+    with patch(
+        "scripts.update_date_on_publish.subprocess.check_output",
+        side_effect=subprocess.CalledProcessError(128, "git"),
+    ):
+        assert update_lib._revision_exists("git", "orphaned") is False
+
+
+def test_resolve_range_no_dotdot():
+    """A single revision (no range) is returned unchanged."""
+    assert update_lib._resolve_range("git", "abc123") == "abc123"
+
+
+def test_resolve_range_before_reachable():
+    """A reachable ``before`` keeps the original range."""
+    with patch(
+        "scripts.update_date_on_publish._revision_exists", return_value=True
+    ):
+        assert update_lib._resolve_range("git", "aaa..bbb") == "aaa..bbb"
+
+
+def test_resolve_range_before_orphaned():
+    """An orphaned ``before`` (amend + force-push) falls back to
+    after^..after."""
+    with patch(
+        "scripts.update_date_on_publish._revision_exists", return_value=False
+    ):
+        assert update_lib._resolve_range("git", "aaa..bbb") == "bbb^..bbb"
+
+
+def test_is_file_modified_orphaned_before_uses_parent_range(
+    test_file, mock_git_root
+):
+    """When the push ``before`` commit is orphaned, the diff falls back to
+    ``after^..after`` instead of crashing on an invalid revision range."""
+    diff_ranges: list[str] = []
+
+    def _mock_git(*args, **kwargs) -> str:
+        argv = args[0]
+        if "--verify" in argv:
+            raise subprocess.CalledProcessError(128, "git")  # before orphaned
+        if "rev-parse" in argv:
+            return f"{mock_git_root}\n"
+        if "diff" in argv:
+            diff_ranges.append(argv[3])
+            return ""
+        return ""
+
+    with patch("subprocess.check_output", side_effect=_mock_git):
+        assert update_lib.is_file_modified(test_file, "orphaned..head") is False
+    assert diff_ranges == ["head^..head"]
+
+
 def test_yaml_formatting_preservation():
     """Test that YAML formatting, quotes, and comments are preserved."""
     # Create a test file with specific formatting
