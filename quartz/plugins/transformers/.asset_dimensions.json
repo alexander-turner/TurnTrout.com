@@ -9618,5 +9618,29 @@
   "https://assets.turntrout.com/static/tweets/2071254764558676130/media-0.png?v=1": {
     "width": 680,
     "height": 736
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cbsnews_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/twemoji/2194.svg?v=1": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/images/claude-guard.png?v=1": {
+    "width": 1676,
+    "height": 938
+  },
+  "https://assets.turntrout.com/static/tweets/2071998353664000365/avatar.jpg?v=1": {
+    "width": 400,
+    "height": 400
+  },
+  "https://assets.turntrout.com/twemoji/1f7e7.svg?v=1": {
+    "width": 36,
+    "height": 36
+  },
+  "https://assets.turntrout.com/static/tweets/2071998353664000365/quoted-avatar.jpg?v=1": {
+    "width": 400,
+    "height": 400
   }
 }

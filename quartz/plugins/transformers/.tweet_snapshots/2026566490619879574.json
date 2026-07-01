@@ -13,7 +13,21 @@
   "media": [],
   "metrics": {
     "replies": 168,
-    "likes": 4317
+    "likes": 4316
   },
-  "snapshotAt": "2026-06-28T05:15:08.479121+00:00"
+  "snapshotAt": "2026-07-01T03:55:09.507389+00:00",
+  "quoted": {
+    "id": "2026390982460125305",
+    "url": "https://xcancel.com/boazbaraktcs/status/2026390982460125305",
+    "author": {
+      "name": "Boaz Barak",
+      "handle": "boazbaraktcs",
+      "verified": false,
+      "avatarSrc": "https://assets.turntrout.com/static/tweets/2026566490619879574/quoted-avatar.jpg"
+    },
+    "createdAt": "2026-02-24T20:17:13.000Z",
+    "text": "As an American citizen, the last thing I want is government using AI for mass surveillance of Americans.",
+    "urls": [],
+    "media": []
+  }
 }
