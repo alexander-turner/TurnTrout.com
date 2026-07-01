@@ -162,6 +162,10 @@ for (const slug of ARTICLE_SLUGS) {
       !testInfo.project.name.endsWith("Chrome"),
       "collision geometry doesn't vary by rendering engine",
     )
+    // Article weight varies enormously (some embed several server-rendered
+    // Mermaid diagrams), so the default 45s budget is too tight for the
+    // heaviest pages under CI load.
+    test.slow()
     await settle(page, `/${slug}`)
     const offenders = await page.evaluate(collectTextImageCollisions, [
       TOLERANCE_PX,
