@@ -48,9 +48,9 @@
   height: calc(6 * $base-margin);
 }
 
-// A flex item (of .tweet-header) rather than a plain block, so its min-width: 0
-// lets the name row below shrink and ellipsize instead of overflowing the card.
 .tweet-author {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   line-height: 1.2;
 }
@@ -62,10 +62,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
-  // Flex items don't shrink below their content size by default; without this
-  // the ellipsis above never triggers and long text overflows the row instead.
-  min-width: 0;
 }
 
 // The display-name link and the verified seal share a row; the seal is a sibling
@@ -80,39 +76,20 @@
 .tweet-name-link {
   color: var(--foreground);
   font-weight: 600;
-
-  // The name truncates before the handle does, so @handle stays fully legible.
-  flex: 1 1 auto;
-
-  // The serif display font's inherited line-height (1.2, from .tweet-author)
-  // reserves more space below the glyphs than the monospace handle or the
-  // verified seal need, so align-items: center visually sinks the name below
-  // its flex siblings. Tightening it to the font's own box re-centers all
-  // three against each other.
-  line-height: 1;
 }
 
 .tweet-handle {
-  flex: 0 0 auto;
   color: var(--midground);
   font-size: var(--font-size-minus-1);
   font-family: var(--font-monospace);
-
-  // Matches .tweet-name-link's tightened line-height so both text items (and
-  // the seal between them) share the same box height to center against.
-  line-height: 1;
 }
 
 // The seal is centered against the name by the flex row's align-items: center
-// (see .tweet-name-row) — no manual offset. Its 1em is anchored to the
-// handle's font-size, not the ambient (larger, unset) name font-size: without
-// this it inherits the display name's size instead, rendering oversized next
-// to the handle it's meant to sit level with.
+// (see .tweet-name-row) — no manual offset.
 .tweet-verified {
   width: 1em;
   height: 1em;
   flex: 0 0 auto;
-  font-size: var(--font-size-minus-1);
   fill: var(--blue);
   margin: 0;
 }

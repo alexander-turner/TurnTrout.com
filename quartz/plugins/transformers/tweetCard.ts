@@ -286,8 +286,8 @@ function retweetContext(name: string): Element {
 }
 
 /**
- * The name line: display name, verified seal, and `@handle` all on one row.
- * The seal stays outside the name anchor so only the name is that link.
+ * The name line: the display name links to the profile, the verified seal sits
+ * beside it. The seal stays outside the anchor so only the name is the link.
  */
 function authorNameRow(author: TweetAuthor, profileUrl: string): Element {
   const children: (Element | string)[] = [
@@ -302,7 +302,6 @@ function authorNameRow(author: TweetAuthor, profileUrl: string): Element {
       icon(VERIFIED_PATH, "tweet-verified", { "aria-label": "Verified account", role: "img" }),
     )
   }
-  children.push(externalAnchor(profileUrl, [`@${author.handle}`], "tweet-handle"))
   return h("span", { className: "tweet-name-row" }, children)
 }
 
@@ -324,6 +323,7 @@ function quotedCard(quoted: QuotedTweet, outerDate: string): Element {
       height: 24,
     }),
     authorNameRow(quoted.author, profileUrl),
+    externalAnchor(profileUrl, [`@${quoted.author.handle}`], "tweet-handle"),
   ])
   const body = h("div", { className: "tweet-body" }, linkifyTweetText(quoted.text, quoted.urls))
   const children: Element[] = [header, body, ...mediaGrid(quoted.media)]
@@ -352,7 +352,10 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
         height: 48,
       }),
     ]),
-    h("div", { className: "tweet-author" }, [authorNameRow(author, profileUrl)]),
+    h("div", { className: "tweet-author" }, [
+      authorNameRow(author, profileUrl),
+      externalAnchor(profileUrl, [`@${author.handle}`], "tweet-handle"),
+    ]),
     externalAnchor(
       snapshot.url,
       [icon(X_LOGO_PATH, "tweet-x-logo")],
