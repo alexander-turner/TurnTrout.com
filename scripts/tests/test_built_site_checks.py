@@ -5250,6 +5250,31 @@ def _vtt_404(stem: str) -> str:
             [(False, 404)],
             [_linked_caption_issue(f"{_CDN}/dup.mp4", _vtt_404("dup"))] * 2,
         ),
+        # Uppercase extensions match; the probe preserves the base's case.
+        # The href-less anchor exercises the reference scan's typeguard.
+        (
+            f'<a>plain</a><a href="{_CDN}/TALK.MP4">c</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/TALK.MP4", _vtt_404("TALK"))],
+        ),
+        # Protocol-relative CDN URLs are in scope.
+        (
+            '<a href="//assets.turntrout.com/static/talk.mp4">c</a>',
+            [(True, 200)],
+            [],
+        ),
+        # Only the exact #no-audio fragment opts out.
+        (
+            f'<a href="{_CDN}/talk.mp4#no-audio-please">c</a>',
+            [(False, 404)],
+            [
+                _linked_caption_issue(
+                    f"{_CDN}/talk.mp4#no-audio-please", _vtt_404("talk")
+                )
+            ],
+        ),
+        # The opt-out fragment combines with a query string.
+        (f'<a href="{_CDN}/talk.mp4?v=2#no-audio">c</a>', [], []),
     ],
 )
 def test_check_linked_video_captions(
@@ -5259,6 +5284,8 @@ def test_check_linked_video_captions(
     expected_issues: list[str],
 ):
     """Linked audio-container videos on the CDN must have captions."""
+    # Clear at both ends: mocked probe results cached under real CDN URLs
+    # must not leak into neighboring tests.
     built_site_checks._cdn_vtt_probe_issue.cache_clear()
     soup = BeautifulSoup(html, "html.parser")
 
@@ -5275,8 +5302,11 @@ def test_check_linked_video_captions(
 
     monkeypatch.setattr(built_site_checks._http_session, "head", mock_head)
 
-    result = built_site_checks.check_linked_video_captions(soup)
-    assert sorted(result) == sorted(expected_issues)
+    try:
+        result = built_site_checks.check_linked_video_captions(soup)
+    finally:
+        built_site_checks._cdn_vtt_probe_issue.cache_clear()
+    assert result == expected_issues
     # Every scripted response must be consumed: leftovers mean the check
     # probed fewer URLs than the scenario expects.
     assert not remaining

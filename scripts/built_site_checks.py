@@ -3028,9 +3028,7 @@ def check_video_caption_tracks(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-# Linked (as opposed to embedded) videos in these container formats routinely
-# carry a speech track, so they need captions. ``.webm``/``.gif`` links are
-# exempt (see check_linked_video_captions).
+# Linked-video container formats that routinely carry speech.
 _CAPTIONABLE_LINKED_VIDEO_EXTS: frozenset[str] = frozenset(
     {".mp4", ".mov", ".m4v"}
 )
@@ -3040,28 +3038,19 @@ _CAPTIONABLE_LINKED_VIDEO_EXTS: frozenset[str] = frozenset(
 _NO_AUDIO_LINK_MARKER = "no-audio"
 
 
-def _cdn_asset_base(url: str) -> tuple[str, str] | None:
+def _cdn_asset_base(url: str) -> tuple[str, str, str] | None:
     """
-    For a URL pointing at the asset CDN, return ``(path_without_ext, ext)`` with
-    the query and fragment stripped and the extension lowercased.
+    Split an asset-CDN URL into ``(path_without_ext, ext, fragment)``, with the
+    query dropped and the extension lowercased.
 
-    Returns
-    ``None`` for URLs hosted anywhere else.
+    ``None`` for URLs hosted
+    anywhere else.
     """
     parsed = urlparse(url)
     if parsed.hostname != script_utils.CDN_HOSTNAME:
         return None
     base, ext = os.path.splitext(parsed.path)
-    return (base, ext.lower())
-
-
-def _page_references_cdn_vtt(soup: BeautifulSoup, base_path: str) -> bool:
-    """True iff the page references ``<base_path>.vtt`` on the asset CDN."""
-    for tag in _tags_only(soup.find_all(["a", "track", "source"])):
-        ref = tag.get("href") or tag.get("src")
-        if isinstance(ref, str) and _cdn_asset_base(ref) == (base_path, ".vtt"):
-            return True
-    return False
+    return (base, ext.lower(), parsed.fragment)
 
 
 @functools.cache
@@ -3069,8 +3058,9 @@ def _cdn_vtt_probe_issue(vtt_url: str) -> str | None:
     """
     ``None`` if a HEAD request finds the ``.vtt`` on the CDN, else the reason.
 
-    Cached per URL: the checker runs over every built page, and a video linked
-    from several pages needs only one probe.
+    Results — failures included — are cached per URL: the checker runs over
+    every built page, and each unreferenced video gets exactly one probe per
+    run.
     """
     try:
         response = _head_with_retry(vtt_url)
@@ -3079,6 +3069,19 @@ def _cdn_vtt_probe_issue(vtt_url: str) -> str | None:
     if response.ok:
         return None
     return f"HEAD {vtt_url} returned status {response.status_code}"
+
+
+def _referenced_cdn_vtt_bases(soup: BeautifulSoup) -> set[str]:
+    """Base paths of every ``.vtt`` on the asset CDN referenced by the page."""
+    bases: set[str] = set()
+    for tag in _tags_only(soup.find_all(["a", "track", "source"])):
+        ref = tag.get("href") or tag.get("src")
+        if not isinstance(ref, str):
+            continue
+        parsed = _cdn_asset_base(ref)
+        if parsed is not None and parsed[1] == ".vtt":
+            bases.add(parsed[0])
+    return bases
 
 
 def check_linked_video_captions(soup: BeautifulSoup) -> list[str]:
@@ -3094,20 +3097,22 @@ def check_linked_video_captions(soup: BeautifulSoup) -> list[str]:
     a ``#no-audio`` fragment, the link-side analog of the ``label="No audio"``
     marker on embedded videos.
     """
+    referenced_vtt_bases = _referenced_cdn_vtt_bases(soup)
+
     issues: list[str] = []
     for anchor in _tags_only(soup.find_all("a", href=True)):
         href = anchor.get("href")
-        if not isinstance(href, str):
+        if not isinstance(href, str):  # pragma: no cover  # a simple typeguard
             continue
         parsed = _cdn_asset_base(href)
-        if parsed is None or parsed[0] == "":
+        if parsed is None:
             continue
-        base_path, ext = parsed
+        base_path, ext, fragment = parsed
         if ext not in _CAPTIONABLE_LINKED_VIDEO_EXTS:
             continue
-        if urlparse(href).fragment == _NO_AUDIO_LINK_MARKER:
+        if fragment == _NO_AUDIO_LINK_MARKER:
             continue
-        if _page_references_cdn_vtt(soup, base_path):
+        if base_path in referenced_vtt_bases:
             continue
         vtt_url = f"{script_utils.CDN_BASE_URL}{base_path}.vtt"
         probe_issue = _cdn_vtt_probe_issue(vtt_url)

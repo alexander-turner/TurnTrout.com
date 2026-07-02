@@ -56,15 +56,10 @@ Three stages: **Transform → Filter → Emit**.
   that every audio-bearing `<video>` ships a real `.vtt` track (or an explicit
   `label="No audio"` marker).
 - **Linked (not embedded) videos**: `built_site_checks.check_linked_video_captions`
-  covers videos referenced by a bare `<a href>` on the asset CDN, which bypass
-  the embedded-`<video>` check. A link to a `.mp4`/`.mov`/`.m4v` on
-  `assets.turntrout.com` passes if the same page references the sibling `.vtt`
-  (same base path), or failing that, if a HEAD probe finds the sibling `.vtt`
-  on the CDN (the transcription pipeline uploads it next to the video; probes
-  use the shared retrying session and are cached per URL). Silent links opt
-  out with a `#no-audio` fragment (`…/foo.mp4#no-audio`), the link-side analog
-  of `label="No audio"` — the check can't detect audio in the remote file.
-  `.webm`/`.gif` links are exempt.
+  requires a captions companion for `<a href>` links to `.mp4`/`.mov`/`.m4v` on
+  the asset CDN — satisfied by an on-page sibling-`.vtt` reference, a HEAD probe
+  finding the `.vtt` on the CDN, or a `#no-audio` opt-out fragment. See the
+  function docstring for the full semantics.
 
 ### Text processing
 
