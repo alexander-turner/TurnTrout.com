@@ -926,7 +926,10 @@ def test_run_archive_nxdomain_routes_to_wayback(
 
 
 def test_run_archive_capture_failure_falls_back_to_wayback(
-    tmp_path: Path, content_dir: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    content_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     def fail_capture(*_a, **_k):
         raise archive_links.SnapshotFailedError("blocked the crawler")
@@ -945,6 +948,10 @@ def test_run_archive_capture_failure_falls_back_to_wayback(
         manifest["https://new.example.com/page"]["archive_url"]
         == "https://cdn/wayback.html"
     )
+    # The live-capture reason is surfaced, not swallowed by the Wayback result.
+    err = capsys.readouterr().err
+    assert "Live capture failed" in err
+    assert "blocked the crawler" in err
 
 
 def test_run_archive_skips_when_capture_and_wayback_fail(

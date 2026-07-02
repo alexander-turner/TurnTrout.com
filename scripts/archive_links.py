@@ -724,7 +724,18 @@ def run_archive(  # pylint: disable=too-many-arguments,too-many-locals
             else:
                 try:
                     archive_url = archive_and_upload(canonical, static_dir)
-                except (LowQualitySnapshotError, SnapshotFailedError):
+                except (
+                    LowQualitySnapshotError,
+                    SnapshotFailedError,
+                ) as capture_exc:
+                    # Surface WHY the live capture failed before falling back;
+                    # otherwise a systemic problem (e.g. the browser never
+                    # launching) hides behind the Wayback result.
+                    print(
+                        f"Live capture failed for {canonical}: {capture_exc}"
+                        " — falling back to Wayback",
+                        file=sys.stderr,
+                    )
                     archive_url = archive_from_wayback(
                         canonical, static_dir, session
                     )
