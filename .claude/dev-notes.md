@@ -266,9 +266,13 @@ records the result in `config/link_archive_manifest.json`.
   `r2:turntrout/static/link-archive/probe-state.json`. This keeps the weekly
   manifest PR diff meaningful — it is the human gate before the irreversible
   rewrite, so it must not drown in timestamp churn.
-- **A link flips to `dead` only on 404/410 confirmed on N>=2 _consecutive_ runs**
-  (`DEAD_STRIKE_THRESHOLD`); any transient (403/429/5xx/timeout) resets the
-  streak, so a flaky probe can't drive the irreversible rewrite.
+- **A link flips to `dead` only on 404/410 — or an authoritative NXDOMAIN
+  (host no longer resolves) — confirmed on N>=2 _consecutive_ runs**
+  (`DEAD_STRIKE_THRESHOLD`); any transient (403/429/5xx/timeout, or a
+  temporary-failure DNS result) resets the streak, so a flaky probe can't drive
+  the irreversible rewrite. `probe_status` classifies a connection error by
+  re-resolving the host: only `EAI_NONAME`/`EAI_NODATA` (not `EAI_AGAIN`) count
+  as the hard-gone `NXDOMAIN_STATUS`, which routes to Wayback like a 404.
 - **Probes send a browser User-Agent** (`PROBE_USER_AGENT`): some anti-bot
   setups return 404 (not 403) to non-browser agents, which would read as
   consistently dead and defeat the strike gate.

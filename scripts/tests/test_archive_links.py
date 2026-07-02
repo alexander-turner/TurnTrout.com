@@ -230,10 +230,83 @@ def test_probe_status_success() -> None:
     response.close.assert_called_once()
 
 
-def test_probe_status_error_returns_zero() -> None:
+def test_probe_status_error_with_resolvable_host_is_transient(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A connection error to a host that still resolves (refused/reset/TLS) is
+    # transient, not dead.
     session = MagicMock()
-    session.get.side_effect = requests.RequestException("boom")
+    session.get.side_effect = requests.ConnectionError("refused")
+    monkeypatch.setattr(archive_links, "_host_resolves", lambda url: True)
     assert archive_links.probe_status("https://example.com", session) == 0
+
+
+def test_probe_status_nxdomain_when_host_stops_resolving(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session = MagicMock()
+    session.get.side_effect = requests.ConnectionError("no route")
+    monkeypatch.setattr(archive_links, "_host_resolves", lambda url: False)
+    assert (
+        archive_links.probe_status("https://gone.example.com", session)
+        == archive_links.NXDOMAIN_STATUS
+    )
+
+
+def test_probe_status_transient_dns_is_not_nxdomain(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # An indeterminate resolver result (EAI_AGAIN) must read as transient, not
+    # a dead domain.
+    session = MagicMock()
+    session.get.side_effect = requests.ConnectionError("temporary failure")
+    monkeypatch.setattr(archive_links, "_host_resolves", lambda url: None)
+    assert archive_links.probe_status("https://blip.example.com", session) == 0
+
+
+def test_host_resolves_true_for_resolvable_host(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(archive_links.socket, "getaddrinfo", lambda *a: [()])
+    assert archive_links._host_resolves("https://example.com/x") is True
+
+
+def test_host_resolves_false_on_nxdomain(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    errno = next(iter(archive_links._NXDOMAIN_ERRNOS))
+
+    def boom(*_a):
+        raise archive_links.socket.gaierror(errno, "Name or service not known")
+
+    monkeypatch.setattr(archive_links.socket, "getaddrinfo", boom)
+    assert archive_links._host_resolves("https://gone.example.com/x") is False
+
+
+def test_host_resolves_none_on_transient_dns(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def boom(*_a):
+        raise archive_links.socket.gaierror(
+            getattr(archive_links.socket, "EAI_AGAIN", -3), "try again"
+        )
+
+    monkeypatch.setattr(archive_links.socket, "getaddrinfo", boom)
+    assert archive_links._host_resolves("https://blip.example.com/x") is None
+
+
+def test_host_resolves_none_on_oserror(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def boom(*_a):
+        raise OSError("resolver unavailable")
+
+    monkeypatch.setattr(archive_links.socket, "getaddrinfo", boom)
+    assert archive_links._host_resolves("https://example.com/x") is None
+
+
+def test_host_resolves_none_without_hostname() -> None:
+    assert archive_links._host_resolves("not-a-url") is None
 
 
 def test_now_iso_format() -> None:
@@ -272,6 +345,23 @@ def test_update_dead_state_dead_strikes_then_flip() -> None:
     assert state["last_status"] == 404
 
     entry, state = archive_links.update_dead_state(entry, state, 410)
+    assert state["dead_strikes"] == 2
+    assert entry["dead"] is True
+
+
+def test_update_dead_state_nxdomain_flips_like_a_hard_status() -> None:
+    # A host that stops resolving for two consecutive runs is as dead as a 410.
+    entry = archive_links._new_entry()
+    state = archive_links._new_probe_state()
+    entry, state = archive_links.update_dead_state(
+        entry, state, archive_links.NXDOMAIN_STATUS
+    )
+    assert state["dead_strikes"] == 1
+    assert entry["dead"] is False
+
+    entry, state = archive_links.update_dead_state(
+        entry, state, archive_links.NXDOMAIN_STATUS
+    )
     assert state["dead_strikes"] == 2
     assert entry["dead"] is True
 
@@ -755,6 +845,36 @@ def test_run_archive_dead_at_discovery_uses_wayback(
         lambda canonical, static_dir, session: "https://cdn/wayback.html",
     )
     monkeypatch.setattr(archive_links, "probe_status", lambda url, session: 404)
+
+    manifest = _run(tmp_path, content_dir)
+
+    assert (
+        manifest["https://new.example.com/page"]["archive_url"]
+        == "https://cdn/wayback.html"
+    )
+
+
+def test_run_archive_nxdomain_routes_to_wayback(
+    tmp_path: Path, content_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # A host that no longer resolves can't be captured live either; route it to
+    # Wayback like any other hard-gone link.
+    def never_capture(*_a, **_k):
+        raise AssertionError(
+            "live capture must not run for a non-resolving host"
+        )
+
+    monkeypatch.setattr(archive_links, "archive_and_upload", never_capture)
+    monkeypatch.setattr(
+        archive_links,
+        "archive_from_wayback",
+        lambda canonical, static_dir, session: "https://cdn/wayback.html",
+    )
+    monkeypatch.setattr(
+        archive_links,
+        "probe_status",
+        lambda url, session: archive_links.NXDOMAIN_STATUS,
+    )
 
     manifest = _run(tmp_path, content_dir)
 

@@ -9,9 +9,10 @@ This is the Python half of the link-archiving system (the TypeScript half is
   2. Probes every discovered link's liveness (browser-like User-Agent,
      parallel), then archives links that need a snapshot: live links are
      captured with ``single-file`` (a headless-Chromium page inliner); links
-     that are already hard-gone (404/410) — or whose capture fails — fall back
-     to the newest Wayback Machine snapshot, so the preserved copy predates the
-     rot instead of memorializing it. Every snapshot gets a ``noindex`` meta
+     that are already hard-gone (404/410, or a host that no longer resolves) —
+     or whose capture fails — fall back to the newest Wayback Machine snapshot,
+     so the preserved copy predates the rot instead of memorializing it. Every
+     snapshot gets a ``noindex`` meta
      and is synced to R2 under a stable
      ``static/link-archive/<sha256>/singlefile.html`` key.
   3. Records durable facts in ``config/link_archive_manifest.json``
@@ -19,8 +20,9 @@ This is the Python half of the link-archiving system (the TypeScript half is
      per-probe telemetry (strike counts, last status/checked) in a separate
      probe-state file that is NOT committed, so the weekly manifest PR only
      appears when something real changed. A link is only marked ``dead`` on a
-     hard-gone status (404/410) confirmed on N>=2 consecutive runs; transient
-     or blocked statuses (403/429/5xx/timeouts) never flip ``dead``.
+     hard-gone status (404/410, or a non-resolving host) confirmed on N>=2
+     consecutive runs; transient or blocked statuses (403/429/5xx/timeouts,
+     transient DNS failures) never flip ``dead``.
 
 The build-time transformer rewrites a ``dead`` link's ``href`` to its archived
 copy. The canonicalization rule here is mirrored exactly in
@@ -41,12 +43,14 @@ import json
 import os
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
 from collections.abc import Iterable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import requests
 from ada_url import URL
@@ -60,8 +64,23 @@ except ImportError:
 
 # --- Configuration constants -------------------------------------------------
 
-# Hard-gone statuses: the only ones that can flip a link to ``dead``.
+# Hard-gone HTTP statuses that can flip a link to ``dead``.
 DEAD_STATUSES: frozenset[int] = frozenset({404, 410})
+# Sentinel "status" for a host that does not resolve (authoritative NXDOMAIN).
+# As final as a 410 — a domain that no longer exists is gone — so it counts
+# toward ``dead`` through the same consecutive-strike gate. Distinct from ``0``
+# (transient/blocked), which never does.
+NXDOMAIN_STATUS: int = -2
+# getaddrinfo errnos meaning "this host does not exist", as opposed to
+# ``EAI_AGAIN`` ("temporary failure in name resolution"), which is transient.
+_NXDOMAIN_ERRNOS: frozenset[int] = frozenset(
+    errno
+    for errno in (
+        getattr(socket, "EAI_NONAME", None),
+        getattr(socket, "EAI_NODATA", None),
+    )
+    if errno is not None
+)
 # Consecutive dead probes required before the destructive rewrite is allowed.
 DEAD_STRIKE_THRESHOLD: int = 2
 # Snapshots smaller than this are treated as login-walls / blank captures.
@@ -297,12 +316,38 @@ def probe_session() -> requests.Session:
     return session
 
 
+def _host_resolves(url: str) -> bool | None:
+    """
+    Whether *url*'s host resolves in DNS.
+
+    Returns ``False`` only on an authoritative "no such host" (NXDOMAIN);
+    ``None`` when the answer is indeterminate (transient resolver failure, an
+    unparseable host, etc.), so a temporary DNS hiccup is never mistaken for a
+    dead domain.
+    """
+    host = urlsplit(url).hostname
+    if not host:
+        return None
+    try:
+        socket.getaddrinfo(host, None)
+        return True
+    except socket.gaierror as exc:
+        if exc.errno in _NXDOMAIN_ERRNOS:
+            return False
+        return None
+    except OSError:
+        return None
+
+
 def probe_status(url: str, session: requests.Session) -> int:
     """
-    Return the final HTTP status of *url* after redirects, or ``0`` on error.
+    Return the final HTTP status of *url* after redirects.
 
-    Streams the response so the body is not downloaded. A ``0`` is treated as a
-    transient/blocked result by :func:`update_dead_state`, never as ``dead``.
+    On a request failure, returns :data:`NXDOMAIN_STATUS` when the host no
+    longer resolves (as final as a 410), or ``0`` for any other error. Both a
+    ``0`` and any non-hard-gone status are treated as transient/blocked by
+    :func:`update_dead_state`, never as ``dead``. Streams the response so the
+    body is not downloaded.
     """
     try:
         response = session.get(
@@ -311,6 +356,12 @@ def probe_status(url: str, session: requests.Session) -> int:
         response.close()
         return response.status_code
     except requests.RequestException as exc:
+        # A connection error may be the host ceasing to exist (NXDOMAIN) or a
+        # transient network/TLS problem; only a definitive no-such-host counts
+        # toward dead.
+        if _host_resolves(url) is False:
+            print(f"Probe for {url}: host does not resolve", file=sys.stderr)
+            return NXDOMAIN_STATUS
         print(f"Probe failed for {url}: {exc}", file=sys.stderr)
         return 0
 
@@ -332,6 +383,11 @@ def _is_alive_status(status: int) -> bool:
     return 200 <= status < 400
 
 
+def _is_dead_status(status: int) -> bool:
+    """Whether *status* is hard-gone: a 404/410 or an NXDOMAIN host."""
+    return status in DEAD_STATUSES or status == NXDOMAIN_STATUS
+
+
 def update_dead_state(
     entry: dict, state: dict, status: int
 ) -> tuple[dict, dict]:
@@ -343,8 +399,9 @@ def update_dead_state(
     destructive rewrite (the repo's zero-flakiness rule for irreversible
     actions):
 
-    - 404/410: increment the strike count; flip ``dead`` once it reaches the
-      threshold. A confirmed ``dead`` verdict never reverts to ``False`` here.
+    - 404/410 or NXDOMAIN: increment the strike count; flip ``dead`` once it
+      reaches the threshold. A confirmed ``dead`` verdict never reverts to
+      ``False`` here.
     - 2xx/3xx: the link recovered — reset strikes and clear ``dead``.
     - anything else (403/429/5xx/timeout=0): blocked/transient — record the
       status and reset the consecutive-strike streak, but keep a previously
@@ -354,7 +411,7 @@ def update_dead_state(
     updated_state = dict(state)
     updated_state["last_status"] = status
     updated_state["last_checked"] = _now_iso()
-    if status in DEAD_STATUSES:
+    if _is_dead_status(status):
         strikes = updated_state.get("dead_strikes", 0) + 1
         updated_state["dead_strikes"] = strikes
         if strikes >= DEAD_STRIKE_THRESHOLD:
@@ -628,12 +685,14 @@ def run_archive(  # pylint: disable=too-many-arguments,too-many-locals
             continue
         status = statuses.get(canonical, 0)
         already_archived = bool(manifest.get(canonical, {}).get("archive_url"))
-        if already_archived and (not refresh or status in DEAD_STATUSES):
+        if already_archived and (not refresh or _is_dead_status(status)):
             # An existing snapshot of a now-dead page is strictly better than
             # anything a re-capture could produce; never clobber it.
             continue
         try:
-            if status in DEAD_STATUSES:
+            if _is_dead_status(status):
+                # A live capture of a 404 page — or of a host that no longer
+                # resolves — would memorialize the rot; go to Wayback instead.
                 archive_url = archive_from_wayback(
                     canonical, static_dir, session
                 )
