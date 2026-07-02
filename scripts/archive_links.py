@@ -552,12 +552,16 @@ def fetch_wayback_snapshot(url: str, session: requests.Session) -> bytes | None:
 
 def sync_snapshot_to_r2(snapshot_path: Path) -> str:
     """
-    Upload *snapshot_path* to R2 with hardening headers; return its URL.
+    Upload *snapshot_path* to R2; return its public URL.
 
     Reuses the R2 plumbing in :mod:`r2_upload` for key derivation and bucket
-    config. ``X-Robots-Tag: noindex`` keeps the mirrored copy out of search
-    engines; ``Content-Security-Policy: sandbox`` neuters scripts and forms in
-    the third-party HTML, which is served from the first-party CDN origin.
+    config. The S3 API can only attach a fixed set of standard object headers,
+    so the hardening response headers (``X-Robots-Tag: noindex`` and
+    ``Content-Security-Policy: sandbox``) come from a Cloudflare transform rule
+    on the ``static/link-archive/`` path prefix instead;
+    ``scripts/check_link_archive_integrity.py`` verifies they are actually
+    served. The injected ``noindex`` meta covers robots even without the
+    header.
     """
     script_utils.check_r2_env()
     relative_path = script_utils.path_relative_to_quartz_parent(snapshot_path)
@@ -571,10 +575,6 @@ def sync_snapshot_to_r2(snapshot_path: Path) -> str:
                 "copyto",
                 str(snapshot_path),
                 upload_target,
-                "--header-upload",
-                "X-Robots-Tag: noindex",
-                "--header-upload",
-                "Content-Security-Policy: sandbox",
                 "--metadata-set",
                 "content-type=text/html",
             ],

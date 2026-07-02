@@ -276,10 +276,17 @@ records the result in `config/link_archive_manifest.json`.
 - **Probes send a browser User-Agent** (`PROBE_USER_AGENT`): some anti-bot
   setups return 404 (not 403) to non-browser agents, which would read as
   consistently dead and defeat the strike gate.
-- **Snapshots are hardened at upload**: `X-Robots-Tag: noindex` (plus an
-  injected meta) keeps them out of search engines; `Content-Security-Policy:
-sandbox` neuters scripts/forms in the third-party HTML served from the
-  first-party CDN origin.
+- **Snapshot hardening headers come from Cloudflare, not the upload.** R2's S3
+  API only accepts a fixed set of standard object headers — rclone logs
+  `Don't know how to set key "X-Robots-Tag" on upload` and ignores arbitrary
+  ones — so `X-Robots-Tag: noindex` and `Content-Security-Policy: sandbox`
+  (neutering scripts/forms in third-party HTML served from the first-party CDN
+  origin) must be attached by a **Cloudflare transform rule** (Rules → Transform
+  Rules → Modify Response Header) on the `turntrout.com` zone: when URI path
+  starts with `/static/link-archive/`, set both static headers. One-time
+  dashboard setup; `check_link_archive_integrity.py` HEADs every snapshot and
+  fails if either header is missing, so the rule is machine-verified weekly.
+  The injected `noindex` meta covers robots even without the header.
 - **A dead page's existing snapshot is never overwritten** (even with
   `--refresh`): it predates the rot, and a re-capture could only be worse.
 - **Canonicalization** (`canonicalize_url`) uses the `ada-url` binding — the same
@@ -320,8 +327,9 @@ A populated manifest rewrites dead links to
 `--check-extern`, so it now **ignores** the `static/link-archive/` prefix —
 otherwise each build would GET thousands of multi-hundred-KB snapshots and
 hammer R2. Their liveness is instead enforced by
-`scripts/check_link_archive_integrity.py` (HEADs every `archive_url`, fails on
-any non-200), run in the weekly archive job right after the manifest is written.
+`scripts/check_link_archive_integrity.py` (HEADs every `archive_url`; fails on
+any non-200, foreign-origin URL, or missing hardening header), run in the weekly
+archive job right after the manifest is written.
 `built_site_checks.py::check_media_asset_sources` only inspects media tags
 (`img`/`video`/`audio`/`source`/`svg`), not `<a>`, so rewritten anchors don't
 trip it.

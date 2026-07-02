@@ -682,10 +682,11 @@ def test_sync_snapshot_to_r2_success(
     url = archive_links.sync_snapshot_to_r2(dest)
     assert url.startswith(archive_links.r2_upload.R2_BASE_URL)
     assert "static/link-archive/abc/singlefile.html" in url
-    assert "X-Robots-Tag: noindex" in captured["cmd"]
-    # Third-party HTML served from the first-party CDN origin must have its
-    # scripts/forms neutered.
-    assert "Content-Security-Policy: sandbox" in captured["cmd"]
+    assert "content-type=text/html" in captured["cmd"]
+    # R2's S3 API rejects arbitrary response headers ("Don't know how to set
+    # key ... on upload"); noindex/CSP come from the Cloudflare transform rule,
+    # verified by check_link_archive_integrity.py.
+    assert "--header-upload" not in captured["cmd"]
 
 
 def test_sync_snapshot_to_r2_upload_failure(

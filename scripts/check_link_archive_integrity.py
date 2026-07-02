@@ -1,15 +1,24 @@
 """
-Verify every archived snapshot URL in the manifest is a live R2 object.
+Verify every archived snapshot URL in the manifest is a live, hardened R2
+object.
 
 The per-PR ``linkchecker`` ignores ``assets.turntrout.com/static/link-archive/``
 so a populated manifest doesn't make every build fetch thousands of multi-
 hundred-KB snapshots and hammer R2. This check is what then guarantees the
-invariant the reader depends on: every ``archive_url`` a dead link could be
-rewritten to is actually reachable AND lives under the snapshot prefix
-(mirroring the reader's own origin check — the rewrite trusts ``archive_url``
-completely). It HEADs each ``archive_url`` and exits non-zero on any non-200 or
-foreign-origin URL, and is meant to run in the weekly archive job (after the
-manifest is written), not on the push critical path.
+invariants the reader depends on. For every ``archive_url`` it HEADs the
+snapshot and fails on:
+
+- a non-200 response (the rewrite must never point at a missing object);
+- a URL outside the snapshot prefix (mirroring the reader's own origin check —
+  the rewrite trusts ``archive_url`` completely);
+- missing hardening response headers. R2's S3 API cannot attach arbitrary
+  per-object response headers, so ``X-Robots-Tag: noindex`` and
+  ``Content-Security-Policy: sandbox`` are served by a Cloudflare transform
+  rule on the ``static/link-archive/`` path prefix; this check is what keeps
+  that dashboard-configured rule honest.
+
+Meant to run in the weekly archive job (after the manifest is written), not on
+the push critical path.
 """
 
 import sys
@@ -29,39 +38,59 @@ except ImportError:
 PROBE_TIMEOUT: int = 30
 # Matches ARCHIVE_URL_PREFIX in quartz/plugins/transformers/archiveLinks.ts.
 ARCHIVE_URL_PREFIX: str = f"{script_utils.CDN_BASE_URL}/static/link-archive/"
-# Sentinel status for an archive_url outside the snapshot prefix.
-FOREIGN_ORIGIN: int = -1
+# Response headers the Cloudflare transform rule must attach to snapshots
+# (header -> required substring of its value).
+REQUIRED_RESPONSE_HEADERS: dict[str, str] = {
+    "X-Robots-Tag": "noindex",
+    "Content-Security-Policy": "sandbox",
+}
+
+
+def _snapshot_problems(response: requests.Response) -> list[str]:
+    """Return every integrity problem with a snapshot's HEAD *response*."""
+    if response.status_code != 200:
+        return [f"HTTP {response.status_code}"]
+    problems = []
+    for header, required in REQUIRED_RESPONSE_HEADERS.items():
+        if required not in response.headers.get(header, ""):
+            problems.append(
+                f"missing response header '{header}: {required}' "
+                "(is the Cloudflare transform rule for "
+                "static/link-archive/ configured?)"
+            )
+    return problems
 
 
 def find_broken_archives(
     manifest: dict, session: requests.Session
-) -> list[tuple[str, str, int]]:
+) -> list[tuple[str, str, str]]:
     """
-    Return ``(canonical_url, archive_url, status)`` for every bad snapshot.
+    Return ``(canonical_url, archive_url, problem)`` for every bad snapshot.
 
-    ``status`` is the HTTP status of the HEAD request, ``0`` if the request
-    raised (DNS/connection/timeout), or ``FOREIGN_ORIGIN`` if the URL is not
-    under the snapshot prefix. Entries without an ``archive_url`` are skipped —
-    there is nothing to verify until they are archived.
+    Entries without an ``archive_url`` are skipped — there is nothing to
+    verify until they are archived.
     """
-    broken: list[tuple[str, str, int]] = []
+    broken: list[tuple[str, str, str]] = []
     for canonical, entry in sorted(manifest.items()):
         archive_url = entry.get("archive_url")
         if not archive_url:
             continue
         if not archive_url.startswith(ARCHIVE_URL_PREFIX):
-            broken.append((canonical, archive_url, FOREIGN_ORIGIN))
+            broken.append(
+                (canonical, archive_url, "outside the snapshot prefix")
+            )
             continue
         try:
             response = session.head(
                 archive_url, timeout=PROBE_TIMEOUT, allow_redirects=True
             )
-            status = response.status_code
         except requests.RequestException as exc:
-            print(f"HEAD failed for {archive_url}: {exc}", file=sys.stderr)
-            status = 0
-        if status != 200:
-            broken.append((canonical, archive_url, status))
+            broken.append((canonical, archive_url, f"HEAD failed: {exc}"))
+            continue
+        broken.extend(
+            (canonical, archive_url, problem)
+            for problem in _snapshot_problems(response)
+        )
     return broken
 
 
@@ -78,21 +107,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     broken = find_broken_archives(manifest, script_utils.http_session())
     if broken:
         print(
-            f"{len(broken)} archived snapshot(s) are not live on R2:",
+            f"{len(broken)} archived snapshot problem(s):",
             file=sys.stderr,
         )
-        for canonical, archive_url, status in broken:
-            label = (
-                "FOREIGN-ORIGIN"
-                if status == FOREIGN_ORIGIN
-                else status or "ERR"
-            )
-            print(
-                f"  {label}  {archive_url}  ({canonical})",
-                file=sys.stderr,
-            )
+        for canonical, archive_url, problem in broken:
+            print(f"  {problem}  {archive_url}  ({canonical})", file=sys.stderr)
         return 1
-    print(f"All {len(manifest)} manifest archive_urls are live (HTTP 200).")
+    print(f"All {len(manifest)} manifest archive_urls are live and hardened.")
     return 0
 
 
