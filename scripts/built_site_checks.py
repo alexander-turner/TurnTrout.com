@@ -3,6 +3,7 @@
 
 import argparse
 import copy
+import functools
 import html
 import json
 import mimetypes
@@ -3063,16 +3064,35 @@ def _page_references_cdn_vtt(soup: BeautifulSoup, base_path: str) -> bool:
     return False
 
 
+@functools.cache
+def _cdn_vtt_probe_issue(vtt_url: str) -> str | None:
+    """
+    ``None`` if a HEAD request finds the ``.vtt`` on the CDN, else the reason.
+
+    Cached per URL: the checker runs over every built page, and a video linked
+    from several pages needs only one probe.
+    """
+    try:
+        response = _head_with_retry(vtt_url)
+    except requests.RequestException as exc:
+        return f"HEAD {vtt_url} failed: {exc}"
+    if response.ok:
+        return None
+    return f"HEAD {vtt_url} returned status {response.status_code}"
+
+
 def check_linked_video_captions(soup: BeautifulSoup) -> list[str]:
     """
-    Every linked audio-container video on the asset CDN must reference captions.
+    Every linked audio-container video on the asset CDN must have captions.
 
     A bare ``<a href="…/foo.mp4">`` bypasses the embedded-``<video>`` caption
-    check, so this requires the page to also reference the sibling
-    ``…/foo.vtt``. Only ``.mp4``/``.mov``/``.m4v`` links are checked (formats
-    that routinely carry speech); ``.webm``/``.gif`` links are exempt. A silent
-    link opts out with a ``#no-audio`` fragment, the link-side analog of the
-    ``label="No audio"`` marker on embedded videos.
+    check. The link passes if the page references the sibling ``…/foo.vtt``,
+    or (checked via HEAD probe) the sibling ``.vtt`` exists on the CDN — the
+    transcription pipeline uploads it next to the video. Only
+    ``.mp4``/``.mov``/``.m4v`` links are checked (formats that routinely carry
+    speech); ``.webm``/``.gif`` links are exempt. A silent link opts out with
+    a ``#no-audio`` fragment, the link-side analog of the ``label="No audio"``
+    marker on embedded videos.
     """
     issues: list[str] = []
     for anchor in _tags_only(soup.find_all("a", href=True)):
@@ -3087,10 +3107,14 @@ def check_linked_video_captions(soup: BeautifulSoup) -> list[str]:
             continue
         if urlparse(href).fragment == _NO_AUDIO_LINK_MARKER:
             continue
-        if not _page_references_cdn_vtt(soup, base_path):
+        if _page_references_cdn_vtt(soup, base_path):
+            continue
+        vtt_url = f"{script_utils.CDN_BASE_URL}{base_path}.vtt"
+        probe_issue = _cdn_vtt_probe_issue(vtt_url)
+        if probe_issue is not None:
             issues.append(
-                f"Linked video {href} has no captions companion "
-                f"(sibling .vtt referenced on the page) or "
+                f"Linked video {href} has no captions companion: "
+                f"{probe_issue}; no on-page .vtt reference or "
                 f"'#{_NO_AUDIO_LINK_MARKER}' marker"
             )
     return issues
