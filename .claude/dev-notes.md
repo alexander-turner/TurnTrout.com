@@ -55,6 +55,11 @@ Three stages: **Transform → Filter → Emit**.
   are skipped. `built_site_checks.check_video_caption_tracks` then enforces
   that every audio-bearing `<video>` ships a real `.vtt` track (or an explicit
   `label="No audio"` marker).
+- **Linked (not embedded) videos**: `built_site_checks.check_linked_video_captions`
+  requires a captions companion for `<a href>` links to `.mp4`/`.mov`/`.m4v` on
+  the asset CDN — satisfied by an on-page sibling-`.vtt` reference, a HEAD probe
+  finding the `.vtt` on the CDN, or a `#no-audio` opt-out fragment. See the
+  function docstring for the full semantics.
 
 ### Text processing
 

@@ -5150,6 +5150,193 @@ def test_check_video_accessibility_reports_offending_tag():
     assert "<source" not in issue
 
 
+_CDN = "https://assets.turntrout.com/static/images/posts"
+
+
+def _linked_caption_issue(href: str, probe_detail: str) -> str:
+    return (
+        f"Linked video {href} has no captions companion: {probe_detail}; "
+        f"no on-page .vtt reference or '#no-audio' marker"
+    )
+
+
+def _vtt_404(stem: str) -> str:
+    return f"HEAD {_CDN}/{stem}.vtt returned status 404"
+
+
+@pytest.mark.parametrize(
+    "html, mock_responses, expected_issues, expected_probe_urls",
+    [
+        # Linked .mp4 with the sibling .vtt linked on the page -> ok, no probe.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>'
+            f'<a href="{_CDN}/talk.vtt">captions</a>',
+            [],
+            [],
+            [],
+        ),
+        # Companion satisfied by a <track src> reference to the sibling .vtt.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a><track src="{_CDN}/talk.vtt">',
+            [],
+            [],
+            [],
+        ),
+        # Cache-busting query strings on both ends still match on base path.
+        (
+            f'<a href="{_CDN}/talk.mp4?v=2">clip</a>'
+            f'<a href="{_CDN}/talk.vtt?v=9">captions</a>',
+            [],
+            [],
+            [],
+        ),
+        # No on-page reference, but the sibling .vtt exists on the CDN -> ok.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>',
+            [(True, 200)],
+            [],
+            [f"{_CDN}/talk.vtt"],
+        ),
+        # No on-page reference and the CDN probe 404s -> issue.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/talk.mp4", _vtt_404("talk"))],
+            [f"{_CDN}/talk.vtt"],
+        ),
+        # The probe raising a network error is reported, not swallowed.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>',
+            [requests.RequestException("boom")],
+            [
+                _linked_caption_issue(
+                    f"{_CDN}/talk.mp4",
+                    f"HEAD {_CDN}/talk.vtt failed: boom",
+                )
+            ],
+            [f"{_CDN}/talk.vtt"],
+        ),
+        # .mov and .m4v are captionable containers too.
+        (
+            f'<a href="{_CDN}/clip.mov">m</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/clip.mov", _vtt_404("clip"))],
+            [f"{_CDN}/clip.vtt"],
+        ),
+        (
+            f'<a href="{_CDN}/clip.m4v">m</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/clip.m4v", _vtt_404("clip"))],
+            [f"{_CDN}/clip.vtt"],
+        ),
+        # #no-audio fragment opts a silent link out; no probe.
+        (f'<a href="{_CDN}/silent.mp4#no-audio">s</a>', [], [], []),
+        # .webm / .gif links are exempt regardless of captions; no probe.
+        (f'<a href="{_CDN}/anim.webm">w</a>', [], [], []),
+        (f'<a href="{_CDN}/anim.gif">g</a>', [], [], []),
+        # A .mp4 on another host is out of scope; no probe.
+        ('<a href="https://youtube.com/watch.mp4">yt</a>', [], [], []),
+        # A sibling .vtt at a different base path does not count on-page,
+        # so the CDN probe decides.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>'
+            f'<a href="{_CDN}/other.vtt">captions</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/talk.mp4", _vtt_404("talk"))],
+            [f"{_CDN}/talk.vtt"],
+        ),
+        # Embedded <video> sources are not anchors -> ignored by this check.
+        (
+            f'<video controls><source src="{_CDN}/talk.mp4"></video>',
+            [],
+            [],
+            [],
+        ),
+        # Each offending link is reported independently; satisfied links
+        # don't probe.
+        (
+            f'<a href="{_CDN}/a.mp4">a</a>'
+            f'<a href="{_CDN}/b.mp4">b</a>'
+            f'<a href="{_CDN}/b.vtt">b captions</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/a.mp4", _vtt_404("a"))],
+            [f"{_CDN}/a.vtt"],
+        ),
+        # The same video linked twice probes once (cached) and is reported
+        # once per anchor.
+        (
+            f'<a href="{_CDN}/dup.mp4">one</a><a href="{_CDN}/dup.mp4">two</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/dup.mp4", _vtt_404("dup"))] * 2,
+            [f"{_CDN}/dup.vtt"],
+        ),
+        # Uppercase extensions match; the probe preserves the base's case.
+        # The href-less anchor exercises the reference scan's typeguard.
+        (
+            f'<a>plain</a><a href="{_CDN}/TALK.MP4">c</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/TALK.MP4", _vtt_404("TALK"))],
+            [f"{_CDN}/TALK.vtt"],
+        ),
+        # Protocol-relative CDN URLs are in scope; the probe rebuilds an
+        # absolute https URL.
+        (
+            '<a href="//assets.turntrout.com/static/talk.mp4">c</a>',
+            [(True, 200)],
+            [],
+            ["https://assets.turntrout.com/static/talk.vtt"],
+        ),
+        # Only the exact #no-audio fragment opts out.
+        (
+            f'<a href="{_CDN}/talk.mp4#no-audio-please">c</a>',
+            [(False, 404)],
+            [
+                _linked_caption_issue(
+                    f"{_CDN}/talk.mp4#no-audio-please", _vtt_404("talk")
+                )
+            ],
+            [f"{_CDN}/talk.vtt"],
+        ),
+        # The opt-out fragment combines with a query string.
+        (f'<a href="{_CDN}/talk.mp4?v=2#no-audio">c</a>', [], [], []),
+    ],
+)
+def test_check_linked_video_captions(
+    monkeypatch,
+    html: str,
+    mock_responses: list,
+    expected_issues: list[str],
+    expected_probe_urls: list[str],
+):
+    """Linked audio-container videos on the CDN must have captions."""
+    # Clear at both ends: mocked probe results cached under real CDN URLs
+    # must not leak into neighboring tests.
+    built_site_checks._cdn_vtt_probe_issue.cache_clear()
+    soup = BeautifulSoup(html, "html.parser")
+
+    remaining = list(mock_responses)
+    probed_urls: list[str] = []
+
+    def mock_head(url: str, timeout: int) -> object:
+        probed_urls.append(url)
+        if not remaining:
+            raise AssertionError(f"Unexpected HEAD probe: {url}")
+        response = remaining.pop(0)
+        if isinstance(response, Exception):
+            raise response
+        ok, status_code = response
+        return type("MockResponse", (), {"ok": ok, "status_code": status_code})
+
+    monkeypatch.setattr(built_site_checks._http_session, "head", mock_head)
+
+    try:
+        result = built_site_checks.check_linked_video_captions(soup)
+    finally:
+        built_site_checks._cdn_vtt_probe_issue.cache_clear()
+    assert result == expected_issues
+    assert probed_urls == expected_probe_urls
+
+
 @pytest.mark.parametrize(
     "html_content, expected_issues",
     [
