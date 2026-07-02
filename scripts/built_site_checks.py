@@ -3043,8 +3043,7 @@ def _cdn_asset_base(url: str) -> tuple[str, str, str] | None:
     Split an asset-CDN URL into ``(path_without_ext, ext, fragment)``, with the
     query dropped and the extension lowercased.
 
-    ``None`` for URLs hosted
-    anywhere else.
+    Returns ``None`` for URLs hosted anywhere else.
     """
     parsed = urlparse(url)
     if parsed.hostname != script_utils.CDN_HOSTNAME:
