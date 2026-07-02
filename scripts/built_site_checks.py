@@ -916,7 +916,7 @@ def _canonical_inline_video_source(video: Tag) -> str | None:
     """
     if video.get("id") == "pond-video":
         return None
-    if not all(video.has_attr(a) for a in ("autoplay", "loop", "muted")):
+    if not _is_gif_replacement(video):
         return None
     candidates: Iterable[str | list[str] | None] = (
         video.get("src"),
@@ -2257,6 +2257,7 @@ def check_file_for_issues(
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
         ),
+        "video_missing_captions": check_video_caption_tracks(soup),
         "inline_style_variables": check_inline_style_variables(
             soup, opts.defined_css_variables
         ),
@@ -2965,6 +2966,64 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
         all_issues.extend(video_issues)
 
     return all_issues
+
+
+def _is_gif_replacement(video: Tag) -> bool:
+    """True for inline looping muted ``<video>`` GIF replacements, which carry
+    no audio and so need no captions."""
+    return all(video.has_attr(attr) for attr in ("autoplay", "loop", "muted"))
+
+
+def _video_source_hint(video: Tag) -> str:
+    """A human-readable source URL for issue messages."""
+    src = video.get("src")
+    if isinstance(src, str):
+        return src
+    for source in _tags_only(video.find_all("source")):
+        source_src = source.get("src")
+        if isinstance(source_src, str):
+            return source_src
+    return "(unknown source)"
+
+
+def _video_caption_issue(video: Tag) -> str | None:
+    """
+    Issue message if a captionable ``<video>`` lacks a real captions track.
+
+    A real ``<track kind="captions" src="….vtt">`` satisfies the check, as does
+    an explicit ``label="No audio"`` marker for an intentionally silent embed.
+    The empty ``data:text/vtt,WEBVTT`` placeholder (injected when nothing
+    assigned a real track) and a missing track both fail.
+    """
+    for track in _tags_only(video.find_all("track")):
+        if track.get("kind") != "captions":
+            continue
+        if str(track.get("label", "")) == "No audio":
+            return None
+        src = track.get("src")
+        if isinstance(src, str) and src.lower().endswith(".vtt"):
+            return None
+    return (
+        f"<video> {_video_source_hint(video)} has no real captions track "
+        "(.vtt) or 'No audio' marker"
+    )
+
+
+def check_video_caption_tracks(soup: BeautifulSoup) -> list[str]:
+    """
+    Every audio-bearing ``<video>`` must carry a real captions track.
+
+    Skips ``#pond-video`` and inline looping muted GIF replacements, which have
+    no audio.
+    """
+    issues: list[str] = []
+    for video in _tags_only(soup.find_all("video")):
+        if _should_skip_video(video) or _is_gif_replacement(video):
+            continue
+        issue = _video_caption_issue(video)
+        if issue is not None:
+            issues.append(issue)
+    return issues
 
 
 # Generic labels that don't describe the video's content, so they don't
