@@ -220,58 +220,69 @@ Public-repo Actions are free, so we don’t tier coverage by event. Path-awarene
 - **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`, same mechanism.
 - **Post-merge**: `push: main` re-runs the full suite plus `deploy.yaml`. `deploy.yaml`’s `verify-test-results` job polls check-runs on the landed SHA, so deploy waits for those to pass before pushing to Cloudflare.
 
-## Outbound link archiving — writer (ArchiveBox + R2)
+## Outbound link archiving — writer (single-file + Wayback + R2)
 
 `scripts/archive_links.py` is the writer half of the link-archive system (the
 build-time reader is `quartz/plugins/transformers/archiveLinks.ts`). It scans
-`website_content/` for outbound links, archives new ones via ArchiveBox
-(singlefile, `noindex` injected), syncs the snapshot to R2 under
-`static/link-archive/<sha256>/singlefile.html`, probes liveness, and records the
-result in `config/link_archive_manifest.json`.
+`website_content/` for outbound links, probes every link's liveness (parallel,
+browser-like User-Agent), archives links that need a snapshot, syncs each
+snapshot to R2 under `static/link-archive/<sha256>/singlefile.html`, and
+records the result in `config/link_archive_manifest.json`.
 
+- **Probe-first routing**: live links are captured with `single-file` (headless
+  Chromium, assets inlined, `CAPTURE_TIMEOUT` per page, one bounded retry for
+  Chromium cold starts). Links that are already hard-gone (404/410) — or whose
+  live capture fails — fall back to the newest **Wayback Machine** snapshot
+  (raw `id_` bytes), so the preserved copy predates the rot instead of
+  memorializing an error page. No snapshot from either source → per-URL skip.
+- **Manifest holds durable facts only** (`archive_url`, `dead`). Probe
+  telemetry (strike counts, last status/checked) lives in a separate
+  uncommitted probe-state file (`--probe-state`, default
+  `.archive_probe_state.json`, gitignored) that the workflow syncs to/from
+  `r2:turntrout/static/link-archive/probe-state.json`. This keeps the weekly
+  manifest PR diff meaningful — it is the human gate before the irreversible
+  rewrite, so it must not drown in timestamp churn.
 - **A link flips to `dead` only on 404/410 confirmed on N>=2 _consecutive_ runs**
   (`DEAD_STRIKE_THRESHOLD`); any transient (403/429/5xx/timeout) resets the
   streak, so a flaky probe can't drive the irreversible rewrite.
+- **Probes send a browser User-Agent** (`PROBE_USER_AGENT`): some anti-bot
+  setups return 404 (not 403) to non-browser agents, which would read as
+  consistently dead and defeat the strike gate.
+- **Snapshots are hardened at upload**: `X-Robots-Tag: noindex` (plus an
+  injected meta) keeps them out of search engines; `Content-Security-Policy:
+sandbox` neuters scripts/forms in the third-party HTML served from the
+  first-party CDN origin.
+- **A dead page's existing snapshot is never overwritten** (even with
+  `--refresh`): it predates the rot, and a re-capture could only be worse.
 - **Canonicalization** (`canonicalize_url`) uses the `ada-url` binding — the same
   `ada` WHATWG parser Node's `new URL` uses — so manifest keys match the reader
   byte-for-byte.
 - **Deny-list** (`config/link_archive_denylist.json`) skips paywall/anti-bot/IP
-  hosts; a min-size quality gate rejects login-wall captures.
+  hosts; a min-size quality gate (`MIN_SNAPSHOT_BYTES`) rejects login-wall and
+  blank captures. A minimal page inlines to ~1 KB, so test fixtures must be
+  sizable to clear the gate.
 
-### Capture path: per-URL capture validated; full backfill still pending
+### Real-capture validation
 
-The single-URL capture path is exercised for real by
-`test_archive_one_produces_real_singlefile` (the `requires_archivebox`
-integration test): it serves a fixture page, runs a real `archivebox add`, and
-asserts `archive_one` returns a `singlefile.html` that clears the size gate and
-carries the `noindex` meta. Run it locally (or in a dedicated job) with:
+The capture path is exercised for real by
+`test_capture_page_produces_real_singlefile` (the `requires_singlefile`
+integration test): it serves a fixture page, runs a real `single-file` capture,
+and asserts a usable `singlefile.html` that clears the size gate. Run with:
 
 ```bash
-uv run pytest -m requires_archivebox scripts/tests/test_archive_links.py
+CHROME_BINARY=<chromium> uv run pytest -m requires_singlefile scripts/tests/test_archive_links.py
 ```
 
-Real-capture gotchas this surfaced (invisible to the mocked unit tests):
+CI wiring:
 
-- **ArchiveBox 0.7.x `add` has no `--parallel` flag** — passing it aborts the
-  command. We add one URL per call, so we don't pass it.
-- **Chromium must report a `Chromium <version>` version string.** ArchiveBox
-  parses the major version out of `chrome --version`; Playwright's "Google
-  Chrome for Testing" build reports a string ArchiveBox truncates to "Google
-  Chrome for", which makes the singlefile extractor crash and **silently**
-  produce no snapshot (the run prints "singlefile … 0 errors" but writes
-  nothing). Use a `chromium`-branded binary.
-- A minimal page inlines to ~1 KB, under `MIN_SNAPSHOT_BYTES` (2048); the
-  fixture must be sizable to clear the quality gate.
-
-CI wiring for this:
-
-- `python-tests.yaml` has an `archivebox-integration` job that installs
-  ArchiveBox + single-file + a version-parseable Chromium and runs
-  `-m requires_archivebox` on PRs touching `scripts/**`, so the real capture
-  path is checked per-PR (the default `python-tests` job deselects the marker).
-- `archive-links.yaml` selects `google-chrome`/`chromium` (rejecting the "for
-  Testing" build), runs the same capture as a smoke test before the long run,
-  and pins `ARCHIVEBOX_VERSION` so an upstream release can't silently break it.
+- `python-tests.yaml` has a `singlefile-integration` job that installs a pinned
+  `single-file-cli` + a Chromium and runs `-m requires_singlefile` on PRs
+  touching `scripts/**` (the default `python-tests` job deselects the marker).
+- `archive-links.yaml` runs the same capture as a smoke test before the long
+  run and pins `SINGLE_FILE_VERSION` so an upstream release can't silently
+  break captures. `single-file` reports failures only on stdio and can exit 0
+  without writing output — `capture_page` surfaces that as a
+  `SnapshotFailedError` with the stdio tail.
 
 ### Linkchecker / manifest integrity
 
@@ -291,7 +302,11 @@ Still pending before the scheduled job can be trusted:
 
 1. Run the first full `--backfill` pass **locally** (needs the R2 env vars);
    it is multi-hour and exceeds the 6h Action cap.
-2. Spot-check a few `singlefile.html` snapshots render standalone from R2, then
+2. During the backfill, confirm the Wayback fallback fetches real content from
+   that machine. The availability API + URL construction are validated, but
+   `web.archive.org` content fetches could not be exercised from the dev
+   sandbox (egress-blocked there); a blocked host degrades to per-URL skips.
+3. Spot-check a few `singlefile.html` snapshots render standalone from R2, then
    commit the seed manifest via PR.
 
 Only then promote `.github/workflows/archive-links.yaml` (weekly +

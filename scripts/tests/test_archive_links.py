@@ -2,7 +2,6 @@
 
 import http.server
 import json
-import os
 import shutil
 import socketserver
 import subprocess
@@ -243,104 +242,314 @@ def test_now_iso_format() -> None:
     assert "T" in stamp
 
 
+def test_probe_session_uses_browser_user_agent() -> None:
+    # The default python-requests UA draws bot-shaped 404s from some anti-bot
+    # setups, which would defeat the consecutive-strike gate.
+    session = archive_links.probe_session()
+    assert session.headers["User-Agent"] == archive_links.PROBE_USER_AGENT
+    assert "Mozilla" in archive_links.PROBE_USER_AGENT
+
+
+def test_probe_all_returns_status_per_url(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    statuses = {"https://a.com": 200, "https://b.com": 404}
+    monkeypatch.setattr(
+        archive_links,
+        "probe_status",
+        lambda url, session: statuses[url],
+    )
+    result = archive_links.probe_all(statuses.keys(), MagicMock(), workers=2)
+    assert result == statuses
+
+
 def test_update_dead_state_dead_strikes_then_flip() -> None:
     entry = archive_links._new_entry()
-    first = archive_links.update_dead_state(entry, 404)
-    assert first["dead_strikes"] == 1
-    assert first["dead"] is False
-    assert first["last_status"] == 404
+    state = archive_links._new_probe_state()
+    entry, state = archive_links.update_dead_state(entry, state, 404)
+    assert state["dead_strikes"] == 1
+    assert entry["dead"] is False
+    assert state["last_status"] == 404
 
-    second = archive_links.update_dead_state(first, 410)
-    assert second["dead_strikes"] == 2
-    assert second["dead"] is True
+    entry, state = archive_links.update_dead_state(entry, state, 410)
+    assert state["dead_strikes"] == 2
+    assert entry["dead"] is True
 
 
 def test_update_dead_state_alive_resets() -> None:
-    entry = {**archive_links._new_entry(), "dead_strikes": 5, "dead": True}
-    updated = archive_links.update_dead_state(entry, 200)
-    assert updated["dead_strikes"] == 0
-    assert updated["dead"] is False
+    entry = {**archive_links._new_entry(), "dead": True}
+    state = {**archive_links._new_probe_state(), "dead_strikes": 5}
+    entry, state = archive_links.update_dead_state(entry, state, 200)
+    assert state["dead_strikes"] == 0
+    assert entry["dead"] is False
 
 
 @pytest.mark.parametrize("status", [403, 429, 500, 0])
 def test_update_dead_state_transient_breaks_streak(status: int) -> None:
     # A transient probe resets the consecutive-404 streak but does not mark a
     # still-suspected link dead.
-    entry = {**archive_links._new_entry(), "dead_strikes": 1, "dead": False}
-    updated = archive_links.update_dead_state(entry, status)
-    assert updated["dead_strikes"] == 0
-    assert updated["dead"] is False
-    assert updated["last_status"] == status
+    entry = archive_links._new_entry()
+    state = {**archive_links._new_probe_state(), "dead_strikes": 1}
+    entry, state = archive_links.update_dead_state(entry, state, status)
+    assert state["dead_strikes"] == 0
+    assert entry["dead"] is False
+    assert state["last_status"] == status
 
 
 def test_update_dead_state_interleaved_transient_never_dies() -> None:
     # 404 -> 500 -> 404 is NOT two consecutive strikes, so the link must stay
     # alive: a flaky 404 can never drive the destructive rewrite.
     entry = archive_links._new_entry()
-    entry = archive_links.update_dead_state(entry, 404)
-    entry = archive_links.update_dead_state(entry, 500)
-    entry = archive_links.update_dead_state(entry, 404)
-    assert entry["dead_strikes"] == 1
+    state = archive_links._new_probe_state()
+    for status in (404, 500, 404):
+        entry, state = archive_links.update_dead_state(entry, state, status)
+    assert state["dead_strikes"] == 1
     assert entry["dead"] is False
 
 
 def test_update_dead_state_transient_keeps_confirmed_dead() -> None:
     # Once confirmed dead, a transient probe must not revert the verdict (only a
     # real 2xx/3xx recovery does).
-    entry = {**archive_links._new_entry(), "dead_strikes": 2, "dead": True}
-    updated = archive_links.update_dead_state(entry, 503)
-    assert updated["dead"] is True
-    assert updated["dead_strikes"] == 0
+    entry = {**archive_links._new_entry(), "dead": True}
+    state = {**archive_links._new_probe_state(), "dead_strikes": 2}
+    entry, state = archive_links.update_dead_state(entry, state, 503)
+    assert entry["dead"] is True
+    assert state["dead_strikes"] == 0
 
 
 def test_update_dead_state_dead_status_keeps_confirmed_dead() -> None:
     # A confirmed-dead link whose streak was reset stays dead on a fresh 404
     # even though the new strike count is below the threshold.
-    entry = {**archive_links._new_entry(), "dead_strikes": 0, "dead": True}
-    updated = archive_links.update_dead_state(entry, 404)
-    assert updated["dead_strikes"] == 1
-    assert updated["dead"] is True
+    entry = {**archive_links._new_entry(), "dead": True}
+    state = archive_links._new_probe_state()
+    entry, state = archive_links.update_dead_state(entry, state, 404)
+    assert state["dead_strikes"] == 1
+    assert entry["dead"] is True
 
 
-# --- archive_one -------------------------------------------------------------
+# --- capture_page (single-file) ------------------------------------------------
 
 
-def _make_snapshot(
-    data_dir: Path, name: str, body: bytes = b"x" * 5000
-) -> Path:
-    snap_dir = data_dir / "archive" / name
-    snap_dir.mkdir(parents=True)
-    snapshot = snap_dir / archive_links.SNAPSHOT_FILENAME
-    snapshot.write_bytes(body)
-    return snapshot
+def test_find_browser_prefers_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CHROME_BINARY", "/opt/custom/chrome")
+    assert archive_links._find_browser() == "/opt/custom/chrome"
 
 
-def test_archive_one_returns_new_snapshot(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    data_dir = tmp_path / "abox"
-    # Pre-existing snapshot that must be ignored (it is in ``before``).
-    _make_snapshot(data_dir, "100")
-
-    def fake_add(urls, _data_dir, _extractors):
-        _make_snapshot(data_dir, "200")
-
-    monkeypatch.setattr(archive_links, "_run_archivebox_add", fake_add)
-    result = archive_links.archive_one("https://example.com/a", data_dir)
-    assert result == data_dir / "archive" / "200" / "singlefile.html"
-
-
-def test_archive_one_raises_without_snapshot(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    data_dir = tmp_path / "abox"
+def test_find_browser_searches_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("CHROME_BINARY", raising=False)
     monkeypatch.setattr(
-        archive_links, "_run_archivebox_add", lambda *a, **k: None
+        archive_links.shutil,
+        "which",
+        lambda name: "/usr/bin/chromium" if name == "chromium" else None,
+    )
+    assert archive_links._find_browser() == "/usr/bin/chromium"
+
+
+def test_find_browser_missing_is_infra_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("CHROME_BINARY", raising=False)
+    monkeypatch.setattr(archive_links.shutil, "which", lambda name: None)
+    with pytest.raises(RuntimeError, match="CHROME_BINARY"):
+        archive_links._find_browser()
+
+
+@pytest.fixture()
+def _capture_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CHROME_BINARY", "/opt/chrome")
+    monkeypatch.setattr(
+        archive_links.script_utils,
+        "find_executable",
+        lambda name: f"/usr/bin/{name}",
+    )
+
+
+def test_capture_page_success(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _capture_env: None
+) -> None:
+    dest = tmp_path / "out" / archive_links.SNAPSHOT_FILENAME
+    captured: dict = {}
+
+    def fake_run(command, check, timeout, capture_output):
+        captured["command"] = command
+        assert check is True and capture_output is True
+        assert timeout == archive_links.CAPTURE_TIMEOUT
+        dest.write_bytes(b"<html>captured</html>")
+
+    monkeypatch.setattr(archive_links.subprocess, "run", fake_run)
+    archive_links.capture_page("https://example.com/a", dest)
+
+    assert captured["command"][0] == "/usr/bin/single-file"
+    assert "--browser-executable-path=/opt/chrome" in captured["command"]
+    assert '--browser-args=["--no-sandbox"]' in captured["command"]
+    assert captured["command"][-2:] == ["https://example.com/a", str(dest)]
+
+
+def test_capture_page_raises_on_subprocess_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _capture_env: None
+) -> None:
+    def fake_run(command, **_kwargs):
+        raise subprocess.CalledProcessError(1, command)
+
+    monkeypatch.setattr(archive_links.subprocess, "run", fake_run)
+    with pytest.raises(
+        archive_links.SnapshotFailedError, match="single-file failed"
+    ):
+        archive_links.capture_page(
+            "https://example.com/a", tmp_path / "out.html"
+        )
+
+
+def test_capture_page_raises_on_timeout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _capture_env: None
+) -> None:
+    def fake_run(command, **_kwargs):
+        raise subprocess.TimeoutExpired(command, 1)
+
+    monkeypatch.setattr(archive_links.subprocess, "run", fake_run)
+    with pytest.raises(archive_links.SnapshotFailedError, match="timed out"):
+        archive_links.capture_page(
+            "https://example.com/a", tmp_path / "out.html"
+        )
+
+
+def _silent_success(stderr: bytes = b"load timed out") -> MagicMock:
+    result = MagicMock()
+    result.stdout = b""
+    result.stderr = stderr
+    return result
+
+
+def test_capture_page_raises_when_no_file_written(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _capture_env: None
+) -> None:
+    # single-file can exit 0 without writing anything on some failures; the
+    # error must surface what single-file reported on stdio.
+    monkeypatch.setattr(
+        archive_links.subprocess, "run", lambda *a, **k: _silent_success()
     )
     with pytest.raises(
-        archive_links.SnapshotFailedError, match="no singlefile.html"
+        archive_links.SnapshotFailedError, match="produced no.*load timed out"
     ):
-        archive_links.archive_one("https://example.com/a", data_dir)
+        archive_links.capture_page(
+            "https://example.com/a", tmp_path / "out.html"
+        )
+
+
+def test_capture_page_retries_after_cold_start_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _capture_env: None
+) -> None:
+    # A cold Chromium start can make single-file exit 0 with no output; one
+    # retry must succeed without surfacing the first failure.
+    dest = tmp_path / archive_links.SNAPSHOT_FILENAME
+    calls: list[int] = []
+
+    def flaky_run(*_args, **_kwargs):
+        calls.append(1)
+        if len(calls) > 1:
+            dest.write_bytes(b"<html>warm</html>")
+        return _silent_success()
+
+    monkeypatch.setattr(archive_links.subprocess, "run", flaky_run)
+    archive_links.capture_page("https://example.com/a", dest)
+    assert len(calls) == 2
+
+
+# --- Wayback fallback ----------------------------------------------------------
+
+
+def _wayback_availability(available: bool, url: str = "") -> MagicMock:
+    response = MagicMock()
+    response.json.return_value = {
+        "archived_snapshots": (
+            {"closest": {"available": available, "url": url}}
+            if available or url
+            else {}
+        )
+    }
+    return response
+
+
+def test_fetch_wayback_snapshot_returns_original_bytes() -> None:
+    session = MagicMock()
+    page = MagicMock()
+    page.content = b"<html>old copy</html>"
+    session.get.side_effect = [
+        _wayback_availability(
+            True, "http://web.archive.org/web/20200101000000/https://a.com/x"
+        ),
+        page,
+    ]
+
+    raw = archive_links.fetch_wayback_snapshot("https://a.com/x", session)
+
+    assert raw == b"<html>old copy</html>"
+    # The raw-bytes ``id_`` modifier is inserted into the snapshot URL.
+    fetched = session.get.call_args_list[1].args[0]
+    assert "/web/20200101000000id_/" in fetched
+
+
+def test_fetch_wayback_snapshot_none_when_unavailable() -> None:
+    session = MagicMock()
+    session.get.return_value = _wayback_availability(False)
+    assert (
+        archive_links.fetch_wayback_snapshot("https://a.com/x", session) is None
+    )
+
+
+def test_fetch_wayback_snapshot_none_on_request_error() -> None:
+    session = MagicMock()
+    session.get.side_effect = requests.ConnectionError("boom")
+    assert (
+        archive_links.fetch_wayback_snapshot("https://a.com/x", session) is None
+    )
+
+
+def test_fetch_wayback_snapshot_none_on_malformed_payload() -> None:
+    session = MagicMock()
+    response = MagicMock()
+    response.json.side_effect = ValueError("not json")
+    session.get.return_value = response
+    assert (
+        archive_links.fetch_wayback_snapshot("https://a.com/x", session) is None
+    )
+
+
+def test_archive_from_wayback_publishes_snapshot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    static_dir = tmp_path / "quartz" / "static"
+    monkeypatch.setattr(
+        archive_links,
+        "fetch_wayback_snapshot",
+        lambda url, session: b"<html><head></head>" + b"x" * 5000 + b"</html>",
+    )
+    monkeypatch.setattr(
+        archive_links, "sync_snapshot_to_r2", lambda path: "https://cdn/w.html"
+    )
+
+    canonical = "https://gone.example.com/page"
+    result = archive_links.archive_from_wayback(
+        canonical, static_dir, MagicMock()
+    )
+
+    assert result == "https://cdn/w.html"
+    written = archive_links.snapshot_dest_path(static_dir, canonical)
+    assert archive_links._NOINDEX_META in written.read_text(encoding="utf-8")
+
+
+def test_archive_from_wayback_raises_without_snapshot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        archive_links, "fetch_wayback_snapshot", lambda url, session: None
+    )
+    with pytest.raises(
+        archive_links.SnapshotFailedError, match="No Wayback snapshot"
+    ):
+        archive_links.archive_from_wayback(
+            "https://gone.example.com/page", tmp_path, MagicMock()
+        )
 
 
 # --- sync_snapshot_to_r2 -----------------------------------------------------
@@ -384,6 +593,9 @@ def test_sync_snapshot_to_r2_success(
     assert url.startswith(archive_links.r2_upload.R2_BASE_URL)
     assert "static/link-archive/abc/singlefile.html" in url
     assert "X-Robots-Tag: noindex" in captured["cmd"]
+    # Third-party HTML served from the first-party CDN origin must have its
+    # scripts/forms neutered.
+    assert "Content-Security-Policy: sandbox" in captured["cmd"]
 
 
 def test_sync_snapshot_to_r2_upload_failure(
@@ -410,25 +622,29 @@ def test_sync_snapshot_to_r2_upload_failure(
 # --- archive_and_upload ------------------------------------------------------
 
 
+def _fake_capture(body: bytes):
+    """A capture_page stand-in that writes *body* to the requested dest."""
+
+    def capture(url: str, dest: Path, timeout: int = 0) -> None:
+        dest.write_bytes(body)
+
+    return capture
+
+
 def test_archive_and_upload_success(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    data_dir = tmp_path / "abox"
     static_dir = tmp_path / "quartz" / "static"
     static_dir.mkdir(parents=True)
-    snapshot = _make_snapshot(
-        data_dir,
-        "200",
-        body=b"<html><head></head><body>" + b"x" * 5000 + b"</body></html>",
-    )
+    body = b"<html><head></head><body>" + b"x" * 5000 + b"</body></html>"
 
-    monkeypatch.setattr(archive_links, "archive_one", lambda *a, **k: snapshot)
+    monkeypatch.setattr(archive_links, "capture_page", _fake_capture(body))
     monkeypatch.setattr(
         archive_links, "sync_snapshot_to_r2", lambda path: "https://cdn/x.html"
     )
 
     canonical = "https://example.com/a"
-    result = archive_links.archive_and_upload(canonical, data_dir, static_dir)
+    result = archive_links.archive_and_upload(canonical, static_dir)
     assert result == "https://cdn/x.html"
 
     written = archive_links.snapshot_dest_path(static_dir, canonical)
@@ -438,14 +654,10 @@ def test_archive_and_upload_success(
 def test_archive_and_upload_rejects_low_quality(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    data_dir = tmp_path / "abox"
     static_dir = tmp_path / "quartz" / "static"
-    snapshot = _make_snapshot(data_dir, "200", body=b"tiny")
-    monkeypatch.setattr(archive_links, "archive_one", lambda *a, **k: snapshot)
+    monkeypatch.setattr(archive_links, "capture_page", _fake_capture(b"tiny"))
     with pytest.raises(archive_links.LowQualitySnapshotError):
-        archive_links.archive_and_upload(
-            "https://example.com/a", data_dir, static_dir
-        )
+        archive_links.archive_and_upload("https://example.com/a", static_dir)
 
 
 # --- run_archive orchestration ----------------------------------------------
@@ -462,6 +674,20 @@ def content_dir(tmp_path: Path) -> Path:
         encoding="utf-8",
     )
     return directory
+
+
+def _run(tmp_path: Path, content_dir: Path, **overrides) -> dict:
+    """Call run_archive with test defaults, letting tests override any part."""
+    kwargs = {
+        "content_dir": content_dir,
+        "manifest_path": tmp_path / "manifest.json",
+        "denylist_path": tmp_path / "deny.json",
+        "static_dir": tmp_path / "static",
+        "probe_state_path": tmp_path / "probe_state.json",
+        "session": MagicMock(),
+        **overrides,
+    }
+    return archive_links.run_archive(**kwargs)
 
 
 def test_run_archive_full_flow(
@@ -489,16 +715,9 @@ def test_run_archive_full_flow(
         return "https://cdn/new.html"
 
     monkeypatch.setattr(archive_links, "archive_and_upload", fake_archive)
-    monkeypatch.setattr(archive_links, "probe_status", lambda url, session: 404)
+    monkeypatch.setattr(archive_links, "probe_status", lambda url, session: 200)
 
-    manifest = archive_links.run_archive(
-        content_dir=content_dir,
-        manifest_path=manifest_path,
-        denylist_path=denylist_path,
-        data_dir=tmp_path / "abox",
-        static_dir=tmp_path / "static",
-        session=MagicMock(),
-    )
+    manifest = _run(tmp_path, content_dir, denylist_path=denylist_path)
 
     # Only the new, non-denied, not-yet-archived URL was archived.
     assert archived == ["https://new.example.com/page"]
@@ -508,31 +727,82 @@ def test_run_archive_full_flow(
     )
     # x.com was deny-listed → never archived nor added.
     assert "https://x.com/foo" not in manifest
-    # Liveness probed every known URL (404 recorded).
-    assert manifest["https://new.example.com/page"]["last_status"] == 404
-    assert manifest["https://done.example.com/page"]["last_status"] == 404
+    # The committed manifest holds only durable facts; probe telemetry goes to
+    # the separate state file.
+    assert set(manifest["https://new.example.com/page"]) == {
+        "archive_url",
+        "dead",
+    }
+    probe_state = archive_links.load_manifest(tmp_path / "probe_state.json")
+    assert probe_state["https://new.example.com/page"]["last_status"] == 200
+    assert probe_state["https://done.example.com/page"]["last_status"] == 200
     # Manifest persisted to disk.
     assert archive_links.load_manifest(manifest_path) == manifest
 
 
-def test_run_archive_skips_failed_archive(
+def test_run_archive_dead_at_discovery_uses_wayback(
     tmp_path: Path, content_dir: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    manifest_path = tmp_path / "manifest.json"
+    # A link that is already hard-gone must NOT be captured live (that would
+    # snapshot the error page); it goes straight to the Wayback fallback.
+    def never_capture(*_a, **_k):
+        raise AssertionError("live capture must not run for a dead link")
 
-    def fail_archive(canonical, *_a, **_k):
-        raise archive_links.LowQualitySnapshotError("too small")
+    monkeypatch.setattr(archive_links, "archive_and_upload", never_capture)
+    monkeypatch.setattr(
+        archive_links,
+        "archive_from_wayback",
+        lambda canonical, static_dir, session: "https://cdn/wayback.html",
+    )
+    monkeypatch.setattr(archive_links, "probe_status", lambda url, session: 404)
 
-    monkeypatch.setattr(archive_links, "archive_and_upload", fail_archive)
+    manifest = _run(tmp_path, content_dir)
+
+    assert (
+        manifest["https://new.example.com/page"]["archive_url"]
+        == "https://cdn/wayback.html"
+    )
+
+
+def test_run_archive_capture_failure_falls_back_to_wayback(
+    tmp_path: Path, content_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def fail_capture(*_a, **_k):
+        raise archive_links.SnapshotFailedError("blocked the crawler")
+
+    monkeypatch.setattr(archive_links, "archive_and_upload", fail_capture)
+    monkeypatch.setattr(
+        archive_links,
+        "archive_from_wayback",
+        lambda canonical, static_dir, session: "https://cdn/wayback.html",
+    )
     monkeypatch.setattr(archive_links, "probe_status", lambda url, session: 200)
 
-    manifest = archive_links.run_archive(
-        content_dir=content_dir,
-        manifest_path=manifest_path,
+    manifest = _run(tmp_path, content_dir)
+
+    assert (
+        manifest["https://new.example.com/page"]["archive_url"]
+        == "https://cdn/wayback.html"
+    )
+
+
+def test_run_archive_skips_when_capture_and_wayback_fail(
+    tmp_path: Path, content_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def fail_capture(*_a, **_k):
+        raise archive_links.LowQualitySnapshotError("too small")
+
+    def fail_wayback(*_a, **_k):
+        raise archive_links.SnapshotFailedError("no wayback copy")
+
+    monkeypatch.setattr(archive_links, "archive_and_upload", fail_capture)
+    monkeypatch.setattr(archive_links, "archive_from_wayback", fail_wayback)
+    monkeypatch.setattr(archive_links, "probe_status", lambda url, session: 200)
+
+    manifest = _run(
+        tmp_path,
+        content_dir,
         denylist_path=tmp_path / "missing-deny.json",
-        data_dir=tmp_path / "abox",
-        static_dir=tmp_path / "static",
-        session=MagicMock(),
     )
 
     # Failed archive → URL not added to the manifest.
@@ -551,14 +821,7 @@ def test_run_archive_propagates_infra_failure(
     monkeypatch.setattr(archive_links, "probe_status", lambda url, session: 200)
 
     with pytest.raises(RuntimeError, match="Failed to upload"):
-        archive_links.run_archive(
-            content_dir=content_dir,
-            manifest_path=tmp_path / "manifest.json",
-            denylist_path=tmp_path / "deny.json",
-            data_dir=tmp_path / "abox",
-            static_dir=tmp_path / "static",
-            session=MagicMock(),
-        )
+        _run(tmp_path, content_dir)
 
 
 def test_run_archive_backfill_refreshes_existing(
@@ -582,20 +845,47 @@ def test_run_archive_backfill_refreshes_existing(
     )
     monkeypatch.setattr(archive_links, "probe_status", lambda url, session: 200)
 
-    manifest = archive_links.run_archive(
-        content_dir=content_dir,
-        manifest_path=manifest_path,
-        denylist_path=tmp_path / "deny.json",
-        data_dir=tmp_path / "abox",
-        static_dir=tmp_path / "static",
-        session=MagicMock(),
-        refresh=True,
-    )
+    manifest = _run(tmp_path, content_dir, refresh=True)
 
     # refresh=True re-archives the already-archived URL.
     assert (
         manifest["https://done.example.com/page"]["archive_url"]
         == "https://cdn/fresh.html"
+    )
+
+
+def test_run_archive_refresh_never_clobbers_snapshot_of_dead_page(
+    tmp_path: Path, content_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The existing snapshot predates the rot; re-capturing (or a Wayback fetch)
+    # could only replace it with something worse.
+    manifest_path = tmp_path / "manifest.json"
+    archive_links.save_manifest(
+        manifest_path,
+        {
+            "https://done.example.com/page": {
+                **archive_links._new_entry(),
+                "archive_url": "https://cdn/good-old.html",
+            }
+        },
+    )
+
+    touched: list[str] = []
+
+    def record(canonical, *_a, **_k):
+        touched.append(canonical)
+        return "https://cdn/replacement.html"
+
+    monkeypatch.setattr(archive_links, "archive_and_upload", record)
+    monkeypatch.setattr(archive_links, "archive_from_wayback", record)
+    monkeypatch.setattr(archive_links, "probe_status", lambda url, session: 404)
+
+    manifest = _run(tmp_path, content_dir, refresh=True)
+
+    assert "https://done.example.com/page" not in touched
+    assert (
+        manifest["https://done.example.com/page"]["archive_url"]
+        == "https://cdn/good-old.html"
     )
 
 
@@ -622,15 +912,7 @@ def test_run_archive_backfill_skips_already_archived(
     monkeypatch.setattr(archive_links, "archive_and_upload", fake_archive)
     monkeypatch.setattr(archive_links, "probe_status", lambda url, session: 200)
 
-    manifest = archive_links.run_archive(
-        content_dir=content_dir,
-        manifest_path=manifest_path,
-        denylist_path=tmp_path / "deny.json",
-        data_dir=tmp_path / "abox",
-        static_dir=tmp_path / "static",
-        session=MagicMock(),
-        backfill=True,
-    )
+    manifest = _run(tmp_path, content_dir, backfill=True)
 
     # backfill considers every URL, but the already-archived one is skipped
     # (refresh is False) and keeps its existing archive_url.
@@ -639,6 +921,28 @@ def test_run_archive_backfill_skips_already_archived(
         manifest["https://done.example.com/page"]["archive_url"]
         == "https://cdn/keep.html"
     )
+
+
+def test_run_archive_strikes_persist_across_runs(
+    tmp_path: Path, content_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The strike counter lives in the probe-state file, so two consecutive
+    # weekly runs of 404s flip the link dead.
+    monkeypatch.setattr(
+        archive_links, "archive_and_upload", lambda *a, **k: "https://cdn/x"
+    )
+    monkeypatch.setattr(
+        archive_links,
+        "archive_from_wayback",
+        lambda *a, **k: "https://cdn/wayback.html",
+    )
+    monkeypatch.setattr(archive_links, "probe_status", lambda url, session: 404)
+
+    first = _run(tmp_path, content_dir)
+    assert first["https://new.example.com/page"]["dead"] is False
+
+    second = _run(tmp_path, content_dir)
+    assert second["https://new.example.com/page"]["dead"] is True
 
 
 # --- main / CLI --------------------------------------------------------------
@@ -676,25 +980,24 @@ def test_main_run_mode_uses_defaults(
         manifest["https://new.example.com/page"]["archive_url"]
         == "https://cdn/x.html"
     )
+    # Probe telemetry defaults to an uncommitted file at the repo root.
+    probe_state = archive_links.load_manifest(
+        git_root / ".archive_probe_state.json"
+    )
+    assert probe_state["https://new.example.com/page"]["last_status"] == 200
 
 
-# --- Real ArchiveBox integration ---------------------------------------------
+# --- Real single-file integration ----------------------------------------------
 #
-# The unit tests above mock `_run_archivebox_add`, so they prove the
-# orchestration but NOT that a real `archivebox add` writes `singlefile.html`
-# where `archive_one` looks. This test closes that gap by capturing a
-# locally-served fixture page for real.
+# The unit tests above mock `capture_page`'s subprocess, so they prove the
+# orchestration but NOT that a real `single-file` run writes a usable
+# `singlefile.html`. This test closes that gap by capturing a locally-served
+# fixture page for real.
 #
 # Requirements (provided by the dedicated CI job, mirrored locally):
-#   - `archivebox`, `single-file` (single-file-cli) and a Chromium on PATH.
-#   - The Chromium must report a "Chromium <version>" version string.
-#     ArchiveBox 0.7.x parses the major version out of `chrome --version`; the
-#     "Google Chrome for Testing" build (Playwright's default) reports a string
-#     ArchiveBox truncates to "Google Chrome for", which makes the singlefile
-#     extractor crash and silently produce no snapshot.
-#
-# Skipped wherever archivebox is absent (e.g. the default `python-tests` job),
-# so it only executes in the dedicated archivebox job or a local run.
+# `single-file` (single-file-cli) on PATH and a Chromium (CHROME_BINARY or
+# auto-detected). Skipped wherever they are absent (e.g. the default
+# `python-tests` job), so it only executes in the dedicated job or a local run.
 
 # Large enough that single-file's inlined output clears MIN_SNAPSHOT_BYTES.
 _FIXTURE_BODY: str = "<p>" + ("Lorem ipsum dolor sit amet. " * 80) + "</p>"
@@ -733,30 +1036,25 @@ def fixture_server() -> Iterator[str]:
             httpd.shutdown()
 
 
-@pytest.mark.requires_archivebox
-@pytest.mark.allow_git_operations
-def test_archive_one_produces_real_singlefile(
+@pytest.mark.requires_singlefile
+def test_capture_page_produces_real_singlefile(
     tmp_path: Path, fixture_server: str
 ) -> None:
-    """`archive_one` captures a live page into a usable `singlefile.html`."""
-    archivebox = shutil.which("archivebox")
-    if archivebox is None:
-        pytest.skip("archivebox is not installed")
+    """`capture_page` captures a live page into a usable `singlefile.html`."""
+    if shutil.which("single-file") is None:
+        pytest.skip("single-file is not installed")
+    try:
+        archive_links._find_browser()
+    except RuntimeError:
+        pytest.skip("no Chromium/Chrome available")
 
-    data_dir = tmp_path / "archivebox"
-    data_dir.mkdir()
-    subprocess.run(
-        [archivebox, "init"], cwd=str(data_dir), check=True, env=os.environ
-    )
-
-    # `archive_one` archives whatever URL it is given; pass the reachable http
+    # `capture_page` archives whatever URL it is given; pass the reachable http
     # fixture directly (canonicalization would force https, which the fixture
     # server does not speak).
-    snapshot = archive_links.archive_one(fixture_server, data_dir)
+    dest = tmp_path / archive_links.SNAPSHOT_FILENAME
+    archive_links.capture_page(fixture_server, dest)
 
-    assert snapshot.name == archive_links.SNAPSHOT_FILENAME
-    assert snapshot.is_file()
-    raw = snapshot.read_bytes()
+    raw = dest.read_bytes()
     assert not archive_links.is_low_quality(raw), (
         f"snapshot is only {len(raw)} bytes; capture likely failed"
     )

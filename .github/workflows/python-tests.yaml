@@ -74,19 +74,16 @@ jobs:
       - name: Run pytest
         run: |
           uv run python -m pytest scripts \
-            -m "not requires_r2 and not requires_archivebox" \
+            -m "not requires_r2 and not requires_singlefile" \
             --config-file config/python/pyproject.toml
 
-  archivebox-integration:
+  singlefile-integration:
     needs: detect-changes
     if: >
       !startsWith(github.head_ref, 'deepsource-') &&
       needs.detect-changes.outputs.python == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    # CI has no usable Chrome sandbox; this makes ArchiveBox pass --no-sandbox.
-    env:
-      CHROME_SANDBOX: "False"
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -98,40 +95,28 @@ jobs:
           install-node-deps: "false"
           install-system-deps: "true"
 
-      - name: Install ArchiveBox and single-file
+      - name: Install single-file
         uses: ./.github/actions/retry-external
         with:
           max-attempts: "3"
           timeout-minutes: "10"
           command: |
-            # Keep in sync with ARCHIVEBOX_VERSION in archive-links.yaml.
-            uv pip install --system "archivebox==0.7.4"
-            npm install -g single-file-cli
-            archivebox version
+            # Keep in sync with SINGLE_FILE_VERSION in archive-links.yaml.
+            npm install -g "single-file-cli@2.0.83"
+            single-file --version
 
-      - name: Select a version-parseable Chromium for ArchiveBox
+      - name: Select a Chromium for single-file
         run: |
-          # See archive-links.yaml: the "Google Chrome for Testing" build makes
-          # ArchiveBox's singlefile extractor silently produce nothing.
           chrome="$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
           if [ -z "$chrome" ]; then
-            echo "::error::No google-chrome/chromium binary found for ArchiveBox" >&2
+            echo "::error::No google-chrome/chromium binary found for single-file" >&2
             exit 1
           fi
-          ver="$("$chrome" --version || true)"
-          echo "Chromium for ArchiveBox: $chrome -> $ver"
-          case "$ver" in
-            "Google Chrome for Testing"*)
-              echo "::error::$chrome is a 'for Testing' build; ArchiveBox mis-parses its version" >&2
-              exit 1 ;;
-          esac
-          {
-            echo "CHROME_BINARY=$chrome"
-            echo "SINGLEFILE_BINARY=$(command -v single-file)"
-          } >> "$GITHUB_ENV"
+          echo "Chromium for single-file: $chrome -> $("$chrome" --version)"
+          echo "CHROME_BINARY=$chrome" >> "$GITHUB_ENV"
 
-      - name: Run the real ArchiveBox capture test
+      - name: Run the real single-file capture test
         run: |
           uv run python -m pytest scripts \
-            -m requires_archivebox \
+            -m requires_singlefile \
             --config-file config/python/pyproject.toml

@@ -6,33 +6,46 @@ This is the Python half of the link-archiving system (the TypeScript half is
 
   1. Scans ``website_content/`` for outbound ``http(s)`` links (excluding the
      author's own domains and the asset CDN).
-  2. Archives newly-discovered links with ArchiveBox (singlefile by default),
-     injects ``noindex`` into the snapshot, and syncs it to R2 under a stable
+  2. Probes every discovered link's liveness (browser-like User-Agent,
+     parallel), then archives links that need a snapshot: live links are
+     captured with ``single-file`` (a headless-Chromium page inliner); links
+     that are already hard-gone (404/410) — or whose capture fails — fall back
+     to the newest Wayback Machine snapshot, so the preserved copy predates the
+     rot instead of memorializing it. Every snapshot gets a ``noindex`` meta
+     and is synced to R2 under a stable
      ``static/link-archive/<sha256>/singlefile.html`` key.
-  3. Probes each link's liveness and records it in
-     ``config/link_archive_manifest.json``. A link is only marked ``dead`` on a
-     hard-gone status (404/410) confirmed on N>=2 consecutive runs; transient or
-     blocked statuses (403/429/5xx/timeouts) never flip ``dead``.
+  3. Records durable facts in ``config/link_archive_manifest.json``
+     (``archive_url`` + ``dead`` — exactly what the build consumes) and
+     per-probe telemetry (strike counts, last status/checked) in a separate
+     probe-state file that is NOT committed, so the weekly manifest PR only
+     appears when something real changed. A link is only marked ``dead`` on a
+     hard-gone status (404/410) confirmed on N>=2 consecutive runs; transient
+     or blocked statuses (403/429/5xx/timeouts) never flip ``dead``.
 
 The build-time transformer rewrites a ``dead`` link's ``href`` to its archived
 copy. The canonicalization rule here is mirrored exactly in
 ``archiveLinks.ts``; the two share fixture tests so the manifest key the writer
 emits always matches the key the reader looks up.
 
-Expected environment variables (for the R2 sync step):
-    - ACCESS_KEY_ID_TURNTROUT_MEDIA
-    - SECRET_ACCESS_TURNTROUT_MEDIA
-    - S3_ENDPOINT_ID_TURNTROUT_MEDIA
+Expected environment variables:
+    - ACCESS_KEY_ID_TURNTROUT_MEDIA / SECRET_ACCESS_TURNTROUT_MEDIA /
+      S3_ENDPOINT_ID_TURNTROUT_MEDIA (R2 sync)
+    - CHROME_BINARY (optional; Chromium for single-file, auto-detected if
+      unset)
 """
 
 import argparse
 import datetime
 import hashlib
 import json
+import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from collections.abc import Iterable, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import requests
@@ -55,8 +68,23 @@ DEAD_STRIKE_THRESHOLD: int = 2
 MIN_SNAPSHOT_BYTES: int = 2048
 # Seconds to wait on a single liveness probe before recording it as blocked.
 PROBE_TIMEOUT: int = 30
-DEFAULT_EXTRACTORS: str = "singlefile"
+# Seconds a single single-file capture may take before it is skipped; a hung
+# Chromium must not stall the whole weekly run.
+CAPTURE_TIMEOUT: int = 180
+# Concurrent liveness probes; entries are independent, so the only bound is
+# politeness and the session's connection pool.
+PROBE_WORKERS: int = 8
 SNAPSHOT_FILENAME: str = "singlefile.html"
+
+# Some anti-bot configurations return 404 (not 403) to non-browser agents;
+# with the default ``python-requests/…`` UA that reads as consistently dead
+# and would defeat the consecutive-strike gate. Probe as a browser.
+PROBE_USER_AGENT: str = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+)
+
+WAYBACK_AVAILABILITY_API: str = "https://archive.org/wayback/available"
 
 # Author's own hosts never get archived (internal links + the asset CDN, which
 # all sit under turntrout.com).
@@ -74,11 +102,11 @@ _TRAILING_PUNCT: str = ".,;:!?"
 
 
 class LowQualitySnapshotError(RuntimeError):
-    """Raised when an ArchiveBox snapshot is too small to be a real capture."""
+    """Raised when a snapshot is too small to be a real capture."""
 
 
 class SnapshotFailedError(RuntimeError):
-    """Raised when ArchiveBox produces no snapshot for a single URL."""
+    """Raised when no usable snapshot could be produced for a single URL."""
 
 
 # --- URL handling ------------------------------------------------------------
@@ -146,22 +174,26 @@ def find_external_links(markdown_files: Iterable[Path]) -> set[str]:
     return links
 
 
-# --- Manifest persistence ----------------------------------------------------
+# --- Manifest + probe-state persistence ---------------------------------------
+#
+# The committed manifest holds only what the build consumes (``archive_url``,
+# ``dead``); probe telemetry lives in a separate uncommitted file so the weekly
+# manifest PR diff contains real changes, not timestamp churn — that diff is
+# the human gate before an irreversible rewrite, and it must stay readable.
 
 
 def _new_entry() -> dict:
     """Return a fresh manifest entry for a not-yet-archived URL."""
-    return {
-        "archive_url": "",
-        "dead": False,
-        "dead_strikes": 0,
-        "last_status": 0,
-        "last_checked": "",
-    }
+    return {"archive_url": "", "dead": False}
+
+
+def _new_probe_state() -> dict:
+    """Return fresh probe telemetry for a never-probed URL."""
+    return {"dead_strikes": 0, "last_status": 0, "last_checked": ""}
 
 
 def load_manifest(path: Path) -> dict:
-    """Load the manifest from *path*, or ``{}`` if it does not exist."""
+    """Load a JSON dict from *path*, or ``{}`` if it does not exist."""
     if not path.exists():
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
@@ -258,6 +290,13 @@ def _now_iso() -> str:
     )
 
 
+def probe_session() -> requests.Session:
+    """Return a retrying session that probes with a browser-like User-Agent."""
+    session = script_utils.http_session()
+    session.headers["User-Agent"] = PROBE_USER_AGENT
+    return session
+
+
 def probe_status(url: str, session: requests.Session) -> int:
     """
     Return the final HTTP status of *url* after redirects, or ``0`` on error.
@@ -276,14 +315,28 @@ def probe_status(url: str, session: requests.Session) -> int:
         return 0
 
 
+def probe_all(
+    urls: Iterable[str],
+    session: requests.Session,
+    workers: int = PROBE_WORKERS,
+) -> dict[str, int]:
+    """Probe every URL concurrently; return ``{url: status}``."""
+    ordered = sorted(urls)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        statuses = pool.map(lambda url: probe_status(url, session), ordered)
+        return dict(zip(ordered, statuses, strict=True))
+
+
 def _is_alive_status(status: int) -> bool:
     """Whether *status* indicates a reachable resource (2xx/3xx final)."""
     return 200 <= status < 400
 
 
-def update_dead_state(entry: dict, status: int) -> dict:
+def update_dead_state(
+    entry: dict, state: dict, status: int
+) -> tuple[dict, dict]:
     """
-    Return a copy of *entry* updated for a probe that returned *status*.
+    Return ``(entry, state)`` copies updated for a probe returning *status*.
 
     Death requires ``DEAD_STRIKE_THRESHOLD`` *consecutive* hard-gone probes, so
     a flaky 404 sandwiched between healthy/transient probes can never drive the
@@ -297,89 +350,157 @@ def update_dead_state(entry: dict, status: int) -> dict:
       status and reset the consecutive-strike streak, but keep a previously
       confirmed ``dead`` verdict until a real recovery.
     """
-    updated = dict(entry)
-    updated["last_status"] = status
-    updated["last_checked"] = _now_iso()
+    updated_entry = dict(entry)
+    updated_state = dict(state)
+    updated_state["last_status"] = status
+    updated_state["last_checked"] = _now_iso()
     if status in DEAD_STATUSES:
-        strikes = updated.get("dead_strikes", 0) + 1
-        updated["dead_strikes"] = strikes
+        strikes = updated_state.get("dead_strikes", 0) + 1
+        updated_state["dead_strikes"] = strikes
         if strikes >= DEAD_STRIKE_THRESHOLD:
-            updated["dead"] = True
+            updated_entry["dead"] = True
     elif _is_alive_status(status):
-        updated["dead_strikes"] = 0
-        updated["dead"] = False
+        updated_state["dead_strikes"] = 0
+        updated_entry["dead"] = False
     else:
-        updated["dead_strikes"] = 0
-    return updated
+        updated_state["dead_strikes"] = 0
+    return updated_entry, updated_state
 
 
-# --- ArchiveBox + R2 sync ----------------------------------------------------
+# --- Capture (single-file) + Wayback fallback ---------------------------------
 
 
-def _run_archivebox_add(
-    urls: Sequence[str],
-    data_dir: Path,
-    extractors: str,
-) -> None:  # pragma: no cover - thin subprocess wrapper, mocked in tests
-    # ArchiveBox 0.7.x `add` has no `--parallel` flag (parallelism is a global
-    # config concern); passing it aborts the command. We add one URL per call,
-    # so per-add parallelism would be a no-op anyway.
-    archivebox = script_utils.find_executable("archivebox")
-    subprocess.run(
-        [
-            archivebox,
-            "add",
-            f"--extract={extractors}",
-            *urls,
-        ],
-        cwd=str(data_dir),
-        check=True,
+def _find_browser() -> str:
+    """
+    Return the Chromium/Chrome binary for single-file.
+
+    ``CHROME_BINARY`` wins when set; otherwise the usual names are searched on
+    PATH. A missing browser is an infra failure (nothing could be captured), so
+    it raises RuntimeError rather than the per-URL skip exceptions.
+    """
+    configured = os.environ.get("CHROME_BINARY")
+    if configured:
+        return configured
+    for candidate in ("google-chrome", "chromium-browser", "chromium"):
+        found = shutil.which(candidate)
+        if found:
+            return found
+    raise RuntimeError(
+        "No Chromium/Chrome binary found for single-file; set CHROME_BINARY"
     )
 
 
-def archive_one(
-    canonical_url: str,
-    data_dir: Path,
-    extractors: str = DEFAULT_EXTRACTORS,
-) -> Path:
-    """
-    Archive *canonical_url* with ArchiveBox and return its ``singlefile.html``.
-
-    ArchiveBox writes snapshots into timestamped ``archive/<ts>/`` dirs, so we
-    diff the ``archive/`` directory before and after this single-URL add and
-    pick the new snapshot that produced a ``singlefile.html``.
-
-    The unit tests mock :func:`_run_archivebox_add`, so the real
-    "ArchiveBox-produces-``singlefile.html``-where-we-expect" behavior is
-    covered instead by ``test_archive_one_produces_real_singlefile`` (the
-    ``requires_archivebox`` integration test), which captures a locally-served
-    page for real.
-    """
-    archive_root = data_dir / "archive"
-    before = set(archive_root.glob("*")) if archive_root.exists() else set()
-    _run_archivebox_add([canonical_url], data_dir, extractors)
-    after = set(archive_root.glob("*")) if archive_root.exists() else set()
-
-    new_snapshots = [
-        directory
-        for directory in (after - before)
-        if (directory / SNAPSHOT_FILENAME).is_file()
-    ]
-    if not new_snapshots:
-        raise SnapshotFailedError(
-            f"ArchiveBox produced no {SNAPSHOT_FILENAME} for {canonical_url}"
+def _capture_once(
+    command: Sequence[str], url: str, dest: Path, timeout: int
+) -> None:
+    """Run one single-file capture; raise SnapshotFailedError on any failure."""
+    try:
+        result = subprocess.run(
+            command, check=True, timeout=timeout, capture_output=True
         )
-    newest = max(new_snapshots, key=lambda directory: directory.stat().st_mtime)
-    return newest / SNAPSHOT_FILENAME
+    except subprocess.TimeoutExpired as exc:
+        raise SnapshotFailedError(
+            f"single-file timed out after {timeout}s for {url}"
+        ) from exc
+    except subprocess.CalledProcessError as exc:
+        stderr = (exc.stderr or b"").decode("utf-8", errors="replace")[-500:]
+        raise SnapshotFailedError(
+            f"single-file failed for {url}: {exc}: {stderr}"
+        ) from exc
+    if not dest.is_file():
+        # single-file exits 0 on some failures, reporting them only on stdio.
+        output = (result.stdout + result.stderr).decode(
+            "utf-8", errors="replace"
+        )[-500:]
+        raise SnapshotFailedError(
+            f"single-file produced no {SNAPSHOT_FILENAME} for {url}: {output}"
+        )
+
+
+def capture_page(
+    url: str,
+    dest: Path,
+    timeout: int = CAPTURE_TIMEOUT,
+    attempts: int = 2,
+) -> None:
+    """
+    Capture *url* into *dest* as a self-contained HTML page via single-file.
+
+    single-file inlines every asset, so *dest* renders standalone. The direct
+    CLI gives a deterministic output path — no directory diffing. A cold
+    Chromium start (first launch on a fresh runner/profile) can exceed
+    single-file's internal page-load wait and fail with exit 0 and no output;
+    the bounded retry absorbs that class without masking persistent failures.
+
+    Raises:
+        SnapshotFailedError: If every attempt errored, timed out, or produced
+            no file.
+    """
+    single_file = script_utils.find_executable("single-file")
+    browser = _find_browser()
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    command = [
+        single_file,
+        f"--browser-executable-path={browser}",
+        # CI containers run Chromium without a usable sandbox.
+        '--browser-args=["--no-sandbox"]',
+        url,
+        str(dest),
+    ]
+    last_error = SnapshotFailedError(f"single-file never ran for {url}")
+    for _ in range(attempts):
+        try:
+            _capture_once(command, url, dest, timeout)
+        except SnapshotFailedError as exc:
+            last_error = exc
+            continue
+        return
+    raise last_error
+
+
+def fetch_wayback_snapshot(url: str, session: requests.Session) -> bytes | None:
+    """
+    Return the newest Wayback Machine copy of *url*, or ``None`` if there is
+    none.
+
+    Uses the availability API to locate the closest snapshot, then downloads
+    the raw original bytes (the ``id_`` modifier strips the Wayback toolbar and
+    URL rewriting).
+    """
+    try:
+        response = session.get(
+            WAYBACK_AVAILABILITY_API,
+            params={"url": url},
+            timeout=PROBE_TIMEOUT,
+        )
+        response.raise_for_status()
+        closest = (
+            response.json().get("archived_snapshots", {}).get("closest", {})
+        )
+        if not closest.get("available"):
+            return None
+        raw_url = re.sub(
+            r"/web/(\d+)/", r"/web/\1id_/", closest["url"], count=1
+        )
+        page = session.get(raw_url, timeout=CAPTURE_TIMEOUT)
+        page.raise_for_status()
+        return page.content
+    except (requests.RequestException, ValueError, KeyError) as exc:
+        print(f"Wayback lookup failed for {url}: {exc}", file=sys.stderr)
+        return None
+
+
+# --- R2 sync -------------------------------------------------------------------
 
 
 def sync_snapshot_to_r2(snapshot_path: Path) -> str:
     """
-    Upload *snapshot_path* to R2 with a ``noindex`` header and return its URL.
+    Upload *snapshot_path* to R2 with hardening headers; return its URL.
 
     Reuses the R2 plumbing in :mod:`r2_upload` for key derivation and bucket
-    config, but adds ``X-Robots-Tag: noindex`` so the mirrored copy stays out of
-    search engines even when fetched directly from the CDN.
+    config. ``X-Robots-Tag: noindex`` keeps the mirrored copy out of search
+    engines; ``Content-Security-Policy: sandbox`` neuters scripts and forms in
+    the third-party HTML, which is served from the first-party CDN origin.
     """
     script_utils.check_r2_env()
     relative_path = script_utils.path_relative_to_quartz_parent(snapshot_path)
@@ -395,6 +516,8 @@ def sync_snapshot_to_r2(snapshot_path: Path) -> str:
                 upload_target,
                 "--header-upload",
                 "X-Robots-Tag: noindex",
+                "--header-upload",
+                "Content-Security-Policy: sandbox",
                 "--metadata-set",
                 "content-type=text/html",
             ],
@@ -405,34 +528,61 @@ def sync_snapshot_to_r2(snapshot_path: Path) -> str:
     return f"{r2_upload.R2_BASE_URL}/{r2_key}"
 
 
-def archive_and_upload(
-    canonical_url: str,
-    data_dir: Path,
-    static_dir: Path,
-    extractors: str = DEFAULT_EXTRACTORS,
-) -> str:
+def _finalize_snapshot(raw: bytes, canonical_url: str, static_dir: Path) -> str:
     """
-    Archive *canonical_url*, ``noindex`` it, store it locally, sync to R2.
+    Quality-gate *raw*, inject ``noindex``, store under *static_dir*, sync to
+    R2.
 
     Returns the public CDN URL of the uploaded snapshot.
-
-    Raises:
-        LowQualitySnapshotError: If the capture is too small to be real.
-        SnapshotFailedError: If ArchiveBox produced no snapshot for the URL.
-        RuntimeError: If the R2 upload failed (infra error — fails loud).
     """
-    snapshot = archive_one(canonical_url, data_dir, extractors)
-    raw = snapshot.read_bytes()
     if is_low_quality(raw):
         raise LowQualitySnapshotError(
             f"Snapshot for {canonical_url} is only {len(raw)} bytes"
         )
-
     html = inject_noindex(raw.decode("utf-8", errors="replace"))
     dest = snapshot_dest_path(static_dir, canonical_url)
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(html, encoding="utf-8")
     return sync_snapshot_to_r2(dest)
+
+
+def archive_and_upload(canonical_url: str, static_dir: Path) -> str:
+    """
+    Capture *canonical_url* live with single-file and publish the snapshot.
+
+    Returns the public CDN URL of the uploaded snapshot.
+
+    Raises:
+        LowQualitySnapshotError: If the capture is too small to be real.
+        SnapshotFailedError: If single-file produced no snapshot for the URL.
+        RuntimeError: If the R2 upload failed (infra error — fails loud).
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        capture = Path(tmp) / SNAPSHOT_FILENAME
+        capture_page(canonical_url, capture)
+        raw = capture.read_bytes()
+    return _finalize_snapshot(raw, canonical_url, static_dir)
+
+
+def archive_from_wayback(
+    canonical_url: str, static_dir: Path, session: requests.Session
+) -> str:
+    """
+    Publish the newest Wayback copy of *canonical_url* as its snapshot.
+
+    Used when the live page is already hard-gone (a fresh capture would
+    memorialize the error page) or when the live capture failed.
+
+    Raises:
+        SnapshotFailedError: If Wayback has no snapshot of the URL.
+        LowQualitySnapshotError: If the Wayback copy is too small to be real.
+    """
+    raw = fetch_wayback_snapshot(canonical_url, session)
+    if raw is None:
+        raise SnapshotFailedError(
+            f"No Wayback snapshot available for {canonical_url}"
+        )
+    return _finalize_snapshot(raw, canonical_url, static_dir)
 
 
 # --- Orchestration -----------------------------------------------------------
@@ -443,21 +593,22 @@ def run_archive(  # pylint: disable=too-many-arguments,too-many-locals
     content_dir: Path,
     manifest_path: Path,
     denylist_path: Path,
-    data_dir: Path,
     static_dir: Path,
+    probe_state_path: Path,
     session: requests.Session,
-    extractors: str = DEFAULT_EXTRACTORS,
     backfill: bool = False,
     refresh: bool = False,
 ) -> dict:
     """
-    Discover outbound links, archive new ones, probe liveness, save manifest.
+    Discover outbound links, probe liveness, archive, save manifest + state.
 
-    Returns the updated manifest. New links are archived proactively (so a
-    snapshot exists before the link rots); the rewrite only happens later, once
-    a link is confirmed ``dead``.
+    Probing happens FIRST so archiving can route on it: live links get a fresh
+    single-file capture (a snapshot exists before the link rots); links that
+    are already hard-gone go straight to the Wayback fallback rather than
+    snapshotting their error page. Returns the updated manifest.
     """
     manifest = load_manifest(manifest_path)
+    probe_state = load_manifest(probe_state_path)
     denylist = load_denylist(denylist_path)
     markdown_files = script_utils.get_files(
         content_dir, (".md",), use_git_ignore=False
@@ -469,22 +620,35 @@ def run_archive(  # pylint: disable=too-many-arguments,too-many-locals
     else:
         to_archive = diff_new_urls(discovered, manifest)
 
+    statuses = probe_all(discovered, session)
+
     for canonical in to_archive:
         if is_denied(canonical, denylist):
             print(f"Skipping deny-listed URL: {canonical}")
             continue
+        status = statuses.get(canonical, 0)
         already_archived = bool(manifest.get(canonical, {}).get("archive_url"))
-        if already_archived and not refresh:
+        if already_archived and (not refresh or status in DEAD_STATUSES):
+            # An existing snapshot of a now-dead page is strictly better than
+            # anything a re-capture could produce; never clobber it.
             continue
         try:
-            archive_url = archive_and_upload(
-                canonical, data_dir, static_dir, extractors
-            )
+            if status in DEAD_STATUSES:
+                archive_url = archive_from_wayback(
+                    canonical, static_dir, session
+                )
+            else:
+                try:
+                    archive_url = archive_and_upload(canonical, static_dir)
+                except (LowQualitySnapshotError, SnapshotFailedError):
+                    archive_url = archive_from_wayback(
+                        canonical, static_dir, session
+                    )
         except (LowQualitySnapshotError, SnapshotFailedError) as exc:
-            # Per-URL capture problems are expected (some sites block crawlers);
-            # skip them. Infra failures (e.g. R2 auth) raise other errors that
-            # propagate and fail the job loudly rather than silently archiving
-            # nothing.
+            # Per-URL capture problems are expected (some sites block crawlers
+            # and have no Wayback copy); skip them. Infra failures (e.g. R2
+            # auth) raise other errors that propagate and fail the job loudly
+            # rather than silently archiving nothing.
             print(f"Skipping {canonical}: {exc}", file=sys.stderr)
             continue
         entry = manifest.get(canonical, _new_entry())
@@ -494,10 +658,16 @@ def run_archive(  # pylint: disable=too-many-arguments,too-many-locals
     for canonical in sorted(discovered):
         if canonical not in manifest:
             continue
-        status = probe_status(canonical, session)
-        manifest[canonical] = update_dead_state(manifest[canonical], status)
+        entry, state = update_dead_state(
+            manifest[canonical],
+            probe_state.get(canonical, _new_probe_state()),
+            statuses[canonical],
+        )
+        manifest[canonical] = entry
+        probe_state[canonical] = state
 
     save_manifest(manifest_path, manifest)
+    save_manifest(probe_state_path, probe_state)
     return manifest
 
 
@@ -516,13 +686,13 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--denylist", type=Path, default=None, help="Deny-list JSON path"
     )
     parser.add_argument(
-        "--data-dir", type=Path, default=None, help="ArchiveBox data dir"
-    )
-    parser.add_argument(
         "--static-dir", type=Path, default=None, help="quartz/static dir"
     )
     parser.add_argument(
-        "--extract", default=DEFAULT_EXTRACTORS, help="ArchiveBox extractors"
+        "--probe-state",
+        type=Path,
+        default=None,
+        help="Probe-state JSON path (uncommitted liveness telemetry)",
     )
     parser.add_argument(
         "--backfill",
@@ -549,17 +719,18 @@ def main(argv: Sequence[str] | None = None) -> None:
     denylist_path = args.denylist or (
         git_root / "config" / "link_archive_denylist.json"
     )
-    data_dir = args.data_dir or (git_root / ".archivebox")
     static_dir = args.static_dir or (git_root / "quartz" / "static")
+    probe_state_path = args.probe_state or (
+        git_root / ".archive_probe_state.json"
+    )
 
     run_archive(
         content_dir=content_dir,
         manifest_path=manifest_path,
         denylist_path=denylist_path,
-        data_dir=data_dir,
         static_dir=static_dir,
-        session=script_utils.http_session(),
-        extractors=args.extract,
+        probe_state_path=probe_state_path,
+        session=probe_session(),
         backfill=args.backfill,
         refresh=args.refresh,
     )

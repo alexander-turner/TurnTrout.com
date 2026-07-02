@@ -5,9 +5,14 @@ name: Archive outbound links
 # pass over ~1k+ links is run LOCALLY via `scripts/archive_links.py --backfill`
 # (it exceeds the job time cap); this job handles the steady-state delta.
 #
-# NOT YET VALIDATED: the ArchiveBox install/capture path has not been run
-# end-to-end. Keep `workflow_dispatch`-only (no `schedule:`) until a local
-# `--backfill` proves real captures land on R2. See .claude/dev-notes.md.
+# Captures use single-file (headless Chromium) directly; links that are already
+# hard-gone fall back to the Wayback Machine. Probe telemetry (strike counts)
+# is synced to/from R2 so consecutive-run dead confirmation survives fresh
+# runners while the committed manifest stays free of timestamp churn.
+#
+# NOT YET VALIDATED end-to-end in CI. Keep `workflow_dispatch`-only (no
+# `schedule:`) until a local `--backfill` proves real captures land on R2. See
+# .claude/dev-notes.md.
 
 concurrency:
   group: archive-links
@@ -28,11 +33,14 @@ permissions:
   contents: write
   pull-requests: write
 
-# Pin ArchiveBox so an upstream release can't silently change capture behavior.
 env:
-  ARCHIVEBOX_VERSION: "0.7.4"
-  # CI has no usable Chrome sandbox; this makes ArchiveBox pass --no-sandbox.
-  CHROME_SANDBOX: "False"
+  # Pin single-file so an upstream release can't silently change capture
+  # behavior. Keep in sync with python-tests.yaml's singlefile-integration job.
+  SINGLE_FILE_VERSION: "2.0.83"
+  # Probe telemetry lives on R2, not in git: strike counts must persist across
+  # runs, but their weekly churn must not pollute the manifest PR diff.
+  PROBE_STATE_REMOTE: "r2:turntrout/static/link-archive/probe-state.json"
+  PROBE_STATE_LOCAL: ".archive_probe_state.json"
 
 jobs:
   archive-links:
@@ -51,46 +59,30 @@ jobs:
           install-python: "true"
           install-system-deps: "true"
 
-      - name: Install ArchiveBox and single-file
+      - name: Install single-file
         uses: ./.github/actions/retry-external
         with:
           max-attempts: "3"
-          timeout-minutes: "15"
+          timeout-minutes: "10"
           command: |
-            uv pip install --system "archivebox==${ARCHIVEBOX_VERSION}"
-            npm install -g single-file-cli
-            archivebox version
+            npm install -g "single-file-cli@${SINGLE_FILE_VERSION}"
+            single-file --version
 
-      - name: Select a version-parseable Chromium for ArchiveBox
+      - name: Select a Chromium for single-file
         run: |
-          # ArchiveBox 0.7.x reads the major version from the first three words
-          # of `<chrome> --version`. The "Google Chrome for Testing" build
-          # (Playwright's default) reports a string that truncates to "Google
-          # Chrome for" — no number — so the singlefile extractor crashes and
-          # SILENTLY writes nothing. Google Chrome stable ("Google Chrome <v>")
-          # and distro Chromium ("Chromium <v>") both parse.
           chrome="$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
           if [ -z "$chrome" ]; then
-            echo "::error::No google-chrome/chromium binary found for ArchiveBox" >&2
+            echo "::error::No google-chrome/chromium binary found for single-file" >&2
             exit 1
           fi
-          ver="$("$chrome" --version || true)"
-          echo "Chromium for ArchiveBox: $chrome -> $ver"
-          case "$ver" in
-            "Google Chrome for Testing"*)
-              echo "::error::$chrome is a 'for Testing' build; ArchiveBox mis-parses its version" >&2
-              exit 1 ;;
-          esac
-          {
-            echo "CHROME_BINARY=$chrome"
-            echo "SINGLEFILE_BINARY=$(command -v single-file)"
-          } >> "$GITHUB_ENV"
+          echo "Chromium for single-file: $chrome -> $("$chrome" --version)"
+          echo "CHROME_BINARY=$chrome" >> "$GITHUB_ENV"
 
       - name: Smoke-test a real capture (version pin + chromium)
-        # Captures a tiny locally-served page for real and asserts a
-        # singlefile.html is produced — so a bad ArchiveBox release or a
-        # wrong-branded Chromium fails here, before the multi-hundred-link run.
-        run: uv run pytest -m requires_archivebox scripts/tests/test_archive_links.py
+        # Captures a tiny locally-served page for real and asserts a usable
+        # singlefile.html is produced — so a bad single-file release or a broken
+        # Chromium fails here, before the multi-hundred-link run.
+        run: uv run pytest -m requires_singlefile scripts/tests/test_archive_links.py
 
       - name: Configure rclone for R2
         env:
@@ -114,14 +106,10 @@ jobs:
           no_check_bucket = true
           EOF
 
-      - name: Initialize ArchiveBox data dir
+      - name: Pull probe state from R2
         run: |
-          mkdir -p .archivebox
-          cd .archivebox
-          # Plain init (no --setup): the binaries are already installed and
-          # pointed at via CHROME_BINARY/SINGLEFILE_BINARY, and --setup would
-          # try to auto-install a (mis-branded) Chromium and can hang.
-          archivebox init
+          rclone copyto "$PROBE_STATE_REMOTE" "$PROBE_STATE_LOCAL" \
+            || echo "No previous probe state (first run)"
 
       - name: Archive new links and probe liveness
         env:
@@ -131,9 +119,12 @@ jobs:
           # Bound through env (not inlined into the script) to avoid template injection.
           REFRESH: ${{ github.event.inputs.refresh }}
         run: |
-          args=()
+          args=(--probe-state "$PROBE_STATE_LOCAL")
           if [ "$REFRESH" = "true" ]; then args+=(--refresh); fi
           uv run python scripts/archive_links.py "${args[@]}"
+
+      - name: Push probe state to R2
+        run: rclone copyto "$PROBE_STATE_LOCAL" "$PROBE_STATE_REMOTE"
 
       - name: Verify every archived snapshot is live on R2
         # Enforces the invariant the per-PR linkchecker no longer checks: every
@@ -153,9 +144,10 @@ jobs:
             scheduled archive-links job: newly-added outbound links were snapshotted
             to R2 and every known link's liveness was re-probed.
 
-            Dead links (404/410 confirmed on >=2 consecutive runs) will be rewritten
-            to their archived copy at build time. Review the manifest diff before
-            merging.
+            The manifest holds only durable facts (`archive_url`, `dead`), so this
+            diff contains real changes: new snapshots or dead-verdict flips. Dead
+            links (404/410 confirmed on >=2 consecutive runs) will be rewritten to
+            their archived copy at build time. Review the diff before merging.
           branch: chore/archive-links-manifest
           delete-branch: true
           add-paths: config/link_archive_manifest.json
