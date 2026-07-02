@@ -128,11 +128,9 @@ function makeMermaidSvgsAccessible(tree: Root): void {
 /**
  * Adds an empty placeholder `<track kind="captions">` only to silent
  * GIF-replacement videos (autoplay+loop+muted), which carry no audio and just
- * need a track to satisfy the axe captions rule. Audio-bearing videos are left
- * untouched: they must receive a real `.vtt` track (or a `label="No audio"`
- * marker) upstream from `transcribe_videos.py`, and the built-site caption
- * check flags them while that track is missing rather than letting an empty
- * placeholder mask it.
+ * need a track to satisfy the axe captions rule. Audio-bearing videos must
+ * carry a real `.vtt` track (or a `label="No audio"` marker) injected by
+ * `transcribe_videos.py`; the built-site caption check flags any that don't.
  */
 function ensureVideoCaptionTracks(tree: Root): void {
   visit(tree, "element", (node: Element) => {
