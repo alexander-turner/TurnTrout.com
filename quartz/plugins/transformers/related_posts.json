@@ -582,14 +582,14 @@
       "title": "Review of 'Debate on Instrumental Convergence between LeCun, Russell, Bengio, Zador, and More'"
     },
     {
-      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
-      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
-      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
-    },
-    {
       "excerpt": "A list of some of my major conceptual mistakes.",
       "permalink": "mistakes",
       "title": "Mistaken claims I've made"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
     }
   ],
   "avoiding-side-effects-in-complex-environments": [
@@ -2608,14 +2608,14 @@
       "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
     },
     {
-      "excerpt": "Shard theory, once speculative, is definitively confirmed by GPT-NeoX-20B. Time to stop arguing and start experimenting.",
-      "permalink": "shard-theory-confirmed",
-      "title": "Definitive confirmation of shard theory"
-    },
-    {
       "excerpt": "My team published a paper on steering a maze-solving AI by manipulating its internal goal representations.",
       "permalink": "cheese-vector-paper",
       "title": "Paper: Understanding and Controlling a Maze-Solving Policy Network"
+    },
+    {
+      "excerpt": "Shard theory, once speculative, is definitively confirmed by GPT-NeoX-20B. Time to stop arguing and start experimenting.",
+      "permalink": "shard-theory-confirmed",
+      "title": "Definitive confirmation of shard theory"
     }
   ],
   "privacy-despite-authoritarianism": [
