@@ -427,13 +427,27 @@ def update_dead_state(
 # --- Capture (single-file) + Wayback fallback ---------------------------------
 
 
+# macOS app bundles are not on PATH; search the standard install locations.
+_MACOS_BROWSER_PATHS: tuple[str, ...] = (
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+)
+
+# A processed single-file save always carries this banner comment. Its absence
+# means single-file wrote the page WITHOUT running its capture pipeline (e.g.
+# the browser failed to launch and it fell back to dumping fetched HTML) — the
+# result looks plausible but has none of its images/fonts/styles embedded.
+SINGLEFILE_BANNER: str = "Page saved with SingleFile"
+
+
 def _find_browser() -> str:
     """
     Return the Chromium/Chrome binary for single-file.
 
     ``CHROME_BINARY`` wins when set; otherwise the usual names are searched on
-    PATH. A missing browser is an infra failure (nothing could be captured), so
-    it raises RuntimeError rather than the per-URL skip exceptions.
+    PATH, then the standard macOS app-bundle locations. A missing browser is an
+    infra failure (nothing could be captured), so it raises RuntimeError rather
+    than the per-URL skip exceptions.
     """
     configured = os.environ.get("CHROME_BINARY")
     if configured:
@@ -442,6 +456,9 @@ def _find_browser() -> str:
         found = shutil.which(candidate)
         if found:
             return found
+    for bundle_binary in _MACOS_BROWSER_PATHS:
+        if Path(bundle_binary).is_file():
+            return bundle_binary
     raise RuntimeError(
         "No Chromium/Chrome binary found for single-file; set CHROME_BINARY"
     )
@@ -464,13 +481,21 @@ def _capture_once(
         raise SnapshotFailedError(
             f"single-file failed for {url}: {exc}: {stderr}"
         ) from exc
+    stdio = (result.stdout + result.stderr).decode("utf-8", errors="replace")[
+        -500:
+    ]
     if not dest.is_file():
         # single-file exits 0 on some failures, reporting them only on stdio.
-        output = (result.stdout + result.stderr).decode(
-            "utf-8", errors="replace"
-        )[-500:]
         raise SnapshotFailedError(
-            f"single-file produced no {SNAPSHOT_FILENAME} for {url}: {output}"
+            f"single-file produced no {SNAPSHOT_FILENAME} for {url}: {stdio}"
+        )
+    if SINGLEFILE_BANNER not in dest.read_text(
+        encoding="utf-8", errors="replace"
+    ):
+        raise SnapshotFailedError(
+            f"single-file saved {url} without processing it (no "
+            f"'{SINGLEFILE_BANNER}' banner) — images/fonts/styles are not "
+            f"embedded; the browser likely failed to launch: {stdio}"
         )
 
 

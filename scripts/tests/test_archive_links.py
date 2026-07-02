@@ -1,5 +1,6 @@
 """Tests for scripts/archive_links.py."""
 
+import base64
 import http.server
 import json
 import shutil
@@ -435,11 +436,26 @@ def test_find_browser_searches_path(monkeypatch: pytest.MonkeyPatch) -> None:
     assert archive_links._find_browser() == "/usr/bin/chromium"
 
 
+def test_find_browser_falls_back_to_macos_bundles(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    # macOS app bundles are not on PATH; the standard locations are searched.
+    monkeypatch.delenv("CHROME_BINARY", raising=False)
+    monkeypatch.setattr(archive_links.shutil, "which", lambda name: None)
+    bundle_binary = tmp_path / "Google Chrome"
+    bundle_binary.write_text("", encoding="utf-8")
+    monkeypatch.setattr(
+        archive_links, "_MACOS_BROWSER_PATHS", (str(bundle_binary),)
+    )
+    assert archive_links._find_browser() == str(bundle_binary)
+
+
 def test_find_browser_missing_is_infra_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("CHROME_BINARY", raising=False)
     monkeypatch.setattr(archive_links.shutil, "which", lambda name: None)
+    monkeypatch.setattr(archive_links, "_MACOS_BROWSER_PATHS", ())
     with pytest.raises(RuntimeError, match="CHROME_BINARY"):
         archive_links._find_browser()
 
@@ -464,7 +480,8 @@ def test_capture_page_success(
         captured["command"] = command
         assert check is True and capture_output is True
         assert timeout == archive_links.CAPTURE_TIMEOUT
-        dest.write_bytes(b"<html>captured</html>")
+        dest.write_bytes(b"<html><!-- Page saved with SingleFile --></html>")
+        return _silent_success(stderr=b"")
 
     monkeypatch.setattr(archive_links.subprocess, "run", fake_run)
     archive_links.capture_page("https://example.com/a", dest)
@@ -537,12 +554,35 @@ def test_capture_page_retries_after_cold_start_failure(
     def flaky_run(*_args, **_kwargs):
         calls.append(1)
         if len(calls) > 1:
-            dest.write_bytes(b"<html>warm</html>")
+            dest.write_bytes(
+                b"<html><!-- Page saved with SingleFile --></html>"
+            )
         return _silent_success()
 
     monkeypatch.setattr(archive_links.subprocess, "run", flaky_run)
     archive_links.capture_page("https://example.com/a", dest)
     assert len(calls) == 2
+
+
+def test_capture_page_rejects_unprocessed_save(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _capture_env: None
+) -> None:
+    # single-file can exit 0 having written the page WITHOUT running its
+    # capture pipeline (e.g. the browser failed to launch): the output looks
+    # plausible but embeds no images/fonts/styles. The missing banner must
+    # fail the capture loudly instead of publishing a hollow snapshot.
+    dest = tmp_path / archive_links.SNAPSHOT_FILENAME
+
+    def raw_dump_run(*_args, **_kwargs):
+        dest.write_bytes(b"<html><body>raw fetched page</body></html>")
+        return _silent_success(stderr=b"browser launch failed")
+
+    monkeypatch.setattr(archive_links.subprocess, "run", raw_dump_run)
+    with pytest.raises(
+        archive_links.SnapshotFailedError,
+        match="without processing.*browser launch failed",
+    ):
+        archive_links.capture_page("https://example.com/a", dest)
 
 
 # --- Wayback fallback ----------------------------------------------------------
@@ -1122,24 +1162,37 @@ def test_main_run_mode_uses_defaults(
 
 # Large enough that single-file's inlined output clears MIN_SNAPSHOT_BYTES.
 _FIXTURE_BODY: str = "<p>" + ("Lorem ipsum dolor sit amet. " * 80) + "</p>"
+# The <img> proves resource embedding: the capture must turn it into a data:
+# URI, or the snapshot's images die with the origin.
 _FIXTURE_HTML: str = (
     "<!doctype html><html lang='en'><head><meta charset='utf-8'>"
     "<title>Archive integration fixture</title></head><body>"
     "<h1>Archive integration fixture</h1>"
+    "<img src='/img.png' alt='embedded fixture image'>"
     + _FIXTURE_BODY * 6
     + "</body></html>"
+)
+# A 1x1 PNG.
+_FIXTURE_PNG: bytes = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8"
+    "z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
 )
 
 
 @pytest.fixture()
 def fixture_server() -> Iterator[str]:
-    """Serve a single sizable HTML page on an ephemeral localhost port."""
+    """Serve a sizable HTML page + an image on an ephemeral localhost port."""
 
     class _Handler(http.server.BaseHTTPRequestHandler):
         def do_GET(self) -> None:  # noqa: N802 - http.server API
-            body = _FIXTURE_HTML.encode("utf-8")
+            if self.path.endswith(".png"):
+                body = _FIXTURE_PNG
+                content_type = "image/png"
+            else:
+                body = _FIXTURE_HTML.encode("utf-8")
+                content_type = "text/html; charset=utf-8"
             self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
@@ -1181,3 +1234,7 @@ def test_capture_page_produces_real_singlefile(
     )
     html = archive_links.inject_noindex(raw.decode("utf-8", errors="replace"))
     assert archive_links._NOINDEX_META in html
+    assert archive_links.SINGLEFILE_BANNER in html
+    # The fixture image must be embedded, not left as a URL that dies with
+    # the origin.
+    assert "data:image/png" in html
