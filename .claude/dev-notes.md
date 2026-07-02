@@ -296,6 +296,16 @@ records the result in `config/link_archive_manifest.json`.
   hosts; a min-size quality gate (`MIN_SNAPSHOT_BYTES`) rejects login-wall and
   blank captures. A minimal page inlines to ~1 KB, so test fixtures must be
   sizable to clear the gate.
+- **single-file can exit 0 having saved the page WITHOUT its capture
+  pipeline** (e.g. the browser fails to launch and it falls back to dumping
+  fetched HTML): the output looks plausible but embeds no images/fonts/styles
+  and dies with the origin. A processed save always carries the
+  `Page saved with SingleFile` banner comment; `capture_page` requires it and
+  fails loudly (with single-file's stdio) when absent. The integration test
+  also asserts a fixture image survives as a `data:` URI.
+- On macOS, Chrome/Chromium are app bundles, not on PATH; `_find_browser`
+  searches the standard `/Applications` locations after PATH (or set
+  `CHROME_BINARY`).
 
 ### Real-capture validation
 
