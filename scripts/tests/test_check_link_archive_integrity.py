@@ -8,6 +8,8 @@ import requests
 
 from .. import archive_links, check_link_archive_integrity, utils
 
+_PREFIX = check_link_archive_integrity.ARCHIVE_URL_PREFIX
+
 
 def _session(side_effect) -> MagicMock:
     """A fake requests.Session whose ``head`` is driven by *side_effect*."""
@@ -34,7 +36,7 @@ def test_find_broken_skips_entries_without_archive_url() -> None:
 
 def test_find_broken_passes_live_snapshots() -> None:
     manifest = {
-        "https://a.com": {"archive_url": "https://cdn/a.html", "dead": True}
+        "https://a.com": {"archive_url": f"{_PREFIX}a/x.html", "dead": True}
     }
     broken = check_link_archive_integrity.find_broken_archives(
         manifest, _session([_ok(200)])
@@ -44,8 +46,8 @@ def test_find_broken_passes_live_snapshots() -> None:
 
 def test_find_broken_flags_non_200_and_exceptions() -> None:
     manifest = {
-        "https://gone.com": {"archive_url": "https://cdn/gone.html"},
-        "https://err.com": {"archive_url": "https://cdn/err.html"},
+        "https://gone.com": {"archive_url": f"{_PREFIX}gone/x.html"},
+        "https://err.com": {"archive_url": f"{_PREFIX}err/x.html"},
     }
     # Entries are probed in sorted order: err.com before gone.com.
     session = _session([requests.ConnectionError("boom"), _ok(404)])
@@ -53,9 +55,32 @@ def test_find_broken_flags_non_200_and_exceptions() -> None:
         manifest, session
     )
     assert broken == [
-        ("https://err.com", "https://cdn/err.html", 0),
-        ("https://gone.com", "https://cdn/gone.html", 404),
+        ("https://err.com", f"{_PREFIX}err/x.html", 0),
+        ("https://gone.com", f"{_PREFIX}gone/x.html", 404),
     ]
+
+
+def test_find_broken_flags_foreign_origin_without_probing() -> None:
+    # Mirrors the reader's origin check: an archive_url outside the snapshot
+    # prefix is broken by definition, no HEAD needed.
+    manifest = {
+        "https://a.com": {
+            "archive_url": "https://evil.example.com/x.html",
+            "dead": True,
+        }
+    }
+    session = _session([])
+    broken = check_link_archive_integrity.find_broken_archives(
+        manifest, session
+    )
+    assert broken == [
+        (
+            "https://a.com",
+            "https://evil.example.com/x.html",
+            check_link_archive_integrity.FOREIGN_ORIGIN,
+        )
+    ]
+    session.head.assert_not_called()
 
 
 @pytest.fixture()
@@ -97,10 +122,19 @@ def test_main_returns_one_when_broken(
     monkeypatch.setattr(
         check_link_archive_integrity,
         "find_broken_archives",
-        lambda *_: [("https://a.com", "https://cdn/a.html", 404)],
+        lambda *_: [
+            ("https://a.com", f"{_PREFIX}a/x.html", 404),
+            (
+                "https://b.com",
+                "https://evil.example.com/x.html",
+                check_link_archive_integrity.FOREIGN_ORIGIN,
+            ),
+        ],
     )
     assert check_link_archive_integrity.main([]) == 1
-    assert "not live" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "not live" in err
+    assert "FOREIGN-ORIGIN" in err
 
 
 def test_main_defaults_to_committed_manifest_path(

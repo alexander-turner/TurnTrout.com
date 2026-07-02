@@ -11,6 +11,7 @@ import { unified } from "unified"
 import type { FullSlug } from "../../util/path"
 
 import {
+  ARCHIVE_URL_PREFIX,
   ARCHIVED_LINK_CLASS,
   ArchiveLinks,
   type ArchiveManifest,
@@ -23,11 +24,8 @@ import { CrawlLinks } from "./links"
 
 function entry(overrides: Partial<ArchiveManifestEntry> = {}): ArchiveManifestEntry {
   return {
-    archive_url: "https://assets.turntrout.com/link-archive/abc/singlefile.html",
+    archive_url: `${ARCHIVE_URL_PREFIX}abc/singlefile.html`,
     dead: true,
-    dead_strikes: 2,
-    last_status: 404,
-    last_checked: "2026-01-01T00:00:00Z",
     ...overrides,
   }
 }
@@ -77,21 +75,43 @@ describe("loadArchiveManifest", () => {
     expect(loadArchiveManifest(path.join(dir, "nope.json")).size).toBe(0)
   })
 
-  it("parses entries and defaults optional numeric/string fields", async () => {
+  it("parses entries down to the fields the build consumes", async () => {
     const file = path.join(dir, "manifest.json")
     await fs.writeFile(
       file,
       JSON.stringify({
-        "https://example.com/a": { archive_url: "https://cdn/x.html", dead: true },
+        "https://example.com/a": {
+          archive_url: `${ARCHIVE_URL_PREFIX}abc/singlefile.html`,
+          dead: true,
+        },
       }),
     )
     expect(loadArchiveManifest(file).get("https://example.com/a")).toEqual({
-      archive_url: "https://cdn/x.html",
+      archive_url: `${ARCHIVE_URL_PREFIX}abc/singlefile.html`,
       dead: true,
-      dead_strikes: 0,
-      last_status: 0,
-      last_checked: "",
     })
+  })
+
+  it("accepts an empty archive_url (not yet archived)", async () => {
+    const file = path.join(dir, "manifest.json")
+    await fs.writeFile(
+      file,
+      JSON.stringify({ "https://example.com/a": { archive_url: "", dead: false } }),
+    )
+    expect(loadArchiveManifest(file).get("https://example.com/a")?.archive_url).toBe("")
+  })
+
+  it("throws when archive_url points outside the snapshot prefix", async () => {
+    // The rewrite trusts archive_url completely, so the manifest must never be
+    // able to point a link at a foreign host.
+    const file = path.join(dir, "manifest.json")
+    await fs.writeFile(
+      file,
+      JSON.stringify({
+        "https://example.com/a": { archive_url: "https://evil.example.com/x.html", dead: true },
+      }),
+    )
+    expect(() => loadArchiveManifest(file)).toThrow(`outside ${ARCHIVE_URL_PREFIX}`)
   })
 
   it.each([
@@ -149,13 +169,37 @@ describe("rewriteArchivedLink", () => {
   }
 
   it("rewrites a dead external link and records the original href", () => {
-    const node = anchor("https://dead.example.com/gone/#frag", ["external"])
+    const node = anchor("https://dead.example.com/gone", ["external"])
     const changed = rewriteArchivedLink(node, makeManifest())
     expect(changed).toBe(true)
     expect(node.properties.href).toBe(entry().archive_url)
-    expect(node.properties["data-original-href"]).toBe("https://dead.example.com/gone/#frag")
+    expect(node.properties["data-original-href"]).toBe("https://dead.example.com/gone")
     expect(node.properties.className).toContain(ARCHIVED_LINK_CLASS)
     expect(node.properties.className).toContain("external")
+  })
+
+  it("carries the original #fragment onto the archived href", () => {
+    // The snapshot is the same document with the same ids, so deep links keep
+    // working after the rewrite.
+    const node = anchor("https://dead.example.com/gone/#frag", ["external"])
+    expect(rewriteArchivedLink(node, makeManifest())).toBe(true)
+    expect(node.properties.href).toBe(`${entry().archive_url}#frag`)
+    expect(node.properties["data-original-href"]).toBe("https://dead.example.com/gone/#frag")
+  })
+
+  it("explains the swap in a title attribute", () => {
+    const node = anchor("https://dead.example.com/gone")
+    rewriteArchivedLink(node, makeManifest())
+    expect(node.properties.title).toBe(
+      "Dead link; serving an archived copy. Original: https://dead.example.com/gone",
+    )
+  })
+
+  it("keeps an author-set title", () => {
+    const node = anchor("https://dead.example.com/gone")
+    node.properties.title = "the author wrote this"
+    rewriteArchivedLink(node, makeManifest())
+    expect(node.properties.title).toBe("the author wrote this")
   })
 
   it("adds the archived class even when no className exists", () => {
@@ -287,7 +331,7 @@ describe("ArchiveLinks after CrawlLinks (manifest-key round trip)", () => {
   ])("rewrites %j (canonical key %j) after CrawlLinks", async (rawHref, expectedKey) => {
     expect(canonicalizeUrl(rawHref)).toBe(expectedKey)
 
-    const archiveUrl = "https://assets.turntrout.com/link-archive/rt/singlefile.html"
+    const archiveUrl = `${ARCHIVE_URL_PREFIX}rt/singlefile.html`
     const manifestFile = path.join(dir, "manifest.json")
     await fs.writeFile(
       manifestFile,

@@ -346,9 +346,14 @@ the manifest diff (never pushes to `main`). Other flags: `--refresh`
 links to a self-hosted archived copy at build time (no client JS). It reads
 `config/link_archive_manifest.json` once per build; for each external `<a>` whose
 canonical href is in the manifest with `dead: true`, it swaps the `href` for the
-archived `archive_url`, adds an `archived` class, and records the original in
+archived `archive_url` (carrying the original `#fragment` over, since the
+snapshot keeps the same element ids), adds an `archived` class, sets an
+explanatory `title` (unless the author wrote one), and records the original in
 `data-original-href`. Live/unknown links are untouched, so with the committed
-empty manifest the transformer is a no-op.
+empty manifest the transformer is a no-op. Because the rewrite trusts
+`archive_url` completely, manifest parsing throws on any `archive_url` outside
+`ARCHIVE_URL_PREFIX` (the CDN's `static/link-archive/` namespace); the weekly
+integrity check enforces the same invariant on the Python side.
 
 The manifest is produced by a separate writer (single-file + Wayback + R2; see
 the writer section above), shipped in its own PR. Canonicalization uses the WHATWG `new URL` parser; the writer mirrors it

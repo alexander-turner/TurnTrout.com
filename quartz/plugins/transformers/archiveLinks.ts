@@ -8,6 +8,7 @@ import { fileURLToPath } from "url"
 
 import type { QuartzTransformerPlugin } from "../types"
 
+import { cdnBaseUrl } from "../../components/constants"
 import { isExternalLink } from "./links"
 
 const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
@@ -18,12 +19,16 @@ export const manifestPath = path.join(projectRoot, "config", "link_archive_manif
 /** Class added to an `<a>` whose `href` was swapped for its archived copy. */
 export const ARCHIVED_LINK_CLASS = "archived"
 
+/**
+ * Every snapshot the writer publishes lives under this prefix. `href` is
+ * rewritten to whatever the manifest says, so the manifest must never be able
+ * to point a link anywhere else.
+ */
+export const ARCHIVE_URL_PREFIX = `${cdnBaseUrl}/static/link-archive/`
+
 export interface ArchiveManifestEntry {
   archive_url: string
   dead: boolean
-  dead_strikes: number
-  last_status: number
-  last_checked: string
 }
 
 export type ArchiveManifest = ReadonlyMap<string, ArchiveManifestEntry>
@@ -62,12 +67,17 @@ function parseManifest(raw: string, source: string): ArchiveManifest {
     if (typeof entry.archive_url !== "string" || typeof entry.dead !== "boolean") {
       throw new Error(`${source} entry for ${key} must have a string archive_url and boolean dead`)
     }
+    if (entry.archive_url !== "" && !entry.archive_url.startsWith(ARCHIVE_URL_PREFIX)) {
+      // Empty means "not yet archived" (never rewritten); anything else must be
+      // one of our own snapshots — fail the build rather than ship an href
+      // pointing wherever a bad manifest says.
+      throw new Error(
+        `${source} entry for ${key} has archive_url outside ${ARCHIVE_URL_PREFIX}: ${entry.archive_url}`,
+      )
+    }
     manifest.set(key, {
       archive_url: entry.archive_url,
       dead: entry.dead,
-      dead_strikes: Number(entry.dead_strikes ?? 0),
-      last_status: Number(entry.last_status ?? 0),
-      last_checked: String(entry.last_checked ?? ""),
     })
   }
   return manifest
@@ -112,8 +122,16 @@ export function rewriteArchivedLink(node: Element, manifest: ArchiveManifest): b
     return false
   }
 
-  node.properties.href = entry.archive_url
+  // The snapshot is the same document with the same element ids, so carrying
+  // the fragment over keeps deep links (e.g. #section) working.
+  const { hash } = new URL(href)
+  node.properties.href = `${entry.archive_url}${hash}`
   node.properties["data-original-href"] = href
+  if (node.properties.title === undefined) {
+    // The CSS "archived" marker is visual-only; the title explains the swap to
+    // screen readers and on hover. An author-set title is left alone.
+    node.properties.title = `Dead link; serving an archived copy. Original: ${href}`
+  }
   const classes = (node.properties.className ?? []) as string[]
   if (!classes.includes(ARCHIVED_LINK_CLASS)) {
     classes.push(ARCHIVED_LINK_CLASS)

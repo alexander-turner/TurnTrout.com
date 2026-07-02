@@ -5,9 +5,11 @@ The per-PR ``linkchecker`` ignores ``assets.turntrout.com/static/link-archive/``
 so a populated manifest doesn't make every build fetch thousands of multi-
 hundred-KB snapshots and hammer R2. This check is what then guarantees the
 invariant the reader depends on: every ``archive_url`` a dead link could be
-rewritten to is actually reachable. It HEADs each ``archive_url`` and exits
-non-zero on any non-200, and is meant to run in the weekly archive job (after
-the manifest is written), not on the push critical path.
+rewritten to is actually reachable AND lives under the snapshot prefix
+(mirroring the reader's own origin check — the rewrite trusts ``archive_url``
+completely). It HEADs each ``archive_url`` and exits non-zero on any non-200 or
+foreign-origin URL, and is meant to run in the weekly archive job (after the
+manifest is written), not on the push critical path.
 """
 
 import sys
@@ -25,23 +27,30 @@ except ImportError:
 
 # Seconds to wait on a single HEAD before recording it as unreachable.
 PROBE_TIMEOUT: int = 30
+# Matches ARCHIVE_URL_PREFIX in quartz/plugins/transformers/archiveLinks.ts.
+ARCHIVE_URL_PREFIX: str = f"{script_utils.CDN_BASE_URL}/static/link-archive/"
+# Sentinel status for an archive_url outside the snapshot prefix.
+FOREIGN_ORIGIN: int = -1
 
 
 def find_broken_archives(
     manifest: dict, session: requests.Session
 ) -> list[tuple[str, str, int]]:
     """
-    Return ``(canonical_url, archive_url, status)`` for every unreachable
-    snapshot.
+    Return ``(canonical_url, archive_url, status)`` for every bad snapshot.
 
-    ``status`` is the HTTP status of the HEAD request, or ``0`` if the request
-    raised (DNS/connection/timeout). Entries without an ``archive_url`` are
-    skipped — there is nothing to verify until they are archived.
+    ``status`` is the HTTP status of the HEAD request, ``0`` if the request
+    raised (DNS/connection/timeout), or ``FOREIGN_ORIGIN`` if the URL is not
+    under the snapshot prefix. Entries without an ``archive_url`` are skipped —
+    there is nothing to verify until they are archived.
     """
     broken: list[tuple[str, str, int]] = []
     for canonical, entry in sorted(manifest.items()):
         archive_url = entry.get("archive_url")
         if not archive_url:
+            continue
+        if not archive_url.startswith(ARCHIVE_URL_PREFIX):
+            broken.append((canonical, archive_url, FOREIGN_ORIGIN))
             continue
         try:
             response = session.head(
@@ -73,8 +82,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             file=sys.stderr,
         )
         for canonical, archive_url, status in broken:
+            label = (
+                "FOREIGN-ORIGIN"
+                if status == FOREIGN_ORIGIN
+                else status or "ERR"
+            )
             print(
-                f"  {status or 'ERR'}  {archive_url}  ({canonical})",
+                f"  {label}  {archive_url}  ({canonical})",
                 file=sys.stderr,
             )
         return 1
