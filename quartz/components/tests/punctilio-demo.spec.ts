@@ -1,8 +1,47 @@
+import type { Page } from "playwright"
+
 import { expect, test } from "./fixtures"
 import { takeRegressionScreenshot } from "./visual_utils"
 
 const PUNCTILIO_URL = "http://localhost:8080/punctilio"
 const OUTPUT_CONTENT = ".punctilio-output-content"
+
+/**
+ * Pins a visual capture to the demo's fully-rendered ghost output. With an empty
+ * input the output is populated client-side: the initial transform is deferred
+ * (`queueMicrotask`), so a bare `visible` wait can race it and screenshot the
+ * empty box. The output's text — including the `::before` ghost rendered from
+ * `data-placeholder` — uses `font-display: swap` faces whose load is triggered
+ * on paint, so `document.fonts.ready` inside the screenshot helper can resolve
+ * before that face loads (FOUT). Wait for the populated, mode-settled state and
+ * force the output font to load before capturing.
+ */
+const waitForGhostOutputRendered = async (
+  page: Page,
+  { monospace }: { monospace: boolean },
+): Promise<void> => {
+  const output = page.locator(OUTPUT_CONTENT)
+  await expect(output).toHaveClass(/ghost/)
+  await expect(output).toHaveAttribute("data-placeholder", /\S/)
+  if (monospace) {
+    await expect(output).toHaveClass(/monospace-output/)
+  } else {
+    await expect(output).not.toHaveClass(/monospace-output/)
+  }
+  await page.evaluate(async (selector) => {
+    const el = document.querySelector(selector)
+    if (!el) return
+    const style = getComputedStyle(el)
+    const family = style.fontFamily
+      .split(",")[0]
+      .trim()
+      .replace(/^["']|["']$/g, "")
+    if (family) {
+      await document.fonts.load(`${style.fontWeight} ${style.fontSize} "${family}"`)
+    }
+    await document.fonts.ready
+  }, OUTPUT_CONTENT)
+}
 
 // Visual regression tests don't need assertions
 /* eslint-disable playwright/expect-expect */
@@ -213,6 +252,7 @@ test.describe("SPA navigation", () => {
 test.describe("Visual regression", () => {
   test("Punctilio demo in plaintext mode (screenshot)", async ({ page }, testInfo) => {
     await page.locator("#punctilio-demo").waitFor({ state: "visible" })
+    await waitForGhostOutputRendered(page, { monospace: false })
 
     await takeRegressionScreenshot(page, testInfo, "punctilio-demo-plaintext", {
       elementToScreenshot: page.locator("#punctilio-demo"),
@@ -221,7 +261,7 @@ test.describe("Visual regression", () => {
 
   test("Punctilio demo in HTML mode (screenshot)", async ({ page }, testInfo) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
-    await expect(page.locator(OUTPUT_CONTENT)).toBeVisible()
+    await waitForGhostOutputRendered(page, { monospace: true })
 
     await takeRegressionScreenshot(page, testInfo, "punctilio-demo-html", {
       elementToScreenshot: page.locator("#punctilio-demo"),
@@ -230,7 +270,7 @@ test.describe("Visual regression", () => {
 
   test("Punctilio demo in Markdown mode (screenshot)", async ({ page }, testInfo) => {
     await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
-    await expect(page.locator(OUTPUT_CONTENT)).toBeVisible()
+    await waitForGhostOutputRendered(page, { monospace: true })
 
     await takeRegressionScreenshot(page, testInfo, "punctilio-demo-markdown", {
       elementToScreenshot: page.locator("#punctilio-demo"),

@@ -12,59 +12,33 @@ Required environment variables (used to configure rclone):
 """
 
 import argparse
-import os
 import shutil
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
 try:
+    from . import r2_sync
     from . import utils as script_utils
 except ImportError:
-    import utils as script_utils  # type: ignore
+    import r2_sync
+    import utils as script_utils
 
-R2_BUCKET = "turntrout"
 R2_PREFIX = "visual-baselines"
 LOCAL_DIR = Path("tests/visual-baselines")
 
 
 def _write_rclone_config(config_path: Path) -> None:
-    """
-    Write a minimal rclone config pointing the ``r2`` remote at the bucket
-    described by the ``*_TURNTROUT_MEDIA`` env vars.
-
-    ``S3_ENDPOINT_ID_TURNTROUT_MEDIA`` is a bare Cloudflare account ID (matching
-    the convention in ``.claude/hooks/session-setup.sh``). If the value already
-    looks like a URL we pass it through; otherwise we wrap it as
-    ``https://<id>.r2.cloudflarestorage.com``.
-    """
-    endpoint_id = os.environ["S3_ENDPOINT_ID_TURNTROUT_MEDIA"]
-    if "://" in endpoint_id:
-        endpoint = endpoint_id
-    else:
-        endpoint = f"https://{endpoint_id}.r2.cloudflarestorage.com"
-    access_key = os.environ["ACCESS_KEY_ID_TURNTROUT_MEDIA"]
-    secret_key = os.environ["SECRET_ACCESS_TURNTROUT_MEDIA"]
-    config_path.write_text(
-        "[r2]\n"
-        "type = s3\n"
-        "provider = Cloudflare\n"
-        f"access_key_id = {access_key}\n"
-        f"secret_access_key = {secret_key}\n"
-        f"endpoint = {endpoint}\n"
-        "no_check_bucket = true\n",
-        encoding="utf-8",
-    )
+    """Thin alias for the shared rclone-config writer (see ``r2_sync``)."""
+    r2_sync.write_rclone_config(config_path)
 
 
 def _rclone(args: list[str], config_path: Path) -> None:
-    cmd = ["rclone", f"--config={config_path}", *args]
-    subprocess.run(cmd, check=True)
+    r2_sync.rclone(args, config_path)
 
 
 def _remote_path() -> str:
-    return f"r2:{R2_BUCKET}/{R2_PREFIX}"
+    return f"r2:{r2_sync.R2_BUCKET}/{R2_PREFIX}"
 
 
 def download(local_dir: Path) -> None:

@@ -6,6 +6,7 @@ tags:
   - AI
   - activation-engineering
   - deepmind
+  - language-models
 description: We tried boosting Gemini benchmarks by optimizing steering vectors. It didn't work. We share our takeaways.
 authors:
   - Alex Turner
@@ -22,7 +23,7 @@ aliases:
   - bidpo-steering
 original_url: https://www.lesswrong.com/posts/WqjkqrEyFDXoHzz9K/steering-gemini-with-bidpo
 date_published: 2025-01-30
-date_updated: 2026-05-15
+date_updated: 2026-06-30
 other_urls:
   - https://deepmindsafetyresearch.medium.com/steering-gemini-using-bidpo-vectors-8a0e7e1da1c9
 createBibtex: true
@@ -78,7 +79,7 @@ Table: Impact of a vector trained for a single step on a single datapoint.
 [Gemini 1.5v2 constituted a moderate upgrade](https://developers.googleblog.com/en/updated-gemini-models-reduced-15-pro-pricing-increased-rate-limits-and-more/). When 1.5v2 landed, nearly all of our positive signs flipped to negative. Gemini Pro 1.5v2 had higher unsteered TruthfulQA performance, while Flash 1.5v2  did not. However, both models seemed significantly better at following instructions and learning from many-shot examples.
 
 1. BIDPO achieved 92.6% on TruthfulQA, a 17.6% boost over the unsteered score of 75%.
-    1. 256-shot prompting achieved 95%, meaning we no longer beat the obvious baseline of multi-shot prompting.
+    1. With 256-shot prompting, we achieved 95%, meaning we no longer beat the obvious baseline of multi-shot prompting.
     2. LORA also achieved at least 95%.
 2. We tried combining BIDPO + LORA, but this no longer boosted performance.
 3. The HaluEval “generalization” result was caused by a data labeling error which flipped the correct answer for each question. At best, the TruthfulQA vectors preserved HaluEval performance.
@@ -153,7 +154,7 @@ This process continues until the entire dataset is exhausted. We may repeat this
 
 When evaluating BIDPO vectors mid-training, we “renormalized” them to have a norm equal to about 5% of the average norm of the residual stream at that part of the forward pass.
 
-## LORA training
+## LoRA training
 
 Our LORAs are trained with rank 1, a learning rate of $10^{-4}$, and a batch size of 16. We evaluate the trained LORAs every 50 steps and evaluate validation accuracy on the checkpoint with lowest validation loss.
 

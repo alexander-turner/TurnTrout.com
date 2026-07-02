@@ -21,10 +21,10 @@ try:
     from . import compress, r2_upload, source_file_checks
     from . import utils as script_utils
 except ImportError:
-    import compress  # type: ignore
-    import r2_upload  # type: ignore
-    import source_file_checks  # type: ignore
-    import utils as script_utils  # type: ignore
+    import compress
+    import r2_upload
+    import source_file_checks
+    import utils as script_utils
 
 yaml_parser = script_utils.get_yaml_parser()
 _http_session = script_utils.http_session()
@@ -99,7 +99,7 @@ def _convert_to_jpeg(
     """
     if max_size_kb is None:
         constants = script_utils.load_shared_constants()
-        max_size_kb = constants["maxCardImageSizeKb"]
+        max_size_kb = int(constants["maxCardImageSizeKb"])
 
     magick_executable = script_utils.find_executable("magick")
     target_size = max_size_kb * 1024  # Convert to bytes

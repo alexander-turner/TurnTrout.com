@@ -20,9 +20,9 @@ title: "Inner and outer alignment decompose one hard problem into two extremely 
 lw-latest-edit: 2023-01-24T00:43:58.097000Z
 lw-is-linkpost: "false"
 tags:
-  - "shard-theory"
-  - "AI"
-  - "critique"
+  - shard-theory
+  - AI
+  - critique
 aliases:
   - "inner-and-outer-alignment-decompose-one-hard-problem-into"
 sequence-link: posts#shard-theory
@@ -35,7 +35,7 @@ date_published: 2022-12-02
 original_url: https://www.lesswrong.com/posts/gHefoxiznGfsbiAu9/inner-and-outer-alignment-decompose-one-hard-problem-into
 skip_import: true
 description: Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.
-date_updated: 2026-05-08
+date_updated: 2026-06-28
 createBibtex: true
 ---
 
@@ -151,7 +151,7 @@ On the other hand, agents which terminally value diamonds will make decisions on
 >
 > Grader-optimization fails because _it is not the kind of thing that has any right to work_. If you want an actor to optimize _X_ but align it with evaluations of _X_, you shouldn't be surprised if you can't get _X_ out of that.
 
-Motivation via evaluations-of-_X_ _incentivizes_ agents to seek out adversarial inputs to the evaluative outer objective (e.g. “how many diamonds a specific simulated smart person expects of a plan”), since if there’s any possible way to get an even higher output-number, the inner-aligned agent will try to exploit that opportunity. I’m 95% confident that outer objectives will have adversarial inputs which have nothing to do with what we were attempting to grade on, because the input-space is exponentially large, the adversaries superintelligent, and real-world evaluative tasks are non-crisp/non-syntactic. This case is made in depth in [don't design agents which exploit adversarial inputs](/dont-design-agents-which-exploit-adversarial-inputs). Don’t build agents which care about evaluations of _X_. Build agents which care about _X_.
+Motivation via evaluations-of-_X_ _incentivizes_ agents to seek out adversarial inputs to the evaluative outer objective (e.g. “how many diamonds a specific simulated smart person expects of a plan”), since if there’s any possible way to get an even higher output-number, the inner-aligned agent will try to exploit that opportunity. I’m 95% confident that outer objectives will have adversarial inputs which have nothing to do with what we were attempting to grade on, because the input-space is exponentially large, the adversaries superintelligent, and real-world evaluative tasks are non-crisp/non-syntactic. This case is made in depth in [@title](/dont-design-agents-which-exploit-adversarial-inputs). Don’t build agents which care about evaluations of _X_. Build agents which care about _X_.
 
 This conflict-of-interest between evaluations-of-_X_ and _X_ is why you need to worry about e.g. “[nearest unblocked strategy](https://arbital.com/p/nearest_unblocked/)” and “[edge instantiation](https://arbital.com/p/edge_instantiation/)” within the outer/inner alignment regime. If you’re trying to get an agent to optimize diamonds by making it optimize evaluations, of course the agent will exploit any conceivable way to get high evaluations without high diamonds. I tentatively conjecture[^6] (but will not presently defend) that these problems are artifacts of the assumption that agents must be grader-optimizers (i.e. a smart “capabilities” module which optimizes for the outputs of some evaluation function, be that a utility function over universe-histories, or a grader function over all possible plans). But when I considered the problem with fresh eyes, I concluded that [alignment allows "nonrobust" decision-influences and doesn't require robust grading](/alignment-without-total-robustness).
 

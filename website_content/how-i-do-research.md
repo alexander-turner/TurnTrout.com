@@ -21,7 +21,7 @@ lw-latest-edit: 2019-11-20T21:28:11.835000Z
 lw-is-linkpost: 'false'
 tags:
   - rationality
-  - scholarship-&-learning
+  - scholarship-and-learning
 aliases:
   - how-i-do-research
 lw-reward-post-warning: 'false'

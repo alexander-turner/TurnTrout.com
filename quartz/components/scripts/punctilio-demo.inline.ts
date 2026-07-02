@@ -67,9 +67,8 @@ function transformMarkdownText(text: string, config: TransformOptions): string {
 
 /**
  * Transform HTML using punctilio's rehype plugin pipeline.
- * Handles cross-element text (e.g., quotes spanning <em> tags),
- * skip tags (code, pre, kbd, etc.), and separator-based text joining
- * automatically via rehypePunctilio.
+ * Handles cross-element text (e.g., quotes spanning <em> tags) and
+ * skip tags (code, pre, kbd, etc.) automatically via rehypePunctilio.
  */
 function transformHtmlText(html: string, config: TransformOptions): string {
   const result = unified()
@@ -81,17 +80,13 @@ function transformHtmlText(html: string, config: TransformOptions): string {
 }
 
 function doTransform(text: string, mode: TransformMode, config: TransformOptions): string {
-  // Skip punctilio's internal idempotency check (runs the whole transform
-  // twice). It's a library self-test, not a correctness requirement here, and
-  // the remark/rehype plugins already default it off.
-  const fastConfig: TransformOptions = { ...config, checkIdempotency: false }
   switch (mode) {
     case "plaintext":
-      return transform(text, fastConfig)
+      return transform(text, config)
     case "markdown":
-      return transformMarkdownText(text, fastConfig)
+      return transformMarkdownText(text, config)
     case "html":
-      return transformHtmlText(text, fastConfig)
+      return transformHtmlText(text, config)
     default: {
       const exhaustive: never = mode
       throw new Error(`Unknown mode: ${exhaustive}`)

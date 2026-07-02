@@ -107,8 +107,12 @@ def reset_saved_progress() -> None:
 
 
 @dataclass
-class CheckStep:
-    """A step in the pre-push check process."""
+class CheckStep:  # pylint: disable=too-many-instance-attributes
+    """
+    A step in the pre-push check process.
+
+    Each field is one config knob.
+    """
 
     name: str
     command: Sequence[str]
@@ -118,6 +122,14 @@ class CheckStep:
     requires: str | None = None
     """External tool that must be on PATH; step is skipped with a warning if
     missing."""
+
+    requires_env: str | None = None
+    """
+    Environment variable that must be set (non-empty); step is skipped with a
+    warning if absent.
+
+    Used for steps that need local-only credentials.
+    """
 
     parallel_group: str | None = None
     """
@@ -178,12 +190,19 @@ def _execute_step(
     """
     Run one CheckStep.
 
-    Returns None if skipped (missing required tool).
+    Returns None if skipped (missing required tool or environment variable).
     """
     if step.requires and not shutil.which(step.requires):
         console.print(
             f"[yellow]⚠ Skipping {step.name}: "
             f"{step.requires} not installed[/yellow]"
+        )
+        return None
+
+    if step.requires_env and not os.environ.get(step.requires_env):
+        console.print(
+            f"[yellow]⚠ Skipping {step.name}: "
+            f"{step.requires_env} not set[/yellow]"
         )
         return None
 
@@ -236,8 +255,10 @@ def _run_parallel_group(
             if first_failure is None:
                 first_failure = (step.name, result)
 
-    # Save state at the last step so resume picks up after the whole group.
-    save_state(group[-1].name)
+    # Advance resume state unless a failure is about to halt the run; a halted
+    # group must re-run in full on --resume rather than be skipped.
+    if first_failure is None or continue_on_failure:
+        save_state(group[-1].name)
 
     if first_failure is not None and not continue_on_failure:
         name, result = first_failure
@@ -382,7 +403,11 @@ def run_non_interactive_command(
     """
     stdout_lines: list[str] = []
     stderr_lines: list[str] = []
-    last_lines: deque[str] = deque(maxlen=5)
+    # Each reader thread gets its own deque: a single shared deque would be
+    # iterated by ``"\n".join(...)`` in one thread while the other appends,
+    # which raises "deque mutated during iteration".
+    stdout_last: deque[str] = deque(maxlen=5)
+    stderr_last: deque[str] = deque(maxlen=5)
     cmd = " ".join(step.command) if step.shell else step.command
 
     with subprocess.Popen(
@@ -395,11 +420,11 @@ def run_non_interactive_command(
     ) as process:
         stdout_thread = threading.Thread(
             target=stream_reader,
-            args=(process.stdout, stdout_lines, last_lines, progress, task_id),
+            args=(process.stdout, stdout_lines, stdout_last, progress, task_id),
         )
         stderr_thread = threading.Thread(
             target=stream_reader,
-            args=(process.stderr, stderr_lines, last_lines, progress, task_id),
+            args=(process.stderr, stderr_lines, stderr_last, progress, task_id),
         )
         # Start both threads before joining either to avoid deadlock:
         # if the subprocess fills the stderr pipe buffer while we're
@@ -604,7 +629,7 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     Get the pre-push check steps to run locally.
 
     Includes shared autofixers from `get_formatter_steps` plus a parallel
-    "verify" group of read-only checks (pylint, mypy, source-file checks,
+    "verify" group of read-only checks (pylint, pyright, source-file checks,
     spellcheck+vale) that mirror CI's lint-and-validate gates so failures
     surface before main goes red. Sequential tail steps handle local-only
     work: asset compression/upload (R2) and alt-text scanning.
@@ -612,12 +637,6 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     Args:
         git_root_path: Path to the git repository root.
     """
-    mypy_files = glob.glob(f"{git_root_path}/scripts/*.py")
-    if not mypy_files and (git_root_path / "scripts").is_dir():
-        raise FileNotFoundError(
-            f"No Python files found in {git_root_path}/scripts/ for Mypy"
-        )
-
     return [
         *get_formatter_steps(git_root_path),
         # source_file_checks.py imports the generated variables.scss when
@@ -651,18 +670,12 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
             cwd=str(git_root_path),
             parallel_group="verify",
         ),
+        # Bare `pyright` reads the include + rules from pyproject.toml's
+        # [tool.pyright], so it must run from the repo root.
         CheckStep(
-            name="Mypy",
-            command=[
-                "uv",
-                "run",
-                "python",
-                "-m",
-                "mypy",
-                "--config-file",
-                f"{git_root_path}/config/python/mypy.ini",
-                *mypy_files,
-            ],
+            name="Pyright",
+            command=["uv", "run", "pyright"],
+            cwd=str(git_root_path),
             parallel_group="verify",
         ),
         CheckStep(
@@ -676,13 +689,14 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
             cwd=str(git_root_path),
             parallel_group="verify",
         ),
+        # No `requires="vale"`: a missing vale must fail the push loudly (the
+        # wrapper errors out) rather than silently skipping the spellcheck gate.
         CheckStep(
             name="Spellcheck and Vale",
             command=[
                 "bash",
                 f"{git_root_path}/scripts/run_spellcheck_and_vale.sh",
             ],
-            requires="vale",
             parallel_group="verify",
         ),
         CheckStep(
@@ -692,6 +706,22 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 f"{git_root_path}/scripts/handle_assets.sh",
             ],
             requires="rclone",
+        ),
+        # Regenerate the related-posts neighbor map so every content page is
+        # covered. Embeds new/changed posts (within budget) via Voyage, syncs
+        # the vector cache on R2, and fails if the budget leaves a post
+        # uncovered. The auto-commit step folds the updated JSON into the push.
+        CheckStep(
+            name="Generating related posts",
+            command=[
+                "uv",
+                "run",
+                "python",
+                "scripts/generate_related_posts.py",
+            ],
+            cwd=str(git_root_path),
+            requires="rclone",
+            requires_env="VOYAGE_API_KEY",
         ),
         CheckStep(
             name="Labeling images for dark-mode inversion",

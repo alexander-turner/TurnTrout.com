@@ -4,12 +4,15 @@
   "defaultTitle": "The Pond",
   "defaultDescription": "Writings about doing good, thinking well, and living happily.",
   "locale": "en-US",
+  "linkTitleSentinel": "@title",
+  "linkTitleLowerSentinel": "@title-lower",
   "localTroutFaviconExtensionDefault": "ico",
   "localTroutFaviconBasenameDefault": "favicon",
   "faviconMimeType": "image/x-icon",
   "appleTouchIconUrl": "https://assets.turntrout.com/static/images/apple-icon.png",
   "faviconBasePath": "https://assets.turntrout.com/static/images/external-favicons",
   "minFaviconCount": 6,
+  "maxAtomicInlineCodeLength": 30,
   "googleSubdomainAllowlist": ["scholar", "play", "docs", "drive", "mail", "colab.research"],
   "faviconCountAllowlist": [
     "apple_com",
@@ -29,7 +32,13 @@
     "fatebook_io",
     "forum_effectivealtruism_org",
     "substack_com",
-    "google_com"
+    "google_com",
+    "washingtonpost_com",
+    "theguardian_com",
+    "cbsnews_com",
+    "arstechnica_com",
+    "stackoverflow_com",
+    "stackexchange_com"
   ],
   "faviconSubstringBlocklist": [
     "incompleteideas_net",
@@ -38,6 +47,7 @@
     "jacobgw",
     "pubsonline_informs_org",
     "nickbostrom_com",
+    "privacy_com",
     "vox_com",
     "cs_umd",
     "acritch",
@@ -96,6 +106,8 @@
     "s"
   ],
   "footnoteHeadingId": "footnotes",
+  "similarPostsHeadingId": "similar-posts",
+  "tocMaxDepth": 2,
   "testPageSlug": "test-page",
   "designPageSlug": "design",
   "tightScrollTolerance": 10,
@@ -173,5 +185,12 @@
     "rightGuillemet": "\u00BB",
     "germanOpenQuote": "\u201E"
   },
-  "stripBoundaryWhitespaceTags": ["em", "strong", "i", "b", "a", "u", "ins", "mark", "del", "s"]
+  "stripBoundaryWhitespaceTags": ["em", "strong", "i", "b", "a", "u", "ins", "mark", "del", "s"],
+  "relatedPosts": {
+    "model": "voyage-3",
+    "maxNewEmbeddingsPerRun": 50,
+    "topN": 5,
+    "minScore": 0.5,
+    "maxEmbedChars": 8000
+  }
 }

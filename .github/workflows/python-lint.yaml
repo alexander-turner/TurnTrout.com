@@ -8,6 +8,7 @@ on:
   push:
     branches: ["main", "dev"]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   actions: read
@@ -52,11 +53,8 @@ jobs:
         with:
           install-node-deps: "false"
 
-      - name: Run mypy
-        run: |
-          uv run python -m mypy \
-            --config-file config/python/mypy.ini \
-            scripts/*.py
+      - name: Run pyright
+        run: uv run pyright
 
       # Ruff is the formatter/linter authority (config in pyproject.toml's
       # [tool.ruff]). Run via `uvx` (ephemeral, version-pinned) since it isn't

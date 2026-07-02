@@ -48,6 +48,7 @@ def mock_environment(
     # Mock functions and constants
     monkeypatch.setattr(built_site_checks, "_PUBLIC_DIR", public_dir)
     monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    monkeypatch.setattr(script_utils, "get_git_root", lambda: tmp_path)
     monkeypatch.setattr(sys, "argv", ["built_site_checks.py"])
 
     # Mock common utility functions
@@ -660,17 +661,14 @@ def test_check_file_for_issues(tmp_path):
     </html>
     """
     file_path.write_text(html_content)
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html_content, "html.parser"),
-    ) as mock_parse_html_file:
-        issues = built_site_checks.check_file_for_issues(
-            file_path,
-            tmp_path / "public",
-            tmp_path / "website_content",
-            built_site_checks.CheckOptions(),
-        )
-    mock_parse_html_file.assert_called_once_with(file_path)
+    soup = BeautifulSoup(html_content, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup,
+        file_path,
+        tmp_path / "public",
+        tmp_path / "website_content",
+        built_site_checks.CheckOptions(),
+    )
     assert issues["localhost_links"] == ["https://localhost:8000"]
     assert issues["invalid_anchors"] == [
         "Invalid anchor: #invalid-anchor",
@@ -696,17 +694,14 @@ def test_complicated_blockquote(tmp_path):
     file_path = tmp_path / "public" / "test.html"
     file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_text(complicated_blockquote)
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(complicated_blockquote, "html.parser"),
-    ) as mock_parse_html_file:
-        issues = built_site_checks.check_file_for_issues(
-            file_path,
-            tmp_path / "public",
-            tmp_path / "website_content",
-            built_site_checks.CheckOptions(),
-        )
-    mock_parse_html_file.assert_called_once_with(file_path)
+    soup = BeautifulSoup(complicated_blockquote, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup,
+        file_path,
+        tmp_path / "public",
+        tmp_path / "website_content",
+        built_site_checks.CheckOptions(),
+    )
     assert issues["trailing_blockquotes"] == [
         "Problematic blockquote: Basic facts about language models during trai ning >"
     ]
@@ -717,17 +712,14 @@ def test_check_file_for_issues_with_redirect(tmp_path):
     file_path.parent.mkdir(parents=True, exist_ok=True)
     html_content = '<html><head><meta http-equiv="refresh" content="0;url=/new-page"></head></html>'
     file_path.write_text(html_content)
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html_content, "html.parser"),
-    ) as mock_parse_html_file:
-        issues = built_site_checks.check_file_for_issues(
-            file_path,
-            tmp_path / "public",
-            tmp_path / "website_content",
-            built_site_checks.CheckOptions(),
-        )
-    mock_parse_html_file.assert_called_once_with(file_path)
+    soup = BeautifulSoup(html_content, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup,
+        file_path,
+        tmp_path / "public",
+        tmp_path / "website_content",
+        built_site_checks.CheckOptions(),
+    )
     assert issues == {}
 
 
@@ -877,6 +869,47 @@ def test_check_unrendered_footnotes_parametrized(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unrendered_footnotes(soup)
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Healthy footnote reference: anchor wrapped in <sup>.
+        (
+            '<p>Text<sup><a id="user-content-fnref-1" data-footnote-ref'
+            ' href="#user-content-fn-1">1</a></sup></p>',
+            [],
+        ),
+        # Footnote nested in a link: the HTML re-parse strands the ref anchor
+        # as a sibling of the link (parent is <p>, not <sup>).
+        (
+            '<p><a href="https://example.com">link<sup></sup></a>'
+            '<a id="user-content-fnref-1" data-footnote-ref'
+            ' href="#user-content-fn-1">1</a> tail</p>',
+            ["user-content-fnref-1"],
+        ),
+        # No footnote references at all.
+        ('<p><a href="https://example.com">plain link</a></p>', []),
+    ],
+)
+def test_check_footnote_refs_in_sup(html, expected):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_footnote_refs_in_sup(soup)
+    assert result == expected
+
+
+def test_check_footnote_refs_in_sup_falls_back_to_href_then_text():
+    """A stranded ref without an id is identified by href, then by text."""
+    by_href = BeautifulSoup(
+        '<p><a data-footnote-ref href="#user-content-fn-2">2</a></p>',
+        "html.parser",
+    )
+    assert built_site_checks.check_footnote_refs_in_sup(by_href) == [
+        "#user-content-fn-2"
+    ]
+
+    by_text = BeautifulSoup("<p><a data-footnote-ref>3</a></p>", "html.parser")
+    assert built_site_checks.check_footnote_refs_in_sup(by_text) == ["3"]
 
 
 @pytest.mark.parametrize(
@@ -2275,6 +2308,33 @@ def test_check_invalid_internal_links(html, expected_count):
 
 
 @pytest.mark.parametrize(
+    "html,expected_count",
+    [
+        # Resolved bound link: sentinel replaced with the real title.
+        ('<a href="/page">Real Title</a>', 0),
+        # Sentinel left in link text (binding never resolved).
+        ('<a href="https://example.com">@title</a>', 1),
+        ('<a href="/page">@title</a>', 1),
+        # The lowercase variant must also be caught.
+        ('<a href="/page">@title-lower</a>', 1),
+        # Sentinel on a link with no href at all.
+        ("<a>@title</a>", 1),
+        # Whitespace around the sentinel still counts.
+        ('<a href="/page">  @title  </a>', 1),
+        # Sentinel as ordinary (non-link) text must be ignored.
+        ("<p><code>@title</code> is the sentinel.</p>", 0),
+        # Multiple leaked links.
+        ('<a href="/a">@title</a><a href="/b">@title</a>', 2),
+    ],
+)
+def test_check_unrendered_title_sentinel(html, expected_count):
+    """The check flags only links whose visible text is the bare sentinel."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_unrendered_title_sentinel(soup)
+    assert len(result) == expected_count
+
+
+@pytest.mark.parametrize(
     "md_content,expected_counts",
     [
         # Basic Markdown Image
@@ -2765,6 +2825,11 @@ def test_check_inline_formatting_spacing(html, expected):
         # Code inside a no-formatting zone is skipped.
         (
             '<p class="no-formatting">text<code>X</code>more</p>',
+            0,
+        ),
+        # Code inside an embedded external README is skipped.
+        (
+            '<div class="external-readme"><p>you <code>curl</code>ed it</p></div>',
             0,
         ),
     ],
@@ -3808,32 +3873,28 @@ def test_check_file_for_issues_with_fonts(tmp_path):
         f.write(html_content)
 
     # Check with fonts enabled
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html_content, "html.parser"),
-    ):
-        issues = built_site_checks.check_file_for_issues(
-            file_path,
-            tmp_path / "public",
-            None,
-            built_site_checks.CheckOptions(should_check_fonts=True),
-        )
+    soup = BeautifulSoup(html_content, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup,
+        file_path,
+        tmp_path / "public",
+        None,
+        built_site_checks.CheckOptions(should_check_fonts=True),
+    )
 
     # Verify that missing_preloaded_font is in the issues
     assert "missing_preloaded_font" in issues
     assert issues["missing_preloaded_font"] is True
 
     # Check with fonts disabled
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html_content, "html.parser"),
-    ):
-        issues = built_site_checks.check_file_for_issues(
-            file_path,
-            tmp_path / "public",
-            None,
-            built_site_checks.CheckOptions(),
-        )
+    soup = BeautifulSoup(html_content, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup,
+        file_path,
+        tmp_path / "public",
+        None,
+        built_site_checks.CheckOptions(),
+    )
 
     # Verify that missing_preloaded_font is not in the issues
     assert "missing_preloaded_font" not in issues
@@ -4060,19 +4121,13 @@ description: Test Description
     )
     assert md_file_path.is_file()
 
-    with (
-        patch(
-            "built_site_checks.check_markdown_assets_in_html",
-            return_value=["Mocked issue"],
-        ) as mock_check,
-        patch(
-            "scripts.utils.parse_html_file",
-            return_value=BeautifulSoup(
-                "<html><body>Test</body></html>", "html.parser"
-            ),
-        ),
-    ):
+    soup = BeautifulSoup("<html><body>Test</body></html>", "html.parser")
+    with patch(
+        "built_site_checks.check_markdown_assets_in_html",
+        return_value=["Mocked issue"],
+    ) as mock_check:
         issues = built_site_checks.check_file_for_issues(
+            soup,
             html_file_path,
             base_dir,
             md_file_path,
@@ -4085,6 +4140,50 @@ description: Test Description
     )
     assert "missing_markdown_assets" in issues
     assert issues["missing_markdown_assets"] == ["Mocked issue"]
+
+
+def test_check_file_for_issues_related_posts_required_on_content_page(
+    tmp_path,
+):
+    """An embeddable content page (full frontmatter) must carry the block."""
+    base_dir = tmp_path / "public"
+    base_dir.mkdir()
+    content_dir = tmp_path / "website_content"
+    content_dir.mkdir()
+
+    html_file_path = base_dir / "post.html"
+    html_file_path.write_text("<html><body>Body</body></html>")
+    md_file_path = content_dir / "post.md"
+    md_file_path.write_text(
+        "---\ntitle: T\npermalink: post\ndescription: D\n---\nBody"
+    )
+
+    # No .related-posts block on a content page → flagged.
+    soup_without = BeautifulSoup("<html><body>x</body></html>", "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup_without,
+        html_file_path,
+        base_dir,
+        md_file_path,
+        built_site_checks.CheckOptions(),
+    )
+    assert issues["related_posts"] == [
+        "Missing related-posts block (.related-posts) on a content page"
+    ]
+
+    # With the block → no related-posts issue.
+    soup_with = BeautifulSoup(
+        '<html><body><div class="related-posts"></div></body></html>',
+        "html.parser",
+    )
+    issues_ok = built_site_checks.check_file_for_issues(
+        soup_with,
+        html_file_path,
+        base_dir,
+        md_file_path,
+        built_site_checks.CheckOptions(),
+    )
+    assert issues_ok["related_posts"] == []
 
 
 def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
@@ -4101,37 +4200,27 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
     html_file_path.write_text("<html><body>Test</body></html>")
     non_existent_md_path = content_dir / "non_existent.md"
 
-    with (
-        patch(
-            "built_site_checks.check_markdown_assets_in_html",
-            return_value=[],
-        ) as mock_check_none,
-        patch(
-            "scripts.utils.parse_html_file",
-            return_value=BeautifulSoup(
-                "<html><body>Test</body></html>", "html.parser"
-            ),
-        ),
-    ):
+    soup = BeautifulSoup("<html><body>Test</body></html>", "html.parser")
+    with patch(
+        "built_site_checks.check_markdown_assets_in_html",
+        return_value=[],
+    ) as mock_check_none:
         issues_none = built_site_checks.check_file_for_issues(
-            html_file_path, base_dir, None, built_site_checks.CheckOptions()
+            soup,
+            html_file_path,
+            base_dir,
+            None,
+            built_site_checks.CheckOptions(),
         )
     mock_check_none.assert_not_called()
     assert "missing_markdown_assets" not in issues_none
 
-    with (
-        patch(
-            "built_site_checks.check_markdown_assets_in_html",
-            return_value=[],
-        ) as mock_check_non_existent,
-        patch(
-            "scripts.utils.parse_html_file",
-            return_value=BeautifulSoup(
-                "<html><body>Test</body></html>", "html.parser"
-            ),
-        ),
-    ):
+    with patch(
+        "built_site_checks.check_markdown_assets_in_html",
+        return_value=[],
+    ) as mock_check_non_existent:
         issues_non_existent = built_site_checks.check_file_for_issues(
+            soup,
             html_file_path,
             base_dir,
             non_existent_md_path,
@@ -4139,6 +4228,191 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
         )
     mock_check_non_existent.assert_not_called()
     assert "missing_markdown_assets" not in issues_non_existent
+
+
+@pytest.mark.parametrize(
+    ("html", "is_content_page", "expected"),
+    [
+        # Content page with the block: ok.
+        ('<div class="related-posts"></div>', True, []),
+        # Content page missing the block: flagged.
+        (
+            "<div>No similar posts</div>",
+            True,
+            ["Missing related-posts block (.related-posts) on a content page"],
+        ),
+        # Non-content page without the block: ok.
+        ("<div>No similar posts</div>", False, []),
+        # Non-content page that wrongly has the block: flagged.
+        (
+            '<div class="related-posts"></div>',
+            False,
+            [
+                "Unexpected related-posts block (.related-posts) on a "
+                "non-content page"
+            ],
+        ),
+    ],
+)
+def test_check_related_posts(
+    html: str, is_content_page: bool, expected: list[str]
+):
+    """Only content pages may carry a .related-posts block."""
+    soup = BeautifulSoup(html, "html.parser")
+    assert (
+        built_site_checks.check_related_posts(
+            soup, is_content_page=is_content_page
+        )
+        == expected
+    )
+
+
+def _toc_page(toc_ol: str, article_inner: str) -> BeautifulSoup:
+    """Wrap a TOC ``<ol>`` and article headings into a checkable page."""
+    html = (
+        '<nav id="table-of-contents"><div id="toc-content">'
+        f"{toc_ol}</div></nav><article>{article_inner}</article>"
+    )
+    return BeautifulSoup(html, "html.parser")
+
+
+# Intro(h1), Sub(h2) nested, then Appendix(h1): headings in document order.
+_VALID_TOC_OL = (
+    "<ol>"
+    '<li><a data-for="intro" href="#intro">Intro</a>'
+    '<ol><li><a data-for="sub" href="#sub">Sub</a></li></ol></li>'
+    '<li><a data-for="appendix" href="#appendix">Appendix</a></li>'
+    "</ol>"
+)
+_VALID_ARTICLE = (
+    '<h1 id="intro">Intro</h1>'
+    '<h2 id="sub">Sub</h2>'
+    '<h1 id="appendix">Appendix</h1>'
+)
+
+
+def test_check_toc_ordering_valid_page_has_no_issues():
+    soup = _toc_page(_VALID_TOC_OL, _VALID_ARTICLE)
+    assert built_site_checks.check_toc_ordering(soup) == []
+
+
+@pytest.mark.parametrize(
+    "soup",
+    [
+        # No TOC content.
+        BeautifulSoup('<article><h1 id="a">A</h1></article>', "html.parser"),
+        # TOC but no article.
+        BeautifulSoup(
+            '<nav id="table-of-contents"><div id="toc-content"><ol>'
+            '<li><a data-for="a" href="#a">A</a></li></ol></div></nav>',
+            "html.parser",
+        ),
+    ],
+)
+def test_check_toc_ordering_skips_pages_without_both(soup: BeautifulSoup):
+    assert built_site_checks.check_toc_ordering(soup) == []
+
+
+def test_check_toc_ordering_ignores_entries_without_a_heading():
+    """An entry pointing at a non-heading id has nothing to compare."""
+    soup = _toc_page(
+        '<ol><li><a data-for="ghost" href="#ghost">Ghost</a></li></ol>',
+        '<h1 id="real">Real</h1>',
+    )
+    assert built_site_checks.check_toc_ordering(soup) == []
+
+
+# The Similar-posts block is rendered before the appendix, so its heading sits
+# there in document order — it is a normal entry, not a special case.
+_SIMILAR_POSTS_ARTICLE = (
+    '<h1 id="intro">Intro</h1>'
+    '<h1 id="similar-posts">Similar posts</h1>'
+    '<h1 id="appendix">Appendix A</h1>'
+    '<h1 id="footnotes">Footnotes</h1>'
+)
+
+
+def _similar_posts_toc(*slugs: str) -> str:
+    labels = {
+        "intro": "Intro",
+        "similar-posts": "Similar posts",
+        "appendix": "Appendix A",
+        "footnotes": "Footnotes",
+    }
+    items = "".join(
+        f'<li><a data-for="{s}" href="#{s}">{labels[s]}</a></li>' for s in slugs
+    )
+    return f"<ol>{items}</ol>"
+
+
+def test_check_toc_ordering_accepts_similar_posts_in_document_order():
+    """Similar posts is listed where its (pre-appendix) heading actually is."""
+    toc = _similar_posts_toc("intro", "similar-posts", "appendix", "footnotes")
+    soup = _toc_page(toc, _SIMILAR_POSTS_ARTICLE)
+    assert built_site_checks.check_toc_ordering(soup) == []
+
+
+def test_check_toc_ordering_accepts_h1_similar_posts_among_h2_sections():
+    """
+    An h2-rooted article lists its sections and the injected h1 entry at the
+    same top level; differing tag names are not a nesting error (real pages like
+    mode-collapse-in-rl...
+
+    look exactly like this).
+    """
+    toc = (
+        "<ol>"
+        '<li><a data-for="summary" href="#summary">Summary</a></li>'
+        '<li><a data-for="similar-posts" href="#similar-posts">'
+        "Similar posts</a></li>"
+        '<li><a data-for="appendix" href="#appendix">Appendix A</a></li>'
+        "</ol>"
+    )
+    article = (
+        '<h2 id="summary">Summary</h2>'
+        '<h1 id="similar-posts">Similar posts</h1>'
+        '<h2 id="appendix">Appendix A</h2>'
+    )
+    assert built_site_checks.check_toc_ordering(_toc_page(toc, article)) == []
+
+
+def test_check_toc_ordering_flags_similar_posts_listed_after_its_heading():
+    """Regression for the original bug: the entry appended after the appendix,
+    even though the block (and heading) precede it — a plain order violation."""
+    toc = _similar_posts_toc("intro", "appendix", "similar-posts", "footnotes")
+    soup = _toc_page(toc, _SIMILAR_POSTS_ARTICLE)
+    assert built_site_checks.check_toc_ordering(soup) == [
+        "TOC entry '#similar-posts' is out of document order (listed after "
+        "'#appendix', which appears later in the article)"
+    ]
+
+
+def test_check_toc_ordering_flags_out_of_order_entries():
+    toc_ol = (
+        "<ol>"
+        '<li><a data-for="beta" href="#beta">Beta</a></li>'
+        '<li><a data-for="alpha" href="#alpha">Alpha</a></li>'
+        "</ol>"
+    )
+    article = '<h1 id="alpha">Alpha</h1><h1 id="beta">Beta</h1>'
+    assert built_site_checks.check_toc_ordering(_toc_page(toc_ol, article)) == [
+        "TOC entry '#alpha' is out of document order (listed after '#beta', "
+        "which appears later in the article)"
+    ]
+
+
+def test_check_toc_ordering_flags_heading_deeper_than_max_depth():
+    toc_ol = (
+        "<ol>"
+        '<li><a data-for="a" href="#a">A</a>'
+        '<ol><li><a data-for="c" href="#c">C</a></li></ol></li>'
+        "</ol>"
+    )
+    article = '<h1 id="a">A</h1><h3 id="c">C</h3>'
+    assert built_site_checks.check_toc_ordering(_toc_page(toc_ol, article)) == [
+        f"TOC entry '#c' targets an <h3>, deeper than "
+        f"tocMaxDepth={script_utils.TOC_MAX_DEPTH}"
+    ]
 
 
 @pytest.mark.parametrize(
@@ -4160,13 +4434,10 @@ def test_check_file_for_issues_favicon_check_called(
     file_path.write_text(html_content)
 
     # We don't need to mock check_favicons_missing, just check if the key is added
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html_content, "html.parser"),
-    ):
-        issues = built_site_checks.check_file_for_issues(
-            file_path, base_dir, None, built_site_checks.CheckOptions()
-        )
+    soup = BeautifulSoup(html_content, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup, file_path, base_dir, None, built_site_checks.CheckOptions()
+    )
 
     if should_check_favicon:
         assert issues["missing_favicon"] is True
@@ -4359,6 +4630,7 @@ def test_main_handles_markdown_mapping(
 
         # Verify check_file_for_issues was called with correct md_path
         mock_check.assert_called_with(
+            BeautifulSoup(html_file.read_text(encoding="utf-8"), "html.parser"),
             html_file,
             mock_environment["public_dir"],
             md_file,
@@ -4420,6 +4692,7 @@ def test_main_command_line_args(
         built_site_checks.main()
 
     mock_check.assert_called_with(
+        BeautifulSoup(html_file.read_text(encoding="utf-8"), "html.parser"),
         html_file,
         mock_environment["public_dir"],
         None,
@@ -4517,7 +4790,7 @@ def test_main_skips_non_root_html_md_mapping_not_required(
         built_site_checks.main()
 
     mock_check.assert_called_once()
-    called_file_path = mock_check.call_args.args[0]
+    called_file_path = mock_check.call_args.args[1]
     assert called_file_path == nested_html
 
 
@@ -4723,6 +4996,345 @@ def test_check_video_source_order_and_match(
     # Ensure the function being tested is correctly referenced
     result = built_site_checks.check_video_source_order_and_match(soup)
     assert sorted(result) == sorted(expected_issues)
+
+
+_NO_CAPTIONS_ISSUE = (
+    "<video> https://cdn/talk.mp4 has no real captions track "
+    "(.vtt) or 'No audio' marker"
+)
+
+
+@pytest.mark.parametrize(
+    "html, expected_issues",
+    [
+        # Relevant (controls) video with a real .vtt track -> ok.
+        (
+            '<video controls><source src="https://cdn/talk.mp4">'
+            '<track kind="captions" src="https://cdn/talk.vtt" srclang="en">'
+            "</video>",
+            [],
+        ),
+        # Relevant video with only the injected empty placeholder -> issue.
+        (
+            '<video controls><source src="https://cdn/talk.mp4">'
+            '<track kind="captions" src="data:text/vtt,WEBVTT"></video>',
+            [_NO_CAPTIONS_ISSUE],
+        ),
+        # Relevant video with no track at all -> issue.
+        (
+            '<video controls><source src="https://cdn/talk.mp4"></video>',
+            [_NO_CAPTIONS_ISSUE],
+        ),
+        # Explicit "No audio" marker on a relevant video -> ok.
+        (
+            '<video controls><source src="https://cdn/talk.mp4">'
+            '<track kind="captions" label="No audio"></video>',
+            [],
+        ),
+        # Inline muted GIF replacement -> skipped (no audio).
+        (
+            '<video autoplay loop muted><source src="https://cdn/anim.mp4">'
+            "</video>",
+            [],
+        ),
+        # The pond video is always skipped.
+        (
+            '<video id="pond-video" controls>'
+            '<source src="https://cdn/pond.mp4"></video>',
+            [],
+        ),
+        # A non-captions track does not satisfy the requirement.
+        (
+            '<video controls><source src="https://cdn/talk.mp4">'
+            '<track kind="descriptions" src="https://cdn/talk.vtt"></video>',
+            [_NO_CAPTIONS_ISSUE],
+        ),
+        # Falls back to the <video src> attribute for the hint.
+        (
+            '<video controls src="https://cdn/inline.mp4"></video>',
+            [
+                "<video> https://cdn/inline.mp4 has no real captions track "
+                "(.vtt) or 'No audio' marker"
+            ],
+        ),
+        # No identifiable source -> "(unknown source)" hint.
+        (
+            "<video controls></video>",
+            [
+                "<video> (unknown source) has no real captions track "
+                "(.vtt) or 'No audio' marker"
+            ],
+        ),
+    ],
+)
+def test_check_video_caption_tracks(html: str, expected_issues: list[str]):
+    """Audio-bearing videos must carry a real captions track."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_video_caption_tracks(soup)
+    assert sorted(result) == sorted(expected_issues)
+
+
+@pytest.mark.parametrize(
+    "html, expected_count",
+    [
+        # Meaningful labels satisfy the requirement.
+        ('<video alt="A trout swimming"><source src="a.mp4"></video>', 0),
+        (
+            '<video aria-label="A trout swimming"><source src="a.mp4"></video>',
+            0,
+        ),
+        ('<video title="A trout swimming"><source src="a.mp4"></video>', 0),
+        (
+            '<video aria-describedby="A trout swimming">'
+            "<source src='a.mp4'></video>",
+            0,
+        ),
+        # Explicit decorative markers exempt the video.
+        ('<video alt=""><source src="a.mp4"></video>', 0),
+        ('<video aria-hidden="true"><source src="a.mp4"></video>', 0),
+        # Decorative marker short-circuits before the label check, so a
+        # placeholder label alongside it is still fine.
+        (
+            '<video aria-hidden="true" aria-label="video">'
+            "<source src='a.mp4'></video>",
+            0,
+        ),
+        # #pond-video is not special-cased: it passes only via its
+        # aria-hidden="true" decorative marker (as rendered in the navbar),
+        # and a bare id no longer exempts it.
+        (
+            '<video id="pond-video" aria-hidden="true">'
+            "<source src='a.mp4'></video>",
+            0,
+        ),
+        ('<video id="pond-video"><source src="a.mp4"></video>', 1),
+        # No label and no decorative marker -> flagged.
+        ("<video><source src='a.mp4'></video>", 1),
+        ("<video autoplay loop muted><source src='a.mp4'></video>", 1),
+        # aria-hidden="false" is not a decorative marker -> flagged.
+        ('<video aria-hidden="false"><source src="a.mp4"></video>', 1),
+        # Placeholder labels are not meaningful -> flagged.
+        ('<video alt="video"><source src="a.mp4"></video>', 1),
+        ('<video aria-label="  Clip "><source src="a.mp4"></video>', 1),
+        # Whitespace-only label is not meaningful -> flagged.
+        ('<video title="   "><source src="a.mp4"></video>', 1),
+        # Each offending video is reported independently.
+        (
+            "<video><source src='a.mp4'></video>"
+            '<video alt="ok"><source src="b.mp4"></video>'
+            "<video><source src='c.mp4'></video>",
+            2,
+        ),
+    ],
+)
+def test_check_video_accessibility(html: str, expected_count: int):
+    """Test that videos require a label or an explicit decorative marker."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_video_accessibility(soup)
+    assert len(result) == expected_count
+    for issue in result:
+        assert "missing accessibility label" in issue
+        # The offending opening tag is included for debugging.
+        assert "<video" in issue
+
+
+def test_check_video_accessibility_reports_offending_tag():
+    """The reported message includes the specific opening <video> tag."""
+    soup = BeautifulSoup(
+        '<video class="float-right"><source src="x.mp4"></video>',
+        "html.parser",
+    )
+    (issue,) = built_site_checks.check_video_accessibility(soup)
+    assert '<video class="float-right">' in issue
+    # Only the opening tag is reported, not the <source> children.
+    assert "<source" not in issue
+
+
+_CDN = "https://assets.turntrout.com/static/images/posts"
+
+
+def _linked_caption_issue(href: str, probe_detail: str) -> str:
+    return (
+        f"Linked video {href} has no captions companion: {probe_detail}; "
+        f"no on-page .vtt reference or '#no-audio' marker"
+    )
+
+
+def _vtt_404(stem: str) -> str:
+    return f"HEAD {_CDN}/{stem}.vtt returned status 404"
+
+
+@pytest.mark.parametrize(
+    "html, mock_responses, expected_issues, expected_probe_urls",
+    [
+        # Linked .mp4 with the sibling .vtt linked on the page -> ok, no probe.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>'
+            f'<a href="{_CDN}/talk.vtt">captions</a>',
+            [],
+            [],
+            [],
+        ),
+        # Companion satisfied by a <track src> reference to the sibling .vtt.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a><track src="{_CDN}/talk.vtt">',
+            [],
+            [],
+            [],
+        ),
+        # Cache-busting query strings on both ends still match on base path.
+        (
+            f'<a href="{_CDN}/talk.mp4?v=2">clip</a>'
+            f'<a href="{_CDN}/talk.vtt?v=9">captions</a>',
+            [],
+            [],
+            [],
+        ),
+        # No on-page reference, but the sibling .vtt exists on the CDN -> ok.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>',
+            [(True, 200)],
+            [],
+            [f"{_CDN}/talk.vtt"],
+        ),
+        # No on-page reference and the CDN probe 404s -> issue.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/talk.mp4", _vtt_404("talk"))],
+            [f"{_CDN}/talk.vtt"],
+        ),
+        # The probe raising a network error is reported, not swallowed.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>',
+            [requests.RequestException("boom")],
+            [
+                _linked_caption_issue(
+                    f"{_CDN}/talk.mp4",
+                    f"HEAD {_CDN}/talk.vtt failed: boom",
+                )
+            ],
+            [f"{_CDN}/talk.vtt"],
+        ),
+        # .mov and .m4v are captionable containers too.
+        (
+            f'<a href="{_CDN}/clip.mov">m</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/clip.mov", _vtt_404("clip"))],
+            [f"{_CDN}/clip.vtt"],
+        ),
+        (
+            f'<a href="{_CDN}/clip.m4v">m</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/clip.m4v", _vtt_404("clip"))],
+            [f"{_CDN}/clip.vtt"],
+        ),
+        # #no-audio fragment opts a silent link out; no probe.
+        (f'<a href="{_CDN}/silent.mp4#no-audio">s</a>', [], [], []),
+        # .webm / .gif links are exempt regardless of captions; no probe.
+        (f'<a href="{_CDN}/anim.webm">w</a>', [], [], []),
+        (f'<a href="{_CDN}/anim.gif">g</a>', [], [], []),
+        # A .mp4 on another host is out of scope; no probe.
+        ('<a href="https://youtube.com/watch.mp4">yt</a>', [], [], []),
+        # A sibling .vtt at a different base path does not count on-page,
+        # so the CDN probe decides.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>'
+            f'<a href="{_CDN}/other.vtt">captions</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/talk.mp4", _vtt_404("talk"))],
+            [f"{_CDN}/talk.vtt"],
+        ),
+        # Embedded <video> sources are not anchors -> ignored by this check.
+        (
+            f'<video controls><source src="{_CDN}/talk.mp4"></video>',
+            [],
+            [],
+            [],
+        ),
+        # Each offending link is reported independently; satisfied links
+        # don't probe.
+        (
+            f'<a href="{_CDN}/a.mp4">a</a>'
+            f'<a href="{_CDN}/b.mp4">b</a>'
+            f'<a href="{_CDN}/b.vtt">b captions</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/a.mp4", _vtt_404("a"))],
+            [f"{_CDN}/a.vtt"],
+        ),
+        # The same video linked twice probes once (cached) and is reported
+        # once per anchor.
+        (
+            f'<a href="{_CDN}/dup.mp4">one</a><a href="{_CDN}/dup.mp4">two</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/dup.mp4", _vtt_404("dup"))] * 2,
+            [f"{_CDN}/dup.vtt"],
+        ),
+        # Uppercase extensions match; the probe preserves the base's case.
+        # The href-less anchor exercises the reference scan's typeguard.
+        (
+            f'<a>plain</a><a href="{_CDN}/TALK.MP4">c</a>',
+            [(False, 404)],
+            [_linked_caption_issue(f"{_CDN}/TALK.MP4", _vtt_404("TALK"))],
+            [f"{_CDN}/TALK.vtt"],
+        ),
+        # Protocol-relative CDN URLs are in scope; the probe rebuilds an
+        # absolute https URL.
+        (
+            '<a href="//assets.turntrout.com/static/talk.mp4">c</a>',
+            [(True, 200)],
+            [],
+            ["https://assets.turntrout.com/static/talk.vtt"],
+        ),
+        # Only the exact #no-audio fragment opts out.
+        (
+            f'<a href="{_CDN}/talk.mp4#no-audio-please">c</a>',
+            [(False, 404)],
+            [
+                _linked_caption_issue(
+                    f"{_CDN}/talk.mp4#no-audio-please", _vtt_404("talk")
+                )
+            ],
+            [f"{_CDN}/talk.vtt"],
+        ),
+        # The opt-out fragment combines with a query string.
+        (f'<a href="{_CDN}/talk.mp4?v=2#no-audio">c</a>', [], [], []),
+    ],
+)
+def test_check_linked_video_captions(
+    monkeypatch,
+    html: str,
+    mock_responses: list,
+    expected_issues: list[str],
+    expected_probe_urls: list[str],
+):
+    """Linked audio-container videos on the CDN must have captions."""
+    # Clear at both ends: mocked probe results cached under real CDN URLs
+    # must not leak into neighboring tests.
+    built_site_checks._cdn_vtt_probe_issue.cache_clear()
+    soup = BeautifulSoup(html, "html.parser")
+
+    remaining = list(mock_responses)
+    probed_urls: list[str] = []
+
+    def mock_head(url: str, timeout: int) -> object:
+        probed_urls.append(url)
+        if not remaining:
+            raise AssertionError(f"Unexpected HEAD probe: {url}")
+        response = remaining.pop(0)
+        if isinstance(response, Exception):
+            raise response
+        ok, status_code = response
+        return type("MockResponse", (), {"ok": ok, "status_code": status_code})
+
+    monkeypatch.setattr(built_site_checks._http_session, "head", mock_head)
+
+    try:
+        result = built_site_checks.check_linked_video_captions(soup)
+    finally:
+        built_site_checks._cdn_vtt_probe_issue.cache_clear()
+    assert result == expected_issues
+    assert probed_urls == expected_probe_urls
 
 
 @pytest.mark.parametrize(
@@ -5191,6 +5803,7 @@ def soup_check_setup(
     )
 
     common_args = {
+        "soup": BeautifulSoup(html_content, "html.parser"),
         "file_path": html_file_path,
         "base_dir": public_dir,
         "md_path": None,
@@ -7367,18 +7980,16 @@ def test_check_file_for_issues_with_included_domains(tmp_path):
     )
     file_path.write_text(html)
 
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html, "html.parser"),
-    ):
-        issues = built_site_checks.check_file_for_issues(
-            file_path,
-            base_dir,
-            None,
-            built_site_checks.CheckOptions(
-                favicon_included_domains=frozenset({"apple_com"})
-            ),
-        )
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup,
+        file_path,
+        base_dir,
+        None,
+        built_site_checks.CheckOptions(
+            favicon_included_domains=frozenset({"apple_com"})
+        ),
+    )
 
     assert "missing_favicons" in issues
     assert any(
@@ -7399,13 +8010,10 @@ def test_check_file_for_issues_without_included_domains(tmp_path):
     )
     file_path.write_text(html)
 
-    with patch(
-        "scripts.utils.parse_html_file",
-        return_value=BeautifulSoup(html, "html.parser"),
-    ):
-        issues = built_site_checks.check_file_for_issues(
-            file_path, base_dir, None, built_site_checks.CheckOptions()
-        )
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_file_for_issues(
+        soup, file_path, base_dir, None, built_site_checks.CheckOptions()
+    )
 
     assert "missing_favicons" not in issues
 
@@ -7421,9 +8029,10 @@ def test_maybe_collect_citation_keys_redirect(tmp_path):
     file_path = public_dir / "redirect.html"
     file_path.write_text(redirect_html)
 
+    soup = BeautifulSoup(redirect_html, "html.parser")
     citation_to_files: dict[str, list[str]] = defaultdict(list)
     built_site_checks._maybe_collect_citation_keys(
-        file_path, public_dir, citation_to_files
+        soup, file_path, public_dir, citation_to_files
     )
     assert len(citation_to_files) == 0
 
@@ -7436,9 +8045,10 @@ def test_maybe_collect_citation_keys_collects(tmp_path):
     file_path = public_dir / "page.html"
     file_path.write_text(html)
 
+    soup = BeautifulSoup(html, "html.parser")
     citation_to_files: dict[str, list[str]] = defaultdict(list)
     built_site_checks._maybe_collect_citation_keys(
-        file_path, public_dir, citation_to_files
+        soup, file_path, public_dir, citation_to_files
     )
     assert "Turner2024Design" in citation_to_files
     assert citation_to_files["Turner2024Design"] == ["page.html"]
@@ -7510,9 +8120,10 @@ def test_maybe_collect_citation_keys(
 ):
     html_file = tmp_path / "page.html"
     html_file.write_text(html_content, encoding="utf-8")
+    soup = BeautifulSoup(html_content, "html.parser")
     citation_to_files: dict[str, list[str]] = defaultdict(list)
     built_site_checks._maybe_collect_citation_keys(
-        html_file, tmp_path, citation_to_files
+        soup, html_file, tmp_path, citation_to_files
     )
     assert sorted(citation_to_files.keys()) == sorted(expected_keys)
     for key in expected_keys:
@@ -7550,6 +8161,13 @@ def test_process_html_files_duplicate_citations(tmp_path: Path):
             built_site_checks,
             "_build_included_favicon_domains",
             return_value=frozenset(),
+        ),
+        patch.object(
+            script_utils,
+            "parse_html_file",
+            side_effect=lambda p: BeautifulSoup(
+                Path(p).read_text(encoding="utf-8"), "html.parser"
+            ),
         ),
     ):
         result = built_site_checks._process_html_files(

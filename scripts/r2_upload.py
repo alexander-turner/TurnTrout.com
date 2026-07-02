@@ -19,7 +19,7 @@ from pathlib import Path
 try:
     from . import utils as script_utils
 except ImportError:
-    import utils as script_utils  # type: ignore
+    import utils as script_utils
 
 R2_BASE_URL: str = script_utils.CDN_BASE_URL
 R2_BUCKET_NAME: str = "turntrout"
@@ -65,7 +65,16 @@ def check_exists_on_r2(upload_target: str, verbose: bool = False) -> bool:
         error_msg = f"Failed to check existence of file in R2: {e}"
         raise RuntimeError(error_msg) from e
 
-    if key in result.stdout:
+    # ``rclone ls`` prints "<size> <path>" per line; match the path exactly so
+    # "static/a.png" doesn't spuriously match "static/a.png-backup" (or the
+    # size digits) via a naive substring test.
+    existing_keys = set()
+    for line in result.stdout.splitlines():
+        parts = line.split(maxsplit=1)
+        if len(parts) == 2:
+            existing_keys.add(parts[1])
+
+    if key in existing_keys:
         if verbose:
             print(f"File found in R2: {upload_target}")
         return True
@@ -178,9 +187,12 @@ def upload_to_r2(
         print(f"Uploading {file_path} to R2 with key: {r2_key}")
 
     rclone_args = ["rclone", "copyto", str(file_path), upload_target]
-    # Set content-type for SVG files to ensure proper serving
-    if file_path.suffix.lower() == ".svg":
+    # Set content-type for files whose extension rclone may not map correctly.
+    suffix = file_path.suffix.lower()
+    if suffix == ".svg":
         rclone_args.extend(["--metadata-set", "content-type=image/svg+xml"])
+    elif suffix == ".vtt":
+        rclone_args.extend(["--metadata-set", "content-type=text/vtt"])
     try:
         subprocess.run(rclone_args, check=True)
     except subprocess.CalledProcessError as e:
@@ -216,7 +228,7 @@ def move_uploaded_file(
     shutil.move(str(file_path), str(target_path))
 
 
-file_exts_to_upload = (".mp4", ".svg", ".avif", ".webm")
+file_exts_to_upload = (".mp4", ".svg", ".avif", ".webm", ".vtt")
 
 
 def upload_and_move(

@@ -5,7 +5,8 @@ Applies two modifications to EBGaramond08-Regular and EBGaramond12-Regular:
 1. Bracket/brace harmonization: affine-maps Y coordinates of bracketleft,
    bracketright, braceleft, braceright so their yMin/yMax match parenleft.
 2. GPOS kerning: adds a PairPos Format 1 lookup to the kern feature
-   for f-variant glyphs x punctuation and open-punct x descender letters.
+   for f-variant glyphs x punctuation, open-punct x descender letters, and
+   close-punct x comma/semicolon (tightened to undo a wide left sidebearing).
 
 Usage:
     python scripts/build_fonts.py           # Build and verify
@@ -20,12 +21,12 @@ import tempfile
 from pathlib import Path
 from typing import Any, Final
 
-from fontTools.otlLib.builder import (  # type: ignore[import-untyped]
+from fontTools.otlLib.builder import (
     PairPosBuilder,
     buildValue,
 )
-from fontTools.ttLib import TTFont  # type: ignore[import-untyped]
-from fontTools.ttLib.tables import otTables  # type: ignore[import-untyped]
+from fontTools.ttLib import TTFont
+from fontTools.ttLib.tables import otTables
 
 _FONT_DIR: Final[Path] = (
     Path(__file__).resolve().parent.parent
@@ -111,6 +112,17 @@ _CLOSE_DESCENDER_KERN: Final[dict[str, int]] = {
 }
 _CAP_CLOSE_KERN: Final[int] = 80
 
+# Comma-family punctuation carries a wide left sidebearing in the 08 master,
+# so it floats after a closing bracket (e.g. the ");" bigram). Pull it back so
+# its left gap matches a lowercase letter's, using "n" as the reference glyph.
+# The 12 master already sets these tightly, so the computed value clamps to 0
+# there and leaves it untouched.
+_TIGHTEN_REFERENCE_GLYPH: Final[str] = "n"
+_TIGHTEN_TARGET_GLYPHS: Final[tuple[str, ...]] = (
+    "comma",
+    "semicolon",
+)
+
 
 def _get_f_glyphs(font: TTFont) -> tuple[str, ...]:
     """Find all f-variant glyphs with positive overhang (xMax > advance
@@ -187,11 +199,12 @@ def _register_kern_feature(gpos: Any, lookup_index: int) -> None:
             feat_rec.Feature.LookupListIndex.append(lookup_index)
             return
 
-    feat = otTables.Feature()  # pylint: disable=no-member
+    # otTables builds Feature/FeatureRecord dynamically, so neither static tool sees them.
+    feat = otTables.Feature()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
     feat.LookupListIndex = [lookup_index]
     feat.LookupCount = 1
 
-    feat_rec = otTables.FeatureRecord()  # pylint: disable=no-member
+    feat_rec = otTables.FeatureRecord()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
     feat_rec.FeatureTag = "kern"
     feat_rec.Feature = feat
     gpos.FeatureList.FeatureRecord.append(feat_rec)
@@ -221,6 +234,35 @@ def _add_overhang_kern_pairs(
                 overhang - glyf_table[tgt].xMin + _KERN_OFFSET,
                 _BASE_KERN[tgt],
             )
+            builder.addGlyphPair(
+                None,
+                src,
+                buildValue({"XAdvance": kern}),
+                tgt,
+                None,
+            )
+
+
+def _add_lsb_tighten_pairs(
+    builder: PairPosBuilder,
+    font: TTFont,
+    sources: tuple[str, ...],
+    targets: tuple[str, ...],
+) -> None:
+    """
+    Add negative kern pairs that normalize each target's left sidebearing down
+    to the reference glyph's.
+
+    Only tightens (never loosens), so targets already tighter than the reference
+    are skipped.
+    """
+    glyf_table = font["glyf"]
+    reference_lsb = glyf_table[_TIGHTEN_REFERENCE_GLYPH].xMin
+    for src in sources:
+        for tgt in targets:
+            kern = min(0, reference_lsb - glyf_table[tgt].xMin)
+            if kern == 0:
+                continue
             builder.addGlyphPair(
                 None,
                 src,
@@ -262,6 +304,9 @@ def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
     _add_overhang_kern_pairs(builder, font, f_glyphs)
     for sources, targets, values in _FIXED_KERN_SPECS:
         _add_fixed_kern_pairs(builder, sources, targets, values)
+    _add_lsb_tighten_pairs(
+        builder, font, _CLOSE_PUNCT_GLYPHS, _TIGHTEN_TARGET_GLYPHS
+    )
 
     lookup = builder.build()
 
@@ -352,6 +397,10 @@ def main() -> None:
             dst = _FONT_DIR / filename
             shutil.copy2(src, dst)
             print(f"Installed {dst}")
+    elif not all_match:
+        # Verify mode: signal drift so a CI invocation fails instead of
+        # silently passing on out-of-date committed fonts.
+        sys.exit(1)
 
 
 if __name__ == "__main__":

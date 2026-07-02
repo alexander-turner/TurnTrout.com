@@ -106,15 +106,14 @@ describe("Backlinks", () => {
   // Basic rendering test
   it("renders without crashing", () => {
     const props = createProps(createFileData(), [])
-    const element = preactH(Backlinks, props)
-    expect(element).toBeTruthy()
+    expect(() => render(preactH(Backlinks, props))).not.toThrow()
   })
 
   // Test no backlinks case
   it("returns null when no backlinks exist", () => {
     const props = createProps(createFileData(), [])
-    const element = preactH(Backlinks, props)
-    expect(element).toBeTruthy()
+    const html = render(preactH(Backlinks, props))
+    expect(html).toBe("")
   })
 
   // Test with backlinks
@@ -146,8 +145,8 @@ describe("Backlinks", () => {
     })
 
     const props = createProps(currentFile, [currentFile])
-    const element = preactH(Backlinks, props)
-    expect(element).toBeTruthy()
+    const html = render(preactH(Backlinks, props))
+    expect(html).toBe("")
   })
 
   // Test self-referential links with anchors are excluded
@@ -189,13 +188,17 @@ describe("Backlinks", () => {
     const html = render(element)
     expect(normalizeNbsp(html)).toContain("Link 1")
     expect(normalizeNbsp(html)).toContain("Link 2")
-    expect(html.match(/<li/g)?.length).toBe(2)
+    expect(html.match(/<li/gu)?.length).toBe(2)
   })
 
   // Test handling of invalid file data
   it("handles files without required properties", () => {
     const currentFile = createFileData({ slug: "target" as FullSlug })
-    const invalidFile = {} as QuartzPluginData // Missing required properties
+    // Links to the target but is missing a frontmatter title.
+    const invalidFile = {
+      slug: "invalid" as FullSlug,
+      links: ["target" as SimpleSlug],
+    } as QuartzPluginData
     const validFile = createFileData({
       slug: "valid" as FullSlug,
       frontmatter: { title: "Valid" },
@@ -203,8 +206,13 @@ describe("Backlinks", () => {
     })
 
     const props = createProps(currentFile, [invalidFile, validFile])
-    const element = preactH(Backlinks, props)
-    expect(element).toBeTruthy()
+    let html = ""
+    expect(() => {
+      html = render(preactH(Backlinks, props))
+    }).not.toThrow()
+    // The valid backlink is rendered; the file missing a title is skipped.
+    expect(normalizeNbsp(html)).toContain("Valid")
+    expect(html.match(/<li/gu)?.length).toBe(1)
   })
 
   // Test empty or undefined slugs
@@ -217,7 +225,7 @@ describe("Backlinks", () => {
     })
 
     const props = createProps(currentFile, [linkingFile])
-    expect(() => preactH(Backlinks, props)).not.toThrow()
+    expect(() => render(preactH(Backlinks, props))).not.toThrow()
   })
 
   // Test abbreviations in titles are processed correctly
@@ -238,7 +246,26 @@ describe("Backlinks", () => {
     const html = render(element)
 
     // Ensure the <abbr> element was rendered with the expected class and transformed text
-    expect(html).toMatch(/<abbr[^>]*class="initialism"[^>]*>AI<\/abbr>/)
+    expect(html).toMatch(/<abbr[^>]*class="initialism"[^>]*>AI<\/abbr>/u)
+  })
+
+  it("renders emoji in backlink titles as Twemoji <img> elements", () => {
+    const currentFile = createFileData({ slug: "target" as FullSlug })
+
+    const linkingFile = createFileData({
+      slug: "emoji-source" as FullSlug,
+      frontmatter: { title: "Other fish in the sea 🐟" },
+      links: ["target" as SimpleSlug],
+    })
+
+    const props = createProps(currentFile, [linkingFile])
+    const html = render(preactH(Backlinks, props))
+
+    // The emoji becomes a Twemoji <img class="emoji"> rather than a bare glyph.
+    expect(html).toMatch(/<img[^>]*class="emoji"[^>]*>/)
+    expect(html).toMatch(/<img[^>]*alt="🐟"[^>]*>/)
+    // The only occurrence of the raw glyph is inside the img's alt text.
+    expect(html.match(/🐟/g)).toHaveLength(1)
   })
 
   it("renders abbreviations without className using empty string fallback", () => {
@@ -258,7 +285,7 @@ describe("Backlinks", () => {
     const html = render(element)
 
     // Ensure the <abbr> element was rendered with empty class (fallback branch)
-    expect(html).toMatch(/<abbr[^>]*class[^>]*>HTML<\/abbr>/)
+    expect(html).toMatch(/<abbr[^>]*class[^>]*>HTML<\/abbr>/u)
   })
 
   // Test non-abbreviation inline HTML elements are wrapped in a <span>
@@ -301,7 +328,21 @@ describe("Backlinks", () => {
 
     // A blockquote should still be rendered (backlinkFiles length > 0), but there should be no <li> entries
     expect(html).toContain("<blockquote")
-    expect(html.match(/<li/g)).toBeNull()
+    expect(html.match(/<li/gu)).toBeNull()
+  })
+
+  it("renders an <img> without a class or draggable attribute when both are absent", () => {
+    const imgNode = {
+      type: "element",
+      tagName: "img",
+      properties: { src: "fish.svg", alt: "🐟" },
+      children: [],
+    } as unknown as RootContent
+
+    const html = render(elementToJsx(imgNode))
+    expect(html).toMatch(/<img[^>]*src="fish.svg"[^>]*>/)
+    expect(html).not.toContain("class=")
+    expect(html).not.toContain("draggable")
   })
 
   it("handles abbr elements with no children gracefully", () => {
@@ -315,7 +356,7 @@ describe("Backlinks", () => {
     const jsx = elementToJsx(abbrNode)
     const html = render(jsx)
 
-    expect(html).toMatch(/<abbr[^>]*class="small-caps"[^>]*><\/abbr>/)
+    expect(html).toMatch(/<abbr[^>]*class="small-caps"[^>]*><\/abbr>/u)
   })
 
   // Test unsupported RootContent type triggers default branch returning empty fragment

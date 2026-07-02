@@ -67,6 +67,13 @@ export default [
     },
   },
 
+  // Naming conventions: ban snake_case identifiers (use camelCase or UPPER_CASE)
+  {
+    rules: {
+      camelcase: ["error", { properties: "never" }],
+    },
+  },
+
   // Async/await correctness
   {
     rules: {
@@ -187,10 +194,13 @@ export default [
       "**/*.min.js",
       "**/*.min.ts",
       "quartz/i18n/",
-      "quartz/static/scripts/img-comparison-slider.js",
+      "**/img-comparison-slider.js",
+      "**/.worktrees/",
       ".venv/",
       ".stryker-tmp/",
       "mutants/",
+      ".claude-tooling/",
+      ".pnpm-store",
     ],
   },
 

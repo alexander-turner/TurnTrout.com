@@ -1,7 +1,9 @@
+# pylint: disable=C0302
 """Check source files for issues, like invalid links, missing required fields,
 etc."""
 
 import argparse
+import json
 import re
 import shutil
 import subprocess
@@ -9,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Literal, TypedDict
 
-import requests  # type: ignore[import]
+import requests
 
 # Add the project root to sys.path
 # pylint: disable=wrong-import-position
@@ -58,6 +60,25 @@ def check_publication_date(metadata: dict) -> list[str]:
     return []
 
 
+# Keys that have a canonical casing and must not appear in any other form.
+# Maps the wrong variant → the correct canonical key name.
+_FORBIDDEN_KEY_VARIANTS: dict[str, str] = {
+    "date-published": "date_published",
+    "date-updated": "date_updated",
+}
+
+
+def check_frontmatter_key_casing(metadata: dict) -> list[str]:
+    """Check that frontmatter keys use the canonical casing convention."""
+    errors = []
+    for bad_key, canonical in _FORBIDDEN_KEY_VARIANTS.items():
+        if bad_key in metadata:
+            errors.append(
+                f"Frontmatter key '{bad_key}' should be '{canonical}'"
+            )
+    return errors
+
+
 def check_cover_image_alt(metadata: dict) -> list[str]:
     """If a card_image is specified, card_image_alt must also be provided."""
     errors: list[str] = []
@@ -66,8 +87,8 @@ def check_cover_image_alt(metadata: dict) -> list[str]:
         return errors
 
     # Check if there's a custom card_image
-    card_image_alt = metadata.get("card_image_alt", "")
-    if not card_image_alt.strip():
+    card_image_alt = metadata.get("card_image_alt") or ""
+    if not str(card_image_alt).strip():
         errors.append(f"Custom card_image ({card_url}) requires card_image_alt")
 
     return errors
@@ -251,6 +272,41 @@ def check_invalid_md_links(text: str, file_path: Path) -> list[str]:
             f"Invalid markdown link at line {line_num}: {match.group()}"
         )
 
+    return errors
+
+
+def check_spaces_in_md_link_urls(text: str) -> list[str]:
+    """
+    Flag markdown link/image URLs that contain raw spaces.
+
+    A space inside `](...)` makes the parser read the URL as ending at the
+    space and try to treat the remainder as a link title. Since titles must be
+    quoted, an unquoted URL with spaces is invalid and the whole construct
+    renders as literal text. Spaces must be percent-encoded (`%20`).
+
+    Valid forms are not flagged:
+    - A quoted title after the URL: `[t](/url "the title")`
+    - An angle-bracketed URL: `[t](</url with spaces>)`
+    """
+    stripped_text = remove_math(remove_code(text))
+    errors = []
+    # Capture the contents of the `(...)` in a `](...)` link target.
+    for match in re.finditer(r"\]\(([^()\n]*)\)", stripped_text):
+        target = match.group(1)
+        url_part, _, rest = target.partition(" ")
+        if " " not in target:
+            continue
+        # Angle-bracketed URLs may legally contain spaces.
+        if url_part.startswith("<"):
+            continue
+        # A quoted title after the URL is legal; only the URL itself is checked.
+        if re.fullmatch(r"\"[^\"]*\"|'[^']*'|\([^)]*\)", rest.strip()):
+            continue
+        line_num = stripped_text[: match.start()].count("\n") + 1
+        errors.append(
+            f"Markdown link URL contains spaces at line {line_num} "
+            f"(percent-encode them as %20): {match.group()}"
+        )
     return errors
 
 
@@ -544,13 +600,15 @@ def check_no_forbidden_patterns(text: str) -> list[str]:
     errors = []
     for config in _FORBIDDEN_PATTERNS:
         processed_text = text
+        # `line_num` is derived from `processed_text`, so stripping below must
+        # preserve newline counts for line numbers to match the original file.
         if config["ignore_code"]:
             processed_text = remove_code(processed_text, mark_boundaries=True)
         if config["ignore_math"]:
             processed_text = remove_math(processed_text, mark_boundaries=True)
 
         for match in re.finditer(config["pattern"], processed_text):
-            line_num = text[: match.start()].count("\n") + 1
+            line_num = processed_text[: match.start()].count("\n") + 1
             errors.append(
                 f"Forbidden pattern found: {match.group()} on line {line_num}"
             )
@@ -666,6 +724,96 @@ def check_heading_links(text: str) -> list[str]:
     return errors
 
 
+# Sentence-case heading guard. See design.md ("Markdown syntax" checklist).
+_HEADING_RE = re.compile(r"^#{1,6}[ \t]+(.+?)[ \t]*$", re.MULTILINE)
+_HEADING_WORD_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9'’\-≠=]*")
+# `N: ...` headings are chapter / narrative titles, which keep title case.
+_NUMBERED_CHAPTER_RE = re.compile(r"^\s*\\?\d+\\?:\s")
+# Leading list enumerators (`1.`, `(2)`) whose following word starts a sentence.
+_ENUMERATOR_RE = re.compile(r"^\s*(?:\(\d+\)|\d+\\?\.)\s+")
+# A new sentence begins after each of these, so the next word may be capitalized.
+_HEADING_SENTENCE_SPLIT_RE = re.compile(r"[:.!?]")
+_POSSESSIVE_RE = re.compile(r"['’][a-z]+$")
+
+
+def _load_heading_case_config() -> tuple[frozenset[str], frozenset[str]]:
+    """Load proper-noun and whole-heading allowlists from
+    ``heading_case.json``."""
+    config_path = Path(__file__).parent.parent / "config" / "heading_case.json"
+    data = json.loads(config_path.read_text())
+    return frozenset(data["proper_nouns"]), frozenset(data["allowed_headings"])
+
+
+_HEADING_PROPER_NOUNS, _HEADING_ALLOWLIST = _load_heading_case_config()
+
+
+def _heading_word_keeps_caps(word: str, proper_nouns: frozenset[str]) -> bool:
+    """Whether a non-initial heading word may legitimately stay capitalized."""
+    if any(char.isdigit() for char in word):
+        return True  # model / version identifiers, e.g. GPT-2-XL, Llama-2-13B
+    bare = _POSSESSIVE_RE.sub("", word.rstrip(".,?!:;"))
+    leading_segment = bare.split("-")[0]
+    if leading_segment.isalpha() and leading_segment.isupper():
+        return True  # ACRONYM-prefixed compound, e.g. POWER-seeking, VNM-incoherence
+    core = bare.replace("-", "").rstrip("s")
+    if bare.isupper() or (core.isalpha() and core.isupper()):
+        return True  # acronym, optionally pluralized: CSS, LLMs, AI's
+    if not (word[0].isupper() and any(char.islower() for char in word)):
+        return True  # not a Title-Case word in the first place
+    return bare in proper_nouns
+
+
+def _heading_case_offenders(
+    heading: str, proper_nouns: frozenset[str]
+) -> list[str]:
+    """Title-Case words in ``heading`` that should be lowercase."""
+    if _NUMBERED_CHAPTER_RE.match(heading):
+        return []
+    stripped = re.sub(r"\$[^$]*\$", " ", heading)
+    stripped = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", stripped)
+    stripped = stripped.replace("~~", "").replace("*", "").replace("_", "")
+    stripped = _ENUMERATOR_RE.sub("", stripped)
+    offenders = []
+    for segment in _HEADING_SENTENCE_SPLIT_RE.split(stripped):
+        words = _HEADING_WORD_RE.findall(segment)
+        for index, word in enumerate(words):
+            if index == 0 or not word[0].isalpha():
+                continue  # first word of each sentence may be capitalized
+            if not _heading_word_keeps_caps(word, proper_nouns):
+                offenders.append(word)
+    return offenders
+
+
+def check_heading_case(
+    text: str,
+    proper_nouns: frozenset[str] = _HEADING_PROPER_NOUNS,
+    allowed_headings: frozenset[str] = _HEADING_ALLOWLIST,
+) -> list[str]:
+    """
+    Headings should use sentence case, not Title Case.
+
+    Flags ATX headings with non-initial Title-Case words. The first word of
+    each sentence (after ``:`` ``.`` ``?`` ``!`` or a list enumerator),
+    acronyms, model/version names, and listed proper nouns stay capitalized.
+    ``N: ...`` chapter headings and headings in ``allowed_headings`` (titles
+    of cited works, product names, quoted terms) are exempt.
+    """
+    errors = []
+    stripped_text = remove_code(text)
+    for match in _HEADING_RE.finditer(stripped_text):
+        heading = match.group(1).strip()
+        if heading in allowed_headings:
+            continue
+        offenders = _heading_case_offenders(heading, proper_nouns)
+        if offenders:
+            line_num = stripped_text[: match.start()].count("\n") + 1
+            errors.append(
+                f"Heading should be sentence case at line {line_num}: "
+                f"{heading!r} (should be lowercase: {', '.join(offenders)})"
+            )
+    return errors
+
+
 def extract_footnote_line_numbers(text: str) -> dict[str, int]:
     """
     Extract all footnote definitions from text.
@@ -675,14 +823,16 @@ def extract_footnote_line_numbers(text: str) -> dict[str, int]:
         If a footnote is defined multiple times, only the first occurrence
         is recorded.
     """
-    # Extract from original text since definitions can contain code
+    # Detect definitions on the same code/math-stripped text as
+    # `extract_footnote_references`, so a `[^name]:` inside a code/math block is
+    # not a real definition. Stripping preserves newline counts (line numbers).
+    stripped_text = remove_math(remove_code(text))
     definition_pattern = r"\[\^([^\]]+)\]:"
     definitions: dict[str, int] = {}
-    for match in re.finditer(definition_pattern, text):
-        footnote_name = match.group(1)
-        # Only record the first occurrence of each footnote definition
-        if footnote_name not in definitions:
-            definitions[footnote_name] = text[: match.start()].count("\n") + 1
+    for match in re.finditer(definition_pattern, stripped_text):
+        # setdefault keeps only the first definition of each footnote
+        line = stripped_text[: match.start()].count("\n") + 1
+        definitions.setdefault(match.group(1), line)
     return definitions
 
 
@@ -787,6 +937,218 @@ def check_self_closing_non_void_elements(text: str) -> list[str]:
     return errors
 
 
+_SENTENCE_INITIAL_NUMERAL_IGNORE = "lint-ignore sentence-initial-numeral"
+
+# Quotes and closing brackets permitted between a sentence boundary and the
+# leading digit: a closing quotation mark from the prior sentence, or an
+# opening quotation mark that begins the new one. Opening "(" and "[" are
+# excluded so parenthetical labels ("(1)") and citations ("[2]") are not read
+# as prose numerals.
+_LEADING_QUOTE_CHARS = "\"'“”‘’)\\]"
+
+_SENTENCE_INITIAL_START_RE = re.compile(
+    r"^\s*[" + _LEADING_QUOTE_CHARS + r"]*\d"
+)
+# A leading "(?<!\.)" keeps an ASCII ellipsis ("...") from registering as a
+# sentence boundary; a Unicode ellipsis ("…") is not in "[.!?]" to begin with.
+_SENTENCE_INITIAL_MID_RE = re.compile(
+    r"(?<!\.)([.!?])[ \t]+[" + _LEADING_QUOTE_CHARS + r"]*\d"
+)
+_TRAILING_WORD_RE = re.compile(r"([A-Za-z.]+)$")
+# A bullet or numbered enumerator, with or without inline body: an item whose
+# text wraps to the next line leaves only the marker (``1.``) on this line, and
+# that bare enumerator is not sentence-initial prose.
+_LIST_MARKER_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])(?:\s+|$)")
+_FOOTNOTE_DEFINITION_RE = re.compile(r"^\[\^[^\]]+\]:\s*")
+# Leading markers that introduce authorial prose; each is stripped so the
+# numeral check runs on the text the reader actually sees. A definition or
+# subtitle line opens with ``:``.
+_DEFINITION_PREFIX_RE = re.compile(r"^\s*:\s+")
+_PROSE_MARKER_RES = (
+    _FOOTNOTE_DEFINITION_RE,
+    _LIST_MARKER_RE,
+    _DEFINITION_PREFIX_RE,
+)
+# Lines that carry no authorial sentence-initial prose. Blockquotes (``>``,
+# including ``[!quote]`` callouts) are verbatim quotations whose numerals must
+# stay as written. Headings have their own style rule, table rows are data
+# cells, and a leading ``![`` is a standalone image whose alt text is not body
+# prose.
+_NON_PROSE_PREFIXES = (">", "#", "|", "![")
+
+# Abbreviations whose trailing period is not a sentence boundary, so a digit
+# after them ("eq. 5", "e.g. 2", "Fig. 3") is not sentence-initial. Single
+# letters and Roman numerals are excluded: they would suppress real boundaries
+# ending in a capital letter ("Option B. 5 remain") more than they help.
+_SENTENCE_END_ABBREVIATIONS = frozenset(
+    """
+    al et seq eq eqs ch chs fig figs no nos vol vols pp p pg pos sec secs
+    thm thms def defs prop props lemma cor ref refs ie eg etc cf vs approx ca
+    jan feb mar apr jun jul aug sep sept oct nov dec mr mrs ms dr prof
+    """.split()
+)
+
+
+def _blank_frontmatter_lines(lines: list[str]) -> None:
+    """
+    Blank a leading YAML frontmatter block in place.
+
+    Blanking (rather than removing) preserves line numbers for the body.
+    """
+    if lines[0] != "---":
+        return
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "---":
+            for j in range(i + 1):
+                lines[j] = ""
+            return
+
+
+def _prose_content(line: str) -> str | None:
+    """
+    Return the rendered-prose portion of a line, or ``None`` if it has none.
+
+    Structural markers that introduce authorial prose are stripped so the
+    numeral check runs on what the reader actually sees: list bullets, numbered
+    enumerators, definition/subtitle colons, and footnote-definition labels.
+    Markers nest (a definition line may hold a numbered list, an enumerator a
+    sub-list), so they are peeled off repeatedly until prose remains. Lines that
+    carry no authorial prose return ``None``: blockquotes (verbatim
+    quotations), headings, table rows, and standalone images, including when
+    such a marker surfaces only after an outer marker is peeled away.
+    """
+    stripped = line.strip()
+    while True:
+        if not stripped or stripped.startswith(_NON_PROSE_PREFIXES):
+            return None
+        for marker in _PROSE_MARKER_RES:
+            match = marker.match(stripped)
+            if match:
+                stripped = stripped[match.end() :].strip()
+                break
+        else:
+            return stripped
+
+
+def check_sentence_initial_numerals(text: str) -> list[str]:
+    """
+    Flag Arabic numerals that begin a sentence in prose.
+
+    English style spells out numbers that open a sentence ("Twenty-six people
+    attended", not "26 people attended"). This flags a digit at the start of a
+    sentence in any rendered authorial prose: paragraphs, list items, numbered
+    list content, definition/subtitle lines, and footnote-definition bodies.
+
+    The leading structural marker of each context is stripped first, so a list
+    bullet or numbered enumerator (a Markdown number, kept as written) does not
+    itself trip the check. Code and math are blanked before checking, so a
+    numeral rendered from a $\\KaTeX$ equation is also fine. Headings (which
+    have their own style rule), tables, standalone image alt text, and
+    blockquotes (``[!quote]`` callouts and ``>`` quotations, where numerals are
+    verbatim) are excluded, as is a digit following an ellipsis (a trailing-off
+    continuation, not a new sentence). A line carrying the
+    "<!-- lint-ignore sentence-initial-numeral -->" marker is skipped so a
+    deliberate leading numeral (e.g. one that refers to a literal figure) can be
+    kept with a one-line reason.
+    """
+    stripped_text = remove_math(
+        remove_code(text, mark_boundaries=True), mark_boundaries=True
+    )
+    lines = stripped_text.split("\n")
+    _blank_frontmatter_lines(lines)
+
+    errors: list[str] = []
+    for line_num, line in enumerate(lines, 1):
+        if _SENTENCE_INITIAL_NUMERAL_IGNORE in line:
+            continue
+        content = _prose_content(line)
+        if content is None:
+            continue
+        if _SENTENCE_INITIAL_START_RE.match(content):
+            errors.append(
+                f"Sentence-initial numeral at line {line_num}: {content[:60]}"
+            )
+            continue
+        for match in _SENTENCE_INITIAL_MID_RE.finditer(content):
+            trailing = _TRAILING_WORD_RE.search(content[: match.start() + 1])
+            word = (
+                trailing.group(1).replace(".", "").lower() if trailing else ""
+            )
+            if word in _SENTENCE_END_ABBREVIATIONS:
+                continue
+            errors.append(
+                f"Sentence-initial numeral at line {line_num}: "
+                f"{content[max(0, match.start() - 20) : match.start() + 20]}"
+            )
+    return errors
+
+
+_DATE_MONTH_NAMES = (
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sept",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+)
+
+# Month name (optionally abbreviated with a trailing period), a 1-2 digit day
+# with an optional ordinal suffix, and a 4-digit year. The suffix is captured
+# so callers can tell "26" from "26th" instead of just matching the date.
+_DATE_WITHOUT_ORDINAL_RE = re.compile(
+    r"\b(?:" + "|".join(_DATE_MONTH_NAMES) + r")\.?\s+"
+    r"\d{1,2}(st|nd|rd|th)?,?\s+\d{4}\b"
+)
+
+# Blockquotes, headings, tables, raw HTML, and standalone images either quote
+# an external source verbatim or render structured/non-prose data, so their
+# dates are left as written.
+_DATE_NON_PROSE_PREFIXES = (">", "#", "|", "<", "![")
+
+
+def check_dates_missing_ordinal_suffix(text: str) -> list[str]:
+    """
+    Flag written-out dates ("Month Day, Year") whose day lacks an ordinal suffix
+    ("st"/"nd"/"rd"/"th").
+
+    The site's date convention spells the day ordinally ("January 26th, 2026"),
+    so a bare cardinal day ("January 26, 2026") is a formatting bug.
+    """
+    stripped_text = remove_math(remove_code(text))
+    errors = []
+    for line_num, line in enumerate(stripped_text.split("\n"), 1):
+        stripped_line = line.strip()
+        if not stripped_line or stripped_line.startswith(
+            _DATE_NON_PROSE_PREFIXES
+        ):
+            continue
+        for match in _DATE_WITHOUT_ORDINAL_RE.finditer(line):
+            if match.group(1) is None:
+                errors.append(
+                    f"Date missing ordinal suffix at line {line_num}: "
+                    f"{match.group().strip()}"
+                )
+    return errors
+
+
 def check_file_data(
     metadata: dict,
     existing_urls: PathMap,
@@ -811,8 +1173,10 @@ def check_file_data(
     text = file_path.read_text()
     issues: MetadataIssues = {
         "required_fields": check_required_fields(metadata),
+        "frontmatter_key_casing": check_frontmatter_key_casing(metadata),
         "cover_image_alt": check_cover_image_alt(metadata),
         "invalid_links": check_invalid_md_links(text, file_path),
+        "spaces_in_link_urls": check_spaces_in_md_link_urls(text),
         "latex_tags": check_latex_tags(text, file_path),
         "table_alignments": check_table_alignments(text),
         "unescaped_braces": check_unescaped_braces(text),
@@ -824,8 +1188,13 @@ def check_file_data(
         ),
         "html_braces": check_html_with_braces(text),
         "heading_links": check_heading_links(text),
+        "heading_case": check_heading_case(text),
         "footnote_references": check_footnote_references(text),
         "self_closing_non_void": check_self_closing_non_void_elements(text),
+        "sentence_initial_numerals": check_sentence_initial_numerals(text),
+        "dates_missing_ordinal_suffix": check_dates_missing_ordinal_suffix(
+            text
+        ),
         "invalid_filename": (
             check_spaces_in_path(file_path)
             + check_filename_lowercase(file_path)

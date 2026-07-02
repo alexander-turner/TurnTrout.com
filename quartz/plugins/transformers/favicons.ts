@@ -240,6 +240,9 @@ export function insertFavicon(imgPath: string | null, node: Element): void {
 // hooks/crossbars, tall punctuation) and which therefore visually crowd the
 // favicon without extra spacing.
 export const charsToSpace = ["!", "?", "|", "]", '"', "”", "’", "'", "f", "q", ":", ";", "/"]
+// Distinct from the shared INLINE_PASSTHROUGH_TAGS (utils.ts) on purpose:
+// favicon placement descends into `<code>` and excludes `<a>` (links handled
+// separately), so its membership differs from the generic inline-wrapper set.
 export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "ins", "abbr"]
 
 /**
@@ -350,14 +353,18 @@ function hasFavicon(node: Element): boolean {
   return false
 }
 
-function shouldSkipFavicon(node: Element, href: string): boolean {
-  const samePage =
-    (typeof node.properties.className === "string" &&
-      node.properties.className.includes("same-page-link")) ||
-    (Array.isArray(node.properties.className) &&
-      node.properties.className.includes("same-page-link"))
+function linkHasClass(node: Element, className: string): boolean {
+  const classes = node.properties.className
+  if (typeof classes === "string") return classes.split(/\s+/).includes(className)
+  return Array.isArray(classes) && classes.includes(className)
+}
 
-  return samePage || isAssetLink(href)
+function shouldSkipFavicon(node: Element, href: string): boolean {
+  // `no-favicon` lets a component opt a link out of the site-wide favicon pass
+  // (e.g. the tweet card, which would otherwise stamp an X icon on every link).
+  return (
+    linkHasClass(node, "same-page-link") || linkHasClass(node, "no-favicon") || isAssetLink(href)
+  )
 }
 
 /**
@@ -395,24 +402,6 @@ export function normalizeUrl(href: string): string {
   return href
 }
 
-/**
- * Thrown when an external link should receive a favicon (passes the count
- * threshold or is allowlisted, and isn't blocklisted) but no SVG file exists
- * for the hostname either locally or on the CDN. Failing the build forces
- * the author to either add the SVG or blocklist the domain.
- */
-export class MissingFaviconError extends Error {
-  constructor(hostname: string, expectedPath: string, count: number) {
-    const expectedUrl = getFaviconUrl(expectedPath)
-    super(
-      `Missing favicon SVG for ${hostname}: expected at ${expectedUrl} ` +
-        `(count=${count}, threshold=${minFaviconCount}). ` +
-        "Upload the SVG to the CDN or add the domain to faviconSubstringBlocklist in config/constants.json.",
-    )
-    this.name = "MissingFaviconError"
-  }
-}
-
 async function handleLink(
   href: string,
   node: Element,
@@ -433,10 +422,13 @@ async function handleLink(
     return
   }
 
+  // When no SVG exists yet (locally or on the CDN), render the link without a
+  // favicon rather than failing the build. The built-site checks
+  // (`check_external_links_have_favicons` in scripts/built_site_checks.py)
+  // flag any included domain still missing its favicon.
   const found = await findFaviconPath(finalURL.hostname)
   if (found === null) {
-    const count = faviconCounts.get(countKey) ?? 0
-    throw new MissingFaviconError(finalURL.hostname, faviconPath, count)
+    return
   }
 
   // Always emit the full CDN URL so downstream consumers (asset dimension

@@ -5,6 +5,7 @@ no_dropcap: false
 tags:
   - AI
   - open-source
+  - privacy
 description: A command-line tool to harden datasets, helping prevent AI data contamination by deploying a protected download portal.
 authors:
   - Alex Turner
@@ -19,7 +20,7 @@ aliases:
   - dataset-protect
   - protect-datasets
 date_published: 2025-07-23
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 createBibtex: true
 ---
 

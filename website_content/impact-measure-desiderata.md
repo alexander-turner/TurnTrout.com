@@ -29,7 +29,7 @@ date_published: 2018-09-02
 original_url: https://www.lesswrong.com/posts/c2oM7qytRByv6ZFtz/impact-measure-desiderata
 skip_import: true
 description: Desirable properties of impact measures for safe and beneficial AI development.
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 ---
 
 If we can penalize some quantity of "impact on the world", we can have unaligned agents whose impact - and thereby negative effect - is small.
@@ -39,7 +39,7 @@ The long-term goal of impact measure research is to find a measure which neatly 
 No approaches to date meet these standards. What do we even require of an impact measure we hope to make safe for use with arbitrarily powerful agents?
 
 > [!warning] Disclaimer
-> I no longer endorse this way of grading impact measures. See instead [Reframing Impact](/reframing-impact).
+> I no longer endorse this way of grading impact measures. See instead [@title](/reframing-impact).
 
 # Desiderata
 
@@ -141,7 +141,7 @@ No approaches to date meet these standards. What do we even require of an impact
 >
 > _Example:_ "Suppose there's some way of gaming the impact measure, but because of  $X$, $Y$, and $Z$, we know this is penalized as well".
 
-# Previous Proposals
+# Previous proposals
 
 [Krakovna et al. propose four desiderata](https://arxiv.org/abs/1806.01186):
 
@@ -158,7 +158,7 @@ No approaches to date meet these standards. What do we even require of an impact
 First, notice that my list points at some abstract amount-of-impact, while the above proposal focuses on specific effects.
 
 - Thinking in terms of "effects" seems like a subtle map/territory confusion. That is, it seems highly unlikely that there exists a robust, value-agnostic means of detecting "effects" that makes sense across representations and environments.
-- [Overcoming Clinginess in Impact Measures](/overcoming-clinginess-in-impact-measures) suggests that penalizing impact based on the world state necessitates a value-laden tradeoff.
+- [@title](/overcoming-clinginess-in-impact-measures) suggests that penalizing impact based on the world state necessitates a value-laden tradeoff.
 
 I left out 1), as I believe that the desired benefit will naturally follow from an approach satisfying my proposed desiderata.
 

@@ -15,6 +15,7 @@ export const {
   appleTouchIconUrl,
   faviconBasePath,
   minFaviconCount,
+  maxAtomicInlineCodeLength,
   googleSubdomainAllowlist,
   faviconCountAllowlist,
   faviconSubstringBlocklist,
@@ -40,6 +41,8 @@ export const {
   emojisToReplace,
   charsToMoveIntoLinkFromRight,
   footnoteHeadingId,
+  similarPostsHeadingId,
+  tocMaxDepth,
   testPageSlug,
   designPageSlug,
   tightScrollTolerance,
@@ -70,6 +73,8 @@ export const {
   leftDoubleQuote: LEFT_DOUBLE_QUOTE,
   rightDoubleQuote: RIGHT_DOUBLE_QUOTE,
   wordJoiner: WORD_JOINER,
+  rightGuillemet: RIGHT_GUILLEMET,
+  ellipsis: ELLIPSIS,
 } = constantsJson.unicodeTypography
 
 /**
@@ -87,8 +92,6 @@ export function normalizeNbsp(s: string): string {
 }
 
 // Private Use Area marker characters (U+F000 range to avoid conflict with Tengwar fonts at U+E000)
-export const markerChar = "\uF000" // Used for text transformation markers
-export const hatTipPlaceholder = "\uF010" // Used for h/t placeholder
 export const twemojiIgnoreChars = {
   emojiReplacement: "\uF001",
   doubleArrow: "\uF002", // ⇔
@@ -123,6 +126,13 @@ export const specialDomainMappings: ReadonlyArray<{ pattern: RegExp; to: string 
   })),
 ]
 
+// Desktop ToC active-heading detection: a heading counts as the current
+// section while it sits within the top `TOC_DETECTION_BAND_FRACTION` of the
+// viewport. `TOC_DETECTION_ROOT_MARGIN` derives the IntersectionObserver
+// margin from the same fraction so the two never drift apart.
+export const TOC_DETECTION_BAND_FRACTION = 0.3
+export const TOC_DETECTION_ROOT_MARGIN = `0px 0px -${(1 - TOC_DETECTION_BAND_FRACTION) * 100}% 0px`
+
 // External link attributes
 export const EXTERNAL_LINK_REL = "noopener noreferrer"
 
@@ -134,6 +144,16 @@ export const MEDIA_TAGS: ReadonlySet<string> = new Set(["img", "video", "audio",
 export const PREVIEWABLE_CLASS = "previewable"
 export const CAN_TRIGGER_POPOVER_CLASS = "can-trigger-popover"
 export const SEARCH_MATCH_CLASS = "search-match"
+
+// Title-binding links: when an internal link's display text is exactly this
+// sentinel, its text is replaced at build time with the up-to-date title of the
+// target page (or the target section heading, for `#anchor` links). See
+// `quartz/plugins/transformers/bindLinkTitles.ts`. Shared with the built-site
+// checker via `config/constants.json` so the two can't disagree on the token.
+export const LINK_TITLE_SENTINEL: string = constantsJson.linkTitleSentinel
+// Same as LINK_TITLE_SENTINEL, but renders the target title lowercased so it
+// reads naturally mid-sentence.
+export const LINK_TITLE_LOWER_SENTINEL: string = constantsJson.linkTitleLowerSentinel
 
 // UI strings for various components
 export const uiStrings = {

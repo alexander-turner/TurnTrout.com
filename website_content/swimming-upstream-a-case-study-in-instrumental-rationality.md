@@ -39,7 +39,7 @@ date_published: 2018-06-03
 original_url: https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
 skip_import: "true"
 description: "I dove headfirst into AI safety, even at the risk of my PhD. This is how. "
-date_updated: 2026-05-08
+date_updated: 2026-07-02
 ---
 
 > [!success]
@@ -55,7 +55,7 @@ It's hard to believe how much I've grown and grown up in these last few months, 
 
 I didn't sacrifice my grades, work performance, physical health, or my social life to do this. I sacrificed something else.
 
-# CHAI For At Least Five Minutes
+# CHAI for at least five minutes
 
 Alex<sub>January</sub> had finished the Sequences and was curious about getting involved with AI safety. Not soon, of course - at the time, I had a narrative in which I had to labor and study for long years before becoming worthy. To be sure, I would never endorse such a narrative - [something to protect](https://www.lesswrong.com/posts/SGR4GxFK7KmW7ckCB/something-to-protect), after all - but I had it.
 
@@ -85,7 +85,7 @@ Terrified that this idea would become my baby, I immediately plotted its murder.
 
 I was still suspicious, and from this suspicion came many an insight; from these insights, newfound invigoration. Being the first to view the world in a certain way isn't just a rush - it's pure _joie de vivre._
 
-# Risk Tolerance
+# Risk tolerance
 
 I'm taking an Uber with Anna Salamon back to her residence, and we're discussing my preparations for technical work in AI safety. With one question, she changes the trajectory of my professional life:
 
@@ -105,7 +105,7 @@ I realize that I'm out of alignment with what I truly want - and will continue t
 
 Soon after, I receive CHAI's acceptance email, surprise and elation washing over me. I feel uneasy. It's easy to be "reckless" in this kind of situation.
 
-## Information Gathering
+## Information gathering
 
 I knew the importance of navigating this situation optimally, so I worked to use every resource at my disposal. There were complex political and interpersonal dynamics at play here; although I consider myself competent in these considerations, I wanted to avoid even a single preventable error.
 
@@ -123,7 +123,7 @@ I contacted friends on the CFAR staff, interfaced with my university's confident
   - I prepared myself to [lose](http://www.hpmor.com/chapter/19), mindful that the objective is _not_ to satisfy that part of me which longs to win debates. Also, idea inoculation and status differentials.
 - I weighed the risks in my mind, squaring my jaw and "mentally staring at each potential negative outcome".
 
-## Gears Integrity
+## Gears integrity
 
 At the reader's remove, this choice may seem easy. Obviously, I meet with my advisor (whom I still admire, despite this specific disagreement), tell them what I want to pursue, and then make the transition.
 
@@ -153,7 +153,7 @@ I sacrificed some of my tethering to the [social web](https://www.lesswrong.com/
 
 [^1]: My secret to being able to [continuously](/set-theory-textbook-review) [soak](/AI-textbook-review) [up](/linear-algebra-textbook-review) [math](/all-of-statistics-textbook-review) [is](/first-analysis-textbook-review) that I _enjoy it_. However, it wasn't immediately obvious that this would be the case, and only the intensity of my desire to step up actually got me to start studying. Only then, after occupying myself in earnest with those pages of Greek glyphs, did I realize that it's _fun_.
 
-[^2]: This event marked my discovery of the mental movement detailed in _[How to Dissolve It](/how-to-dissolve-it)_; it has since paid further dividends in both novel ideas and clarity of thought.
+[^2]: This event marked my discovery of the mental movement detailed in _[@title](/how-to-dissolve-it)_; it has since paid further dividends in both novel ideas and clarity of thought.
 
 [^3]: I've since updated away from this being true for humans in practice, but I felt it would be dishonest to edit my thought process after the fact.
 
@@ -182,4 +182,4 @@ I sacrificed some of my tethering to the [social web](https://www.lesswrong.com/
 
 [^6]: Objectives are subject to change.
 
-[^edit]: As of Feb. 19, 2025, I think that AI risk _was_ on the fringe in 2018. The FLI AI principles argument wasn't a good one.
+[^edit]: As of Feb. 19th, 2025, I think that AI risk _was_ on the fringe in 2018. The FLI AI principles argument wasn't a good one.

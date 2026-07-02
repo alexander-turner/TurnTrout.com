@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-06-06
+date_updated: 2026-07-02
 no_dropcap: false
 createBibtex: true
 ---
@@ -109,7 +109,15 @@ I wrote [a script](https://github.com/alexander-turner/TurnTrout.com/blob/main/s
 2. Copies the assets to my local mirror of the CDN content;
 3. Removes the assets so they aren't tracked by my `git` repo.
 
-I later describe my [deployment pipeline](#deployment-pipeline) in more detail.
+I later describe my [@title-lower](#deployment-pipeline) in more detail.
+
+## Embedding tweets
+
+I allow rich, tracking-free embeds of tweets. Each card renders from a snapshot which I host on my own CDN, so it leaks nothing to X and still displays even if the original tweet is deleted. I also point the links at [`xcancel.com`](https://xcancel.com) rather than `x.com`, as I [avoid X for ethical reasons.](/advanced-privacy#gradually-migrate-your-social-network-away-from-x)
+
+```tweet
+https://xcancel.com/Turn_Trout/status/2064426233769742627
+```
 
 # Color scheme
 
@@ -183,7 +191,7 @@ When designing visual content, I consider where the reader's eyes go. People vis
 
 During the build process, I convert all naive CSS assignments of `color:red` (<span class="ignore-pa11y" style="color:rgb(255,0,0);">imagine if I made you read this</span>) to <span style="color:red">the site's red</span>. Lots of my old equations used raw `red` / `green` / `blue` colors because that's all that my old blog allowed; these colors are converted to the site theme. I even override and standardize the colors used for syntax highlighting in the code blocks.
 
-I color [inline favicons](#inline-favicons) using muted shades from the site's palette. For sites like [YouTube](https://youtube.com) and [Google Drive](https://drive.google.com), colored favicons enhance recognition and orient the reader.
+I color [@title-lower](#inline-favicons) using muted shades from the site's palette. For sites like [YouTube](https://youtube.com) and [Google Drive](https://drive.google.com), colored favicons enhance recognition and orient the reader.
 
 # Site responsiveness
 
@@ -201,13 +209,13 @@ Therefore, I use [my optimized fork of `subfont`](/open-source#faster-font-subse
 
 <span class="populate-markdown-font-stats"></span>
 
-Eventually, the ultimate solution will be [progressive font enrichment](https://www.w3.org/TR/PFE-evaluation/), which will load just those glyphs needed for a webpage, and then cache those glyphs so that they aren't reloaded during future calls. Sadly, progressive font enrichment is not yet available.
+Eventually, the ultimate solution will be [progressive font enrichment](https://www.w3.org/TR/PFE-evaluation/), which will load just those glyphs needed for a webpage, and then cache those glyphs so that they aren't reloaded during future calls. Its successor standard, [Incremental Font Transfer](https://www.w3.org/TR/IFT/), has begun shipping in Chromium but isn't yet broadly available.
 
 ### Images
 
-Among lossy compression formats, there are two kings: AVIF and WEBP. Under my tests, they achieved similar (amazing) compression ratios of about 10x over PNG. For compatibility reasons, I chose AVIF. The upshot is that _images are nearly costless in terms of responsiveness_, which is liberating.
+Among lossy compression formats, there are two kings: AVIF and WEBP. Under my tests, they achieved similar (amazing) compression ratios of about 10x over PNG. I chose AVIF. The upshot is that _images are nearly costless in terms of responsiveness_, which is liberating.
 
-To demonstrate this liberty, I perform a statistical analysis of the 941 AVIF files hosted on my CDN as of November 9, 2024.[^colab] I downloaded each AVIF file and used `magick` to convert it back to a PNG, measuring the size before and after.
+To demonstrate this liberty, I perform a statistical analysis of the 941 AVIF files hosted on my CDN as of November 9th, 2024.[^colab] I downloaded each AVIF file and used `magick` to convert it back to a PNG, measuring the size before and after.
 
 <img alt="Compression ratios: (PNG size) / (AVIF size). A left-skew histogram with tails reaching out to 75x." src="https://assets.turntrout.com/static/images/posts/compression_ratio.svg" class="compression-ratio-graph"/>
 
@@ -373,7 +381,7 @@ After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^
 
 If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
 
-[^characters]: 60 characters per line seemed awkwardly narrow to me, so I went for 75 per line.
+[^characters]: 60 characters per line seemed awkwardly narrow to me, so I went for 75 per line.  <!-- lint-ignore sentence-initial-numeral: author's prose, leading numeral kept as written -->
 
 ## Font selection
 
@@ -496,7 +504,7 @@ Undirected quote marks (`"test"`) look bad to me. Call me extra (I _am_ extra), 
 
 Sadly, there wasn't. GitHub-flavored Markdown includes a `smartypants` option, but honestly, it's sloppy. So I wrote a bit of code.
 
-> [!quote] [Punctilio for meticulous typography](/open-source#punctilio-for-meticulous-typography)
+> [!quote] [@title](/open-source#punctilio-for-meticulous-typography)
 > ![[/open-source#punctilio-for-meticulous-typography]]
 
 ### Hyphen replacement
@@ -647,10 +655,20 @@ Many favicons are monochromatic to avoid chaos. However, some iconic brand logos
   <div class="subfigure">
     <svg class="favicon favicon-big" data-domain="amazon_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/amazon_com.svg);" alt=""></svg>
     <figcaption><code>amazon.com</code>'s background is a <code>radial-gradient</code>: <svg class="favicon no-mask favicon-demo-inline" data-domain="amazon_com" alt="A disk of text-color surrounded by yellow to form a square."></svg>.</figcaption>
-</div>
+  </div>
+  <div class="subfigure">
+    <svg class="favicon favicon-big" data-domain="msnbc_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/msnbc_com.svg);" alt=""></svg>
+    <figcaption><code>msnbc.com</code>'s peacock fans out from a <code>conic-gradient</code>: <svg class="favicon no-mask favicon-demo-inline full-color" data-domain="msnbc_com" alt="The six peacock colors (yellow, orange, red, purple, blue, and green) fanning out as wedges from a point near the bottom of a square."></svg>.</figcaption>
+  </div>
   </figure>
 
 I showcase all included favicons on [the test page](/test-page#external-links-with-favicons) to verify that the favicons look good after several kinds of characters.
+
+## Suggest related posts based on embedding similarity
+
+Subtitle: Inspired by [`gwern`](https://gwern.net/design#similar-links).
+
+I feed all of my articles through a text embedding model. For each article, I find the top 5 articles with highest [cosine-similarity](https://en.wikipedia.org/wiki/Cosine_similarity) (giving up on articles without sufficiently similar counterparts).
 
 ## Admonitions encapsulate information
 
@@ -726,21 +744,21 @@ Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thin
 
 ## Accessibility
 
-I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also enforce strict [Lighthouse](#lighthouse) scores across all four audit categories. Here are some highlights from my accessibility pipeline.
+I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also enforce strict [@title](#lighthouse) scores across all four audit categories. Here are some highlights from my accessibility pipeline.
 
 Asset accessibility
 : I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
 
-> [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
+> [!quote]- [@title](/open-source#automatic-alt-text-generation)
 > ![[/open-source#automatic-alt-text-generation]]
 
-I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
+I also subtitled the 22-minute [@title](/alignment-tier-list).
 
 Color contrast
 : I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context.
 
 ID uniqueness
-: In, [Mermaid diagrams](#mermaid-diagrams) didn't scope their HTML `id`s. Therefore, a page with multiple diagrams would have `id` collisions, causing rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410). Mermaid merged the PR.
+: In, [@title](#mermaid-diagrams) didn't scope their HTML `id`s. Therefore, a page with multiple diagrams would have `id` collisions, causing rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410). Mermaid merged the PR.
 
 Skip-to-content link
 : A hidden link lets keyboard and screen reader users skip the navigation and jump straight to the main content. The link text is rendered via a CSS `::after` pseudo-element so that it doesn't appear in Ctrl+F search results.
@@ -901,7 +919,7 @@ Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my 
 Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. I enable the [`pyupgrade`](https://docs.astral.sh/ruff/rules/#pyupgrade-up) and [`return-statement`](https://docs.astral.sh/ruff/rules/#flake8-return-ret) rule families to modernize Python idioms (PEP 585 type hints, PEP 604 unions) and to simplify control flow. After the auto-fix steps, four more read-only checks sweep in parallel:
 
 - [`pylint`](https://pylint.readthedocs.io/) — the static-analysis nits DeepSource also flags, picked up before push instead of after merge.
-- [`mypy`](https://mypy.readthedocs.io/) — type-checking across my Python scripts. The session-start hook warms up a `dmypy` daemon so this finishes in a few seconds.
+- [`pyright`](https://microsoft.github.io/pyright/) — type-checking across my Python scripts, with a handful of extra correctness rules switched on beyond its defaults.
 - My [Markdown and source-file validators](#static-validation-of-markdown-and-source-files).
 - A wrapper around [`spellchecker-cli`](https://www.npmjs.com/package/spellchecker-cli) and [Vale](https://vale.sh/). Before linting, I run a preprocessor that strips `[!quote]` callouts (so external quotes don't trip my dictionary), blanks the interior of LaTeX math (so `\cdot`-style commands aren't tokenized as words), and collapses inline `<span class="dropcap">…</span>` tags (so `dropcap` reads as one word, not split across the tag).
 
@@ -942,7 +960,7 @@ I lint my Markdown links for probable errors. I found that I might mangle a Mark
 >
 > 1. Each article's metadata has required fields filled in (like `title` and `description`).
 > 2. No pages attempt to share a URL.
-> 3. [Sequences](/posts#sequences) are well-defined. Post $n$ should link backwards to a post $n-1$ which marks post $n$ as its successor. Similar logic should hold for posts $n$ and $n-1$.
+> 3. [@title](/posts#sequences) are well-defined. Post $n$ should link backwards to a post $n-1$ which marks post $n$ as its successor. Similar logic should hold for posts $n$ and $n-1$.
 > 4. Filenames do not contain spaces.
 > 5. Preview card image URLs are valid, end with `.jpg`, are hosted on my CDN, and are at most <span id="populate-max-size-card"></span>KB.
 >
@@ -960,6 +978,7 @@ I lint my Markdown links for probable errors. I found that I might mangle a Mark
 > 5. Avoid error patterns from incorrectly mixing Markdown into a line with raw HTML.
 > 6. Headings should not contain Markdown links (like `## Title [link](...)`).
 > 7. After a definition title in a definition list, continuation paragraphs should be indented properly.
+> 8. Headings use sentence case (only the first word and proper nouns are capitalized), with acronyms and the titles of cited works left as-is.
 >
 > **Typography:**
 >
@@ -1010,6 +1029,10 @@ Over time, [links decay and rot](https://en.wikipedia.org/wiki/Link_rot), eventu
 - Links to [the Github repository for the website.](https://github.com/alexander-turner/TurnTrout.com)
 
 I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
+
+### Linking by title
+
+Sometimes I link by the title of a post, like "[@title](/towards-a-new-impact-measure)." But what if I change that title later? The linked title is just text in a Markdown file. To prevent drift, I write `@title` as the link text. Then the build fills in the target's current title.
 
 ### Validating the emitted HTML files
 
@@ -1140,7 +1163,7 @@ cd .timestamps
 ots --no-bitcoin verify "files/ABC012.txt.ots"
 ```
 
-# Github Actions
+# GitHub Actions
 
 When I `push` commits to [the `main` branch on GitHub](https://github.com/alexander-turner/TurnTrout.com), an Action generates the webpages. Before these pages are sent off to Cloudflare, they must pass yet another gauntlet of tests:
 
@@ -1150,7 +1173,7 @@ Site functionality
 I run these tests using 8 Linux shards (plus 5 macOS shards) for functional tests and 3 Linux shards (plus 2 macOS) for visual regression tests. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
 
 Lighthouse audits
-: I enforce strict [Lighthouse](#lighthouse) thresholds across all four audit categories, plus dedicated layout-shift checks on desktop and mobile.
+: I enforce strict [@title](#lighthouse) thresholds across all four audit categories, plus dedicated layout-shift checks on desktop and mobile.
 
 Quality gates
 : CI is the primary quality gate for checks that don't require local credentials or auto-fixing — linting, type-checking, tests, spellcheck, and link validation across the Python, TypeScript, and SCSS stacks. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed.
@@ -1164,9 +1187,6 @@ Several GitHub workflows run on schedules or in response to external events. Muc
 
 Monthly newsletter
 : A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/monthly-newsletter.yml) collects commits since the last newsletter, feeds them to the Claude API with a [prompt template](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/prompts/newsletter-prompt.md), and emails me the draft via [Resend](https://resend.com/).
-
-Weekly security scan
-: A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/security-vulnerability-scan.yaml) aggregates Dependabot alerts, code scanning alerts, secret scanning alerts, and `pnpm audit` results. [`claude-code-action`](https://github.com/anthropics/claude-code-action) triages the findings, applies fixes, and opens a PR.
 
 Template sync
 : A [daily workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/template-sync.yaml) diffs local automation files against the [template repo](https://github.com/alexander-turner/claude-automation-template), copies new files, and opens a PR.

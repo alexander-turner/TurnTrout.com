@@ -25,6 +25,37 @@ uv_install_if_missing() {
 	fi
 }
 
+# Install vale (prose linter) if missing, from a pinned GitHub release.
+# webi has no vale package, so pull the official tarball directly. The version
+# is the single source of truth in config/vale/version, shared with CI
+# (lint-and-validate.yaml) so pre-push and CI never drift; required by the
+# pre-push spellcheck/prose gate.
+VALE_VERSION="$(cat "$PROJECT_DIR/config/vale/version")"
+vale_install_if_missing() {
+	command -v vale &>/dev/null && return 0
+	local os arch
+	case "$(uname -s)" in
+	Linux) os=Linux ;;
+	Darwin) os=macOS ;;
+	*) warn "Unsupported OS for vale install: $(uname -s)" && return 0 ;;
+	esac
+	case "$(uname -m)" in
+	x86_64 | amd64) arch=64-bit ;;
+	aarch64 | arm64) arch=arm64 ;;
+	*) warn "Unsupported arch for vale install: $(uname -m)" && return 0 ;;
+	esac
+	local url tarball
+	url="https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_${os}_${arch}.tar.gz"
+	tarball=$(mktemp "${TMPDIR:-/tmp}/vale-XXXXXX.tar.gz")
+	mkdir -p "$HOME/.local/bin"
+	if curl --proto '=https' -fsSL "$url" -o "$tarball" 2>/dev/null; then
+		tar -xzf "$tarball" -C "$HOME/.local/bin" vale 2>/dev/null || warn "Failed to extract vale"
+	else
+		warn "Failed to download vale from $url"
+	fi
+	rm -f "$tarball"
+}
+
 # Install a command via webi if missing
 # $1 = command name, $2 = optional webi package specifier (e.g. tool@version)
 # Hardened: HTTPS-only, shebang validation, version pinning via $2
@@ -63,6 +94,9 @@ fi
 webi_install_if_missing shfmt shfmt@3
 webi_install_if_missing gh gh@2
 webi_install_if_missing jq jq@1.7
+# vale is required by the pre-push spellcheck/prose gate (it errors when vale
+# is absent), so install it here rather than letting it silently skip.
+vale_install_if_missing
 uv_install_if_missing alt-text-llm
 if is_root; then
 	# Map: command-to-probe -> apt package name. ffmpeg/imagemagick are
@@ -236,10 +270,20 @@ fi
 # Timestamps repo (required by post-commit hook)
 #######################################
 
+# Distinguish an ephemeral web sandbox (the main repo's remote is the local
+# proxy and the container is discarded on exit) from a local claude-guard run,
+# where the project — including a nested .timestamps — is a WRITABLE bind-mount
+# of the host repo. Session auth written into .timestamps/.git/config persists
+# onto the host in the local case and breaks the user's real credentials once
+# the session token expires, so this distinction gates every auth write below.
+project_remote=$(git -C "$PROJECT_DIR" remote get-url origin 2>/dev/null || true)
+is_web_sandbox=false
+[[ "$project_remote" == *"local_proxy@"* ]] && is_web_sandbox=true
+
 if [ ! -d "$PROJECT_DIR/.timestamps/.git" ]; then
-	# In web sessions, direct GitHub URLs may not work through the local proxy.
-	# Use GH_TOKEN for authentication if available.
-	if [ -n "${GH_TOKEN:-}" ]; then
+	# Bake the session token into the clone only in a web sandbox; locally,
+	# clone clean and let the user's credential helper provide auth.
+	if [ "$is_web_sandbox" = true ] && [ -n "${GH_TOKEN:-}" ]; then
 		git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps.git" \
 			"$PROJECT_DIR/.timestamps" ||
 			warn "Failed to clone .timestamps repo"
@@ -249,15 +293,11 @@ if [ ! -d "$PROJECT_DIR/.timestamps/.git" ]; then
 	fi
 fi
 
-# Configure .timestamps push access using GH_TOKEN (the local proxy only
-# authorizes the main repo, so .timestamps needs direct GitHub auth)
-if [ -d "$PROJECT_DIR/.timestamps/.git" ] && [ -n "${GH_TOKEN:-}" ]; then
-	git -C "$PROJECT_DIR/.timestamps" remote set-url origin \
-		"https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps.git"
-	# Web sessions lack CA certs for direct GitHub access; disable SSL
-	# verification for this repo only (the token provides auth security).
-	git -C "$PROJECT_DIR/.timestamps" config http.sslVerify false
-fi
+# Reconcile the .timestamps remote with the session type: inject the session
+# token in a web sandbox, or repair host config a prior session leaked into.
+bash "$PROJECT_DIR/scripts/configure_timestamps_remote.sh" \
+	"$PROJECT_DIR/.timestamps" "$is_web_sandbox" ||
+	warn "Failed to configure .timestamps remote"
 
 # Pre-fetch .timestamps origin/master so the post-commit hook's
 # `git pull --rebase` works against an already-warm DNS/TLS connection
@@ -342,7 +382,17 @@ if [ -f "$PROJECT_DIR/package.json" ]; then
 	if command -v pnpm &>/dev/null; then
 		# Skip Puppeteer browser download — sandboxed environments can't reach
 		# storage.googleapis.com and Playwright browsers are used instead.
-		PUPPETEER_SKIP_DOWNLOAD=true pnpm install --silent || warn "Failed to install Node dependencies"
+		#
+		# --config.confirm-modules-purge=false: the container's pre-provisioned
+		# node_modules can be inconsistent with the lockfile, so pnpm wants to
+		# purge and reinstall it. Without this flag that prompt aborts under no
+		# TTY (ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY), leaving node_modules
+		# stale — which then makes every later `pnpm exec` (e.g. the pre-push
+		# checks) fail the same way. Letting the purge proceed here leaves a
+		# consistent tree so subsequent `pnpm exec` runs skip the reinstall.
+		PUPPETEER_SKIP_DOWNLOAD=true pnpm install --silent \
+			--config.confirm-modules-purge=false ||
+			warn "Failed to install Node dependencies"
 	elif command -v npm &>/dev/null; then
 		npm install --silent || warn "Failed to install Node dependencies"
 	fi
@@ -366,10 +416,6 @@ if [ -f "$PROJECT_DIR/uv.lock" ] && command -v uv &>/dev/null; then
 			echo "export PATH=\"$PROJECT_DIR/.venv/bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
 		fi
 	fi
-	# Pre-warm dmypy daemon in the background so lint-staged mypy checks are
-	# fast (~1s) on all commits rather than cold-starting (~18s) on the first.
-	uv run dmypy start -- --config-file "$PROJECT_DIR/config/python/mypy.ini" \
-		>/dev/null &
 fi
 
 if [ "$SETUP_WARNINGS" -gt 0 ]; then

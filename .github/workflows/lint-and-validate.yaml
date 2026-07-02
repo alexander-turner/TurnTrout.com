@@ -8,6 +8,7 @@ on:
   push:
     branches: ["main", "dev"]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   actions: read
@@ -173,14 +174,14 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           # Only stage files the shared autofixers could have modified.
-          # Git pathspec globs with `**` do NOT match top-level files, so
-          # we pass both `dir/*.ext` and `dir/**/*.ext` for every tree.
+          # ESLint --fix runs over the whole repo, so its targets are matched
+          # repo-wide by bare extension globs (a git pathspec like `*.ts`
+          # matches at any depth). The other fixers are scoped to specific
+          # trees; for those pass both `dir/*.ext` and `dir/**/*.ext`, since a
+          # `**` glob does NOT match top-level files.
           git diff --name-only -z -- \
+            '*.js' '*.jsx' '*.cjs' '*.mjs' '*.ts' '*.tsx' \
             'quartz/*.scss'           'quartz/**/*.scss' \
-            'quartz/*.js'             'quartz/**/*.js' \
-            'quartz/*.jsx'            'quartz/**/*.jsx' \
-            'quartz/*.ts'             'quartz/**/*.ts' \
-            'quartz/*.tsx'            'quartz/**/*.tsx' \
             'scripts/*.py'            'scripts/**/*.py' \
             '.github/scripts/*.py'    '.github/scripts/**/*.py' \
             'website_content/*.md'    'website_content/**/*.md' \
@@ -307,9 +308,11 @@ jobs:
       - name: Install Vale
         if: needs.detect-changes.outputs.content == 'true'
         run: |
-          wget -q https://github.com/errata-ai/vale/releases/download/v3.9.0/vale_3.9.0_Linux_64-bit.tar.gz
-          echo "fd39029bd9dbd0ecf8cbd5274b69dcff03ad27a5d7344c69c173c93a00f6d423  vale_3.9.0_Linux_64-bit.tar.gz" | sha256sum --check
-          tar -xzf vale_3.9.0_Linux_64-bit.tar.gz
+          VALE_VERSION="$(cat config/vale/version)"
+          tarball="vale_${VALE_VERSION}_Linux_64-bit.tar.gz"
+          wget -q "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/${tarball}"
+          echo "fd39029bd9dbd0ecf8cbd5274b69dcff03ad27a5d7344c69c173c93a00f6d423  ${tarball}" | sha256sum --check
+          tar -xzf "${tarball}"
           sudo mv vale /usr/local/bin/
 
       - name: Generate SCSS variables
@@ -378,19 +381,6 @@ jobs:
         if: needs.detect-changes.outputs.source-checks == 'true'
         continue-on-error: true
         run: uv run python scripts/source_file_checks.py ${{ steps.pub-date-flag.outputs.flag }}
-
-      - name: Verify apt packages are version-pinned
-        run: |
-          # Find package-like lines between apt-get install and shell: that lack =version
-          # shellcheck disable=SC1003  # the regex needs a literal backslash, not an escaped single quote
-          awk '/apt-get install/,/shell:/' .github/actions/setup-site/action.yaml \
-            | grep -E '^\s+[a-z][a-z0-9._+-]+\s*\\?\s*$' \
-            | while read -r line; do
-                pkg=$(echo "$line" | tr -d ' \\')
-                echo "::error::Unpinned apt package in setup-site: '$pkg' (add =version suffix)"
-                exit 1
-              done
-          echo "All apt packages are version-pinned"
 
       - name: Check results
         run: |

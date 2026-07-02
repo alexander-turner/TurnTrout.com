@@ -12,6 +12,7 @@ import { NBSP } from "../../components/constants"
 import {
   gatherTextBeforeIndex,
   hasClass,
+  INLINE_PASSTHROUGH_TAGS,
   isCode,
   replaceRegex,
   shouldCapitalizeNodeText,
@@ -262,19 +263,6 @@ export const capitalizeAfterEnding = new RegExp(
   "iu",
 )
 
-export const INLINE_ELEMENTS: ReadonlySet<string> = new Set([
-  "b",
-  "strong",
-  "em",
-  "i",
-  "sup",
-  "sub",
-  "strike",
-  "del",
-  "s",
-  "a",
-])
-
 export const PUNCTUATION_BEFORE_MATCH = /[([{"“‘`]/gu
 /**
  * Determines if a matched text should be capitalized based on its position in the document
@@ -305,7 +293,7 @@ export function shouldCapitalizeMatch(
 
     // If parent is an inline element, check its context
     const parent = ancestors[ancestors.length - 1]
-    if (parent.type === "element" && INLINE_ELEMENTS.has((parent as Element).tagName)) {
+    if (parent.type === "element" && INLINE_PASSTHROUGH_TAGS.has((parent as Element).tagName)) {
       const grandParent = ancestors[ancestors.length - 2]
       const parentIndex = grandParent.children.indexOf(parent as Element)
       // istanbul ignore if
@@ -341,9 +329,7 @@ export function processMatchedText(text: string, shouldCapitalize: boolean): str
 export function isInAllowList(matchText: string): boolean {
   return allowAcronyms.some(
     (acronym) =>
-      matchText === acronym ||
-      matchText.startsWith(`${acronym}s`) ||
-      matchText.startsWith(`${acronym}x`),
+      matchText === acronym || matchText === `${acronym}s` || matchText === `${acronym}x`,
   )
 }
 

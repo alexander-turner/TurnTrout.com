@@ -21,6 +21,7 @@ lw-latest-edit: 2024-03-27T02:58:00.187000Z
 lw-is-linkpost: 'false'
 tags:
   - AI
+  - existential-risk
 aliases:
   - ban-development-of-unpredictable-powerful-models
 lw-reward-post-warning: 'false'
@@ -29,7 +30,7 @@ date_published: 2023-06-20
 original_url: https://www.lesswrong.com/posts/8CvkNa6FKSrK4Nj83/ban-development-of-unpredictable-powerful-models
 skip_import: true
 description: "A proposal for a government regulation of AI: Developers must be able to accurately predict the model's output. "
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 ---
 
 > [!warning]
@@ -64,7 +65,7 @@ Partially incentivizes labs to do alignment research for us.
 
 ## Drawbacks
 
-Most notably, this test seems _extremely strict_, perhaps beyond even the strict standards we will want to demand of those looking to deploy potentially world-changing models. I'll discuss a few drawbacks in the next section.
+Most notably, this test seems _extremely strict_, perhaps beyond even the strict standards we will want to demand of those looking to deploy potentially world-changing models. I'll discuss a few drawbacks in [the next section](#anticipated-questions).
 
 ## Anticipated questions
 

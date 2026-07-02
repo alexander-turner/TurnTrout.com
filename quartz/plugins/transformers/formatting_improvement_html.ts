@@ -2,18 +2,21 @@ import type { Element, ElementContent, Parent, Root, Text } from "hast"
 
 import { h } from "hastscript"
 import {
-  dashWordJoiner,
+  definePass,
   hyphenReplace,
   nbspTransform,
   niceQuotes,
-  primeMarks,
+  type ProsePass,
+  type ProseView,
   symbolTransform,
+  withProseView,
 } from "punctilio"
 import {
-  collectTransformableElements,
+  applyPasses,
+  collectProseBlocks,
   getTextContent,
+  type PassEntry,
   type TextNodeSkipPredicate,
-  transformElement,
 } from "punctilio/rehype"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
@@ -23,16 +26,22 @@ import type { ElementMaybeWithParent } from "./utils"
 
 import {
   charsToMoveIntoLinkFromRight,
-  hatTipPlaceholder,
   LEFT_SINGLE_QUOTE,
-  markerChar,
   NBSP,
   RIGHT_SINGLE_QUOTE,
   STRIP_BOUNDARY_TAGS,
+  WORD_JOINER,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { isHeading } from "./favicons"
-import { fractionRegex, hasAncestor, hasClass, isCode, replaceRegex, urlRegex } from "./utils"
+import {
+  fractionRegex,
+  hasAncestor,
+  hasClass,
+  isCode,
+  replaceRegex,
+  urlRegexNonGlobal,
+} from "./utils"
 
 /**
  * Tags that should be skipped during text transformation.
@@ -50,6 +59,12 @@ export const FRACTION_SKIP_TAGS = ["code", "pre", "a", "script", "style"] as con
  * CSS classes that indicate content should skip formatting.
  */
 export const SKIP_CLASSES = ["no-formatting", "elvish", "bad-handwriting"] as const
+
+/**
+ * Elements whose text is a literal value rather than prose (form-control
+ * labels, document metadata). Their text gets no typography transforms.
+ */
+export const NON_PROSE_TAGS: ReadonlySet<string> = new Set(["title", "button", "option", "output"])
 
 export function toSkip(node: Element): boolean {
   if (node.type === "element") {
@@ -80,71 +95,149 @@ export const shouldSkipLinkUrlText: TextNodeSkipPredicate = (textNode, ancestors
  * A plugin that improves text formatting in HTML content by applying various typographic enhancements
  */
 
-/**
- * Marker-aware word boundary patterns.
- * Regular \b matches at word/non-word transitions, but markers (non-word chars)
- * can create false boundaries between text that should be connected.
- *
- * Example: "xReLU" has no word boundary before 'R', but "x\uF000ReLU" (with marker)
- * would have a false boundary. These patterns reject boundaries caused by markers.
- *
- * A "false" start boundary: word_char + marker(s) + word_char (markers between word chars)
- * A "false" end boundary: word_char + marker(s) + word_char (same pattern)
- *
- * wb: word boundary, reject if preceded by (word char + markers)
- * wbe: word boundary, reject if followed by (markers + word char)
- */
-// Start of word: word boundary, not preceded by word+marker(s) pattern
-const wb = `(?<!\\w${markerChar}*)\\b`
-// End of word: word boundary, not followed by marker(s)+word pattern
-const wbe = `\\b(?!${markerChar}*\\w)`
+// Spacing characters around a slash that the slash rules may absorb or pad.
+// NBSP is deliberately absent: an NBSP next to a slash is real content, so it
+// anchors the lookahead (and blocks re-padding an already-padded slash).
+const SLASH_PLAIN_SPACES = new Set([" ", "\t", "\n", "\r", "\f", "\v"])
 
-// Rejects digit-before-slash to leave fractions alone. Lookahead skips
-// markers and treats NBSP as real content so it anchors past an NBSP that
-// earlier transforms (e.g. nbspBeforeLastWord) inserted at a paragraph edge.
-const slashRegex = new RegExp(
-  `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=${markerChar}*[^ \\t\\n\\r\\f\\v${markerChar}])(?!/)`,
-  "gu",
-)
-
-const htPlaceholderRegex = new RegExp(hatTipPlaceholder, "g")
+function isPlainDigit(char: string | undefined): boolean {
+  return char !== undefined && char >= "0" && char <= "9"
+}
 
 /**
- * Space out slashes in text
- * @returns The text with slashes spaced out
+ * The slash must be preceded by visible content: a non-space character that
+ * is not a digit (leave fractions alone), "/", or "<". An element boundary
+ * immediately before `start` counts as content, whatever sits on its far side.
  */
-export function spacesAroundSlashes(text: string): string {
-  // First replace h/t with the placeholder character (hatTipPlaceholder imported from constants)
-  text = text.replace(/\bh\/t\b/g, hatTipPlaceholder)
+function passesLeftSlashGuard(view: ProseView, start: number): boolean {
+  if (view.hasBoundary(start)) {
+    return true
+  }
+  if (start === 0) {
+    return false
+  }
+  const prev = view.text[start - 1]
+  return /\S/.test(prev) && !/[\d/<]/.test(prev)
+}
 
-  text = text.replace(slashRegex, (...args) => {
-    const groups = args.at(-1) as {
-      spaceBefore: string
-      markerBefore: string | undefined
-      markerAfter: string | undefined
-      spaceAfter: string
+/**
+ * "h/t" is kept verbatim. The h and t must sit in the same text node as the
+ * slash; a boundary on either flank of "h/t" acts as a word boundary.
+ */
+function isHatTipSlash(view: ProseView, slashIdx: number): boolean {
+  const text = view.text
+  if (text[slashIdx - 1] !== "h" || text[slashIdx + 1] !== "t") {
+    return false
+  }
+  if (view.hasBoundary(slashIdx) || view.hasBoundary(slashIdx + 1)) {
+    return false
+  }
+  const hIdx = slashIdx - 1
+  const afterTIdx = slashIdx + 2
+  const wordBeforeH = hIdx > 0 && !view.hasBoundary(hIdx) && /\w/.test(text[hIdx - 1])
+  const wordAfterT =
+    afterTIdx < text.length && !view.hasBoundary(afterTIdx) && /\w/.test(text[afterTIdx])
+  return !wordBeforeH && !wordAfterT
+}
+
+/**
+ * Pad one slash with NBSPs so it gets breathing room without allowing a line
+ * break at it. Each side is decided independently:
+ *
+ * - a plain space already next to the slash is kept as-is;
+ * - at an element boundary, the neighboring node's text (including any space
+ *   it carries) is left untouched and an NBSP is glued onto the slash's side
+ *   of the boundary instead — empty inline elements must never swallow the
+ *   slash or its padding;
+ * - otherwise an NBSP is inserted directly against the slash.
+ *
+ * Returns true when the slash matched (even if both sides kept their spaces),
+ * so the digit-slash rule doesn't double-process it.
+ */
+function applyMainSlashRule(view: ProseView, slashIdx: number): boolean {
+  const text = view.text
+  const leftBoundary = view.hasBoundary(slashIdx)
+  const spaceBefore = !leftBoundary && text[slashIdx - 1] === " "
+  const guardOk =
+    leftBoundary ||
+    (spaceBefore ? passesLeftSlashGuard(view, slashIdx - 1) : passesLeftSlashGuard(view, slashIdx))
+  if (!guardOk) {
+    return false
+  }
+
+  const afterIdx = slashIdx + 1
+  const rightBoundary = view.hasBoundary(afterIdx)
+  const spaceAfter = text[afterIdx] === " "
+  const lookIdx = afterIdx + (spaceAfter ? 1 : 0)
+  const lookChar = text[lookIdx]
+  // The slash needs following content (at most one plain space away), and
+  // must not start a "//" run unless a boundary separates the two slashes.
+  if (lookChar === undefined || SLASH_PLAIN_SPACES.has(lookChar)) {
+    return false
+  }
+  if (lookChar === "/" && !view.hasBoundary(lookIdx)) {
+    return false
+  }
+
+  if (leftBoundary) {
+    view.replace(slashIdx, slashIdx, NBSP, { bind: "right" })
+  } else if (!spaceBefore) {
+    view.replace(slashIdx, slashIdx, NBSP)
+  }
+  if (rightBoundary) {
+    view.replace(afterIdx, afterIdx, NBSP, { bind: "left" })
+  } else if (!spaceAfter) {
+    view.replace(afterIdx, afterIdx, NBSP)
+  }
+  return true
+}
+
+/**
+ * A digit directly before a slash (same text node) followed by a non-digit
+ * gets NBSP padding: "3/month" → "3 / month". End-of-prose and an element
+ * boundary after the slash both count as non-digit context.
+ */
+function applyNumberSlashRule(view: ProseView, slashIdx: number): void {
+  if (view.hasBoundary(slashIdx) || !isPlainDigit(view.text[slashIdx - 1])) {
+    return
+  }
+  const afterIdx = slashIdx + 1
+  const nonNumberAfter =
+    afterIdx === view.text.length ||
+    view.hasBoundary(afterIdx) ||
+    !isPlainDigit(view.text[afterIdx])
+  if (!nonNumberAfter) {
+    return
+  }
+  view.replace(slashIdx, afterIdx, `${NBSP}/${NBSP}`)
+}
+
+function applySlashSpacing(view: ProseView): void {
+  const text = view.text
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] !== "/" || isHatTipSlash(view, i)) {
+      continue
     }
-    const { spaceBefore: leftSpace, spaceAfter: rightSpace } = groups
-    const leftMarker = groups.markerBefore ?? ""
-    const rightMarker = groups.markerAfter ?? ""
-    // Decide each side independently. A captured space sitting OUTSIDE a
-    // marker (e.g. " <SEP>/" or "/<SEP> ") lives in a sibling text node, not
-    // the slash's own node — keep it outside and glue an NBSP to "/" instead.
-    // With no marker on a side, the space is in the same text node as the
-    // slash, so absorb it (preserves marker invariance with empty inline
-    // elements there).
-    const outerLeft = leftMarker ? leftSpace : ""
-    const padLeft = leftMarker ? NBSP : leftSpace || NBSP
-    const outerRight = rightMarker ? rightSpace : ""
-    const padRight = rightMarker ? NBSP : rightSpace || NBSP
-    return `${outerLeft}${leftMarker}${padLeft}/${padRight}${rightMarker}${outerRight}`
-  })
+    if (!applyMainSlashRule(view, i)) {
+      applyNumberSlashRule(view, i)
+    }
+  }
+}
 
-  const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g
-  text = text.replace(numberSlashThenNonNumber, `${NBSP}/${NBSP}`)
-
-  // Restore the h/t occurrences
-  return text.replace(htPlaceholderRegex, "h/t")
+/**
+ * Space out slashes so "dog/cat" reads "dog / cat" (with non-breaking
+ * spaces). Dual-input pass: string in → string out; ProseView in → edits
+ * committed in place.
+ */
+export function spacesAroundSlashes(input: string): string
+export function spacesAroundSlashes(input: ProseView): void
+export function spacesAroundSlashes(input: string | ProseView): string | void {
+  if (typeof input === "string") {
+    return withProseView(input, applySlashSpacing)
+  }
+  applySlashSpacing(input)
+  input.commit()
+  return undefined
 }
 
 /**
@@ -197,27 +290,46 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
   })
 }
 
-// Named wrapper for nbsp transform so it can be explicitly filtered when needed
-const nbspTransformWrapper = (text: string) => nbspTransform(text, { separator: markerChar })
+// Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
+function symbolTransformNoArrows(input: string): string
+function symbolTransformNoArrows(input: ProseView): void
+function symbolTransformNoArrows(input: string | ProseView): string | void {
+  if (typeof input === "string") {
+    return symbolTransform(input, { includeArrows: false })
+  }
+  symbolTransform(input, { includeArrows: false })
+  return undefined
+}
 
-// These lists are automatically added to both applyTextTransforms and the main HTML transforms
-// Don't check for invariance: these transforms accept a `separator` and intentionally
-// use it to respect element boundaries (e.g., niceQuotes won't pair quotes across elements).
-// Because they behave differently with vs. without markers, the invariance property
-// transform(text_with_markers) == transform(text_without_markers) does not hold.
-const uncheckedTextTransformers = [
-  (text: string) => hyphenReplace(text, { separator: markerChar }),
-  // Prime marks must run before niceQuotes to convert 5'10" → 5′10″ before quote processing
-  (text: string) => primeMarks(text, { separator: markerChar }),
-  (text: string) => niceQuotes(text, { separator: markerChar }),
-  // Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
-  (text: string) => symbolTransform(text, { separator: markerChar, includeArrows: false }),
+// These lists are automatically added to both applyTextTransforms and the main HTML transforms.
+// Each entry is a boundary-aware ProsePass: string in → string out, ProseView in → edits
+// committed in place (e.g., niceQuotes won't pair quotes across element boundaries).
+const uncheckedTextTransformers: readonly ProsePass[] = [
+  hyphenReplace,
+  // niceQuotes converts primes first (5'10" → 5′10″) before quote processing
+  niceQuotes,
+  symbolTransformNoArrows,
   // Non-breaking spaces: prevents orphans, keeps numbers with units, etc.
-  nbspTransformWrapper,
+  nbspTransform,
 ]
 
-// Check for invariance: these are simple find-and-replace transforms that never interact
-// with the marker character, so we verify they produce identical results with or without markers.
+// Glue a word joiner before em/en dashes so they can never be the first glyph
+// on a wrapped line. Boundary decision: an element boundary immediately
+// before the dash counts as preceding content, so a dash that opens a text
+// node (after e.g. a skipped <code>) is still glued — punctilio's
+// dashWordJoiner only inspects the neighboring character, which may sit in a
+// sibling node across the boundary.
+const dashWordJoinerPass = definePass(/[–—]/gu, (match, view) => {
+  if (!view.hasBoundary(match.index)) {
+    const prev = match.index > 0 ? view.text[match.index - 1] : undefined
+    if (prev === undefined || /\s/u.test(prev) || prev === WORD_JOINER) {
+      return null
+    }
+  }
+  return `${WORD_JOINER}${match[0]}`
+})
+
+// Simple find-and-replace transforms local to this site (punctilio handles the rest)
 const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransform]
 
 /**
@@ -234,7 +346,7 @@ export function applyTextTransforms(text: string, options: { useNbsp?: boolean }
   // Filter out nbspTransform if useNbsp is false
   const textTransformers = useNbsp
     ? uncheckedTextTransformers
-    : uncheckedTextTransformers.filter((t) => t !== nbspTransformWrapper)
+    : uncheckedTextTransformers.filter((t) => t !== nbspTransform)
 
   for (const transformer of [
     ...checkedTextTransformers,
@@ -247,7 +359,7 @@ export function applyTextTransforms(text: string, options: { useNbsp?: boolean }
   return text
 }
 
-export const l_pRegex = /(?<prefix>\s|^)L(?<number>\d+)\b(?!\.)/g
+export const lPRegex = /(?<prefix>\s|^)L(?<number>\d+)\b(?!\.)/g
 /**
  * Converts L-numbers (like "L1", "L42") to use subscript numbers with lining numerals
  * @param tree - The HTML AST to process
@@ -264,7 +376,7 @@ export function formatLNumbers(tree: Root): void {
     let lastIndex = 0
     const newNodes: (Text | Element)[] = []
 
-    while ((match = l_pRegex.exec(node.value)) !== null) {
+    while ((match = lPRegex.exec(node.value)) !== null) {
       // Add text before the match
       if (match.index > lastIndex) {
         newNodes.push({
@@ -293,7 +405,7 @@ export function formatLNumbers(tree: Root): void {
         children: [{ type: "text", value: number }],
       })
 
-      lastIndex = l_pRegex.lastIndex
+      lastIndex = lPRegex.lastIndex
     }
 
     // Add remaining text
@@ -415,6 +527,12 @@ export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
 }
 
 const ordinalSuffixRegex = /(?<![-−])(?<number>[\d,]+)(?<suffix>st|nd|rd|th)/gu
+
+// A day adjacent to a year (e.g. "26th, 2026") is a calendar date: tag its
+// number .date-ordinal-num so it renders in oldstyle figures matching the year.
+// Every other ordinal keeps lining figures so it stays full cap height.
+const trailingYearRegex = /^,?\s+\d{4}\b/
+
 export function formatOrdinalSuffixes(tree: Root): void {
   visitParents(tree, "text", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent
@@ -422,7 +540,12 @@ export function formatOrdinalSuffixes(tree: Root): void {
 
     const index = parent.children.indexOf(node as ElementContent)
     replaceRegex(node, index, parent, ordinalSuffixRegex, (match: RegExpMatchArray) => {
-      const numSpan = h("span.ordinal-num", match.groups?.number ?? /* istanbul ignore next */ "")
+      const matchEnd = (match.index ?? /* istanbul ignore next */ 0) + match[0].length
+      const followedByYear = trailingYearRegex.test(
+        match.input?.slice(matchEnd) ?? /* istanbul ignore next */ "",
+      )
+      const numSelector = followedByYear ? "span.date-ordinal-num" : "span.ordinal-num"
+      const numSpan = h(numSelector, match.groups?.number ?? /* istanbul ignore next */ "")
       const suffixSpan = h(
         "sup.ordinal-suffix",
         match.groups?.suffix ?? /* istanbul ignore next */ "",
@@ -554,13 +677,14 @@ export const rearrangeLinkPunctuation = (
 
   if (sibling && "type" in sibling) {
     const hasAttrs = "tagName" in sibling && "children" in sibling
+    // A favicon-span wraps trailing text + an icon/back-arrow (created for
+    // footnote back-arrows before this pass runs). Its leading punctuation
+    // should move into the link just like a bare text sibling's would.
+    const looksTextLike =
+      hasAttrs && (TEXT_LIKE_TAGS.includes(sibling.tagName) || hasClass(sibling, "favicon-span"))
     if (sibling.type === "text") {
       textNode = sibling
-    } else if (
-      hasAttrs &&
-      TEXT_LIKE_TAGS.includes(sibling.tagName) &&
-      sibling.children.length > 0
-    ) {
+    } else if (looksTextLike && sibling.children.length > 0) {
       textNode = sibling.children[0]
     }
   }
@@ -586,80 +710,130 @@ export const rearrangeLinkPunctuation = (
   }
 }
 
-// The trailing (?!\.) keeps the rewrite idempotent: without it, "i.e.." lets
-// the optional period backtrack to empty, the rewrite appends its own period,
-// and every pass grows the text by one dot.
-const afterAbbrevPattern = `\\.?(?<abbrevMarker>${markerChar})?(?:,(?<commaMarker>${markerChar})?)?(?!\\.)(?=${wbe}|\\s|${markerChar}|$)`
-const egRegex = new RegExp(`${wb}e\\.?g${afterAbbrevPattern}`, "gi")
-const ieRegex = new RegExp(`${wb}i\\.?e${afterAbbrevPattern}`, "gi")
+// The optional comma after the abbreviation is consumed and normalized away.
+// (?!\.) keeps the rewrite idempotent: without it "i.e.." lets \.? backtrack
+// to ε, the lookahead fires at the first ".", and every pass appends a period.
+// The lookahead requires a word-end boundary, whitespace, or end of prose.
+const afterAbbrevPattern = "\\.?(?!\\.),?(?=(?<=\\w)(?!\\w)|\\s|$)"
+
+// Boundary decision: the comma being normalized away may live in a sibling
+// text node (e.g. "<em>e.g.</em>, test"), so a boundary directly before that
+// trailing comma is allowed; a boundary anywhere else in the match (inside
+// the abbreviation itself) rejects it.
+function allowBoundaryBeforeTrailingComma(match: RegExpExecArray, view: ProseView): boolean {
+  if (!match[0].endsWith(",")) {
+    return false
+  }
+  const commaIdx = match.index + match[0].length - 1
+  return view.boundaries.every(
+    (boundary) =>
+      boundary <= match.index || boundary >= match.index + match[0].length || boundary === commaIdx,
+  )
+}
+
+// The word-end assertion `(?<=\w)(?!\w)` is not interchangeable with `\b`
+// here: after an optional "." or "," the position sits between non-word
+// characters, where `\b` would accept but a word-end must reject.
+// eslint-disable-next-line regexp/prefer-predefined-assertion
+const egPass = definePass(new RegExp(`\\be\\.?g${afterAbbrevPattern}`, "gi"), "e.g.", {
+  boundaries: allowBoundaryBeforeTrailingComma,
+})
+// eslint-disable-next-line regexp/prefer-predefined-assertion
+const iePass = definePass(new RegExp(`\\bi\\.?e${afterAbbrevPattern}`, "gi"), "i.e.", {
+  boundaries: allowBoundaryBeforeTrailingComma,
+})
 
 /**
  * Normalizes "e.g." and "i.e." abbreviations to standard format.
- * Captures any markers after the abbreviation and trailing comma, preserving them in the output.
  */
 export function normalizeAbbreviations(text: string): string {
-  text = text.replace(egRegex, "e.g.$<abbrevMarker>$<commaMarker>")
-  text = text.replace(ieRegex, "i.e.$<abbrevMarker>$<commaMarker>")
-
-  return text
+  return iePass(egPass(text))
 }
 
 const plusToAmpersandRegex = /(?<!\b(?:ctrl|alt|option|cmd|command|fn))(?<=\p{L})\+(?=[A-Z])/giu
+const plusToAmpersandPass = definePass(plusToAmpersandRegex, `${NBSP}&${NBSP}`)
 
 export function plusToAmpersand(text: string): string {
-  return text.replace(plusToAmpersandRegex, `${NBSP}&${NBSP}`)
+  return plusToAmpersandPass(text)
 }
 
 // The time regex is used to convert 12:30 PM to 12:30 p.m.
 // At the end, watch out for double periods
-// Marker-aware: allow optional marker between digit and space, e.g., "15<marker> Am"
-const amPmRegex = new RegExp(
-  `(?<=\\d(?:${markerChar})? ?)(?<time>[AP])(?:\\.M\\.|M)\\.?(?!\\p{L})`,
-  "giu",
-)
-export function timeTransform(text: string): string {
-  const matchFunction = (_: string, ...args: unknown[]) => {
-    const groups = args[args.length - 1] as { time: string }
-    return `${groups.time.toLowerCase()}.m.`
+const amPmRegex = /(?<=\d ?)(?<time>[AP])(?:\.M\.|M)\.?(?!\p{L})/giu
+const amPmPass = definePass(amPmRegex, (match) => {
+  const groups = match.groups as { time: string }
+  return `${groups.time.toLowerCase()}.m.`
+})
+
+export function timeTransform(input: string): string
+export function timeTransform(input: ProseView): void
+export function timeTransform(input: string | ProseView): string | void {
+  if (typeof input === "string") {
+    return amPmPass(input)
   }
-  return text.replace(amPmRegex, matchFunction)
+  amPmPass(input)
+  return undefined
 }
 
 // Site-specific transforms (punctilio handles: !=, multiplication, ellipsis, math symbols, etc.)
-// Use marker-aware word boundaries (wb/wbe) to prevent markers from creating false word boundaries
 const massTransforms: [RegExp, string][] = [
-  [new RegExp(`${wb}(?:i\\.i\\.d\\.|iid)`, "gi"), "IID"],
-  [new RegExp(`${wb}(?<letter>[Ff])rappe${wbe}`, "g"), "$<letter>rappé"],
-  [new RegExp(`${wb}(?<letter>[Ll])atte${wbe}`, "g"), "$<letter>atté"],
-  [new RegExp(`${wb}(?<letter>[Cc])liche${wbe}`, "g"), "$<letter>liché"],
-  [new RegExp(`(?<=[Aa]n |[Tt]he )${wb}(?<letter>[Ee])xpose${wbe}`, "g"), "$<letter>xposé"],
+  [/\b(?:i\.i\.d\.|iid)/gi, "IID"],
+  [/\b(?<letter>[Ff])rappe\b/g, "$<letter>rappé"],
+  [/\b(?<letter>[Ll])atte\b/g, "$<letter>atté"],
+  [/\b(?<letter>[Cc])liche\b/g, "$<letter>liché"],
+  [/(?<=[Aa]n |[Tt]he )(?<letter>[Ee])xpose\b/g, "$<letter>xposé"],
   [/wi-?fi/gi, "Wi-Fi"],
-  [new RegExp(`${wb}(?<letter>[Dd])eja vu${wbe}`, "g"), "$<letter>éjà vu"],
-  [new RegExp(`${wb}github${wbe}`, "gi"), "GitHub"],
-  [new RegExp(`(?<=${wb}| )(?<letter>[Vv])oila(?=${wbe}|$)`, "g"), "$<letter>oilà"],
-  [new RegExp(`${wb}(?<letter>[Nn])aive`, "g"), "$<letter>aïve"],
-  [new RegExp(`${wb}(?<letter>[Cc])hateau${wbe}`, "g"), "$<letter>hâteau"],
-  [new RegExp(`${wb}(?<letter>[Dd])ojo`, "g"), "$<letter>ōjō"],
-  [new RegExp(`${wb}regex(?<plural>e?s)?${wbe}`, "gi"), "RegEx$<plural>"],
-  [new RegExp(`${wb}relu${wbe}`, "gi"), "RELU"],
-  [new RegExp(`${wb}(?<letter>[Oo])pen-source${wbe}`, "g"), "$<letter>pen source"],
-  [new RegExp(`${wb}markdown${wbe}`, "g"), "Markdown"],
+  [/\b(?<letter>[Dd])eja vu\b/g, "$<letter>éjà vu"],
+  [/\bgithub\b/gi, "GitHub"],
+  [/(?<=\b| )(?<letter>[Vv])oila(?=\b|$)/g, "$<letter>oilà"],
+  [/\b(?<letter>[Nn])aive/g, "$<letter>aïve"],
+  [/\b(?<letter>[Cc])hateau\b/g, "$<letter>hâteau"],
+  [/\b(?<letter>[Dd])ojo/g, "$<letter>ōjō"],
+  [/\bregex(?<plural>e?s)?\b/gi, "RegEx$<plural>"],
+  [/\brelu\b/gi, "RELU"],
+  [/\b(?<letter>[Oo])pen-source\b/g, "$<letter>pen source"],
+  [/\bmarkdown\b/g, "Markdown"],
   [/macos/gi, "macOS"],
   [/team shard/gi, "Team Shard"],
   [/Gemini (?<model>\w+) (?<version>\d(?:\.\d)?)(?!-)/g, "Gemini $<version> $<model>"],
   // Model naming standardization
-  [new RegExp(`${wb}LLAMA(?=-\\d)`, "g"), "Llama"], // LLAMA-2 → Llama-2
-  [new RegExp(`${wb}GPT-4-o${wbe}`, "gi"), "GPT-4o"], // GPT-4-o → GPT-4o
-  [new RegExp(`${wb}bibtex${wbe}`, "gi"), "BibTeX"], // Normalize BibTeX capitalization
+  [/\bLLAMA(?=-\d)/g, "Llama"], // LLAMA-2 → Llama-2
+  [/\bGPT-4-o\b/gi, "GPT-4o"], // GPT-4-o → GPT-4o
+  [/\bbibtex\b/gi, "BibTeX"], // Normalize BibTeX capitalization
 ]
 
-export function massTransformText(text: string): string {
-  for (const [regex, replacement] of massTransforms) {
-    text = text.replace(regex, replacement)
+// Boundary decision: all site regexes keep definePass's default
+// `boundaries: "skip"` — a candidate split across an element boundary (e.g. a
+// word broken by <em>) is left untouched rather than rewritten across nodes.
+const massTransformPasses: readonly ProsePass[] = massTransforms.map(([regex, replacement]) =>
+  definePass(regex, replacement),
+)
+
+export function massTransformText(input: string): string
+export function massTransformText(input: ProseView): void
+export function massTransformText(input: string | ProseView): string | void {
+  if (typeof input === "string") {
+    for (const pass of massTransformPasses) {
+      input = pass(input)
+    }
+    return normalizeAbbreviations(input)
   }
-  text = normalizeAbbreviations(text)
-  return text
+  for (const pass of [...massTransformPasses, egPass, iePass]) {
+    pass(input)
+  }
+  return undefined
 }
+
+// Per-element pipeline order mirrors checkedTextTransformers: the mass
+// transforms (with abbreviation normalization), then plus-to-ampersand, then
+// the a.m./p.m. rewrite.
+const checkedTextPasses: readonly ProsePass[] = [
+  ...massTransformPasses,
+  egPass,
+  iePass,
+  plusToAmpersandPass,
+  amPmPass,
+]
 
 /**
  * Sets a data-first-letter attribute on the first non-empty paragraph element in the tree.
@@ -704,6 +878,12 @@ export function setFirstLetterAttribute(tree: Root): void {
   )
   if (!firstTextNode) return
 
+  // The in-place rewrites below assume the first text node holds the first
+  // letter. When the paragraph opens with an inline element carrying text
+  // (e.g. <em>First</em>), the first text node is later prose, so rewriting it
+  // would corrupt visible text. Only rewrite when this node starts the letter.
+  if (firstTextNode.value.charAt(0) !== firstLetter) return
+
   // Replace nbsp after first letter — nbspTransform adds it after single-letter
   // words like "I", but it creates a visible extra space with dropcap float
   if (firstTextNode.value.charAt(1) === NBSP) {
@@ -726,7 +906,7 @@ function fractionToSkip(node: Text, _idx: number, parent: Parent, ancestors: Par
         hasClass(ancestor, "fraction"),
       ancestors,
     ) ||
-    (node.value?.includes("/") && urlRegex.test(node.value))
+    (node.value?.includes("/") && urlRegexNonGlobal.test(node.value))
   )
 }
 
@@ -814,23 +994,24 @@ export const improveFormatting = (
         isDisplayHeading(node as Element) ||
         hasAncestor(node as Element, isDisplayHeading, ancestors)
       const activeUncheckedTransformers = inDisplayHeading
-        ? uncheckedTextTransformers.filter((t) => t !== nbspTransformWrapper)
+        ? uncheckedTextTransformers.filter((t) => t !== nbspTransform)
         : uncheckedTextTransformers
 
-      const eltsToTransform = collectTransformableElements(node as Element, toSkip)
+      // skipTags is empty because toSkip already covers the site's skip list;
+      // punctilio's default skip tags (kbd, var, samp, ...) must not apply.
+      // Form-control and metadata text (option labels, button captions) is a
+      // literal value, not prose — drop those blocks from the collection.
+      const eltsToTransform = collectProseBlocks(node as Element, {
+        skipTags: [],
+        shouldSkip: toSkip,
+      }).filter((elt) => !NON_PROSE_TAGS.has(elt.tagName))
       eltsToTransform.forEach((elt) => {
-        for (const transform of checkedTextTransformers) {
-          transformElement(elt, transform, toSkip, markerChar, true)
-        }
-
-        for (const transform of activeUncheckedTransformers) {
-          transformElement(elt, transform, toSkip, markerChar, false)
-        }
-
-        // Glue a word joiner before em/en dashes so they can never be the first
-        // glyph on a wrapped line. Runs after dash conversion; the marker char
-        // counts as preceding content, so element boundaries are respected.
-        transformElement(elt, dashWordJoiner, toSkip, markerChar, false)
+        const passes: PassEntry[] = [
+          ...checkedTextPasses,
+          ...activeUncheckedTransformers,
+          // Runs after dash conversion so freshly created dashes get glued.
+          dashWordJoinerPass,
+        ]
 
         // Don't replace slashes in fractions, but give breathing room
         // to others
@@ -838,16 +1019,12 @@ export const improveFormatting = (
           return !hasClass(n, "fraction") && n?.tagName !== "a"
         }
         if (isNotFractionOrLink(elt)) {
-          // checkInvariance=false: spacesAroundSlashes is intentionally
-          // marker-aware. When "/" is alone in its own text node between two
-          // markers (e.g. <code>A</code>/<code>B</code>), it preserves the
-          // surrounding text nodes' boundary spaces and glues NBSPs to "/",
-          // rather than absorbing the spaces into the slash's node. The
-          // stripped-vs-marked invariance does not hold in that case by design.
-          transformElement(elt, spacesAroundSlashes, toSkip, markerChar, false, {
-            shouldSkipText: shouldSkipLinkUrlText,
-          })
+          // Slash spacing alone also skips URL-text links, so its entry
+          // carries the extra text-node predicate.
+          passes.push({ pass: spacesAroundSlashes, shouldSkipText: shouldSkipLinkUrlText })
         }
+
+        applyPasses(elt, passes, { shouldSkip: toSkip })
       })
     })
 

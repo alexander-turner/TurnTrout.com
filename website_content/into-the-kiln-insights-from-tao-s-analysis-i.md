@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - summaries
   - understanding-the-world
+  - mathematics
 aliases:
   - into-the-kiln-insights-from-tao-s-analysis-i
 lw-sequence-title: Becoming Stronger
@@ -38,7 +39,7 @@ date_published: 2018-06-01
 original_url: https://www.lesswrong.com/posts/cuZxipMFup5uJdeAp/into-the-kiln-insights-from-tao-s-analysis-i
 skip_import: true
 description: Tao's "Analysis I" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.
-date_updated: 2026-05-08
+date_updated: 2026-06-28
 ---
 
 As a young boy, mathematics captivated me. In elementary school, I'd happily while away entire weekends working through the next grade's math book. I was impatient. In middle school, I'd lazily estimate angles of incidence that would result if I shot lasers from my eyes, tracing their trajectories within the classroom and out down the hallway. I was restless.
@@ -65,7 +66,7 @@ _In which the Peano axioms are introduced, allowing us to define addition and mu
 
 _In which functions and Cartesian products are defined, among other concepts._
 
-### Recursive Nesting
+### Recursive nesting
 
 How can you apply the [axiom of foundation](https://en.wikipedia.org/wiki/Axiom_of_regularity) if sets are nested in each other? That is, how can the axiom of foundation "reach into" sets like $A=\{B,\ldots\}$ and $B=\{A,\ldots\}$?
 
@@ -87,7 +88,7 @@ _In which Cauchy sequences allow us to formally construct the reals._ [^1]
 
 _In which we meet convergence and its lovely limit laws, extend the reals to cover infinities, experience the delightfully counterintuitive_ $\limsup$ _and_ $\liminf$_, and complete our definition of real exponentiation._
 
-### Upper-Bounded Monotonic Sequence Convergence
+### Upper-bounded monotonic sequence convergence
 
 _I tried to come up with a clever title here - I really did. Apparently even **my** pun-making abilities are bounded._
 
@@ -125,7 +126,7 @@ _In which uncountable sets[^2], the axiom of choice, and ordered sets brighten o
 
 _In which continuity, the maximum principle, and the intermediate value theorem make their debut._
 
-### Lipschitz Continuity $\not \Leftrightarrow$ Uniform Continuity
+### Lipschitz continuity $\not \Leftrightarrow$ uniform continuity
 
 If a function $f : X \to \mathbb{R}$ ( $X \subseteq \mathbb{R}$) is Lipschitz-continuous for some Lipschitz constant $M$, then by definition we have that for every $x,y \in X$:
 
@@ -144,7 +145,7 @@ _In which the basic rules of differential calculus are proven._
 
 You know, I actually thought that I wouldn't have too much to explain in this post - the book went smoothly up to this point. On the upside, we get to spend even more time together!
 
-### Differential Intuitions
+### Differential intuitions
 
 Let me simply direct you to [this excellent StackExchange answer](https://math.stackexchange.com/a/1461296).
 
@@ -159,7 +160,7 @@ We can understand $(f^{-1})'(x)=\frac{1}{f'(x)}$ by simply thinking about $\frac
 > (f^{-1})'(x) = \dfrac{1}{f'\left(f^{-1}(x)\right)}.
 > $$
 
-### L'Hôpital's Rule
+### L'Hôpital's rule
 
 Consider $f,g:[a,b]\to \mathbb{R}$ differentiable on $(a,b]$ (for real numbers $a<b$). Then if $f(a)=g(a)=0,g'(x)\neq0$ for $x\in[a,b]$, and the rightward $\lim_{x\to a^+} \frac{f'(x)}{g'(x)}=L\in\mathbb{R}$, we have that $g(x) \neq 0$ for $x\in (a,b]$ and the rightward $\lim_{x\to a^+} \frac{f(x)}{g(x)}=L$.
 
@@ -167,8 +168,7 @@ As a neat exercise, let's see how this rule breaks if we violate preconditions:
 
 - If $f(a)$ or $g(a)\neq 0$, then the ratio is "messed up" and not necessarily indicative of the functions' slopes as $a$ is approached.
 - If $f$ or $g$ is not differentiable on $(a,b]$, then perhaps
-  <video autoplay loop muted playsinline style="margin-left:auto;margin-right:auto"><source src="https://assets.turntrout.com/static/images/posts/tumblr_mg2eerTssi1rkty0bo1_500.mp4" type="video/mp4; codecs=hvc1">
-<source src="https://assets.turntrout.com/static/images/posts/tumblr_mg2eerTssi1rkty0bo1_500.webm" type="video/webm"></video>
+ <video aria-label='A clip from the movie *Mean Girls* shows Cady Heron with an intense expression, with the caption "THE LIMIT DOES NOT EXIST."' autoplay="" loop="" muted="" playsinline="" style="margin-left:auto;margin-right:auto"><source src="https://assets.turntrout.com/static/images/posts/tumblr_mg2eerTssi1rkty0bo1_500.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/tumblr_mg2eerTssi1rkty0bo1_500.webm" type="video/webm" /></video>
   - No, but really - you _would_ use L'Hôpital's rule to analytically determine that the limit in question ($\lim _{x \rightarrow 0} \frac{\ln (1-x)-\sin x}{1-\cos ^2 x}$) does not exist.
 - If $g'(x)=0$ for some $x \in [a,b]$, then we have division by zero (unless $x=a$, in which case we find more [twisted counterexamples](https://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule#Counterexamples_when_the_derivative_of_the_denominator_is_zero) which necessitate the closure of this interval).
 
@@ -178,17 +178,17 @@ _In which partitions and piecewise constant functions help us define the Riemann
 
 Having taken care of the exposition, we arrive at the Rivendell of real analysis, preparing ourselves for the arduous journey to Mt. Lebesgue.
 
-### Pointless Integration
+### Pointless integration
 
 Zero area is enclosed under a point (or even under infinitely many points, such as $\mathbb{N}$) due to how we define length, which in turn allows us to build from piecewise Riemann integrals to something better.
 
-### Infinite Partitions?
+### Infinite partitions?
 
 The upper and lower Riemann integrals can be defined as the infimum and supremum of the upper and lower Riemann sums, respectively. It is important to note that even though that for many functions (such as $f(x)=x$), further refinement of the partition always gets you closer to the extremum, the result is not an "infinite" partition (which is not defined according to this construction).
 
 Consider the curried function $g_f : [P]\to \mathbb{R}$, which takes a partition and computes its corresponding Riemann sum with respect to the predefined function. Then clearly this function is monotonic with respect to the refinement of the partition; the extremum is not necessarily achieved by any given partition in the refinement sequence, but rather the closest bound on what you can get with _any_ partition.
 
-### Riemann-Stieltjes Confusion
+### Riemann-Stieltjes confusion
 
 The book doesn't lay it out cleanly, so I will: the Riemann-Stieltjes integral allows us to use custom length functions to weight different parts of the function differently. I recommend working through a simple case like $\alpha(x) = x^2$ in your head: $\int_1^3x\,d\alpha$ (how do the piecewise constant Riemann-Stieltjes integrals of majorizing and minorizing functions change as you iteratively refine the coarsest partition possible?).
 
@@ -200,7 +200,7 @@ $$
 
 The Riemann integral is recovered as the special case where $\alpha(x)=x$.
 
-## Final Verdict
+## Final verdict
 
 Terence Tao is both an incredible mathematician and writer, and it shows. There simply _weren't_ many things which confused me, and that says more about his writing than it does about me. The exercises are appropriate and hew closely to each chapter's content; often, the reader proves key results.
 
@@ -220,13 +220,13 @@ I also think I need to run through some applied Calculus to refresh my reflexes 
 - Appendix A is extremely useful for those new to proofs.
 - When reading textbooks, your priors should be towards _your_ being wrong - following this intuition will allow you to unlock new abilities, rather than glossing over your (probable) incorrectness and having it blow up in your face later.
 
-## Marginal Attention
+## Marginal attention
 
 In the last pages of CFAR's participant handbook is an entry on marginal attention. Essentially, each bit of extra attention contributes more than the last. If you're totally dialed in on a task and get slightly distracted, that is far more disastrous than getting slightly more distracted while your attention is already somewhat unfocused.
 
 I often simply left my phone at home and accompanied my Kindle to an empty classroom. This worked wonderfully; I suspect it more than doubled my hourly learning efficiency.
 
-## Proving Myself
+## Proving myself
 
 Just over three months ago, I wrote:
 

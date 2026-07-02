@@ -1,5 +1,6 @@
 ---
 permalink: lightness-and-unease
+no_dropcap_color: true
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
@@ -37,7 +38,7 @@ date_published: 2018-03-21
 original_url: https://www.lesswrong.com/posts/EvKWNRkJgLosgRDSa/lightness-and-unease
 skip_import: true
 description: A personal reflection on finding the rationalist community and the joy and anxiety of pursuing AI alignment.
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 ---
 
 # Light
@@ -72,7 +73,7 @@ I came to [Beyond the Reach of God](https://www.lesswrong.com/posts/sYgv4eYH82JE
 
 Trout can swim.
 
-# Gnawing Shadows
+# Gnawing shadows
 
 I can sense a mix of reasonable dissatisfaction with my performance, and "psychologically unrealistic" expectations. I’ve taken far longer than I wished on my AI book; if only I were less vulnerable to [pica](http://lesswrong.com/lw/15w/experiential_pica/), if I studied an extra hour each day, if the concepts had come to me more easily… I imagine worlds in which I did better and had by now also made progress in, say, topology or linear algebra.
 

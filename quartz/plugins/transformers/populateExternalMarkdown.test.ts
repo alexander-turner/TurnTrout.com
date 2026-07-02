@@ -5,14 +5,21 @@ import fs from "fs"
 import type { BuildCtx } from "../../util/ctx"
 
 import {
+  asQuoteAdmonition,
   buildPlaceholderRegex,
   clearContentCache,
   fetchGitHubContentSync,
   fetchLocalContentSync,
+  githubReadmeSource,
   isLocalSource,
   populateExternalContent,
   PopulateExternalMarkdown,
+  rewriteRelativeLinksToGitHub,
   stripBadges,
+  stripLeadingH1,
+  stripRelativeLinks,
+  truncateToSections,
+  wrapExternalReadme,
 } from "./populateExternalMarkdown"
 
 /** Wraps `"key": value` output in braces so it can be parsed as JSON. */
@@ -52,6 +59,165 @@ describe("PopulateExternalMarkdown", () => {
       ["No badges here", "No badges here"],
     ])("should strip badges from markdown", (input, expected) => {
       expect(stripBadges(input)).toBe(expected)
+    })
+  })
+
+  describe("stripLeadingH1", () => {
+    it.each([
+      ["leading h1 with body", "# agent-input-sanitizer\n\nBody text", "Body text"],
+      ["leading h1 with single newline", "# Title\nNext line", "Next line"],
+      ["leading whitespace before h1", "\n# Title\n\nBody", "Body"],
+      [
+        "no leading h1 keeps content",
+        "Intro paragraph\n\n## Section",
+        "Intro paragraph\n\n## Section",
+      ],
+      ["only strips the first h1", "# First\n\nMid\n\n# Second", "Mid\n\n# Second"],
+      ["does not strip h2", "## Subsection\n\nBody", "## Subsection\n\nBody"],
+    ])("%s", (_desc, input, expected) => {
+      expect(stripLeadingH1(input)).toBe(expected)
+    })
+  })
+
+  describe("stripRelativeLinks", () => {
+    it.each([
+      ["relative path link", "[v5 migration guide](docs/migrating-to-v5.md)", "v5 migration guide"],
+      ["absolute https link", "[text](https://example.com)", "[text](https://example.com)"],
+      ["anchor link", "[issue](#anchor)", "[issue](#anchor)"],
+      ["absolute path link", "[root](/absolute/path)", "[root](/absolute/path)"],
+      ["mailto link", "[mail](mailto:a@b.com)", "[mail](mailto:a@b.com)"],
+      [
+        "multiple relative links",
+        "See [guide](docs/guide.md) and [ref](../other.md) for details.",
+        "See guide and ref for details.",
+      ],
+    ])("%s", (_desc, input, expected) => {
+      expect(stripRelativeLinks(input)).toBe(expected)
+    })
+  })
+
+  describe("rewriteRelativeLinksToGitHub", () => {
+    const rewrite = rewriteRelativeLinksToGitHub("owner", "repo")
+    const rewriteRef = rewriteRelativeLinksToGitHub("owner", "repo", "v2")
+
+    it.each([
+      [
+        "relative path link",
+        "[v5 migration guide](docs/migrating-to-v5.md)",
+        "[v5 migration guide](https://github.com/owner/repo/blob/main/docs/migrating-to-v5.md)",
+      ],
+      ["absolute https link", "[text](https://example.com)", "[text](https://example.com)"],
+      ["anchor link", "[issue](#anchor)", "[issue](#anchor)"],
+      ["absolute path link", "[root](/absolute/path)", "[root](/absolute/path)"],
+      ["mailto link", "[mail](mailto:a@b.com)", "[mail](mailto:a@b.com)"],
+      [
+        "multiple relative links",
+        "See [guide](docs/guide.md) and [ref](other.md) for details.",
+        "See [guide](https://github.com/owner/repo/blob/main/docs/guide.md) and [ref](https://github.com/owner/repo/blob/main/other.md) for details.",
+      ],
+    ])("%s", (_desc, input, expected) => {
+      expect(rewrite(input)).toBe(expected)
+    })
+
+    it("respects custom ref", () => {
+      expect(rewriteRef("[guide](docs/guide.md)")).toBe(
+        "[guide](https://github.com/owner/repo/blob/v2/docs/guide.md)",
+      )
+    })
+  })
+
+  describe("wrapExternalReadme", () => {
+    it("wraps content in a div carrying the source slug", () => {
+      expect(wrapExternalReadme("# Hi\n\nBody", "my-repo")).toBe(
+        '<div class="external-readme" data-readme-slug="my-repo">\n\n# Hi\n\nBody\n\n</div>',
+      )
+    })
+  })
+
+  describe("asQuoteAdmonition", () => {
+    it("titles the callout and prefixes every line (blank lines become bare '>')", () => {
+      expect(asQuoteAdmonition("a\n\nb", "T")).toBe("> [!quote] T\n> a\n>\n> b")
+    })
+  })
+
+  describe("truncateToSections", () => {
+    const doc = "Intro\n\n## One\n\na\n\n### Sub\n\nb\n\n## Two\n\nc\n\n## Three\n\nd"
+
+    it.each([
+      [
+        "keeps preamble plus the first section, dropping the rest",
+        1,
+        "Intro\n\n## One\n\na\n\n### Sub\n\nb\n",
+      ],
+      ["keeps the first two sections", 2, "Intro\n\n## One\n\na\n\n### Sub\n\nb\n\n## Two\n\nc\n"],
+    ])("%s", (_desc, maxSections, expected) => {
+      expect(truncateToSections(doc, maxSections)).toBe(expected)
+    })
+
+    it("returns content unchanged when it has at most maxSections sections", () => {
+      expect(truncateToSections(doc, 3)).toBe(doc)
+      expect(truncateToSections(doc, 5)).toBe(doc)
+    })
+
+    it("does not count ## inside fenced code blocks", () => {
+      const withFence = "Intro\n\n## Real\n\n```sh\n## not a heading\n```\n\nbody"
+      expect(truncateToSections(withFence, 1)).toBe(withFence)
+    })
+
+    it("does not count ### subsections as top-level sections", () => {
+      const withSubs = "Intro\n\n## Only\n\n### A\n\n### B\n\ntail"
+      expect(truncateToSections(withSubs, 1)).toBe(withSubs)
+    })
+  })
+
+  describe("githubReadmeSource", () => {
+    const badgeAndLink = "[![CI](badge.svg)](ci)\n\n# Repo title\n\nBody with [a](docs/g.md) link."
+    const title = "[`owner/repo`](https://github.com/owner/repo)"
+    const wrap = (inner: string) =>
+      `<div class="external-readme" data-readme-slug="repo">\n\n${asQuoteAdmonition(
+        inner,
+        title,
+      )}\n\n</div>`
+
+    it("strips badges and a leading H1, rewrites relative links, and wraps in a quote callout", () => {
+      const source = githubReadmeSource("owner", "repo")
+      expect(source).toMatchObject({ owner: "owner", repo: "repo" })
+      expect(source.transform?.(badgeAndLink)).toBe(
+        wrap("Body with [a](https://github.com/owner/repo/blob/main/docs/g.md) link."),
+      )
+    })
+
+    it("leaves content intact when no H1 leads the file", () => {
+      const source = githubReadmeSource("owner", "repo")
+      expect(source.transform?.("**Bold intro**\n\n## Usage")).toBe(
+        wrap("**Bold intro**\n\n## Usage"),
+      )
+    })
+
+    it("truncates to maxSections and appends a centered link to the full README", () => {
+      const source = githubReadmeSource("owner", "repo", { maxSections: 1 })
+      expect(source.transform?.("# Title\n\nIntro\n\n## Keep\n\na\n\n## Drop\n\nb")).toBe(
+        wrap(
+          'Intro\n\n## Keep\n\na\n\n<div class="centered">\n\n[Read the rest on GitHub](https://github.com/owner/repo)\n\n</div>',
+        ),
+      )
+    })
+
+    it("repoints surviving same-page anchors to the GitHub README when truncating", () => {
+      const source = githubReadmeSource("owner", "repo", { maxSections: 0 })
+      expect(source.transform?.("Use the [CLI](#cli).\n\n## CLI\n\nbody")).toBe(
+        wrap(
+          "Use the [CLI](https://github.com/owner/repo#cli).\n\n" +
+            '<div class="centered">\n\n[Read the rest on GitHub](https://github.com/owner/repo)\n\n</div>',
+        ),
+      )
+    })
+
+    it("omits the read-more link when maxSections covers the whole README", () => {
+      const source = githubReadmeSource("owner", "repo", { maxSections: 5 })
+      expect(source.transform?.("# Title\n\nIntro\n\n## Only\n\nbody")).toBe(
+        wrap("Intro\n\n## Only\n\nbody"),
+      )
     })
   })
 

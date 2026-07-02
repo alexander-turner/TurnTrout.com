@@ -4,9 +4,11 @@ import {
   AfterArticle,
   AliasRedirects,
   AllTagsPage,
+  ArchiveLinks,
   Assets,
   AutoCode,
   Bibtex,
+  BindLinkTitles,
   ColorVariables,
   ComponentResources,
   ContentIndex,
@@ -16,21 +18,24 @@ import {
   FixFootnotes,
   FrontMatter,
   GitHubFlavoredMarkdown,
+  githubReadmeSource,
   HTMLFormattingImprovement,
+  InlineCodeSpacing,
   InvertInDarkMode,
   Latex,
   NotFoundPage,
   ObsidianFlavoredMarkdown,
   PopulateContainers,
   PopulateExternalMarkdown,
+  PrefixExternalReadmeIds,
   RecentPostsPage,
   rehypeCustomSpoiler,
   rehypeCustomSubtitle,
+  RelatedPosts,
   RemoveDrafts,
   RemoveFixtures,
   RemovePartials,
   Static,
-  stripBadges,
   StripInlineBoundaryWhitespace,
   SyntaxHighlighting,
   TableDivider,
@@ -39,6 +44,7 @@ import {
   TagSmallcaps,
   TextFormattingImprovement,
   TroutOrnamentHr,
+  TweetEmbed,
   Twemoji,
   WrapNakedElements,
 } from "../../quartz/plugins"
@@ -67,11 +73,18 @@ const config: QuartzConfig = {
       FrontMatter(),
       PopulateExternalMarkdown({
         sources: {
-          punctilio: {
-            owner: "alexander-turner",
-            repo: "punctilio",
-            transform: stripBadges,
-          },
+          punctilio: githubReadmeSource("alexander-turner", "punctilio", {
+            maxSections: 0,
+          }),
+          "claude-guard": githubReadmeSource("alexander-turner", "claude-guard", {
+            maxSections: 0,
+          }),
+          "ci-truth-serum": githubReadmeSource("alexander-turner", "ci-truth-serum", {
+            maxSections: 1,
+          }),
+          "agent-input-sanitizer": githubReadmeSource("alexander-turner", "agent-input-sanitizer", {
+            maxSections: 1,
+          }),
           "lint-staged": {
             filePath: "package.json",
             jsonPath: "lint-staged",
@@ -113,6 +126,9 @@ const config: QuartzConfig = {
       Twemoji(),
       TroutOrnamentHr(),
       Bibtex(),
+      // Before SyntaxHighlighting so ```tweet blocks become cards rather than
+      // being handed to the highlighter as an unknown "tweet" language.
+      TweetEmbed(),
       SyntaxHighlighting({
         theme: {
           light: "github-light",
@@ -126,6 +142,9 @@ const config: QuartzConfig = {
         enableCheckbox: true,
       }),
       GitHubFlavoredMarkdown({ enableSmartyPants: false }),
+      // After GitHubFlavoredMarkdown assigns heading ids/autolinks: namespace the
+      // ids of embedded external READMEs so they stay unique on the host page.
+      PrefixExternalReadmeIds(),
       TableDivider(),
       FixFootnotes(),
       WrapNakedElements(),
@@ -135,14 +154,25 @@ const config: QuartzConfig = {
       HTMLFormattingImprovement(),
       Latex(),
       CrawlLinks({ lazyLoad: true, markdownLinkResolution: "shortest" }),
+      // After CrawlLinks so `data-slug`/`href` are resolved, and before
+      // AddFavicons so the favicon is woven into the resolved title rather than
+      // the `@title` sentinel.
+      BindLinkTitles(),
+      // After CrawlLinks so it sees normalized https:// hrefs + the "external"
+      // class; swaps confirmed-dead outbound links for their archived copy.
+      ArchiveLinks(),
       rehypeCustomSpoiler(),
       TagSmallcaps(),
       AutoCode(),
       AfterArticle(),
+      RelatedPosts(),
       AddFavicons(),
       // After AddFavicons because favicon insertion can rewrite link
       // content and reintroduce leading whitespace inside an <a>.
       StripInlineBoundaryWhitespace(),
+      // After whitespace stripping so the preceding-character check sees the
+      // final inline structure (a glued "(" isn't separated by stray text).
+      InlineCodeSpacing(),
       ColorVariables(),
       TableOfContents({ minEntries: 3 }),
       addAssetDimensionsFromSrc(),

@@ -7,10 +7,11 @@ import { visitParents } from "unist-util-visit-parents"
 import type { QuartzTransformerPlugin } from "../types"
 import type { TocEntry } from "../vfile"
 
-import { footnoteHeadingId, normalizeNbsp } from "../../components/constants"
+import { footnoteHeadingId, normalizeNbsp, tocMaxDepth } from "../../components/constants"
 import { createWinstonLogger } from "../../util/log"
 import { applyTextTransforms } from "./formatting_improvement_html"
 import { resetSlugger, slugify } from "./gfm"
+import { EXTERNAL_README_CLASS } from "./populateExternalMarkdown"
 import { type ElementMaybeWithParent, hasAncestor } from "./utils"
 
 /**
@@ -29,7 +30,9 @@ export interface Options {
 }
 
 const defaultOptions: Options = {
-  maxDepth: 2,
+  // Deepest heading level shown; shared with the built-site checker via
+  // config/constants.json so the two can't disagree on the cutoff.
+  maxDepth: tocMaxDepth as Options["maxDepth"],
   minEntries: 1,
   showByDefault: true,
   collapseByDefault: false,
@@ -92,8 +95,27 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
               const toc: TocEntry[] = []
               let highestDepth: number = opts.maxDepth
               let hasFootnotes = false
+              // Embedded external READMEs are inlined as raw HTML, so their
+              // headings aren't nested under the wrapper at the mdast stage.
+              // Track the wrapper's `<div>`/`</div>` nesting in document order to
+              // skip them — their headings are namespaced and belong to third
+              // parties. Depth counting tolerates divs inside the README itself.
+              let readmeDivDepth = 0
 
               visitParents(tree, (node: Node, ancestors) => {
+                if (node.type === "html") {
+                  const value = (node as { value?: string }).value ?? ""
+                  if (readmeDivDepth === 0 && value.includes(`class="${EXTERNAL_README_CLASS}"`)) {
+                    readmeDivDepth = 1
+                  } else if (readmeDivDepth > 0) {
+                    const opens = value.match(/<div\b/g)?.length ?? 0
+                    const closes = value.match(/<\/div>/g)?.length ?? 0
+                    readmeDivDepth += opens - closes
+                  }
+                  return undefined
+                }
+                if (readmeDivDepth > 0) return undefined
+
                 if (
                   hasAncestor(
                     node as ElementMaybeWithParent,
@@ -145,10 +167,10 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                 logger.debug(`Generated TOC for ${file.path} with ${adjustedToc.length} entries`)
                 adjustedToc.forEach(logTocEntry)
               } else {
-                logger.warn(`Skipped TOC generation for ${file.path}: not enough entries`)
+                logger.debug(`Skipped TOC generation for ${file.path}: not enough entries`)
               }
             } else {
-              logger.warn(`TOC generation skipped for ${file.path}: display is false`)
+              logger.debug(`TOC generation skipped for ${file.path}: display is false`)
             }
           }
         },

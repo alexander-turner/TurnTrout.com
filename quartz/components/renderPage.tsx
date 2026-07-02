@@ -26,6 +26,8 @@ import {
   generateAllTagsHast,
 } from "./pages/AllTagsContent"
 import PageShellConstructor from "./PageShell"
+// @ts-expect-error Not a module but a bundled inline script string
+import contentIndexLoaderScript from "./scripts/contentIndex.inline"
 import { type QuartzComponent, type QuartzComponentProps } from "./types"
 
 interface RenderComponents {
@@ -233,15 +235,10 @@ export function pageResources(
   staticResources: StaticResources,
 ): StaticResources {
   const contentIndexPath = joinSegments(baseDir, "static/contentIndex.json")
-  // Lazy-load contentIndex.json only when search is initialized to avoid blocking initial page load
-  const contentIndexScript = `const contentIndexPath = "${contentIndexPath}";
-let fetchData = null;
-function getContentIndex() {
-  if (!fetchData) {
-    fetchData = fetch(contentIndexPath).then(data => data.json()).catch(err => { console.error('[getContentIndex] Failed to load content index:', err); fetchData = null; return null; });
-  }
-  return fetchData;
-}`
+  // Expose the page-relative index path as data, then run the bundled, unit-tested
+  // loader (quartz/components/scripts/contentIndexLoader.ts). The loader lazy-fetches
+  // contentIndex.json on demand and self-heals a fetch left hung by a frozen tab.
+  const contentIndexScript = `window.__contentIndexPath = ${JSON.stringify(contentIndexPath)};\n${contentIndexLoaderScript}`
 
   return {
     css: [joinSegments("/", "index.css"), ...staticResources.css],
@@ -451,9 +448,65 @@ export function renderPage(
 }
 
 /**
- * Post-processes rendered HTML to ensure the first content image (likely LCP
- * element) has `loading="eager"`, `fetchpriority="high"`, and a matching
- * `<link rel="preload">` in `<head>`.
+ * Returns the LCP-eligible content image `src` for an `<img>` tag, or `null`
+ * when the tag is a favicon, a Twemoji glyph, or has no `src`.
+ */
+function lcpImageSrc(imgTag: string): string | null {
+  if (/\bfavicon\b/.test(imgTag)) return null
+  const src = imgTag.match(/\bsrc="(?<srcValue>[^"]*)"/)?.groups?.["srcValue"]
+  if (src === undefined) return null
+  // Twemoji glyphs are tiny inline characters, never the LCP element.
+  if (src.startsWith(twemojiBaseUrl)) return null
+  return src
+}
+
+/** Promotes an `<img>` tag string to `loading="eager"` and `fetchpriority="high"`. */
+function promoteImgTag(imgTag: string): string {
+  let newTag = imgTag
+
+  if (/\bloading="/.test(newTag)) {
+    newTag = newTag.replace(/\bloading="[^"]*"/, 'loading="eager"')
+  } else {
+    newTag = newTag.replace("<img ", '<img loading="eager" ')
+  }
+
+  if (/\bfetchpriority="/.test(newTag)) {
+    newTag = newTag.replace(/\bfetchpriority="[^"]*"/, 'fetchpriority="high"')
+  } else {
+    newTag = newTag.replace("<img ", '<img fetchpriority="high" ')
+  }
+
+  return newTag
+}
+
+/**
+ * If `imgIdx` falls inside an `<img-comparison-slider>` within the article,
+ * returns the slider's inner `[start, end)` range; otherwise `null`.
+ */
+function enclosingSliderRange(
+  html: string,
+  articleIdx: number,
+  imgIdx: number,
+): { start: number; end: number } | null {
+  const openIdx = html.lastIndexOf("<img-comparison-slider", imgIdx)
+  if (openIdx < articleIdx) return null
+
+  const start = html.indexOf(">", openIdx) + 1
+  const end = html.indexOf("</img-comparison-slider>", start)
+  // The image is enclosed only when the slider closes after it.
+  if (end <= imgIdx) return null
+
+  return { start, end }
+}
+
+/**
+ * Post-processes rendered HTML to ensure the LCP image has `loading="eager"`,
+ * `fetchpriority="high"`, and a matching `<link rel="preload">` in `<head>`.
+ *
+ * The LCP candidate is the first content image in the article. Inside an
+ * `<img-comparison-slider>`, two equally sized images overlap and the browser
+ * can pick the second (overlay) image as the LCP element, so every image in the
+ * slider is promoted.
  *
  * Catches images from React components that bypass the CrawlLinks transformer
  * pipeline. Idempotent: pages already optimized by the transformer are
@@ -466,53 +519,42 @@ export function optimizeLcpImage(html: string): string {
   const articleEndIdx = html.indexOf("</article>", articleIdx)
   if (articleEndIdx === -1) return html
 
-  // Find the first non-favicon <img> within the article
   const imgRegex = /<img\s[^>]*>/g
   imgRegex.lastIndex = articleIdx
 
+  const candidates: { index: number; tag: string; src: string }[] = []
   let match: RegExpExecArray | null
   while ((match = imgRegex.exec(html)) !== null) {
     if (match.index >= articleEndIdx) break
-    if (/\bfavicon\b/.test(match[0])) continue
+    const src = lcpImageSrc(match[0])
+    if (src === null) continue
+    candidates.push({ index: match.index, tag: match[0], src })
+  }
+  if (candidates.length === 0) return html
 
-    const imgTag = match[0]
-    const srcMatch = imgTag.match(/\bsrc="(?<srcValue>[^"]*)"/)
-    if (!srcMatch?.groups) break
-    const src = srcMatch.groups["srcValue"]
+  const sliderRange = enclosingSliderRange(html, articleIdx, candidates[0].index)
+  const targets = sliderRange
+    ? candidates.filter((c) => c.index < sliderRange.end)
+    : [candidates[0]]
 
-    // Twemoji glyphs are tiny inline characters, never the LCP element.
-    if (src.startsWith(twemojiBaseUrl)) continue
-
-    let newTag = imgTag
-
-    // Ensure loading="eager"
-    if (/\bloading="/.test(newTag)) {
-      newTag = newTag.replace(/\bloading="[^"]*"/, 'loading="eager"')
-    } else {
-      newTag = newTag.replace("<img ", '<img loading="eager" ')
+  // Rewrite tags back-to-front so earlier indices stay valid as the string grows.
+  for (let i = targets.length - 1; i >= 0; i--) {
+    const { index, tag } = targets[i]
+    const newTag = promoteImgTag(tag)
+    if (newTag !== tag) {
+      html = html.slice(0, index) + newTag + html.slice(index + tag.length)
     }
+  }
 
-    // Ensure fetchpriority="high"
-    if (/\bfetchpriority="/.test(newTag)) {
-      newTag = newTag.replace(/\bfetchpriority="[^"]*"/, 'fetchpriority="high"')
-    } else {
-      newTag = newTag.replace("<img ", '<img fetchpriority="high" ')
-    }
-
-    if (newTag !== imgTag) {
-      html = html.slice(0, match.index) + newTag + html.slice(match.index + imgTag.length)
-    }
-
-    // `crossorigin` on the preload must match the <img>'s CORS mode. All
-    // content images are CDN-sourced and carry `crossorigin="anonymous"`.
+  // `crossorigin` on the preload must match the <img>'s CORS mode. All content
+  // images are CDN-sourced and carry `crossorigin="anonymous"`.
+  for (const { src } of targets) {
     if (!html.includes(`<link rel="preload" href="${src}" as="image"`)) {
       html = html.replace(
         "</head>",
         `<link rel="preload" href="${src}" as="image" crossorigin="anonymous"/></head>`,
       )
     }
-
-    break
   }
 
   return html

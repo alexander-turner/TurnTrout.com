@@ -1,5 +1,15 @@
 import type { Node } from "hast"
-import type { Blockquote, Code, Emphasis, InlineCode, Link, Paragraph, Root, Text } from "mdast"
+import type {
+  Blockquote,
+  Code,
+  Emphasis,
+  Html,
+  InlineCode,
+  Link,
+  Paragraph,
+  Root,
+  Text,
+} from "mdast"
 
 import { describe, expect, it } from "@jest/globals"
 
@@ -45,6 +55,8 @@ const createParagraph = (children: Paragraph["children"]) =>
 
 const createBlockquote = (children: Blockquote["children"]) =>
   createNode<Blockquote>("blockquote", { children })
+
+const createHtml = (value: string) => createNode<Html>("html", { value })
 
 describe("customToString", () => {
   it.each([
@@ -229,6 +241,32 @@ describe("TableOfContents Plugin", () => {
       expect(mockFile.data.toc).toHaveLength(2)
       expect(normalizeNbsp(mockFile.data.toc?.[0]?.text ?? "")).toBe("Main Title")
       expect(normalizeNbsp(mockFile.data.toc?.[1]?.text ?? "")).toBe("Section")
+    })
+
+    it("excludes headings inside an embedded external README wrapper", () => {
+      const plugin = TableOfContents()
+      const processor = (plugin.markdownPlugins?.({} as BuildCtx)?.[0] as () => ProcessorFunction)()
+
+      const mockFile: MockFile = { path: "test.md", data: { frontmatter: {} } }
+      const mockTree: Root = createRoot([
+        // Unrelated HTML (neither marker) and an HTML node without a value:
+        // these must not toggle the wrapper state.
+        createHtml("<hr>"),
+        createNode<Html>("html", { value: undefined as unknown as string }),
+        createHeading(1, [createText("Own Heading")]),
+        createHtml('<div class="external-readme" data-readme-slug="repo">'),
+        // A div nested inside the README must keep depth tracking balanced.
+        createHtml("<div>"),
+        createHeading(2, [createText("README Section")]),
+        createHtml("</div>"),
+        createHtml("</div>"),
+        createHeading(2, [createText("After README")]),
+      ])
+
+      processor(mockTree, mockFile)
+
+      const texts = (mockFile.data.toc ?? []).map((e) => normalizeNbsp(e.text))
+      expect(texts).toEqual(["Own Heading", "After README"])
     })
 
     it("respects showByDefault false", () => {

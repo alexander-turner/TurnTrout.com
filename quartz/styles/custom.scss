@@ -6,10 +6,17 @@
 @use "scroll-indicator";
 @use "print";
 @use "../components/styles/punctilioDemo";
+@use "../components/styles/relatedPosts";
+@use "../components/styles/tweet";
 
 // Shared bottom-margin for the after-article box, the footnotes heading,
 // and the footnotes section itself, so the page-bottom rhythm stays balanced.
-$page-end-bottom-margin: calc(2 * $base-margin);
+$page-end-bottom-margin: calc(3 * $base-margin);
+
+// Distance a footnote block quote is nudged right so its border clears the
+// marker. The same amount is shaved off padding-left so the text stays put;
+// one variable keeps the two from drifting apart.
+$footnote-blockquote-indent: 0.5 * $base-margin;
 
 body {
   min-height: 100vh;
@@ -34,6 +41,13 @@ li[id^="user-content-fn-"] > * {
 // Ensure not too much margin before blockquote
 li > blockquote:first-child {
   margin-top: $base-margin;
+}
+
+// Keep the block-quote border from crowding the footnote marker. Admonitions
+// are also block quotes but carry their own chrome, so they are excluded.
+li[id^="user-content-fn-"] > blockquote:not(.admonition) {
+  margin-left: $footnote-blockquote-indent;
+  padding-left: calc(2 * $base-margin - $footnote-blockquote-indent);
 }
 
 .footnotes {
@@ -87,10 +101,9 @@ li[id^="user-content-fn-"] {
 a[id*="fnref-"] {
   // When scrolling back to a footnote, scroll up farther than default
   scroll-margin-top: calc(2 * $base-margin);
-
-  // Dotted border signals "click for interaction" (same pattern as Elvish text)
-  border: 1px dotted var(--midground-fainter);
-  padding: 0 calc(0.25 * $base-margin);
+  background-color: var(--midground-faintest);
+  padding: 0 calc(0.125 * $base-margin);
+  margin: 0 calc(0.125 * $base-margin);
   border-radius: $border-radius;
 
   @media all and (max-width: $max-mobile-width) {
@@ -369,7 +382,8 @@ figure,
 }
 
 #article-title,
-.page-listing-title {
+.page-listing-title,
+.related-post > a {
   font-variant-numeric: lining-nums;
 }
 
@@ -401,7 +415,7 @@ p:has(+ .subtitle),
   color: var(--midground);
   margin-top: calc(0.25 * $base-margin);
   font-size: var(--font-size-minus-1);
-  text-wrap: balance;
+  text-wrap: pretty;
 
   .admonition & {
     color: color-mix(in srgb, var(--midground) 60%, var(--color));
@@ -431,7 +445,11 @@ figcaption {
   max-width: 90%;
   margin-left: auto;
   margin-right: auto;
-  text-wrap: balance;
+
+  // `pretty` (not `balance`) so the favicon nowrap-span at a caption's end
+  // can't strand on its own line; `balance` is silently disabled by the
+  // browser for taller captions, which reintroduces the orphan.
+  text-wrap: pretty;
 }
 
 img,
@@ -450,6 +468,15 @@ figcaption,
     margin-left: auto;
     margin-right: auto;
     display: block;
+  }
+
+  // A video has no usable intrinsic width before its resource loads, so without
+  // a definite width the shrink-to-fit float collapses to the 300px default and
+  // shifts layout once the video arrives. `--natural-width` is set per video by
+  // the asset-dimensions transformer.
+  & video,
+  video.float-right {
+    width: var(--natural-width, 100%);
   }
 
   float: right;
@@ -563,8 +590,19 @@ hr {
     }
   }
 
+  // The masthead dateline reads as a prominent header, so keep it at full cap
+  // height (lining figures) for the whole date — overriding the year-adjacent
+  // oldstyle rule that .date-ordinal-num applies elsewhere.
   & .publication-str {
-    font-variant-numeric: lining-nums;
+    &,
+    & .date-ordinal-num {
+      font-variant-numeric: lining-nums;
+    }
+
+    // Figures are lining here, so the suffix stays at lining height.
+    & .date-ordinal-num + .ordinal-suffix {
+      vertical-align: 0.34em;
+    }
   }
 }
 
@@ -699,6 +737,7 @@ img.emoji {
 }
 
 .sequence-links {
+  margin-top: calc(2 * $base-margin);
   margin-bottom: calc(2 * $base-margin);
 }
 
@@ -942,11 +981,6 @@ iframe {
   border-radius: $border-radius;
   margin-top: calc(2 * $base-margin);
   margin-bottom: calc(2 * $base-margin);
-
-  // Palform looks out of place in dark mode, so we invert it
-  :root[data-theme="dark"] &[src*="palform.app"] {
-    filter: url("#accurate-invert") grayscale(50%) brightness(95%);
-  }
 }
 
 .right-arrow,

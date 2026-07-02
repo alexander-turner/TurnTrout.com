@@ -134,23 +134,48 @@ export interface RegressionScreenshotOptions {
   preserveSiblings?: boolean
 }
 
-async function waitForImagesInElement(scope: Locator): Promise<void> {
+// Generous per-image ceiling: long enough to absorb a couple of reload retries
+// of a remote AVIF, short enough that a genuinely dead image can't hang the run.
+const IMAGE_PAINT_TIMEOUT_MS = 15000
+
+export async function waitForImagesInElement(scope: Locator): Promise<void> {
   const images = await scope.locator("img").all()
   await Promise.all(
     images.map((img) =>
       img
-        .evaluate((el: HTMLImageElement) =>
-          el.complete
-            ? undefined
-            : new Promise<void>((resolve) => {
-                const timer = setTimeout(resolve, 5000)
-                const done = (): void => {
-                  clearTimeout(timer)
-                  resolve()
-                }
-                el.addEventListener("load", done, { once: true })
-                el.addEventListener("error", done, { once: true })
-              }),
+        .evaluate(
+          (el: HTMLImageElement, timeoutMs) =>
+            new Promise<void>((resolve) => {
+              // A remote AVIF can intermittently fail to load (notably Firefox in
+              // CI); resolving on that failure captured a blank image and churned
+              // the baseline. Reload-and-retry a failed load until it paints, with
+              // a hard ceiling so a permanently broken image can't hang the run.
+              const hardStop = window.setTimeout(resolve, timeoutMs)
+              const settle = (): void => {
+                window.clearTimeout(hardStop)
+                resolve()
+              }
+              const reload = (): void => {
+                const url = new URL(el.currentSrc || el.src, document.baseURI)
+                // `set` overwrites the prior value, so retries don't accumulate
+                // query params; the cache-buster forces a fresh fetch.
+                url.searchParams.set("__visualRetry", String(Math.trunc(performance.now())))
+                el.src = url.toString()
+              }
+              // A successful (re)load is accepted only once `decode()` confirms it
+              // is paint-ready; a failed load reloads. Listeners persist across
+              // reloads so every retry is re-evaluated until an image paints.
+              el.addEventListener("load", () => {
+                el.decode().then(settle, reload)
+              })
+              el.addEventListener("error", () => window.setTimeout(reload, 250))
+              // The image may have already finished (success or failure) before
+              // the listeners attached.
+              if (el.complete) {
+                el.decode().then(settle, reload)
+              }
+            }),
+          IMAGE_PAINT_TIMEOUT_MS,
         )
         .catch(() => undefined),
     ),
@@ -189,27 +214,7 @@ export async function takeRegressionScreenshot(
 ): Promise<Buffer> {
   if (!options?.skipMediaPause) {
     await pauseMediaElements(page, options?.elementToScreenshot)
-
-    // Wait for every video to be paused at time 0. Re-seeks if the initial
-    // seek timed out (e.g. slow CI).
-    const mediaScope = options?.elementToScreenshot ?? page
-    const videos = await mediaScope.locator("video").all()
-    for (const video of videos) {
-      const handle = await video.elementHandle()
-      if (!handle) throw new Error("Could not get element handle for video")
-      await page.waitForFunction(
-        (el) => {
-          const videoEl = el as HTMLVideoElement
-          if (videoEl.currentTime !== 0) {
-            videoEl.pause()
-            videoEl.currentTime = 0
-          }
-          return videoEl.paused && videoEl.currentTime === 0
-        },
-        handle,
-        { timeout: 5000 },
-      )
-    }
+    await waitForVideosPainted(options?.elementToScreenshot ?? page)
   }
 
   // Separate out the element option so we don't pass it to the screenshot API
@@ -261,97 +266,6 @@ export async function takeRegressionScreenshot(
     .toMatchSnapshot([screenshotName], { maxDiffPixels })
 
   return screenshotBuffer
-}
-
-/** Wraps all H1 sections in spans, taking the locator or page object as the base. */
-export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<void> {
-  const evaluateFunc = () => {
-    // Collect direct-child H1s and footnote sections as split boundaries (in DOM order)
-    const boundaries = Array.from(
-      document.querySelectorAll("article > h1, article > section[data-footnotes]"),
-    )
-
-    for (const boundary of boundaries) {
-      const parent = boundary.parentElement
-
-      if (!parent) continue
-
-      // If the parent is already a span we've created, skip it
-      if (parent.tagName === "SPAN" && parent.id.startsWith("h1-span-")) {
-        continue
-      }
-
-      const span = document.createElement("span")
-      const id = boundary.id || boundary.querySelector("h1")?.id
-      if (!id) {
-        throw new Error("Header has no id")
-      }
-      span.id = `h1-span-${id}`
-
-      parent.insertBefore(span, boundary)
-
-      span.appendChild(boundary)
-
-      // Move all subsequent siblings into the span until we hit the next boundary
-      let nextSibling = span.nextSibling
-      while (nextSibling && boundaries.indexOf(nextSibling as Element) === -1) {
-        const toMove = nextSibling
-        nextSibling = toMove.nextSibling
-        span.appendChild(toMove)
-      }
-    }
-  }
-
-  if ("locator" in locator) {
-    await (locator as Locator).evaluate(evaluateFunc)
-  } else {
-    await (locator as Page).evaluate(evaluateFunc)
-  }
-}
-
-/**
- * Get screenshots of all h1s in a container
- * @param page - The page to get the h1s from
- * @param testInfo - The test info
- * @param location - The location to get the h1s from
- * @param theme - The theme to get the screenshots for
- */
-export async function getH1Screenshots(
-  page: Page,
-  testInfo: TestInfo,
-  location: Locator | null,
-  theme: "dark" | "light",
-) {
-  const screenshotBase = location ?? page
-  await wrapH1SectionsInSpans(screenshotBase)
-
-  const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
-
-  // Pause media once upfront. Per-section image waits are handled by
-  // takeRegressionScreenshot (scoped to the section, 5s timeout per image).
-  await pauseMediaElements(page)
-  await page.evaluate(() => document.fonts.ready)
-
-  await page.evaluate(() => {
-    for (const sel of ["#navbar", ".skip-to-content"]) {
-      const el = document.querySelector<HTMLElement>(sel)
-      if (el) el.style.display = "none"
-    }
-  })
-
-  for (const h1Span of h1Spans) {
-    await h1Span.evaluate((el) => el.scrollIntoView({ block: "center" }))
-
-    const h1Header = h1Span.locator("h1").first()
-    const h1Id = await h1Header.getAttribute("id")
-    const sanitizedH1Id = h1Id ? sanitize(h1Id) : null
-    if (!sanitizedH1Id) throw new Error("H1 header has no id")
-
-    await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
-      elementToScreenshot: h1Span,
-      skipMediaPause: true,
-    })
-  }
 }
 
 /**
@@ -552,6 +466,63 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
       await handle.evaluate((el) => el.removeAttribute("autoplay"))
       await handle.dispose()
     }
+  }
+}
+
+/**
+ * Blocks until every video has actually painted its frame-0 to the compositor.
+ *
+ * `pauseMediaElements` seeks videos to currentTime 0, but `paused`/`currentTime
+ * === 0` are satisfied even when the engine (notably WebKit) has presented no
+ * frame yet. Screenshotting that blank, never-painted state diffs against the
+ * painted baseline — the source of the flake. requestVideoFrameCallback fires
+ * only on a real paint, which is the signal we actually need.
+ */
+async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
+  for (const video of await scope.locator("video").all()) {
+    const handle = await video.elementHandle()
+    if (!handle) throw new Error("Could not get element handle for video")
+    await handle.evaluate(
+      (el) =>
+        new Promise<void>((resolve) => {
+          const videoEl = el as HTMLVideoElement & {
+            requestVideoFrameCallback?: (cb: () => void) => number
+          }
+          const timers: ReturnType<typeof setTimeout>[] = []
+          let settled = false
+          const finish = () => {
+            if (settled) return
+            settled = true
+            timers.forEach(clearTimeout)
+            resolve()
+          }
+          const waitForPaint = () => {
+            videoEl.pause()
+            if (videoEl.currentTime !== 0) videoEl.currentTime = 0
+            if (typeof videoEl.requestVideoFrameCallback !== "function") {
+              finish()
+              return
+            }
+            videoEl.requestVideoFrameCallback(finish)
+            // Fallback for the case where frame 0 is already on screen: no new
+            // frame is presented, so rVFC would never fire.
+            timers.push(setTimeout(finish, 1500))
+          }
+          if (videoEl.readyState >= 2) {
+            // HAVE_CURRENT_DATA or better: a frame is decodable now.
+            waitForPaint()
+          } else {
+            videoEl.addEventListener("loadeddata", waitForPaint, { once: true })
+            // Mirror pauseMediaElements: only force a reload when there is no
+            // data at all; for HAVE_METADATA the decode is already in flight.
+            if (videoEl.readyState === 0) videoEl.load()
+          }
+          // Never hang on a video whose data never arrives (e.g. a broken
+          // source); let the screenshot proceed and fail on its own terms.
+          timers.push(setTimeout(finish, 8000))
+        }),
+    )
+    await handle.dispose()
   }
 }
 

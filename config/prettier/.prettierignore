@@ -13,9 +13,7 @@ htmlcov/
 .venv/
 .vale-styles
 .logs/
-.mypy_cache/
 .pytest_cache/
-.dmypy.json
 test-results/
 .lighthouseci/
 pnpm-lock.yaml
@@ -28,3 +26,6 @@ pnpm-lock.yaml
 **/website_content/.obsidian/**
 # Jinja2 templates: prettier-html mangles `{% %}` blocks inside attributes.
 **/scripts/templates/**
+.claude-tooling/
+.worktrees
+.pnpm-store

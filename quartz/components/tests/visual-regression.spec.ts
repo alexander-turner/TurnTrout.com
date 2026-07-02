@@ -2,10 +2,14 @@ import { type TestInfo } from "@playwright/test"
 import { type Page } from "playwright"
 
 import { maxMobileWidth, minDesktopWidth } from "../../styles/variables"
-import { forceHslInvertClass, listTolerance, tightScrollTolerance } from "../constants"
+import {
+  forceHslInvertClass,
+  listTolerance,
+  tightScrollTolerance,
+  TOC_DETECTION_BAND_FRACTION,
+} from "../constants"
 import { expect, test } from "./fixtures"
 import {
-  getH1Screenshots,
   gotoPage,
   isDesktopViewport,
   isElementChecked,
@@ -74,13 +78,13 @@ async function setDummyContentMeta(page: Page) {
     const publicationStr = document.querySelector(".publication-str")
     if (publicationStr) {
       publicationStr.innerHTML =
-        'Published on <time datetime="2024-01-01">January <span class="ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2024</time>'
+        'Published on <time datetime="2024-01-01">January <span class="date-ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2024</time>'
     }
 
     const lastUpdatedStr = document.querySelector(".last-updated-str")
     if (lastUpdatedStr) {
       lastUpdatedStr.innerHTML =
-        '<a href="#" class="external" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-01-02">January <span class="ordinal-num">2</span><span class="ordinal-suffix">nd</span>, 2024</time>'
+        '<a href="#" class="external" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-01-02">January <span class="date-ordinal-num">2</span><span class="ordinal-suffix">nd</span>, 2024</time>'
     }
 
     const backlinksUl = document.querySelector("#backlinks-admonition ul")
@@ -109,14 +113,41 @@ async function hideForceHslInvertInFirefox(page: Page, testInfo: TestInfo): Prom
   }, forceHslInvertClass)
 }
 
+/**
+ * The desktop sidebar TOC mirrors every heading in test-page.md, so the
+ * whole-page integration screenshot would churn whenever any section is added or
+ * removed — even sections far below the fold. Swap in a fixed stub list so this
+ * shot stays decoupled from the page's heading set; the live TOC's own rendering
+ * is covered by the dedicated "Table of contents" screenshots.
+ */
+const STUB_TOC_OL = `<ol>
+  <li><a href="#stub-one" class="internal same-page-link" data-for="stub-one"><span>First section</span></a></li>
+  <li><a href="#stub-two" class="internal same-page-link" data-for="stub-two"><span>Second section</span></a><ol>
+    <li><a href="#stub-two-a" class="internal same-page-link" data-for="stub-two-a"><span>Nested entry</span></a></li>
+  </ol></li>
+  <li><a href="#stub-three" class="internal same-page-link" data-for="stub-three"><span>Third section</span></a></li>
+</ol>`
+
+async function stubTableOfContents(page: Page): Promise<void> {
+  await page.evaluate((ol) => {
+    document.querySelectorAll("#toc-content, #toc-content-mobile").forEach((el) => {
+      el.innerHTML = ol
+    })
+  }, STUB_TOC_OL)
+}
+
 test.describe("Test page sections", () => {
   THEMES.forEach((theme) => {
+    // Per-section detail is covered by the isolated fixtures in
+    // section-fixtures.spec.ts; this viewport shot is the cross-section
+    // integration check (header + how the top sections stack together).
     test(`Normal page in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
 
       await hideForceHslInvertInFirefox(page, testInfo)
+      await stubTableOfContents(page)
 
-      await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
+      await takeRegressionScreenshot(page, testInfo, `test-page-normal-${theme}`)
     })
   })
 })
@@ -459,6 +490,64 @@ test.describe("Table of contents", () => {
 
     const highlightText = page.locator("#table-of-contents .active").first()
     await expect(highlightText).not.toHaveText(initialHighlightText)
+  })
+
+  test("Re-initializing while scrolled past the detection band highlights the passed heading", async ({
+    page,
+  }) => {
+    test.skip(!isDesktopViewport(page))
+
+    await page.waitForFunction(
+      () => document.querySelector("#table-of-contents .active") !== null,
+      { timeout: 15_000 },
+    )
+
+    // Reproduce a fresh load that lands below every heading: scroll past the
+    // detection band so no heading intersects it, then re-run the TOC setup
+    // the way a `nav` dispatch would. This exercises the scroll fallback, not
+    // the IntersectionObserver's visible-section branch.
+    const { expectedSlug, firstSlug, headingsInBand } = await page.evaluate((bandFraction) => {
+      const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>("#toc-content a"))
+      const navSlugs = new Set(navLinks.map((l) => l.getAttribute("href")?.split("#")[1]))
+      const sections = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          "#center-content article h1, #center-content article h2",
+        ),
+      ).filter((s) => s.id && navSlugs.has(s.id))
+
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" })
+
+      const boundary = window.innerHeight * bandFraction
+      const headingsInBand = sections.filter((s) => {
+        const rect = s.getBoundingClientRect()
+        return rect.top < boundary && rect.bottom > 0
+      }).length
+
+      // Mirror getActiveSectionByScroll: last heading scrolled above the band.
+      let expected = ""
+      for (const s of sections) {
+        if (s.getBoundingClientRect().top > boundary) break
+        expected = s.id
+      }
+
+      document.dispatchEvent(new CustomEvent("nav", { detail: { url: window.location.pathname } }))
+      return { expectedSlug: expected, firstSlug: sections[0]?.id ?? "", headingsInBand }
+    }, TOC_DETECTION_BAND_FRACTION)
+
+    // Guard that the scenario is meaningful: the fallback (not the observer)
+    // must drive the result, and the answer must differ from the first entry
+    // that the buggy code left stuck.
+    expect(headingsInBand).toBe(0)
+    expect(expectedSlug).not.toBe(firstSlug)
+
+    await page.waitForFunction(
+      (slug) => {
+        const active = document.querySelector("#table-of-contents .active")
+        return active?.getAttribute("href")?.split("#")[1] === slug
+      },
+      expectedSlug,
+      { timeout: 15_000 },
+    )
   })
 })
 

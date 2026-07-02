@@ -33,7 +33,7 @@ date_published: 2021-06-08
 original_url: https://www.lesswrong.com/posts/buaGz3aiqCotzjKie/game-theoretic-alignment-in-terms-of-attainable-utility
 skip_import: true
 description: A game-theoretic examination of how "aligned" agents are in a multi-player game, using an alignment metric based on social welfare functions.
-date_updated: 2026-04-20
+date_updated: 2026-06-28
 ---
 
 > [!thanks] Acknowledgements
@@ -63,7 +63,7 @@ This presented a clear set of research goals moving forward:
 
 I consider our project to make substantial progress on (1) and to suggest avenues of attack for (2), though not the ones we expected.
 
-# Desiderata for Alignment Metrics
+# Desiderata for alignment metrics
 
 Setting out towards addressing (1), our optimistic roadmap looked something like this:
 
@@ -87,7 +87,7 @@ Another relevant distinction to be drawn is between _global_ and _local_ alignme
 
 Local metrics tend to be a lot simpler than global metrics, since they can ignore much of the difficulty of game theory. However, we can construct a simple class of global metrics by defining some "natural" strategy profile for each game. We call these the _localized_ global metrics, equipped with a _localizing_ function that, given a game, chooses a strategy profile.
 
-## Examples of Alignment Metrics
+## Examples of alignment metrics
 
 To give intuition on what such alignment metrics might look like, we present a few examples of simple alignment metrics for 2-player games, then test them on some simple, commonly referenced games.
 
@@ -142,7 +142,7 @@ This metric is consistent with the "limiting cases" criterion by properties of t
 
 Additionally, note that if $X$ is a constant variable, then $\text{Cov}(X, Y) = 0$. Thus, if the strategy profile is deterministic, our metric will be 0.
 
-# Social Welfare and the Coordination-Alignment Inequalities
+# Social welfare and the coordination-alignment inequalities
 
 Another approach to the problem of alignment metrics comes from specifying what we mean by "alignment". For the purposes of this section, we define "alignment" to be alignment with social welfare, which we define below:
 
@@ -174,7 +174,7 @@ The Coordination inequality
 The Alignment inequality
 : is an equality IFF there exists a unique [Pareto efficient](https://en.wikipedia.org/wiki/Pareto_efficiency) payoff profile. This payoff profile must be optimal for each player, otherwise some preferred profile would also be Pareto efficient. This class of games is (superficially) much broader than the common-payoff games, but both have unique Pareto efficient Nash Equilibria which can be thought of as "max attainable utility".
 
-## Constructing the C-A Alignment Metric
+## Constructing the C-A alignment metric
 
 Motivated by our framing of limiting cases with the C-A inequalities we can construct a simple alignment metric using the alignment inequality. In particular, we define _misalignment_ as the positive difference in the terms of the alignment inequality, then _alignment_ as negative misalignment. Doing the algebra and letting $\alpha$ denote the alignment metric, we find the following:
 
@@ -199,7 +199,7 @@ Considering the metric on our example games yields the following:
 > [!warning] Disclaimer
 > We don't claim that $\alpha$ is the "one true alignment metric" and that our research question is solved. We think that the C-A inequalities are probably significant for the eventual POWER-scarcity application and that $\alpha$ illustrates this point nicely. We don't mean to downplay our own research, but more investigation would be needed to pin down "The" alignment metric and relate it directly to POWER-scarcity.
 
-# Connections to Broader Game Theory
+# Connections to broader game theory
 
 We now explore one connection, bridging the divide between (Harsanyi) utilitarianism and ideas from [Bargaining theory](https://en.wikipedia.org/wiki/Cooperative_bargaining).
 

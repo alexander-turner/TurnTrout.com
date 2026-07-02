@@ -169,6 +169,13 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<ContentIndexOptions>> = (
         const slug = file.data.slug as FullSlug
         const date = getDate(ctx.cfg.configuration, file.data) ?? new Date()
 
+        // `avoidIndexing` pages are kept out of search, sitemap, and RSS (they
+        // already carry a robots `noindex`). Visual-regression section fixtures
+        // use this so they don't pollute search results during test builds.
+        if (file.data.frontmatter?.avoidIndexing) {
+          continue
+        }
+
         if (opts?.includeEmptyFiles || (file.data.text && file.data.text !== "")) {
           linkIndex.set(slug, {
             title: formatTitle(file.data.frontmatter?.title ?? ""),

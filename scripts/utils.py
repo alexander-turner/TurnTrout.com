@@ -6,17 +6,20 @@ import io
 import json
 import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
-from collections.abc import Callable, Collection
+import tempfile
+from collections.abc import Callable, Collection, Mapping
 from pathlib import Path
 from typing import NoReturn
 from urllib.parse import urlparse
 
 import git
 import requests
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup, Tag
+from bs4.element import NavigableString
 from requests.adapters import HTTPAdapter
 from ruamel.yaml import YAML, YAMLError
 from urllib3.util.retry import Retry
@@ -42,6 +45,10 @@ ZERO_WIDTH_SPACE: str = _UNICODE_TYPO["zeroWidthSpace"]
 CDN_BASE_URL: str = _CONSTANTS["cdnBaseUrl"]
 CDN_HOSTNAME: str = CDN_BASE_URL.split("://", 1)[1].split("/", 1)[0]
 TWEMOJI_BASE_URL: str = _CONSTANTS["twemojiBaseUrl"]
+
+# Deepest heading level shown in the table of contents — shared with the TOC
+# transformer (quartz/plugins/transformers/toc.ts) via config/constants.json.
+TOC_MAX_DEPTH: int = _CONSTANTS["tocMaxDepth"]
 
 # R2/Cloudflare credentials shared by scripts/r2_baselines.py and
 # scripts/r2_upload.py. Populated by ``envchain cloudflare`` in normal
@@ -146,6 +153,48 @@ def load_shared_constants() -> dict:
     independent deep copy so mutating the result cannot corrupt the cache.
     """
     return copy.deepcopy(_CONSTANTS)
+
+
+def load_json_object(path: Path) -> dict:
+    """
+    Load a top-level JSON object from *path* (empty dict if the file is absent).
+
+    Raises ``ValueError`` if the file's top-level JSON value is not an object,
+    so a corrupted cache fails loudly rather than defaulting silently.
+    """
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    return data
+
+
+def atomic_write_json(
+    data: object, path: Path, *, sort_keys: bool = False
+) -> None:
+    """
+    Atomically write *data* to *path* as pretty-printed JSON.
+
+    Creates parent directories as needed, writes to a tempfile, then
+    ``os.replace``s it into place. Any failure deletes the partial tempfile
+    before re-raising.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(
+        prefix=path.name + ".", suffix=".tmp", dir=str(path.parent)
+    )
+    tmp = Path(tmp_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(
+                data, fh, ensure_ascii=False, indent=2, sort_keys=sort_keys
+            )
+            fh.write("\n")
+        os.replace(tmp, path)
+    except Exception:
+        tmp.unlink(missing_ok=True)
+        raise
 
 
 _executable_cache: dict[str, str] = {}
@@ -270,11 +319,17 @@ def get_files(
                 repo = git.Repo(root)
                 # Convert file paths to paths relative to the git root
                 relative_files = [file.relative_to(root) for file in files]
-                # Filter out ignored files
+                # ``repo.ignored`` shells out to ``git check-ignore``; pass all
+                # paths in one call instead of spawning a subprocess per file.
+                ignored = (
+                    frozenset(repo.ignored(*relative_files))
+                    if relative_files
+                    else frozenset()
+                )
                 files = [
                     file
                     for file, rel_file in zip(files, relative_files)
-                    if not repo.ignored(rel_file)
+                    if str(rel_file) not in ignored
                 ]
             except (
                 git.GitCommandError,
@@ -381,6 +436,11 @@ def error_exit(message: str, code: int = 1) -> NoReturn:
     sys.exit(code)
 
 
+# Closing frontmatter fence: a line containing only `---` (with optional
+# trailing spaces/tabs). Line-anchored so a `---` inside a value isn't matched.
+_CLOSING_FENCE_RE = re.compile(r"^---[ \t]*$", re.MULTILINE)
+
+
 def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
     """
     Split a markdown file into its YAML frontmatter and content.
@@ -398,16 +458,24 @@ def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
         content = f.read()
 
     # Frontmatter is a leading YAML block fenced by `---` lines: an opening
-    # `---\n` at the very start of the file and a closing `---` after it. A
-    # `---` rule elsewhere in the body is content, not a delimiter.
-    parts = content.split("---", 2)
-    if not content.startswith("---\n") or len(parts) < 3:
+    # `---\n` at the very start of the file and a closing `---` on its own
+    # line. The closing fence must be line-anchored so a `---` inside a YAML
+    # value (or a `---` rule in the body) isn't mistaken for the delimiter.
+    fence_match = (
+        _CLOSING_FENCE_RE.search(content, 4)
+        if content.startswith("---\n")
+        else None
+    )
+    if fence_match is None:
         if verbose:
             print(f"Skipping {file_path}: No valid frontmatter found")
         return {}, ""
 
+    front_matter_text = content[4 : fence_match.start()]
+    body = content[fence_match.end() :]
+
     try:
-        metadata = yaml.load(parts[1])
+        metadata = yaml.load(front_matter_text)
         # YAML front matter that's a scalar (string, number, null) parses
         # to a non-dict — coerce so callers can always rely on .get/.items.
         if not isinstance(metadata, dict):
@@ -416,7 +484,29 @@ def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
         print(f"Error parsing YAML in {file_path}: {str(e)}")
         return {}, ""
 
-    return metadata, parts[2]
+    return metadata, body
+
+
+def is_embeddable_article(frontmatter: Mapping) -> bool:
+    """
+    Whether a content file should carry a related-posts ("Similar posts") block.
+
+    Single source of truth shared by the generator
+    (``scripts/generate_related_posts.py``, which embeds these pages) and the
+    built-site content-page gate (``scripts/built_site_checks.py``). A page
+    qualifies when it has a ``title``, ``permalink``, and ``description`` and is
+    neither a draft nor a ``hide_metadata`` listing/landing page (e.g. the
+    homepage or the "Posts & Sequences" index).
+    """
+    if not frontmatter:
+        return False
+    if frontmatter.get("draft") is True or frontmatter.get("hide_metadata"):
+        return False
+    return bool(
+        frontmatter.get("title")
+        and frontmatter.get("permalink")
+        and frontmatter.get("description")
+    )
 
 
 def build_html_to_md_map(md_dir: Path) -> dict[str, Path]:

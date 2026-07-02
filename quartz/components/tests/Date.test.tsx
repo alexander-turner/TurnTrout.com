@@ -138,6 +138,27 @@ describe("DateElement", () => {
     ).toThrow("valid Date object")
   })
 
+  it("renders a UTC-midnight Date without day-shift in a behind-UTC timezone", () => {
+    const originalTz = process.env.TZ
+    process.env.TZ = "America/Los_Angeles"
+    try {
+      // YAML parses `date: 2024-01-15` to this UTC-midnight Date.
+      const utcMidnight = new Date("2024-01-15T00:00:00Z")
+      const element = DateElement({
+        cfg,
+        date: utcMidnight,
+        includeOrdinalSuffix: true,
+        formatOrdinalSuffix: false,
+        monthFormat: "short",
+      }) as JSX.Element
+
+      expect(element.props.dateTime).toBe("2024-01-15")
+      expect(element.props.dangerouslySetInnerHTML.__html).toBe("Jan 15th, 2024")
+    } finally {
+      process.env.TZ = originalTz
+    }
+  })
+
   it("parses a day-only YYYY-MM-DD string as local time (no UTC day-shift)", () => {
     const element = DateElement({
       cfg,

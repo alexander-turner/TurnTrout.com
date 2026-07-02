@@ -653,7 +653,7 @@ _TEST_ROOT = Path("/test/root")
 _VERIFY_NAMES = frozenset(
     {
         "Pylint",
-        "Mypy",
+        "Pyright",
         "Source file checks",
         "Spellcheck and Vale",
     }
@@ -739,9 +739,16 @@ def test_autofix_lint_runs_before_autofix_format():
     assert last_lint_idx < first_format_idx
 
 
-def test_spellcheck_step_requires_vale():
+def test_spellcheck_step_has_no_requires_so_it_fails_loudly():
+    """
+    The spellcheck/prose gate must not silently skip when vale is absent: it has
+    no `requires`, so it always runs and errors loudly (the wrapper checks for
+    vale itself).
+
+    session-setup.sh installs vale.
+    """
     steps = run_push_checks.get_check_steps(_TEST_ROOT)
-    assert _step_by_name(steps, "Spellcheck and Vale").requires == "vale"
+    assert _step_by_name(steps, "Spellcheck and Vale").requires is None
 
 
 def test_eslint_step_invocation():
@@ -759,6 +766,28 @@ def test_asset_step_uses_bash_and_requires_rclone():
     asset_step = _step_by_name(steps, "Compressing and uploading local assets")
     assert asset_step.shell is False
     assert asset_step.requires == "rclone"
+
+
+def test_related_posts_step_invocation():
+    """The related-posts generator runs sequentially after asset upload and
+    needs rclone for the R2 vector-cache sync."""
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    step = _step_by_name(steps, "Generating related posts")
+    assert step.command == [
+        "uv",
+        "run",
+        "python",
+        "scripts/generate_related_posts.py",
+    ]
+    assert step.cwd == str(_TEST_ROOT)
+    assert step.requires == "rclone"
+    assert step.requires_env == "VOYAGE_API_KEY"
+    assert step.parallel_group is None
+    step_index = {s.name: i for i, s in enumerate(steps)}
+    assert (
+        step_index["Compressing and uploading local assets"]
+        < step_index["Generating related posts"]
+    )
 
 
 def test_alt_text_step_requires_alt_text_llm():
@@ -790,6 +819,30 @@ def test_run_checks_skips_missing_requires(temp_state_dir, capsys):
 
     captured = capsys.readouterr().out
     assert "nonexistent-tool-xyz not installed" in captured
+
+
+def test_run_checks_skips_missing_requires_env(
+    temp_state_dir, capsys, monkeypatch
+):
+    """Steps whose required env var is unset are skipped with a warning."""
+    monkeypatch.delenv("NEEDED_KEY", raising=False)
+    steps = [
+        run_push_checks.CheckStep(
+            name="Needs key", command=["echo", "x"], requires_env="NEEDED_KEY"
+        ),
+        run_push_checks.CheckStep(name="Always runs", command=["echo", "hi"]),
+    ]
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+        run_push_checks.run_checks(steps)
+        assert mock_run.call_count == 1
+
+    assert "NEEDED_KEY not set" in capsys.readouterr().out
 
 
 def test_main_resume_with_invalid_step(temp_state_dir):
@@ -1332,6 +1385,49 @@ def test_run_parallel_group_raises_on_failure(temp_state_dir):
         )
     assert exc_info.value.step_name == "Bad"
     assert exc_info.value.stdout == "boom"
+
+
+@pytest.mark.parametrize("continue_on_failure", [False, True])
+def test_run_parallel_group_save_state_on_failure(
+    continue_on_failure, temp_state_dir
+):
+    """A failed check halts resume progress (state untouched) unless
+    continue_on_failure lets the run proceed past it; otherwise --resume would
+    skip the failed check."""
+    group = [
+        run_push_checks.CheckStep(
+            name="Bad", command=["bad"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="OK", command=["ok"], parallel_group="verify"
+        ),
+    ]
+    results_by_name = {
+        "Bad": run_push_checks.CommandResult(
+            success=False, stdout="boom", stderr="kaboom"
+        ),
+        "OK": run_push_checks.CommandResult(success=True, stdout="", stderr=""),
+    }
+    with (
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.commit_step_changes"),
+        patch("scripts.run_push_checks.save_state") as mock_save,
+    ):
+        mock_exec.side_effect = lambda step, _p: results_by_name[step.name]
+        if continue_on_failure:
+            run_push_checks._run_parallel_group(
+                group, MagicMock(), auto_commit=False, continue_on_failure=True
+            )
+            mock_save.assert_called_once_with("OK")
+        else:
+            with pytest.raises(run_push_checks.CheckFailedError):
+                run_push_checks._run_parallel_group(
+                    group,
+                    MagicMock(),
+                    auto_commit=False,
+                    continue_on_failure=False,
+                )
+            mock_save.assert_not_called()
 
 
 def test_run_parallel_group_continues_past_failure(temp_state_dir):

@@ -475,6 +475,7 @@ Ephel
 Epistemologists
 Equilibria
 Erebor
+Erez
 Espero
 EteSync
 Eval
@@ -953,6 +954,7 @@ Norvig
 Noschese's
 OAuth2
 OGI
+OOM
 OV
 OV-circuit
 OV-circuits
@@ -1123,6 +1125,7 @@ ReLU
 ReLUs
 Reabsorption
 Reachability
+README
 Recontextualization
 Recontextualized
 Reddit
@@ -1935,6 +1938,7 @@ dropcap
 dropcaps
 dt
 dualble
+dualing
 dwarves
 dx
 décor
@@ -2665,6 +2669,7 @@ precisify
 precommit
 precommitment
 precompute
+precomputed
 predation
 predictions-for-shard-theory-mechanistic-interpretability
 predictively
@@ -2779,6 +2784,7 @@ reddit
 redeclared
 rederive
 redirectability
+redpilling
 redstone
 reductionism
 redux
@@ -3171,6 +3177,7 @@ unstyled
 untackled
 untethered
 untransformed
+untrusted
 unwisdom
 uparrow
 uptime

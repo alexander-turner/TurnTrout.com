@@ -249,6 +249,16 @@ $search-panel-max-height: 100vh - $search-space-top-offset - $search-modal-botto
             background: color-mix(in srgb, var(--midground-faint) 40%, var(--background));
           }
 
+          &.no-match {
+            cursor: default;
+
+            &:hover,
+            &:focus,
+            &.focus {
+              background: none;
+            }
+          }
+
           & > h3 {
             margin: 0;
           }
@@ -348,6 +358,15 @@ $match-color: var(--green);
   &:not(#search-container .search-match) {
     animation: search-match-fade 5s ease-out forwards;
   }
+}
+
+// Inside the preview, force the match color to win over high-specificity
+// `color: ... !important` rules on descendants (e.g. admonition titles, which
+// set `color: inherit !important` on every child). The leading ID outweighs
+// those declarations. Scoped to the preview so the on-page fade animation,
+// which animates `color` back to `inherit`, is left untouched.
+#search-container .search-match {
+  color: $match-color !important;
 }
 
 @media all and (max-width: $tablet-breakpoint) {

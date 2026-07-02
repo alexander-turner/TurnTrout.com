@@ -38,7 +38,7 @@ date_published: 2020-04-22
 original_url: https://www.lesswrong.com/posts/JcpwEKbmNHdwhpq5n/problem-relaxation-as-a-tactic
 skip_import: true
 description: Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.
-date_updated: 2026-05-08
+date_updated: 2026-06-28
 ---
 
 > [!warning]
@@ -66,7 +66,7 @@ However, even if the real problem has crazy constraints, that doesn't mean you s
 
 Historically, I tend to be too slow to relax research problems. On the flip side, _all of my favorite research ideas were directly enabled by problem relaxation_. Instead of just telling you what to do and then having you forget this advice in five minutes, I'm going to paint it into your mind using two stories.
 
-# Attainable Utility Preservation
+# Attainable utility preservation
 
 It's spring of 2018, and I've written myself into a corner. My work with CHAI for that summer was supposed to be on impact measurement, but I _inconveniently_ posted [a convincing-to-me argument](/overcoming-clinginess-in-impact-measures) that impact measurement cannot admit a clean solution:
 
@@ -84,7 +84,7 @@ I'm staring at the whiteboard.
 
 A minute passes.
 
-59 more minutes pass.
+Fifty-nine more minutes pass.
 
 I'd been thinking about how, in hindsight, it was so important that Shannon had first written a perfect chess-playing algorithm which required infinite compute, that Hutter had written an AGI algorithm which required infinite compute. I didn't know how to solve impact under all the constraints, but what if I assumed something here?
 
@@ -96,7 +96,7 @@ The answer was almost trivially obvious. My first thought was that negative impa
 
 I then wrote down The Attainable Utility Preservation Equation, more or less. Although it took me a few weeks to believe and realize, [that equation solved all of the impact measurement problems](/attainable-utility-preservation-concepts) which had seemed so insurmountable to me just minutes before.[^4]
 
-# Formalizing Instrumental Convergence
+# Formalizing instrumental convergence
 
 It's spring of 2019, and I've written myself into a corner. [My first post on AUP](/towards-a-new-impact-measure) was confusing – I'd failed to truly communicate what I was trying to say. Inspired by [_Embedded Agency_](https://www.lesswrong.com/s/Rm6oQRJJmhGCcLvxh), I was planning [an illustrated sequence of my own](/posts#reframing-impact).
 
@@ -120,7 +120,7 @@ I'm staring at the whiteboard.
 
 A minute passes.
 
-29 more minutes pass.
+Twenty-nine more minutes pass.
 
 I'm reminded of a paper my advisor had me read for my qualifying exam. The paper talked about a dual formulation for reinforcement learning environments, where you consider the available trajectories through the future instead of the available policies. I take a picture of the whiteboard and head back to my office.
 

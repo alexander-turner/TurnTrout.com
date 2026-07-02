@@ -21,6 +21,7 @@ lw-latest-edit: 2023-01-24T00:26:35.060000Z
 lw-is-linkpost: 'false'
 tags:
   - AI
+  - language-models
 aliases:
   - four-usages-of-loss-in-ai
 lw-reward-post-warning: 'false'
@@ -29,7 +30,7 @@ date_published: 2022-10-02
 original_url: https://www.lesswrong.com/posts/jnmG5jczvWbeRPcvG/four-usages-of-loss-in-ai
 skip_import: true
 description: Four distinct concepts related to "loss function" in AI are often conflated, leading to ambiguity in the field of AI alignment.
-date_updated: 2026-04-20
+date_updated: 2026-06-26
 ---
 
 What does it _mean_ for a loss function to be "aligned with" human goals? I perceive four different concepts which involve "loss function" in importantly different ways:

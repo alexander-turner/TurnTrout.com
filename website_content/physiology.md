@@ -18,7 +18,7 @@ sequence-link: posts#becoming-stronger
 prev-post-slug: alignment-phd
 prev-post-title: Looking back on my alignment PhD
 date_published: 2025-01-23
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 card_image_alt: The cutesy cartoon cover of "The Manga Guide to Physiology."
 ---
 
@@ -152,8 +152,7 @@ Imagine I'm standing in my bedroom. The door is open to my kitchen. Then I toss 
 
 # Here's some random cool stuff
 
-<video  autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/cell-division.mp4" type="video/mp4; codecs=hvc1">
-<source src="https://assets.turntrout.com/static/images/posts/cell-division.webm" type="video/webm"></video>
+<video aria-label="A 3D animation shows the process of cell division. Chromosomes align at the center, are pulled to opposite sides, and the cell membrane pinches inward, creating two new identical cells." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/cell-division.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/cell-division.webm" type="video/webm" /></video>
 
 Figure: Animation of cell division ([source](https://www.youtube.com/watch?v=7ybxaYhRpIA)). Look how jiggly the cytoplasm is!
 

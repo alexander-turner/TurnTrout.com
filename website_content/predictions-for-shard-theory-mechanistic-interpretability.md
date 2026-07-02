@@ -28,6 +28,7 @@ tags:
   - mats-program
   - shard-theory
   - rationality
+  - interpretability
 aliases:
   - predictions-for-shard-theory-mechanistic-interpretability
 lw-sequence-title: Interpreting a Maze-Solving Network
@@ -42,14 +43,13 @@ date_published: 2023-03-01
 original_url: https://www.lesswrong.com/posts/JusJcepE2qohiC3hm/predictions-for-shard-theory-mechanistic-interpretability
 skip_import: true
 description: Predictions about a cheese-finding AI model's internal workings, before the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖
-date_updated: 2026-06-05
+date_updated: 2026-06-30
 createBibtex: true
 ---
 
 How do agents work, internally? My shard theory [MATS 3.0](https://www.serimats.org/) team set out to do mechanistic interpretability on one of the [goal misgeneralization](https://arxiv.org/abs/2105.14111) agents: the cheese-maze network.
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/xuq1yzfdjztdhi4gy0jw.mp4" type="video/mp4; codecs=hvc1">
-<source src="https://assets.turntrout.com/static/images/posts/xuq1yzfdjztdhi4gy0jw.webm" type="video/webm"></video>
+<video aria-label="A trained AI agent repeatedly solves different mazes by navigating to a piece of cheese that always appears in the top-right quadrant." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/xuq1yzfdjztdhi4gy0jw.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/xuq1yzfdjztdhi4gy0jw.webm" type="video/webm" /></video>
 
 Figure: The network in action on its training distribution, where cheese is randomly spawned in the top-right 5x5 available grid region. For more training videos, see the [`rand_region_5`](https://drive.google.com/drive/folders/1oX-PoNbqMQKYAPQQMRUSw0bVsaJO9FpP?usp=share_link) Google Drive folder.
 
@@ -105,10 +105,10 @@ Give a credence for the following questions / subquestions.
 ### Model editing
 
 1. Without proportionally reducing top-right corner attainment by more than 25% in decision-square-containing mazes (e.g. 50% -> .5x.75 = 37.5%), we can[^1] patch activations so that the agent has an X\% proportional reduction in cheese acquisition, for $X=$
-    - 50\%: ( ?? %)
-    - 70\%: ( ?? %)
-    - 90\%: ( ?? %)
-    - 99\%: ( ?? %)
+    - 50\%: ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 70\%: ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 90\%: ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 99\%: ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
 2. About halfway through the network (the [first residual add of Impala-2](/predictions-for-shard-theory-mechanistic-interpretability#facts-about-training)), linear probes achieve >70% accuracy for recovering the cheese position in Cartesian coordinates: ( ?? %)
 3. We will conclude that the policy contains at least two sub-policies in “combination”, one of which roughly pursues cheese; the other, the top-right corner: ( ?? %)
 4. We will conclude that, in order to make the network more/less likely to go to the cheese, it’s more promising to RL-finetune the network than to edit it: ( ?? %)
@@ -116,8 +116,8 @@ Give a credence for the following questions / subquestions.
 6. In at least 75% of randomly generated mazes, we can easily edit the network to navigate to a range of maze destinations (e.g. coordinate x=4, y=7), by hand-editing at most $X$% of activations, for $X=$
     - .01 ( ?? %)
     - .1 ( ?? %)
-    - 1 ( ?? %)
-    - 10 ( ?? %)
+    - 1 ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 10 ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
     - (Not possible) ( ?? %)
 
 ### Internal goal representation
@@ -141,23 +141,23 @@ This network has a value head, which PPO uses to provide policy gradients. How o
 (Remember that since mazes are simply connected, there is always a unique shortest path to the cheese.)
 
 1. **At decision squares in** **test mazes where the cheese can be anywhere**, the policy will put max probability on the maximal-value action at least $X$% of the time, for $X=$
-    - 25% ( ?? %)
-    - 50% ( ?? %)
-    - 75% ( ?? %)
-    - 95% ( ?? %)
-    - 99.5% ( ?? %)
+    - 25% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 50% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 75% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 95% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 99.5% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
 2. In **test mazes where the cheese can be anywhere, averaging over mazes** _**and**_ **valid positions throughout those mazes**, the policy will put max probability on the maximal-value action at least $X$% of the time, for $X=$
-    - 25% ( ?? %)
-    - 50% ( ?? %)
-    - 75% ( ?? %)
-    - 95% ( ?? %)
-    - 99.5% ( ?? %)
+    - 25% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 50% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 75% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 95% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 99.5% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
 3. In **training mazes where the cheese is in the top-right 5x5, averaging over both mazes** _**and**_ **valid positions in the top-right 5x5 corner**, the policy will put max probability on the maximal-value action at least $X$% of the time, for $X=$
-    - 25% ( ?? %)
-    - 50% ( ?? %)
-    - 75% ( ?? %)
-    - 95% ( ?? %)
-    - 99.5% ( ?? %)
+    - 25% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 50% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 75% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 95% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
+    - 99.5% ( ?? %)  <!-- lint-ignore sentence-initial-numeral: registered prediction/legend value, not prose -->
 
 # Conclusion
 

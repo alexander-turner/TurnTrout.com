@@ -62,6 +62,19 @@ const commentRegex = new RegExp(/%%[\s\S]*?%%/, "g")
 /** Regular expression to match admonition syntax ([!type][fold]) */
 const admonitionRegex = new RegExp(`^\\[!(?<type>${UNICODE_WORD_CHAR}+)\\](?<collapse>[+-]?)`, "u")
 
+/**
+ * Reports the default fold state encoded by an admonition's first line.
+ *
+ * @param firstLine - The first line of a blockquote (the `>` markers stripped).
+ * @returns `"collapsed"` for `[!type]-`, `"expanded"` for `[!type]` or `[!type]+`,
+ *   or `null` when the line isn't an admonition directive.
+ */
+export function admonitionCollapseState(firstLine: string): "collapsed" | "expanded" | null {
+  const match = admonitionRegex.exec(firstLine)
+  if (!match?.groups) return null
+  return match.groups.collapse === "-" ? "collapsed" : "expanded"
+}
+
 /** Regular expression to match admonition lines in blockquotes */
 const admonitionLineRegex = new RegExp(`^> *\\[!${UNICODE_WORD_CHAR}+\\][+-]?.*$`, "gmu")
 
@@ -891,10 +904,12 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
         src = src.replace(tableRegex, (value: string): string => {
           // escape all aliases and headers in wikilinks inside a table
           return value.replace(tableWikilinkRegex, (_match: string, raw: string) => {
-            /* istanbul ignore next -- table wikilink escaping edge case */
+            // `raw` is the `wikilink` capture group, which always matches, so the
+            // `?? ""` fallback is unreachable defensive code.
+            /* istanbul ignore next -- defensive fallback for always-present capture group */
             let escaped = raw ?? ""
-            escaped = escaped.replace("#", "\\#")
-            escaped = escaped.replace("|", "\\|")
+            escaped = escaped.replaceAll("#", "\\#")
+            escaped = escaped.replaceAll("|", "\\|")
 
             return escaped
           })
@@ -927,9 +942,13 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
             // Handle alias processing - only use explicitly provided aliases
             const displayAlias = rawAlias ?? ""
 
-            /* istanbul ignore next -- external link wikilink edge case */
             if (rawFp && externalLinkRegex.test(rawFp)) {
-              return `${embedDisplay}[${displayAlias.replace(/^\|/, "")}](${rawFp})`
+              // Encode spaces so the markdown link/image destination parses; an
+              // unencoded space terminates the destination and the embed renders
+              // as literal text. Matches the %20 convention used for external
+              // asset URLs elsewhere in the pipeline.
+              const encodedFp = rawFp.replace(/ /g, "%20")
+              return `${embedDisplay}[${displayAlias.replace(/^\|/, "")}](${encodedFp})`
             }
 
             return `${embedDisplay}[[${fp}${displayAnchor}${displayAlias}]]`

@@ -691,6 +691,16 @@ describe("ObsidianFlavoredMarkdown", () => {
       input: "[[https://example.com|External Link]]",
       expected: "[External Link](https://example.com)",
     },
+    {
+      name: "external image embeds with spaces in the URL",
+      input: "![[https://assets.turntrout.com/static/images/posts/Why I left-6.avif]]",
+      expected: "![](https://assets.turntrout.com/static/images/posts/Why%20I%20left-6.avif)",
+    },
+    {
+      name: "external embeds with no spaces are left unchanged",
+      input: "![[https://example.com/image.avif]]",
+      expected: "![](https://example.com/image.avif)",
+    },
   ]
 
   const wikilinkContainsCases: WikilinkContainsTestCase[] = [
@@ -698,6 +708,11 @@ describe("ObsidianFlavoredMarkdown", () => {
       name: "wikilinks in tables",
       input: "| [[link#header|alias]] | content |\n|---|---|\n| data | more |",
       expectedToContain: "[[link\\#header\\|alias]]",
+    },
+    {
+      name: "wikilinks in tables with multiple # and | escape every occurrence",
+      input: "| [[a#b#c|d|e]] | content |\n|---|---|\n| data | more |",
+      expectedToContain: "[[a\\#b\\#c\\|d\\|e]]",
     },
     {
       name: "wikilinks with block references",

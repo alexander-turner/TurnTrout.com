@@ -75,10 +75,10 @@ describe("getQuartzPath", () => {
   })
 
   it.each(["math", "gaming", "stats", "ai"])(
-    "preserves stackexchange subdomain %s.stackexchange.com",
+    "collapses stackexchange subdomain %s.stackexchange.com to the root domain",
     (subdomain) => {
       const hostname = `${subdomain}.stackexchange.com`
-      const expected = `/static/images/external-favicons/${subdomain}_stackexchange_com.svg`
+      const expected = "/static/images/external-favicons/stackexchange_com.svg"
       expect(favicons.getQuartzPath(hostname)).toBe(expected)
     },
   )
@@ -587,9 +587,45 @@ describe("ModifyNode", () => {
     },
   )
 
+  it.each([
+    ["array className", ["other", "no-favicon"]],
+    ["string className", "other no-favicon"],
+  ])("skips links opted out with a no-favicon class (%s)", async (_label, className) => {
+    const node = h("a", { href: "https://example.com", className })
+    const parent = h("div", [node])
+    await favicons.ModifyNode(node, parent, faviconCounts)
+    expect(node.children.length).toBe(0)
+  })
+
   it("skips links that already have a favicon", async () => {
     const node = h("a", { href: "https://example.com" }, [
       h("span", {}, [h("svg", { className: "favicon" })]),
+    ])
+    const parent = h("div", [node])
+    const initialCount = node.children.length
+    await favicons.ModifyNode(node, parent, faviconCounts)
+    expect(node.children.length).toBe(initialCount)
+  })
+
+  it("skips when a sibling of the direct favicon child has no favicon descendants", async () => {
+    // <a> → [<span> (no children, no favicon), <svg class="favicon">]
+    // hasFavicon visits span first: hasClass=false, recursive hasFavicon=false (false branch),
+    // then visits svg: hasClass=true → returns true overall. ModifyNode exits early.
+    const node = h("a", { href: "https://example.com" }, [
+      h("span", {}),
+      h("svg", { className: "favicon" }),
+    ])
+    const parent = h("div", [node])
+    const initialCount = node.children.length
+    await favicons.ModifyNode(node, parent, faviconCounts)
+    expect(node.children.length).toBe(initialCount)
+  })
+
+  it("skips non-element (text) children inside hasFavicon without throwing", async () => {
+    // hasFavicon iterates node.children; text nodes hit the `continue` branch.
+    const node = h("a", { href: "https://example.com" }, [
+      "some text",
+      h("svg", { className: "favicon" }),
     ])
     const parent = h("div", [node])
     const initialCount = node.children.length
@@ -617,6 +653,28 @@ describe("ModifyNode", () => {
       },
       children: [],
     } as Element
+    const parent = h("div", [node])
+    await favicons.ModifyNode(node, parent, faviconCounts)
+    expect(node.children.length).toBe(0)
+  })
+
+  it("skips asset link with string className not containing same-page-link", async () => {
+    const node = {
+      type: "element",
+      tagName: "a",
+      properties: {
+        href: "https://example.com/photo.jpg",
+        className: "external",
+      },
+      children: [],
+    } as Element
+    const parent = h("div", [node])
+    await favicons.ModifyNode(node, parent, faviconCounts)
+    expect(node.children.length).toBe(0)
+  })
+
+  it("skips asset link with array className not containing same-page-link", async () => {
+    const node = h("a", { href: "https://example.com/photo.jpg", className: ["external"] })
     const parent = h("div", [node])
     await favicons.ModifyNode(node, parent, faviconCounts)
     expect(node.children.length).toBe(0)
@@ -658,25 +716,23 @@ describe("ModifyNode", () => {
       expect(node.children.length).toBeGreaterThan(0)
     })
 
-    it("throws MissingFaviconError when threshold met but SVG missing", async () => {
+    it("inserts no favicon when threshold met but SVG missing", async () => {
       faviconCounts.set(favicons.normalizePathForCounting(faviconPath), minFaviconCount + 10)
       mockCdnLookup(false)
       const node = h("a", { href: `https://${hostname}/page` })
       const parent = h("div", [node])
-      await expect(favicons.ModifyNode(node, parent, faviconCounts)).rejects.toThrow(
-        favicons.MissingFaviconError,
-      )
+      await expect(favicons.ModifyNode(node, parent, faviconCounts)).resolves.toBeUndefined()
+      expect(node.children.length).toBe(0)
     })
 
-    it("throws when allowlisted favicon has no SVG", async () => {
+    it("inserts no favicon when allowlisted favicon has no SVG", async () => {
       const appleHost = "apple.com"
       // No counts entry; apple_com is allowlisted so should still try to include.
       mockCdnLookup(false)
       const node = h("a", { href: `https://${appleHost}/page` })
       const parent = h("div", [node])
-      await expect(favicons.ModifyNode(node, parent, faviconCounts)).rejects.toThrow(
-        /Missing favicon SVG for apple\.com/,
-      )
+      await expect(favicons.ModifyNode(node, parent, faviconCounts)).resolves.toBeUndefined()
+      expect(node.children.length).toBe(0)
     })
 
     it("does not throw for blocklisted hostnames even with very high count", async () => {
@@ -754,21 +810,6 @@ describe("AddFavicons plugin", () => {
     const divEl = tree.children[0] as Element
     expect((divEl.children[0] as Element).children.length).toBe(0)
     expect((divEl.children[1] as Element).children.length).toBe(0)
-  })
-})
-
-describe("MissingFaviconError", () => {
-  it("includes hostname and expected path in message", () => {
-    const err = new favicons.MissingFaviconError(
-      "example.com",
-      "/static/images/external-favicons/example_com.svg",
-      10,
-    )
-    expect(err.name).toBe("MissingFaviconError")
-    expect(err.message).toContain("example.com")
-    expect(err.message).toContain("/static/images/external-favicons/example_com.svg")
-    expect(err.message).toContain("count=10")
-    expect(err.message).toContain("faviconSubstringBlocklist")
   })
 })
 

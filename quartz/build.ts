@@ -16,7 +16,10 @@ import type { FilePath, FullSlug } from "./util/path"
 import cfg from "../config/quartz/quartz.config"
 import DepGraph from "./depgraph"
 import { getStaticResourcesFromPlugins } from "./plugins"
+import { isDraftPath } from "./plugins/filters/draft"
+import { resetTitleIndexCache } from "./plugins/transformers/bindLinkTitles"
 import { countAllFavicons } from "./plugins/transformers/countFavicons"
+import { buildTitleIndex } from "./processors/buildTitleIndex"
 import { emitContent } from "./processors/emit"
 import { filterContent } from "./processors/filter"
 import { parseMarkdown } from "./processors/parse"
@@ -92,7 +95,33 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
     console.log(`Cleaned output directory \`${output}\` in ${perf.timeSince("clean")}`)
 
     perf.addEvent("glob")
-    const allFiles = await glob("**/*.*", argv.directory, cfg.configuration.ignorePatterns)
+    // In serve (dev) mode, ignore .gitignore so gitignored content such as
+    // `drafts/` is discovered and previewed locally.
+    const trackedFiles = await glob(
+      "**/*.*",
+      argv.directory,
+      cfg.configuration.ignorePatterns,
+      !argv.serve,
+    )
+    // The per-section visual fixtures under `fixtures/` are gitignored
+    // (regenerated from `test-page.md`, never committed), so the
+    // gitignore-aware glob above skips them in build mode. When building
+    // fixtures for the test suites, discover the `fixtures/` tree separately
+    // with .gitignore disabled; `RemoveFixtures` still decides what publishes.
+    const allFiles =
+      process.env.INCLUDE_FIXTURES === "true"
+        ? [
+            ...new Set([
+              ...trackedFiles,
+              ...(await glob(
+                "fixtures/**/*.*",
+                argv.directory,
+                cfg.configuration.ignorePatterns,
+                false,
+              )),
+            ]),
+          ]
+        : trackedFiles
     const fps = allFiles.filter((fp) => fp.endsWith(".md")).sort()
     console.log(
       `Found ${fps.length} input files from \`${argv.directory}\` in ${perf.timeSince("glob")}`,
@@ -109,6 +138,11 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
     } else {
       console.log(chalk.yellow("Skipping link counting (offline mode)"))
     }
+
+    perf.addEvent("title-index")
+    await buildTitleIndex(ctx, filePaths)
+    resetTitleIndexCache()
+    console.log(`Built title index in ${perf.timeSince("title-index")}`)
 
     parsedFiles = await parseMarkdown(ctx, filePaths)
     const filteredContent = filterContent(ctx, parsedFiles)
@@ -202,17 +236,193 @@ async function startServing(
  * @param clientRefresh - A function to refresh the client.
  * @param buildData - The build data.
  */
+type StaticResources = ReturnType<typeof getStaticResourcesFromPlugins>
+
+/**
+ * Updates the dependency graphs in `buildData` to reflect a single file change.
+ * Mutates `buildData.contentMap`, `buildData.dependencies`, and `buildData.toRemove`.
+ */
+async function updateDependencyGraphForAction(
+  action: FileEvent,
+  fp: FilePath,
+  buildData: BuildData,
+  staticResources: StaticResources,
+): Promise<void> {
+  const { ctx, dependencies, contentMap, toRemove } = buildData
+  const { cfg } = ctx
+
+  switch (action) {
+    case "add": {
+      // add to cache when new file is added
+      const processedFiles = await parseMarkdown(ctx, [fp])
+      processedFiles.forEach(([tree, vfile]) => contentMap.set(getFilePath(vfile), [tree, vfile]))
+
+      // update the dep graph by asking all emitters whether they depend on this file
+      for (const emitter of cfg.plugins.emitters) {
+        const emitterGraph =
+          (await emitter.getDependencyGraph?.(ctx, processedFiles, staticResources)) ?? null
+
+        if (emitterGraph) {
+          const existingGraph = dependencies[emitter.name]
+          if (existingGraph !== null) {
+            existingGraph.mergeGraph(emitterGraph)
+          } else {
+            // might be the first time we're adding a markdown file
+            dependencies[emitter.name] = emitterGraph
+          }
+        }
+      }
+      break
+    }
+    case "change": {
+      // invalidate cache when file is changed
+      const processedFiles = await parseMarkdown(ctx, [fp])
+      processedFiles.forEach(([tree, vfile]) => contentMap.set(getFilePath(vfile), [tree, vfile]))
+
+      // only content files can have added/removed dependencies because of transclusions
+      if (path.extname(fp) === ".md") {
+        for (const emitter of cfg.plugins.emitters) {
+          const emitterGraph =
+            (await emitter.getDependencyGraph?.(ctx, processedFiles, staticResources)) ?? null
+
+          // only update the graph if the emitter plugin uses the changed file
+          // eg. Assets plugin ignores md files, so we skip updating the graph
+          if (emitterGraph?.hasNode(fp)) {
+            // merge the new dependencies into the dep graph
+            dependencies[emitter.name]?.updateIncomingEdgesForNode(emitterGraph, fp)
+          }
+        }
+      }
+      break
+    }
+    case "delete":
+      toRemove.add(fp)
+      break
+    default:
+      throw new Error(`Unknown action: ${action}`)
+  }
+}
+
+/**
+ * Re-emits files affected by the changed file `fp` and returns the number emitted.
+ */
+async function emitChangedFiles(
+  fp: FilePath,
+  buildData: BuildData,
+  staticResources: StaticResources,
+): Promise<number> {
+  const { ctx, dependencies, contentMap, toRemove } = buildData
+  const { argv, cfg } = ctx
+  let emittedFiles = 0
+
+  for (const emitter of cfg.plugins.emitters) {
+    const depGraph = dependencies[emitter.name]
+
+    // emitter hasn't defined a dependency graph. call it with all processed files
+    if (depGraph === null) {
+      if (argv.verbose) {
+        console.log(
+          `Emitter ${emitter.name} doesn't define a dependency graph. Calling it with all files...`,
+        )
+      }
+
+      const files = [...contentMap.values()].filter(
+        ([, vfile]) => vfile.data.filePath && !toRemove.has(vfile.data.filePath),
+      )
+
+      const emittedFps = await emitter.emit(ctx, files, staticResources)
+
+      if (ctx.argv.verbose) {
+        for (const file of emittedFps) {
+          console.log(`[emit:${emitter.name}] ${file}`)
+        }
+      }
+
+      emittedFiles += emittedFps.length
+      continue
+    }
+
+    // only call the emitter if it uses this file
+    if (depGraph.hasNode(fp)) {
+      // re-emit using all files that are needed for the downstream of this file
+      // eg. for ContentIndex, the dep graph could be:
+      // a.md --> contentIndex.json
+      // b.md ------^
+      //
+      // if a.md changes, we need to re-emit contentIndex.json,
+      // and supply [a.md, b.md] to the emitter
+      const upstreams = [...depGraph.getLeafNodeAncestors(fp)] as FilePath[]
+
+      const upstreamContent = upstreams
+        .filter((file) => contentMap.has(file))
+        // skip deleted files so the emitter doesn't see stale paths
+        .filter((file) => !toRemove.has(file))
+        .map((file) => contentMap.get(file) || [])
+        .filter((content) => content.length > 0)
+
+      const emittedFps = await emitter.emit(
+        ctx,
+        upstreamContent as ProcessedContent[],
+        staticResources,
+      )
+
+      if (ctx.argv.verbose) {
+        for (const file of emittedFps) {
+          console.log(`[emit:${emitter.name}] ${file}`)
+        }
+      }
+
+      emittedFiles += emittedFps.length
+    }
+  }
+
+  return emittedFiles
+}
+
+/**
+ * Removes deleted files from the cache and deletes their orphaned output artifacts.
+ */
+async function cleanupDeletedFiles(buildData: BuildData): Promise<void> {
+  const { ctx, dependencies, contentMap, toRemove } = buildData
+  const { argv } = ctx
+
+  const destinationsToDelete = new Set<FilePath>()
+  // remove from cache
+  for (const file of toRemove) {
+    contentMap.delete(file)
+  }
+  // Iterate each dependency graph once, removing every deleted file's node,
+  // then collecting orphans. eg if a.md is deleted, a.html is orphaned and
+  // should be removed.
+  Object.values(dependencies).forEach((depGraph) => {
+    if (!depGraph) return
+    for (const file of toRemove) {
+      depGraph.removeNode(file)
+    }
+    const orphanNodes = depGraph.removeOrphanNodes()
+    orphanNodes.forEach((node) => {
+      // only delete files that are in the output directory
+      if (node.startsWith(argv.output)) {
+        destinationsToDelete.add(node)
+      }
+    })
+  })
+  await rimraf([...destinationsToDelete])
+}
+
 async function partialRebuildFromEntrypoint(
   filepath: string,
   action: FileEvent,
   clientRefresh: () => void,
   buildData: BuildData, // note: this function mutates buildData
 ) {
-  const { ctx, ignored, dependencies, contentMap, mut, toRemove } = buildData
-  const { argv, cfg } = ctx
+  const { ctx, ignored, mut, toRemove } = buildData
+  const { argv } = ctx
 
-  // don't do anything for gitignored files
-  if (ignored(filepath)) {
+  // Drafts live under a gitignored `drafts/` directory but must still hot-rebuild
+  // in serve (dev) mode so the preview reflects edits; everything else that is
+  // gitignored stays ignored.
+  if (ignored(filepath) && !(argv.serve && isDraftPath(toPosixPath(filepath)))) {
     return
   }
 
@@ -228,160 +438,22 @@ async function partialRebuildFromEntrypoint(
   console.log(chalk.yellow("Detected change, rebuilding..."))
 
   try {
-    // UPDATE DEP GRAPH
     const fp = joinSegments(argv.directory, toPosixPath(filepath)) as FilePath
-
     const staticResources = getStaticResourcesFromPlugins(ctx)
-    let processedFiles: ProcessedContent[] = []
 
-    switch (action) {
-      case "add":
-        // add to cache when new file is added
-        processedFiles = await parseMarkdown(ctx, [fp])
-        processedFiles.forEach(([tree, vfile]) => contentMap.set(getFilePath(vfile), [tree, vfile]))
-
-        // update the dep graph by asking all emitters whether they depend on this file
-        for (const emitter of cfg.plugins.emitters) {
-          const emitterGraph =
-            (await emitter.getDependencyGraph?.(ctx, processedFiles, staticResources)) ?? null
-
-          if (emitterGraph) {
-            const existingGraph = dependencies[emitter.name]
-            if (existingGraph !== null) {
-              existingGraph.mergeGraph(emitterGraph)
-            } else {
-              // might be the first time we're adding a markdown file
-              dependencies[emitter.name] = emitterGraph
-            }
-          }
-        }
-        break
-      case "change":
-        // invalidate cache when file is changed
-        processedFiles = await parseMarkdown(ctx, [fp])
-        processedFiles.forEach(([tree, vfile]) => contentMap.set(getFilePath(vfile), [tree, vfile]))
-
-        // only content files can have added/removed dependencies because of transclusions
-        if (path.extname(fp) === ".md") {
-          for (const emitter of cfg.plugins.emitters) {
-            const emitterGraph =
-              (await emitter.getDependencyGraph?.(ctx, processedFiles, staticResources)) ?? null
-
-            // only update the graph if the emitter plugin uses the changed file
-            // eg. Assets plugin ignores md files, so we skip updating the graph
-            if (emitterGraph?.hasNode(fp)) {
-              // merge the new dependencies into the dep graph
-              dependencies[emitter.name]?.updateIncomingEdgesForNode(emitterGraph, fp)
-            }
-          }
-        }
-        break
-      case "delete":
-        toRemove.add(fp)
-        break
-      default:
-        throw new Error(`Unknown action: ${action}`)
-    }
+    await updateDependencyGraphForAction(action, fp, buildData, staticResources)
 
     if (argv.verbose) {
       console.log(`Updated dependency graphs in ${perf.timeSince()}`)
     }
 
-    // EMIT
     perf.addEvent("rebuild")
-    let emittedFiles = 0
-    const emittedPaths: FilePath[] = [] // Track emitted file paths
-
-    for (const emitter of cfg.plugins.emitters) {
-      const depGraph = dependencies[emitter.name]
-
-      // emitter hasn't defined a dependency graph. call it with all processed files
-      if (depGraph === null) {
-        if (argv.verbose) {
-          console.log(
-            `Emitter ${emitter.name} doesn't define a dependency graph. Calling it with all files...`,
-          )
-        }
-
-        const files = [...contentMap.values()].filter(
-          ([, vfile]) => vfile.data.filePath && !toRemove.has(vfile.data.filePath),
-        )
-
-        const emittedFps = await emitter.emit(ctx, files, staticResources)
-
-        if (ctx.argv.verbose) {
-          for (const file of emittedFps) {
-            console.log(`[emit:${emitter.name}] ${file}`)
-          }
-        }
-
-        emittedFiles += emittedFps.length
-        emittedPaths.push(...emittedFps)
-        continue
-      }
-
-      // only call the emitter if it uses this file
-      if (depGraph.hasNode(fp)) {
-        // re-emit using all files that are needed for the downstream of this file
-        // eg. for ContentIndex, the dep graph could be:
-        // a.md --> contentIndex.json
-        // b.md ------^
-        //
-        // if a.md changes, we need to re-emit contentIndex.json,
-        // and supply [a.md, b.md] to the emitter
-        const upstreams = [...depGraph.getLeafNodeAncestors(fp)] as FilePath[]
-
-        const upstreamContent = upstreams
-          .filter((file) => contentMap.has(file))
-          // skip deleted files so the emitter doesn't see stale paths
-          .filter((file) => !toRemove.has(file))
-          .map((file) => contentMap.get(file) || [])
-          .filter((content) => content.length > 0)
-
-        const emittedFps = await emitter.emit(
-          ctx,
-          upstreamContent as ProcessedContent[],
-          staticResources,
-        )
-
-        if (ctx.argv.verbose) {
-          for (const file of emittedFps) {
-            console.log(`[emit:${emitter.name}] ${file}`)
-          }
-        }
-
-        emittedFiles += emittedFps.length
-        emittedPaths.push(...emittedFps)
-      }
-    }
-
+    const emittedFiles = await emitChangedFiles(fp, buildData, staticResources)
     console.log(
       `Emitted ${emittedFiles} files to \`${argv.output}\` in ${perf.timeSince("rebuild")}`,
     )
 
-    // CLEANUP
-    const destinationsToDelete = new Set<FilePath>()
-    // remove from cache
-    for (const file of toRemove) {
-      contentMap.delete(file)
-    }
-    // Iterate each dependency graph once, removing every deleted file's node,
-    // then collecting orphans. eg if a.md is deleted, a.html is orphaned and
-    // should be removed.
-    Object.values(dependencies).forEach((depGraph) => {
-      if (!depGraph) return
-      for (const file of toRemove) {
-        depGraph.removeNode(file)
-      }
-      const orphanNodes = depGraph.removeOrphanNodes()
-      orphanNodes.forEach((node) => {
-        // only delete files that are in the output directory
-        if (node.startsWith(argv.output)) {
-          destinationsToDelete.add(node)
-        }
-      })
-    })
-    await rimraf([...destinationsToDelete])
+    await cleanupDeletedFiles(buildData)
 
     console.log(chalk.green(`Done rebuilding in ${perf.timeSince()} 🔔`))
     beep.default(1)
@@ -411,8 +483,10 @@ async function rebuildFromEntrypoint(
 
   const { argv } = ctx
 
-  // don't do anything for gitignored files
-  if (ignored(fp)) {
+  // Drafts live under a gitignored `drafts/` directory but must still hot-rebuild
+  // in serve (dev) mode so the preview reflects edits; everything else that is
+  // gitignored stays ignored.
+  if (ignored(fp) && !(argv.serve && isDraftPath(toPosixPath(fp)))) {
     return
   }
 
@@ -455,6 +529,15 @@ async function rebuildFromEntrypoint(
       .map((fp) => slugifyFilePath(path.posix.relative(argv.directory, fp) as FilePath))
 
     ctx.allSlugs = [...new Set([...initialSlugs, ...trackedSlugs])]
+
+    // Rebuild the title index over all tracked Markdown so `@title` links resolve
+    // against current titles, then drop the cache so workers re-read it.
+    const trackedMarkdown = [...new Set([...contentMap.keys(), ...toRebuild])].filter(
+      (fp) => !toRemove.has(fp) && fp.endsWith(".md"),
+    )
+    await buildTitleIndex(ctx, trackedMarkdown)
+    resetTitleIndexCache()
+
     const parsedContent = await parseMarkdown(ctx, filesToRebuild)
     for (const content of parsedContent) {
       const [, vfile] = content

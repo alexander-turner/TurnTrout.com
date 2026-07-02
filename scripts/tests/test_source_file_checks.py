@@ -145,6 +145,17 @@ def test_check_required_fields(
             {},
             [],
         ),
+        # Test case 7: card_image_alt present but null (YAML `card_image_alt:`)
+        # parses as None - should fail cleanly, not raise AttributeError.
+        (
+            {
+                "title": "Test",
+                "description": "Test Description",
+                "card_image": "/custom-image.png",
+                "card_image_alt": None,
+            },
+            ["Custom card_image (/custom-image.png) requires card_image_alt"],
+        ),
     ],
 )
 def test_check_cover_image_alt(
@@ -158,6 +169,36 @@ def test_check_cover_image_alt(
         expected_errors: List of expected error messages
     """
     errors = source_file_checks.check_cover_image_alt(metadata)
+    assert set(errors) == set(expected_errors)
+
+
+@pytest.mark.parametrize(
+    "metadata,expected_errors",
+    [
+        ({}, []),
+        ({"date_published": "2024-01-01"}, []),
+        ({"date_updated": "2024-01-01"}, []),
+        (
+            {"date-published": "2024-01-01"},
+            ["Frontmatter key 'date-published' should be 'date_published'"],
+        ),
+        (
+            {"date-updated": "2024-01-01"},
+            ["Frontmatter key 'date-updated' should be 'date_updated'"],
+        ),
+        (
+            {"date-published": "2024-01-01", "date-updated": "2024-01-02"},
+            [
+                "Frontmatter key 'date-published' should be 'date_published'",
+                "Frontmatter key 'date-updated' should be 'date_updated'",
+            ],
+        ),
+    ],
+)
+def test_check_frontmatter_key_casing(
+    metadata: dict[str, str], expected_errors: list[str]
+):
+    errors = source_file_checks.check_frontmatter_key_casing(metadata)
     assert set(errors) == set(expected_errors)
 
 
@@ -678,6 +719,78 @@ def test_check_heading_links(text: str, expected_errors: list[str]):
     assert errors == expected_errors
 
 
+@pytest.mark.parametrize(
+    "text,expected_offenders",
+    [
+        # Plain Title-Case heading is flagged (first word stays capitalized).
+        ("## Information Theory\n", ["Theory"]),
+        ("## Foo Bar Baz\n", ["Bar", "Baz"]),
+        # Acronyms (all-caps, optionally pluralized) keep their case.
+        ("## Inlining critical CSS\n", []),
+        ("## Working with LLMs\n", []),
+        # Proper nouns and possessives of them.
+        ("## Switch to Proton Mail\n", []),
+        ("## Bessel's correction\n", []),
+        # Possessive of an acronym (AI's -> AI).
+        ("## The AI's goal\n", []),
+        # ACRONYM-prefixed compounds and model/version names.
+        ("## POWER-seeking dynamics\n", []),
+        ("## Speculation on X-vectors\n", []),
+        ("## Using GPT-2-XL today\n", []),
+        # Numbered chapter headings keep title case.
+        ("## 2: The Natural Numbers\n", []),
+        # List enumerators: the following word begins a sentence.
+        ("## 1\\. Activation additions preserve perplexity\n", []),
+        ("## (1) Weakly increasing arguments\n", []),
+        # A new sentence after `.`/`?`/`!` may be capitalized.
+        ("## Robust to noise. Why not?\n", []),
+        # Scare-quoted common-noun terms follow sentence case (lowercase).
+        ('## Formalizing "ability to achieve goals"\n', []),
+        # ...and Title-Case words inside quotes are still flagged.
+        ('## Quoting a "Capitalized Term"\n', ["Capitalized", "Term"]),
+        # A defined term with `≠`/`=` stays a single token (Reward≠OT).
+        ("## I made a few mistakes in Reward≠OT\n", []),
+        # Whole-heading allowlist entry (a cited book title).
+        ("## All of Statistics\n", []),
+        # Inline math is stripped before analysis.
+        ("## Calibrating $R$\n", []),
+        # Markdown links contribute only their visible text.
+        ("## Read [more stuff](https://x.com)\n", []),
+        # A non-alpha word mid-heading is skipped, the next word is not.
+        ("## Foo 3rd Bar\n", ["Bar"]),
+    ],
+)
+def test_check_heading_case(text: str, expected_offenders: list[str]):
+    """Heading-case guard flags Title-Case words but honors every exemption."""
+    errors = source_file_checks.check_heading_case(text)
+    if not expected_offenders:
+        assert errors == []
+    else:
+        assert len(errors) == 1
+        assert (
+            f"should be lowercase: {', '.join(expected_offenders)}" in errors[0]
+        )
+
+
+def test_check_heading_case_reports_line_and_ignores_code_blocks():
+    """Line numbers are reported and headings inside code fences are ignored."""
+    text = "intro\n\n## Bad Heading Here\n\n```\n# Not A Real Heading\n```\n"
+    errors = source_file_checks.check_heading_case(text)
+    assert errors == [
+        "Heading should be sentence case at line 3: 'Bad Heading Here' "
+        "(should be lowercase: Heading, Here)"
+    ]
+
+
+def test_load_heading_case_config():
+    """The shipped config loads into two non-empty frozensets."""
+    proper_nouns, allowed = source_file_checks._load_heading_case_config()
+    assert isinstance(proper_nouns, frozenset) and proper_nouns
+    assert isinstance(allowed, frozenset) and allowed
+    assert "GitHub" in proper_nouns
+    assert "All of Statistics" in allowed
+
+
 def test_integration_with_main(
     scss_scenarios,
     setup_font_test: Callable,
@@ -818,6 +931,28 @@ def test_latex_tags_variations(
     create_markdown_file(test_file, content=content)
 
     errors = source_file_checks.check_latex_tags(content, test_file)
+    assert len(errors) == expected_count
+
+
+@pytest.mark.parametrize(
+    "content,expected_count",
+    [
+        ("[ok](/no-spaces)", 0),
+        ("![img](/no-spaces.png)", 0),
+        ("[ok](/url 'a title')", 0),  # quoted title is legal
+        ('[ok](/url "a title")', 0),  # double-quoted title is legal
+        ("[ok](</url with spaces>)", 0),  # angle-bracketed URL is legal
+        ("[bad](/url with spaces)", 1),
+        ("[bad](https://x.com/a b c.mp4)", 1),
+        ("![bad](/img with space.png)", 1),
+        ("`[code](/has spaces)`", 0),  # inline code is ignored
+        ("[a](/x y) and [b](/p q)", 2),
+    ],
+)
+def test_check_spaces_in_md_link_urls(content: str, expected_count: int):
+    """Markdown link/image URLs with raw spaces are flagged; legal forms (quoted
+    titles, angle-bracketed URLs, code spans) are not."""
+    errors = source_file_checks.check_spaces_in_md_link_urls(content)
     assert len(errors) == expected_count
 
 
@@ -2047,6 +2182,12 @@ def test_check_filename_lowercase(filename: str, should_error: bool):
         # Shouldn't ignore boundaries of code/math blocks
         ("Test `code`)", []),
         ("Test $math$)", []),
+        # Line number is computed against the code-stripped text, so inline
+        # code on an earlier line must not shift the reported line.
+        (
+            "`inline code spanning many chars`\nSentence. )",
+            ["Forbidden pattern found:  ) on line 2"],
+        ),
     ],
 )
 def test_check_no_forbidden_patterns(text: str, expected_errors: list[str]):
@@ -2145,6 +2286,10 @@ def test_check_html_with_braces(text: str, expected_errors: list[str]):
         ("[^test]: Definition\nMore text", {"test": 1}),
         ("Text [^ref] reference\n[^ref]: Definition", {"ref": 2}),
         ("[^test]: Definition\n[^test]: Duplicate", {"test": 1}),
+        # A definition-looking pattern inside inline code is not a definition
+        ("Use `[^foo]:` syntax\n[^bar]: Real", {"bar": 2}),
+        # ...nor inside a fenced code block (newlines preserved → line numbers)
+        ("```\n[^foo]: In code\n```\n[^bar]: Real", {"bar": 4}),
     ],
 )
 def test_extract_footnote_definitions(
@@ -2307,6 +2452,14 @@ def test_extract_footnote_references(
             "Line 3 with footnote.[^combo]\n"
             "\n"
             "[^combo]: Definition",
+            [],
+        ),
+        # A defined-and-referenced footnote is not flagged even when a
+        # definition-looking pattern for it also appears inside inline code.
+        # Definitions and references are detected on the same code/math-stripped
+        # text, so the code occurrence never inflates the definition count.
+        (
+            "Show the `[^real]:` syntax. Real use.[^real]\n[^real]: Definition",
             [],
         ),
     ],
@@ -2522,3 +2675,215 @@ def test_void_elements_are_allowed_self_closing(tag: str):
     text = f"<{tag} />"
     errors = source_file_checks.check_self_closing_non_void_elements(text)
     assert errors == []
+
+
+@pytest.mark.parametrize(
+    "text, expected_errors",
+    [
+        # Bare digit beginning a paragraph
+        (
+            "26 people attended.",
+            ["Sentence-initial numeral at line 1: 26 people attended."],
+        ),
+        # Leading quotation mark before the digit still counts
+        (
+            '"2FA" is secure.',
+            ['Sentence-initial numeral at line 1: "2FA" is secure.'],
+        ),
+        # Curly opening quote
+        (
+            "“5 reasons” to care.",
+            ["Sentence-initial numeral at line 1: “5 reasons” to care."],
+        ),
+        # Digit after sentence-ending punctuation mid-line
+        (
+            "Hello. 5 cats.",
+            ["Sentence-initial numeral at line 1: Hello. 5 cats."],
+        ),
+        # Boundary with no preceding word token (trailing word is None)
+        ("? 5 things", ["Sentence-initial numeral at line 1: ? 5 things"]),
+        # A leading numeral is flagged once and does not double-count later
+        # numerals on the same line.
+        (
+            "5 cats. 6 dogs.",
+            ["Sentence-initial numeral at line 1: 5 cats. 6 dogs."],
+        ),
+        # Abbreviation before the digit is not a sentence boundary
+        ("See eq. 5 above.", []),
+        ("For example, e.g. 2 apples are enough.", []),
+        ("Refer to Fig. 3 for details.", []),
+        # Ellipsis is a trailing-off continuation, not a new sentence
+        ("Wait... 5 more to go.", []),
+        ("Wait… 5 more to go.", []),
+        # Plain prose without a leading numeral
+        ("Just some ordinary text.", []),
+        # Non-prose contexts are excluded
+        ("# 5 reasons it works", []),
+        ("| 5 | column |", []),
+        ("![5 boxes in a diagram](/img.png)", []),
+        # Blockquotes are verbatim quotations, excluded at any nesting and even
+        # when they wrap a list
+        ("> 5 reasons it works", []),
+        (">> 5 reasons nested", []),
+        ("> - 5 things in a quoted list", []),
+        # Rendered authorial prose is checked once its leading marker is peeled
+        (
+            ": 2024 Nobel laureate in Physics and a Turing Award winner.",
+            [
+                "Sentence-initial numeral at line 1: 2024 Nobel laureate in "
+                "Physics and a Turing Award winner."
+            ],
+        ),
+        (
+            ": 5 is the definition",
+            ["Sentence-initial numeral at line 1: 5 is the definition"],
+        ),
+        (
+            "[^note]: 5 things to note",
+            ["Sentence-initial numeral at line 1: 5 things to note"],
+        ),
+        ("- 5 things", ["Sentence-initial numeral at line 1: 5 things"]),
+        ("* 5 things", ["Sentence-initial numeral at line 1: 5 things"]),
+        (
+            "1. 256-shot prompting",
+            ["Sentence-initial numeral at line 1: 256-shot prompting"],
+        ),
+        (
+            "1) 256-shot prompting",
+            ["Sentence-initial numeral at line 1: 256-shot prompting"],
+        ),
+        # A Markdown enumerator is a number kept as written: the ordinal itself
+        # is stripped, so list content opening with a word is fine, including a
+        # numbered list nested inside a definition line
+        ("1. Some reasons here", []),
+        (": 1.  The error tolerance is too high", []),
+        # A bare enumerator (the item's text wraps to the next line) is the
+        # marker alone, not sentence-initial prose
+        ("1.", []),
+        ("12.", []),
+        ("256)", []),
+        ("1.\n   wrapped item text", []),
+        # A footnote definition whose body continues on the next line
+        ("[^note]:", []),
+        # A numeral rendered from a KaTeX equation is acceptable, even when it
+        # opens a definition line
+        (": $2024$ was the year", []),
+        # Image alt text is excluded even when an image opens a definition line
+        (": ![1. boxes, 2. arrows](/img.png)", []),
+        # Blank lines are skipped, body numeral still flagged on its line
+        (
+            "   \n5 cats walked away.",
+            ["Sentence-initial numeral at line 2: 5 cats walked away."],
+        ),
+        # Inline suppression marker with a reason
+        (
+            "5 things <!-- lint-ignore sentence-initial-numeral: refers to "
+            "the literal 5 -->",
+            [],
+        ),
+        # Code and math are stripped before checking
+        ("`5 birds` flew", []),
+        ("$5 birds$ flew", []),
+        (
+            "```\n5 birds flew\n```",
+            [],
+        ),
+        # YAML frontmatter is blanked; line numbers stay correct for the body
+        (
+            "---\ntitle: 9 lives\n---\n5 cats walked away.",
+            ["Sentence-initial numeral at line 4: 5 cats walked away."],
+        ),
+        # Frontmatter without a closing fence does not crash or misreport
+        ("---\ntitle: Test\nbody has 9 lives", []),
+        # Empty input
+        ("", []),
+        # Double space after the period (house style) is still a boundary
+        (
+            "Hello.  5 cats.",
+            ["Sentence-initial numeral at line 1: Hello.  5 cats."],
+        ),
+        # A digit opening a sentence after stripped inline math is flagged
+        (
+            "Value is $x$. 5 follows.",
+            [
+                "Sentence-initial numeral at line 1: Value is "
+                f"{source_file_checks._REPLACEMENT_CHAR}. 5 follows."
+            ],
+        ),
+        # A sentence ending in a single capital letter is a real boundary,
+        # not an abbreviation, so the next numeral is flagged
+        (
+            "Plan B. 5 remain.",
+            ["Sentence-initial numeral at line 1: Plan B. 5 remain."],
+        ),
+    ],
+)
+def test_check_sentence_initial_numerals(text: str, expected_errors: list[str]):
+    """Test the check_sentence_initial_numerals function."""
+    errors = source_file_checks.check_sentence_initial_numerals(text)
+    assert errors == expected_errors
+
+
+@pytest.mark.parametrize(
+    "text, expected_errors",
+    [
+        # Bare cardinal day is flagged
+        (
+            "It happened on January 26, 2026.",
+            ["Date missing ordinal suffix at line 1: January 26, 2026"],
+        ),
+        # Already-ordinal day is fine
+        ("It happened on January 26th, 2026.", []),
+        ("The deal closed on May 1st, 2020.", []),
+        ("She was born on June 2nd, 1990.", []),
+        ("He arrived on March 3rd, 2001.", []),
+        # Abbreviated month, with or without a trailing period
+        (
+            "As of Feb. 19, 2025, the plan changed.",
+            ["Date missing ordinal suffix at line 1: Feb. 19, 2025"],
+        ),
+        ("As of Feb. 19th, 2025, the plan changed.", []),
+        (
+            "As of Sept 3, 2019, it was over.",
+            ["Date missing ordinal suffix at line 1: Sept 3, 2019"],
+        ),
+        # No day-of-month present, just month + year: not a flagged pattern
+        ("Written in October 2024.", []),
+        ("Spring 2018 through June 2022.", []),
+        # Month + day with no year is not flagged (no comma+year to anchor it)
+        ("Meet me May 5 sometime.", []),
+        # Blockquotes are verbatim quotations
+        ("> Edited on August 29, 2022", []),
+        (">> Edited on August 29, 2022", []),
+        # Headings, tables, and images are non-prose contexts
+        ("# November 9, 2024", []),
+        ("| November 9, 2024 | column |", []),
+        ("![Taken November 9, 2024](/img.png)", []),
+        # Raw HTML lines (e.g. component demo fixtures) are excluded
+        ('<p class="subtitle">November 4, 2008</p>', []),
+        # Code and math are stripped before checking
+        ("`January 26, 2026`", []),
+        ("$January 26, 2026$", []),
+        # Two dates on one line both get flagged
+        (
+            "From January 1, 2020 to January 2, 2020.",
+            [
+                "Date missing ordinal suffix at line 1: January 1, 2020",
+                "Date missing ordinal suffix at line 1: January 2, 2020",
+            ],
+        ),
+        # Line number tracking across multiple lines
+        (
+            "Just prose.\nIt happened on January 26, 2026.",
+            ["Date missing ordinal suffix at line 2: January 26, 2026"],
+        ),
+        # Empty input
+        ("", []),
+    ],
+)
+def test_check_dates_missing_ordinal_suffix(
+    text: str, expected_errors: list[str]
+):
+    """Test the check_dates_missing_ordinal_suffix function."""
+    errors = source_file_checks.check_dates_missing_ordinal_suffix(text)
+    assert errors == expected_errors

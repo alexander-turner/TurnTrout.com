@@ -8,9 +8,14 @@ import type { QuartzTransformerPlugin } from "../types"
 
 import { replaceRegex } from "./utils"
 
-// Library / tool names that should auto-format as inline <code> in prose.
-// Lowercase-only so sentence-initial proper-noun uses ("Punctilio handles…")
-// keep their capital-letter signal instead of being rewrapped.
+// Names that should auto-format as inline <code> in prose.
+//
+// Library / tool names are lowercase-only so sentence-initial proper-noun uses
+// ("Punctilio handles…") keep their capital-letter signal instead of being
+// rewrapped. Repo-doc filenames are matched in their canonical UPPERCASE form
+// (both bare and `.md`); the regex is case-sensitive, so lowercase prose words
+// like "security" or "read me" never match. Longer variants are sorted first
+// (see `sortedTerms`), so "README.md" wins over "README".
 export const codeTerms: readonly string[] = [
   "punctilio",
   "subfont",
@@ -23,6 +28,7 @@ export const codeTerms: readonly string[] = [
   "pylint",
   "eslint",
   "mypy",
+  "pyright",
   "linkchecker",
   "docformatter",
   "micromorph",
@@ -33,6 +39,14 @@ export const codeTerms: readonly string[] = [
   "prettier",
   "pnpm",
   "vale",
+  "README.md",
+  "README",
+  "SECURITY.md",
+  "SECURITY",
+  "CONTRIBUTING.md",
+  "CONTRIBUTING",
+  "THREAT-MODEL.md",
+  "THREAT-MODEL",
 ]
 
 // Sort by length DESC so "retext-smartypants" matches before "retext"

@@ -20,6 +20,8 @@ from ..build_fonts import (
     _OPEN_PUNCT_GLYPHS,
     _SQUARE_BRACKET_GLYPHS,
     _TARGET_GLYPHS,
+    _TIGHTEN_REFERENCE_GLYPH,
+    _TIGHTEN_TARGET_GLYPHS,
     _UPSTREAM_DIR,
     _add_kerning,
     _affine_map_glyph_y,
@@ -202,6 +204,11 @@ class TestKerning:
     ) -> None:
         font: TTFont = request.getfixturevalue(font_fixture)
         f_glyphs = _get_f_glyphs(font)
+        glyf = font["glyf"]
+        ref_lsb = glyf[_TIGHTEN_REFERENCE_GLYPH].xMin
+        tighten_applies = any(
+            glyf[t].xMin > ref_lsb for t in _TIGHTEN_TARGET_GLYPHS
+        )
         _add_kerning(font, f_glyphs)
         subtable = font["GPOS"].table.LookupList.Lookup[-1].SubTable[0]
         expected = (
@@ -210,6 +217,8 @@ class TestKerning:
             | set(_DESCENDER_GLYPHS)
             | set(_CAP_OVERHANG_GLYPHS)
         )
+        if tighten_applies:
+            expected |= set(_CLOSE_PUNCT_GLYPHS)
         assert set(subtable.Coverage.glyphs) == expected
 
     def test_f_kern_values_match_formula(self, upstream_08: TTFont) -> None:
@@ -260,6 +269,45 @@ class TestKerning:
                     assert pvr.Value1.XAdvance == _CLOSE_DESCENDER_KERN[src], (
                         f"{src}->{pvr.SecondGlyph}"
                     )
+
+    def _tighten_pairs(self, font: TTFont) -> dict[tuple[str, str], int]:
+        subtable = font["GPOS"].table.LookupList.Lookup[-1].SubTable[0]
+        target_set = set(_TIGHTEN_TARGET_GLYPHS)
+        close_set = set(_CLOSE_PUNCT_GLYPHS)
+        pairs: dict[tuple[str, str], int] = {}
+        for i, src in enumerate(subtable.Coverage.glyphs):
+            if src not in close_set:
+                continue
+            for pvr in subtable.PairSet[i].PairValueRecord:
+                if pvr.SecondGlyph in target_set:
+                    pairs[(src, pvr.SecondGlyph)] = pvr.Value1.XAdvance
+        return pairs
+
+    def test_tighten_pairs_match_lsb_formula_08pt(
+        self, upstream_08: TTFont
+    ) -> None:
+        glyf = upstream_08["glyf"]
+        ref_lsb = glyf[_TIGHTEN_REFERENCE_GLYPH].xMin
+        _add_kerning(upstream_08, _get_f_glyphs(upstream_08))
+        pairs = self._tighten_pairs(upstream_08)
+
+        # The 08 master has a wide comma/semicolon sidebearing, so every
+        # close-punct x target pair is present and strictly negative.
+        assert pairs
+        for (src, tgt), value in pairs.items():
+            assert value == ref_lsb - glyf[tgt].xMin, f"{src}->{tgt}"
+            assert value < 0, f"{src}->{tgt} should tighten"
+
+    def test_tighten_skips_already_tight_targets_12pt(
+        self, upstream_12: TTFont
+    ) -> None:
+        glyf = upstream_12["glyf"]
+        ref_lsb = glyf[_TIGHTEN_REFERENCE_GLYPH].xMin
+        # The 12 master sets these targets tighter than the reference, so no
+        # tighten pairs should be emitted (clamped to 0, then skipped).
+        assert all(glyf[t].xMin <= ref_lsb for t in _TIGHTEN_TARGET_GLYPHS)
+        _add_kerning(upstream_12, _get_f_glyphs(upstream_12))
+        assert self._tighten_pairs(upstream_12) == {}
 
     def test_kern_feature_in_all_scripts(self, upstream_08: TTFont) -> None:
         _add_kerning(upstream_08, _get_f_glyphs(upstream_08))

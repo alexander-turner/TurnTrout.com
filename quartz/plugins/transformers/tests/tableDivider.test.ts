@@ -82,6 +82,15 @@ describe("processTableBody", () => {
     })
   })
 
+  it("does not set prevRow for non-tr elements in tbody", () => {
+    const orphan = h("td", "orphaned cell")
+    const tbody = h("tbody", [orphan, tr(MARKER)])
+    processTableBody(tbody)
+    // The orphan td is kept but prevRow was never set, so no boundary class is added
+    expect(tbody.children).toHaveLength(1)
+    expect(classes(tbody.children[0] as Element)).toEqual([])
+  })
+
   it("preserves existing classes on the tagged row", () => {
     const tbody = h("tbody", [
       h("tr", { className: ["existing"] }, [h("td", "a")]),

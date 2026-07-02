@@ -255,6 +255,68 @@ describe("renderPage", () => {
     expect(html).toContain("./source-page/nested#intro")
   })
 
+  it("demotes a transcluded same-page link to a normal internal link", () => {
+    const anchorFavicon: Element = {
+      type: "element",
+      tagName: "svg",
+      children: [],
+      properties: {
+        class: "favicon",
+        "data-domain": "anchor",
+        style:
+          "--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/anchor.svg);",
+      },
+    }
+    const link = h("a", { href: "#intro", className: ["internal", "same-page-link"] }, [
+      h("span", { className: ["favicon-span"] }, ["Link", anchorFavicon]),
+    ])
+
+    const transcludedPage: QuartzPluginData = {
+      slug: "source-page/nested" as FullSlug,
+      frontmatter: { title: "Source Page" },
+      htmlAst: {
+        type: "root",
+        children: [h("p", [link]) as unknown as Element],
+      },
+    } as unknown as QuartzPluginData
+
+    const props = createMockProps(
+      {
+        tree: {
+          type: "root",
+          children: [
+            h("span", { className: ["transclude"], dataUrl: "source-page/nested", dataBlock: "" }),
+          ],
+        } as unknown as Root,
+      },
+      [transcludedPage],
+    )
+
+    const html = renderPage(
+      props.cfg,
+      "current-page" as FullSlug,
+      props,
+      {
+        ...components,
+        pageBody: ({ tree }: QuartzComponentProps) => (
+          <div id="page-body">{JSON.stringify(tree)}</div>
+        ),
+      } as typeof components,
+      pageResources,
+    )
+
+    // The transcluded link is serialized as escaped JSON inside #page-body; scope
+    // assertions to it so the page shell's own skip-to-content link is ignored.
+    const pageBody = html.slice(html.indexOf('id="page-body"'))
+    expect(pageBody).toContain("./source-page/nested#intro")
+    // Demoted: same-page-link dropped (className is internal-only), anchor favicon
+    // swapped for the turntrout favicon.
+    expect(pageBody).toContain("[&quot;internal&quot;]")
+    expect(pageBody).toContain("turntrout_com")
+    expect(pageBody).not.toContain("same-page-link")
+    expect(pageBody).not.toContain("&quot;anchor&quot;")
+  })
+
   it.each([
     {
       name: "intro transclusion with ![[page#]]",
@@ -924,6 +986,66 @@ describe("optimizeLcpImage", () => {
     const result = optimizeLcpImage(html)
     expect(result).toContain('fetchpriority="high"')
     expect(result).not.toContain('fetchpriority="low"')
+  })
+
+  it("promotes both images of an img-comparison-slider", () => {
+    const html =
+      "<html><head></head><body><article><figure><img-comparison-slider>" +
+      '<img slot="first" src="https://cdn.example.com/before.avif" loading="lazy">' +
+      '<img slot="second" src="https://cdn.example.com/after.avif" loading="lazy">' +
+      "</img-comparison-slider></figure></article></body></html>"
+    const result = optimizeLcpImage(html)
+    expect(result).toContain(
+      'slot="first" src="https://cdn.example.com/before.avif" loading="eager"',
+    )
+    expect(result).toContain(
+      'slot="second" src="https://cdn.example.com/after.avif" loading="eager"',
+    )
+    expect(result).not.toContain('loading="lazy"')
+    expect((result.match(/fetchpriority="high"/g) ?? []).length).toBe(2)
+    expect(result).toContain(
+      '<link rel="preload" href="https://cdn.example.com/before.avif" as="image" crossorigin="anonymous"/>',
+    )
+    expect(result).toContain(
+      '<link rel="preload" href="https://cdn.example.com/after.avif" as="image" crossorigin="anonymous"/>',
+    )
+  })
+
+  it("does not promote images in a later slider when the LCP image is outside it", () => {
+    const html =
+      "<html><head></head><body><article>" +
+      '<img src="hero.avif" loading="lazy">' +
+      '<img-comparison-slider><img slot="first" src="a.avif" loading="lazy">' +
+      '<img slot="second" src="b.avif" loading="lazy"></img-comparison-slider>' +
+      "</article></body></html>"
+    const result = optimizeLcpImage(html)
+    expect(result).toContain('src="hero.avif" loading="eager"')
+    expect(result).toContain('src="a.avif" loading="lazy"')
+    expect(result).toContain('src="b.avif" loading="lazy"')
+  })
+
+  it("only promotes slider images, not a content image after the slider", () => {
+    const html =
+      "<html><head></head><body><article><img-comparison-slider>" +
+      '<img slot="first" src="a.avif" loading="lazy">' +
+      '<img slot="second" src="b.avif" loading="lazy"></img-comparison-slider>' +
+      '<img src="after.avif" loading="lazy"></article></body></html>'
+    const result = optimizeLcpImage(html)
+    expect(result).toContain('src="a.avif" loading="eager"')
+    expect(result).toContain('src="b.avif" loading="eager"')
+    expect(result).toContain('src="after.avif" loading="lazy"')
+  })
+
+  it("treats a content image after a non-content slider as the lone LCP image", () => {
+    const html =
+      "<html><head></head><body><article><img-comparison-slider>" +
+      '<img class="favicon" slot="first" src="icon.svg">' +
+      "</img-comparison-slider>" +
+      '<img src="hero.avif" loading="lazy"></article></body></html>'
+    const result = optimizeLcpImage(html)
+    expect(result).toContain('class="favicon" slot="first" src="icon.svg"')
+    expect(result).toContain('src="hero.avif" loading="eager"')
+    expect(result).toContain('fetchpriority="high"')
   })
 
   it("ignores images outside the article boundary", () => {

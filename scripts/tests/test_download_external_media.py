@@ -152,6 +152,8 @@ def test_download_media_success(mock_git_root, tmp_path):
         url = mock_get.call_args[0][0]
         assert url == "https://example.com/image.png"
         assert (target_dir / "image.png").read_bytes() == b"image-bytes"
+        # Decoding is opted into so gzip/deflate responses land decompressed.
+        assert response.raw.decode_content is True
 
 
 def test_download_media_failure(mock_git_root, tmp_path):

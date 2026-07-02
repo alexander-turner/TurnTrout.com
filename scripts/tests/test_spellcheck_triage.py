@@ -198,7 +198,7 @@ def patch_site_checks(monkeypatch):
     """Monkeypatch the two ``built_site_checks`` helpers used by the script."""
 
     def install(paragraphs, issues):
-        def fake_collect(_file, _fp, _pub, paragraph_map):
+        def fake_collect(_soup, _file, _fp, _pub, paragraph_map):
             paragraph_map.update(paragraphs)
 
         monkeypatch.setattr(

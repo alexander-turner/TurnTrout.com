@@ -6,8 +6,8 @@ no_dropcap: "false"
 tags:
   - AI
   - mats-program
+  - interpretability
 description: Isolate capabilities to known parts of a network. Helps with interpretability, robust unlearning, and scalable oversight.
-date-published: ""
 authors:
   - Alex Cloud
   - Jacob Goldman-Wetzler
@@ -19,7 +19,7 @@ card_image: https://assets.turntrout.com/static/images/card_images/NO2S3mX.jpg
 lw-linkpost-url: https://arxiv.org/abs/2410.04332
 original_url: https://www.lesswrong.com/posts/nLRKKCTtwQgvozLTN/gradient-routing-masking-gradients-to-localize-computation
 date_published: 2024-12-05
-date_updated: 2026-05-15
+date_updated: 2026-06-27
 card_image_alt: A landscape of sparkling crystalline shards growing out of the ground.
 createBibtex: true
 ---

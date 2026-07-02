@@ -3,6 +3,7 @@
 
 import argparse
 import copy
+import functools
 import html
 import json
 import mimetypes
@@ -22,10 +23,11 @@ from types import MappingProxyType
 from typing import Literal, NamedTuple
 from urllib.parse import urlparse
 
-import requests  # type: ignore[import]
+import requests
 import tqdm
-import validators  # type: ignore[import]
-from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
+import validators
+from bs4 import BeautifulSoup, Tag
+from bs4.element import NavigableString, PageElement
 
 # Add the project root to sys.path
 # pylint: disable=C0413
@@ -48,6 +50,7 @@ from scripts.utils import (
     RIGHT_DOUBLE_QUOTE,
     RIGHT_GUILLEMET,
     RIGHT_SINGLE_QUOTE,
+    TOC_MAX_DEPTH,
     WORD_JOINER,
     ZERO_WIDTH_NBSP,
     ZERO_WIDTH_SPACE,
@@ -65,6 +68,17 @@ INVERT_CLASS: str = script_utils.load_shared_constants()[
 FORCE_HSL_INVERT_CLASS: str = script_utils.load_shared_constants()[
     "forceHslInvertClass"
 ]
+# Sentinel that opts a link into build-time title binding. If it survives into
+# the emitted HTML as link text, the binding never resolved.
+LINK_TITLE_SENTINEL: str = script_utils.load_shared_constants()[
+    "linkTitleSentinel"
+]
+LINK_TITLE_LOWER_SENTINEL: str = script_utils.load_shared_constants()[
+    "linkTitleLowerSentinel"
+]
+LINK_TITLE_SENTINELS: frozenset[str] = frozenset(
+    {LINK_TITLE_SENTINEL, LINK_TITLE_LOWER_SENTINEL}
+)
 
 _IssuesDict = dict[str, list[str] | list[Tag] | bool]
 
@@ -307,6 +321,28 @@ def check_unrendered_footnotes(soup: BeautifulSoup) -> list[str]:
     return unrendered_footnotes
 
 
+def check_footnote_refs_in_sup(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that every footnote-reference anchor sits inside a ``<sup>``.
+
+    A footnote authored inside link text (``[text[^id]](url)``) compiles to
+    invalid nested anchors. The HTML re-parse splits them apart, stranding the
+    footnote-reference anchor as a sibling of the link instead of a child of its
+    ``<sup>`` (and leaving an empty ``<sup>`` behind in the link). A stranded
+    reference therefore signals a footnote nested in a link, which must be
+    rewritten in the source so the marker sits outside the link.
+
+    Returns a list of stranded footnote-reference identifiers.
+    """
+    stranded: list[str] = []
+    for ref in _tags_only(soup.select("a[data-footnote-ref]")):
+        parent = ref.parent
+        if parent is None or parent.name != "sup":
+            identifier = ref.get("id") or ref.get("href") or ref.get_text()
+            _append_to_list(stranded, str(identifier))
+    return stranded
+
+
 def _check_anchor_classes(
     link: Tag, href: str, invalid_anchors: list[str]
 ) -> None:
@@ -345,14 +381,29 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
     for link in links:
         if not isinstance(link, Tag):  # pragma: no cover
             continue  # just a typeguard
-        if (
-            not link.has_attr("href")
-            or not isinstance(link["href"], str)
-            or link["href"].startswith("https://")
-        ):
+        href = link["href"] if link.has_attr("href") else None
+        if not isinstance(href, str) or href.startswith("https://"):
             invalid_internal_links.append(link)
 
     return invalid_internal_links
+
+
+def check_unrendered_title_sentinel(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for links whose visible text is still a title sentinel (``@title`` or
+    ``@title-lower``).
+
+    A surviving sentinel means the build-time title binding never resolved (e.g.
+    the sentinel was placed on an external or unresolvable link), leaking the
+    raw token into the page instead of the target's title.
+    """
+    leaked: list[str] = []
+    for link in _tags_only(soup.find_all("a")):
+        text = link.get_text(strip=True)
+        if text in LINK_TITLE_SENTINELS:
+            href = link.get("href", "")
+            leaked.append(f"{text} as link text (href={href})")
+    return leaked
 
 
 def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
@@ -866,7 +917,7 @@ def _canonical_inline_video_source(video: Tag) -> str | None:
     """
     if video.get("id") == "pond-video":
         return None
-    if not all(video.has_attr(a) for a in ("autoplay", "loop", "muted")):
+    if not _is_gif_replacement(video):
         return None
     candidates: Iterable[str | list[str] | None] = (
         video.get("src"),
@@ -1273,6 +1324,9 @@ def should_skip(element: Tag | NavigableString) -> bool:
         "elvish",
         "bad-handwriting",
         "katex",
+        # Embedded external READMEs: prose-quality checks target first-party
+        # authoring, not third-party README text.
+        "external-readme",
     }
 
     # Check current element and all parents
@@ -1662,8 +1716,12 @@ def _build_included_favicon_domains(
     ``{"apple_com", "openai_com", "scholar_google_com"}``).
     """
     script = str(git_root / "scripts" / "compute_favicon_lists.ts")
+    # Invoke tsx directly rather than via ``pnpm exec``: pnpm 11's
+    # deps-status check can recreate node_modules and print install chatter
+    # to stdout, which would corrupt the JSON parsed below.
+    tsx_bin = str(git_root / "node_modules" / ".bin" / "tsx")
     result = subprocess.run(  # skipcq: BAN-B607
-        ["pnpm", "exec", "tsx", script],
+        [tsx_bin, script],
         capture_output=True,
         text=True,
         cwd=str(git_root),
@@ -2021,7 +2079,112 @@ class CheckOptions:
     invert_labels: Mapping[str, InvertLabel] | None = None
 
 
+def check_related_posts(
+    soup: BeautifulSoup, *, is_content_page: bool
+) -> list[str]:
+    """
+    Enforce that only content pages carry a "Similar posts" block.
+
+    Every embeddable article gets a precomputed neighbor list in
+    ``related_posts.json``, which the transformer renders as a ``.related-posts``
+    block. Content pages must have one (a missing block means the article was
+    never embedded, so coverage is incomplete); non-content pages (listings,
+    tag pages, etc.) must not.
+    """
+    present = soup.find(class_="related-posts") is not None
+    if is_content_page and not present:
+        return [
+            "Missing related-posts block (.related-posts) on a content page"
+        ]
+    if not is_content_page and present:
+        return [
+            "Unexpected related-posts block (.related-posts) on a non-content page"
+        ]
+    return []
+
+
+_HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "h6")
+
+
+def _ordered_toc_slugs(toc_content: Tag) -> list[str]:
+    """Slug of each TOC anchor, in document order."""
+    slugs: list[str] = []
+    for anchor in toc_content.find_all("a", attrs={"data-for": True}):
+        slug = anchor.get("data-for")
+        if isinstance(slug, str):
+            slugs.append(slug)
+    return slugs
+
+
+class _HeadingMeta(NamedTuple):
+    """Where an article heading sits and how deep it is."""
+
+    position: int  # document order among article headings
+    level: int  # heading level (1-6)
+
+
+def _article_heading_index(article: Tag) -> dict[str, _HeadingMeta]:
+    """Map each article heading id to its document position and level."""
+    index: dict[str, _HeadingMeta] = {}
+    for order, heading in enumerate(article.find_all(_HEADING_TAGS)):
+        heading_id = heading.get("id")
+        if isinstance(heading_id, str) and heading_id not in index:
+            index[heading_id] = _HeadingMeta(order, int(heading.name[1]))
+    return index
+
+
+def check_toc_ordering(soup: BeautifulSoup) -> list[str]:
+    """
+    Verify the table of contents agrees with the article's headings.
+
+    Two invariants, keyed off the shared TOC config (``TOC_MAX_DEPTH``) so the
+    checker can't drift from the transformer that builds the TOC:
+
+    * **Order** — every entry is listed in the order its target heading appears
+      in the document. The injected "Similar posts" entry is included: its block
+      is rendered before the first appendix (or footnotes), so its heading
+      really does sit where the entry is listed.
+    * **Depth cutoff** — no entry targets a heading deeper than
+      ``TOC_MAX_DEPTH`` (e.g. an h3 leaking into an h1/h2 TOC).
+
+    Nesting is intentionally not checked. The TOC nests by depth *relative* to
+    the article's top heading, not by absolute ``<hN>`` level, so a page whose
+    body sections are ``<h2>`` lists them at the same top level as the injected
+    ``<h1>`` "Similar posts" entry — correct, yet indistinguishable from a bug
+    by tag name alone.
+    """
+    toc_content = soup.find(id="toc-content")
+    article = soup.find("article")
+    if toc_content is None or article is None:
+        return []
+
+    headings = _article_heading_index(article)
+    issues: list[str] = []
+    previous_slug: str | None = None
+    previous_position = -1
+
+    for slug in _ordered_toc_slugs(toc_content):
+        target = headings.get(slug)
+        if target is None:
+            continue  # entry targets something other than an article heading
+        if target.level > TOC_MAX_DEPTH:
+            issues.append(
+                f"TOC entry '#{slug}' targets an <h{target.level}>, deeper than "
+                f"tocMaxDepth={TOC_MAX_DEPTH}"
+            )
+        if previous_slug is not None and target.position <= previous_position:
+            issues.append(
+                f"TOC entry '#{slug}' is out of document order (listed after "
+                f"'#{previous_slug}', which appears later in the article)"
+            )
+        previous_slug = slug
+        previous_position = target.position
+
+    return issues
+
+
 def check_file_for_issues(
+    soup: BeautifulSoup,
     file_path: Path,
     base_dir: Path,
     md_path: Path | None,
@@ -2031,6 +2194,7 @@ def check_file_for_issues(
     Check a single HTML file for various issues.
 
     Args:
+        soup: Pre-parsed BeautifulSoup object for the HTML file
         file_path: Path to the HTML file to check
         base_dir: Path to the base directory of the site
         md_path: Path to the markdown file that generated the HTML file
@@ -2039,7 +2203,6 @@ def check_file_for_issues(
     Returns:
         Dictionary of issues found in the HTML file
     """
-    soup = script_utils.parse_html_file(file_path)
     if script_utils.is_redirect(soup):
         return {}
     initial_soup_str = str(soup)
@@ -2047,6 +2210,7 @@ def check_file_for_issues(
     issues: _IssuesDict = {
         "localhost_links": check_localhost_links(soup),
         "invalid_internal_links": check_invalid_internal_links(soup),
+        "unrendered_title_sentinel": check_unrendered_title_sentinel(soup),
         "invalid_anchors": check_invalid_anchors(soup, base_dir),
         "malformed_hrefs": check_malformed_hrefs(soup),
         "problematic_paragraphs": paragraphs_contain_canary_phrases(soup),
@@ -2056,6 +2220,7 @@ def check_file_for_issues(
         "problematic_katex": check_katex_elements_for_errors(soup),
         "unrendered_subtitles": check_unrendered_subtitles(soup),
         "unrendered_footnotes": check_unrendered_footnotes(soup),
+        "footnote_ref_not_in_sup": check_footnote_refs_in_sup(soup),
         "missing_critical_css": not check_critical_css(soup),
         "empty_body": script_utils.body_is_empty(soup),
         "duplicate_ids": check_duplicate_ids(soup),
@@ -2093,6 +2258,8 @@ def check_file_for_issues(
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
         ),
+        "video_missing_captions": check_video_caption_tracks(soup),
+        "linked_video_missing_captions": check_linked_video_captions(soup),
         "inline_style_variables": check_inline_style_variables(
             soup, opts.defined_css_variables
         ),
@@ -2108,6 +2275,7 @@ def check_file_for_issues(
         "invalid_tengwar_characters": check_tengwar_characters(soup),
         "invalid_class_names": check_invalid_class_names(soup),
         "orphaned_subfigures": check_orphaned_subfigures(soup),
+        "toc_ordering": check_toc_ordering(soup),
     }
 
     if opts.favicon_included_domains is not None:
@@ -2117,6 +2285,14 @@ def check_file_for_issues(
 
     if opts.should_check_fonts:
         issues["missing_preloaded_font"] = not check_preloaded_fonts(soup)
+
+    is_content_page = False
+    if md_path and md_path.is_file():
+        md_frontmatter, _ = script_utils.split_yaml(md_path)
+        is_content_page = script_utils.is_embeddable_article(md_frontmatter)
+    issues["related_posts"] = check_related_posts(
+        soup, is_content_page=is_content_page
+    )
 
     if md_path and md_path.is_file():
         issues["missing_markdown_assets"] = check_markdown_assets_in_html(
@@ -2425,7 +2601,11 @@ def check_inline_code_word_boundaries(soup: BeautifulSoup) -> list[str]:
     """
     issues: list[str] = []
     for code in _tags_only(soup.find_all("code")):
-        if code.find_parent("pre") or code.find_parent(class_="no-formatting"):
+        if (
+            code.find_parent("pre")
+            or code.find_parent(class_="no-formatting")
+            or code.find_parent(class_="external-readme")
+        ):
             continue
         issues.extend(
             _check_element_spacing(
@@ -2713,6 +2893,11 @@ def _compare_base_paths(src1: str, src2: str, video_preview: str) -> list[str]:
     return []
 
 
+def _video_open_tag(video: Tag) -> str:
+    """The opening ``<video ...>`` tag string, without children."""
+    return str(video).split(">", 1)[0] + ">"
+
+
 def _check_single_video(
     video: Tag, expected_sources: list[tuple[str, str]]
 ) -> list[str]:
@@ -2724,7 +2909,7 @@ def _check_single_video(
         for child in video.children
         if isinstance(child, Tag) and child.name == "source"
     ]
-    open_tag = str(video).split(">", 1)[0] + ">"
+    open_tag = _video_open_tag(video)
 
     if len(sources) < len(expected_sources):
         _append_to_list(
@@ -2785,6 +2970,226 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
     return all_issues
 
 
+def _is_gif_replacement(video: Tag) -> bool:
+    """True for inline looping muted ``<video>`` GIF replacements, which carry
+    no audio and so need no captions."""
+    return all(video.has_attr(attr) for attr in ("autoplay", "loop", "muted"))
+
+
+def _video_source_hint(video: Tag) -> str:
+    """A human-readable source URL for issue messages."""
+    src = video.get("src")
+    if isinstance(src, str):
+        return src
+    for source in _tags_only(video.find_all("source")):
+        source_src = source.get("src")
+        if isinstance(source_src, str):
+            return source_src
+    return "(unknown source)"
+
+
+def _video_caption_issue(video: Tag) -> str | None:
+    """
+    Issue message if a captionable ``<video>`` lacks a real captions track.
+
+    A real ``<track kind="captions" src="….vtt">`` satisfies the check, as does
+    an explicit ``label="No audio"`` marker for an intentionally silent embed.
+    The empty ``data:text/vtt,WEBVTT`` placeholder (injected when nothing
+    assigned a real track) and a missing track both fail.
+    """
+    for track in _tags_only(video.find_all("track")):
+        if track.get("kind") != "captions":
+            continue
+        if str(track.get("label", "")) == "No audio":
+            return None
+        src = track.get("src")
+        if isinstance(src, str) and src.lower().endswith(".vtt"):
+            return None
+    return (
+        f"<video> {_video_source_hint(video)} has no real captions track "
+        "(.vtt) or 'No audio' marker"
+    )
+
+
+def check_video_caption_tracks(soup: BeautifulSoup) -> list[str]:
+    """
+    Every audio-bearing ``<video>`` must carry a real captions track.
+
+    Skips ``#pond-video`` and inline looping muted GIF replacements, which have
+    no audio.
+    """
+    issues: list[str] = []
+    for video in _tags_only(soup.find_all("video")):
+        if _should_skip_video(video) or _is_gif_replacement(video):
+            continue
+        issue = _video_caption_issue(video)
+        if issue is not None:
+            issues.append(issue)
+    return issues
+
+
+# Linked-video container formats that routinely carry speech.
+_CAPTIONABLE_LINKED_VIDEO_EXTS: frozenset[str] = frozenset(
+    {".mp4", ".mov", ".m4v"}
+)
+
+# Fragment on a linked video's href that opts it out of the captions
+# requirement, mirroring the ``label="No audio"`` marker on embedded <video>.
+_NO_AUDIO_LINK_MARKER = "no-audio"
+
+
+def _cdn_asset_base(url: str) -> tuple[str, str, str] | None:
+    """
+    Split an asset-CDN URL into ``(path_without_ext, ext, fragment)``, with the
+    query dropped and the extension lowercased.
+
+    Returns ``None`` for URLs hosted anywhere else.
+    """
+    parsed = urlparse(url)
+    if parsed.hostname != script_utils.CDN_HOSTNAME:
+        return None
+    base, ext = os.path.splitext(parsed.path)
+    return (base, ext.lower(), parsed.fragment)
+
+
+@functools.cache
+def _cdn_vtt_probe_issue(vtt_url: str) -> str | None:
+    """
+    ``None`` if a HEAD request finds the ``.vtt`` on the CDN, else the reason.
+
+    Results — failures included — are cached per URL: the checker runs over
+    every built page, and each unreferenced video gets exactly one probe per
+    run.
+    """
+    try:
+        response = _head_with_retry(vtt_url)
+    except requests.RequestException as exc:
+        return f"HEAD {vtt_url} failed: {exc}"
+    if response.ok:
+        return None
+    return f"HEAD {vtt_url} returned status {response.status_code}"
+
+
+def _referenced_cdn_vtt_bases(soup: BeautifulSoup) -> set[str]:
+    """Base paths of every ``.vtt`` on the asset CDN referenced by the page."""
+    bases: set[str] = set()
+    for tag in _tags_only(soup.find_all(["a", "track", "source"])):
+        ref = tag.get("href") or tag.get("src")
+        if not isinstance(ref, str):
+            continue
+        parsed = _cdn_asset_base(ref)
+        if parsed is not None and parsed[1] == ".vtt":
+            bases.add(parsed[0])
+    return bases
+
+
+def check_linked_video_captions(soup: BeautifulSoup) -> list[str]:
+    """
+    Every linked audio-container video on the asset CDN must have captions.
+
+    A bare ``<a href="…/foo.mp4">`` bypasses the embedded-``<video>`` caption
+    check. The link passes if the page references the sibling ``…/foo.vtt``,
+    or (checked via HEAD probe) the sibling ``.vtt`` exists on the CDN — the
+    transcription pipeline uploads it next to the video. Only
+    ``.mp4``/``.mov``/``.m4v`` links are checked (formats that routinely carry
+    speech); ``.webm``/``.gif`` links are exempt. A silent link opts out with
+    a ``#no-audio`` fragment, the link-side analog of the ``label="No audio"``
+    marker on embedded videos.
+    """
+    referenced_vtt_bases = _referenced_cdn_vtt_bases(soup)
+
+    issues: list[str] = []
+    for anchor in _tags_only(soup.find_all("a", href=True)):
+        href = anchor.get("href")
+        if not isinstance(href, str):  # pragma: no cover  # a simple typeguard
+            continue
+        parsed = _cdn_asset_base(href)
+        if parsed is None:
+            continue
+        base_path, ext, fragment = parsed
+        if ext not in _CAPTIONABLE_LINKED_VIDEO_EXTS:
+            continue
+        if fragment == _NO_AUDIO_LINK_MARKER:
+            continue
+        if base_path in referenced_vtt_bases:
+            continue
+        vtt_url = f"{script_utils.CDN_BASE_URL}{base_path}.vtt"
+        probe_issue = _cdn_vtt_probe_issue(vtt_url)
+        if probe_issue is not None:
+            issues.append(
+                f"Linked video {href} has no captions companion: "
+                f"{probe_issue}; no on-page .vtt reference or "
+                f"'#{_NO_AUDIO_LINK_MARKER}' marker"
+            )
+    return issues
+
+
+# Generic labels that don't describe the video's content, so they don't
+# satisfy the accessibility requirement.
+_PLACEHOLDER_VIDEO_LABELS: frozenset[str] = frozenset(
+    {"video", "movie", "clip", "media", "content", "placeholder"}
+)
+
+# Attributes that, when present and descriptive, give a <video> a text
+# alternative for assistive technology. ``alt`` follows the repo's GIF
+# conversion convention; the rest mirror the alt-text-llm scanner.
+_VIDEO_LABEL_ATTRS: tuple[str, ...] = (
+    "alt",
+    "aria-label",
+    "title",
+    "aria-describedby",
+)
+
+
+def _video_label_is_meaningful(value: object) -> bool:
+    """True iff *value* is a non-placeholder, non-empty label string."""
+    if not isinstance(value, str):
+        return False
+    stripped = value.strip().lower()
+    return bool(stripped) and stripped not in _PLACEHOLDER_VIDEO_LABELS
+
+
+def _video_is_decorative(video: Tag) -> bool:
+    """
+    A <video> explicitly marked decorative is exempt from needing a label.
+
+    Decorative markers mirror the image convention: an empty ``alt=""`` or
+    ``aria-hidden="true"`` signals the video carries no information for
+    assistive technology.
+    """
+    if video.get("aria-hidden") == "true":
+        return True
+    alt = video.get("alt")
+    return isinstance(alt, str) and alt.strip() == ""
+
+
+def check_video_accessibility(soup: BeautifulSoup) -> list[str]:
+    """
+    Every <video> must carry a text alternative or be marked decorative.
+
+    A video passes when it has a meaningful ``alt``/``aria-label``/``title``,
+    or is explicitly marked decorative (``alt=""`` or ``aria-hidden="true"``).
+    Videos with neither are reported so the gap surfaces in CI rather than
+    only in the local pre-push alt-text scan. The persistent ``#pond-video``
+    is not special-cased here: it passes on its own ``aria-hidden="true"``.
+    """
+    issues: list[str] = []
+    for video in _tags_only(soup.find_all("video")):
+        if _video_is_decorative(video):
+            continue
+        if any(
+            _video_label_is_meaningful(video.get(attr))
+            for attr in _VIDEO_LABEL_ATTRS
+        ):
+            continue
+        issues.append(
+            "<video> missing accessibility label "
+            "(alt/aria-label/title) or decorative marker "
+            f'(alt="" / aria-hidden="true"): {_video_open_tag(video)}'
+        )
+    return issues
+
+
 REQUIRED_ROOT_FILES = ("robots.txt", "favicon.svg", "favicon.ico")
 
 # Pattern to match citation keys in BibTeX entries: @misc{CitationKey,
@@ -2827,15 +3232,13 @@ def _find_duplicate_citations(
 
 
 def _maybe_collect_citation_keys(
+    soup: BeautifulSoup,
     file_path: Path,
     public_dir: Path,
     citation_to_files: dict[str, list[str]],
 ) -> None:
     """Extract citation keys from file and add to collection if not a
     redirect."""
-    # skipcq: PTC-W6004 -- file_path comes from iterating over trusted local files
-    with open(file_path, encoding="utf-8") as f:
-        soup = BeautifulSoup(f.read(), "html.parser")
     if script_utils.is_redirect(soup):
         return
 
@@ -3177,6 +3580,7 @@ def _resolve_md_path(
 
 
 def _collect_paragraphs_for_spellcheck(
+    soup: BeautifulSoup,
     file: str,
     file_path: Path,
     public_dir: Path,
@@ -3185,14 +3589,11 @@ def _collect_paragraphs_for_spellcheck(
     """Collect flattened paragraph text for spellcheck, skipping test pages."""
     if Path(file).stem == "test-page":
         return
-    # skipcq: PTC-W6004
-    with open(file_path, encoding="utf-8") as f:
-        soup_for_paras = BeautifulSoup(f.read(), "html.parser")
-    if script_utils.is_redirect(soup_for_paras) or soup_for_paras.find(
+    if script_utils.is_redirect(soup) or soup.find(
         "div", class_="page-listing"
     ):
         return
-    paras = _extract_flat_paragraph_texts(soup_for_paras)
+    paras = _extract_flat_paragraph_texts(soup)
     if paras:
         rel = str(file_path.relative_to(public_dir))
         paragraph_map[rel] = paras
@@ -3275,18 +3676,22 @@ def _process_html_files(  # pylint: disable=too-many-locals
                 file, root_path, public_dir, file_path, permalink_to_md_path_map
             )
 
+            # Read and parse each HTML file exactly once, then thread the
+            # parsed soup through every per-page check below.
+            soup = script_utils.parse_html_file(file_path)
+
             issues = check_file_for_issues(
-                file_path, public_dir, md_path, check_opts
+                soup, file_path, public_dir, md_path, check_opts
             )
             if any(lst for lst in issues.values()):
                 _print_issues(file_path, issues)
                 issues_found_in_html = True
 
             _maybe_collect_citation_keys(
-                file_path, public_dir, citation_to_files
+                soup, file_path, public_dir, citation_to_files
             )
             _collect_paragraphs_for_spellcheck(
-                file, file_path, public_dir, paragraph_map
+                soup, file, file_path, public_dir, paragraph_map
             )
 
     # Check for duplicate citation keys across all files

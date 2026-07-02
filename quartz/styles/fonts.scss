@@ -142,6 +142,7 @@ $italic-fonts: (
 @include font-face("DejaVuSerifCondensed-Bold", "DejaVuSerifCondensed-Bold-subset", ".woff2");
 @include font-face("BadHandwriting", "badhandwriting-webfont", ".woff2");
 @include font-face("Scary", "DarkmodeRegular", ".woff2");
+@include font-face("Acidic", "Acidic", ".woff2");
 @include font-face("Elvish", "tengwar_artano/TengwarArtano", ".woff2");
 
 // Tengwar Artano uses Unicode PUA encoding (U+E000-U+E07F).
@@ -252,6 +253,17 @@ em {
   font-style: normal;
 }
 
+.acidic {
+  font-family: Acidic, serif;
+  font-style: normal;
+
+  // The subset's "S" sits flush against its left edge while the trailing "e"
+  // keeps a sliver of slack, so inline the word crowds the word before it and
+  // drifts from the word after. Lead in slightly and pull the trailing gap
+  // back so the display word spaces evenly between normal-font words.
+  margin-inline: 0.06em -0.04em;
+}
+
 .fraction {
   font-variant-numeric: stacked-fractions;
   font-feature-settings: "frac" 1;
@@ -341,6 +353,29 @@ code {
   }
 }
 
+// Inline code (not `pre > code`, which scrolls) may break an over-long token as a
+// last resort rather than clip or force horizontal scroll on narrow viewports.
+// `break-word` only breaks when the token wouldn't otherwise fit; a short code
+// (`.inline-code-atomic`) stays whole since `overflow-wrap` is inert under
+// `white-space: nowrap`.
+:not(pre) > code {
+  overflow-wrap: break-word;
+}
+
+// Inline code's monospace glyph can crowd the word before it (especially after
+// letters with a rightward hook, "f"/"r"). The InlineCodeSpacing transformer
+// wraps that word so it can carry a trailing gap. A trailing margin collapses at
+// a line end, so when the code wraps to a line start it stays flush there.
+.inline-code-gap {
+  margin-right: 0.1em;
+}
+
+// A short code is one token: it wraps to the next line whole instead of breaking
+// at an internal hyphen. Longer codes stay breakable (see InlineCodeSpacing).
+.inline-code-atomic {
+  white-space: nowrap;
+}
+
 // For usage in the middle of a paragraph
 .dropcap {
   display: inline-block;
@@ -423,21 +458,42 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   }
 }
 
-// EG 1st, 2nd, 3rd
-.ordinal-suffix {
-  vertical-align: calc(0.5 * $base-margin);
-  font-size: 0.75em; // Adapt to the font size
+// Opt out of the random color flourish (e.g. solemn posts) while keeping the
+// dropcap. The extra attribute outranks the colored rule above, so the
+// embellishment always falls back to the monochrome --midground-faint.
+article[data-use-dropcap="true"][data-no-dropcap-color="true"] > p:not(.subtitle):first-of-type {
+  --before-color: var(--midground-faint);
+}
 
+// EG 1st, 2nd, 3rd. A raised, scaled glyph sized and positioned to match the
+// upright face's designed superscript, so the suffix stays consistent across
+// the upright and italic faces (the italic face ships no superscript glyphs).
+.ordinal-suffix {
+  font-size: 0.7em;
+  vertical-align: 0.34em;
+
+  // Italic figures slant into the raised suffix, so add space before it.
   em & {
-    margin-left: calc(0.25 * $base-margin);
+    margin-left: 0.15em;
   }
 }
 
-// Body text ordinals (like "21st place") use lining-nums for visual consistency.
-// Date ordinals (.date-ordinal-num) intentionally have no styling so they
-// inherit oldstyle-nums from body to match the year (e.g., "October 8th, 2025").
-article .ordinal-num {
+// Standalone ordinals (like "21st place") use lining figures so the number
+// keeps full cap height. A day adjacent to a year is tagged .date-ordinal-num
+// instead and uses oldstyle figures so it matches the year (e.g., "October
+// 8th, 2025").
+.ordinal-num {
   font-variant-numeric: lining-nums;
+}
+
+.date-ordinal-num {
+  font-variant-numeric: oldstyle-nums;
+}
+
+// Oldstyle date figures are shorter than lining figures, so drop the suffix to
+// sit on top of them instead of floating at lining height.
+.date-ordinal-num + .ordinal-suffix {
+  vertical-align: 0.22em;
 }
 
 // Version labels like "V1", "V2", "V100" — keep digits at cap height so they

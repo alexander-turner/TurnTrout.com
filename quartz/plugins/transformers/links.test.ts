@@ -104,7 +104,11 @@ describe("CrawlLinks anchor processing", () => {
 
   it.each([
     ["bare domain", "example.com", 'href="https://example.com"'],
+    ["bare domain starting with http", "httpbin.org", 'href="https://httpbin.org"'],
     ["mailto", "mailto:test@example.com", 'href="mailto:test@example.com"'],
+    ["tel", "tel:+15551234", 'href="tel:+15551234"'],
+    ["data uri", "data:text/plain,hello", 'href="data:text/plain,hello"'],
+    ["host with port", "example.com:8080", 'href="https://example.com:8080"'],
     ["https", "https://example.com", 'href="https://example.com"'],
   ])("normalizes %s href correctly", async (_desc, href, expected) => {
     const result = await processHtml(`<a href="${href}">Link</a>`)
@@ -146,6 +150,14 @@ describe("CrawlLinks anchor processing", () => {
       allSlugs: ["other-page"] as FullSlug[],
     })
     expect(result.links).toHaveLength(1)
+  })
+
+  it("throws an attributed error for an internal link with malformed percent-encoding", async () => {
+    // A stray "%" reaches decodeURIComponent and would otherwise abort the whole
+    // build with a bare "URI malformed"; the link and file must be named instead.
+    await expect(processHtml('<a href="/foo%bar">Broken</a>', { slug: "my-post" })).rejects.toThrow(
+      /Malformed internal link "\/foo%bar" in my-post/,
+    )
   })
 
   it.each([

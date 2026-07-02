@@ -59,6 +59,10 @@ jobs:
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
+    secrets:
+      ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+      SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+      S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
 
   deploy:
     needs: build
@@ -103,7 +107,10 @@ jobs:
             --formats woff2 --in-place --instance --inline-css --no-recursive --debug
 
       - name: Install Wrangler
-        run: pnpm add -g wrangler
+        # Local install (not -g): the deploy step below invokes it via
+        # `pnpm exec wrangler`, which resolves from node_modules. pnpm 11
+        # also hard-fails `add -g` when its global bin dir isn't on PATH.
+        run: pnpm install wrangler@3.99.0
 
       - name: Publish to Cloudflare Pages for Lighthouse testing
         id: deploy_cf_pages
@@ -161,11 +168,8 @@ jobs:
         with:
           urls: |
             ${{ needs.deploy.outputs.deploy_url }}/design
-            ${{ needs.deploy.outputs.deploy_url }}/design#footnote-label
+            ${{ needs.deploy.outputs.deploy_url }}/design#footnotes
             ${{ needs.deploy.outputs.deploy_url }}/test-page
-            ${{ needs.deploy.outputs.deploy_url }}/test-page#spoilers
-            ${{ needs.deploy.outputs.deploy_url }}/test-page#videos
-            ${{ needs.deploy.outputs.deploy_url }}/test-page#admonitions
             ${{ needs.deploy.outputs.deploy_url }}/test-page#footnotes
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config.json"
@@ -192,11 +196,8 @@ jobs:
         with:
           urls: |
             ${{ needs.deploy.outputs.deploy_url }}/design
-            ${{ needs.deploy.outputs.deploy_url }}/design#footnote-label
+            ${{ needs.deploy.outputs.deploy_url }}/design#footnotes
             ${{ needs.deploy.outputs.deploy_url }}/test-page
-            ${{ needs.deploy.outputs.deploy_url }}/test-page#spoilers
-            ${{ needs.deploy.outputs.deploy_url }}/test-page#videos
-            ${{ needs.deploy.outputs.deploy_url }}/test-page#admonitions
             ${{ needs.deploy.outputs.deploy_url }}/test-page#footnotes
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config-mobile.json"

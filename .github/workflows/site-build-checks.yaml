@@ -19,7 +19,6 @@ on:
       - "config/constants.json"
       - "config/stylelint/.variables-only-stylelintrc.json"
       - "scripts/built_site_checks.py"
-      - "scripts/check_internal_links.py"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
@@ -58,7 +57,6 @@ jobs:
               - "config/constants.json"
               - "config/stylelint/.variables-only-stylelintrc.json"
               - "scripts/built_site_checks.py"
-              - "scripts/check_internal_links.py"
               - "package.json"
               - "pnpm-lock.yaml"
               - ".github/actions/**"
@@ -70,6 +68,10 @@ jobs:
     uses: ./.github/workflows/build-site.yaml
     with:
       fetch-depth: 0
+    secrets:
+      ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+      SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+      S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
 
   built-site-checks:
     needs: [should-run, build]
@@ -92,9 +94,13 @@ jobs:
 
       - name: Check CSS variables
         run: |
-          # Run stylelint to check for unknown CSS variables
+          # Run stylelint to check for unknown CSS variables.
+          # Invoke the binary directly rather than via `pnpm exec`: pnpm's
+          # deps-status check can recreate node_modules and print install
+          # chatter to stderr, which the 2>&1 capture below would mistake
+          # for stylelint warnings.
           # Filter out known false positives and check if any real issues remain
-          WARNINGS=$(pnpm exec stylelint public/index.css \
+          WARNINGS=$(node_modules/.bin/stylelint public/index.css \
             --config config/stylelint/.variables-only-stylelintrc.json 2>&1 \
             | grep -vE 'shiki|problem|public/index.css' \
             | grep . || true)

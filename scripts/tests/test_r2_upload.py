@@ -484,7 +484,9 @@ def test_check_exists_on_r2_file_exists():
         ),
         patch("subprocess.run") as mock_run,
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="file.txt\n")
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="        9 file.txt\n"
+        )
         result = r2_upload.check_exists_on_r2("r2:bucket/file.txt")
         assert result is True
         mock_run.assert_called_once_with(
@@ -493,6 +495,38 @@ def test_check_exists_on_r2_file_exists():
             text=True,
             check=True,
         )
+
+
+def test_check_exists_on_r2_substring_prefix_does_not_match():
+    """A key that is only a substring-prefix of a real object is not 'found'."""
+    with (
+        patch(
+            "scripts.r2_upload.script_utils.find_executable",
+            return_value="rclone",
+        ),
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="       12 file.txt-backup\n"
+        )
+        result = r2_upload.check_exists_on_r2("r2:bucket/file.txt")
+        assert result is False
+
+
+def test_check_exists_on_r2_does_not_match_size_column():
+    """A key equal to the rclone size column is not mistaken for a path."""
+    with (
+        patch(
+            "scripts.r2_upload.script_utils.find_executable",
+            return_value="rclone",
+        ),
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="        9 file.txt\n"
+        )
+        result = r2_upload.check_exists_on_r2("r2:bucket/9")
+        assert result is False
 
 
 def test_check_exists_on_r2_file_not_exists():
@@ -516,7 +550,9 @@ def test_check_exists_on_r2_file_not_exists():
 
 def test_check_exists_on_r2_verbose_output(capsys):
     with patch("subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(returncode=0, stdout="file.txt\n")
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="        9 file.txt\n"
+        )
         r2_upload.check_exists_on_r2("r2:bucket/file.txt", verbose=True)
         captured = capsys.readouterr()
         assert "File found in R2: r2:bucket/file.txt" in captured.out
@@ -658,6 +694,33 @@ def test_upload_svg_with_metadata(mock_git_root: Path):
                 f"r2:{r2_upload.R2_BUCKET_NAME}/static/test.svg",
                 "--metadata-set",
                 "content-type=image/svg+xml",
+            ],
+            check=True,
+        )
+
+
+def test_vtt_in_upload_extensions():
+    """VTT captions are uploaded alongside the other video assets."""
+    assert ".vtt" in r2_upload.file_exts_to_upload
+
+
+# Ensure we tell rclone to serve captions with the correct MIME header
+def test_upload_vtt_with_metadata(mock_git_root: Path):
+    test_file = mock_git_root / "quartz" / "static" / "test.vtt"
+    test_file.parent.mkdir(parents=True, exist_ok=True)
+    test_file.touch()
+
+    with patch("subprocess.run") as mock_run, patch("shutil.move"):
+        r2_upload.upload_and_move(test_file, verbose=True)
+
+        mock_run.assert_any_call(
+            [
+                "rclone",
+                "copyto",
+                str(test_file),
+                f"r2:{r2_upload.R2_BUCKET_NAME}/static/test.vtt",
+                "--metadata-set",
+                "content-type=text/vtt",
             ],
             check=True,
         )

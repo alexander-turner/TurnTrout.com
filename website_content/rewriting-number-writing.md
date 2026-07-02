@@ -5,6 +5,7 @@ no_dropcap: false
 tags:
   - critique
   - understanding-the-world
+  - writing
 description: "Our eyes must scan to the end of a long number, then jump back to the start in order to understand it. My modest proposal: flip how we write numbers."
 authors:
   - Alex Turner
@@ -17,7 +18,7 @@ aliases:
   - number-proposal
   - rethinking-number-writing
 date_published: 2025-07-25
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 card_image_alt: A depiction of the House of Wisdom, made in the style of the famous School of Athens painting.
 ---
 
@@ -33,6 +34,9 @@ I have no illusions: this system will not be adopted anytime soon, and for good 
 
 > [!note] Few people have written about this proposal
 > I am apparently not the first person to have this thought. `lsusr` wrote a short note titled ["We write numbers backward".](https://www.lsusr.com/blog/we-write-numbers-backward.html) However, they promote the misconception that Arabic numerals are backwards in English because Arabic reads right-to-left. [I thought that at first too, but it's not true; I explain why.](#right-to-left-scripts-already-swap-directions-for-reading-numbers) I also found [a tiny Hacker News thread](https://news.ycombinator.com/item?id=2909549) whose original poster promotes the same misconception.
+
+> [!idea] An interesting alternative
+> Erez Abrams suggested writing ${}^5 21,514$, where the 5 indicates the order of magnitude (OOM) of the first digit of the number. You'd only want to write the OOM when it isn't apparent at a glance. This resolves [the major "I don't know what to do with these digits" issues](#the-first-digits-are-informative-on-their-own) for written English while [retaining important OOM information up front.](#the-rough-magnitude) That said, Erez's scheme is [worse for serial processing](#simplifies-long-addition-and-multiplication) and doesn't [align with left-to-right number-sense](#mental-number-line-small-on-the-left-big-on-the-right). My [improved scientific notation](#scientific-notation-should-flip) stands independently.
 
 # Advantages of flipped digit order
 
@@ -160,7 +164,7 @@ This rule is strictly more complicated than what flipped numbers require. Flippe
 
 If you're writing a number where most readers will only care about the magnitude, then write the number in scientific notation. Scientific notation only includes the digits which are relevant. However, it isn't perfect.
 
-Consider the standard notation of $5 \times 10^7$. You read the first part: "$5 \times$". 5 _what_? You don't know. Instead, we might write $10^7 \times 5$ in order to communicate the most important information ASAP. (Or technically, ↗$01^{7}\times 5$.)
+Consider the standard notation of $5 \times 10^7$. You read the first part: "$5 \times$"… 5 _what_? You don't know. Instead, we might write $10^7 \times 5$ in order to communicate the most important information ASAP. (Or technically, ↗$01^{7}\times 5$.)
 
 However, for $10^k$ with $k\geq 1$, this would run counter to the "left is smaller" mental number line by putting the big magnitude to the left of a number in the one's place. We can't win - no matter which way we order the scientific notation, the mental number line will be violated for either $k\geq 1$ or $k \leq -1$. On the other hand, given that readers would be used to looking for the most significant digit on the right, writing $10^7 \times 5$ would be congruent with the more usual way of writing ↗000,000,05. On balance, I think that "$10^7 \times 5$" is the way to go.
 

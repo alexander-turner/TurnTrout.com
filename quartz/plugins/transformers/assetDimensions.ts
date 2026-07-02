@@ -8,10 +8,12 @@ import sizeOf from "image-size"
 import path from "path"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
+import { VFile } from "vfile"
 
 import type { BuildCtx } from "../../util/ctx"
 
 import { createWinstonLogger } from "../../util/log"
+import { isDraftPath } from "../filters/draft"
 
 export const logger = createWinstonLogger("assetDimensions")
 
@@ -414,7 +416,15 @@ class AssetProcessor {
       node.properties = node.properties || {}
       node.properties.width = dims.width
       node.properties.height = dims.height
-      prependStyles(node, `aspect-ratio: ${dims.width} / ${dims.height};`)
+      let styles = `aspect-ratio: ${dims.width} / ${dims.height};`
+      // A video reports no usable intrinsic width until its resource loads, so a
+      // shrink-to-fit float-right figure sizes to the 300px default object width
+      // and then jumps to the real width on load. Expose the known width so CSS
+      // can give such figures a definite width up front.
+      if (node.tagName === "video") {
+        styles += ` --natural-width: ${dims.width}px;`
+      }
+      prependStyles(node, styles)
     }
   }
 }
@@ -502,7 +512,12 @@ export const addAssetDimensionsFromSrc = () => {
       const offline = ctx.argv.offline ?? false
       return [
         () => {
-          return async (tree: Root) => {
+          return async (tree: Root, file: VFile) => {
+            // Drafts are stripped by RemoveDrafts before emission, so don't fail
+            // the build over a draft that references an asset not yet on disk.
+            if (isDraftPath(file.data.filePath ?? file.path ?? "")) {
+              return
+            }
             const currentDimensionsCache = await assetProcessor.maybeLoadDimensionCache()
             const assetsToProcess = assetProcessor.collectAssetNodes(tree)
 

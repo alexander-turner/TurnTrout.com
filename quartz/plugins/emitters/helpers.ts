@@ -23,7 +23,10 @@ export const write = async ({ ctx, slug, ext, content }: WriteOptions): Promise<
   const pathToPage = joinSegments(ctx.argv.output, slug + ext) as FilePath
   const dir = path.dirname(pathToPage)
   await fs.promises.mkdir(dir, { recursive: true })
-  await fs.promises.writeFile(pathToPage, content)
+  // Write atomically: a crash mid-write must not leave a truncated page on disk.
+  const tempFile = `${pathToPage}.tmp`
+  await fs.promises.writeFile(tempFile, content)
+  await fs.promises.rename(tempFile, pathToPage)
   return pathToPage
 }
 

@@ -80,8 +80,7 @@ describe("PopulateContainers", () => {
       if (command.includes("git rev-list")) return `${DEFAULT_MOCK_STATS.commitCount}\n`
       if (command.includes('git log --all --oneline --grep="claude.ai/code/session"'))
         return `${DEFAULT_MOCK_STATS.aiCommitCount}\n`
-      if (command.includes("pnpm test"))
-        return `Tests:       ${DEFAULT_MOCK_STATS.jsTestCount} passed, ${DEFAULT_MOCK_STATS.jsTestCount} total\n`
+      if (command.includes("*.test.ts")) return `${DEFAULT_MOCK_STATS.jsTestCount}\n`
       if (command.includes("pytest --collect-only"))
         return `${DEFAULT_MOCK_STATS.pytestCount} tests collected in 0.50s\n`
       if (command.includes('grep -r "test("')) return `${DEFAULT_MOCK_STATS.playwrightTestCount}\n`
@@ -896,30 +895,31 @@ describe("PopulateContainers", () => {
     })
 
     describe("countJsTestFiles", () => {
-      it("should count JS/TS tests from pnpm test output", () => {
-        mockExecSync.mockReturnValue(
-          `Tests:       ${MOCK_STATS.jsTestCount} passed, ${MOCK_STATS.jsTestCount} total\n`,
-        )
+      it("should count JS/TS test declarations via grep", () => {
+        mockExecSync.mockReturnValue(`${MOCK_STATS.jsTestCount}\n`)
 
         const count = populateModule.countJsTests()
 
         expect(count).toBe(MOCK_STATS.jsTestCount)
         expect(mockExecSync).toHaveBeenCalledWith(
-          "pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1",
+          expect.stringContaining("--include='*.test.ts'"),
           { encoding: "utf-8" },
         )
       })
 
-      it("should throw when no tests found", () => {
-        mockExecSync.mockReturnValue("")
+      it("should not execute the test suite", () => {
+        mockExecSync.mockReturnValue("42\n")
 
-        expect(() => populateModule.countJsTests()).toThrow(
-          "Failed to parse test count from output",
+        populateModule.countJsTests()
+
+        expect(mockExecSync).not.toHaveBeenCalledWith(
+          expect.stringContaining("pnpm test"),
+          expect.anything(),
         )
       })
 
-      it("should handle different test output formats", () => {
-        mockExecSync.mockReturnValue("Tests:       42 passed, 50 total\n")
+      it("should handle a different count", () => {
+        mockExecSync.mockReturnValue("42\n")
 
         const count = populateModule.countJsTests()
 
@@ -1006,9 +1006,7 @@ describe("PopulateContainers", () => {
           .mockReturnValueOnce(`${MOCK_STATS.commitCount}\n`)
           .mockReturnValueOnce("false\n") // isShallowClone for aiCommitCount
           .mockReturnValueOnce(`${MOCK_STATS.aiCommitCount}\n`)
-          .mockReturnValueOnce(
-            `Tests:       ${MOCK_STATS.jsTestCount} passed, ${MOCK_STATS.jsTestCount} total\n`,
-          )
+          .mockReturnValueOnce(`${MOCK_STATS.jsTestCount}\n`)
           .mockReturnValueOnce(`${MOCK_STATS.playwrightTestCount}\n`)
           .mockReturnValueOnce(`${MOCK_STATS.pytestCount} tests collected in 0.50s\n`)
           .mockReturnValueOnce(`${MOCK_STATS.linesOfCode}\n`)
@@ -1016,6 +1014,42 @@ describe("PopulateContainers", () => {
         const stats = await populateModule.computeRepoStats()
 
         expect(stats).toEqual(MOCK_STATS)
+      })
+
+      it("degrades a failing cosmetic counter to the sentinel instead of aborting", async () => {
+        // Every stat command fails (e.g. no `.venv`, no `git`): the build must
+        // still produce a full RepoStats object with sentinel counts.
+        mockExecSync.mockImplementation(() => {
+          throw new Error("command not found")
+        })
+
+        const stats = await populateModule.computeRepoStats()
+
+        expect(stats).toEqual({
+          commitCount: populateModule.STAT_UNAVAILABLE,
+          aiCommitCount: populateModule.STAT_UNAVAILABLE,
+          jsTestCount: populateModule.STAT_UNAVAILABLE,
+          playwrightTestCount: populateModule.STAT_UNAVAILABLE,
+          pytestCount: populateModule.STAT_UNAVAILABLE,
+          linesOfCode: populateModule.STAT_UNAVAILABLE,
+        })
+      })
+    })
+
+    describe("safeStatCount", () => {
+      it("returns the counter result when it succeeds", () => {
+        expect(populateModule.safeStatCount("ok", () => 42)).toBe(42)
+      })
+
+      it("returns the sentinel and does not throw when the counter throws", () => {
+        const throwingCounter = () => {
+          throw new Error("boom")
+        }
+
+        expect(() => populateModule.safeStatCount("boom", throwingCounter)).not.toThrow()
+        expect(populateModule.safeStatCount("boom", throwingCounter)).toBe(
+          populateModule.STAT_UNAVAILABLE,
+        )
       })
     })
 

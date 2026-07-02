@@ -24,12 +24,13 @@ dependencies = [
     "rich",
     "ruamel-yaml",
     "tqdm",
+    "voyageai",
     "validators",
     "types-defusedxml==0.7.0.20260504",
     "types-pyyaml==6.0.12.20260510",
     "types-requests==2.33.0.20260513",
     "pandas-stubs",
-    "mypy==2.1.0",
+    "pyright==1.1.410",
     "lxml-stubs>=0.5.1",
     "types-pysocks>=1.7.1.20251001",
     "types-pygments==2.20.0.20260508",
@@ -114,6 +115,9 @@ black = true
 [tool.coverage.run]
 omit = ["scripts/tests/*", "scripts/__init__.py"]
 disable_warnings = ["no-data-collected"]
+# compress.video() runs its HEVC and WebM encodes in worker threads; without
+# this, lines executed only off the main thread are reported as uncovered.
+concurrency = ["thread"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -143,3 +147,19 @@ pytest_add_cli_args_test_selection = [
     "scripts/tests/test_strip_for_spellcheck.py",
     "scripts/tests/test_strip_for_spellcheck_properties.py",
 ]
+
+[tool.pyright]
+include = ["scripts/*.py"]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.11"
+typeCheckingMode = "standard"
+# Helpful correctness rules beyond `standard` (excluding pure style/churn and the
+# `reportUnknown*` family, which would drown the untyped-dependency call sites):
+reportUnnecessaryComparison = "error"
+reportUnnecessaryContains = "error"
+reportUnnecessaryCast = "error"
+reportConstantRedefinition = "error"
+reportUnnecessaryTypeIgnoreComment = "error"
+reportMatchNotExhaustive = "error"
+reportPropertyTypeMismatch = "error"

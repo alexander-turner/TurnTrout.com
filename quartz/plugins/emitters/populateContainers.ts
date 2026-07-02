@@ -104,6 +104,26 @@ interface GitCountOptions {
   grep?: string
 }
 
+/**
+ * Sentinel returned for a cosmetic stat whose underlying command failed. These
+ * counts feed decorative badges only, so a missing tool (no `.venv`, no `git`,
+ * an unexpected output format) must degrade gracefully rather than abort the
+ * whole build.
+ */
+export const STAT_UNAVAILABLE = 0
+
+/** Runs a cosmetic stat counter, degrading to {@link STAT_UNAVAILABLE} on any failure. */
+export function safeStatCount(label: string, counter: () => number): number {
+  try {
+    return counter()
+  } catch (err) {
+    logger.warn(
+      `Stat counter "${label}" failed; using sentinel ${STAT_UNAVAILABLE}: ${String(err)}`,
+    )
+    return STAT_UNAVAILABLE
+  }
+}
+
 /** True if the current git working tree is a shallow clone. */
 export function isShallowClone(): boolean {
   return execSync("git rev-parse --is-shallow-repository", { encoding: "utf-8" }).trim() === "true"
@@ -120,15 +140,16 @@ export function countGitCommits(options: GitCountOptions = {}): number {
   return parseInt(output.trim(), 10)
 }
 
-/** Counts passing Jest tests by parsing the trailing "Tests: N passed" line from the test run. */
+/**
+ * Approximate count of Jest `it`/`test`/`it.each`/`test.each` declarations
+ * across `*.test.{ts,tsx}` files via grep (a stat badge, not an exact AST count).
+ */
 export function countJsTests(): number {
-  // Sadly, this requires running all tests but there isn't a --collect-only like for pytest
-  const output = execSync("pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1", {
-    encoding: "utf-8",
-  })
-  const match = output.match(/(?<count>\d+)\s+passed/)
-  if (!match?.groups) throw new Error("Failed to parse test count from output")
-  return parseInt(match.groups.count, 10)
+  const output = execSync(
+    "grep -rhoE '\\b(it|test)(\\.each)?\\s*[(`]' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules . | wc -l",
+    { encoding: "utf-8" },
+  )
+  return parseInt(output.trim(), 10)
 }
 
 /** Counts Playwright `test(...)` declarations in `quartz/components/tests/*.spec.ts`. */
@@ -173,16 +194,20 @@ export interface RepoStats {
   linesOfCode: number
 }
 
-/** Gathers commit, test, and code-size statistics about this repo in parallel. */
+/**
+ * Gathers commit, test, and code-size statistics about this repo in parallel.
+ * Each counter is cosmetic, so a single failure degrades to {@link STAT_UNAVAILABLE}
+ * rather than aborting the build.
+ */
 export async function computeRepoStats(): Promise<RepoStats> {
   const [commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
     await Promise.all([
-      countGitCommits({ author: "Alex Turner" }),
-      countGitCommits({ grep: "claude.ai/code/session" }),
-      countJsTests(),
-      countPlaywrightTests(),
-      countPythonTests(),
-      countLinesOfCode(),
+      safeStatCount("git-commits", () => countGitCommits({ author: "Alex Turner" })),
+      safeStatCount("ai-git-commits", () => countGitCommits({ grep: "claude.ai/code/session" })),
+      safeStatCount("js-tests", countJsTests),
+      safeStatCount("playwright-tests", countPlaywrightTests),
+      safeStatCount("pytest", countPythonTests),
+      safeStatCount("lines-of-code", countLinesOfCode),
     ])
 
   return { commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }

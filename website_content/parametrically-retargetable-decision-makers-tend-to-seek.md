@@ -37,7 +37,7 @@ date_published: 2023-02-18
 original_url: https://www.lesswrong.com/posts/GY49CKBkEs3bEpteM/parametrically-retargetable-decision-makers-tend-to-seek
 skip_import: true
 description: "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power."
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 createBibtex: true
 ---
 
@@ -61,7 +61,7 @@ Examples of agent designs the power-seeking theorems now apply to:
 - [Quantilizing](https://intelligence.org/files/QuantilizersSaferAlternative.pdf) with a uniform prior over plans, and
 - RL-trained agents under certain modeling assumptions.
 
-The key insight is that the original results hinge not on optimality per se, but on the [retargetability](/satisficers-tend-to-seek-power) of the policy-generation process via a reward or utility function or some other parameter. See [Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability](/satisficers-tend-to-seek-power) for intuitions and illustrations.
+The key insight is that the original results hinge not on optimality per se, but on the [retargetability](/satisficers-tend-to-seek-power) of the policy-generation process via a reward or utility function or some other parameter. See [@title](/satisficers-tend-to-seek-power) for intuitions and illustrations.
 
 # Why am I only now posting this?
 

@@ -41,6 +41,15 @@
   &.close-text {
     margin-left: calc(0.3125 * #{$base-margin});
   }
+
+  // A favicon appended after inline code sits inside the <code>, so the
+  // monospace cell tightens the gap to the word; widen the left margin to
+  // 0.1rem so it sits clear of the code. The right gap keeps a trailing
+  // ")" / "]" from cramping.
+  code & {
+    margin-left: calc(0.2 * #{$base-margin});
+    margin-right: calc(0.15 * #{$base-margin});
+  }
 }
 
 // SVG-specific styling using masks for color control
@@ -53,6 +62,7 @@ svg.favicon {
   --attenuated-green: color-mix(in srgb, var(--green) var(--color-percentage), var(--svg-color));
   --attenuated-yellow: color-mix(in srgb, var(--gold) var(--color-percentage), var(--svg-color));
   --attenuated-orange: color-mix(in srgb, var(--orange) var(--color-percentage), var(--svg-color));
+  --attenuated-purple: color-mix(in srgb, var(--purple) var(--color-percentage), var(--svg-color));
 
   mask: var(--mask-url) no-repeat center / contain;
   filter: none; // Don't apply img filters to masks
@@ -111,6 +121,25 @@ svg.favicon {
     );
   }
 
+  // NBC peacock: six feathers fan out from a single point, so a conic-gradient
+  // anchored there paints each feather its own hue. Going left-to-right across
+  // the fan: yellow, orange, red, purple, blue, green. The ~24:15 artwork is
+  // letterboxed into the square favicon box, so its fan base sits at 80.8% of
+  // the box height (not 100%); anchoring there keeps each feather one solid
+  // color. The 0deg/360deg seam sits at 180deg (straight down), inside the
+  // empty wedge below the fan, so no feather straddles the wrap.
+  &[data-domain="msnbc_com"] {
+    background: conic-gradient(
+      from 0deg at 50% 80.8%,
+      var(--attenuated-purple) 0deg 25deg,
+      var(--attenuated-blue) 25deg 54deg,
+      var(--attenuated-green) 54deg 180deg,
+      var(--attenuated-yellow) 180deg 306deg,
+      var(--attenuated-orange) 306deg 334deg,
+      var(--attenuated-red) 334deg 360deg
+    );
+  }
+
   &[data-domain="intelligence_org"] {
     background: conic-gradient(
       from -90deg at 50% 50%,
@@ -124,8 +153,11 @@ svg.favicon {
 // Per-domain SVG colors
 $domain-svg-colors: (
   "arbital_com": var(--green),
+  "arstechnica_com": var(--orange),
   "arxiv_org": var(--red),
   "cnn_com": var(--red),
+  "stackexchange_com": var(--blue),
+  "theguardian_com": var(--blue),
   "deepmind_com": var(--blue),
   "discord_gg": color-mix(in srgb, var(--purple) 50%, var(--blue)),
   "fatebook_io": var(--purple),
@@ -191,5 +223,18 @@ svg.favicon[data-domain="amazon_com"] {
 
   &.full-color {
     --color-percentage: 100%;
+  }
+}
+
+// Four captions across squeeze each into a column too narrow for phrases like
+// "is a radial-gradient:", so the atomic code wraps awkwardly. Cap at two
+// columns, and one on mobile, so each caption has room to wrap naturally.
+#big-favicon-demo .subfigure {
+  flex-basis: 45%;
+}
+
+@media all and (max-width: $mobile-breakpoint) {
+  #big-favicon-demo .subfigure {
+    flex-basis: 100%;
   }
 }

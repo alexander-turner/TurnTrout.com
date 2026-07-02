@@ -65,6 +65,7 @@ export default (() => {
     )
     const exposedFrontmatter = {
       no_dropcap: fileData.frontmatter?.no_dropcap,
+      no_dropcap_color: fileData.frontmatter?.no_dropcap_color,
     }
 
     const frontmatterScript = (
@@ -146,7 +147,9 @@ export default (() => {
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex, nofollow" />
         )}
-        <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
+        {fileData.usesKatex && (
+          <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
+        )}
         {iconPreloads}
         {fontPreloads}
         <script defer src="/static/scripts/collapsible-listeners.js" spa-preserve />

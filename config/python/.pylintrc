@@ -5,7 +5,7 @@ extension-pkg-allow-list =
 extension-pkg-whitelist = 
 fail-on = 
 fail-under = 10
-ignore = CVS,.venv,mutants
+ignore = CVS,.venv,mutants,.claude-tooling,.worktrees
 ignore-paths = ^mutants/.*,.*scripts/(tests|notebooks)/.*,.*node_modules/.*,.venv/.*,.github/scripts/.*,.claude/hooks/.*
 ignore-patterns = ^\.#
 ignored-modules = 
@@ -147,7 +147,7 @@ min-similarity-lines = 4
 [SPELLING]
 max-spelling-suggestions = 4
 spelling-dict = 
-spelling-ignore-comment-directives = fmt: on,fmt: off,noqa:,noqa,nosec,isort:skip,mypy:
+spelling-ignore-comment-directives = fmt: on,fmt: off,noqa:,noqa,nosec,isort:skip,pyright:
 spelling-ignore-words = 
 spelling-private-dict-file = 
 spelling-store-unknown-words = no

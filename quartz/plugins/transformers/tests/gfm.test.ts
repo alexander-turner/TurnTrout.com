@@ -426,12 +426,12 @@ describe("returnAddIdsToHeadingsFn function", () => {
     processor(tree1)
     processor(tree2)
 
-    const h1_tree1 = tree1.children[0] as Element
-    const h1_tree2 = tree2.children[0] as Element
+    const h1Tree1 = tree1.children[0] as Element
+    const h1Tree2 = tree2.children[0] as Element
 
     // Both should get the same ID since slugger is reset
-    expect(h1_tree1.properties?.id).toBe("same-heading")
-    expect(h1_tree2.properties?.id).toBe("same-heading")
+    expect(h1Tree1.properties?.id).toBe("same-heading")
+    expect(h1Tree2.properties?.id).toBe("same-heading")
   })
 })
 
@@ -901,8 +901,11 @@ describe("htmlAccessibilityPlugin (integration)", () => {
 
   it.each([
     [
-      "adds <track> to video without one",
-      () => h("video", { controls: true }, [h("source", { src: "test.mp4", type: "video/mp4" })]),
+      "adds placeholder <track> to silent GIF-replacement video without one",
+      () =>
+        h("video", { autoplay: true, loop: true, muted: true }, [
+          h("source", { src: "test.mp4", type: "video/mp4" }),
+        ]),
       (el: Element) => {
         const track = el.children.find(
           (c) => c.type === "element" && c.tagName === "track",
@@ -913,9 +916,17 @@ describe("htmlAccessibilityPlugin (integration)", () => {
       },
     ],
     [
-      "does not add duplicate <track>",
+      "leaves audio-bearing video untracked so the caption check flags it",
+      () => h("video", { controls: true }, [h("source", { src: "test.mp4", type: "video/mp4" })]),
+      (el: Element) => {
+        const tracks = el.children.filter((c) => c.type === "element" && c.tagName === "track")
+        expect(tracks).toHaveLength(0)
+      },
+    ],
+    [
+      "does not add duplicate <track> to a GIF-replacement video",
       () =>
-        h("video", { controls: true }, [
+        h("video", { autoplay: true, loop: true, muted: true }, [
           h("source", { src: "test.mp4", type: "video/mp4" }),
           h("track", { kind: "captions", label: "No audio" }),
         ]),

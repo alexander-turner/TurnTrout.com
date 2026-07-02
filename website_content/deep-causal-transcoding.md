@@ -6,6 +6,7 @@ tags:
   - activation-engineering
   - AI
   - mats-program
+  - interpretability
 description: Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.
 authors:
   - Andrew Mack
@@ -16,7 +17,7 @@ aliases:
   - melbo-framework
   - dct
 date_published: 2024-12-04
-date_updated: 2026-05-22
+date_updated: 2026-06-28
 original_url: https://www.lesswrong.com/posts/fSRg5qs9TPbNy3sm5/deep-causal-transcoding-a-framework-for-mechanistically
 ---
 
@@ -206,7 +207,7 @@ seems plausible that by incorporating all higher-order information of the true m
 
 [^bignote-1.5]: Interestingly, the factor of 1.5 in the exponent is of the same order of the construction that [Hänni et al. (2024)](https://arxiv.org/abs/2408.05451) give for noise-tolerant computation in superposition.
 
-### Fitting a Linear MLP
+### Fitting a linear MLP
 
 In this case, no matter what $\hat U, \hat V$ are, all but the linear terms of the loss (3) vanish, and we are fitting a factorization of the Jacobian of $\Delta_{R}^{s\rightarrow t}$, as we are simply minimizing:
 
@@ -238,7 +239,7 @@ $$
 
 This will serve as a useful fast initialization for learning quadratic and exponential MLPs. And as we will see, despite being an approximation it also often delivers *more* useful/interpretable features than computing the Jacobian exactly, further supporting the hypothesis that assuming orthogonal features does not accurately reflect an LLM's true ontology.
 
-### Fitting a Quadratic MLP
+### Fitting a quadratic MLP
 
 In this case, all but the quadratic terms in equation (3) are constant, and we are fitting a factorization of the Hessian tensor. In particular, our minimization problem is:
 $$
@@ -281,7 +282,7 @@ $$
 \begin{aligned} & \textbf{Algorithm 2: Symmetric Orthogonalized Alternating Least Squares} \\ & \textbf{Input: } \mathcal{T}^{(2)}, \tau, \epsilon, m \\ & \textbf{Output: } \hat{U}, \hat{V}, \alpha \\ & \\ & 1: \text{Initialize } \hat{U}, \hat{V} \text{ via Algorithm (1')} \\ & 2: \textbf{repeat } \text{for } \tau \text{ steps (or until change in factors is smaller than } \epsilon \text{)} \\ & 3: \qquad \hat{V} \leftarrow Q \text{ in the QR decomposition of } \hat{V} \\ & 4: \qquad \hat{u}_\ell \leftarrow \mathcal{T}^{(2)}(\cdot, \hat{v}_\ell, \hat{v}_\ell) \quad \forall \ell = 1, \ldots, m \\ & 5: \qquad \hat{v}_\ell \leftarrow \mathcal{T}^{(2)}(\hat{u}_\ell, \hat{v}_\ell, \cdot) \quad \forall \ell = 1, \ldots, m \\ & 6: \qquad \text{Normalize the columns of } \hat{U}, \hat{V} \\ & 7: \textbf{end repeat} \\ & 8: K_{\text{quadratic}, \ell \ell'} \leftarrow \text{matrix w/ elements } \langle \hat{u}_\ell, \hat{u}_{\ell'} \rangle |\langle \hat{v}_\ell, \hat{v}_{\ell'} \rangle|^2 \quad \forall \ell, \ell' = 1, \ldots, m \\ & 9: \alpha \leftarrow K^{-1}_\text{quadratic} (\mathcal{T}^{(2)}(\hat{u}_\ell, \hat{v}_\ell, \hat{v}_\ell))_{\ell=1}^m \end{aligned}
 $$
 
-Note that it's possible to compute the main updates of algorithm 2 without explicitly materializing the entire Hessian tensor; for details see the [appendix](#appendix) (broadly, the details are similar to, e.g., [Panickserry (2023)](https://www.lesswrong.com/posts/mwBaS2qE9RNNfqYBC/recipe-hessian-eigenvector-computation-for-pytorch-models) or [Grosse et al. (2023)](https://arxiv.org/pdf/2308.03296)).
+Note that it's possible to compute the main updates of algorithm 2 without explicitly materializing the entire Hessian tensor; for details see the [@title-lower](#appendix) (broadly, the details are similar to, e.g., [Panickserry (2023)](https://www.lesswrong.com/posts/mwBaS2qE9RNNfqYBC/recipe-hessian-eigenvector-computation-for-pytorch-models) or [Grosse et al. (2023)](https://arxiv.org/pdf/2308.03296)).
 
 #### Alternative formulation of tensor decomposition objective: causal importance minus similarity penalty
 
@@ -326,7 +327,7 @@ The re-phrased version yields a number of additional insights, summarized as fol
 
 [^bignote-motif]: To summarize, a prevailing finding from both theoretical and empirical papers in this literature is that methods which make large steps in parameter space (ALS is one, but another is the tensor power iteration method of [Anandkumar et al. (2014)](https://jmlr.org/papers/volume15/anandkumar14b/anandkumar14b.pdf)) perform better, and are more robust to noise, than vanilla gradient descent.
 
-### Fitting an Exponential MLP
+### Fitting an exponential MLP
 
 Now, I leverage the intuition developed in the final part of the previous section to derive a heuristic training algorithm in the case of exponential MLPs.
 
@@ -405,7 +406,7 @@ At first glance, we seem to have simply replaced one hyper-parameter $(R)$ for a
 
 In fact, my preliminary finding is that for a constant depth-horizon $t-s = 10$, a value of $\lambda=.5$ works across a variety of models (even models of varying depths). To illustrate this, for all exponential DCTs in this post I train using the same value of $\lambda=.5$.
 
-# Case Study: Learning Jailbreak Vectors
+# Case study: Learning jailbreak vectors
 
 ## Generalization of linear, quadratic, and exponential DCTs
 
@@ -421,7 +422,7 @@ To evaluate sample complexity, I create 10 different random shuffles of the data
 
 Using the first 32 instructions of each shuffle as a validation set, I rank source-layer features by taking the average difference in final logits between "Sure" and "Sorry" when steered by each feature as an efficiently computable jailbreak score. I then take the highest-ranking feature on the validation set and compute test-set jailbreak scores. The results are visualized in figure 1 above.
 
-### Exponential DCTs out-perform Quadratic/Linear DCTs
+### Exponential DCTs out-perform quadratic/linear DCTs
 
 Exponential DCTs consistently achieve the highest jailbreak scores across all sample sizes, aligning with their theoretical advantages - namely, their ability to learn non-orthogonal features, as well as their ability to incorporate higher-order information in $\Delta^{s\rightarrow t}$. Quadratic DCTs outperform linear variants, in line with the theory that non-orthogonality is important for accurately reflecting the model's true ontology. Projected linear DCTs show better performance than standard linear DCTs, suggesting that strict orthogonality constraints hinder learning of the model's true feature space, to the point that using an approximate Jacobian is better than working with the exact Jacobian.
 
@@ -683,7 +684,7 @@ Additionally, my subjective impression is that larger models are better able to 
 >
 >4. Play the new arrangement: Strum or improvise the chords of the second song while singing the transposed melody from the first song. This creates a unique blend of the two songs.
 
-# Application: Jailbreaking Representation-Rerouted Mistral-7B
+# Application: Jailbreaking representation-rerouted Mistral-7B
 
 In the previous section, I presented evidence for the existence of over 200 "request is harmless" directions capable of jailbreaking Qwen-7B-Chat. If we are to take the implications of this finding seriously, this suggests that even sophisticated safety training methods which attempt to scramble model internals on a "forget" dataset may remain vulnerable to jailbreaks if they do not explicitly attempt to enumerate and address all possible harmless directions. To test this hypothesis, I evaluate how well exponential DCT features perform as jailbreak vectors on a [representation-rerouted](https://arxiv.org/abs/2406.04313) version of Mistral-7B-Instruct-v2.
 
@@ -757,7 +758,7 @@ To achieve a full jailbreak, I train an exponential DCT at source-layer $s=5$ on
 
 To quantify things, this vector achieves an attack success rate of 62% using Harmbench's [Mistral-7B classifier](https://huggingface.co/cais/HarmBench-Mistral-7b-val-cls). This rate is a stark improvement over the 6.2% attack success rate reported in [Zou et al. (2024)](https://arxiv.org/abs/2406.04313) using a representation-engineering based latent-space attack.
 
-# Application: Eliciting Capabilities in Password-Locked Models
+# Application: Eliciting capabilities in password-locked models
 
 In the previous section, I showed how to use DCTs with minimal hyper-parameter tuning to jailbreak a robustly trained version of Mistral-7B-Instruct-v2, showing how the lessons from my initial sample complexity experiments can generalize with minimal hyper-parameter tuning.
 
@@ -765,7 +766,7 @@ To get a sense of how exponential DCTs with standard hyper-parameters might appl
 
 I train the exponential DCT with the same hyper-parameters as my earlier sample complexity experiment ($m=512, \lambda=0.5, s=10, t=20, \tau=10$), on a sample size of $n=8$ questions from MATH. Steering with the calibrated value of $R$, I then choose the best scoring vector on a validation set of 32 questions from MATH, and evaluate performance on a test set of 100 questions. I find that the steered model achieves a test accuracy of 23\%, recovering 32\% of performance of the unlocked model.
 
-# Future Work
+# Future work
 
 I'm excited about the many interesting research directions that can be explored using DCTs. Below is a quick summary of what I think are some of the most compelling questions. If you're interested in pursuing any of these, or have other novel ideas, please get in touch.
 

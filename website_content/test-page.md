@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-06-16
+date_updated: 2026-07-01
 createBibtex: true
 ---
 
@@ -40,6 +40,10 @@ This line of text verifies that adding content to a section only updates that se
 Subtitle: I am a subtitle with [a link](/test-page).
 
 Subtitle: MATS (starting with smallcaps).
+
+# Title-binding links
+
+The `@title` sentinel ties a link's text to its target's current title at build time: [@title](/test-page) renders this page's title, and [@title](#header-4) renders the current text of the "Header 4" section.
 
 # Lists
 
@@ -182,7 +186,7 @@ Admonition in a description list
 
 ## Section to transclude
 
-Hi! Am I being transcluded?
+Hi! Am I being transcluded? Here is a within-page link to the [admonitions section](#admonitions); because this section is transcluded from the same page above, both copies stay within-page links.
 
 # Admonitions
 
@@ -478,11 +482,39 @@ Equation and table nested in a list item (gaps must not stack with `<p>` margins
 
 <video autoplay muted loop playsinline aria-label="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"><track kind="captions" label="No audio"></video>
 
-<video controls width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"><track kind="captions" src="/static/debate.vtt" srclang="en" label="English"></video>
+<video aria-label="AI-generated voices of Barack Obama, Joe Biden, and Donald Trump humorously debate and create a tier list ranking different approaches to ensuring AI safety." controls="" width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"/><track kind="captions" label="English" src="/static/debate.vtt" srclang="en"/></video>
 
 # Audio
 
 <div class="centered"><audio src="https://assets.turntrout.com/static/audio/batman.mp3" controls> </audio></div>
+
+# Tweet embeds
+
+A single tweet, rendered from a self-hosted snapshot, with an optional retweet indicator:
+
+```tweet
+https://xcancel.com/Turn_Trout/status/2064426233769742627
+retweeted-by: Shrek
+```
+
+A single image keeps its natural aspect ratio up to a height cap; one that exceeds the cap is cropped and fades out at the bottom edge of the card:
+
+```tweet
+https://xcancel.com/TechEmails/status/2071254764558676130
+```
+
+A thread (one URL per line) renders as a connected stack:
+
+```tweet
+https://xcancel.com/Turn_Trout/status/2055343603224879417
+https://xcancel.com/Turn_Trout/status/2055343603958878231
+```
+
+A quote-tweet renders the quoted post as a nested card:
+
+```tweet
+https://xcancel.com/ChrisMurphyCT/status/2071998353664000365
+```
 
 # Images
 
@@ -529,6 +561,19 @@ Figure: An SVG `<img>` flagged for dark-mode inversion. The build pipeline pre-c
 <!--spellchecker-disable-->
 
 Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
+
+<!--spellchecker-enable-->
+
+## Floating image right with caption
+
+<!-- vale off -->
+![[https://assets.turntrout.com/static/images/posts/alex_rainbow_2.avif|Alex smiling at the camera; rainbow colored light splays off the wall in the background.]]{.float-right style="width:20%;"}
+Figure: The caption floats with the image instead of stranding above the following text.
+<!-- vale on -->
+
+<!--spellchecker-disable-->
+
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
 
 <!--spellchecker-enable-->
 
@@ -638,6 +683,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 | descender + \} | g\} j\} p\} q\} y\} |
 | caps + close | T) T] V) V] Y) Y] |
 | In context | f(x), (glyph), (jpg), (query), [typography] |
+| close + ;, | \[1\]; \{2\}; (3); \[a\], \{b\}, (c), |
 | In context | the staff(s) called if’d a “buff” (Wolf) |
 | In context | the clipping (probably) happened (just) quickly |
 
@@ -691,7 +737,7 @@ He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._ October 5th, 1
 
 Each emoji stays glued to its preceding character and never wraps alone to the start of a new line:
 
-(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿(🪿.
+(🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿 (🪿.
 
 ## Emoji comparison
 
@@ -745,6 +791,13 @@ Each emoji stays glued to its preceding character and never wraps alone to the s
 
 This text omits a detail.[^footnote] This sentence has multiple footnotes.[^1][^2]
 
+This footnote opens with a block quote.[^fn-blockquote]
+
+[^fn-blockquote]:
+    > A block quote inside a footnote should not crowd the footnote marker.
+
+    Trailing text after the block quote.
+
 Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 
 [^spam1]: Make sure we hit double-digit footnotes to test formatting.
@@ -766,6 +819,10 @@ Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 # Code blocks
 
 Inline code ligature kerning: `$var` must be interpolated into `#{$var}`. See also `===`, `!==`, `=>`, and `custom-property-no-missing-interpolation`.
+
+Inline code left spacing after a crowding glyph: with the help of [`TomSmith`](#code-blocks).
+
+Inline code flush against a glued delimiter: parentheses (`code`), brackets \[`code`\], braces \{`code`\}, quotes "`code`", a slash AI/`code`, a hyphen re-`code`, and equals x=`code` all hug the code, while a space `the regex` or an em dash—`code` keeps the small gap.
 
 ```json
 "lint-staged": {
@@ -833,6 +890,12 @@ Gold script
 
 Corrupted text
 : <span class=”corrupted”>The corruption creeps ever closer...</span>
+
+Acidic display font
+: <span class="acidic">Silence</span>
+
+Acidic display font, in context
+: International Association of <span class="acidic">Silence</span> on the Ethics of AI
 
 ## Italic punctuation
 

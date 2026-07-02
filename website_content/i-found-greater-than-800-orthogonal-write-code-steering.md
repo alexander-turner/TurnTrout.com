@@ -27,6 +27,7 @@ tags:
   - AI
   - mats-program
   - activation-engineering
+  - interpretability
 aliases:
   - i-found-greater-than-800-orthogonal-write-code-steering
 lw-reward-post-warning: 'false'
@@ -35,7 +36,7 @@ date_published: 2024-07-15
 original_url: https://www.lesswrong.com/posts/CbSEZSpjdpnvBcEvc/i-found-greater-than-800-orthogonal-write-code-steering
 skip_import: true
 description: 800+ orthogonal vectors steer an AI model to write code. Redundant features or something weirder?
-date_updated: 2026-04-20
+date_updated: 2026-06-27
 ---
 
 > [!thanks]
@@ -47,7 +48,7 @@ I'll first discuss how I found these orthogonal steering vectors, then share som
 
 # Methodology
 
-My work here builds upon [Mechanistically Eliciting Latent Behaviors in Language Models](/mechanistically-eliciting-latent-behaviors) (MELBO). I use MELBO to find steering vectors. Once I have a MELBO vector, I then use my algorithm to generate vectors orthogonal to it that do similar things.
+My work here builds upon [@title](/mechanistically-eliciting-latent-behaviors) (MELBO). I use MELBO to find steering vectors. Once I have a MELBO vector, I then use my algorithm to generate vectors orthogonal to it that do similar things.
 
 Define $f(x)$ as the activation-activation map that takes as input layer 8 activations of the language model and returns layer 16 activations after being passed through layers 9-16 (these are of shape `(n_sequence, d_model)`). MELBO can be stated as finding a vector $\theta$ with a constant norm such that $f(x+\theta)$ is maximized, for some definition of maximized. Then one can repeat the process with the added constraint that the new vector is orthogonal to all the previous vectors so that the process finds semantically different vectors. Mack and Turner's interesting finding was that this process finds interesting and interpretable vectors.
 

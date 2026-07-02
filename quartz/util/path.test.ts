@@ -3,6 +3,7 @@ import type { Element, Text } from "hast"
 import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
 
+import { specialFaviconPaths } from "../components/constants"
 import { type FullSlug, normalizeHastElement } from "./path"
 
 describe("normalizeHastElement", () => {
@@ -125,5 +126,88 @@ describe("normalizeHastElement", () => {
     const result = normalizeHastElement(input, baseSlug, newSlug)
     const anchor = result.children[0] as Element
     expect(anchor.properties?.href).toBe("../other/page#footnote")
+  })
+
+  describe("demotes within-page links rebased to the source page", () => {
+    // Favicons are hand-constructed in createFaviconElement with a literal
+    // "data-domain" key (not via hastscript), so mirror that shape exactly.
+    const faviconNode = (domain: string, maskUrl: string): Element => ({
+      type: "element",
+      tagName: "svg",
+      children: [],
+      properties: {
+        class: "favicon",
+        "data-domain": domain,
+        style: `--mask-url: url(${maskUrl});`,
+      },
+    })
+    const anchorFavicon = () => faviconNode("anchor", specialFaviconPaths.anchor)
+
+    it("drops same-page-link and swaps the anchor favicon for the turntrout favicon", () => {
+      const link = h(
+        "a",
+        { href: "#section", className: ["internal", "same-page-link", "can-trigger-popover"] },
+        [h("span", { className: ["favicon-span"] }, ["Link", anchorFavicon()])],
+      )
+      const result = normalizeHastElement(h("p", [link]), baseSlug, newSlug)
+      const anchor = result.children[0] as Element
+
+      expect(anchor.properties?.href).toBe("../other/page#section")
+      expect(anchor.properties?.className).toEqual(["internal", "can-trigger-popover"])
+
+      const favicon = (anchor.children[0] as Element).children[1] as Element
+      expect(favicon.properties?.["data-domain"]).toBe("turntrout_com")
+      expect(favicon.properties?.style).toBe(`--mask-url: url(${specialFaviconPaths.turntrout});`)
+    })
+
+    it("drops same-page-link even when the link carries no favicon", () => {
+      const link = h("a", { href: "#section", className: ["internal", "same-page-link"] }, "Link")
+      const result = normalizeHastElement(h("p", [link]), baseSlug, newSlug)
+      const anchor = result.children[0] as Element
+      expect(anchor.properties?.className).toEqual(["internal"])
+    })
+
+    it("drops same-page-link from a string className (footnote backrefs)", () => {
+      // Footnote backrefs from rehype-gfm carry a space-separated string className.
+      const link = h("a", { href: "#user-content-fnref-1" }, "↩")
+      link.properties.className = "data-footnote-backref internal same-page-link"
+      const result = normalizeHastElement(h("p", [link]), baseSlug, newSlug)
+      const anchor = result.children[0] as Element
+      expect(anchor.properties?.className).toBe("data-footnote-backref internal")
+    })
+
+    it("leaves favicons for other domains untouched", () => {
+      const otherFavicon = faviconNode("wikipedia_org", "x")
+      const link = h("a", { href: "#section", className: ["same-page-link"] }, [
+        h("span", { className: ["favicon-span"] }, ["Link", otherFavicon]),
+      ])
+      const result = normalizeHastElement(h("p", [link]), baseSlug, newSlug)
+      const favicon = ((result.children[0] as Element).children[0] as Element)
+        .children[1] as Element
+      expect(favicon.properties?.["data-domain"]).toBe("wikipedia_org")
+    })
+
+    it("does not demote non-anchor elements that carry an anchor-only href", () => {
+      const div = h("div", { href: "#section", className: ["same-page-link"] }, "x")
+      const result = normalizeHastElement(h("section", [div]), baseSlug, newSlug)
+      const child = result.children[0] as Element
+      expect(child.properties?.href).toBe("../other/page#section")
+      expect(child.properties?.className).toEqual(["same-page-link"])
+    })
+
+    it("keeps the within-page favicon for a same-page transclusion", () => {
+      // curBase === newBase: the anchor still resolves on the host page, so the
+      // link and its anchor favicon must be left untouched.
+      const link = h("a", { href: "#section", className: ["internal", "same-page-link"] }, [
+        h("span", { className: ["favicon-span"] }, ["Link", anchorFavicon()]),
+      ])
+      const result = normalizeHastElement(h("p", [link]), baseSlug, baseSlug)
+      const anchor = result.children[0] as Element
+
+      expect(anchor.properties?.href).toBe("#section")
+      expect(anchor.properties?.className).toEqual(["internal", "same-page-link"])
+      const favicon = (anchor.children[0] as Element).children[1] as Element
+      expect(favicon.properties?.["data-domain"]).toBe("anchor")
+    })
   })
 })

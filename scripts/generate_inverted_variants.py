@@ -41,8 +41,8 @@ try:
     from . import compress
     from . import utils as script_utils
 except ImportError:  # pragma: no cover
-    import compress  # type: ignore
-    import utils as script_utils  # type: ignore
+    import compress
+    import utils as script_utils
 
 INVERTED_SUFFIX: Final[str] = "-inverted"
 _SVG_EXTENSIONS: Final[frozenset[str]] = frozenset(

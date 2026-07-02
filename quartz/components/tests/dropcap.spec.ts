@@ -1,8 +1,12 @@
+import type { Locator } from "@playwright/test"
+
 import { colorDropcapProbability, DROPCAP_COLORS } from "../constants"
 import { expect, test } from "./fixtures"
 import { gotoPage, triggerAndWaitForSPANav } from "./visual_utils"
 
 const DROPCAP_URL = "http://localhost:8080/test-page"
+// A solemn post that opts out of the random color via `no_dropcap_color`.
+const OPTED_OUT_URL = "http://localhost:8080/bruce-wayne-and-the-cost-of-inaction"
 
 /** Mock Math.random so sequential calls return the given values (then 0.5).
  *  Must accept values as a parameter (not closure) because addInitScript serializes the function. */
@@ -10,6 +14,24 @@ const mockRandom = (vals: number[]) => {
   let i = 0
   Math.random = () => vals[i++] ?? 0.5
 }
+
+/** Resolved color of the dropcap embellishment (the `::before` pseudo-element). */
+const embellishmentColor = (paragraph: Locator) =>
+  paragraph.evaluate((el) => getComputedStyle(el, "::before").color)
+
+/** Resolve --midground-faint to an rgb() string via a throwaway probe element. */
+const midgroundFaintColor = (paragraph: Locator) =>
+  paragraph.evaluate((el) => {
+    const probe = document.createElement("span")
+    probe.style.color = "var(--midground-faint)"
+    el.appendChild(probe)
+    const resolved = getComputedStyle(probe).color
+    probe.remove()
+    return resolved
+  })
+
+const firstDropcapParagraph = (root: Locator) =>
+  root.locator("> p:not(.subtitle):first-of-type").first()
 
 test.describe("Random dropcap color", () => {
   test(`no color applied when Math.random >= ${colorDropcapProbability}`, async ({ page }) => {
@@ -62,6 +84,43 @@ test.describe("Random dropcap color", () => {
 
     expect(await dropcap2.screenshot()).not.toEqual(defaultShot)
     await page2.close()
+  })
+
+  test('data-no-dropcap-color="true" suppresses the rolled color', async ({ page }) => {
+    // Force a colored roll (red) so the opt-out has something to suppress.
+    await page.addInitScript(mockRandom, [0.01, 0.0])
+    await gotoPage(page, DROPCAP_URL)
+
+    const dropcapParagraph = firstDropcapParagraph(
+      page.locator('article[data-use-dropcap="true"]').first(),
+    )
+    await dropcapParagraph.scrollIntoViewIfNeeded()
+
+    const coloredEmbellishment = await embellishmentColor(dropcapParagraph)
+
+    // Opting out reverts the embellishment to the monochrome --midground-faint.
+    await dropcapParagraph.evaluate((el) =>
+      el.closest("article")?.setAttribute("data-no-dropcap-color", "true"),
+    )
+    const monochromeEmbellishment = await embellishmentColor(dropcapParagraph)
+
+    expect(monochromeEmbellishment).not.toBe(coloredEmbellishment)
+    expect(monochromeEmbellishment).toBe(await midgroundFaintColor(dropcapParagraph))
+  })
+
+  test("opted-out page renders monochrome end-to-end even when a color rolls", async ({ page }) => {
+    // Force a colored roll; the frontmatter→attribute→CSS chain must still win.
+    await page.addInitScript(mockRandom, [0.01, 0.0])
+    await gotoPage(page, OPTED_OUT_URL)
+
+    const article = page.locator('article[data-use-dropcap="true"]').first()
+    await expect(article).toHaveAttribute("data-no-dropcap-color", "true")
+
+    const dropcapParagraph = firstDropcapParagraph(article)
+    await dropcapParagraph.scrollIntoViewIfNeeded()
+    expect(await embellishmentColor(dropcapParagraph)).toBe(
+      await midgroundFaintColor(dropcapParagraph),
+    )
   })
 
   test("color re-rolls on SPA navigation", async ({ page }) => {

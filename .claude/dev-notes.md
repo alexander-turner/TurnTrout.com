@@ -17,7 +17,7 @@ Three stages: **Transform → Filter → Emit**.
 ### Python scripts (`scripts/`)
 
 - **Asset processing**: `convert_assets.py`, `compress.py`, `r2_upload.py`
-- **Validation**: `check_internal_links.py`, `source_file_checks.py`, `built_site_checks.py`, `scan_for_empty_alt.py`
+- **Validation**: `source_file_checks.py`, `built_site_checks.py`; internal links via `linkchecker.fish`
 - **Pre-push orchestration**: `run_push_checks.py`
 - **Alt-text**: handled by the PyPI package `alt-text-llm`.
 
@@ -42,6 +42,24 @@ Three stages: **Transform → Filter → Emit**.
   assets already on R2: `uv run scripts/generate_inverted_variants.py
 --asset-directory ~/Downloads/website-media-r2`, then re-run `r2_upload`
   to push the new `-inverted` files.
+- **Video captions**: `scripts/transcribe_videos.py` (run by
+  `handle_assets.sh` after `convert_assets.py`, before `r2_upload.py`)
+  transcribes every `.mp4` with a real, non-silent audio stream via a
+  self-hosted [Scriberr](https://github.com/rishikanthc/Scriberr) instance,
+  writes a sibling `.vtt`, and injects `<track kind="captions">` into the
+  matching markdown `<video>` block. The `.vtt` then uploads to R2 like the
+  other sources (served as `text/vtt`). Requires `SCRIBERR_BASE_URL` (e.g.
+  `http://scriberr.<tailnet>.ts.net:8080`) and `SCRIBERR_API_KEY`; when unset
+  (CI, external contributors) the step self-skips with a warning. GIF-derived
+  muted videos (no audio stream) and videos with an existing sibling `.vtt`
+  are skipped. `built_site_checks.check_video_caption_tracks` then enforces
+  that every audio-bearing `<video>` ships a real `.vtt` track (or an explicit
+  `label="No audio"` marker).
+- **Linked (not embedded) videos**: `built_site_checks.check_linked_video_captions`
+  requires a captions companion for `<a href>` links to `.mp4`/`.mov`/`.m4v` on
+  the asset CDN — satisfied by an on-page sibling-`.vtt` reference, a HEAD probe
+  finding the `.vtt` on the CDN, or a `#no-audio` opt-out fragment. See the
+  function docstring for the full semantics.
 
 ### Text processing
 
@@ -160,6 +178,12 @@ For PR runs the workflow pushes an empty commit to the PR branch so visual-
 
 **Shard status vs. overall status.** Individual `visual-testing-(linux|macos)` shards stay green when the only failures are new or updated screenshots—those are expected outcomes that the diff-gallery + approve button is designed for, and red shards turn into noise. Each shard runs `scripts/classify_visual_failures.py` over its blob report and only exits non-zero for real failures (timeouts, page errors, exceptions before the screenshot assertion). The `aggregate-visual-results` job collects per-shard status artifacts and the overall `visual-testing` status + `publish-visual-report` deploy carry the snapshot-diff signal forward.
 
+## Commit timestamping (OpenTimestamps, async)
+
+`git commit` enqueues the commit hash and hands off to a **detached** background worker (`.hooks/post-commit` → `.hooks/timestamp-worker.sh`), so the commit returns immediately instead of blocking ~3s on network I/O. The worker holds a single `mkdir` lock (portable; `flock` is absent on macOS), drains every queued hash, creates each OpenTimestamps proof (`ots stamp`), commits it into the `.timestamps` repo, then pushes the whole batch in **one** pull/push.
+
+State lives under `$(git rev-parse --git-dir)/ots-timestamps/`: `queue` (pending hashes), `lock.d/` (worker lock), `worker.log` (errors only—a clean success writes nothing). Best-effort by design: a failed stamp re-queues its hash, a failed push leaves the proof committed-but-unpushed, and the next commit's worker retries via `has_unpushed`. A commit is never rolled back, so no commit loses its eventual proof. Skipped entirely when `CI=true`. If proofs are missing, check `worker.log`; re-trigger by committing, or run the worker directly with `OTS_GIT_ROOT`/`OTS_STATE_DIR` set.
+
 ## Pre-push validation pipeline
 
 When pushing to main, `scripts/run_push_checks.py` runs:
@@ -168,7 +192,7 @@ When pushing to main, `scripts/run_push_checks.py` runs:
 2. **Sequential prep** — `pnpm exec tsx quartz/styles/generate-variables.ts` regenerates `quartz/styles/variables.scss` because `source_file_checks.py` reads it.
 3. **Parallel verify group** (read-only, runs concurrently via `ThreadPoolExecutor`):
    - `pylint` (matches `python-lint.yaml` CI invocation: `pylint .` with `config/python/.pylintrc`).
-   - `mypy` (uses the `dmypy` daemon pre-warmed by `session-setup.sh`).
+   - `pyright` (type-checks `scripts/`; config in `pyproject.toml`'s `[tool.pyright]`).
    - `source_file_checks.py` (frontmatter / dates / asset refs / fonts).
    - `scripts/run_spellcheck_and_vale.sh` (strips `[!quote]` callouts, runs spellchecker-cli and Vale concurrently inside the wrapper).
 4. **Sequential tail**—asset compression + R2 upload (skipped if `rclone` not present), alt-text scan (LLM; requires `alt-text-llm`).
@@ -205,7 +229,7 @@ Public-repo Actions are free, so we don’t tier coverage by event. Path-awarene
 
 - **Why not trigger-level `paths:`**: a workflow filtered out by a trigger-level `paths:` filter never starts, so its required check context is never created and branch protection hangs at “Expected — Waiting” forever. A required check is satisfied only by `success` or `skipped`, so the fix is to always trigger and let the gate emit `skipped`—never to filter the trigger.
 - **Path gate (`.github/actions/ci-gate`)**: on a `pull_request` it runs `dorny/paths-filter` over the workflow’s relevant-path globs (passed in via the `filters:` input) and outputs `run=true` only when relevant files changed. `push` / `workflow_dispatch` always get `run=true` (full coverage). The `ci:full-tests` / `ci:run-*` labels (the `force-labels:` input) force `run=true` regardless of paths.
-- **How the skip surfaces**: workflows with a unified `if: always()` status job (`playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`) exit 0 from that job when `run=false`. `python-tests` / `python-lint` / `lint` gate the required job itself on a `detect-changes` (dorny) output, so the job reports `skipped`. `preview-audits` lets `build` → `deploy` → lighthouse skip down the `needs` chain. **Node is special**: its required check `build (<version>)` is a matrix job, and skipping a matrixed job at the job level can report under the bare name—so `build` always runs (context always created) and the gate skips only the inner `Setup site` / `Run tests` steps, leaving the job green.
+- **How the skip surfaces**: workflows with a unified `if: always()` status job (`playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`) exit 0 from that job when `run=false`. `python-tests` / `python-lint` / `lint` gate the required job itself on a `detect-changes` (dorny) output, so the job reports `skipped`. `deploy.yaml` gates `deploy-build` / `prepare-deploy` on a `should-run` (ci-gate) job, so on an irrelevant PR they report `skipped` (no preview deploy) while the context is still created; `push` always gates `run=true`, so production deploys are never skipped. `preview-audits` lets `build` → `deploy` → lighthouse skip down the `needs` chain. **Node is special**: its required check `build (<version>)` is a matrix job, and skipping a matrixed job at the job level can report under the bare name—so `build` always runs (context always created) and the gate skips only the inner `Setup site` / `Run tests` steps, leaving the job green.
 - **Bot skip**: `should-run` skips dependabot/renovate/deepsource branches so lockfile bumps don’t churn the visual baselines; the status jobs treat a skipped `should-run` as a pass.
 - **Flake check**: `workflow_dispatch` only.
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards.
@@ -216,7 +240,7 @@ Public-repo Actions are free, so we don’t tier coverage by event. Path-awarene
 `main` is gated by required-status-check branch protection plus auto-merge—there’s **no merge queue** (the feature isn’t enabled in this repo).
 
 - **How to merge**: call `mcp__github__enable_pr_auto_merge` once the PR is green. GitHub waits for required checks to pass on the PR head SHA, then squashes.
-- **Required checks**: `playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`, `python-tests`, `python-lint`, `lint`, `Node.js CI / build`, lighthouse jobs. Each workflow always triggers on a PR and gates internally (see “How CI runs”), so every required context reports `success` or `skipped` on the same head SHA auto-merge waits on—none can hang uncreated.
+- **Required checks**: `playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`, `python-tests`, `python-lint`, `lint-and-validate.yaml`, `Node tests / build`, lighthouse jobs. Each workflow always triggers on a PR and gates internally (see “How CI runs”), so every required context reports `success` or `skipped` on the same head SHA auto-merge waits on—none can hang uncreated.
 - **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`, same mechanism.
 - **Post-merge**: `push: main` re-runs the full suite plus `deploy.yaml`. `deploy.yaml`’s `verify-test-results` job polls check-runs on the landed SHA, so deploy waits for those to pass before pushing to Cloudflare.
 
@@ -316,7 +340,115 @@ PR-creating token; it archives only the steady-state delta and opens a PR with
 the manifest diff (never pushes to `main`). Other flags: `--refresh`
 (re-archive).
 
+## Outbound link archiving (build-time fallback)
+
+`quartz/plugins/transformers/archiveLinks.ts` rewrites confirmed-dead outbound
+links to a self-hosted archived copy at build time (no client JS). It reads
+`config/link_archive_manifest.json` once per build; for each external `<a>` whose
+canonical href is in the manifest with `dead: true`, it swaps the `href` for the
+archived `archive_url`, adds an `archived` class, and records the original in
+`data-original-href`. Live/unknown links are untouched, so with the committed
+empty manifest the transformer is a no-op.
+
+The manifest is produced by a separate writer (single-file + Wayback + R2; see
+the writer section above), shipped in its own PR. Canonicalization uses the WHATWG `new URL` parser; the writer mirrors it
+with the same `ada` parser so the keys match.
+
+## Tweet embeds (self-hosted, tracking-free)
+
+Author a tweet with a ` ```tweet ` fenced block holding one tweet URL per line
+(several lines render as a connected thread):
+
+````md
+```tweet
+https://x.com/turntrout/status/1881825910040702979
+retweeted-by: Jeff Dean
+```
+````
+
+An optional `retweeted-by: <name>` line attaches a "<name> retweeted" header to
+the tweet above it (the API can't supply retweet context, so it's manual). The
+card also shows the reply and like counts captured at snapshot time; the
+cookie-free endpoint doesn't expose retweet or view counts, so those are omitted.
+
+`quartz/plugins/transformers/tweetEmbed.ts` (registered before
+`SyntaxHighlighting`) replaces each block with a site-native card built in
+`tweetCard.ts`. The build is fully decoupled from Twitter: it reads a normalized
+JSON snapshot from `quartz/plugins/transformers/.tweet_snapshots/<id>.json` and
+renders from that. A referenced tweet with no snapshot **fails the build** (so a
+forgotten capture can't silently ship a degraded card); prefix the line with
+`unavailable:` to opt a deleted-before-capture tweet into the xcancel-link stub.
+
+Snapshots are captured by `scripts/tweet_snapshot.py`, which fetches the post
+from X's cookie-free syndication endpoint, mirrors the avatar + photos/video to
+R2 under `static/tweets/<id>/`, rewrites every media URL to `assets.turntrout.com`
+(the only media host `built_site_checks` allows), and writes the snapshot JSON.
+Resolution order: a pinned (already-present) snapshot is authoritative; otherwise
+live fetch then public CDN (`static/tweets/<id>.json`) then skip (stub).
+
+- **Add a tweet locally:** `uv run python scripts/tweet_snapshot.py` (no `--write`
+  pulls/creates snapshots without touching R2). With R2 env vars + `--write` it
+  also uploads. Commit the resulting `<id>.json` with `git add -f` (the
+  `.tweet_snapshots/` dir is gitignored) to pin it; pinned tweets render with
+  zero Twitter/R2 dependency.
+- **R2 refresh:** `.github/workflows/refresh-tweet-snapshots.yaml` runs
+  `tweet_snapshot.py --write --force` on every push to `main` that touches content
+  or the script, keeping the R2 backup (JSON + media) current without git churn.
+- The committed example fixtures under `.tweet_snapshots/` drive the `test-page.md`
+  examples and their `(screenshot)` baselines; their avatar/media point at existing
+  CDN assets so the visual build is deterministic offline.
+
 ## Lessons learned
 
 - When making interface array properties `readonly`, also update downstream function signatures to accept `readonly` arrays. `.map()`/`.filter()`/`.some()`/`.includes()` work on readonly; `.sort()`/`.push()` don’t—copy first: `[...arr].sort()`.
 - **Cloudflare Speed Brain refuses `<link rel="prefetch">` to cross-origin assets.** Browsers send `Sec-Purpose: prefetch` for `rel="prefetch"`; CF intercepts at the edge and returns a bare 503 with `cf-speculation-refused: prefetch refused: not eligible`, which Chromium surfaces as a CORS error (the 503 has no `Access-Control-Allow-Origin`). Local Playwright tests and direct `curl` probes never hit this path—only real browsers going through the CF edge do. Use `rel="preload"` for current-page assets you’d otherwise prefetch; preload doesn’t carry the `Sec-Purpose` header and isn’t intercepted. Symptom to watch for in DevTools Network: status 503, `Cf-Speculation-Refused` response header, `Vary: sec-purpose`, `Server: cloudflare`.
+
+## Per-section visual fixtures
+
+`website_content/test-page.md` is the single human-edited source of truth for
+visual-regression content. `scripts/split_test_page_sections.py` slices it on
+top-level headings (a `#` followed by a space) into one fixture page per section under
+`website_content/fixtures/test-sections/` (permalink `test-section-<slug>`).
+Each section is its own page, so a Playwright screenshot of one section is
+unaffected by edits to—or reordering of—any other section
+(`quartz/components/tests/section-fixtures.spec.ts` screenshots each in both
+themes). `test-page.md` itself stays the integration shot: the `Normal page in
+{theme}` test in `visual-regression.spec.ts` takes a single viewport screenshot
+of its top (cross-section / header coverage), **not** a `fullPage` capture — no
+test in the suite passes `fullPage`, so a bare `takeRegressionScreenshot` shoots
+only the viewport.
+
+This replaced the old `getH1Screenshots` / `wrapH1SectionsInSpans` helpers, which
+screenshotted each section in-place on one page. The per-section fixtures do that
+job with true isolation, so those helpers were removed. **DOM isolation
+(`performDOMIsolation` / `elementToScreenshot` / `preserveSiblings`) stays** — it
+is still needed by every element-scoped screenshot taken on a shared page
+(popovers, search previews, sidebar, etc.); it is only redundant _on the fixture
+pages themselves_, where nothing else is on the page to hide.
+
+The fixtures under `website_content/fixtures/test-sections/` are **not tracked
+in git** (`.gitignore`) — they're pure derivatives of `test-page.md`, so
+committing them only created churn and a drift surface. They're regenerated
+wherever they're needed:
+
+- **CI**: the reusable `generate-fixtures.yaml` workflow runs the generator
+  once and uploads a `section-fixtures` artifact. The `build` job and every
+  Playwright shard (visual, playwright-tests, flake-check) depend on that job
+  and pull the artifact via the `download-section-fixtures` composite action.
+  Even non-screenshot shards need it: Playwright collects
+  `section-fixtures.spec.ts` (then grep-filters it out) and that spec reads the
+  directory at module load.
+- **Locally**: the Playwright `webServer` command regenerates them before
+  `pnpm start`, so `pnpm test:visual` works from a clean checkout.
+
+So after editing `test-page.md` there's nothing to commit for the fixtures — just
+run the generator if you want to preview locally:
+
+```bash
+uv run python scripts/split_test_page_sections.py
+```
+
+The generator pulls each section's referenced footnote definitions in
+(transitively) so sections render standalone; sections that reference other
+sections (e.g. `Transclusion`) are listed in `SKIP_HEADINGS` and live only on
+the integration page.

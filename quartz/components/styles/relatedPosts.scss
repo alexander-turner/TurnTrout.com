@@ -1,0 +1,25 @@
+@use "../../styles/variables.scss" as *;
+
+.related-posts-title {
+  margin-top: calc(2 * $base-margin);
+  margin-bottom: $base-margin;
+}
+
+.related-posts {
+  ul {
+    list-style: none;
+    margin-top: 0;
+    padding-left: 0;
+  }
+
+  li.related-post {
+    margin-top: calc(2 * $base-margin);
+    margin-bottom: $base-margin;
+
+    .related-post-excerpt {
+      display: block;
+      color: var(--midground-strong);
+      font-size: 0.9em;
+    }
+  }
+}

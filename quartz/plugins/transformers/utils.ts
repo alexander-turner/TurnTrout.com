@@ -10,6 +10,11 @@ export const urlRegex = new RegExp(
   /(?<protocol>https?:\/\/)(?<domain>(?:[\da-z-]+\.)+)(?<path>[/?=\w.-]+(?:\([\w.\-,() ]*\))?)(?=\))/g,
 )
 
+// Non-global copy of `urlRegex` for stateless `.test()` calls. A global regex's
+// `.test()` advances `lastIndex` between calls, making repeated detection on the
+// same string order-dependent; this copy keeps detection deterministic.
+export const urlRegexNonGlobal = new RegExp(urlRegex.source, urlRegex.flags.replace("g", ""))
+
 const linkText = /\[(?<linkText>[^\]]+)\]/
 const linkURL = /\((?<linkURL>[^#].*?)\)/ // Ignore internal links, capture as little as possible
 export const mdLinkRegex = new RegExp(linkText.source + linkURL.source, "g")
@@ -66,10 +71,16 @@ export const replaceRegex = (
   // Find all non-overlapping matches in the node's text
   regex.lastIndex = 0 // Reset regex state before first pass with exec()
   while ((match = regex.exec(node.value)) !== null) {
+    // A zero-width match leaves lastIndex unchanged; nudge it forward so the
+    // loop terminates instead of spinning on the same empty match.
+    if (match[0].length === 0) {
+      regex.lastIndex++
+      continue
+    }
     /* istanbul ignore next -- exec() always advances past previous match on global regex */
     if (match.index >= lastMatchEnd) {
       matches.push(match)
-      lastMatchEnd = match.index + match[0]?.length
+      lastMatchEnd = match.index + match[0].length
     }
   }
 
@@ -266,6 +277,34 @@ export function addClass(node: Element, className: string): void {
   node.properties = { ...node.properties, className: list }
 }
 
+// Remove a class from a node, preserving the shape of any remaining classes
+// (string-form stays a string; array stays an array). Handles both the
+// `className` and `class` property forms that `hasClass` honors, so a class
+// found by `hasClass` is always strippable. No-op when the class is absent.
+export function removeClass(node: Element, className: string): void {
+  for (const key of ["className", "class"] as const) {
+    const existing = node.properties?.[key]
+    const kept =
+      typeof existing === "string"
+        ? existing
+            .split(/\s+/)
+            .filter(Boolean)
+            .filter((c) => c !== className)
+        : Array.isArray(existing)
+          ? existing.map(String).filter((c) => c !== className)
+          : undefined
+    if (kept === undefined) continue
+
+    const next = { ...node.properties }
+    if (kept.length === 0) {
+      delete next[key]
+    } else {
+      next[key] = typeof existing === "string" ? kept.join(" ") : kept
+    }
+    node.properties = next
+  }
+}
+
 /**
  * Type guard to check if a node is a Text node.
  * @param node - The node to check
@@ -292,6 +331,38 @@ export function isElementNode(node: ElementContent): node is Element {
 export function isCode(node: Element): boolean {
   return node.tagName === "code"
 }
+
+/**
+ * Phrasing-content (inline) wrapper tags. Transforms treat these as inline
+ * context: tagSmallcaps ascends through them when deciding sentence-initial
+ * capitalization, and inlineCodeSpacing ascends out of them to find the
+ * character preceding inline code.
+ *
+ * `<abbr>` is intentionally excluded: tagSmallcaps emits `<abbr class="small-caps">`
+ * as its own output and skips text inside `<abbr>`, so it is a processing
+ * terminal rather than a passthrough wrapper.
+ *
+ * `favicons.ts` keeps its own `tagsToZoomInto` instead: favicon placement
+ * descends into `<code>` and excludes `<a>` (links are handled separately), so
+ * its membership intentionally differs.
+ */
+export const INLINE_PASSTHROUGH_TAGS: ReadonlySet<string> = new Set([
+  "a",
+  "b",
+  "del",
+  "em",
+  "i",
+  "ins",
+  "mark",
+  "s",
+  "small",
+  "span",
+  "strike",
+  "strong",
+  "sub",
+  "sup",
+  "u",
+])
 
 /**
  * Factory function to create a Quartz transformer plugin that visits all elements in the HTML AST.

@@ -40,10 +40,18 @@ const placeholderRestoreRegex = /___VAR_PLACEHOLDER_(?<index>\d+)___/g
 function compileColorPatterns(
   mapping: Readonly<Record<string, string>>,
 ): readonly { regex: RegExp; variable: string }[] {
-  return Object.entries(mapping).map(([color, variable]) => ({
-    regex: new RegExp(`\\b${color}\\b`, "gi"),
-    variable,
-  }))
+  return Object.entries(mapping).map(([color, variable]) => {
+    const escaped = color.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    // `\b` only delimits where the key edge is a word char; hex keys like
+    // "#D73A49" start with `#` (non-word), so a leading `\b#…` could never
+    // match. The current keys all end in an alphanumeric, so a trailing `\b`
+    // suffices; only the start boundary needs to vary.
+    const startBoundary = /^\w/.test(color) ? "\\b" : "(?<![\\w#])"
+    return {
+      regex: new RegExp(`${startBoundary}${escaped}\\b`, "gi"),
+      variable,
+    }
+  })
 }
 
 const defaultCompiledPatterns = compileColorPatterns(colorMapping)
@@ -62,11 +70,21 @@ export const transformStyle = (
   const patterns =
     mapping === colorMapping ? defaultCompiledPatterns : compileColorPatterns(mapping)
 
-  // Extract all var() expressions to protect them from transformation
   const varExpressions: string[] = []
   const placeholder = "___VAR_PLACEHOLDER_"
 
-  let newStyle = style.replace(/var\([^)]+\)/gi, (match) => {
+  // Protect CSS custom property values before anything else. Shiki's dual-theme
+  // output uses --shiki-light/--shiki-dark with calibrated hex values; rewriting
+  // those to CSS variables breaks contrast. Doing this step first avoids nested
+  // placeholders when a custom property value also contains a var() expression.
+  let newStyle = style.replace(/(?<=--[\w-]+:)[^;]*/g, (match) => {
+    if (match.length === 0) return match
+    varExpressions.push(match)
+    return `${placeholder}${varExpressions.length - 1}___`
+  })
+
+  // Also protect var() expressions in regular properties from transformation.
+  newStyle = newStyle.replace(/var\([^)]+\)/gi, (match) => {
     varExpressions.push(match)
     return `${placeholder}${varExpressions.length - 1}___`
   })

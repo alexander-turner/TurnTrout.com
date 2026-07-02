@@ -110,8 +110,8 @@ describe("util/log", () => {
   })
 
   it.each([
-    ["CI unset", undefined, undefined],
-    ["CI=true but running under Jest", "true", "1"],
+    ["CI unset and running under Jest", undefined, "1"],
+    ["CI=true and running under Jest", "true", "1"],
   ])("should not add Console transport when %s", (_label, ci, workerId) => {
     if (ci !== undefined) process.env.CI = ci
     if (workerId !== undefined) process.env.JEST_WORKER_ID = workerId
@@ -121,12 +121,20 @@ describe("util/log", () => {
     expect(mockConsoleTransport).not.toHaveBeenCalled()
   })
 
-  describe("when CI=true and not under Jest", () => {
-    beforeEach(() => {
+  describe("when not under Jest", () => {
+    it("should add Console transport at warn level in CI", () => {
       process.env.CI = "true"
+      createWinstonLogger("test-logger")
+
+      expect(mockConsoleTransport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          level: "warn",
+          stderrLevels: ["error", "warn", "info", "http", "verbose", "debug", "silly"],
+        }),
+      )
     })
 
-    it("should add Console transport with all levels on stderr", () => {
+    it("should add Console transport at warn level outside CI", () => {
       createWinstonLogger("test-logger")
 
       expect(mockConsoleTransport).toHaveBeenCalledWith(

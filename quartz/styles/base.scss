@@ -121,6 +121,21 @@ a {
       fill: var(--foreground);
     }
   }
+
+  // Outbound link whose target rotted: the href now points at our archived
+  // snapshot on the CDN. A dashed underline plus a small marker tells the
+  // reader they're following a fallback copy, not the live page.
+  &.archived {
+    text-decoration-style: dashed;
+
+    &::after {
+      content: "archived";
+      margin-left: 0.2em;
+      color: var(--midground-faint);
+      font-size: 0.6em;
+      vertical-align: super;
+    }
+  }
 }
 
 .desktop-only {
@@ -203,6 +218,16 @@ a {
         top: $top-spacing;
         overflow-y: auto;
         max-height: calc(100vh - #{$top-spacing});
+
+        // Keep the scrollbar gutter reserved (no layout shift) but hide the
+        // thumb until the sidebar is hovered.
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+        transition: scrollbar-color $transition-duration-medium ease;
+
+        &:hover {
+          scrollbar-color: var(--midground-fainter) var(--background);
+        }
       }
 
       &#left-sidebar {
@@ -409,7 +434,12 @@ pre {
       text-indent: calc(-5 * $base-margin);
       padding-left: calc(5 * $base-margin);
       padding-right: calc(2 * $base-margin);
-      text-wrap: pretty;
+
+      // Must stay `auto`, not `pretty`: `overflow-wrap: anywhere` makes every
+      // character a break opportunity, and `pretty`'s paragraph-level
+      // optimization over that break set is combinatorial in Chromium — long
+      // highlighted lines at mobile widths hang or crash the renderer.
+      text-wrap: auto;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
       box-sizing: border-box;

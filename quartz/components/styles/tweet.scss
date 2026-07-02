@@ -1,0 +1,367 @@
+@use "../../styles/variables.scss" as *;
+
+// Self-hosted, tracking-free tweet embeds (see plugins/transformers/tweetEmbed.ts).
+// The card derives its palette from the site tokens so it themes light/dark for
+// free; no inversion is applied to avatars or media.
+
+.tweet-embed {
+  max-width: 32rem;
+  margin: calc(2 * $base-margin) auto;
+}
+
+.tweet-card {
+  border: 1px solid var(--midground-faint);
+  border-radius: calc(2 * $border-radius);
+  padding: calc(1.5 * $base-margin);
+  background-color: var(--background);
+  overflow-wrap: break-word;
+
+  // Source link in the corner; lets the avatar/name links sit normally.
+  position: relative;
+}
+
+.tweet-header {
+  display: flex;
+  align-items: center;
+  gap: $base-margin;
+}
+
+.tweet-card .tweet-avatar-wrap {
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+// Both avatars share the circular, cover-cropped treatment; only the size differs.
+.tweet-card img.tweet-avatar,
+.tweet-card img.tweet-quoted-avatar {
+  border-radius: 50%;
+  margin: 0;
+  object-fit: cover;
+  mix-blend-mode: normal;
+}
+
+.tweet-card img.tweet-avatar {
+  width: calc(6 * $base-margin);
+  height: calc(6 * $base-margin);
+}
+
+.tweet-author {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.tweet-name-link,
+.tweet-handle {
+  background-color: transparent;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// The display-name link and the verified seal share a row; the seal is a sibling
+// of the anchor, so only the name is clickable.
+.tweet-name-row {
+  display: flex;
+  align-items: center;
+  gap: calc(0.5 * $base-margin);
+  min-width: 0;
+}
+
+.tweet-name-link {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.tweet-handle {
+  color: var(--midground);
+  font-size: var(--font-size-minus-1);
+  font-family: var(--font-monospace);
+}
+
+// The seal is centered against the name by the flex row's align-items: center
+// (see .tweet-name-row) — no manual offset.
+.tweet-verified {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  fill: var(--blue);
+  margin: 0;
+}
+
+.tweet-source-link {
+  position: absolute;
+
+  // Slightly above the card's padding edge so the icon reads as tucked into
+  // the corner instead of pinned level with the name row — this holds
+  // regardless of how long the display name is, since the name never wraps.
+  top: calc(1 * $base-margin);
+  right: calc(1.5 * $base-margin);
+  background-color: transparent;
+  line-height: 0;
+
+  // Behaves like a link on hover; fill is immune to the visited text color, so
+  // the icon never picks up a :visited state.
+  &:hover .tweet-x-logo {
+    fill: var(--color-link);
+  }
+}
+
+.tweet-x-logo {
+  width: calc(2.5 * $base-margin);
+  height: calc(2.5 * $base-margin);
+  fill: var(--midground);
+  margin: 0;
+  transition: fill 0.2s ease;
+}
+
+.tweet-body {
+  margin: $base-margin 0 0;
+  color: var(--foreground);
+  white-space: normal;
+}
+
+.tweet-body .tweet-entity {
+  color: var(--color-link);
+}
+
+// The embedded quote-tweet: a bordered mini-card under the quoting tweet's body.
+.tweet-quoted {
+  margin-top: $base-margin;
+  border: 1px solid var(--midground-faint);
+  border-radius: calc(2 * $border-radius);
+  padding: $base-margin;
+}
+
+.tweet-quoted-header {
+  display: flex;
+  align-items: center;
+  gap: calc(0.5 * $base-margin);
+}
+
+.tweet-card img.tweet-quoted-avatar {
+  width: calc(3 * $base-margin);
+  height: calc(3 * $base-margin);
+}
+
+.tweet-quoted .tweet-body {
+  margin-top: calc(0.5 * $base-margin);
+}
+
+// A single image keeps its natural aspect ratio up to this height, so an
+// ordinary photo shows in full; only an unusually tall image is cropped.
+$tweet-media-max-height: 24rem;
+
+.tweet-media-grid {
+  display: grid;
+  gap: calc(0.5 * $base-margin);
+  margin-top: $base-margin;
+  border-radius: calc(2 * $border-radius);
+  overflow: hidden;
+
+  // Fade the bottom edge into the card when a clipped image trails off there, so
+  // it ends on a soft edge instead of a hard line — the same fade overflowing
+  // equations and tables get where their content is cut. The class is toggled by
+  // tweet-media-fade.inline.ts, which measures whether the bottom of the frame
+  // actually cuts through image content; a fully-visible image keeps its real
+  // bottom edge and gets no fade.
+  &.tweet-media-grid-fade-bottom {
+    mask-image: linear-gradient(
+      to bottom,
+      var(--background) calc(100% - 4 * $base-margin),
+      transparent 100%
+    );
+  }
+
+  // A lone image sizes to its natural aspect ratio, capped at a max height.
+  &.tweet-media-count-1 {
+    grid-template-columns: 1fr;
+
+    .tweet-media {
+      height: auto;
+      max-height: $tweet-media-max-height;
+    }
+  }
+
+  // Multi-image layouts pin to a fixed 16:9 frame so one oversized portrait
+  // can't dominate the card; each image cover-crops into its cell, mirroring X.
+  // The full image still opens via the source link.
+  &.tweet-media-count-2,
+  &.tweet-media-count-3,
+  &.tweet-media-count-4 {
+    aspect-ratio: 16 / 9;
+  }
+
+  &.tweet-media-count-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  &.tweet-media-count-3,
+  &.tweet-media-count-4 {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  // Three-up mosaic: the first image fills the left column while the other two
+  // stack on the right.
+  &.tweet-media-count-3 > :first-child {
+    grid-row: 1 / span 2;
+  }
+}
+
+.tweet-card .tweet-media {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  object-fit: cover;
+  mix-blend-mode: normal;
+  border-radius: 0;
+}
+
+// The photo link generates no box of its own, so the wrapped img stays the grid
+// item and every grid/fade rule keeps applying unchanged.
+.tweet-media-link {
+  display: contents;
+
+  // Signal that the photo opens its full-size asset on click.
+  .tweet-media-photo {
+    cursor: zoom-in;
+  }
+}
+
+// Muted timestamp at the bottom of the main card and, identically, the quoted
+// card.
+.tweet-date,
+.tweet-quoted-date {
+  display: block;
+  margin-top: $base-margin;
+  color: var(--midground);
+  font-size: var(--font-size-minus-1);
+}
+
+.tweet-card-unavailable {
+  color: var(--midground);
+  font-style: italic;
+}
+
+.tweet-retweet-context {
+  display: flex;
+  align-items: center;
+  gap: calc(0.5 * $base-margin);
+  margin-bottom: $base-margin;
+  color: var(--midground);
+  font-size: var(--font-size-minus-1);
+  font-weight: 600;
+}
+
+.tweet-retweet-icon {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  fill: var(--midground);
+  margin: 0;
+}
+
+.tweet-metrics {
+  display: flex;
+  gap: calc(3 * $base-margin);
+  margin-top: $base-margin;
+  color: var(--midground);
+  font-size: var(--font-size-minus-1);
+}
+
+.tweet-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(0.5 * $base-margin);
+}
+
+// Stroked outlines (not filled) at one shared weight so the reply and like
+// icons read identically — see REPLY_PATH/HEART_PATH in tweetCard.ts.
+.tweet-metric-icon {
+  width: calc(2 * $base-margin);
+  height: calc(2 * $base-margin);
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--midground);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  margin: 0;
+}
+
+// Threads: stack the cards and run a continuous rail down the avatar column.
+// Avatar center sits at padding-left (1.5) + avatar radius (3) = 4.5 base-margins
+// from the card's padding edge; below-header content is indented past the avatar
+// column (avatar width 6 + header gap 1) so it never crosses the rail.
+$tweet-rail-x: calc(4.5 * $base-margin);
+$tweet-avatar-bottom: calc(7.5 * $base-margin); // padding-top 1.5 + avatar height 6
+$tweet-content-indent: calc(7 * $base-margin); // avatar width 6 + header gap 1
+
+.tweet-thread {
+  display: flex;
+  flex-direction: column;
+
+  .tweet-card {
+    border-radius: 0;
+
+    &:first-child {
+      border-top-left-radius: calc(2 * $border-radius);
+      border-top-right-radius: calc(2 * $border-radius);
+    }
+
+    &:last-child {
+      border-bottom-left-radius: calc(2 * $border-radius);
+      border-bottom-right-radius: calc(2 * $border-radius);
+    }
+
+    &:not(:first-child) {
+      border-top: none;
+    }
+
+    // Inner dividers between chained tweets are fainter than the outer border.
+    &:not(:last-child) {
+      border-bottom-color: var(--midground-fainter);
+    }
+
+    // Rail below this avatar down past the card's bottom edge, overlapping the
+    // inner divider so the connector reads as continuous over the border.
+    &:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      left: $tweet-rail-x;
+      top: $tweet-avatar-bottom;
+      bottom: -1px;
+      width: 2px;
+      transform: translateX(-50%);
+      background-color: var(--midground-faint);
+    }
+
+    // ...continuing from the card's top edge up to this avatar.
+    &:not(:first-child)::before {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      left: $tweet-rail-x;
+      top: 0;
+      height: calc(1.5 * $base-margin);
+      width: 2px;
+      transform: translateX(-50%);
+      background-color: var(--midground-faint);
+    }
+  }
+
+  // Indent below-header content past the avatar column so it clears the rail.
+  // Direct children only, so a quoted card's own body/media stay un-indented
+  // within their nested frame.
+  .tweet-card > .tweet-body,
+  .tweet-card > .tweet-media-grid,
+  .tweet-card > .tweet-quoted,
+  .tweet-card > .tweet-metrics,
+  .tweet-card > .tweet-date {
+    margin-left: $tweet-content-indent;
+  }
+}
