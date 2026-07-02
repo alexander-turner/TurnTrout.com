@@ -20,8 +20,8 @@ try:
     from . import archive_links
     from . import utils as script_utils
 except ImportError:
-    import archive_links  # type: ignore
-    import utils as script_utils  # type: ignore
+    import archive_links
+    import utils as script_utils
 
 # Seconds to wait on a single HEAD before recording it as unreachable.
 PROBE_TIMEOUT: int = 30

@@ -55,8 +55,8 @@ try:
     from . import r2_upload
     from . import utils as script_utils
 except ImportError:
-    import r2_upload  # type: ignore
-    import utils as script_utils  # type: ignore
+    import r2_upload
+    import utils as script_utils
 
 # --- Configuration constants -------------------------------------------------
 
