@@ -39,7 +39,7 @@ date_published: 2018-06-03
 original_url: https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
 skip_import: "true"
 description: "I dove headfirst into AI safety, even at the risk of my PhD. This is how. "
-date_updated: 2026-06-28
+date_updated: 2026-07-02
 ---
 
 > [!success]
@@ -182,4 +182,4 @@ I sacrificed some of my tethering to the [social web](https://www.lesswrong.com/
 
 [^6]: Objectives are subject to change.
 
-[^edit]: As of Feb. 19, 2025, I think that AI risk _was_ on the fringe in 2018. The FLI AI principles argument wasn't a good one.
+[^edit]: As of Feb. 19th, 2025, I think that AI risk _was_ on the fringe in 2018. The FLI AI principles argument wasn't a good one.
