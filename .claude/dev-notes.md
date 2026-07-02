@@ -55,6 +55,15 @@ Three stages: **Transform → Filter → Emit**.
   are skipped. `built_site_checks.check_video_caption_tracks` then enforces
   that every audio-bearing `<video>` ships a real `.vtt` track (or an explicit
   `label="No audio"` marker).
+- **Linked (not embedded) videos**: `built_site_checks.check_linked_video_captions`
+  covers videos referenced by a bare `<a href>` on the asset CDN, which bypass
+  the embedded-`<video>` check. A link to a `.mp4`/`.mov`/`.m4v` on
+  `assets.turntrout.com` must have its sibling `.vtt` referenced somewhere on
+  the same page (same base path). Silent links opt out with a `#no-audio`
+  fragment (`…/foo.mp4#no-audio`), the link-side analog of `label="No audio"`.
+  `.webm`/`.gif` links are exempt. The check can't probe the remote file for
+  audio, so the `#no-audio` marker is how a genuinely silent linked video
+  declares itself.
 
 ### Text processing
 

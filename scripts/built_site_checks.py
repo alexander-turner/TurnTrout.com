@@ -2258,6 +2258,7 @@ def check_file_for_issues(
             soup
         ),
         "video_missing_captions": check_video_caption_tracks(soup),
+        "linked_video_missing_captions": check_linked_video_captions(soup),
         "inline_style_variables": check_inline_style_variables(
             soup, opts.defined_css_variables
         ),
@@ -3023,6 +3024,75 @@ def check_video_caption_tracks(soup: BeautifulSoup) -> list[str]:
         issue = _video_caption_issue(video)
         if issue is not None:
             issues.append(issue)
+    return issues
+
+
+# Linked (as opposed to embedded) videos in these container formats routinely
+# carry a speech track, so they need captions. ``.webm``/``.gif`` links are
+# exempt (see check_linked_video_captions).
+_CAPTIONABLE_LINKED_VIDEO_EXTS: frozenset[str] = frozenset(
+    {".mp4", ".mov", ".m4v"}
+)
+
+# Fragment on a linked video's href that opts it out of the captions
+# requirement, mirroring the ``label="No audio"`` marker on embedded <video>.
+_NO_AUDIO_LINK_MARKER = "no-audio"
+
+
+def _cdn_asset_base(url: str) -> tuple[str, str] | None:
+    """
+    For a URL pointing at the asset CDN, return ``(path_without_ext, ext)`` with
+    the query and fragment stripped and the extension lowercased.
+
+    Returns
+    ``None`` for URLs hosted anywhere else.
+    """
+    parsed = urlparse(url)
+    if parsed.hostname != script_utils.CDN_HOSTNAME:
+        return None
+    base, ext = os.path.splitext(parsed.path)
+    return (base, ext.lower())
+
+
+def _page_references_cdn_vtt(soup: BeautifulSoup, base_path: str) -> bool:
+    """True iff the page references ``<base_path>.vtt`` on the asset CDN."""
+    for tag in _tags_only(soup.find_all(["a", "track", "source"])):
+        ref = tag.get("href") or tag.get("src")
+        if isinstance(ref, str) and _cdn_asset_base(ref) == (base_path, ".vtt"):
+            return True
+    return False
+
+
+def check_linked_video_captions(soup: BeautifulSoup) -> list[str]:
+    """
+    Every linked audio-container video on the asset CDN must reference captions.
+
+    A bare ``<a href="…/foo.mp4">`` bypasses the embedded-``<video>`` caption
+    check, so this requires the page to also reference the sibling
+    ``…/foo.vtt``. Only ``.mp4``/``.mov``/``.m4v`` links are checked (formats
+    that routinely carry speech); ``.webm``/``.gif`` links are exempt. A silent
+    link opts out with a ``#no-audio`` fragment, the link-side analog of the
+    ``label="No audio"`` marker on embedded videos.
+    """
+    issues: list[str] = []
+    for anchor in _tags_only(soup.find_all("a", href=True)):
+        href = anchor.get("href")
+        if not isinstance(href, str):
+            continue
+        parsed = _cdn_asset_base(href)
+        if parsed is None or parsed[0] == "":
+            continue
+        base_path, ext = parsed
+        if ext not in _CAPTIONABLE_LINKED_VIDEO_EXTS:
+            continue
+        if urlparse(href).fragment == _NO_AUDIO_LINK_MARKER:
+            continue
+        if not _page_references_cdn_vtt(soup, base_path):
+            issues.append(
+                f"Linked video {href} has no captions companion "
+                f"(sibling .vtt referenced on the page) or "
+                f"'#{_NO_AUDIO_LINK_MARKER}' marker"
+            )
     return issues
 
 

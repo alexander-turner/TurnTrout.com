@@ -5150,6 +5150,81 @@ def test_check_video_accessibility_reports_offending_tag():
     assert "<source" not in issue
 
 
+_CDN = "https://assets.turntrout.com/static/images/posts"
+
+
+def _linked_caption_issue(href: str) -> str:
+    return (
+        f"Linked video {href} has no captions companion "
+        f"(sibling .vtt referenced on the page) or '#no-audio' marker"
+    )
+
+
+@pytest.mark.parametrize(
+    "html, expected_issues",
+    [
+        # Linked .mp4 with the sibling .vtt linked on the page -> ok.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>'
+            f'<a href="{_CDN}/talk.vtt">captions</a>',
+            [],
+        ),
+        # Companion satisfied by a <track src> reference to the sibling .vtt.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a><track src="{_CDN}/talk.vtt">',
+            [],
+        ),
+        # Cache-busting query strings on both ends still match on base path.
+        (
+            f'<a href="{_CDN}/talk.mp4?v=2">clip</a>'
+            f'<a href="{_CDN}/talk.vtt?v=9">captions</a>',
+            [],
+        ),
+        # Linked .mp4 with no captions anywhere -> issue.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>',
+            [_linked_caption_issue(f"{_CDN}/talk.mp4")],
+        ),
+        # .mov and .m4v are captionable containers too.
+        (
+            f'<a href="{_CDN}/clip.mov">m</a>',
+            [_linked_caption_issue(f"{_CDN}/clip.mov")],
+        ),
+        (
+            f'<a href="{_CDN}/clip.m4v">m</a>',
+            [_linked_caption_issue(f"{_CDN}/clip.m4v")],
+        ),
+        # #no-audio fragment opts a silent link out.
+        (f'<a href="{_CDN}/silent.mp4#no-audio">s</a>', []),
+        # .webm / .gif links are exempt regardless of captions.
+        (f'<a href="{_CDN}/anim.webm">w</a>', []),
+        (f'<a href="{_CDN}/anim.gif">g</a>', []),
+        # A .mp4 on another host is out of scope.
+        ('<a href="https://youtube.com/watch.mp4">yt</a>', []),
+        # A sibling .vtt at a different base path does not count.
+        (
+            f'<a href="{_CDN}/talk.mp4">clip</a>'
+            f'<a href="{_CDN}/other.vtt">captions</a>',
+            [_linked_caption_issue(f"{_CDN}/talk.mp4")],
+        ),
+        # Embedded <video> sources are not anchors -> ignored by this check.
+        (f'<video controls><source src="{_CDN}/talk.mp4"></video>', []),
+        # Each offending link is reported independently.
+        (
+            f'<a href="{_CDN}/a.mp4">a</a>'
+            f'<a href="{_CDN}/b.mp4">b</a>'
+            f'<a href="{_CDN}/b.vtt">b captions</a>',
+            [_linked_caption_issue(f"{_CDN}/a.mp4")],
+        ),
+    ],
+)
+def test_check_linked_video_captions(html: str, expected_issues: list[str]):
+    """Linked audio-container videos on the CDN must reference captions."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_linked_video_captions(soup)
+    assert sorted(result) == sorted(expected_issues)
+
+
 @pytest.mark.parametrize(
     "html_content, expected_issues",
     [
