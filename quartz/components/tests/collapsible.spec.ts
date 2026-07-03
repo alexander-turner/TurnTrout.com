@@ -40,6 +40,17 @@ async function spaNavigateToAbout(page: Page): Promise<void> {
   await expect(page.locator('body[data-slug="about"]')).toBeAttached()
 }
 
+/** Resolves a locator's bounding box, throwing if it's not visible/attached. */
+async function requireBoundingBox(
+  locator: import("@playwright/test").Locator,
+): Promise<{ x: number; y: number; width: number; height: number }> {
+  const box = await locator.boundingBox()
+  if (!box) {
+    throw new Error(`Expected a visible bounding box for locator: ${locator}`)
+  }
+  return box
+}
+
 async function goBackToTestPage(page: Page): Promise<void> {
   await page.goBack()
   await page.waitForURL("**/test-page")
@@ -165,6 +176,48 @@ test.describe("Collapsible admonition state persistence", () => {
       .filter({ hasText: "starts off open" })
     await expect(afterNav).toBeAttached()
     await expect(afterNav).toHaveClass(/is-collapsed/)
+  })
+
+  test("title's pointer cursor and click target cover the full row, including the side padding gutters", async ({
+    page,
+  }) => {
+    const admonition = page
+      .locator(".admonition.is-collapsible:not(.is-collapsed)")
+      .filter({ hasText: "starts off open" })
+    const title = admonition.locator(".admonition-title")
+
+    const [admonitionBox, titleBox] = await Promise.all([
+      requireBoundingBox(admonition),
+      requireBoundingBox(title),
+    ])
+
+    // The title's box must reach the admonition's edges -- it shouldn't stop
+    // short at the inner content padding, leaving an un-hoverable/unclickable gutter.
+    const GUTTER_TOLERANCE_PX = 3
+    expect(titleBox.x - admonitionBox.x).toBeLessThan(GUTTER_TOLERANCE_PX)
+    expect(admonitionBox.x + admonitionBox.width - (titleBox.x + titleBox.width)).toBeLessThan(
+      GUTTER_TOLERANCE_PX,
+    )
+
+    // Sample the cursor right at each edge of the title row (inside the
+    // gutters that used to fall outside the title's box) and confirm it's a pointer.
+    const y = titleBox.y + titleBox.height / 2
+    const cursorAt = (x: number) =>
+      page.evaluate(
+        ({ px, py }) => {
+          const el = document.elementFromPoint(px, py)
+          return el ? getComputedStyle(el).cursor : null
+        },
+        { px: x, py: y },
+      )
+    expect(await cursorAt(titleBox.x + 2)).toBe("pointer")
+    expect(await cursorAt(titleBox.x + titleBox.width - 2)).toBe("pointer")
+
+    // Clicking in the gutter itself (not just the visible icon/text) should
+    // toggle the admonition, proving the extended box is actually clickable.
+    await expect(admonition).not.toHaveClass(/is-collapsed/)
+    await page.mouse.click(titleBox.x + 2, y)
+    await expect(admonition).toHaveClass(/is-collapsed/)
   })
 
   test("clicking content does not close open collapsible", async ({ page }) => {
