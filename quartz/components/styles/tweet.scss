@@ -93,7 +93,11 @@
 
 .tweet-source-link {
   position: absolute;
-  top: calc(1.5 * $base-margin);
+
+  // Slightly above the card's padding edge so the icon reads as tucked into
+  // the corner instead of pinned level with the name row — this holds
+  // regardless of how long the display name is, since the name never wraps.
+  top: calc(1 * $base-margin);
   right: calc(1.5 * $base-margin);
   background-color: transparent;
   line-height: 0;

@@ -1083,6 +1083,72 @@ def check_sentence_initial_numerals(text: str) -> list[str]:
     return errors
 
 
+_DATE_MONTH_NAMES = (
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sept",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+)
+
+# Month name (optionally abbreviated with a trailing period), a 1-2 digit day
+# with an optional ordinal suffix, and a 4-digit year. The suffix is captured
+# so callers can tell "26" from "26th" instead of just matching the date.
+_DATE_WITHOUT_ORDINAL_RE = re.compile(
+    r"\b(?:" + "|".join(_DATE_MONTH_NAMES) + r")\.?\s+"
+    r"\d{1,2}(st|nd|rd|th)?,?\s+\d{4}\b"
+)
+
+# Blockquotes, headings, tables, raw HTML, and standalone images either quote
+# an external source verbatim or render structured/non-prose data, so their
+# dates are left as written.
+_DATE_NON_PROSE_PREFIXES = (">", "#", "|", "<", "![")
+
+
+def check_dates_missing_ordinal_suffix(text: str) -> list[str]:
+    """
+    Flag written-out dates ("Month Day, Year") whose day lacks an ordinal suffix
+    ("st"/"nd"/"rd"/"th").
+
+    The site's date convention spells the day ordinally ("January 26th, 2026"),
+    so a bare cardinal day ("January 26, 2026") is a formatting bug.
+    """
+    stripped_text = remove_math(remove_code(text))
+    errors = []
+    for line_num, line in enumerate(stripped_text.split("\n"), 1):
+        stripped_line = line.strip()
+        if not stripped_line or stripped_line.startswith(
+            _DATE_NON_PROSE_PREFIXES
+        ):
+            continue
+        for match in _DATE_WITHOUT_ORDINAL_RE.finditer(line):
+            if match.group(1) is None:
+                errors.append(
+                    f"Date missing ordinal suffix at line {line_num}: "
+                    f"{match.group().strip()}"
+                )
+    return errors
+
+
 def check_file_data(
     metadata: dict,
     existing_urls: PathMap,
@@ -1126,6 +1192,9 @@ def check_file_data(
         "footnote_references": check_footnote_references(text),
         "self_closing_non_void": check_self_closing_non_void_elements(text),
         "sentence_initial_numerals": check_sentence_initial_numerals(text),
+        "dates_missing_ordinal_suffix": check_dates_missing_ordinal_suffix(
+            text
+        ),
         "invalid_filename": (
             check_spaces_in_path(file_path)
             + check_filename_lowercase(file_path)

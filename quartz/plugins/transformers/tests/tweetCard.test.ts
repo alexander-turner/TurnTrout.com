@@ -10,6 +10,7 @@ import {
   buildTweetCard,
   buildTweetEmbed,
   buildUnavailableCard,
+  decodeHtmlEntities,
   formatCount,
   formatTweetDate,
   linkifyTweetText,
@@ -59,6 +60,29 @@ describe("formatTweetDate", () => {
   })
 })
 
+describe("decodeHtmlEntities", () => {
+  it.each([
+    ["a &amp; b", "a & b"],
+    ["1 &lt; 2 &gt; 0", "1 < 2 > 0"],
+    ["she said &quot;hi&quot;", 'she said "hi"'],
+    ["it&apos;s", "it's"],
+    ["A&#38;B", "A&B"],
+    ["&#x26;", "&"],
+    ["&#X26;", "&"],
+  ])("decodes %p to %p", (input, expected) => {
+    expect(decodeHtmlEntities(input)).toBe(expected)
+  })
+
+  it.each([
+    ["unknown named entity", "&nbsp;"],
+    ["out-of-range code point", "&#x110000;"],
+    ["zero code point", "&#0;"],
+    ["a bare ampersand", "R&D"],
+  ])("leaves %s untouched", (_label, input) => {
+    expect(decodeHtmlEntities(input)).toBe(input)
+  })
+})
+
 describe("linkifyTweetText", () => {
   it("links t.co entities to their expanded URL with display text", () => {
     const nodes = linkifyTweetText("see https://t.co/abc now", [
@@ -76,6 +100,20 @@ describe("linkifyTweetText", () => {
     expect(html).toContain('href="https://xcancel.com/bob"')
     expect(html).toContain("https://xcancel.com/search?q=%23ai")
     expect(html).toContain("https://xcancel.com/search?q=%24TSLA")
+  })
+
+  it("decodes HTML entities before building text nodes", () => {
+    const nodes = linkifyTweetText("safety filters &amp; aspirational language", [])
+    expect(nodes).toEqual(["safety filters & aspirational language"])
+  })
+
+  it("decodes HTML entities in a t.co link's display text", () => {
+    const nodes = linkifyTweetText("see https://t.co/abc", [
+      { url: "https://t.co/abc", display: "site.com/a&amp;b", expanded: "https://site.com/a&b" },
+    ])
+    const html = nodes.map((n) => (typeof n === "string" ? n : render(n))).join("")
+    expect(html).toContain(">site.com/a&#x26;b<")
+    expect(html).not.toContain("&#x26;amp;")
   })
 
   it("turns newlines into <br> and preserves surrounding text", () => {
@@ -196,6 +234,24 @@ describe("buildTweetCard", () => {
     expect(html).toContain('width="800"')
     expect(html).toContain('alt="a photo"')
     expect(html).toContain("tweet-media-count-1")
+  })
+
+  it("decodes HTML entities in the author name and photo alt text", () => {
+    const withEntities: TweetSnapshot = {
+      ...baseSnapshot,
+      author: { ...baseSnapshot.author, name: "Ben &amp; Jerry" },
+      media: [
+        {
+          type: "photo",
+          src: "https://assets.turntrout.com/static/tweets/123/p.jpg",
+          alt: "chart of X &amp; Y",
+        },
+      ],
+    }
+    const html = render(buildTweetCard(withEntities))
+    expect(html).toContain('<span class="tweet-name">Ben &#x26; Jerry</span>')
+    expect(html).toContain('alt="chart of X &#x26; Y"')
+    expect(html).not.toContain("&#x26;amp;")
   })
 
   it("renders a looping video with a poster and a source element", () => {
@@ -325,6 +381,13 @@ describe("quote tweets", () => {
     expect(html).toContain('href="https://xcancel.com/someone"')
     // The post date sits at the bottom of the quoted card (base is Jan 21, quote Jan 20).
     expect(html).toContain('<span class="tweet-quoted-date">January 20th, 2025</span>')
+  })
+
+  it("decodes HTML entities in the quoted tweet's body", () => {
+    const withEntity = { ...quoted, text: "quoted R&amp;D note" }
+    const html = render(buildTweetCard({ ...baseSnapshot, quoted: withEntity }))
+    expect(html).toContain("quoted R&#x26;D note")
+    expect(html).not.toContain("&#x26;amp;")
   })
 
   it("omits the quoted date line when the timestamp is unparseable", () => {
