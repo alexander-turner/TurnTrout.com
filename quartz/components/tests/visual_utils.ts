@@ -154,43 +154,48 @@ export async function waitForImagesInElement(
             if (el.loading === "lazy") {
               el.loading = "eager"
             }
-            // A remote AVIF can intermittently fail to load (notably Firefox in
-            // CI). Reload-and-retry a failed load until it paints, with a hard
-            // ceiling so a permanently broken image can't hang the run.
-            const hardStop = window.setTimeout(() => resolve(false), deadlineMs)
+            // A remote AVIF can intermittently fail to load (notably Firefox
+            // in CI), so failed loads are retried until the deadline. The loop
+            // POLLS instead of listening to load/error events: a reload fired
+            // from a stale event timer changes `src` while a decode() is
+            // pending, which rejects it and (on Firefox, where naturalWidth
+            // resets during the new request) re-triggers reload forever.
+            const POLL_MS = 100
+            const RELOAD_DEBOUNCE_MS = 250
+            let lastReloadAt = -RELOAD_DEBOUNCE_MS
+            const hardStop = window.setTimeout(() => {
+              window.clearInterval(poller)
+              resolve(false)
+            }, deadlineMs)
             const settle = (): void => {
               window.clearTimeout(hardStop)
+              window.clearInterval(poller)
               resolve(true)
             }
-            const reload = (): void => {
-              const url = new URL(el.currentSrc || el.src, document.baseURI)
-              // `set` overwrites the prior value, so retries don't accumulate
-              // query params; the cache-buster forces a fresh fetch.
-              url.searchParams.set("__visualRetry", String(Math.trunc(performance.now())))
-              el.src = url.toString()
+            const tick = (): void => {
+              // Still loading (or a lazy request not yet started): keep waiting.
+              if (!el.complete) return
+              if (el.naturalWidth > 0) {
+                // Loaded. decode() flushes the bitmap so the paint is ready;
+                // WebKit spuriously rejects decode() for painted SVGs, so a
+                // rejection still settles.
+                window.clearInterval(poller)
+                el.decode().then(settle, settle)
+                return
+              }
+              // Errored (complete with no dimensions): retry with a
+              // cache-busted fetch. `set` overwrites the prior value, so
+              // retries don't accumulate query params.
+              const now = performance.now()
+              if (now - lastReloadAt >= RELOAD_DEBOUNCE_MS) {
+                lastReloadAt = now
+                const url = new URL(el.currentSrc || el.src, document.baseURI)
+                url.searchParams.set("__visualRetry", String(Math.trunc(now)))
+                el.src = url.toString()
+              }
             }
-            // A successful (re)load is accepted once `decode()` confirms it is
-            // paint-ready. WebKit rejects `decode()` for SVG images that have
-            // loaded and painted fine, so a rejection with a nonzero natural
-            // width still settles; only a genuinely failed load (naturalWidth
-            // of 0) reloads. Listeners persist across reloads so every retry
-            // is re-evaluated until an image paints.
-            const settleOrReload = (): void => {
-              el.decode().then(settle, () => {
-                if (el.complete && el.naturalWidth > 0) {
-                  settle()
-                } else {
-                  reload()
-                }
-              })
-            }
-            el.addEventListener("load", settleOrReload)
-            el.addEventListener("error", () => window.setTimeout(reload, 250))
-            // The image may have already finished (success or failure) before
-            // the listeners attached.
-            if (el.complete) {
-              settleOrReload()
-            }
+            const poller = window.setInterval(tick, POLL_MS)
+            tick()
           }),
         timeoutMs,
       )
