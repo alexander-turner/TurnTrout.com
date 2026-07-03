@@ -114,11 +114,14 @@ async function hideForceHslInvertInFirefox(page: Page, testInfo: TestInfo): Prom
 }
 
 /**
- * The desktop sidebar TOC mirrors every heading in test-page.md, so the
- * whole-page integration screenshot would churn whenever any section is added or
- * removed — even sections far below the fold. Swap in a fixed stub list so this
- * shot stays decoupled from the page's heading set; the live TOC's own rendering
- * is covered by the dedicated "Table of contents" screenshots.
+ * The sidebar and mobile TOCs mirror every heading in test-page.md, so any
+ * screenshot including them would churn whenever a section is added, removed,
+ * or reordered — regardless of position on the page. Swap in a fixed stub list
+ * so every TOC-including shot (the whole-page integration screenshot and the
+ * dedicated "Table of contents" screenshots) stays decoupled from the page's
+ * heading set. The TOC component's data-driven behavior (active-heading
+ * tracking, click delegation) is covered by non-visual tests elsewhere in this
+ * file, which don't depend on the stub's exact structure.
  */
 const STUB_TOC_OL = `<ol>
   <li><a href="#stub-one" class="internal same-page-link" data-for="stub-one"><span>First section</span></a></li>
@@ -366,13 +369,11 @@ test.describe("Table of contents", () => {
     await expect(page.locator(selector)).toBeVisible()
   })
 
-  // Cap how many top-level TOC entries the screenshots include. Hiding the
-  // rest keeps the baseline stable when sections are added or removed from
-  // test-page.md beyond this prefix.
-  const TOC_VISIBLE_TOP_LEVEL_ENTRIES = 9
-
   test("Desktop TOC visual test (screenshot)", async ({ page }, testInfo) => {
     test.skip(!isDesktopViewport(page))
+
+    // Decouple this shot from test-page.md's heading set (see stubTableOfContents).
+    await stubTableOfContents(page)
 
     // Set .simulate-visited on first TOC link child
     const rightSidebar = page.locator("#right-sidebar #table-of-contents")
@@ -389,13 +390,6 @@ test.describe("Table of contents", () => {
       }
     })
 
-    await rightSidebar.evaluate((el, keep) => {
-      const items = el.querySelectorAll<HTMLElement>("#toc-content > ol > li")
-      items.forEach((li, idx) => {
-        if (idx >= keep) li.style.display = "none"
-      })
-    }, TOC_VISIBLE_TOP_LEVEL_ENTRIES)
-
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-sidebar", {
       elementToScreenshot: rightSidebar,
     })
@@ -403,6 +397,9 @@ test.describe("Table of contents", () => {
 
   test("TOC visual test (screenshot)", async ({ page }, testInfo) => {
     test.skip(isDesktopViewport(page))
+
+    // Decouple this shot from test-page.md's heading set (see stubTableOfContents).
+    await stubTableOfContents(page)
 
     // Hide the navbar
     await page.evaluate(() => {
@@ -413,12 +410,6 @@ test.describe("Table of contents", () => {
     })
 
     const tocContent = page.locator(":has(> #toc-content-mobile)").first()
-    await tocContent.evaluate((el, keep) => {
-      const items = el.querySelectorAll<HTMLElement>("#toc-content-mobile > ol > li")
-      items.forEach((li, idx) => {
-        if (idx >= keep) li.style.display = "none"
-      })
-    }, TOC_VISIBLE_TOP_LEVEL_ENTRIES)
 
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
       elementToScreenshot: tocContent,
