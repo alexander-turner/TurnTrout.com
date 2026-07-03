@@ -213,9 +213,7 @@ test.describe("Collapsible admonition state persistence", () => {
     // short at the inner content padding, leaving an un-hoverable/unclickable gutter.
     const GUTTER_TOLERANCE_PX = 3
     expect(measurements.titleLeft - measurements.admonitionLeft).toBeLessThan(GUTTER_TOLERANCE_PX)
-    expect(measurements.admonitionRight - measurements.titleRight).toBeLessThan(
-      GUTTER_TOLERANCE_PX,
-    )
+    expect(measurements.admonitionRight - measurements.titleRight).toBeLessThan(GUTTER_TOLERANCE_PX)
 
     // Cursor should be a pointer right at each edge of the title row (inside the
     // gutters that used to fall outside the title's box), not just over the icon/text.
