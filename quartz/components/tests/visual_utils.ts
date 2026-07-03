@@ -163,6 +163,7 @@ export async function waitForImagesInElement(
             const POLL_MS = 100
             const RELOAD_DEBOUNCE_MS = 250
             let lastReloadAt = -RELOAD_DEBOUNCE_MS
+            let poller: number | undefined
             const hardStop = window.setTimeout(() => {
               window.clearInterval(poller)
               resolve(false)
@@ -194,7 +195,7 @@ export async function waitForImagesInElement(
                 el.src = url.toString()
               }
             }
-            const poller = window.setInterval(tick, POLL_MS)
+            poller = window.setInterval(tick, POLL_MS)
             tick()
           }),
         timeoutMs,
