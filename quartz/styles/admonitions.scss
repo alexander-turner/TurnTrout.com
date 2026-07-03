@@ -173,6 +173,10 @@
   }
 
   &.is-collapsible {
+    > .admonition-title {
+      cursor: pointer;
+    }
+
     > .admonition-content {
       transition: max-height $transition-duration-medium ease;
       overflow: hidden;
