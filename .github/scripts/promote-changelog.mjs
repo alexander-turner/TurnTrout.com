@@ -20,8 +20,8 @@
 // Self-contained on purpose (node builtins only): the release workflow may run
 // a trusted copy of this file, which only works if it imports nothing in-repo.
 
-import { writeFileSync, readFileSync, renameSync } from "node:fs";
-import { dirname, basename, join } from "node:path";
+import { readFileSync, renameSync, writeFileSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
 
 const CHANGELOG_PATH = "CHANGELOG.md";
 
