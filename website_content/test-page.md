@@ -262,6 +262,15 @@ Hi! Am I being transcluded? Here is a within-page link to the [admonitions secti
 
 > [!quote] [Here's a LINK with various spans and a favicon at the end. Color should be gray, except on hover.](/)
 
+> [!quote] [Seeking Power Is Often Robustly Instrumental in MDPs](/)
+> A quote whose link title is a cited work: "MDPs" stays plain rather than small-capped.
+
+> [!quote] The Basic Reasons I Expect AGI Ruin
+> A plain-text title-cased quote title: "AGI" stays plain.
+
+> [!quote] Does Proton VPN keep logs?
+> A prose quote title: "VPN" is small-capped as usual.
+
 > [!quote] Jacob Goldman-Wetzler
 > Subtitle: MATS 6.0, [Gradient Routing](/gradient-routing)
 >

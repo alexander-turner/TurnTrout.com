@@ -6,8 +6,10 @@ import {
   addClass,
   type ElementMaybeWithParent,
   gatherTextBeforeIndex,
+  hammingDistance,
   hasAncestor,
   hasClass,
+  isEffectivelyTitleCased,
   removeClass,
   type ReplaceFnResult,
   replaceRegex,
@@ -581,5 +583,39 @@ describe("hasAncestor", () => {
     expect(hasAncestor(node, predicate, ancestors)).toBe(true)
     // once for the node itself, and once for the parent (stops at first match)
     expect(callCount).toBe(2)
+  })
+})
+
+describe("hammingDistance", () => {
+  it.each([
+    { a: "", b: "", expected: 0 },
+    { a: "abc", b: "abc", expected: 0 },
+    { a: "abc", b: "abC", expected: 1 },
+    { a: "abc", b: "ABC", expected: 3 },
+    // Length mismatch: trailing characters count as mismatches.
+    { a: "abc", b: "abcd", expected: 1 },
+    { a: "abcd", b: "ab", expected: 2 },
+  ])("counts $expected mismatched positions between $a and $b", ({ a, b, expected }) => {
+    expect(hammingDistance(a, b)).toBe(expected)
+  })
+})
+
+describe("isEffectivelyTitleCased", () => {
+  it.each([
+    // Already title-cased work titles (0–1 flips) → true.
+    "Seeking Power Is Often Robustly Instrumental in MDPs",
+    "The Basic Reasons I Expect AGI Ruin",
+    "ACLU",
+    "GPT-3",
+  ])("treats already title-cased %j as a title", (text) => {
+    expect(isEffectivelyTitleCased(text)).toBe(true)
+  })
+
+  it.each([
+    // Prose/sentence fragments (≥2 flips) → false.
+    "Does Proton VPN keep logs?",
+    "Top Scoring exponential DCT vector",
+  ])("treats prose %j as not a title", (text) => {
+    expect(isEffectivelyTitleCased(text)).toBe(false)
   })
 })
