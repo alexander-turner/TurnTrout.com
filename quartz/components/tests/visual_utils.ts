@@ -163,17 +163,27 @@ export async function waitForImagesInElement(
               url.searchParams.set("__visualRetry", String(Math.trunc(performance.now())))
               el.src = url.toString()
             }
-            // A successful (re)load is accepted only once `decode()` confirms it
-            // is paint-ready; a failed load reloads. Listeners persist across
-            // reloads so every retry is re-evaluated until an image paints.
-            el.addEventListener("load", () => {
-              el.decode().then(settle, reload)
-            })
+            // A successful (re)load is accepted once `decode()` confirms it is
+            // paint-ready. WebKit rejects `decode()` for SVG images that have
+            // loaded and painted fine, so a rejection with a nonzero natural
+            // width still settles; only a genuinely failed load (naturalWidth
+            // of 0) reloads. Listeners persist across reloads so every retry
+            // is re-evaluated until an image paints.
+            const settleOrReload = (): void => {
+              el.decode().then(settle, () => {
+                if (el.complete && el.naturalWidth > 0) {
+                  settle()
+                } else {
+                  reload()
+                }
+              })
+            }
+            el.addEventListener("load", settleOrReload)
             el.addEventListener("error", () => window.setTimeout(reload, 250))
             // The image may have already finished (success or failure) before
             // the listeners attached.
             if (el.complete) {
-              el.decode().then(settle, reload)
+              settleOrReload()
             }
           }),
         timeoutMs,
