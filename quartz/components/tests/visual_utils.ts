@@ -162,40 +162,35 @@ export async function waitForImagesInElement(
             // resets during the new request) re-triggers reload forever.
             const POLL_MS = 100
             const RELOAD_DEBOUNCE_MS = 250
+            const startedAt = performance.now()
             let lastReloadAt = -RELOAD_DEBOUNCE_MS
-            let poller: number | undefined
-            const hardStop = window.setTimeout(() => {
-              window.clearInterval(poller)
-              resolve(false)
-            }, deadlineMs)
-            const settle = (): void => {
-              window.clearTimeout(hardStop)
-              window.clearInterval(poller)
-              resolve(true)
-            }
+            const settle = (): void => resolve(true)
             const tick = (): void => {
-              // Still loading (or a lazy request not yet started): keep waiting.
-              if (!el.complete) return
-              if (el.naturalWidth > 0) {
-                // Loaded. decode() flushes the bitmap so the paint is ready;
-                // WebKit spuriously rejects decode() for painted SVGs, so a
-                // rejection still settles.
-                window.clearInterval(poller)
-                el.decode().then(settle, settle)
+              if (performance.now() - startedAt >= deadlineMs) {
+                resolve(false)
                 return
               }
-              // Errored (complete with no dimensions): retry with a
-              // cache-busted fetch. `set` overwrites the prior value, so
-              // retries don't accumulate query params.
-              const now = performance.now()
-              if (now - lastReloadAt >= RELOAD_DEBOUNCE_MS) {
-                lastReloadAt = now
-                const url = new URL(el.currentSrc || el.src, document.baseURI)
-                url.searchParams.set("__visualRetry", String(Math.trunc(now)))
-                el.src = url.toString()
+              if (el.complete) {
+                if (el.naturalWidth > 0) {
+                  // Loaded. decode() flushes the bitmap so the paint is ready;
+                  // WebKit spuriously rejects decode() for painted SVGs, so a
+                  // rejection still settles.
+                  el.decode().then(settle, settle)
+                  return
+                }
+                // Errored (complete with no dimensions): retry with a
+                // cache-busted fetch. `set` overwrites the prior value, so
+                // retries don't accumulate query params.
+                const now = performance.now()
+                if (now - lastReloadAt >= RELOAD_DEBOUNCE_MS) {
+                  lastReloadAt = now
+                  const url = new URL(el.currentSrc || el.src, document.baseURI)
+                  url.searchParams.set("__visualRetry", String(Math.trunc(now)))
+                  el.src = url.toString()
+                }
               }
+              window.setTimeout(tick, POLL_MS)
             }
-            poller = window.setInterval(tick, POLL_MS)
             tick()
           }),
         timeoutMs,
