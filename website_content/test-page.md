@@ -61,6 +61,8 @@ Acronyms in a resolved `@title` fill and in title-cased `[!quote]` titles render
 > [!quote] Does Proton VPN keep logs?
 > A prose quote title: "VPN" is small-capped as usual.
 
+In-text work titles behave the same way: a title-cased link like [Seeking Power is Often Convergently Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps) and an italicized title like _Corrigibility Can Be VNM-Incoherent_ keep their acronyms as plain caps, while prose mentions of NASA, a lone italicized _LLM_, and sentence-cased links like [how the FBI does its work](/test-page) stay small-capped.
+
 # Lists
 
 This sentence is a baseline-scoping probe: it sits in the Lists section, so only the Lists screenshots should change.

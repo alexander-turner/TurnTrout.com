@@ -1337,3 +1337,45 @@ describe("data-original-text attribute", () => {
     expect(matches.map((m) => m.groups?.text)).toEqual(["NASA", "FBI", "100KM"])
   })
 })
+
+describe("markWorkTitles", () => {
+  it.each([
+    [
+      "a title-cased link keeps its acronym as plain caps",
+      '<p>See <a href="/x">AGI Ruin: A List of Lethalities</a> for more.</p>',
+      '<p>See <a href="/x" class="no-smallcaps">AGI Ruin: A List of Lethalities</a> for more.</p>',
+    ],
+    [
+      "a title-cased emphasized title keeps its acronym as plain caps",
+      "<p>I read <em>Seeking Power Is Often Robustly Instrumental in MDPs</em> today.</p>",
+      '<p>I read <em class="no-smallcaps">Seeking Power Is Often Robustly Instrumental in MDPs</em> today.</p>',
+    ],
+    [
+      "a sentence-cased link still gets small-caps",
+      '<p><a href="/x">How the FBI does its work</a></p>',
+      '<p><a href="/x">How the <abbr class="small-caps">fbi</abbr> does its work</a></p>',
+    ],
+    [
+      "a single emphasized acronym still gets small-caps",
+      "<p><em>NASA</em> launched.</p>",
+      '<p><em><abbr class="small-caps">Nasa</abbr></em> launched.</p>',
+    ],
+    [
+      "an all-caps multi-word phrase still gets small-caps",
+      '<p><a href="/x">CC BY-SA</a></p>',
+      '<p><a href="/x"><abbr class="small-caps">Cc by-sa</abbr></a></p>',
+    ],
+    [
+      "a heading anchor keeps small-caps in heading text",
+      '<h2><a href="#x">Header 2 (SMALLCAPS)</a></h2>',
+      '<h2><a href="#x">Header 2 (<abbr class="small-caps">smallcaps</abbr>)</a></h2>',
+    ],
+    [
+      "a title-cased emphasis nested in a link is suppressed once",
+      '<p><a href="/x"><em>Corrigibility Can Be VNM-Incoherent</em></a></p>',
+      '<p><a href="/x" class="no-smallcaps"><em class="no-smallcaps">Corrigibility Can Be VNM-Incoherent</em></a></p>',
+    ],
+  ])("%s", (_label, input, expected) => {
+    expect(testTagSmallcapsHTML(input)).toBe(expected)
+  })
+})

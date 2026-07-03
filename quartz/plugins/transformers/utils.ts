@@ -165,6 +165,27 @@ export function isEffectivelyTitleCased(text: string): boolean {
 }
 
 /**
+ * True when inline text reads as the title of a work: a multi-word,
+ * title-cased phrase with at least one lowercase letter. The lowercase
+ * requirement keeps all-caps phrases (bare acronyms, "CC BY-SA")
+ * small-capped, and the multi-word requirement keeps single emphasized words
+ * like "_LLM_" out. Short phrases must match title case exactly — one
+ * mis-cased word in "The NASA program" makes it ordinary prose — while
+ * phrases of five words or more get one word of slack, since long titles are
+ * often written with a mid-title "is" or "the" the `titleCase` library would
+ * capitalize differently.
+ */
+export function looksLikeWorkTitle(text: string): boolean {
+  const trimmed = text.trim()
+  if (!/\s/.test(trimmed) || !/\p{Ll}/u.test(trimmed)) {
+    return false
+  }
+  const wordCount = trimmed.split(/\s+/).length
+  const allowedFlips = wordCount >= 5 ? 2 : 1
+  return hammingDistance(titleCase(trimmed, { locale }), trimmed) < allowedFlips
+}
+
+/**
  * Checks if node has no previous sibling or previous sibling ends with period + with optional whitespace.
  */
 export function shouldCapitalizeNodeText(index: number, parent: Parent): boolean {

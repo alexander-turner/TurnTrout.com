@@ -141,6 +141,12 @@ describe("renderInlineFormatting", () => {
     expect(findByTag(out, "img")).toHaveLength(1)
   })
 
+  it("skips small-caps but keeps Twemoji for work titles", () => {
+    const out = renderInlineFormatting("Thoughts on LLM training \u{1F41F}", { workTitle: true })
+    expect(findByTag(out, "abbr")).toHaveLength(0)
+    expect(findByTag(out, "img")).toHaveLength(1)
+  })
+
   it("returns a single text node when nothing matches", () => {
     const out = nodes("nothing to transform here")
     expect(out).toMatchObject([{ type: "text", value: "nothing to transform here" }])

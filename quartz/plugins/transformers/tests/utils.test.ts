@@ -10,6 +10,7 @@ import {
   hasAncestor,
   hasClass,
   isEffectivelyTitleCased,
+  looksLikeWorkTitle,
   removeClass,
   type ReplaceFnResult,
   replaceRegex,
@@ -597,6 +598,32 @@ describe("hammingDistance", () => {
     { a: "abcd", b: "ab", expected: 2 },
   ])("counts $expected mismatched positions between $a and $b", ({ a, b, expected }) => {
     expect(hammingDistance(a, b)).toBe(expected)
+  })
+})
+
+describe("looksLikeWorkTitle", () => {
+  it.each([
+    "AGI Ruin: A List of Lethalities",
+    "Seeking Power is Often Convergently Instrumental in MDPs",
+    "Corrigibility Can Be VNM-Incoherent",
+    "Steered GPT-2",
+  ])("treats %j as a work title", (text) => {
+    expect(looksLikeWorkTitle(text)).toBe(true)
+  })
+
+  it.each([
+    // Single words never qualify, even acronyms.
+    "LLM",
+    "really",
+    // All-caps phrases stay small-capped.
+    "CC BY-SA",
+    // Short phrases with one mis-cased word are prose.
+    "The NASA program",
+    "FBI agent",
+    // Sentence-cased prose.
+    "How the FBI does its work",
+  ])("treats %j as prose", (text) => {
+    expect(looksLikeWorkTitle(text)).toBe(false)
   })
 })
 
