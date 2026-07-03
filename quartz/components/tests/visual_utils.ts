@@ -148,6 +148,12 @@ export async function waitForImagesInElement(
       const painted = await img.evaluate(
         (el: HTMLImageElement, deadlineMs) =>
           new Promise<boolean>((resolve) => {
+            // WebKit only starts a lazy image's request when it nears the
+            // viewport, so a below-fold `loading="lazy"` image would sit
+            // unloaded until the deadline. Promote it to eager for the wait.
+            if (el.loading === "lazy") {
+              el.loading = "eager"
+            }
             // A remote AVIF can intermittently fail to load (notably Firefox in
             // CI). Reload-and-retry a failed load until it paints, with a hard
             // ceiling so a permanently broken image can't hang the run.
