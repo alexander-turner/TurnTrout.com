@@ -185,38 +185,50 @@ test.describe("Collapsible admonition state persistence", () => {
       .locator(".admonition.is-collapsible:not(.is-collapsed)")
       .filter({ hasText: "starts off open" })
     const title = admonition.locator(".admonition-title")
+    await title.scrollIntoViewIfNeeded()
 
-    const [admonitionBox, titleBox] = await Promise.all([
-      requireBoundingBox(admonition),
-      requireBoundingBox(title),
-    ])
+    // Measure geometry and hit-test the cursor in a single browser round-trip
+    // (rather than combining a Playwright-side boundingBox() with a later
+    // elementFromPoint call) so the two never disagree on viewport/scroll state.
+    const measurements = await title.evaluate((titleEl) => {
+      const admonitionEl = titleEl.closest(".admonition") as HTMLElement
+      const titleRect = titleEl.getBoundingClientRect()
+      const admonitionRect = admonitionEl.getBoundingClientRect()
+      const y = titleRect.top + titleRect.height / 2
+      const cursorAt = (x: number) => {
+        const el = document.elementFromPoint(x, y)
+        return el ? getComputedStyle(el).cursor : null
+      }
+      return {
+        titleLeft: titleRect.left,
+        titleRight: titleRect.right,
+        admonitionLeft: admonitionRect.left,
+        admonitionRight: admonitionRect.right,
+        cursorNearLeftEdge: cursorAt(titleRect.left + 2),
+        cursorNearRightEdge: cursorAt(titleRect.right - 2),
+      }
+    })
 
     // The title's box must reach the admonition's edges -- it shouldn't stop
     // short at the inner content padding, leaving an un-hoverable/unclickable gutter.
     const GUTTER_TOLERANCE_PX = 3
-    expect(titleBox.x - admonitionBox.x).toBeLessThan(GUTTER_TOLERANCE_PX)
-    expect(admonitionBox.x + admonitionBox.width - (titleBox.x + titleBox.width)).toBeLessThan(
+    expect(measurements.titleLeft - measurements.admonitionLeft).toBeLessThan(GUTTER_TOLERANCE_PX)
+    expect(measurements.admonitionRight - measurements.titleRight).toBeLessThan(
       GUTTER_TOLERANCE_PX,
     )
 
-    // Sample the cursor right at each edge of the title row (inside the
-    // gutters that used to fall outside the title's box) and confirm it's a pointer.
-    const y = titleBox.y + titleBox.height / 2
-    const cursorAt = (x: number) =>
-      page.evaluate(
-        ({ px, py }) => {
-          const el = document.elementFromPoint(px, py)
-          return el ? getComputedStyle(el).cursor : null
-        },
-        { px: x, py: y },
-      )
-    expect(await cursorAt(titleBox.x + 2)).toBe("pointer")
-    expect(await cursorAt(titleBox.x + titleBox.width - 2)).toBe("pointer")
+    // Cursor should be a pointer right at each edge of the title row (inside the
+    // gutters that used to fall outside the title's box), not just over the icon/text.
+    expect(measurements.cursorNearLeftEdge).toBe("pointer")
+    expect(measurements.cursorNearRightEdge).toBe("pointer")
 
     // Clicking in the gutter itself (not just the visible icon/text) should
     // toggle the admonition, proving the extended box is actually clickable.
+    // `position` is relative to the title's own box, so it stays correct
+    // across viewports/devices without any manual coordinate math.
+    const titleBox = await requireBoundingBox(title)
     await expect(admonition).not.toHaveClass(/is-collapsed/)
-    await page.mouse.click(titleBox.x + 2, y)
+    await title.click({ position: { x: 2, y: titleBox.height / 2 } })
     await expect(admonition).toHaveClass(/is-collapsed/)
   })
 
