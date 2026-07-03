@@ -45,6 +45,22 @@ Subtitle: MATS (starting with smallcaps).
 
 The `@title` sentinel ties a link's text to its target's current title at build time: [@title](/test-page) renders this page's title, and [@title](#header-4) renders the current text of the "Header 4" section.
 
+# `@title`s and quote smallcaps
+
+Acronyms in a resolved `@title` fill and in title-cased `[!quote]` titles render as plain caps instead of smallcaps.
+
+> [!quote] [Seeking Power Is Often Robustly Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps)
+> A quote whose link title is a hand-written cited work: "MDPs" stays plain rather than small-capped.
+
+> [!quote] [@title](/seeking-power-is-often-convergently-instrumental-in-mdps)
+> A quote whose title is an `@title` fill: the live title renders with plain acronyms.
+
+> [!quote] The Basic Reasons I Expect AGI Ruin
+> A plain-text title-cased quote title: "AGI" stays plain.
+
+> [!quote] Does Proton VPN keep logs?
+> A prose quote title: "VPN" is small-capped as usual.
+
 # Lists
 
 This sentence is a baseline-scoping probe: it sits in the Lists section, so only the Lists screenshots should change.
@@ -59,7 +75,7 @@ This sentence is a baseline-scoping probe: it sits in the Lists section, so only
 >
 > 1. Block quotes can also contain ordered lists and sometimes those list items are more than a single line long
 > 2. With counters
->     1. That track depth (except in Safari)
+>    1. That track depth (except in Safari)
 
 1. A normal ordered list
    1. Indented
@@ -85,25 +101,26 @@ Header 1
 
 Unordered list inside a description list
 : - Voice & video calls
-  - GPS
-  - Audible
-  - Uber / Lyft
-  - Authenticators / alarms / other boring utilities
-  - Roam / note-taking
+
+- GPS
+- Audible
+- Uber / Lyft
+- Authenticators / alarms / other boring utilities
+- Roam / note-taking
 
 Code block in a `<dl>`
 : To verify that a commit `ABC012` was indeed committed by a given date, run:
 
-  ```shell
-  git clone https://github.com/alexander-turner/.timestamps
-  cd .timestamps
-  ots --no-bitcoin verify "files/ABC012.txt.ots"
-  ```
+```shell
+git clone https://github.com/alexander-turner/.timestamps
+cd .timestamps
+ots --no-bitcoin verify "files/ABC012.txt.ots"
+```
 
 Admonition in a description list
 : > [!quote] Test
-  >
-  > To be or not to be.
+
+> To be or not to be.
 
 # Admonition lists
 
@@ -171,6 +188,7 @@ Admonition in a description list
 
 <label for="select-basic">Basic select:</label>
 <select id="select-basic">
+
   <option value="">Choose an option</option>
   <option value="1">Option 1</option>
   <option value="2">Option 2</option>
@@ -262,15 +280,6 @@ Hi! Am I being transcluded? Here is a within-page link to the [admonitions secti
 
 > [!quote] [Here's a LINK with various spans and a favicon at the end. Color should be gray, except on hover.](/)
 
-> [!quote] [Seeking Power Is Often Robustly Instrumental in MDPs](/)
-> A quote whose link title is a cited work: "MDPs" stays plain rather than small-capped.
-
-> [!quote] The Basic Reasons I Expect AGI Ruin
-> A plain-text title-cased quote title: "AGI" stays plain.
-
-> [!quote] Does Proton VPN keep logs?
-> A prose quote title: "VPN" is small-capped as usual.
-
 > [!quote] Jacob Goldman-Wetzler
 > Subtitle: MATS 6.0, [Gradient Routing](/gradient-routing)
 >
@@ -326,7 +335,6 @@ Figure: A `<figcaption>` element created from the Markdown cue of "Figure:". "�
 This footnote has a table.[^table]
 
 [^table]:
-
     |   Layer    | Coeff |    Pos. 0     |   1    |   2    |   3   |     4     |
     | :--------: | :---: | :-----------: | :----: | :----: | :---: | :-------: |
     | 0 (Prompt) |  +1   | `<endoftext>` |  `I`   | `hate` | `you` | `because` |
@@ -409,20 +417,20 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 
 - [ ] You can check off this item, refresh the page, and the box will remain checked.
 
-| **Tier** | **Time for tier** | **Cost of tier** | **Protection level** |
-| -----------------: | :--------: | :----------: | :--------------------------------- |
-| Quick start | 50 minutes | \$0 | Online accounts secured against most hacking. Limited private communication ability. |
+|    **Tier** | **Time for tier** | **Cost of tier** | **Protection level**                                                                 |
+| ----------: | :---------------: | :--------------: | :----------------------------------------------------------------------------------- |
+| Quick start |    50 minutes     |       \$0        | Online accounts secured against most hacking. Limited private communication ability. |
 
-|   Model |   Intervention   | Gaming Gap (%, ↓) |
-| ------: | :--------------: | :---------------: |
-|   GPT-4 |     Baseline     |       18.9        |
-|   GPT-4 |   +Coop Prompt   |        1.2        |
-|   ===   |       ===        |        ===        |
-| GPT-4o |     Baseline     |        8.9        |
-| GPT-4o |   +Coop Prompt   |       0.01        |
-|   ===   |       ===        |        ===        |
-|  Opus-4 |     Baseline     |       47.2        |
-|  Opus-4 |   +Coop Prompt   |       14.9        |
+|  Model | Intervention | Gaming Gap (%, ↓) |
+| -----: | :----------: | :---------------: |
+|  GPT-4 |   Baseline   |       18.9        |
+|  GPT-4 | +Coop Prompt |        1.2        |
+|    === |     ===      |        ===        |
+| GPT-4o |   Baseline   |        8.9        |
+| GPT-4o | +Coop Prompt |       0.01        |
+|    === |     ===      |        ===        |
+| Opus-4 |   Baseline   |       47.2        |
+| Opus-4 | +Coop Prompt |       14.9        |
 
 Table: Darker dividers between row groups.
 
@@ -432,27 +440,27 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 
 <!--spellchecker-disable-->
 
-| Feature | punctilio | smartypants | tipograph | smartquotes | typograf | retext | Other lib |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Smart quotes | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Leading apostrophe | ✓ | ✗ | ✗ | ◐ | ✗ | ✓ | ✗ |
-| Em dash | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ |
-| En dash (ranges) | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ |
-| Ellipsis | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ |
-| Multiplication | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ |
+|      Feature       | punctilio | smartypants | tipograph | smartquotes | typograf | retext | Other lib |
+| :----------------: | :-------: | :---------: | :-------: | :---------: | :------: | :----: | :-------: |
+|    Smart quotes    |     ✓     |      ✓      |     ✓     |      ✓      |    ✓     |   ✓    |     ✓     |
+| Leading apostrophe |     ✓     |      ✗      |     ✗     |      ◐      |    ✗     |   ✓    |     ✗     |
+|      Em dash       |     ✓     |      ✓      |     ✗     |      ✗      |    ✓     |   ✓    |     ✗     |
+|  En dash (ranges)  |     ✓     |      ✗      |     ✓     |      ✗      |    ✗     |   ✓    |     ✗     |
+|      Ellipsis      |     ✓     |      ✓      |     ✓     |      ✗      |    ✓     |   ✓    |     ✗     |
+|   Multiplication   |     ✓     |      ✗      |     ✗     |      ✗      |    ✗     |   ✓    |     ✗     |
 
 > [!note] Admonition with scrollable table
 >
 > The fade gradient should match the admonition tint, not the page background.
 >
-> | Feature | punctilio | smartypants | tipograph | smartquotes | typograf | retext | Other lib |
-> | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-> | Smart quotes | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-> | Leading apostrophe | ✓ | ✗ | ✗ | ◐ | ✗ | ✓ | ✗ |
-> | Em dash | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ |
-> | En dash (ranges) | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ |
-> | Ellipsis | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ |
-> | Multiplication | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ |
+> |      Feature       | punctilio | smartypants | tipograph | smartquotes | typograf | retext | Other lib |
+> | :----------------: | :-------: | :---------: | :-------: | :---------: | :------: | :----: | :-------: |
+> |    Smart quotes    |     ✓     |      ✓      |     ✓     |      ✓      |    ✓     |   ✓    |     ✓     |
+> | Leading apostrophe |     ✓     |      ✗      |     ✗     |      ◐      |    ✗     |   ✓    |     ✗     |
+> |      Em dash       |     ✓     |      ✓      |     ✗     |      ✗      |    ✓     |   ✓    |     ✗     |
+> |  En dash (ranges)  |     ✓     |      ✗      |     ✓     |      ✗      |    ✗     |   ✓    |     ✗     |
+> |      Ellipsis      |     ✓     |      ✓      |     ✓     |      ✗      |    ✓     |   ✓    |     ✗     |
+> |   Multiplication   |     ✓     |      ✗      |     ✗     |      ✗      |    ✗     |   ✓    |     ✗     |
 
 <!--spellchecker-enable-->
 
@@ -474,12 +482,11 @@ Equation and table nested in a list item (gaps must not stack with `<p>` margins
 
 2. Table.
 
-   | A | B | C |
-   | :---: | :---: | :---: |
-   | 1 | 2 | 3 |
+   |  A  |  B  |  C  |
+   | :-: | :-: | :-: |
+   |  1  |  2  |  3  |
 
-[^fn-equation]:
-    Before.
+[^fn-equation]: Before.
 
     $$
     x = y
@@ -576,8 +583,10 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 ## Floating image right with caption
 
 <!-- vale off -->
+
 ![[https://assets.turntrout.com/static/images/posts/alex_rainbow_2.avif|Alex smiling at the camera; rainbow colored light splays off the wall in the background.]]{.float-right style="width:20%;"}
 Figure: The caption floats with the image instead of stranding above the following text.
+
 <!-- vale on -->
 
 <!--spellchecker-disable-->
@@ -637,26 +646,26 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 
 <!--spellchecker-disable-->
 
-|                            |                            |                            |                            |                            |                            |
-| :------------------------: | :------------------------: | :------------------------: | :------------------------: | :------------------------: | :------------------------: |
-| [aba](https://npmjs.com)   | [abb](https://npmjs.com)   | [abc](https://npmjs.com)   | [abd](https://npmjs.com)   | [abe](https://npmjs.com)   | [abf](https://npmjs.com)   |
-| [abg](https://npmjs.com)   | [abh](https://npmjs.com)   | [abi](https://npmjs.com)   | [abj](https://npmjs.com)   | [abk](https://npmjs.com)   | [abl](https://npmjs.com)   |
-| [abm](https://npmjs.com)   | [abn](https://npmjs.com)   | [abo](https://npmjs.com)   | [abp](https://npmjs.com)   | [abq](https://npmjs.com)   | [abr](https://npmjs.com)   |
-| [abs](https://npmjs.com)   | [abt](https://npmjs.com)   | [abu](https://npmjs.com)   | [abv](https://npmjs.com)   | [abw](https://npmjs.com)   | [abx](https://npmjs.com)   |
-| [aby](https://npmjs.com)   | [abz](https://npmjs.com)   | [abA](https://npmjs.com)   | [abB](https://npmjs.com)   | [abC](https://npmjs.com)   | [abD](https://npmjs.com)   |
-| [abE](https://npmjs.com)   | [abF](https://npmjs.com)   | [abG](https://npmjs.com)   | [abH](https://npmjs.com)   | [abI](https://npmjs.com)   | [abJ](https://npmjs.com)   |
-| [abK](https://npmjs.com)   | [abL](https://npmjs.com)   | [abM](https://npmjs.com)   | [abN](https://npmjs.com)   | [abO](https://npmjs.com)   | [abP](https://npmjs.com)   |
-| [abQ](https://npmjs.com)   | [abR](https://npmjs.com)   | [abS](https://npmjs.com)   | [abT](https://npmjs.com)   | [abU](https://npmjs.com)   | [abV](https://npmjs.com)   |
-| [abW](https://npmjs.com)   | [abX](https://npmjs.com)   | [abY](https://npmjs.com)   | [abZ](https://npmjs.com)   | [ab0](https://npmjs.com)   | [ab1](https://npmjs.com)   |
-| [ab2](https://npmjs.com)   | [ab3](https://npmjs.com)   | [ab4](https://npmjs.com)   | [ab5](https://npmjs.com)   | [ab6](https://npmjs.com)   | [ab7](https://npmjs.com)   |
-| [ab8](https://npmjs.com)   | [ab9](https://npmjs.com)   | [ab.](https://npmjs.com)   | [ab,](https://npmjs.com)   | [ab;](https://npmjs.com)   | [ab:](https://npmjs.com)   |
-| [ab!](https://npmjs.com)   | [ab?](https://npmjs.com)   | [ab'](https://npmjs.com)   | [ab"](https://npmjs.com)   | [ab’](https://npmjs.com)   | [ab”](https://npmjs.com)   |
-| [ab(](https://npmjs.com)   | [ab)](https://npmjs.com)   | [ab\[](https://npmjs.com)  | [ab\]](https://npmjs.com)  | [ab\{](https://npmjs.com)  | [ab\}](https://npmjs.com)  |
-| [ab-](https://npmjs.com)   | [ab/](https://npmjs.com)   | [ab\\](https://npmjs.com)  | [ab\|](https://npmjs.com)  | [ab&](https://npmjs.com)   | [ab\*](https://npmjs.com)  |
-| [ab@](https://npmjs.com)   | [ab#](https://npmjs.com)   | [ab%](https://npmjs.com)   | [ab$](https://npmjs.com)   | [ab+](https://npmjs.com)   | [ab=](https://npmjs.com)   |
-| [ab\<](https://npmjs.com)  | [ab\>](https://npmjs.com)  | [ab~](https://npmjs.com)   | [ab^](https://npmjs.com)   | [ab\_](https://npmjs.com)  | <a href="https://npmjs.com">ab&#96;</a> |
-| [ab…](https://npmjs.com)   | [ab—](https://npmjs.com)   | [ab–](https://npmjs.com)   | [ab′](https://npmjs.com)   | [ab″](https://npmjs.com)   | [ab°](https://npmjs.com)   |
-| [ab→](https://npmjs.com)   | [ab×](https://npmjs.com)   | [ab™](https://npmjs.com)   | [ab©](https://npmjs.com)   | [ab®](https://npmjs.com)   | [ab⁇](https://npmjs.com)   |
+|                           |                           |                           |                           |                           |                                         |
+| :-----------------------: | :-----------------------: | :-----------------------: | :-----------------------: | :-----------------------: | :-------------------------------------: |
+| [aba](https://npmjs.com)  | [abb](https://npmjs.com)  | [abc](https://npmjs.com)  | [abd](https://npmjs.com)  | [abe](https://npmjs.com)  |        [abf](https://npmjs.com)         |
+| [abg](https://npmjs.com)  | [abh](https://npmjs.com)  | [abi](https://npmjs.com)  | [abj](https://npmjs.com)  | [abk](https://npmjs.com)  |        [abl](https://npmjs.com)         |
+| [abm](https://npmjs.com)  | [abn](https://npmjs.com)  | [abo](https://npmjs.com)  | [abp](https://npmjs.com)  | [abq](https://npmjs.com)  |        [abr](https://npmjs.com)         |
+| [abs](https://npmjs.com)  | [abt](https://npmjs.com)  | [abu](https://npmjs.com)  | [abv](https://npmjs.com)  | [abw](https://npmjs.com)  |        [abx](https://npmjs.com)         |
+| [aby](https://npmjs.com)  | [abz](https://npmjs.com)  | [abA](https://npmjs.com)  | [abB](https://npmjs.com)  | [abC](https://npmjs.com)  |        [abD](https://npmjs.com)         |
+| [abE](https://npmjs.com)  | [abF](https://npmjs.com)  | [abG](https://npmjs.com)  | [abH](https://npmjs.com)  | [abI](https://npmjs.com)  |        [abJ](https://npmjs.com)         |
+| [abK](https://npmjs.com)  | [abL](https://npmjs.com)  | [abM](https://npmjs.com)  | [abN](https://npmjs.com)  | [abO](https://npmjs.com)  |        [abP](https://npmjs.com)         |
+| [abQ](https://npmjs.com)  | [abR](https://npmjs.com)  | [abS](https://npmjs.com)  | [abT](https://npmjs.com)  | [abU](https://npmjs.com)  |        [abV](https://npmjs.com)         |
+| [abW](https://npmjs.com)  | [abX](https://npmjs.com)  | [abY](https://npmjs.com)  | [abZ](https://npmjs.com)  | [ab0](https://npmjs.com)  |        [ab1](https://npmjs.com)         |
+| [ab2](https://npmjs.com)  | [ab3](https://npmjs.com)  | [ab4](https://npmjs.com)  | [ab5](https://npmjs.com)  | [ab6](https://npmjs.com)  |        [ab7](https://npmjs.com)         |
+| [ab8](https://npmjs.com)  | [ab9](https://npmjs.com)  | [ab.](https://npmjs.com)  | [ab,](https://npmjs.com)  | [ab;](https://npmjs.com)  |        [ab:](https://npmjs.com)         |
+| [ab!](https://npmjs.com)  | [ab?](https://npmjs.com)  | [ab'](https://npmjs.com)  | [ab"](https://npmjs.com)  | [ab’](https://npmjs.com)  |        [ab”](https://npmjs.com)         |
+| [ab(](https://npmjs.com)  | [ab)](https://npmjs.com)  | [ab\[](https://npmjs.com) | [ab\]](https://npmjs.com) | [ab\{](https://npmjs.com) |        [ab\}](https://npmjs.com)        |
+| [ab-](https://npmjs.com)  | [ab/](https://npmjs.com)  | [ab\\](https://npmjs.com) | [ab\|](https://npmjs.com) | [ab&](https://npmjs.com)  |        [ab\*](https://npmjs.com)        |
+| [ab@](https://npmjs.com)  | [ab#](https://npmjs.com)  | [ab%](https://npmjs.com)  | [ab$](https://npmjs.com)  | [ab+](https://npmjs.com)  |        [ab=](https://npmjs.com)         |
+| [ab\<](https://npmjs.com) | [ab\>](https://npmjs.com) | [ab~](https://npmjs.com)  | [ab^](https://npmjs.com)  | [ab\_](https://npmjs.com) | <a href="https://npmjs.com">ab&#96;</a> |
+| [ab…](https://npmjs.com)  | [ab—](https://npmjs.com)  | [ab–](https://npmjs.com)  | [ab′](https://npmjs.com)  | [ab″](https://npmjs.com)  |        [ab°](https://npmjs.com)         |
+| [ab→](https://npmjs.com)  | [ab×](https://npmjs.com)  | [ab™](https://npmjs.com)  | [ab©](https://npmjs.com)  | [ab®](https://npmjs.com)  |        [ab⁇](https://npmjs.com)         |
 
 <!--spellchecker-enable-->
 
@@ -679,22 +688,22 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 
 ## Kerning pairs
 
-| Category | Pairs |
-| --: | :-- |
-| f + close | f) f] f\} f” f’ f( |
-| ff + close | ff) ff] ff\} ff” ff’ |
-| f + quotes | f” f’ f” f’ |
-| ( + descender | (g (j (p (q (y |
-| \[ + descender | \[g \[j \[p \[q \[y |
-| \{ + descender | \{g \{j \{p \{q \{y |
-| descender + ) | g) j) p) q) y) |
-| descender + ] | g] j] p] q] y] |
-| descender + \} | g\} j\} p\} q\} y\} |
-| caps + close | T) T] V) V] Y) Y] |
-| In context | f(x), (glyph), (jpg), (query), [typography] |
-| close + ;, | \[1\]; \{2\}; (3); \[a\], \{b\}, (c), |
-| In context | the staff(s) called if’d a “buff” (Wolf) |
-| In context | the clipping (probably) happened (just) quickly |
+|       Category | Pairs                                           |
+| -------------: | :---------------------------------------------- |
+|      f + close | f) f] f\} f” f’ f(                              |
+|     ff + close | ff) ff] ff\} ff” ff’                            |
+|     f + quotes | f” f’ f” f’                                     |
+|  ( + descender | (g (j (p (q (y                                  |
+| \[ + descender | \[g \[j \[p \[q \[y                             |
+| \{ + descender | \{g \{j \{p \{q \{y                             |
+|  descender + ) | g) j) p) q) y)                                  |
+|  descender + ] | g] j] p] q] y]                                  |
+| descender + \} | g\} j\} p\} q\} y\}                             |
+|   caps + close | T) T] V) V] Y) Y]                               |
+|     In context | f(x), (glyph), (jpg), (query), [typography]     |
+|     close + ;, | \[1\]; \{2\}; (3); \[a\], \{b\}, (c),           |
+|     In context | the staff(s) called if’d a “buff” (Wolf)        |
+|     In context | the clipping (probably) happened (just) quickly |
 
 ## Numbers and units
 
@@ -802,8 +811,7 @@ This text omits a detail.[^footnote] This sentence has multiple footnotes.[^1][^
 
 This footnote opens with a block quote.[^fn-blockquote]
 
-[^fn-blockquote]:
-    > A block quote inside a footnote should not crowd the footnote marker.
+[^fn-blockquote]: > A block quote inside a footnote should not crowd the footnote marker.
 
     Trailing text after the block quote.
 
@@ -884,6 +892,7 @@ No wrapping needed here.
 ## Special fonts
 
 <!-- spellchecker-disable -->
+
 Elvish
 : <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
 : <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy, and queenly.</span></span>
@@ -912,30 +921,30 @@ Enclosing punctuation should render upright (roman) while letter forms remain it
 
 ### 8pt italic
 
-| Character | Old (slanted) | New (upright) |
-| :-- | :-- | :-- |
-| Parentheses | <span class="italic-old">(quickly)</span> | _(quickly)_ |
-| Brackets | <span class="italic-old">[briefly]</span> | _[briefly]_ |
-| Braces | <span class="italic-old">\{gently\}</span> | _\{gently\}_ |
-| Double quotes | <span class="italic-old">“softly”</span> | _“softly”_ |
-| Single quotes | <span class="italic-old">‘lightly’</span> | _‘lightly’_ |
-| Apostrophe | <span class="italic-old">don’t</span> | _don’t_ |
-| Mixed | <span class="italic-old">(it’s “fine," he said)</span> | _(it’s “fine," he said)_ |
-| f-ligatures | <span class="italic-old">(fifty officials)</span> | _(fifty officials)_ |
+| Character     | Old (slanted)                                          | New (upright)            |
+| :------------ | :----------------------------------------------------- | :----------------------- |
+| Parentheses   | <span class="italic-old">(quickly)</span>              | _(quickly)_              |
+| Brackets      | <span class="italic-old">[briefly]</span>              | _[briefly]_              |
+| Braces        | <span class="italic-old">\{gently\}</span>             | _\{gently\}_             |
+| Double quotes | <span class="italic-old">“softly”</span>               | _“softly”_               |
+| Single quotes | <span class="italic-old">‘lightly’</span>              | _‘lightly’_              |
+| Apostrophe    | <span class="italic-old">don’t</span>                  | _don’t_                  |
+| Mixed         | <span class="italic-old">(it’s “fine," he said)</span> | _(it’s “fine," he said)_ |
+| f-ligatures   | <span class="italic-old">(fifty officials)</span>      | _(fifty officials)_      |
 
 ### 12pt italic
 
-| Character | Old (slanted) | New (upright) |
-| :-- | :-- | :-- |
-| Parentheses | <span class="italic-12-old">(quickly)</span> | <span class="italic-12">(quickly)</span> |
-| Brackets | <span class="italic-12-old">[briefly]</span> | <span class="italic-12">[briefly]</span> |
-| Braces | <span class="italic-12-old">\{gently\}</span> | <span class="italic-12">\{gently\}</span> |
-| Double quotes | <span class="italic-12-old">"softly"</span> | <span class="italic-12">"softly"</span> |
-| Single quotes | <span class="italic-12-old">‘lightly’</span> | <span class="italic-12">‘lightly’</span> |
-| Apostrophe | <span class="italic-12-old">don’t</span> | <span class="italic-12">don’t</span> |
-| Mixed | <span class="italic-12-old">(it’s “fine," he said)</span> | <span class="italic-12">(it’s “fine," he said)</span> |
-| f-ligatures | <span class="italic-12-old">(fifty officials)</span> | <span class="italic-12">(fifty officials)</span> |
-  
+| Character     | Old (slanted)                                             | New (upright)                                         |
+| :------------ | :-------------------------------------------------------- | :---------------------------------------------------- |
+| Parentheses   | <span class="italic-12-old">(quickly)</span>              | <span class="italic-12">(quickly)</span>              |
+| Brackets      | <span class="italic-12-old">[briefly]</span>              | <span class="italic-12">[briefly]</span>              |
+| Braces        | <span class="italic-12-old">\{gently\}</span>             | <span class="italic-12">\{gently\}</span>             |
+| Double quotes | <span class="italic-12-old">"softly"</span>               | <span class="italic-12">"softly"</span>               |
+| Single quotes | <span class="italic-12-old">‘lightly’</span>              | <span class="italic-12">‘lightly’</span>              |
+| Apostrophe    | <span class="italic-12-old">don’t</span>                  | <span class="italic-12">don’t</span>                  |
+| Mixed         | <span class="italic-12-old">(it’s “fine," he said)</span> | <span class="italic-12">(it’s “fine," he said)</span> |
+| f-ligatures   | <span class="italic-12-old">(fifty officials)</span>      | <span class="italic-12">(fifty officials)</span>      |
+
 - _The Elements of Typographic Style (Hartley & Marks, 2004)_ is a good book.
 - _Parentheses (like these), brackets [like these], and braces \{like these\} should all be upright._
 - _**Bold italic (parentheses) and [brackets]**_
@@ -991,8 +1000,7 @@ Enclosing punctuation should render upright (roman) while letter forms remain it
 
 [^2]: Second footnote in a row.
 
-[^footnote]:
-    Here's the detail, in a footnote. And here's a nested footnote.[^nested]
+[^footnote]: Here's the detail, in a footnote. And here's a nested footnote.[^nested]
 
     > [!note] Admonition in a footnote
     >

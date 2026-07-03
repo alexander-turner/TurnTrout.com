@@ -138,47 +138,54 @@ export interface RegressionScreenshotOptions {
 // of a remote AVIF, short enough that a genuinely dead image can't hang the run.
 const IMAGE_PAINT_TIMEOUT_MS = 15000
 
-export async function waitForImagesInElement(scope: Locator): Promise<void> {
+export async function waitForImagesInElement(
+  scope: Locator,
+  timeoutMs: number = IMAGE_PAINT_TIMEOUT_MS,
+): Promise<void> {
   const images = await scope.locator("img").all()
   await Promise.all(
-    images.map((img) =>
-      img
-        .evaluate(
-          (el: HTMLImageElement, timeoutMs) =>
-            new Promise<void>((resolve) => {
-              // A remote AVIF can intermittently fail to load (notably Firefox in
-              // CI); resolving on that failure captured a blank image and churned
-              // the baseline. Reload-and-retry a failed load until it paints, with
-              // a hard ceiling so a permanently broken image can't hang the run.
-              const hardStop = window.setTimeout(resolve, timeoutMs)
-              const settle = (): void => {
-                window.clearTimeout(hardStop)
-                resolve()
-              }
-              const reload = (): void => {
-                const url = new URL(el.currentSrc || el.src, document.baseURI)
-                // `set` overwrites the prior value, so retries don't accumulate
-                // query params; the cache-buster forces a fresh fetch.
-                url.searchParams.set("__visualRetry", String(Math.trunc(performance.now())))
-                el.src = url.toString()
-              }
-              // A successful (re)load is accepted only once `decode()` confirms it
-              // is paint-ready; a failed load reloads. Listeners persist across
-              // reloads so every retry is re-evaluated until an image paints.
-              el.addEventListener("load", () => {
-                el.decode().then(settle, reload)
-              })
-              el.addEventListener("error", () => window.setTimeout(reload, 250))
-              // The image may have already finished (success or failure) before
-              // the listeners attached.
-              if (el.complete) {
-                el.decode().then(settle, reload)
-              }
-            }),
-          IMAGE_PAINT_TIMEOUT_MS,
-        )
-        .catch(() => undefined),
-    ),
+    images.map(async (img) => {
+      const painted = await img.evaluate(
+        (el: HTMLImageElement, deadlineMs) =>
+          new Promise<boolean>((resolve) => {
+            // A remote AVIF can intermittently fail to load (notably Firefox in
+            // CI). Reload-and-retry a failed load until it paints, with a hard
+            // ceiling so a permanently broken image can't hang the run.
+            const hardStop = window.setTimeout(() => resolve(false), deadlineMs)
+            const settle = (): void => {
+              window.clearTimeout(hardStop)
+              resolve(true)
+            }
+            const reload = (): void => {
+              const url = new URL(el.currentSrc || el.src, document.baseURI)
+              // `set` overwrites the prior value, so retries don't accumulate
+              // query params; the cache-buster forces a fresh fetch.
+              url.searchParams.set("__visualRetry", String(Math.trunc(performance.now())))
+              el.src = url.toString()
+            }
+            // A successful (re)load is accepted only once `decode()` confirms it
+            // is paint-ready; a failed load reloads. Listeners persist across
+            // reloads so every retry is re-evaluated until an image paints.
+            el.addEventListener("load", () => {
+              el.decode().then(settle, reload)
+            })
+            el.addEventListener("error", () => window.setTimeout(reload, 250))
+            // The image may have already finished (success or failure) before
+            // the listeners attached.
+            if (el.complete) {
+              el.decode().then(settle, reload)
+            }
+          }),
+        timeoutMs,
+      )
+      // Screenshotting an unpainted image bakes its alt text into the capture,
+      // which either churns the diff gallery or — if approved — corrupts the
+      // baseline. Fail the test instead; a real failure surfaces on the shard.
+      if (!painted) {
+        const src = (await img.getAttribute("src")) ?? "<unknown src>"
+        throw new Error(`Image did not paint within ${timeoutMs}ms despite retries: ${src}`)
+      }
+    }),
   )
 }
 
