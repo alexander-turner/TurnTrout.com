@@ -2,11 +2,13 @@
 @use "sass:color";
 @use "./colors";
 
+$admonition-padding-inline: 1rem;
+
 .admonition,
 .timeline-card {
   margin: 1rem 0;
   overflow: hidden;
-  padding: 0 1rem;
+  padding: 0 $admonition-padding-inline;
 }
 
 .admonition {
@@ -173,8 +175,12 @@
   }
 
   &.is-collapsible {
+    // Bleed into the admonition's own inline padding so the pointer cursor
+    // (and click target) covers the full title bar, not just its content.
     > .admonition-title {
       cursor: pointer;
+      margin-inline: calc(-1 * #{$admonition-padding-inline});
+      padding-inline: $admonition-padding-inline;
     }
 
     > .admonition-content {
