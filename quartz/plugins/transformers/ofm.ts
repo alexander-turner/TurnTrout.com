@@ -223,6 +223,8 @@ const createAdmonitionTitle = (
 /**
  * Concatenates the visible text of inline mdast nodes (the link/emphasis/etc.
  * that follow a bare-text admonition title), descending into their children.
+ * Non-text leaves such as images contribute nothing, which is fine here: the
+ * result only feeds the title-case heuristic, not the rendered title.
  */
 function collectInlineText(nodes: readonly PhrasingContent[]): string {
   let text = ""
