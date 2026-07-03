@@ -138,6 +138,56 @@ export interface RegressionScreenshotOptions {
 // of a remote AVIF, short enough that a genuinely dead image can't hang the run.
 const IMAGE_PAINT_TIMEOUT_MS = 15000
 
+// Runs in the browser via `locator.evaluate` (Playwright serializes it), so it
+// must not reference module scope. Resolves true once the image has painted,
+// false at the deadline. A remote AVIF can intermittently fail to load
+// (notably Firefox in CI), so failed loads are retried until the deadline. The
+// loop POLLS instead of listening to load/error events: a reload fired from a
+// stale event timer changes `src` while a decode() is pending, which rejects
+// it and (on Firefox, where naturalWidth resets during the new request)
+// re-triggers reload forever.
+/* istanbul ignore next -- executed in the browser, not under Jest */
+function pollUntilImagePaints(el: HTMLImageElement, deadlineMs: number): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    // WebKit only starts a lazy image's request when it nears the viewport, so
+    // a below-fold `loading="lazy"` image would sit unloaded until the
+    // deadline. Promote it to eager for the wait.
+    if (el.loading === "lazy") {
+      el.loading = "eager"
+    }
+    const POLL_MS = 100
+    const RELOAD_DEBOUNCE_MS = 250
+    const startedAt = performance.now()
+    let lastReloadAt = -RELOAD_DEBOUNCE_MS
+    const settle = (): void => resolve(true)
+    const tick = (): void => {
+      if (performance.now() - startedAt >= deadlineMs) {
+        resolve(false)
+        return
+      }
+      if (el.complete && el.naturalWidth > 0) {
+        // Loaded. decode() flushes the bitmap so the paint is ready; WebKit
+        // spuriously rejects decode() for painted SVGs, so a rejection still
+        // settles.
+        el.decode().then(settle, settle)
+        return
+      }
+      const now = performance.now()
+      if (el.complete && now - lastReloadAt >= RELOAD_DEBOUNCE_MS) {
+        // Errored (complete with no dimensions): retry with a cache-busted
+        // fetch. `set` overwrites the prior value, so retries don't
+        // accumulate query params.
+        lastReloadAt = now
+        const url = new URL(el.currentSrc || el.src, document.baseURI)
+        url.searchParams.set("__visualRetry", String(Math.trunc(now)))
+        el.src = url.toString()
+      }
+      window.setTimeout(tick, POLL_MS)
+    }
+    tick()
+  })
+}
+
 export async function waitForImagesInElement(
   scope: Locator,
   timeoutMs: number = IMAGE_PAINT_TIMEOUT_MS,
@@ -145,56 +195,7 @@ export async function waitForImagesInElement(
   const images = await scope.locator("img").all()
   await Promise.all(
     images.map(async (img) => {
-      const painted = await img.evaluate(
-        (el: HTMLImageElement, deadlineMs) =>
-          new Promise<boolean>((resolve) => {
-            // WebKit only starts a lazy image's request when it nears the
-            // viewport, so a below-fold `loading="lazy"` image would sit
-            // unloaded until the deadline. Promote it to eager for the wait.
-            if (el.loading === "lazy") {
-              el.loading = "eager"
-            }
-            // A remote AVIF can intermittently fail to load (notably Firefox
-            // in CI), so failed loads are retried until the deadline. The loop
-            // POLLS instead of listening to load/error events: a reload fired
-            // from a stale event timer changes `src` while a decode() is
-            // pending, which rejects it and (on Firefox, where naturalWidth
-            // resets during the new request) re-triggers reload forever.
-            const POLL_MS = 100
-            const RELOAD_DEBOUNCE_MS = 250
-            const startedAt = performance.now()
-            let lastReloadAt = -RELOAD_DEBOUNCE_MS
-            const settle = (): void => resolve(true)
-            const tick = (): void => {
-              if (performance.now() - startedAt >= deadlineMs) {
-                resolve(false)
-                return
-              }
-              if (el.complete) {
-                if (el.naturalWidth > 0) {
-                  // Loaded. decode() flushes the bitmap so the paint is ready;
-                  // WebKit spuriously rejects decode() for painted SVGs, so a
-                  // rejection still settles.
-                  el.decode().then(settle, settle)
-                  return
-                }
-                // Errored (complete with no dimensions): retry with a
-                // cache-busted fetch. `set` overwrites the prior value, so
-                // retries don't accumulate query params.
-                const now = performance.now()
-                if (now - lastReloadAt >= RELOAD_DEBOUNCE_MS) {
-                  lastReloadAt = now
-                  const url = new URL(el.currentSrc || el.src, document.baseURI)
-                  url.searchParams.set("__visualRetry", String(Math.trunc(now)))
-                  el.src = url.toString()
-                }
-              }
-              window.setTimeout(tick, POLL_MS)
-            }
-            tick()
-          }),
-        timeoutMs,
-      )
+      const painted = await img.evaluate(pollUntilImagePaints, timeoutMs)
       // Screenshotting an unpainted image bakes its alt text into the capture,
       // which either churns the diff gallery or — if approved — corrupts the
       // baseline. Fail the test instead; a real failure surfaces on the shard.

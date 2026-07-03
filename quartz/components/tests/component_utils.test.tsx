@@ -142,7 +142,7 @@ describe("renderInlineFormatting", () => {
   })
 
   it("skips small-caps but keeps Twemoji for work titles", () => {
-    const out = renderInlineFormatting("Thoughts on LLM training \u{1F41F}", { workTitle: true })
+    const out = renderInlineFormatting("Thoughts on LLM training \u{1F41F}", true)
     expect(findByTag(out, "abbr")).toHaveLength(0)
     expect(findByTag(out, "img")).toHaveLength(1)
   })

@@ -20,14 +20,6 @@ export function formatTitle(title: string): string {
   return title
 }
 
-export interface InlineFormattingOptions {
-  /**
-   * The text names a work (a page or sequence title), so acronyms in it render
-   * as plain caps rather than small-caps.
-   */
-  workTitle?: boolean
-}
-
 /**
  * Single source of truth for the site's node-producing inline transforms:
  * emoji → Twemoji `<img>` and acronym small-caps, applied in pipeline order
@@ -37,13 +29,13 @@ export interface InlineFormattingOptions {
  * sequence links, backlinks) must re-apply them here. Smart-quote / arrow /
  * nbsp transforms are string-level and belong upstream in the caller
  * (`formatTitle` for titles, `applyTextTransforms` for descriptions).
+ *
+ * `workTitle` marks text that names a work (a page or sequence title), whose
+ * acronyms render as plain caps: the small-caps pass is skipped.
  */
-export function applyInlineFormattingTransforms(
-  tree: Root | Element,
-  options?: InlineFormattingOptions,
-): void {
+export function applyInlineFormattingTransforms(tree: Root | Element, workTitle = false): void {
   processTwemojiTree(tree as unknown as Root)
-  if (options?.workTitle) return
+  if (workTitle) return
   visitParents(tree, "text", (node: Text, ancestors: Parent[]) => {
     replaceSCInNode(node, ancestors)
   })
@@ -55,12 +47,9 @@ export function applyInlineFormattingTransforms(
  * callers whose source may contain HTML markup, parse it first and call
  * {@link applyInlineFormattingTransforms} on the resulting tree instead.
  */
-export function renderInlineFormatting(
-  text: string,
-  options?: InlineFormattingOptions,
-): (Text | Element)[] {
+export function renderInlineFormatting(text: string, workTitle = false): (Text | Element)[] {
   const container = h("span", [{ type: "text", value: text } as Text])
-  applyInlineFormattingTransforms(container, options)
+  applyInlineFormattingTransforms(container, workTitle)
   return container.children as (Text | Element)[]
 }
 

@@ -14,7 +14,7 @@ function processBacklinkTitle(title: string): Parent {
   const formattedTitle = formatTitle(title)
   // Titles may contain inline HTML (e.g. <abbr>), so parse before transforming.
   const htmlAst = fromHtml(formattedTitle, { fragment: true })
-  applyInlineFormattingTransforms(htmlAst, { workTitle: true })
+  applyInlineFormattingTransforms(htmlAst, true)
   return htmlAst as unknown as Parent
 }
 
