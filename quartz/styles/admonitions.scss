@@ -176,15 +176,18 @@ $admonition-title-margin-block: calc(1.5 * $base-margin);
   }
 
   &.is-collapsible {
-    // Bleed into the title's own margin (vertical) and the admonition's
-    // inline padding (horizontal) so the pointer cursor and click target
-    // cover the full title bar, not just its text/icon content. Safe because
-    // .admonition's overflow:hidden creates a BFC (no margin collapsing with
-    // its own top edge) and .admonition-content has no top margin to collapse
-    // with the title's bottom margin.
+    // The pointer cursor and click target must cover the full title bar,
+    // including its surrounding spacing, not just its text/icon content.
+    // Block axis: the spacing lives in the title's padding (not margin), so it
+    // belongs to the title's box. A negative block margin would push the box
+    // past the padding edge, where .admonition's overflow:hidden clips it —
+    // .admonition has no block padding to absorb it.
+    // Inline axis: .admonition has inline padding, so a negative inline margin
+    // reaches into it (inside the padding box, unclipped) while the matching
+    // inline padding holds the text in place.
     > .admonition-title {
       cursor: pointer;
-      margin: calc(-1 * #{$admonition-title-margin-block}) calc(-1 * #{$admonition-padding-inline});
+      margin: 0 calc(-1 * #{$admonition-padding-inline});
       padding: $admonition-title-margin-block $admonition-padding-inline;
     }
 
