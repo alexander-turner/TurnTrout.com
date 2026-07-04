@@ -28,6 +28,7 @@ jobs:
         timeout-minutes: 5
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Restore last reviewed commit
         id: cache-commit
