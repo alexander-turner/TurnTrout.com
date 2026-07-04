@@ -160,9 +160,15 @@ describe("markdownPlugins", () => {
       notExpectedContent: ["no-smallcaps"],
     },
     {
-      name: "non-quote admonition never skips small-caps even when title-cased",
-      input: "> [!note] The Basic Reasons I Expect AGI Ruin",
+      name: "non-quote admonition with a title-cased title also skips small-caps",
+      input: "> [!note] The CLOUD Act: A Dangerous Expansion of Police Snooping",
       expectedClass: "admonition note",
+      expectedContent: ['<div class="admonition-title no-smallcaps">'],
+    },
+    {
+      name: "non-quote admonition with a prose title keeps small-caps",
+      input: "> [!warning] Watch out for the NASA launch schedule",
+      expectedClass: "admonition warning",
       expectedContent: ['<div class="admonition-title">'],
       notExpectedContent: ["no-smallcaps"],
     },

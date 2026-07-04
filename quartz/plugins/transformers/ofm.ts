@@ -348,12 +348,13 @@ const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
   const useDefaultTitle = titleContent === "" && firstChild.children.length === 1
   const capitalizedTypeString = typeString.charAt(0).toUpperCase() + typeString.slice(1)
 
-  // A quote whose title is already the (title-cased) name of a cited work should
-  // not render its acronyms as small-caps; prose-style attributions still do.
+  // An admonition title that already reads as a title-cased work name (a
+  // cited article, a named act) should not render its acronyms as
+  // small-caps, regardless of admonition type; prose-style titles still do.
   const fullTitleText = `${titleContent} ${collectInlineText(
     firstChild.children.slice(1) as PhrasingContent[],
   )}`.trim()
-  const noSmallcaps = admonitionType === "quote" && isEffectivelyTitleCased(fullTitleText)
+  const noSmallcaps = isEffectivelyTitleCased(fullTitleText)
 
   const admonitionTitle = createAdmonitionTitle(
     useDefaultTitle,
