@@ -351,10 +351,13 @@ const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
   // An admonition title that already reads as a title-cased work name (a
   // cited article, a named act) should not render its acronyms as
   // small-caps, regardless of admonition type; prose-style titles still do.
+  // A blank title (the admonition type's own name, e.g. "Note") is never a
+  // work title, and an empty string is vacuously "title-cased" by the Hamming
+  // check, so guard on non-empty text first.
   const fullTitleText = `${titleContent} ${collectInlineText(
     firstChild.children.slice(1) as PhrasingContent[],
   )}`.trim()
-  const noSmallcaps = isEffectivelyTitleCased(fullTitleText)
+  const noSmallcaps = fullTitleText !== "" && isEffectivelyTitleCased(fullTitleText)
 
   const admonitionTitle = createAdmonitionTitle(
     useDefaultTitle,

@@ -160,6 +160,13 @@ describe("markdownPlugins", () => {
       notExpectedContent: ["no-smallcaps"],
     },
     {
+      name: "blank-titled admonition never gets no-smallcaps (empty text is not a title)",
+      input: "> [!quote]\n> Just body content.",
+      expectedClass: "admonition quote",
+      expectedContent: ['<div class="admonition-title">'],
+      notExpectedContent: ["no-smallcaps"],
+    },
+    {
       name: "non-quote admonition with a title-cased title also skips small-caps",
       input: "> [!note] The CLOUD Act: A Dangerous Expansion of Police Snooping",
       expectedClass: "admonition note",
