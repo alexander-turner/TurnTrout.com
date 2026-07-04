@@ -20,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
 
       # The generator uses only the Python standard library, so the
       # runner's preinstalled python3 is enough — no uv/venv setup needed.

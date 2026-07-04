@@ -29,6 +29,7 @@ jobs:
         timeout-minutes: 5
         with:
           sparse-checkout: .github/actions/ci-gate
+          persist-credentials: false
       - id: gate
         uses: ./.github/actions/ci-gate
         with:
@@ -79,6 +80,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
       - name: Setup site
         uses: ./.github/actions/setup-site
         with:
@@ -141,7 +144,7 @@ jobs:
 
       - name: Wait for deployment to be reachable
         run: |
-          URL="${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}"
+          URL="${STEPS_DEPLOY_CF_PAGES_OUTPUTS_DEPLOY_URL}"
           echo "Waiting for $URL to respond..."
           for i in $(seq 1 20); do
             STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$URL" 2>/dev/null || echo "000")
@@ -154,6 +157,8 @@ jobs:
           done
           echo "::error::Deploy URL $URL not reachable after 20 attempts"
           exit 1
+        env:
+          STEPS_DEPLOY_CF_PAGES_OUTPUTS_DEPLOY_URL: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
 
   lighthouse_desktop_cls:
     runs-on: ubuntu-24.04
@@ -162,6 +167,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
       - name: CLS Check (Desktop)
         id: lighthouse_desktop
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
@@ -190,6 +197,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
       - name: CLS Check (Mobile)
         id: lighthouse_mobile
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
@@ -218,6 +227,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
       - name: Run Lighthouse Full Audit (Performance, Accessibility, Best Practices, SEO)
         id: lighthouse_full
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
@@ -256,6 +267,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
         with:

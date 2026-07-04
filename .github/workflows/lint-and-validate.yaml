@@ -31,7 +31,7 @@ jobs:
       github.ref == 'refs/heads/main' &&
       needs.detect-changes.outputs.content == 'true'
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the amend + force-push below
         timeout-minutes: 5
         with:
           fetch-depth: 0
@@ -79,6 +79,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
 
       - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: changes
@@ -145,7 +147,7 @@ jobs:
        (github.event_name == 'push' && contains(fromJSON('["refs/heads/main","refs/heads/dev"]'), github.ref)))
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
         timeout-minutes: 5
         with:
           ref: ${{ github.head_ref || github.ref_name }}
@@ -217,6 +219,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
       - name: Check for unpinned action references
         run: |
           # Find YAML uses: directives with tag-based refs (@v1, @v2, etc.) instead of SHA pins
@@ -248,6 +252,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
 
       - name: Install actionlint
         env:
@@ -301,6 +307,7 @@ jobs:
         timeout-minutes: 5
         with:
           ref: ${{ github.head_ref || github.ref_name }}
+          persist-credentials: false
 
       - name: Setup site
         uses: ./.github/actions/setup-site
@@ -345,11 +352,15 @@ jobs:
         id: vale
         if: needs.detect-changes.outputs.content == 'true'
         continue-on-error: true
-        run: vale --config config/vale/.vale.ini "${{ steps.strip-for-spellcheck.outputs.dir }}"
+        run: vale --config config/vale/.vale.ini "${STEPS_STRIP_FOR_SPELLCHECK_OUTPUTS_DIR}"
+        env:
+          STEPS_STRIP_FOR_SPELLCHECK_OUTPUTS_DIR: ${{ steps.strip-for-spellcheck.outputs.dir }}
 
       - name: Clean up stripped content
         if: always() && steps.strip-for-spellcheck.outputs.dir
-        run: rm -rf "${{ steps.strip-for-spellcheck.outputs.dir }}"
+        run: rm -rf "${STEPS_STRIP_FOR_SPELLCHECK_OUTPUTS_DIR}"
+        env:
+          STEPS_STRIP_FOR_SPELLCHECK_OUTPUTS_DIR: ${{ steps.strip-for-spellcheck.outputs.dir }}
 
       - name: Run ESLint
         id: eslint
@@ -380,17 +391,25 @@ jobs:
         id: source-checks
         if: needs.detect-changes.outputs.source-checks == 'true'
         continue-on-error: true
-        run: uv run python scripts/source_file_checks.py ${{ steps.pub-date-flag.outputs.flag }}
+        run: uv run python scripts/source_file_checks.py ${STEPS_PUB_DATE_FLAG_OUTPUTS_FLAG}
+        env:
+          STEPS_PUB_DATE_FLAG_OUTPUTS_FLAG: ${{ steps.pub-date-flag.outputs.flag }}
 
       - name: Check results
         run: |
           failed=""
-          if [[ "${{ steps.spellcheck.outcome }}" == "failure" ]]; then failed="$failed spellcheck"; fi
-          if [[ "${{ steps.vale.outcome }}" == "failure" ]]; then failed="$failed vale"; fi
-          if [[ "${{ steps.eslint.outcome }}" == "failure" ]]; then failed="$failed eslint"; fi
-          if [[ "${{ steps.stylelint.outcome }}" == "failure" ]]; then failed="$failed stylelint"; fi
-          if [[ "${{ steps.source-checks.outcome }}" == "failure" ]]; then failed="$failed source-file-checks"; fi
+          if [[ "${STEPS_SPELLCHECK_OUTCOME}" == "failure" ]]; then failed="$failed spellcheck"; fi
+          if [[ "${STEPS_VALE_OUTCOME}" == "failure" ]]; then failed="$failed vale"; fi
+          if [[ "${STEPS_ESLINT_OUTCOME}" == "failure" ]]; then failed="$failed eslint"; fi
+          if [[ "${STEPS_STYLELINT_OUTCOME}" == "failure" ]]; then failed="$failed stylelint"; fi
+          if [[ "${STEPS_SOURCE_CHECKS_OUTCOME}" == "failure" ]]; then failed="$failed source-file-checks"; fi
           if [[ -n "$failed" ]]; then
             echo "The following checks failed:$failed"
             exit 1
           fi
+        env:
+          STEPS_SPELLCHECK_OUTCOME: ${{ steps.spellcheck.outcome }}
+          STEPS_VALE_OUTCOME: ${{ steps.vale.outcome }}
+          STEPS_ESLINT_OUTCOME: ${{ steps.eslint.outcome }}
+          STEPS_STYLELINT_OUTCOME: ${{ steps.stylelint.outcome }}
+          STEPS_SOURCE_CHECKS_OUTCOME: ${{ steps.source-checks.outcome }}
