@@ -173,8 +173,7 @@ export async function captureStableScreenshot(
     previous = current
   } while (Date.now() < deadline)
   throw new Error(
-    `Screenshot ${screenshotName} did not stabilize within ${SCREENSHOT_STABILIZATION_TIMEOUT_MS}ms: ` +
-      `consecutive captures kept differing, so something is still repainting the page`,
+    `Screenshot ${screenshotName} did not stabilize within ${SCREENSHOT_STABILIZATION_TIMEOUT_MS}ms: consecutive captures kept differing, so something is still repainting the page`,
   )
 }
 
