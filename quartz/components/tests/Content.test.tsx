@@ -13,8 +13,22 @@ import type { BuildCtx } from "../../util/ctx"
 import type { FullSlug } from "../../util/path"
 import type { QuartzComponentProps } from "../types"
 
-import { specialFaviconPaths } from "../constants"
+import { CAN_TRIGGER_POPOVER_CLASS, specialFaviconPaths } from "../constants"
 import Content, { createLinkWithFavicon } from "../pages/Content"
+
+/** Recursively find the first anchor (`a`) element in a JSX tree. */
+function findFirstAnchor(node: unknown): (JSX.Element & { props: Record<string, unknown> }) | null {
+  if (!node || typeof node !== "object") return null
+  const element = node as JSX.Element & { props: Record<string, unknown> }
+  if (element.type === "a") return element
+  const children = element.props?.children
+  const childArray = Array.isArray(children) ? children : [children]
+  for (const child of childArray) {
+    const found = findFirstAnchor(child)
+    if (found) return found
+  }
+  return null
+}
 
 const mockConfig = {
   pageTitle: "Test",
@@ -135,6 +149,27 @@ describe("Content component - mobile ToC rendering", () => {
     const admonitionContent = blockquoteChildren[1]
     assertJSXElement(admonitionContent)
     expect(admonitionContent.props.id).toBe("toc-content-mobile")
+  })
+
+  it("should mark mobile ToC links as popover-capable", () => {
+    const props = createQuartzProps({
+      toc: [
+        { depth: 1, text: "Heading 1", slug: "heading-1" },
+        { depth: 2, text: "Heading 1.1", slug: "heading-1-1" },
+      ],
+    })
+    const ContentComponent = Content()
+    const result = ContentComponent(props)
+
+    assertJSXElement(result)
+    const children = result.props.children as JSX.Element[]
+    const mobileOnlySpan = children[0]
+    assertJSXElement(mobileOnlySpan)
+
+    const anchor = findFirstAnchor(mobileOnlySpan)
+    expect(anchor).not.toBeNull()
+    const classNames = (anchor?.props.className as string).split(" ")
+    expect(classNames).toContain(CAN_TRIGGER_POPOVER_CLASS)
   })
 
   it("should render article without errors when filePath is undefined", () => {

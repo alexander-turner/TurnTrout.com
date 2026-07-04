@@ -1,7 +1,7 @@
 import type { Locator } from "@playwright/test"
 
 import { minDesktopWidth } from "../../styles/variables"
-import { popoverScrollOffset, scrollTolerance } from "../constants"
+import { popoverPadding, popoverScrollOffset, scrollTolerance } from "../constants"
 import { test as base, expect } from "./fixtures"
 import {
   getAllWithWait,
@@ -123,7 +123,11 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
 })
 
 test("Multiple popovers don't stack with wait", async ({ page }) => {
-  const allLinks = await getAllWithWait(page.locator("#center-content .can-trigger-popover"))
+  // `:visible` skips the mobile ToC (inside #center-content but display:none on
+  // desktop), whose hidden links would fail the `toBeVisible()` assertion below.
+  const allLinks = await getAllWithWait(
+    page.locator("#center-content .can-trigger-popover:visible"),
+  )
   const firstLinks = allLinks.slice(0, 5)
   for (const link of firstLinks) {
     await link.scrollIntoViewIfNeeded()
@@ -139,7 +143,11 @@ test("Multiple popovers don't stack with wait", async ({ page }) => {
 })
 
 test("Multiple popovers don't stack without wait", async ({ page }) => {
-  const allLinks = await getAllWithWait(page.locator("#center-content .can-trigger-popover"))
+  // `:visible` skips the mobile ToC (inside #center-content but display:none on
+  // desktop), whose hidden links would fail the `toBeVisible()` assertion below.
+  const allLinks = await getAllWithWait(
+    page.locator("#center-content .can-trigger-popover:visible"),
+  )
   const firstLinks = allLinks.slice(0, 5)
   for (const link of firstLinks) {
     await expect(link).toBeAttached()
@@ -335,7 +343,7 @@ test("Popover appears at minimal viewport width", async ({ page, dummyLink }) =>
   await expect(popover).toBeVisible()
 })
 
-for (const id of ["navbar", "toc-content"]) {
+for (const id of ["navbar"]) {
   test(`Popover does not show on ${id}`, async ({ page }) => {
     const element = page.locator(`#${id}`)
     await expect(element).toBeVisible()
@@ -727,14 +735,128 @@ base.describe("Footnote popover on mobile", () => {
   })
 
   base("Non-footnote popovers are still hidden on mobile", async ({ page }) => {
-    const regularLink = page
-      .locator('.can-trigger-popover:not([href^="#user-content-fn-"])')
-      .first()
+    // Exclude every hash link (`#…`): footnote refs and the now-popover-capable
+    // ToC anchors. `.first()` then lands on a cross-page internal link (the
+    // content-meta tag link), the case this test is meant to cover.
+    const regularLink = page.locator('.can-trigger-popover:not([href^="#"])').first()
     await regularLink.scrollIntoViewIfNeeded()
     await regularLink.click()
     const popover = page.locator(".popover:not(.footnote-popover)")
     await expect(popover).toBeHidden()
   })
+})
+
+// Use base (not test) so ToC-popover tests navigate to the popover fixture —
+// its headings are deterministic and free of leading digits (which the popover
+// hash-scroll silently drops), and screenshots don't churn with test-page edits.
+base.describe("Desktop ToC hover previews", () => {
+  base.beforeEach(async ({ page }) => {
+    if (!isDesktopViewport(page)) {
+      base.skip()
+    }
+    await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
+    await page.mouse.move(1, 1)
+  })
+
+  base("Hovering a ToC link shows a popover scrolled to that section", async ({ page }) => {
+    const tocLink = page.locator('#toc-content a[href="#table-footnote"]')
+    await expect(tocLink).toBeVisible()
+    await tocLink.hover()
+
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+
+    const popoverInner = popover.locator(".popover-inner")
+    const target = popoverInner.locator("#table-footnote-popover")
+    await expect(target).toBeVisible()
+
+    const scrollTop = await popoverInner.evaluate((el) => el.scrollTop)
+    const expectedScrollTop = await target.evaluate((el, offset) => {
+      if (!(el instanceof HTMLElement)) {
+        throw new Error("Target heading inside popover is not an HTMLElement")
+      }
+      return el.offsetTop - offset
+    }, popoverScrollOffset)
+    expect(Math.abs(scrollTop - expectedScrollTop)).toBeLessThanOrEqual(scrollTolerance)
+  })
+
+  base("ToC popover preview (screenshot)", async ({ page }, testInfo) => {
+    const tocLink = page.locator('#toc-content a[href="#anchor-target"]')
+    await expect(tocLink).toBeVisible()
+    await tocLink.hover()
+
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+    await takeRegressionScreenshot(page, testInfo, "toc-popover-preview", {
+      elementToScreenshot: popover,
+      preserveSiblings: true,
+    })
+  })
+
+  base("Successive ToC hovers yield exactly one popover", async ({ page }) => {
+    const tocLinks = await getAllWithWait(page.locator("#toc-content a.can-trigger-popover"))
+    for (const link of tocLinks.slice(0, 3)) {
+      await link.hover()
+      await expect(page.locator(".popover")).toBeVisible()
+    }
+    await expect(page.locator(".popover")).toHaveCount(1)
+  })
+
+  base("Clicking a hovered ToC link keeps scroll-tracking active", async ({ page }) => {
+    const tocLink = page.locator('#toc-content a[href="#checkboxes"]')
+    await expect(tocLink).toBeVisible()
+    await tocLink.hover()
+    await expect(page.locator(".popover")).toBeVisible()
+
+    await tocLink.click()
+    // Section-scroll tracking still runs after the popover interaction, so the
+    // clicked link becomes the active entry once its section scrolls into view.
+    await expect(tocLink).toHaveClass(/active/)
+  })
+
+  base("ToC popover stays within a short viewport", async ({ page }) => {
+    await page.setViewportSize({ width: minDesktopWidth + 200, height: 200 })
+    const tocLink = page.locator('#toc-content a[href="#anchor-target"]')
+    await expect(tocLink).toBeVisible()
+    await tocLink.hover()
+
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+
+    // A popover taller than the viewport clamps its top edge to `popoverPadding`
+    // instead of overflowing above the fold.
+    const box = await popover.boundingBox()
+    assertDefined(box)
+    expect(box.y).toBeGreaterThanOrEqual(0)
+    expect(box.y).toBeLessThanOrEqual(popoverPadding + scrollTolerance)
+  })
+})
+
+// Use base (not test) to bypass the file-level desktop-only skip; these set a
+// mobile viewport explicitly, mirroring the "Footnote popover on mobile" block.
+base.describe("ToC hover previews on mobile", () => {
+  base.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 })
+    await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
+  })
+
+  base(
+    "Desktop ToC hidden; mobile ToC links popover-capable but show no popover",
+    async ({ page }) => {
+      // The desktop ToC is `.desktop-only`, so it's hidden at mobile width.
+      await expect(page.locator("#table-of-contents")).toBeHidden()
+
+      // Mobile ToC links carry the capability class...
+      const mobileTocLink = page.locator("#toc-content-mobile a.can-trigger-popover").first()
+      await expect(mobileTocLink).toHaveClass(/can-trigger-popover/)
+
+      // ...but tapping one navigates within the page without showing a popover.
+      await mobileTocLink.scrollIntoViewIfNeeded()
+      await mobileTocLink.click()
+      const popover = page.locator(".popover")
+      await expect(popover).toBeHidden()
+    },
+  )
 })
 
 test.describe("Popover checkbox state preservation", () => {

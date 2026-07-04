@@ -21,6 +21,7 @@ import {
   processSmallCaps,
   processTextWithArrows,
 } from "./component_utils"
+import { CAN_TRIGGER_POPOVER_CLASS } from "./constants"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import tocScript from "./scripts/toc.inline"
@@ -146,7 +147,11 @@ export function addListItem(entries: TocEntry[]): JSX.Element {
 export function toJSXListItem(entry: TocEntry): JSX.Element {
   const entryParent: Parent = processTocEntry(entry)
   return (
-    <a href={`#${entry.slug}`} className="internal same-page-link" data-for={entry.slug}>
+    <a
+      href={`#${entry.slug}`}
+      className={`internal same-page-link ${CAN_TRIGGER_POPOVER_CLASS}`}
+      data-for={entry.slug}
+    >
       {entryParent.children.map(elementToJsx)}
     </a>
   )

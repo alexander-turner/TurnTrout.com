@@ -13,7 +13,7 @@ import type { BuildCtx } from "../../util/ctx"
 import type { QuartzComponentProps } from "../types"
 
 import { TocEntry } from "../../plugins/vfile"
-import { normalizeNbsp } from "../constants"
+import { CAN_TRIGGER_POPOVER_CLASS, normalizeNbsp } from "../constants"
 import {
   addListItem,
   buildNestedList,
@@ -250,7 +250,7 @@ describe("buildNestedList", () => {
     const link = firstItem.props.children[0]
     expect(link.type).toBe("a")
     expect(link.props.href).toBe("#heading-1")
-    expect(link.props.className).toBe("internal same-page-link")
+    expect(link.props.className).toBe(`internal same-page-link ${CAN_TRIGGER_POPOVER_CLASS}`)
     expect(link.props["data-for"]).toBe("heading-1")
 
     // Check nested list structure
@@ -456,6 +456,15 @@ describe("addListItem", () => {
 })
 
 describe("toJSXListItem", () => {
+  it("should mark the link as popover-capable so hover previews attach", () => {
+    const entry: TocEntry = { depth: 1, text: "Test Item", slug: "test-item" }
+
+    const result = toJSXListItem(entry)
+
+    const classNames = (result.props.className as string).split(" ")
+    expect(classNames).toContain(CAN_TRIGGER_POPOVER_CLASS)
+  })
+
   it("should convert TOC entry to JSX list item", () => {
     const entry: TocEntry = { depth: 1, text: "Test Item", slug: "test-item" }
 
@@ -463,7 +472,7 @@ describe("toJSXListItem", () => {
 
     expect(result.type).toBe("a")
     expect(result.props.href).toBe("#test-item")
-    expect(result.props.className).toBe("internal same-page-link")
+    expect(result.props.className).toBe(`internal same-page-link ${CAN_TRIGGER_POPOVER_CLASS}`)
     expect(result.props["data-for"]).toBe("test-item")
 
     // Verify the children contain the processed text
@@ -482,7 +491,7 @@ describe("toJSXListItem", () => {
 
     expect(result.type).toBe("a")
     expect(result.props.href).toBe("#complex-entry")
-    expect(result.props.className).toBe("internal same-page-link")
+    expect(result.props.className).toBe(`internal same-page-link ${CAN_TRIGGER_POPOVER_CLASS}`)
     expect(result.props["data-for"]).toBe("complex-entry")
 
     // Verify children are processed (contains multiple elements)
