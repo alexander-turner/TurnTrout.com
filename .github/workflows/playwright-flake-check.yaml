@@ -97,7 +97,7 @@ jobs:
             --config config/playwright/playwright.config.ts \
             --grep "^(?:(?!screenshot).)*$" \
             --shard ${{ matrix.shard }} \
-            --repeat-each ${NEEDS_SETUP_OUTPUTS_REPEAT} \
+            --repeat-each "${NEEDS_SETUP_OUTPUTS_REPEAT}" \
             | tee playwright-flake.log
         env:
           # 90 min job timeout → 85 min Playwright global timeout
@@ -212,7 +212,7 @@ jobs:
             --config config/playwright/playwright.config.ts \
             --grep "^(?:(?!screenshot).)*$" \
             --shard ${{ matrix.shard }} \
-            --repeat-each ${NEEDS_SETUP_OUTPUTS_REPEAT} \
+            --repeat-each "${NEEDS_SETUP_OUTPUTS_REPEAT}" \
             | tee playwright-flake.log
         env:
           # 90 min job timeout → 85 min Playwright global timeout

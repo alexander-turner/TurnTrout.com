@@ -391,7 +391,12 @@ jobs:
         id: source-checks
         if: needs.detect-changes.outputs.source-checks == 'true'
         continue-on-error: true
-        run: uv run python scripts/source_file_checks.py ${STEPS_PUB_DATE_FLAG_OUTPUTS_FLAG}
+        # The flag is a single optional token (empty on push to main/dev);
+        # `${flag:+"$flag"}` expands to nothing when unset so an empty value
+        # becomes no argument rather than an empty-string positional arg.
+        run: |
+          flag="${STEPS_PUB_DATE_FLAG_OUTPUTS_FLAG}"
+          uv run python scripts/source_file_checks.py ${flag:+"$flag"}
         env:
           STEPS_PUB_DATE_FLAG_OUTPUTS_FLAG: ${{ steps.pub-date-flag.outputs.flag }}
 
