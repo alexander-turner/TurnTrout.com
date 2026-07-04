@@ -181,10 +181,13 @@ test.describe("Collapsible admonition state persistence", () => {
   test("title's pointer cursor and click target cover the full row, including the side padding gutters", async ({
     page,
   }) => {
+    // Use a state-independent locator (no :not(.is-collapsed)) so it still
+    // matches after clicking toggles the class.
     const admonition = page
-      .locator(".admonition.is-collapsible:not(.is-collapsed)")
+      .locator(".admonition.is-collapsible")
       .filter({ hasText: "starts off open" })
     const title = admonition.locator(".admonition-title")
+    await expect(admonition).not.toHaveClass(/is-collapsed/)
     await title.scrollIntoViewIfNeeded()
 
     // Measure geometry and hit-test the cursor in a single browser round-trip
@@ -225,7 +228,6 @@ test.describe("Collapsible admonition state persistence", () => {
     // `position` is relative to the title's own box, so it stays correct
     // across viewports/devices without any manual coordinate math.
     const titleBox = await requireBoundingBox(title)
-    await expect(admonition).not.toHaveClass(/is-collapsed/)
     await title.click({ position: { x: 2, y: titleBox.height / 2 } })
     await expect(admonition).toHaveClass(/is-collapsed/)
   })
