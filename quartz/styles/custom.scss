@@ -501,8 +501,11 @@ figcaption,
   max-width: 45%;
 }
 
-.testimonial-maybe-negative-margin {
-  margin-top: calc(-7 * $base-margin);
+.float-desktop-pull-up {
+  // A floated image pulled up by a negative top margin overlaps the callout
+  // title once the title wraps at narrow widths, so the pull-up is desktop-only.
+  // Per-image desktop offsets can override via the custom property.
+  margin-top: var(--float-negative-margin-top, calc(-7 * $base-margin));
 
   @media all and (width <= 700px) {
     margin-top: initial;
