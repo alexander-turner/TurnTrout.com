@@ -70,6 +70,25 @@ test.describe("visual_utils functions", () => {
     expect(requests).toBeGreaterThanOrEqual(2)
   })
 
+  test("waitForImagesInElement rejects when an image never paints", async ({ page }) => {
+    await page.route("**/dead-visual-test-image.png*", (route) => route.abort())
+
+    await page.evaluate(() => {
+      const container = document.createElement("div")
+      container.id = "dead-img-container"
+      const img = document.createElement("img")
+      img.src = "https://assets.turntrout.com/dead-visual-test-image.png"
+      container.appendChild(img)
+      document.body.appendChild(container)
+    })
+
+    // A short deadline keeps the test fast; the helper must fail loudly rather
+    // than let the screenshot capture the unpainted image's alt text.
+    await expect(
+      waitForImagesInElement(page.locator("#dead-img-container"), 1_000),
+    ).rejects.toThrow(/did not paint within 1000ms/)
+  })
+
   for (const theme of ["light", "dark", "auto"]) {
     test(`setTheme changes theme attributes and label for ${theme}`, async ({ page }) => {
       await setTheme(page, theme as Theme)

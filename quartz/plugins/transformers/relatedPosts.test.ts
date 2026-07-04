@@ -196,6 +196,18 @@ describe("buildRelatedPostsBlock", () => {
     expect((abbrs[0].children[0] as { value: string }).value).toBe("llm")
   })
 
+  it("renders title acronyms as plain caps, not small-caps", () => {
+    const [, list] = buildRelatedPostsBlock([
+      {
+        permalink: "p",
+        title: "Seeking Power is Often Convergently Instrumental in MDPs",
+        excerpt: "x",
+      },
+    ])
+    const link = elementsByTag(list, "a")[0]
+    expect(elementsByTag(link, "abbr")).toHaveLength(0)
+  })
+
   it("applies smart-quote transforms to the title", () => {
     const [, list] = buildRelatedPostsBlock(emojiPosts)
     const link = elementsByTag(list, "a")[0]
