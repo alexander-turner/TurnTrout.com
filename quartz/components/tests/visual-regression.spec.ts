@@ -121,14 +121,16 @@ async function hideForceHslInvertInFirefox(page: Page, testInfo: TestInfo): Prom
  * dedicated "Table of contents" screenshots) stays decoupled from the page's
  * heading set. The TOC component's data-driven behavior (active-heading
  * tracking, click delegation) is covered by non-visual tests elsewhere in this
- * file, which don't depend on the stub's exact structure.
+ * file, which don't depend on the stub's exact structure. The stub entries
+ * still carry the markup real headings render into (small-caps, inline code,
+ * italics, a full-size number prefix) so those styles stay covered here too.
  */
 const STUB_TOC_OL = `<ol>
-  <li><a href="#stub-one" class="internal same-page-link" data-for="stub-one"><span>First section</span></a></li>
-  <li><a href="#stub-two" class="internal same-page-link" data-for="stub-two"><span>Second section</span></a><ol>
-    <li><a href="#stub-two-a" class="internal same-page-link" data-for="stub-two-a"><span>Nested entry</span></a></li>
+  <li><a href="#stub-one" class="internal same-page-link" data-for="stub-one"><span><abbr class="small-caps">Nasa</abbr> and the moon</span></a></li>
+  <li><a href="#stub-two" class="internal same-page-link" data-for="stub-two"><span>Second section with <code class="inline-code">inline_code</code></span></a><ol>
+    <li><a href="#stub-two-a" class="internal same-page-link" data-for="stub-two-a"><span>Nested <em>italic</em> entry</span></a></li>
   </ol></li>
-  <li><a href="#stub-three" class="internal same-page-link" data-for="stub-three"><span>Third section</span></a></li>
+  <li><a href="#stub-three" class="internal same-page-link" data-for="stub-three"><span><span class="number-prefix">1984: </span>Full-size numbers</span></a></li>
 </ol>`
 
 async function stubTableOfContents(page: Page): Promise<void> {
