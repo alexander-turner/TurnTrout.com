@@ -23,13 +23,16 @@
     var(--max-font-size)
   );
 
+  // Fallback for browsers without CSS round() support (Safari <18, Firefox <128).
+  font-size: var(--base-font-size);
+
   // Quantized to 2px steps: every rem/em measurement on the page derives from
   // this value, so a continuously fluid root font-size forces a full-document
   // restyle and layout on every pixel of viewport-width change during resize.
-  // The empty interpolation stops Sass from parsing this as its own
-  // single-argument global round() function and passes the native CSS
-  // round() call through unchanged.
-  font-size: rou#{""}nd(nearest, var(--base-font-size), 2px);
+  @supports (font-size: round(nearest, 1px, 1px)) {
+    font-size: round(nearest, var(--base-font-size), 2px);
+  }
+
   text-rendering: geometricprecision;
 }
 
