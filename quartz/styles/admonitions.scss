@@ -234,6 +234,26 @@ $admonition-title-margin-block: calc(1.5 * $base-margin);
       margin-top: 0;
     }
   }
+
+  // The general collapsible rule adds block padding to make the whole title bar
+  // clickable. Here the metadata's own block margins would stack on top of that
+  // padding and double the spacing, so restate the block spacing as padding on
+  // the title and zero the margins the padding replaces.
+  &.is-collapsible {
+    & > .admonition-title {
+      margin-block: 0;
+      padding-top: var(--admonition-margin-outer);
+      padding-bottom: calc(0.75 * $base-margin);
+    }
+
+    &.is-collapsed > .admonition-title {
+      padding-bottom: var(--admonition-margin-outer);
+    }
+
+    & > .admonition-content {
+      margin-top: 0;
+    }
+  }
 }
 
 .admonition-title {

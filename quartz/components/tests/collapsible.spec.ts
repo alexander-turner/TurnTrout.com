@@ -249,6 +249,57 @@ test.describe("Collapsible admonition state persistence", () => {
     await expect(admonition).toHaveClass(/is-collapsed/)
   })
 
+  test("content-meta metadata title spacing is not doubled and covers the full row", async ({
+    page,
+  }) => {
+    // The backlinks ("Links to this page") admonition lives in #content-meta and
+    // carries its own ID-scoped block margins. The general collapsible rule adds
+    // block padding to make the whole bar clickable; if those margins survive,
+    // they stack on the padding and double the spacing. Assert the title box
+    // reaches the admonition's edges -- surviving margins would push it inward.
+    const admonition = page.locator("#content-meta .admonition-metadata.is-collapsible")
+    const title = admonition.locator(".admonition-title")
+    await expect(admonition).toBeAttached()
+    await title.scrollIntoViewIfNeeded()
+
+    const measurements = await title.evaluate((titleEl) => {
+      const admonitionEl = titleEl.closest(".admonition") as HTMLElement
+      const titleRect = titleEl.getBoundingClientRect()
+      const admonitionRect = admonitionEl.getBoundingClientRect()
+      const titleStyle = getComputedStyle(titleEl)
+      const midY = titleRect.top + titleRect.height / 2
+      const cursorAt = (x: number, y: number) => {
+        const el = document.elementFromPoint(x, y)
+        return el ? getComputedStyle(el).cursor : null
+      }
+      return {
+        titleLeft: titleRect.left,
+        titleRight: titleRect.right,
+        titleTop: titleRect.top,
+        admonitionLeft: admonitionRect.left,
+        admonitionRight: admonitionRect.right,
+        admonitionTop: admonitionRect.top,
+        marginTop: titleStyle.marginTop,
+        marginBottom: titleStyle.marginBottom,
+        cursorNearLeftEdge: cursorAt(titleRect.left + 2, midY),
+        cursorNearRightEdge: cursorAt(titleRect.right - 2, midY),
+      }
+    })
+
+    const EDGE_TOLERANCE_PX = 3
+    expect(measurements.titleLeft - measurements.admonitionLeft).toBeLessThan(EDGE_TOLERANCE_PX)
+    expect(measurements.admonitionRight - measurements.titleRight).toBeLessThan(EDGE_TOLERANCE_PX)
+    expect(measurements.titleTop - measurements.admonitionTop).toBeLessThan(EDGE_TOLERANCE_PX)
+
+    // The block spacing must live in padding (clickable), not margin (would
+    // stack on the general rule's padding and double the gap).
+    expect(measurements.marginTop).toBe("0px")
+    expect(measurements.marginBottom).toBe("0px")
+
+    expect(measurements.cursorNearLeftEdge).toBe("pointer")
+    expect(measurements.cursorNearRightEdge).toBe("pointer")
+  })
+
   test("clicking content does not close open collapsible", async ({ page }) => {
     // Target the specific "[!info]+ This collapsible admonition starts off open" admonition
     const openCollapsible = page
