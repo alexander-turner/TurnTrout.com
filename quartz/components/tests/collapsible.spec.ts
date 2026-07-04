@@ -252,52 +252,75 @@ test.describe("Collapsible admonition state persistence", () => {
   test("content-meta metadata title spacing is not doubled and covers the full row", async ({
     page,
   }) => {
-    // The backlinks ("Links to this page") admonition lives in #content-meta and
-    // carries its own ID-scoped block margins. The general collapsible rule adds
-    // block padding to make the whole bar clickable; if those margins survive,
-    // they stack on the padding and double the spacing. Assert the title box
-    // reaches the admonition's edges -- surviving margins would push it inward.
+    // The backlinks ("Links to this page") admonition in #content-meta carries
+    // its own ID-scoped title margins. Its block spacing must come from padding
+    // (a single, clickable source with zero block margin) while the inline
+    // gutter comes from the general rule's negative inline margin. Verify both
+    // in the default (collapsed) and expanded states.
     const admonition = page.locator("#content-meta .admonition-metadata.is-collapsible")
     const title = admonition.locator(".admonition-title")
     await expect(admonition).toBeAttached()
     await title.scrollIntoViewIfNeeded()
 
-    const measurements = await title.evaluate((titleEl) => {
-      const admonitionEl = titleEl.closest(".admonition") as HTMLElement
-      const titleRect = titleEl.getBoundingClientRect()
-      const admonitionRect = admonitionEl.getBoundingClientRect()
-      const titleStyle = getComputedStyle(titleEl)
-      const midY = titleRect.top + titleRect.height / 2
-      const cursorAt = (x: number, y: number) => {
-        const el = document.elementFromPoint(x, y)
-        return el ? getComputedStyle(el).cursor : null
-      }
-      return {
-        titleLeft: titleRect.left,
-        titleRight: titleRect.right,
-        titleTop: titleRect.top,
-        admonitionLeft: admonitionRect.left,
-        admonitionRight: admonitionRect.right,
-        admonitionTop: admonitionRect.top,
-        marginTop: titleStyle.marginTop,
-        marginBottom: titleStyle.marginBottom,
-        cursorNearLeftEdge: cursorAt(titleRect.left + 2, midY),
-        cursorNearRightEdge: cursorAt(titleRect.right - 2, midY),
-      }
-    })
-
+    // 3px absorbs the admonition's ~1px border in the edge deltas.
     const EDGE_TOLERANCE_PX = 3
-    expect(measurements.titleLeft - measurements.admonitionLeft).toBeLessThan(EDGE_TOLERANCE_PX)
-    expect(measurements.admonitionRight - measurements.titleRight).toBeLessThan(EDGE_TOLERANCE_PX)
-    expect(measurements.titleTop - measurements.admonitionTop).toBeLessThan(EDGE_TOLERANCE_PX)
 
-    // The block spacing must live in padding (clickable), not margin (would
-    // stack on the general rule's padding and double the gap).
-    expect(measurements.marginTop).toBe("0px")
-    expect(measurements.marginBottom).toBe("0px")
+    const measure = () =>
+      title.evaluate((titleEl) => {
+        const admonitionEl = titleEl.closest(".admonition") as HTMLElement
+        const contentEl = admonitionEl.querySelector(".admonition-content") as HTMLElement
+        const titleRect = titleEl.getBoundingClientRect()
+        const admonitionRect = admonitionEl.getBoundingClientRect()
+        const contentRect = contentEl.getBoundingClientRect()
+        const titleStyle = getComputedStyle(titleEl)
+        const midY = titleRect.top + titleRect.height / 2
+        const cursorAt = (x: number, y: number) => {
+          const el = document.elementFromPoint(x, y)
+          return el ? getComputedStyle(el).cursor : null
+        }
+        return {
+          titleLeft: titleRect.left,
+          titleRight: titleRect.right,
+          titleTop: titleRect.top,
+          titleBottom: titleRect.bottom,
+          admonitionLeft: admonitionRect.left,
+          admonitionRight: admonitionRect.right,
+          admonitionTop: admonitionRect.top,
+          contentTop: contentRect.top,
+          contentVisible: contentEl.offsetParent !== null,
+          marginTop: titleStyle.marginTop,
+          marginBottom: titleStyle.marginBottom,
+          cursorNearLeftEdge: cursorAt(titleRect.left + 2, midY),
+          cursorNearRightEdge: cursorAt(titleRect.right - 2, midY),
+        }
+      })
 
-    expect(measurements.cursorNearLeftEdge).toBe("pointer")
-    expect(measurements.cursorNearRightEdge).toBe("pointer")
+    const assertFullRow = (m: Awaited<ReturnType<typeof measure>>) => {
+      // Block spacing is padding, not margin -- a block margin would stack on
+      // the general rule's padding.
+      expect(m.marginTop).toBe("0px")
+      expect(m.marginBottom).toBe("0px")
+      // The title box reaches the admonition's top and side edges, so the whole
+      // bar (its padding) sits inside the clickable box.
+      expect(m.titleTop - m.admonitionTop).toBeLessThan(EDGE_TOLERANCE_PX)
+      expect(m.titleLeft - m.admonitionLeft).toBeLessThan(EDGE_TOLERANCE_PX)
+      expect(m.admonitionRight - m.titleRight).toBeLessThan(EDGE_TOLERANCE_PX)
+      // The inline gutter is clickable, so the cursor is a pointer at each edge.
+      expect(m.cursorNearLeftEdge).toBe("pointer")
+      expect(m.cursorNearRightEdge).toBe("pointer")
+    }
+
+    await expect(admonition).toHaveClass(/is-collapsed/)
+    assertFullRow(await measure())
+
+    // Expanded: same invariants, and the title's bottom padding must not stack
+    // with a content top margin (that would re-introduce a doubled gap).
+    await title.click()
+    await expect(admonition).not.toHaveClass(/is-collapsed/)
+    const open = await measure()
+    assertFullRow(open)
+    expect(open.contentVisible).toBe(true)
+    expect(open.contentTop - open.titleBottom).toBeLessThan(EDGE_TOLERANCE_PX)
   })
 
   test("clicking content does not close open collapsible", async ({ page }) => {
