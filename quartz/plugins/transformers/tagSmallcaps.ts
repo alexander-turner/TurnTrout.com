@@ -2,18 +2,21 @@ import type { Element, Node, Parent, Text } from "hast"
 import type { Plugin } from "unified"
 
 import escapeStringRegexp from "escape-string-regexp"
+import { toString } from "hast-util-to-string"
 import { h } from "hastscript"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { NBSP } from "../../components/constants"
+import { HEADING_TAGS, NBSP } from "../../components/constants"
 import {
+  addClass,
   gatherTextBeforeIndex,
   hasClass,
   INLINE_PASSTHROUGH_TAGS,
   isCode,
+  looksLikeWorkTitle,
   replaceRegex,
   shouldCapitalizeNodeText,
 } from "./utils"
@@ -428,12 +431,36 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
   )
 }
 
+/** Inline tags whose text carries a cited work's title in Markdown output. */
+const WORK_TITLE_TAGS: ReadonlySet<string> = new Set(["a", "em", "i", "cite"])
+
+/**
+ * Tags links/emphasis/cite elements whose text reads as a title-cased work
+ * title with `no-smallcaps`, so their acronyms render as plain caps. Title
+ * case is the marker: authors opt in by writing a work title in title case
+ * and opt out by sentence-casing. Heading text must keep its small-caps, so
+ * the anchor wrappers inside headings are exempt.
+ */
+export function markWorkTitles(tree: Node): void {
+  visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
+    if (!WORK_TITLE_TAGS.has(node.tagName)) return
+    const inHeading = ancestors.some(
+      (ancestor) => ancestor.type === "element" && HEADING_TAGS.has((ancestor as Element).tagName),
+    )
+    if (inHeading) return
+    if (looksLikeWorkTitle(toString(node))) {
+      addClass(node, "no-smallcaps")
+    }
+  })
+}
+
 /**
  * Rehype plugin that visits text nodes and replaces
  * detected all-caps or acronyms with smallcaps <abbr>.
  */
 export const rehypeTagSmallcaps: Plugin = () => {
   return (tree: Node) => {
+    markWorkTitles(tree)
     visitParents(tree, "text", (node: Text, ancestors: Parent[]) => {
       replaceSCInNode(node, ancestors)
     })

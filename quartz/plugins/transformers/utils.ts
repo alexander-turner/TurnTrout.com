@@ -2,9 +2,12 @@ import type { Element, ElementContent, Parent, Root, RootContent, Text } from "h
 
 import { toString } from "hast-util-to-string"
 import { h } from "hastscript"
+import { titleCase } from "title-case"
 import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
+
+import { locale } from "../../components/constants"
 
 export const urlRegex = new RegExp(
   /(?<protocol>https?:\/\/)(?<domain>(?:[\da-z-]+\.)+)(?<path>[/?=\w.-]+(?:\([\w.\-,() ]*\))?)(?=\))/g,
@@ -134,6 +137,52 @@ export const replaceRegex = (
   if (parent.children && typeof index === "number") {
     parent.children.splice(index, 1, ...(fragment as RootContent[]))
   }
+}
+
+/**
+ * Positional character mismatch count between two strings. Positions past the
+ * end of the shorter string count as mismatches, so it degrades gracefully when
+ * the lengths differ.
+ */
+export function hammingDistance(a: string, b: string): number {
+  const maxLength = Math.max(a.length, b.length)
+  let distance = 0
+  for (let i = 0; i < maxLength; i++) {
+    if (a[i] !== b[i]) distance++
+  }
+  return distance
+}
+
+/**
+ * True when `text` already reads as a title-cased work title rather than prose.
+ * `titleCase` only recases letters, so comparing it to the original by Hamming
+ * distance counts how many words the author cased differently from title case;
+ * fewer than two flips means the author already wrote it as a title (e.g. a
+ * cited article headline), where small-caps acronyms look out of place.
+ */
+export function isEffectivelyTitleCased(text: string): boolean {
+  return hammingDistance(titleCase(text, { locale }), text) < 2
+}
+
+/**
+ * True when inline text reads as the title of a work: a multi-word,
+ * title-cased phrase with at least one lowercase letter. The lowercase
+ * requirement keeps all-caps phrases (bare acronyms, "CC BY-SA")
+ * small-capped, and the multi-word requirement keeps single emphasized words
+ * like "_LLM_" out. Short phrases must match title case exactly — one
+ * mis-cased word in "The NASA program" makes it ordinary prose — while
+ * phrases of five words or more get one word of slack, since long titles are
+ * often written with a mid-title "is" or "the" the `titleCase` library would
+ * capitalize differently.
+ */
+export function looksLikeWorkTitle(text: string): boolean {
+  const trimmed = text.trim()
+  if (!/\s/.test(trimmed) || !/\p{Ll}/u.test(trimmed)) {
+    return false
+  }
+  const wordCount = trimmed.split(/\s+/).length
+  const allowedFlips = wordCount >= 5 ? 2 : 1
+  return hammingDistance(titleCase(trimmed, { locale }), trimmed) < allowedFlips
 }
 
 /**

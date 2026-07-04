@@ -15,7 +15,26 @@ warn() {
 	echo "WARNING: $1" >&2
 	SETUP_WARNINGS=$((SETUP_WARNINGS + 1))
 }
-is_root() { [ "$(id -u)" = "0" ]; }
+is_root() { [[ "$(id -u)" = "0" ]]; }
+
+# Append `export NAME=VALUE` to CLAUDE_ENV_FILE with VALUE shell-quoted via
+# bash's @Q operator. Interpolating a value straight into a double-quoted
+# string (e.g. "export X=\"$val\"") is not escaping it — a value containing a
+# `"` or `$` becomes arbitrary code in whatever later sources this file.
+emit_export() {
+  local name="$1" value="$2"
+  [[ -n "${CLAUDE_ENV_FILE:-}" ]] || return 0
+  echo "export $name=${value@Q}" >>"$CLAUDE_ENV_FILE"
+}
+
+# Append `export PATH=<quoted dir>:$PATH` — like emit_export, but $PATH must
+# stay unexpanded so it resolves against whatever PATH is active when the
+# file is later sourced, not the PATH at generation time.
+emit_path_prepend() {
+  local dir="$1"
+  [[ -n "${CLAUDE_ENV_FILE:-}" ]] || return 0
+  echo "export PATH=${dir@Q}:\$PATH" >>"$CLAUDE_ENV_FILE"
+}
 
 # Install a command via uv if missing
 uv_install_if_missing() {
@@ -76,6 +95,39 @@ webi_install_if_missing() {
 		rm -f "$installer"
 	fi
 }
+
+#######################################
+# Hook syntax validation
+#######################################
+
+# A hook script with a syntax error (e.g. unresolved merge conflict markers)
+# exits non-zero before any logic runs, which Claude Code treats as a block.
+# Surface broken hooks at session start so they can be fixed before the first
+# tool call dies with no explanation.
+_check_hook_syntax() {
+  local dir file out
+  for dir in "$PROJECT_DIR/.claude/hooks" "$PROJECT_DIR/.hooks"; do
+    [[ -d "$dir" ]] || continue
+    while IFS= read -r -d '' file; do
+      case "$file" in
+      *.sh | *.bash)
+        if ! out=$(bash -n "$file" 2>&1); then
+          warn "hook has bash syntax error: ${file#"$PROJECT_DIR/"}"
+          [[ -n "$out" ]] && echo "$out" >&2
+        fi
+        ;;
+      *.py)
+        if command -v python3 &>/dev/null && ! out=$(python3 -m py_compile "$file" 2>&1); then
+          warn "hook has python syntax error: ${file#"$PROJECT_DIR/"}"
+          [[ -n "$out" ]] && echo "$out" >&2
+        fi
+        ;;
+      esac
+    done < <(find "$dir" -maxdepth 1 -type f -print0)
+  done
+}
+
+_check_hook_syntax
 
 #######################################
 # PATH setup
@@ -188,6 +240,17 @@ endpoint = https://${S3_ENDPOINT_ID_TURNTROUT_MEDIA}.r2.cloudflarestorage.com
 no_check_bucket = true
 RCLONE_EOF
 	chmod 600 "$RCLONE_CONFIG_DIR/rclone.conf"
+fi
+
+# Python projects: the pre-commit and pre-push hooks shell out to ruff, which
+# isn't a project dependency. Install it (pinned to match .pre-commit-config.yaml
+# so local hooks format identically to CI). Skip for non-Python repos.
+# VERSION PINS: keep in sync with .pre-commit-config.yaml (ruff-pre-commit rev:
+# and zizmor additional_dependencies:). A contract test in tests/test_version_sync.py
+# enforces this.
+if { [[ -f "$PROJECT_DIR/pyproject.toml" ]] || [[ -f "$PROJECT_DIR/uv.lock" ]]; } && command -v uv &>/dev/null; then
+  uv_install_if_missing ruff "ruff==0.14.5"
+  uv_install_if_missing zizmor "zizmor==1.25.2"
 fi
 
 #######################################

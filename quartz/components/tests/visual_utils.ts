@@ -138,47 +138,111 @@ export interface RegressionScreenshotOptions {
 // of a remote AVIF, short enough that a genuinely dead image can't hang the run.
 const IMAGE_PAINT_TIMEOUT_MS = 15000
 
-export async function waitForImagesInElement(scope: Locator): Promise<void> {
+// WebKit paints images above its interpolation cutoff (800×800 source pixels)
+// with fast low-quality scaling whenever their painted size just changed
+// (e.g. a custom element upgrading and re-laying-out its slotted images), then
+// repaints at high quality when its 500 ms `lowQualityTimeThreshold` timer
+// fires (WebCore/rendering/ImageQualityController.cpp). Consecutive captures
+// must be spaced wider than that window so a pending high-quality repaint
+// always lands between them and shows up as a frame difference.
+const WEBKIT_LOW_QUALITY_SCALE_WINDOW_MS = 550
+const SCREENSHOT_STABILIZATION_TIMEOUT_MS = 10_000
+
+/**
+ * Captures screenshots until two consecutive frames are byte-identical, so
+ * late async repaints (WebKit's deferred high-quality image rescale, font
+ * swaps) can't be baked into the compared capture. This is the same
+ * two-equal-frames contract Playwright's `toHaveScreenshot` applies
+ * internally; `toMatchSnapshot` on a raw buffer has no such loop, so we
+ * provide it here.
+ *
+ * @param takeScreenshot - Thunk performing one capture of the target.
+ * @param screenshotName - Name used in the timeout error message.
+ * @returns The first capture that matched its predecessor exactly.
+ */
+export async function captureStableScreenshot(
+  takeScreenshot: () => Promise<Buffer>,
+  screenshotName: string,
+): Promise<Buffer> {
+  const deadline = Date.now() + SCREENSHOT_STABILIZATION_TIMEOUT_MS
+  let previous = await takeScreenshot()
+  do {
+    await new Promise((resolve) => setTimeout(resolve, WEBKIT_LOW_QUALITY_SCALE_WINDOW_MS))
+    const current = await takeScreenshot()
+    if (current.equals(previous)) return current
+    previous = current
+  } while (Date.now() < deadline)
+  throw new Error(
+    `Screenshot ${screenshotName} did not stabilize within ${SCREENSHOT_STABILIZATION_TIMEOUT_MS}ms: consecutive captures kept differing, so something is still repainting the page`,
+  )
+}
+
+// Runs in the browser via `locator.evaluate` (Playwright serializes it), so it
+// must not reference module scope. Resolves true once the image has painted,
+// false at the deadline. A remote AVIF can intermittently fail to load
+// (notably Firefox in CI), so failed loads are retried until the deadline. The
+// loop POLLS instead of listening to load/error events: a reload fired from a
+// stale event timer changes `src` while a decode() is pending, which rejects
+// it and (on Firefox, where naturalWidth resets during the new request)
+// re-triggers reload forever.
+/* istanbul ignore next -- executed in the browser, not under Jest */
+function pollUntilImagePaints(el: HTMLImageElement, deadlineMs: number): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    // WebKit only starts a lazy image's request when it nears the viewport, so
+    // a below-fold `loading="lazy"` image would sit unloaded until the
+    // deadline. Promote it to eager for the wait.
+    if (el.loading === "lazy") {
+      el.loading = "eager"
+    }
+    const POLL_MS = 100
+    const RELOAD_DEBOUNCE_MS = 250
+    const startedAt = performance.now()
+    let lastReloadAt = -RELOAD_DEBOUNCE_MS
+    const settle = (): void => resolve(true)
+    const tick = (): void => {
+      if (performance.now() - startedAt >= deadlineMs) {
+        resolve(false)
+        return
+      }
+      if (el.complete && el.naturalWidth > 0) {
+        // Loaded. decode() flushes the bitmap so the paint is ready; WebKit
+        // spuriously rejects decode() for painted SVGs, so a rejection still
+        // settles.
+        el.decode().then(settle, settle)
+        return
+      }
+      const now = performance.now()
+      if (el.complete && now - lastReloadAt >= RELOAD_DEBOUNCE_MS) {
+        // Errored (complete with no dimensions): retry with a cache-busted
+        // fetch. `set` overwrites the prior value, so retries don't
+        // accumulate query params.
+        lastReloadAt = now
+        const url = new URL(el.currentSrc || el.src, document.baseURI)
+        url.searchParams.set("__visualRetry", String(Math.trunc(now)))
+        el.src = url.toString()
+      }
+      window.setTimeout(tick, POLL_MS)
+    }
+    tick()
+  })
+}
+
+export async function waitForImagesInElement(
+  scope: Locator,
+  timeoutMs: number = IMAGE_PAINT_TIMEOUT_MS,
+): Promise<void> {
   const images = await scope.locator("img").all()
   await Promise.all(
-    images.map((img) =>
-      img
-        .evaluate(
-          (el: HTMLImageElement, timeoutMs) =>
-            new Promise<void>((resolve) => {
-              // A remote AVIF can intermittently fail to load (notably Firefox in
-              // CI); resolving on that failure captured a blank image and churned
-              // the baseline. Reload-and-retry a failed load until it paints, with
-              // a hard ceiling so a permanently broken image can't hang the run.
-              const hardStop = window.setTimeout(resolve, timeoutMs)
-              const settle = (): void => {
-                window.clearTimeout(hardStop)
-                resolve()
-              }
-              const reload = (): void => {
-                const url = new URL(el.currentSrc || el.src, document.baseURI)
-                // `set` overwrites the prior value, so retries don't accumulate
-                // query params; the cache-buster forces a fresh fetch.
-                url.searchParams.set("__visualRetry", String(Math.trunc(performance.now())))
-                el.src = url.toString()
-              }
-              // A successful (re)load is accepted only once `decode()` confirms it
-              // is paint-ready; a failed load reloads. Listeners persist across
-              // reloads so every retry is re-evaluated until an image paints.
-              el.addEventListener("load", () => {
-                el.decode().then(settle, reload)
-              })
-              el.addEventListener("error", () => window.setTimeout(reload, 250))
-              // The image may have already finished (success or failure) before
-              // the listeners attached.
-              if (el.complete) {
-                el.decode().then(settle, reload)
-              }
-            }),
-          IMAGE_PAINT_TIMEOUT_MS,
-        )
-        .catch(() => undefined),
-    ),
+    images.map(async (img) => {
+      const painted = await img.evaluate(pollUntilImagePaints, timeoutMs)
+      // Screenshotting an unpainted image bakes its alt text into the capture,
+      // which either churns the diff gallery or — if approved — corrupts the
+      // baseline. Fail the test instead; a real failure surfaces on the shard.
+      if (!painted) {
+        const src = (await img.getAttribute("src")) ?? "<unknown src>"
+        throw new Error(`Image did not paint within ${timeoutMs}ms despite retries: ${src}`)
+      }
+    }),
   )
 }
 
@@ -218,9 +282,7 @@ export async function takeRegressionScreenshot(
   }
 
   // Separate out the element option so we don't pass it to the screenshot API
-  const { elementToScreenshot: _elementOpt, ...remainingOptions } = options ?? {}
-  // skipcq: JS-0098
-  void _elementOpt // prevent unused variable lint error
+  const { elementToScreenshot, ...remainingOptions } = options ?? {}
 
   if (!options?.skipStabilityWait) {
     await waitForVisualStability(page, options?.elementToScreenshot)
@@ -235,17 +297,23 @@ export async function takeRegressionScreenshot(
 
   let screenshotBuffer: Buffer
   const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
-  if (options?.elementToScreenshot) {
-    const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
-    await performDOMIsolation(elementToIsolate, options.preserveSiblings ?? false)
+  if (elementToScreenshot) {
+    const elementToIsolate = options?.elementAboutWhichToIsolateDOM ?? elementToScreenshot
+    await performDOMIsolation(elementToIsolate, options?.preserveSiblings ?? false)
 
     try {
-      screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
+      screenshotBuffer = await captureStableScreenshot(
+        () => elementToScreenshot.screenshot(screenshotOptions),
+        screenshotName,
+      )
     } finally {
       await restoreDOMFromIsolation(page)
     }
   } else {
-    screenshotBuffer = await page.screenshot(screenshotOptions)
+    screenshotBuffer = await captureStableScreenshot(
+      () => page.screenshot(screenshotOptions),
+      screenshotName,
+    )
   }
 
   // PNG IHDR stores width at byte offset 16 and height at 20. Using the

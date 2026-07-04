@@ -190,9 +190,10 @@ describe("loadSnapshot", () => {
         },
       }) as never,
     )
-    const settled = loadSnapshot("10123", "/dir").catch((error: Error) => error)
-    await jest.runAllTimersAsync()
-    expect((await settled).message).toContain("invalid json")
+    await Promise.all([
+      expect(loadSnapshot("10123", "/dir")).rejects.toThrow("invalid json"),
+      jest.runAllTimersAsync(),
+    ])
     expect(fetchSpy).toHaveBeenCalledTimes(3)
     jest.useRealTimers()
   })

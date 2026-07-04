@@ -10,6 +10,7 @@ import type { QuartzTransformerPlugin } from "../types"
 import { LINK_TITLE_LOWER_SENTINEL, LINK_TITLE_SENTINEL } from "../../components/constants"
 import { titleIndexFile } from "../../components/constants.server"
 import { type FullSlug, splitAnchor } from "../../util/path"
+import { addClass } from "./utils"
 
 interface SerializedTarget {
   title: string
@@ -110,6 +111,9 @@ export function bindTitlesInTree(
       resolved = target.title
     }
     onlyChild.value = lower ? resolved.toLowerCase() : resolved
+    // A resolved title is the name of a work, not prose, so acronyms in it
+    // (AGI, GPT, …) should not render as small-caps.
+    addClass(node, "no-smallcaps")
   })
 }
 

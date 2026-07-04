@@ -145,7 +145,7 @@ export function buildRelatedPostsBlock(posts: readonly RelatedPost[]): Element[]
                 href: `/${post.permalink.replace(/^\/+/, "")}`,
                 className: "internal can-trigger-popover",
               },
-              renderInlineFormatting(formatTitle(post.title)),
+              renderInlineFormatting(formatTitle(post.title), true),
             ),
             h(
               "span",

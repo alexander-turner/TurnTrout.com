@@ -71,7 +71,7 @@ for file in "$@"; do
   # still produces an empty (not failing) result — required under `pipefail`.
   desc_block=$(awk '/^---$/{n++; next} n==1' "$file" | sed -n '/^description:/,/^[a-z]/p')
   periods=$(printf '%s' "$desc_block" | tr -dc '.')
-  if [ "${#periods}" -lt 2 ]; then
+  if [[ "${#periods}" -lt 2 ]]; then
     echo "ERROR: $file description too short — use 2-3 sentences with specific activation triggers" >&2
     errors=$((errors + 1))
   fi
@@ -83,4 +83,4 @@ for file in "$@"; do
   fi
 done
 
-[ "$errors" -gt 0 ] && exit 1 || exit 0
+[[ "$errors" -gt 0 ]] && exit 1 || exit 0
