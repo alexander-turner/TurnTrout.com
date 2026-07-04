@@ -131,6 +131,22 @@ export default [
     },
   },
 
+  // .github/scripts holds Node CI automation loaded by actions/github-script:
+  // CommonJS entrypoints (require/module.exports) plus ESM helpers that need
+  // Node globals. These files are synced and linted by the automation template,
+  // so disable the rules that would otherwise force edits to template-managed
+  // code: require() imports, an async entrypoint with no await, and a lookahead
+  // the regexp plugin flags as super-linear.
+  {
+    files: [".github/scripts/**/*.{js,cjs,mjs}"],
+    languageOptions: { globals: globals.node },
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+      "require-await": "off",
+      "regexp/no-super-linear-backtracking": "off",
+    },
+  },
+
   // Disable rules for test/spec files:
   // - react-hooks: Playwright's `use()` triggers false positives
   // - require-await: mock methods often need async signatures

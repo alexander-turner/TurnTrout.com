@@ -234,6 +234,25 @@ $admonition-title-margin-block: calc(1.5 * $base-margin);
       margin-top: 0;
     }
   }
+
+  // Block spacing lives in the title's padding so the full bar stays clickable.
+  // The metadata title carries its own ID-scoped block margins, so zero them
+  // here to keep padding the single source of block spacing.
+  &.is-collapsible {
+    & > .admonition-title {
+      margin-block: 0;
+      padding-top: var(--admonition-margin-outer);
+      padding-bottom: calc(0.75 * $base-margin);
+    }
+
+    &.is-collapsed > .admonition-title {
+      padding-bottom: var(--admonition-margin-outer);
+    }
+
+    & > .admonition-content {
+      margin-top: 0;
+    }
+  }
 }
 
 .admonition-title {
