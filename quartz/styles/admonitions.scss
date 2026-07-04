@@ -3,6 +3,7 @@
 @use "./colors";
 
 $admonition-padding-inline: 1rem;
+$admonition-title-margin-block: calc(1.5 * $base-margin);
 
 .admonition,
 .timeline-card {
@@ -183,8 +184,8 @@ $admonition-padding-inline: 1rem;
     // with the title's bottom margin.
     > .admonition-title {
       cursor: pointer;
-      margin: calc(-1.5 * $base-margin) calc(-1 * #{$admonition-padding-inline});
-      padding: calc(1.5 * $base-margin) $admonition-padding-inline;
+      margin: calc(-1 * #{$admonition-title-margin-block}) calc(-1 * #{$admonition-padding-inline});
+      padding: $admonition-title-margin-block $admonition-padding-inline;
     }
 
     > .admonition-content {
@@ -236,7 +237,7 @@ $admonition-padding-inline: 1rem;
   display: flex;
   align-items: flex-start;
   gap: 0; // Used for fold-icon
-  margin: calc(1.5 * $base-margin) 0;
+  margin: $admonition-title-margin-block 0;
 
   --icon-size: calc(1.5 * #{$base-margin});
 
