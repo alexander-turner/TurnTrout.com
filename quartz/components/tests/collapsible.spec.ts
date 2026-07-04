@@ -40,6 +40,17 @@ async function spaNavigateToAbout(page: Page): Promise<void> {
   await expect(page.locator('body[data-slug="about"]')).toBeAttached()
 }
 
+/** Resolves a locator's bounding box, throwing if it's not visible/attached. */
+async function requireBoundingBox(
+  locator: import("@playwright/test").Locator,
+): Promise<{ x: number; y: number; width: number; height: number }> {
+  const box = await locator.boundingBox()
+  if (!box) {
+    throw new Error(`Expected a visible bounding box for locator: ${locator}`)
+  }
+  return box
+}
+
 async function goBackToTestPage(page: Page): Promise<void> {
   await page.goBack()
   await page.waitForURL("**/test-page")
@@ -165,6 +176,77 @@ test.describe("Collapsible admonition state persistence", () => {
       .filter({ hasText: "starts off open" })
     await expect(afterNav).toBeAttached()
     await expect(afterNav).toHaveClass(/is-collapsed/)
+  })
+
+  test("title's pointer cursor and click target cover the full row, including the side padding gutters and top/bottom margins", async ({
+    page,
+  }) => {
+    // Use a state-independent locator (no :not(.is-collapsed)) so it still
+    // matches after clicking toggles the class.
+    const admonition = page
+      .locator(".admonition.is-collapsible")
+      .filter({ hasText: "starts off open" })
+    const title = admonition.locator(".admonition-title")
+    await expect(admonition).not.toHaveClass(/is-collapsed/)
+    await title.scrollIntoViewIfNeeded()
+
+    // Measure geometry and hit-test the cursor in a single browser round-trip
+    // (rather than combining a Playwright-side boundingBox() with a later
+    // elementFromPoint call) so the two never disagree on viewport/scroll state.
+    const measurements = await title.evaluate((titleEl) => {
+      const admonitionEl = titleEl.closest(".admonition") as HTMLElement
+      const contentEl = admonitionEl.querySelector(".admonition-content") as HTMLElement
+      const titleRect = titleEl.getBoundingClientRect()
+      const admonitionRect = admonitionEl.getBoundingClientRect()
+      const contentRect = contentEl.getBoundingClientRect()
+      const midY = titleRect.top + titleRect.height / 2
+      const midX = titleRect.left + titleRect.width / 2
+      const cursorAt = (x: number, y: number) => {
+        const el = document.elementFromPoint(x, y)
+        return el ? getComputedStyle(el).cursor : null
+      }
+      return {
+        titleLeft: titleRect.left,
+        titleRight: titleRect.right,
+        titleTop: titleRect.top,
+        titleBottom: titleRect.bottom,
+        admonitionLeft: admonitionRect.left,
+        admonitionRight: admonitionRect.right,
+        admonitionTop: admonitionRect.top,
+        contentTop: contentRect.top,
+        cursorNearLeftEdge: cursorAt(titleRect.left + 2, midY),
+        cursorNearRightEdge: cursorAt(titleRect.right - 2, midY),
+        cursorNearTopEdge: cursorAt(midX, titleRect.top + 2),
+        cursorNearBottomEdge: cursorAt(midX, titleRect.bottom - 2),
+      }
+    })
+
+    // The title's box must reach the admonition's left/right edges and the
+    // admonition's top edge -- it shouldn't stop short at the inner content
+    // padding/margin, leaving un-hoverable/unclickable gutters.
+    const EDGE_TOLERANCE_PX = 3
+    expect(measurements.titleLeft - measurements.admonitionLeft).toBeLessThan(EDGE_TOLERANCE_PX)
+    expect(measurements.admonitionRight - measurements.titleRight).toBeLessThan(EDGE_TOLERANCE_PX)
+    expect(measurements.titleTop - measurements.admonitionTop).toBeLessThan(EDGE_TOLERANCE_PX)
+    // The title's bottom margin sits above the content, not the admonition's
+    // own bottom edge (there's more content below), so compare against that.
+    expect(measurements.contentTop - measurements.titleBottom).toBeLessThan(EDGE_TOLERANCE_PX)
+
+    // Cursor should be a pointer right at each edge of the title row (inside the
+    // gutters/margins that used to fall outside the title's box), not just over
+    // the icon/text.
+    expect(measurements.cursorNearLeftEdge).toBe("pointer")
+    expect(measurements.cursorNearRightEdge).toBe("pointer")
+    expect(measurements.cursorNearTopEdge).toBe("pointer")
+    expect(measurements.cursorNearBottomEdge).toBe("pointer")
+
+    // Clicking in the gutter itself (not just the visible icon/text) should
+    // toggle the admonition, proving the extended box is actually clickable.
+    // `position` is relative to the title's own box, so it stays correct
+    // across viewports/devices without any manual coordinate math.
+    const titleBox = await requireBoundingBox(title)
+    await title.click({ position: { x: 2, y: titleBox.height / 2 } })
+    await expect(admonition).toHaveClass(/is-collapsed/)
   })
 
   test("clicking content does not close open collapsible", async ({ page }) => {
