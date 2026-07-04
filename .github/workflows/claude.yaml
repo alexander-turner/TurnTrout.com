@@ -1,0 +1,78 @@
+name: Claude
+
+# General-purpose @claude responder. Fires whenever someone mentions @claude in
+# an issue, a PR/issue comment, or a PR review, and hands the request to
+# claude-code-action, which acts on it (answers, edits code, resolves conflicts)
+# and pushes to the branch.
+#
+# WHY THIS EXISTS — template-sync linkage:
+#   template-sync.yaml opens a sync PR and, when a sync hits merge conflicts,
+#   posts an "@claude Resolve this..." comment (see request-claude-resolve.sh).
+#   Without a listener, that comment lands in the void, so a human has to
+#   remember to open a Claude session and resolve the conflicts by hand. This
+#   workflow IS that listener — it turns the existing @claude comment into a
+#   hands-off resolution, leaving only human review + merge.
+#
+#   IMPORTANT — comment author matters: GitHub does NOT deliver issue_comment
+#   events for comments authored by GITHUB_TOKEN (the github-actions[bot]); it's
+#   a recursion guard. So for sync auto-resolution to fire, template-sync.yaml's
+#   @claude comment must be posted by a real identity — set the
+#   TEMPLATE_SYNC_TOKEN secret (a fine-grained PAT) so it doesn't fall back to
+#   github.token. The sync flow already needs TEMPLATE_SYNC_TOKEN for its PR to
+#   trigger downstream CI, so this is the same existing requirement.
+#
+# AUTH — two credentials, both already documented in the README secrets table:
+#   - Model side: ANTHROPIC_API_KEY authenticates the Anthropic API call. This is
+#     the same secret the security-vulnerability-scan workflow already uses; the
+#     GitHub App does not cover it.
+#   - GitHub side: github_token is TEMPLATE_SYNC_TOKEN (a fine-grained PAT) when
+#     set, falling back to GITHUB_TOKEN. The PAT matters because commits pushed
+#     under GITHUB_TOKEN are suppressed by the recursion guard above and will NOT
+#     re-trigger CI on the PR; a PAT-authored push does. Same pattern as
+#     template-sync / phone-home / auto-version.
+#
+# SETUP (per downstream repo, one time): install the Claude GitHub App
+# (https://github.com/apps/claude) and set ANTHROPIC_API_KEY (plus
+# TEMPLATE_SYNC_TOKEN for CI re-triggering). Access is gated by
+# claude-code-action's built-in check — it only acts for commenters with write
+# access, so a drive-by "@claude" from an outsider is ignored.
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  issues:
+    types: [opened, assigned]
+
+concurrency:
+  # Serialize per issue/PR so overlapping @claude mentions don't race on the same
+  # branch; never cancel an in-flight resolution (it may be mid-push).
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+  actions: read
+
+jobs:
+  claude:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Respond to @claude
+        uses: anthropics/claude-code-action@428971d2ecd6e3a7cb0ee0da2a3a8b33fdb3678d # v1.0.157
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-sonnet-4-6
+          github_token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
