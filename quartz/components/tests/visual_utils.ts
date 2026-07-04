@@ -138,6 +138,45 @@ export interface RegressionScreenshotOptions {
 // of a remote AVIF, short enough that a genuinely dead image can't hang the run.
 const IMAGE_PAINT_TIMEOUT_MS = 15000
 
+// WebKit paints images above its interpolation cutoff (800×800 source pixels)
+// with fast low-quality scaling whenever their painted size just changed
+// (e.g. a custom element upgrading and re-laying-out its slotted images), then
+// repaints at high quality when its 500 ms `lowQualityTimeThreshold` timer
+// fires (WebCore/rendering/ImageQualityController.cpp). Consecutive captures
+// must be spaced wider than that window so a pending high-quality repaint
+// always lands between them and shows up as a frame difference.
+const WEBKIT_LOW_QUALITY_SCALE_WINDOW_MS = 550
+const SCREENSHOT_STABILIZATION_TIMEOUT_MS = 10_000
+
+/**
+ * Captures screenshots until two consecutive frames are byte-identical, so
+ * late async repaints (WebKit's deferred high-quality image rescale, font
+ * swaps) can't be baked into the compared capture. This is the same
+ * two-equal-frames contract Playwright's `toHaveScreenshot` applies
+ * internally; `toMatchSnapshot` on a raw buffer has no such loop, so we
+ * provide it here.
+ *
+ * @param takeScreenshot - Thunk performing one capture of the target.
+ * @param screenshotName - Name used in the timeout error message.
+ * @returns The first capture that matched its predecessor exactly.
+ */
+export async function captureStableScreenshot(
+  takeScreenshot: () => Promise<Buffer>,
+  screenshotName: string,
+): Promise<Buffer> {
+  const deadline = Date.now() + SCREENSHOT_STABILIZATION_TIMEOUT_MS
+  let previous = await takeScreenshot()
+  do {
+    await new Promise((resolve) => setTimeout(resolve, WEBKIT_LOW_QUALITY_SCALE_WINDOW_MS))
+    const current = await takeScreenshot()
+    if (current.equals(previous)) return current
+    previous = current
+  } while (Date.now() < deadline)
+  throw new Error(
+    `Screenshot ${screenshotName} did not stabilize within ${SCREENSHOT_STABILIZATION_TIMEOUT_MS}ms: consecutive captures kept differing, so something is still repainting the page`,
+  )
+}
+
 // Runs in the browser via `locator.evaluate` (Playwright serializes it), so it
 // must not reference module scope. Resolves true once the image has painted,
 // false at the deadline. A remote AVIF can intermittently fail to load
@@ -243,9 +282,7 @@ export async function takeRegressionScreenshot(
   }
 
   // Separate out the element option so we don't pass it to the screenshot API
-  const { elementToScreenshot: _elementOpt, ...remainingOptions } = options ?? {}
-  // skipcq: JS-0098
-  void _elementOpt // prevent unused variable lint error
+  const { elementToScreenshot, ...remainingOptions } = options ?? {}
 
   if (!options?.skipStabilityWait) {
     await waitForVisualStability(page, options?.elementToScreenshot)
@@ -260,17 +297,23 @@ export async function takeRegressionScreenshot(
 
   let screenshotBuffer: Buffer
   const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
-  if (options?.elementToScreenshot) {
-    const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
-    await performDOMIsolation(elementToIsolate, options.preserveSiblings ?? false)
+  if (elementToScreenshot) {
+    const elementToIsolate = options?.elementAboutWhichToIsolateDOM ?? elementToScreenshot
+    await performDOMIsolation(elementToIsolate, options?.preserveSiblings ?? false)
 
     try {
-      screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
+      screenshotBuffer = await captureStableScreenshot(
+        () => elementToScreenshot.screenshot(screenshotOptions),
+        screenshotName,
+      )
     } finally {
       await restoreDOMFromIsolation(page)
     }
   } else {
-    screenshotBuffer = await page.screenshot(screenshotOptions)
+    screenshotBuffer = await captureStableScreenshot(
+      () => page.screenshot(screenshotOptions),
+      screenshotName,
+    )
   }
 
   // PNG IHDR stores width at byte offset 16 and height at 20. Using the
