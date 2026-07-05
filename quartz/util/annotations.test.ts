@@ -1,25 +1,12 @@
 import { describe, expect, it } from "@jest/globals"
 
-import { type LinkAnnotation, validateLinkAnnotations } from "./annotations"
-
-function annotation(overrides: Partial<LinkAnnotation> = {}): LinkAnnotation {
-  return {
-    source: "wikipedia",
-    title: "Reinforcement learning",
-    abstract_html: "<p>Reinforcement learning is…</p>",
-    attribution: {
-      text: "Wikipedia",
-      license: "CC BY-SA 4.0",
-      license_url: "https://creativecommons.org/licenses/by-sa/4.0/",
-    },
-    retrieved: "2026-07-05",
-    ...overrides,
-  }
-}
+import { validateLinkAnnotations } from "./annotations"
+import {
+  testAnnotation as annotation,
+  TEST_ANNOTATION_KEY as KEY,
+} from "./tests/annotationFixtures"
 
 describe("validateLinkAnnotations", () => {
-  const KEY = "https://en.wikipedia.org/wiki/Reinforcement_learning"
-
   it("returns a map of validated entries", () => {
     const result = validateLinkAnnotations({ [KEY]: annotation() }, "test.json")
     expect(result.get(KEY)).toEqual(annotation())
@@ -87,5 +74,25 @@ describe("validateLinkAnnotations", () => {
     expect(() => validateLinkAnnotations({ [KEY]: null }, "my-file.json")).toThrow(
       `my-file.json entry for ${KEY}`,
     )
+  })
+
+  it.each([
+    ["plain paragraph", "<p>Escaped &lt;text&gt; only</p>"],
+    ["allowed formatting tags", "<p>Uses <em>em</em>, <strong>strong</strong>, <sub>s</sub></p>"],
+    ["no tags at all", "Just text"],
+  ])("accepts abstract_html with %s", (_desc, abstractHtml) => {
+    const entry = annotation({ abstract_html: abstractHtml })
+    expect(validateLinkAnnotations({ [KEY]: entry }, "test.json").get(KEY)).toEqual(entry)
+  })
+
+  it.each([
+    ["a script tag", "<p><script>alert(1)</script></p>"],
+    ["an img tag", '<p><img src="x"></p>'],
+    ["an attribute on an allowed tag", '<p onclick="x">text</p>'],
+    ["a stray angle bracket", "<p>a < b</p>"],
+  ])("rejects abstract_html containing %s", (_desc, abstractHtml) => {
+    expect(() =>
+      validateLinkAnnotations({ [KEY]: annotation({ abstract_html: abstractHtml }) }, "test.json"),
+    ).toThrow("abstract_html may only contain attribute-free")
   })
 })

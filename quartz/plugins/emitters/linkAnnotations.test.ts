@@ -3,29 +3,18 @@ import fs from "fs/promises"
 import os from "os"
 import path from "path"
 
-import { type LinkAnnotation } from "../../util/annotations"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug } from "../../util/path"
+import {
+  testAnnotation,
+  TEST_ANNOTATION_KEY as WIKI_KEY,
+} from "../../util/tests/annotationFixtures"
 
 jest.unstable_mockModule("./helpers", () => ({
   write: jest.fn(async (opts: { slug: FullSlug; ext: string }) => {
     return await Promise.resolve(`${opts.slug}${opts.ext}`)
   }),
 }))
-
-const WIKI_KEY = "https://en.wikipedia.org/wiki/Reinforcement_learning"
-
-const testAnnotation: LinkAnnotation = {
-  source: "wikipedia",
-  title: "Reinforcement learning",
-  abstract_html: "<p>Reinforcement learning is…</p>",
-  attribution: {
-    text: "Wikipedia",
-    license: "CC BY-SA 4.0",
-    license_url: "https://creativecommons.org/licenses/by-sa/4.0/",
-  },
-  retrieved: "2026-07-05",
-}
 
 const mockCtx = { argv: { output: "public" } } as unknown as BuildCtx
 
@@ -57,7 +46,7 @@ describe("LinkAnnotations", () => {
 
   it("emits the manifest as static JSON", async () => {
     const file = path.join(dir, "annotations.json")
-    await fs.writeFile(file, JSON.stringify({ [WIKI_KEY]: testAnnotation }))
+    await fs.writeFile(file, JSON.stringify({ [WIKI_KEY]: testAnnotation() }))
 
     const emitted = await emit(file)
 
@@ -65,7 +54,7 @@ describe("LinkAnnotations", () => {
     const call = write.mock.calls[0][0]
     expect(call.slug).toBe("static/link-annotations")
     expect(call.ext).toBe(".json")
-    expect(JSON.parse(call.content)).toEqual({ [WIKI_KEY]: testAnnotation })
+    expect(JSON.parse(call.content)).toEqual({ [WIKI_KEY]: testAnnotation() })
   })
 
   it("emits an empty object when the manifest is missing", async () => {

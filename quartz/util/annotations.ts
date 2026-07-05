@@ -44,6 +44,36 @@ function requireString(entry: Record<string, unknown>, field: string, context: s
 }
 
 /**
+ * The fetcher only ever emits plain text wrapped in simple formatting tags,
+ * so anything else in a committed manifest is either hand-edit damage or an
+ * injection attempt. Attributes are disallowed entirely.
+ */
+const ALLOWED_ABSTRACT_TAGS: ReadonlySet<string> = new Set([
+  "p",
+  "em",
+  "strong",
+  "i",
+  "b",
+  "sub",
+  "sup",
+])
+const ABSTRACT_TAG_REGEX = /<\s*\/?\s*([a-z0-9-]*)([^>]*)>?/gi
+
+function requireSafeAbstractHtml(entry: Record<string, unknown>, context: string): string {
+  const value = requireString(entry, "abstract_html", context)
+  for (const match of value.matchAll(ABSTRACT_TAG_REGEX)) {
+    const [, tagName, rest] = match
+    if (!ALLOWED_ABSTRACT_TAGS.has(tagName.toLowerCase()) || rest !== "") {
+      throw new Error(
+        `${context}: abstract_html may only contain attribute-free ` +
+          `${[...ALLOWED_ABSTRACT_TAGS].join("/")} tags, found "${match[0]}"`,
+      )
+    }
+  }
+  return value
+}
+
+/**
  * Validates parsed annotations JSON, throwing a descriptive error on any
  * malformed entry so a bad manifest fails the build loudly.
  */
@@ -70,7 +100,7 @@ export function validateLinkAnnotations(
     annotations.set(key, {
       source: requireString(entry, "source", context),
       title: requireString(entry, "title", context),
-      abstract_html: requireString(entry, "abstract_html", context),
+      abstract_html: requireSafeAbstractHtml(entry, context),
       attribution: {
         text: requireString(attribution, "text", `${context}.attribution`),
         license: requireString(attribution, "license", `${context}.attribution`),

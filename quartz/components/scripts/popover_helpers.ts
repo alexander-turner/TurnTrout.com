@@ -1,7 +1,7 @@
 import { minDesktopWidth } from "../../styles/variables"
 import { LINK_ANNOTATIONS_STATIC_PATH, type LinkAnnotation } from "../../util/annotations"
 import { normalizeRelativeURLs } from "../../util/path"
-import { canonicalizeUrl } from "../../util/urls"
+import { tryCanonicalizeUrl } from "../../util/urls"
 import { CAN_TRIGGER_POPOVER_CLASS, popoverPadding, popoverRemovalDelayMs } from "../constants"
 import { type ContentRenderOptions, modifyElementIds, renderHTMLContent } from "./content_renderer"
 import { createLazyJsonLoader } from "./lazyJson"
@@ -151,10 +151,8 @@ export async function createAnnotationPopover(
   // Archived links keep their live URL in data-original-href; the manifest is
   // keyed by the live URL.
   const liveUrl = linkElement.dataset.originalHref ?? linkElement.href
-  let key: string
-  try {
-    key = canonicalizeUrl(liveUrl)
-  } catch {
+  const key = tryCanonicalizeUrl(liveUrl)
+  if (key === null) {
     return null
   }
   const annotation = annotations[key]
@@ -420,20 +418,22 @@ export function attachPopoverEventListeners(
     "click",
     (e) => {
       const clickedLink = (e.target as HTMLElement).closest("a")
-      // Footnote popovers are readable text; only non-footnote popovers
-      // navigate to the link target when the body is clicked.
-      const targetHref =
-        clickedLink instanceof HTMLAnchorElement
-          ? clickedLink.href
-          : isFootnote
-            ? null
-            : linkElement.href
-      if (targetHref === null) {
+      let targetHref: string
+      if (clickedLink instanceof HTMLAnchorElement) {
+        targetHref = clickedLink.href
+      } else if (isFootnote) {
+        // Footnote popovers are readable text; only clicks on actual links
+        // inside them navigate.
         return
+      } else {
+        targetHref = linkElement.href
       }
       // Annotation popovers preview an external link that itself opens in a
-      // new tab (target="_blank"); clicks inside them must match.
+      // new tab (target="_blank"); clicks inside them must match. Their inner
+      // anchors are also target="_blank", so suppress the browser's own
+      // navigation or the URL would open twice.
       if (isAnnotation) {
+        e.preventDefault()
         navigation.openInNewTab(targetHref)
       } else {
         navigation.goTo(targetHref)

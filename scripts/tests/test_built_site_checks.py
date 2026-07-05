@@ -8203,6 +8203,10 @@ class TestAnnotatedLinkChecks:
                 "https://en.wikipedia.org/wiki/Foo#frag",
                 "https://en.wikipedia.org/wiki/Foo",
             ),
+            (
+                "https://en.wikipedia.org/wiki/Foo?",
+                "https://en.wikipedia.org/wiki/Foo",
+            ),
         ],
     )
     def test_canonicalize_annotation_href(
@@ -8214,50 +8218,55 @@ class TestAnnotatedLinkChecks:
     def _soup(self, html: str) -> BeautifulSoup:
         return BeautifulSoup(html, "html.parser")
 
-    def test_annotated_link_with_entry_passes(self) -> None:
-        soup = self._soup(
-            f'<a href="{self.WIKI_KEY}" data-annotated="true">RL</a>'
-        )
+    @pytest.mark.parametrize(
+        "description,html,keys,expected_issue_count",
+        [
+            (
+                "manifest hit passes",
+                f'<a href="{WIKI_KEY}" data-annotated="true">RL</a>',
+                frozenset({WIKI_KEY}),
+                0,
+            ),
+            (
+                "manifest miss fails",
+                '<a href="https://en.wikipedia.org/wiki/Missing" '
+                'data-annotated="true">x</a>',
+                frozenset({WIKI_KEY}),
+                1,
+            ),
+            (
+                "archived link checked by original href",
+                '<a href="https://assets.turntrout.com/link-archive/x/'
+                'singlefile.html" '
+                f'data-original-href="{WIKI_KEY}" data-annotated="true">RL</a>',
+                frozenset({WIKI_KEY}),
+                0,
+            ),
+            (
+                "None keys flags all annotated links",
+                f'<a href="{WIKI_KEY}" data-annotated="true">RL</a>',
+                None,
+                1,
+            ),
+            (
+                "unannotated links ignored",
+                '<a href="https://example.com">x</a>',
+                frozenset(),
+                0,
+            ),
+        ],
+    )
+    def test_check_annotated_links(
+        self,
+        description: str,
+        html: str,
+        keys: frozenset[str] | None,
+        expected_issue_count: int,
+    ) -> None:
         issues = built_site_checks.check_annotated_links_have_annotations(
-            soup, frozenset({self.WIKI_KEY})
+            self._soup(html), keys
         )
-        assert issues == []
-
-    def test_annotated_link_without_entry_fails(self) -> None:
-        soup = self._soup(
-            '<a href="https://en.wikipedia.org/wiki/Missing" data-annotated="true">x</a>'
-        )
-        issues = built_site_checks.check_annotated_links_have_annotations(
-            soup, frozenset({self.WIKI_KEY})
-        )
-        assert len(issues) == 1
-        assert "Missing" in issues[0]
-
-    def test_archived_link_checked_by_original_href(self) -> None:
-        soup = self._soup(
-            '<a href="https://assets.turntrout.com/link-archive/x/singlefile.html" '
-            f'data-original-href="{self.WIKI_KEY}" data-annotated="true">RL</a>'
-        )
-        issues = built_site_checks.check_annotated_links_have_annotations(
-            soup, frozenset({self.WIKI_KEY})
-        )
-        assert issues == []
-
-    def test_none_keys_flags_all_annotated_links(self) -> None:
-        soup = self._soup(
-            f'<a href="{self.WIKI_KEY}" data-annotated="true">RL</a>'
-        )
-        issues = built_site_checks.check_annotated_links_have_annotations(
-            soup, None
-        )
-        assert len(issues) == 1
-
-    def test_unannotated_links_ignored(self) -> None:
-        soup = self._soup('<a href="https://example.com">x</a>')
-        issues = built_site_checks.check_annotated_links_have_annotations(
-            soup, frozenset()
-        )
-        assert issues == []
+        assert len(issues) == expected_issue_count, description
 
     def test_load_annotation_keys_missing_file(self, tmp_path: Path) -> None:
         assert built_site_checks.load_annotation_keys(tmp_path) == frozenset()

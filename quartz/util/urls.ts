@@ -22,3 +22,16 @@ export function canonicalizeUrl(href: string): string {
   }
   return `https://${url.host}${pathname}${url.search}`
 }
+
+/**
+ * `canonicalizeUrl`, but returns null for unparseable hrefs — a malformed
+ * href simply cannot be a manifest key, so callers skip the link instead of
+ * crashing.
+ */
+export function tryCanonicalizeUrl(href: string): string | null {
+  try {
+    return canonicalizeUrl(href)
+  } catch {
+    return null
+  }
+}

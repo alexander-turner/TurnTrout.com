@@ -5,6 +5,7 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import { LINK_ANNOTATIONS_STATIC_PATH } from "../../../util/annotations"
+import { TEST_ANNOTATION_KEY, testAnnotation } from "../../../util/tests/annotationFixtures"
 import {
   attachPopoverEventListeners,
   computeLeft,
@@ -1003,20 +1004,11 @@ describe("fetchWithMetaRedirect", () => {
 })
 
 describe("annotation popovers", () => {
-  const WIKI_URL = "https://en.wikipedia.org/wiki/Reinforcement_learning"
-  const testAnnotation = {
-    source: "wikipedia",
-    title: "Reinforcement learning",
-    abstract_html: "<p>Reinforcement learning is a field of machine learning.</p>",
-    attribution: {
-      text: "Wikipedia",
-      license: "CC BY-SA 4.0",
-      license_url: "https://creativecommons.org/licenses/by-sa/4.0/",
-    },
-    retrieved: "2026-07-05",
-  }
+  const WIKI_URL = TEST_ANNOTATION_KEY
+  const annotationFixture = testAnnotation()
 
   let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
+  const originalMatchMedia = window.matchMedia
 
   function setDesktopViewport(isDesktop: boolean): void {
     window.matchMedia = jest.fn(() => ({ matches: isDesktop }) as MediaQueryList)
@@ -1063,19 +1055,20 @@ describe("annotation popovers", () => {
   afterEach(() => {
     consoleErrorSpy.mockRestore()
     resetAnnotationsLoaderForTesting()
+    window.matchMedia = originalMatchMedia
   })
 
   it("renders title, abstract, and attribution from the manifest", async () => {
-    const fetchMock = mockAnnotationsFetch({ [WIKI_URL]: testAnnotation })
+    const fetchMock = mockAnnotationsFetch({ [WIKI_URL]: annotationFixture })
     const popover = await createPopover(annotatedOptions(annotatedLink()))
 
     expect(popover).not.toBeNull()
     if (!popover) throw new Error("popover is null")
     expect(popover.classList.contains("popover")).toBe(true)
     expect(popover.classList.contains("annotation-popover")).toBe(true)
-    expect(popover.querySelector(".annotation-title")?.textContent).toBe(testAnnotation.title)
+    expect(popover.querySelector(".annotation-title")?.textContent).toBe(annotationFixture.title)
     expect(popover.querySelector(".annotation-abstract")?.innerHTML).toBe(
-      testAnnotation.abstract_html,
+      annotationFixture.abstract_html,
     )
     const attributionLinks = popover.querySelectorAll<HTMLAnchorElement>(
       ".annotation-attribution a",
@@ -1083,7 +1076,7 @@ describe("annotation popovers", () => {
     expect(attributionLinks).toHaveLength(2)
     expect(attributionLinks[0].href).toBe(WIKI_URL)
     expect(attributionLinks[0].textContent).toBe("Wikipedia")
-    expect(attributionLinks[1].href).toBe(testAnnotation.attribution.license_url)
+    expect(attributionLinks[1].href).toBe(annotationFixture.attribution.license_url)
     expect(attributionLinks[1].textContent).toBe("CC BY-SA 4.0")
     for (const link of attributionLinks) {
       expect(link.target).toBe("_blank")
@@ -1095,18 +1088,18 @@ describe("annotation popovers", () => {
   })
 
   it("reuses the cached manifest for subsequent popovers", async () => {
-    const fetchMock = mockAnnotationsFetch({ [WIKI_URL]: testAnnotation })
+    const fetchMock = mockAnnotationsFetch({ [WIKI_URL]: annotationFixture })
     await createPopover(annotatedOptions(annotatedLink()))
     await createPopover(annotatedOptions(annotatedLink()))
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it("looks up archived links by their original URL", async () => {
-    mockAnnotationsFetch({ [WIKI_URL]: testAnnotation })
+    mockAnnotationsFetch({ [WIKI_URL]: annotationFixture })
     const link = annotatedLink("https://assets.turntrout.com/link-archive/abc/singlefile.html")
     link.dataset.originalHref = WIKI_URL
     const popover = await createPopover(annotatedOptions(link))
-    expect(popover?.querySelector(".annotation-title")?.textContent).toBe(testAnnotation.title)
+    expect(popover?.querySelector(".annotation-title")?.textContent).toBe(annotationFixture.title)
   })
 
   it("returns null on a manifest miss", async () => {
@@ -1125,13 +1118,13 @@ describe("annotation popovers", () => {
 
   it("returns null on mobile without fetching anything", async () => {
     setDesktopViewport(false)
-    const fetchMock = mockAnnotationsFetch({ [WIKI_URL]: testAnnotation })
+    const fetchMock = mockAnnotationsFetch({ [WIKI_URL]: annotationFixture })
     await expect(createPopover(annotatedOptions(annotatedLink()))).resolves.toBeNull()
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it("returns null when the link URL cannot be canonicalized", async () => {
-    mockAnnotationsFetch({ [WIKI_URL]: testAnnotation })
+    mockAnnotationsFetch({ [WIKI_URL]: annotationFixture })
     const link = annotatedLink()
     link.dataset.originalHref = "http://"
     await expect(createAnnotationPopover(link)).resolves.toBeNull()
@@ -1178,16 +1171,20 @@ describe("attachPopoverEventListeners (annotation popover)", () => {
       if (clickInnerLink) {
         const innerLink = document.createElement("a")
         innerLink.href = "https://creativecommons.org/licenses/by-sa/4.0/"
+        innerLink.target = "_blank"
         popoverElement.appendChild(innerLink)
-        clickEvent = new MouseEvent("click", { bubbles: true })
+        clickEvent = new MouseEvent("click", { bubbles: true, cancelable: true })
         Object.defineProperty(clickEvent, "target", { value: innerLink })
       } else {
-        clickEvent = new MouseEvent("click")
+        clickEvent = new MouseEvent("click", { cancelable: true })
       }
 
       popoverElement.dispatchEvent(clickEvent)
       expect(openSpy).toHaveBeenCalledWith(expectedHref as string)
       expect(goToSpy).not.toHaveBeenCalled()
+      // The browser's own target="_blank" navigation must be suppressed so
+      // the URL opens exactly once.
+      expect(clickEvent.defaultPrevented).toBe(true)
       openSpy.mockRestore()
       goToSpy.mockRestore()
     },

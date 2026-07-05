@@ -106,7 +106,9 @@ export function abstractHtmlFromText(text: string): string {
 }
 
 export function wikipediaSummaryUrl(canonicalUrl: string): string {
-  const title = new URL(canonicalUrl).pathname.slice("/wiki/".length)
+  // Slashes in a title (e.g. /wiki/AC/DC) would read as extra path segments;
+  // the REST API expects them encoded as %2F.
+  const title = new URL(canonicalUrl).pathname.slice("/wiki/".length).replaceAll("/", "%2F")
   return `https://en.wikipedia.org/api/rest_v1/page/summary/${title}`
 }
 

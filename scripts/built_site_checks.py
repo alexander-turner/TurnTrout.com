@@ -2084,8 +2084,8 @@ def load_annotation_keys(public_dir: Path) -> frozenset[str]:
     """
     Keys of the emitted ``static/link-annotations.json``.
 
-    A missing file
-    yields an empty set, so any ``data-annotated`` link then fails the check.
+    A missing file yields an empty set, so any ``data-annotated`` link then
+    fails the check.
     """
     path = public_dir / "static" / "link-annotations.json"
     if not path.exists():

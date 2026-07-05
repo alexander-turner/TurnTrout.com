@@ -1,10 +1,7 @@
 import type { Element, Root } from "hast"
 
-import gitRoot from "find-git-root"
-import fs from "fs"
 import path from "path"
 import { visit } from "unist-util-visit"
-import { fileURLToPath } from "url"
 
 import type { QuartzTransformerPlugin } from "../types"
 
@@ -14,23 +11,18 @@ import {
   type LinkAnnotations,
   validateLinkAnnotations,
 } from "../../util/annotations"
-import { canonicalizeUrl } from "../../util/urls"
+import { addClassesOnce } from "../../util/hast"
+import { projectRoot, readManifestFile } from "../../util/manifests"
+import { tryCanonicalizeUrl } from "../../util/urls"
 import { isExternalLink } from "./links"
-
-const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
 
 /** Committed source of truth for external-link annotations (keyed by canonical URL). */
 export const annotationsPath = path.join(projectRoot, "config", "link_annotations.json")
 
 /** Missing manifest → empty map; malformed content or other I/O errors propagate. */
 export function loadLinkAnnotations(filePath: string = annotationsPath): LinkAnnotations {
-  let raw: string
-  try {
-    raw = fs.readFileSync(filePath, "utf-8")
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return new Map()
-    throw error
-  }
+  const raw = readManifestFile(filePath)
+  if (raw === null) return new Map()
   return validateLinkAnnotations(JSON.parse(raw), filePath)
 }
 
@@ -45,13 +37,7 @@ export function annotationKeyForNode(node: Element): string | null {
   if (typeof href !== "string" || !href.startsWith("http") || !isExternalLink(href)) {
     return null
   }
-  try {
-    return canonicalizeUrl(href)
-  } catch {
-    // A malformed href can't be in the manifest; leave the link untouched
-    // rather than crashing the build.
-    return null
-  }
+  return tryCanonicalizeUrl(href)
 }
 
 /**
@@ -69,13 +55,7 @@ export function annotateLink(
     return false
   }
 
-  const classes = (node.properties.className ?? []) as string[]
-  for (const cls of [CAN_TRIGGER_POPOVER_CLASS, ANNOTATED_LINK_CLASS]) {
-    if (!classes.includes(cls)) {
-      classes.push(cls)
-    }
-  }
-  node.properties.className = classes
+  addClassesOnce(node, [CAN_TRIGGER_POPOVER_CLASS, ANNOTATED_LINK_CLASS])
   node.properties["data-annotated"] = "true"
   return true
 }

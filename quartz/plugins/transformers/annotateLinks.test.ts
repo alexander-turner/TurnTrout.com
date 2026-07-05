@@ -11,7 +11,11 @@ import { unified } from "unified"
 import type { FullSlug } from "../../util/path"
 
 import { CAN_TRIGGER_POPOVER_CLASS } from "../../components/constants"
-import { ANNOTATED_LINK_CLASS, type LinkAnnotation } from "../../util/annotations"
+import { ANNOTATED_LINK_CLASS } from "../../util/annotations"
+import {
+  testAnnotation,
+  TEST_ANNOTATION_KEY as WIKI_KEY,
+} from "../../util/tests/annotationFixtures"
 import {
   annotateLink,
   AnnotateLinks,
@@ -20,20 +24,6 @@ import {
 } from "./annotateLinks"
 import { ArchiveLinks, type ArchiveManifestEntry } from "./archiveLinks"
 import { CrawlLinks } from "./links"
-
-const WIKI_KEY = "https://en.wikipedia.org/wiki/Reinforcement_learning"
-
-const testAnnotation: LinkAnnotation = {
-  source: "wikipedia",
-  title: "Reinforcement learning",
-  abstract_html: "<p>Reinforcement learning is…</p>",
-  attribution: {
-    text: "Wikipedia",
-    license: "CC BY-SA 4.0",
-    license_url: "https://creativecommons.org/licenses/by-sa/4.0/",
-  },
-  retrieved: "2026-07-05",
-}
 
 function anchor(href?: string, properties: Element["properties"] = {}): Element {
   if (href !== undefined) {
@@ -59,9 +49,9 @@ describe("loadLinkAnnotations", () => {
 
   it("loads and validates a manifest file", async () => {
     const file = path.join(dir, "annotations.json")
-    await fs.writeFile(file, JSON.stringify({ [WIKI_KEY]: testAnnotation }))
+    await fs.writeFile(file, JSON.stringify({ [WIKI_KEY]: testAnnotation() }))
     const annotations = loadLinkAnnotations(file)
-    expect(annotations.get(WIKI_KEY)).toEqual(testAnnotation)
+    expect(annotations.get(WIKI_KEY)).toEqual(testAnnotation())
   })
 
   it("throws on a malformed manifest", async () => {
@@ -111,7 +101,7 @@ describe("annotationKeyForNode", () => {
 })
 
 describe("annotateLink", () => {
-  const annotations = new Map([[WIKI_KEY, testAnnotation]])
+  const annotations = new Map([[WIKI_KEY, testAnnotation()]])
 
   it("marks a manifest-hit external link", () => {
     const node = anchor(WIKI_KEY, { className: ["external"] })
@@ -163,7 +153,7 @@ describe("AnnotateLinks plugin", () => {
   beforeEach(async () => {
     dir = await fs.mkdtemp(path.join(os.tmpdir(), "annotate-plugin-"))
     annotationsFile = path.join(dir, "annotations.json")
-    await fs.writeFile(annotationsFile, JSON.stringify({ [WIKI_KEY]: testAnnotation }))
+    await fs.writeFile(annotationsFile, JSON.stringify({ [WIKI_KEY]: testAnnotation() }))
   })
 
   afterEach(async () => {
@@ -219,7 +209,7 @@ describe("AnnotateLinks after CrawlLinks and ArchiveLinks", () => {
     const archiveFile = path.join(dir, "archive.json")
     const annotationsFile = path.join(dir, "annotations.json")
     await fs.writeFile(archiveFile, JSON.stringify({ [WIKI_KEY]: archiveEntry }))
-    await fs.writeFile(annotationsFile, JSON.stringify({ [WIKI_KEY]: testAnnotation }))
+    await fs.writeFile(annotationsFile, JSON.stringify({ [WIKI_KEY]: testAnnotation() }))
 
     const crawl = CrawlLinks({
       lazyLoad: true,

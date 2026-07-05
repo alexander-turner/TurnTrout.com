@@ -134,10 +134,15 @@ describe("abstractHtmlFromText", () => {
 })
 
 describe("wikipediaSummaryUrl", () => {
-  it("builds the REST endpoint from the canonical URL", () => {
-    expect(wikipediaSummaryUrl(WIKI_URL)).toBe(
-      "https://en.wikipedia.org/api/rest_v1/page/summary/Reinforcement_learning",
-    )
+  it.each([
+    [WIKI_URL, "https://en.wikipedia.org/api/rest_v1/page/summary/Reinforcement_learning"],
+    // Slashes in the title must be encoded or the REST API reads them as path segments
+    [
+      "https://en.wikipedia.org/wiki/AC/DC",
+      "https://en.wikipedia.org/api/rest_v1/page/summary/AC%2FDC",
+    ],
+  ])("builds the REST endpoint for %s", (canonicalUrl, expected) => {
+    expect(wikipediaSummaryUrl(canonicalUrl)).toBe(expected)
   })
 })
 

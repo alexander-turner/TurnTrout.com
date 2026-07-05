@@ -1,17 +1,14 @@
 import type { Element, Root } from "hast"
 
-import gitRoot from "find-git-root"
-import fs from "fs"
 import path from "path"
 import { visit } from "unist-util-visit"
-import { fileURLToPath } from "url"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { canonicalizeUrl } from "../../util/urls"
+import { addClassesOnce } from "../../util/hast"
+import { projectRoot, readManifestFile } from "../../util/manifests"
+import { tryCanonicalizeUrl } from "../../util/urls"
 import { isExternalLink } from "./links"
-
-const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
 
 /** Committed source of truth for archived external links (keyed by canonical URL). */
 export const manifestPath = path.join(projectRoot, "config", "link_archive_manifest.json")
@@ -57,13 +54,8 @@ function parseManifest(raw: string, source: string): ArchiveManifest {
 
 /** Missing manifest → empty map; other I/O errors propagate. */
 export function loadArchiveManifest(filePath: string = manifestPath): ArchiveManifest {
-  let raw: string
-  try {
-    raw = fs.readFileSync(filePath, "utf-8")
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return new Map()
-    throw error
-  }
+  const raw = readManifestFile(filePath)
+  if (raw === null) return new Map()
   return parseManifest(raw, filePath)
 }
 
@@ -78,12 +70,8 @@ export function rewriteArchivedLink(node: Element, manifest: ArchiveManifest): b
     return false
   }
 
-  let canonical: string
-  try {
-    canonical = canonicalizeUrl(href)
-  } catch {
-    // A malformed href can't be in the manifest; leave the link untouched
-    // rather than crashing the build.
+  const canonical = tryCanonicalizeUrl(href)
+  if (canonical === null) {
     return false
   }
 
@@ -96,11 +84,7 @@ export function rewriteArchivedLink(node: Element, manifest: ArchiveManifest): b
 
   node.properties.href = entry.archive_url
   node.properties["data-original-href"] = href
-  const classes = (node.properties.className ?? []) as string[]
-  if (!classes.includes(ARCHIVED_LINK_CLASS)) {
-    classes.push(ARCHIVED_LINK_CLASS)
-  }
-  node.properties.className = classes
+  addClassesOnce(node, [ARCHIVED_LINK_CLASS])
   return true
 }
 

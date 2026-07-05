@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals"
 
-import { canonicalizeUrl } from "./urls"
+import { canonicalizeUrl, tryCanonicalizeUrl } from "./urls"
 
 describe("canonicalizeUrl", () => {
   it.each([
@@ -29,5 +29,14 @@ describe("canonicalizeUrl", () => {
 
   it("throws on an unparsable URL", () => {
     expect(() => canonicalizeUrl("not a url")).toThrow()
+  })
+})
+
+describe("tryCanonicalizeUrl", () => {
+  it.each([
+    ["https://example.com/a/", "https://example.com/a"],
+    ["not a url", null],
+  ])("canonicalizes %j to %j", (input, expected) => {
+    expect(tryCanonicalizeUrl(input)).toBe(expected)
   })
 })
