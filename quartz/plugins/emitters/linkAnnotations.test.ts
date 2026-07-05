@@ -11,7 +11,9 @@ import {
 } from "../../util/tests/annotationFixtures"
 
 jest.unstable_mockModule("./helpers", () => ({
-  write: jest.fn((opts: { slug: FullSlug; ext: string }) => Promise.resolve(`${opts.slug}${opts.ext}`)),
+  write: jest.fn((opts: { slug: FullSlug; ext: string }) =>
+    Promise.resolve(`${opts.slug}${opts.ext}`),
+  ),
 }))
 
 const mockCtx = { argv: { output: "public" } } as unknown as BuildCtx
