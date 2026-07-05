@@ -68,6 +68,11 @@ function isCitingLink(node: Element): boolean {
   if (node.tagName !== "a") return false
   if (!hasClass(node, "internal")) return false
   if (hasClass(node, "same-page-link")) return false
+  // A transclude placeholder link (`![[…]]`) is swapped for the embedded page's
+  // content at emit time, so any id stamped on it disappears from the built
+  // HTML—deep-linking to it would dangle. The real citing links inside the
+  // embedded content keep the ids stamped during the source page's own pass.
+  if (hasClass(node, "transclude-inner")) return false
   const dataSlug = node.properties?.["data-slug"]
   return typeof dataSlug === "string" && dataSlug.length > 0
 }

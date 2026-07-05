@@ -257,8 +257,8 @@ describe("LinkContexts transformer", () => {
     expect(contexts[0].anchor).toBe("backlink-cite-test-page-0")
     expect(contexts[0].excerptHtml).toBe('Intro <span class="backlink-highlight">cited</span>')
     // The anchor id is stamped on the original citing link for deep-linking.
-    const p = (out.children[0] as Element).children[1] as Element
-    expect(p.properties.id).toBe("backlink-cite-test-page-0")
+    const citingLink = (out.children[0] as Element).children[1] as Element
+    expect(citingLink.properties.id).toBe("backlink-cite-test-page-0")
   })
 
   it("reuses an existing id on the citing link instead of generating one", () => {
@@ -327,6 +327,10 @@ describe("LinkContexts transformer", () => {
     ["external links", h("a", { className: ["external"], href: "https://x.com" }, "ext")],
     ["same-page anchors", h("a", { className: ["internal", "same-page-link"], href: "#s" }, "a")],
     ["internal links without a resolved target", h("a", { className: ["internal"] }, "raw")],
+    [
+      "transclude placeholder links (replaced at emit, so the stamped id would dangle)",
+      h("a", { className: ["internal", "transclude-inner"], "data-slug": "other-page" }, "embed"),
+    ],
     ["non-anchor elements", h("strong", "bold")],
   ])("ignores %s", (_label, node) => {
     const tree = h("root", [h("p", [node as ElementContent])]) as unknown as Root

@@ -383,7 +383,7 @@ describe("Backlinks", () => {
     expect(html).toBe("")
   })
 
-  const linkingWithExcerpt = (linkContexts: QuartzPluginData["linkContexts"]): QuartzPluginData =>
+  const linkingWithExcerpt = (linkContexts?: QuartzPluginData["linkContexts"]): QuartzPluginData =>
     createFileData({
       slug: "linking-page" as FullSlug,
       frontmatter: { title: "Linking Page" },
@@ -429,7 +429,7 @@ describe("Backlinks", () => {
 
   it("renders a title-only row when the file records no linkContexts", () => {
     const currentFile = createFileData({ slug: "target-page" as FullSlug })
-    const linkingFile = linkingWithExcerpt(undefined)
+    const linkingFile = linkingWithExcerpt()
 
     const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
 
