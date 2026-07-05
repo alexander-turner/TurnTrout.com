@@ -18,8 +18,10 @@ jobs:
       DEEPSOURCE_PAT: ${{ secrets.DEEPSOURCE_PAT }}
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Install DeepSource CLI
@@ -31,27 +33,22 @@ jobs:
         run: |
           set -euo pipefail
           deepsource auth login --with-token "$DEEPSOURCE_PAT"
-          pr_json=$(deepsource issues --pr 1552 --output json || echo '"CLI-ERROR"')
-          branch_json=$(deepsource issues --analyzer javascript --limit 100 --output json || echo '"CLI-ERROR"')
-          main_json=$(deepsource issues --default-branch --analyzer javascript --limit 100 --output json || echo '"CLI-ERROR"')
-          git diff --name-only origin/main...HEAD > /tmp/changed.txt
+          pr_json=$(deepsource issues --pr 1552 --output json || echo '[]')
+          deepsource issues --analyzer javascript --limit 500 --output json \
+            | grep -v '^> Note:' > /tmp/branch.json || echo '[]' > /tmp/branch.json
+          deepsource issues --default-branch --analyzer javascript --limit 500 --output json \
+            | grep -v '^> Note:' > /tmp/main.json || echo '[]' > /tmp/main.json
           {
             echo "<!-- tmp-deepsource-findings -->"
             echo "PR issues:"
             echo '```json'
             echo "$pr_json"
             echo '```'
-            echo "Branch JS issue count: $(echo "$branch_json" | jq 'length' || echo '?')"
-            echo "Main JS issue count: $(echo "$main_json" | jq 'length' || echo '?')"
-            echo "Branch JS issues in changed files:"
-            echo '```json'
-            echo "$branch_json" | jq --rawfile changed /tmp/changed.txt \
-              '[.[] | select((.path // .location.path) as $p | $changed | split("\n") | index($p))]' \
-              || echo "$branch_json" | head -c 3000
+            echo "Branch JS issue count: $(jq 'length' /tmp/branch.json)"
+            echo "Main JS issue count: $(jq 'length' /tmp/main.json)"
+            echo "All branch JS issues (compact):"
             echo '```'
-            echo "First 3 branch JS issues (raw shape):"
-            echo '```json'
-            echo "$branch_json" | jq '.[0:3]' || true
+            jq -r '.[] | "\(.path):\(.begin_line) \(.issue_code) \(.title)"' /tmp/branch.json
             echo '```'
           } > /tmp/comment.md
           gh api "repos/${GITHUB_REPOSITORY}/issues/1552/comments" \
