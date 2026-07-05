@@ -18,37 +18,38 @@ jobs:
       DEEPSOURCE_PAT: ${{ secrets.DEEPSOURCE_PAT }}
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        timeout-minutes: 5
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-
-      - name: Install DeepSource CLI
+      - name: Query run summary via GraphQL and post as PR comment
         run: |
-          curl -fsSL https://cli.deepsource.com/install | BINDIR="$HOME/.local/bin" sh
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          set -uo pipefail
+          # Wait for the JavaScript analysis of this head to finish so the
+          # status carries the run UID in its target_url.
+          run_url=""
+          for _ in $(seq 1 40); do
+            run_url=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/statuses" \
+              --jq '[.[] | select(.context == "DeepSource: JavaScript") | select(.state != "pending")][0].target_url // ""')
+            if [ -n "$run_url" ]; then break; fi
+            sleep 15
+          done
+          run_uid=$(echo "$run_url" | sed -E 's|.*/run/([0-9a-f-]+)/.*|\1|')
 
-      - name: Fetch findings and post as PR comment
-        run: |
-          set -euo pipefail
-          deepsource auth login --with-token "$DEEPSOURCE_PAT"
-          pr_json=$(deepsource issues --pr 1552 --output json || echo '[]')
-          deepsource issues --analyzer javascript --limit 500 --output json \
-            | grep -v '^> Note:' > /tmp/branch.json || echo '[]' > /tmp/branch.json
-          deepsource issues --default-branch --analyzer javascript --limit 500 --output json \
-            | grep -v '^> Note:' > /tmp/main.json || echo '[]' > /tmp/main.json
+          gql() {
+            curl -sS https://api.deepsource.io/graphql/ \
+              -H "Authorization: Bearer $DEEPSOURCE_PAT" \
+              -H "Content-Type: application/json" \
+              -d "$1"
+          }
+          q1=$(jq -n --arg uid "$run_uid" '{query: "query($uid: UUID!) { run(runUid: $uid) { status commitOid summary { occurrencesIntroduced occurrencesResolved occurrencesSuppressed } checks { edges { node { analyzer { shortcode } status summary { occurrencesIntroduced occurrencesResolved occurrencesSuppressed } } } } } }", variables: {uid: $uid}}')
+          q2=$(jq -n --arg uid "$run_uid" '{query: "query($uid: UUID!) { run(runUid: $uid) { checks { edges { node { analyzer { shortcode } concreteIssues(first: 100) { edges { node { shortcode title occurrenceCount } } } } } } } }", variables: {uid: $uid}}')
           {
             echo "<!-- tmp-deepsource-findings -->"
-            echo "PR issues:"
+            echo "Run URL: $run_url"
+            echo "Run summary:"
             echo '```json'
-            echo "$pr_json"
+            gql "$q1" | jq . || true
             echo '```'
-            echo "Branch JS issue count: $(jq 'length' /tmp/branch.json)"
-            echo "Main JS issue count: $(jq 'length' /tmp/main.json)"
-            echo "All branch JS issues (compact):"
-            echo '```'
-            jq -r '.[] | "\(.path):\(.begin_line) \(.issue_code) \(.title)"' /tmp/branch.json
+            echo "Concrete issues:"
+            echo '```json'
+            gql "$q2" | jq . || true
             echo '```'
           } > /tmp/comment.md
           gh api "repos/${GITHUB_REPOSITORY}/issues/1552/comments" \
