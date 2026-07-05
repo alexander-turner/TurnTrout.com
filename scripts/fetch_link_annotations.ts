@@ -47,16 +47,15 @@ function countChar(text: string, char: string): number {
 /** Strips Markdown context (closing parens, trailing punctuation) off a URL match. */
 export function trimUrlMatch(raw: string): string {
   let url = raw
-  for (;;) {
+  while (url.length > 0) {
     const last = url[url.length - 1]
-    if (TRAILING_PUNCTUATION.has(last)) {
-      url = url.slice(0, -1)
-    } else if (last === ")" && countChar(url, ")") > countChar(url, "(")) {
-      url = url.slice(0, -1)
-    } else {
-      return url
+    const isUnbalancedParen = last === ")" && countChar(url, ")") > countChar(url, "(")
+    if (!TRAILING_PUNCTUATION.has(last) && !isUnbalancedParen) {
+      break
     }
+    url = url.slice(0, -1)
   }
+  return url
 }
 
 export function extractWikipediaUrls(markdown: string): string[] {

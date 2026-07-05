@@ -59,6 +59,7 @@ describe("trimUrlMatch", () => {
     ["https://en.wikipedia.org/wiki/Foo_(bar)", "https://en.wikipedia.org/wiki/Foo_(bar)"],
     ["https://en.wikipedia.org/wiki/Foo_(bar))", "https://en.wikipedia.org/wiki/Foo_(bar)"],
     ["https://en.wikipedia.org/wiki/Foo?x=1;", "https://en.wikipedia.org/wiki/Foo?x=1"],
+    ["...", ""],
   ])("trims %j to %j", (input, expected) => {
     expect(trimUrlMatch(input)).toBe(expected)
   })
