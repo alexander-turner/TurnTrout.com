@@ -26,50 +26,62 @@ test.describe("footnote reference after a favicon", () => {
       const build = (glue: string) => {
         const paragraph = document.createElement("p")
         paragraph.style.margin = "0"
-        paragraph.innerHTML = `Alpha beta gamma delta epsilon the ${linkHtml}${glue}${supHtml} zeta eta theta.`
+        // Measure on one line first: no width cap so nothing wraps yet.
+        paragraph.style.width = "1000px"
+        paragraph.style.maxWidth = "none"
+        paragraph.innerHTML = `${linkHtml}${glue}${supHtml}`
         article.appendChild(paragraph)
         return paragraph
+      }
+
+      const rectIn = (paragraph: HTMLElement, selector: string) => {
+        const el = paragraph.querySelector<HTMLElement>(selector)
+        if (!el) throw new Error(`missing fixture element: ${selector}`)
+        return el.getBoundingClientRect()
       }
 
       // A superscript `<sup>` and a middle-aligned favicon sit at different
       // heights on the same line, so compare against half a line box: a wrapped
       // reference drops a full line below, well past the threshold.
       const sameLine = (paragraph: HTMLElement) => {
-        const fav = paragraph.querySelector<HTMLElement>(".fav-glyph")
-        const sup = paragraph.querySelector<HTMLElement>(".fn-ref")
-        if (!fav || !sup) throw new Error("missing fixture elements")
         const lineHeight = parseFloat(getComputedStyle(paragraph).lineHeight) || 24
-        return sup.getBoundingClientRect().top - fav.getBoundingClientRect().top < lineHeight * 0.5
+        return (
+          rectIn(paragraph, ".fn-ref").top - rectIn(paragraph, ".fav-glyph").top < lineHeight * 0.5
+        )
       }
 
       const control = build("")
       const fixed = build(WORD_JOINER)
 
-      // Shrink both paragraphs together until the control (no word joiner)
-      // strands the footnote number on its own line.
-      let orphanWidth = 0
-      for (let w = 360; w >= 120; w -= 2) {
-        control.style.width = `${w}px`
-        control.style.maxWidth = `${w}px`
-        fixed.style.width = `${w}px`
-        fixed.style.maxWidth = `${w}px`
-        if (!sameLine(control)) {
-          orphanWidth = w
-          break
-        }
+      // With everything on one line, the only width that strands the reference
+      // is the sliver between the favicon's right edge and the reference's right
+      // edge: wide enough for the favicon, too narrow for the digit after it. A
+      // greedy scan can step over this ~few-pixel window (font metrics vary per
+      // browser), so target it directly instead.
+      const paraLeft = control.getBoundingClientRect().left
+      const favRight = rectIn(control, ".fav-glyph").right - paraLeft
+      const supRight = rectIn(control, ".fn-ref").right - paraLeft
+      const targetWidth = Math.ceil(favRight) + 2
+
+      for (const paragraph of [control, fixed]) {
+        paragraph.style.width = `${targetWidth}px`
+        paragraph.style.maxWidth = `${targetWidth}px`
       }
 
       const result = {
-        controlOrphaned: orphanWidth > 0 && !sameLine(control),
+        // The favicon fits at targetWidth but the reference digit does not.
+        windowExists: supRight - targetWidth > 1,
+        controlOrphaned: !sameLine(control),
         fixedKeepsTogether: sameLine(fixed),
-        orphanWidth,
       }
       control.remove()
       fixed.remove()
       return result
     })
 
-    // Sanity: the chosen width genuinely orphans the reference under greedy wrapping.
+    // Sanity: the chosen width genuinely leaves the reference no room on the line.
+    expect(measured.windowExists).toBe(true)
+    // Without the joiner the reference is stranded on its own line.
     expect(measured.controlOrphaned).toBe(true)
     // The fix: the word joiner keeps the reference number glued to the favicon.
     expect(measured.fixedKeepsTogether).toBe(true)
