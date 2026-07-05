@@ -19,12 +19,23 @@ test("Annotated external link on mobile fetches nothing and shows no popover", a
   await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
   await page.mouse.move(1, 1)
 
-  const link = page.locator('a[data-annotated="true"]').first()
-  await link.scrollIntoViewIfNeeded()
-  await link.hover()
-  // The popover timer is 300ms; wait past it before asserting nothing happened
-  await page.waitForTimeout(1_000)
+  // Hover an internal link first: its popover attaches to the DOM even on
+  // mobile (hidden by CSS), giving a deterministic marker that the
+  // hover→timer→create pipeline is live on this page.
+  // A known always-visible internal link in the article intro (sidebar/TOC
+  // links are display:none on mobile, and spoiler content is hidden).
+  const internalLink = page.locator("a#first-link-test-page")
+  await internalLink.scrollIntoViewIfNeeded()
+  await internalLink.hover()
+  await expect(page.locator(".popover")).toBeAttached()
+
+  const annotatedLink = page.locator('a[data-annotated="true"]').first()
+  await annotatedLink.scrollIntoViewIfNeeded()
+  await annotatedLink.hover()
+  // When the annotated link's popover timer fires, it removes the internal
+  // popover and then the annotation branch yields nothing — so an empty
+  // .popover set proves the annotated hover pipeline ran to completion.
+  await expect(page.locator(".popover")).toHaveCount(0)
 
   expect(annotationRequests).toBe(0)
-  await expect(page.locator(".popover")).toHaveCount(0)
 })

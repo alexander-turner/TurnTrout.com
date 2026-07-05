@@ -59,6 +59,33 @@ const ALLOWED_ABSTRACT_TAGS: ReadonlySet<string> = new Set([
 ])
 const ABSTRACT_TAG_REGEX = /<\s*\/?\s*([a-z0-9-]*)([^>]*)>?/gi
 
+/**
+ * `license_url` lands directly in an `href`, so it must be a real https URL —
+ * a hand-edited `javascript:` value would otherwise become click-to-execute.
+ */
+function requireHttpsUrl(entry: Record<string, unknown>, field: string, context: string): string {
+  const value = requireString(entry, field, context)
+  let parsed: URL
+  try {
+    parsed = new URL(value)
+  } catch {
+    throw new Error(`${context}: field "${field}" must be a valid URL, got "${value}"`)
+  }
+  if (parsed.protocol !== "https:") {
+    throw new Error(`${context}: field "${field}" must use https, got "${value}"`)
+  }
+  return value
+}
+
+/** `retrieved` feeds date arithmetic (`--max-age-days`); NaN dates would silently pass. */
+function requireIsoDate(entry: Record<string, unknown>, field: string, context: string): string {
+  const value = requireString(entry, field, context)
+  if (Number.isNaN(Date.parse(value))) {
+    throw new Error(`${context}: field "${field}" must be a parseable date, got "${value}"`)
+  }
+  return value
+}
+
 function requireSafeAbstractHtml(entry: Record<string, unknown>, context: string): string {
   const value = requireString(entry, "abstract_html", context)
   for (const match of value.matchAll(ABSTRACT_TAG_REGEX)) {
@@ -104,9 +131,9 @@ export function validateLinkAnnotations(
       attribution: {
         text: requireString(attribution, "text", `${context}.attribution`),
         license: requireString(attribution, "license", `${context}.attribution`),
-        license_url: requireString(attribution, "license_url", `${context}.attribution`),
+        license_url: requireHttpsUrl(attribution, "license_url", `${context}.attribution`),
       },
-      retrieved: requireString(entry, "retrieved", context),
+      retrieved: requireIsoDate(entry, "retrieved", context),
     })
   }
   return annotations

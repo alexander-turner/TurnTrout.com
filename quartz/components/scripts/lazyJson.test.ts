@@ -23,6 +23,7 @@ function mockFetchRejecting(error: Error): jest.Mock {
 
 describe("createLazyJsonLoader", () => {
   let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
+  const originalFetch = globalThis.fetch
 
   beforeEach(() => {
     // skipcq: JS-0321 -- intentional no-op: suppress console.error noise in tests
@@ -31,6 +32,7 @@ describe("createLazyJsonLoader", () => {
 
   afterEach(() => {
     consoleErrorSpy.mockRestore()
+    globalThis.fetch = originalFetch
   })
 
   function makeLoader() {

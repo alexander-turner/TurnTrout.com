@@ -8,7 +8,6 @@ import type { QuartzTransformerPlugin } from "../types"
 import { addClassesOnce } from "../../util/hast"
 import { projectRoot, readManifestFile } from "../../util/manifests"
 import { tryCanonicalizeUrl } from "../../util/urls"
-import { isExternalLink } from "./links"
 
 /** Committed source of truth for archived external links (keyed by canonical URL). */
 export const manifestPath = path.join(projectRoot, "config", "link_archive_manifest.json")
@@ -66,7 +65,7 @@ export function loadArchiveManifest(filePath: string = manifestPath): ArchiveMan
  */
 export function rewriteArchivedLink(node: Element, manifest: ArchiveManifest): boolean {
   const href = node.properties?.href
-  if (typeof href !== "string" || !href.startsWith("http") || !isExternalLink(href)) {
+  if (typeof href !== "string" || !href.startsWith("http")) {
     return false
   }
 

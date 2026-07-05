@@ -1,8 +1,12 @@
 import DepGraph from "../../depgraph"
-import { type FilePath, type FullSlug, joinSegments } from "../../util/path"
+import { LINK_ANNOTATIONS_STATIC_PATH } from "../../util/annotations"
+import { type FilePath, type FullSlug } from "../../util/path"
 import { annotationsPath, loadLinkAnnotations } from "../transformers/annotateLinks"
 import { type QuartzEmitterPlugin } from "../types"
 import { write } from "./helpers"
+
+// Derived from the client's fetch path so the two cannot drift apart.
+const emittedSlug = LINK_ANNOTATIONS_STATIC_PATH.slice(1).replace(/\.json$/, "") as FullSlug
 
 export interface LinkAnnotationsOptions {
   annotationsPath: string
@@ -30,12 +34,11 @@ export const LinkAnnotations: QuartzEmitterPlugin<Partial<LinkAnnotationsOptions
     },
     async emit(ctx): Promise<FilePath[]> {
       const annotations = loadLinkAnnotations(filePath)
-      const fp = joinSegments("static", "link-annotations") as FullSlug
       return [
         await write({
           ctx,
           content: JSON.stringify(Object.fromEntries(annotations)),
-          slug: fp,
+          slug: emittedSlug,
           ext: ".json",
         }),
       ]

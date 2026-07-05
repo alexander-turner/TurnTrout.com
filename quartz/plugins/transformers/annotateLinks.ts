@@ -14,7 +14,6 @@ import {
 import { addClassesOnce } from "../../util/hast"
 import { projectRoot, readManifestFile } from "../../util/manifests"
 import { tryCanonicalizeUrl } from "../../util/urls"
-import { isExternalLink } from "./links"
 
 /** Committed source of truth for external-link annotations (keyed by canonical URL). */
 export const annotationsPath = path.join(projectRoot, "config", "link_annotations.json")
@@ -34,7 +33,7 @@ export function loadLinkAnnotations(filePath: string = annotationsPath): LinkAnn
 export function annotationKeyForNode(node: Element): string | null {
   const originalHref = node.properties?.["data-original-href"]
   const href = typeof originalHref === "string" ? originalHref : node.properties?.href
-  if (typeof href !== "string" || !href.startsWith("http") || !isExternalLink(href)) {
+  if (typeof href !== "string" || !href.startsWith("http")) {
     return null
   }
   return tryCanonicalizeUrl(href)

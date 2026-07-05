@@ -79,6 +79,7 @@ describe("validateLinkAnnotations", () => {
   it.each([
     ["plain paragraph", "<p>Escaped &lt;text&gt; only</p>"],
     ["allowed formatting tags", "<p>Uses <em>em</em>, <strong>strong</strong>, <sub>s</sub></p>"],
+    ["uppercase allowed tags", "<P>Shouting</P>"],
     ["no tags at all", "Just text"],
   ])("accepts abstract_html with %s", (_desc, abstractHtml) => {
     const entry = annotation({ abstract_html: abstractHtml })
@@ -94,5 +95,22 @@ describe("validateLinkAnnotations", () => {
     expect(() =>
       validateLinkAnnotations({ [KEY]: annotation({ abstract_html: abstractHtml }) }, "test.json"),
     ).toThrow("abstract_html may only contain attribute-free")
+  })
+
+  it.each([
+    ["a javascript: URL", "javascript:alert(1)", "must use https"],
+    ["an http URL", "http://example.com/license", "must use https"],
+    ["an unparseable URL", "not a url", "must be a valid URL"],
+  ])("rejects attribution.license_url that is %s", (_desc, licenseUrl, message) => {
+    const attribution = { ...annotation().attribution, license_url: licenseUrl }
+    expect(() =>
+      validateLinkAnnotations({ [KEY]: { ...annotation(), attribution } }, "test.json"),
+    ).toThrow(message)
+  })
+
+  it("rejects an unparseable retrieved date", () => {
+    expect(() =>
+      validateLinkAnnotations({ [KEY]: annotation({ retrieved: "not-a-date" }) }, "test.json"),
+    ).toThrow('field "retrieved" must be a parseable date')
   })
 })

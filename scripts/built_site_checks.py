@@ -2068,13 +2068,20 @@ def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
 
 
 def _canonicalize_annotation_href(href: str) -> str:
-    """Mirror ``canonicalizeUrl`` in ``quartz/util/urls.ts`` for the URLs the
-    annotation pipeline emits (absolute URLs already normalized by the WHATWG
-    parser at build time): force https, drop a single trailing slash, drop the
-    fragment, keep the query."""
+    """
+    Mirror ``canonicalizeUrl`` in ``quartz/util/urls.ts``: force https,
+    lowercase the host, strip userinfo and default ports, drop a single trailing
+    slash, drop the fragment, keep the query.
+
+    Percent-encoding of non-ASCII paths is not mirrored; manifest keys come from
+    the WHATWG parser, which already encodes them.
+    """
     split = urllib.parse.urlsplit(href)
+    host = split.netloc.rpartition("@")[2].lower()
+    for default_port in (":80", ":443"):
+        host = host.removesuffix(default_port)
     path = split.path.removesuffix("/")
-    result = f"https://{split.netloc}{path}"
+    result = f"https://{host}{path}"
     if split.query:
         result += f"?{split.query}"
     return result

@@ -1142,6 +1142,8 @@ describe("attachPopoverEventListeners (annotation popover)", () => {
   let popoverElement: HTMLElement
   let linkElement: HTMLLinkElement
   let cleanup: () => void
+  let openSpy: jest.SpiedFunction<typeof navigation.openInNewTab>
+  let goToSpy: jest.SpiedFunction<typeof navigation.goTo>
 
   beforeEach(() => {
     popoverElement = document.createElement("div")
@@ -1149,10 +1151,16 @@ describe("attachPopoverEventListeners (annotation popover)", () => {
     linkElement = document.createElement("a") as unknown as HTMLLinkElement
     linkElement.href = "https://en.wikipedia.org/wiki/Reinforcement_learning"
     cleanup = attachPopoverEventListeners(popoverElement, linkElement, jest.fn())
+    // skipcq: JS-0321 -- intentional no-op: silence real navigation in tests
+    openSpy = jest.spyOn(navigation, "openInNewTab").mockImplementation(() => {})
+    // skipcq: JS-0321 -- intentional no-op: silence real navigation in tests
+    goToSpy = jest.spyOn(navigation, "goTo").mockImplementation(() => {})
   })
 
   afterEach(() => {
     cleanup()
+    openSpy.mockRestore()
+    goToSpy.mockRestore()
   })
 
   it.each`
@@ -1162,11 +1170,6 @@ describe("attachPopoverEventListeners (annotation popover)", () => {
   `(
     "click opens $expectedHref in a new tab (clickInnerLink=$clickInnerLink)",
     ({ clickInnerLink, expectedHref }) => {
-      // skipcq: JS-0321 -- intentional no-op: silence real navigation in tests
-      const openSpy = jest.spyOn(navigation, "openInNewTab").mockImplementation(() => {})
-      // skipcq: JS-0321 -- intentional no-op: silence real navigation in tests
-      const goToSpy = jest.spyOn(navigation, "goTo").mockImplementation(() => {})
-
       let clickEvent: MouseEvent
       if (clickInnerLink) {
         const innerLink = document.createElement("a")
@@ -1185,8 +1188,6 @@ describe("attachPopoverEventListeners (annotation popover)", () => {
       // The browser's own target="_blank" navigation must be suppressed so
       // the URL opens exactly once.
       expect(clickEvent.defaultPrevented).toBe(true)
-      openSpy.mockRestore()
-      goToSpy.mockRestore()
     },
   )
 })

@@ -10,6 +10,7 @@ import {
   isElementChecked,
   isSafariBrowser,
   moveMouseToSafePosition,
+  requireBoundingBox,
   search,
   takeRegressionScreenshot,
   triggerAndWaitForSPANav,
@@ -854,10 +855,7 @@ test("Annotation popover body click opens the external URL in a new tab", async 
   // Click by viewport coordinates: an element click auto-scrolls the window
   // (headings have scroll-margin-top), and hover popovers close on window
   // scroll. The body-click handler fires for any non-anchor element.
-  const box = await title.boundingBox()
-  if (!box) {
-    throw new Error("annotation title has no bounding box")
-  }
+  const box = await requireBoundingBox(title)
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
   const openedUrls = await page.evaluate(
     () => (window as unknown as { __openedUrls: string[] }).__openedUrls,
