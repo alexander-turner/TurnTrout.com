@@ -74,4 +74,42 @@ test.describe("footnote reference after a favicon", () => {
     // The fix: the word joiner keeps the reference number glued to the favicon.
     expect(measured.fixedKeepsTogether).toBe(true)
   })
+
+  test("the transformer glues a real favicon-ending link to its footnote ref", async ({ page }) => {
+    await gotoPage(page, "http://localhost:8080/test-page")
+
+    const glued = await page.evaluate(() => {
+      const WORD_JOINER = "⁠"
+      const isFootnoteRef = (el: Element) =>
+        el.tagName === "SUP" &&
+        !!el.querySelector("a[data-footnote-ref], a[id^='user-content-fnref']")
+      const endsWithFavicon = (el: Element): boolean => {
+        const last = [...el.childNodes]
+          .filter((n) => !(n.nodeType === Node.TEXT_NODE && !n.textContent?.trim()))
+          .at(-1)
+        if (!(last instanceof Element)) return false
+        return last.classList.contains("favicon") || endsWithFavicon(last)
+      }
+
+      // At least one footnote ref on the page follows a favicon-ending link, and
+      // each such ref must be immediately preceded by the word joiner.
+      let faviconBackedRefs = 0
+      let allGlued = true
+      for (const sup of document.querySelectorAll("sup")) {
+        if (!isFootnoteRef(sup)) continue
+        let prev = sup.previousSibling
+        while (prev && prev.nodeType === Node.TEXT_NODE && prev.textContent === "") {
+          prev = prev.previousSibling
+        }
+        const prevIsFaviconLink = prev instanceof Element && endsWithFavicon(prev)
+        if (!prevIsFaviconLink) continue
+        faviconBackedRefs += 1
+        if (sup.previousSibling?.textContent !== WORD_JOINER) allGlued = false
+      }
+      return { faviconBackedRefs, allGlued }
+    })
+
+    expect(glued.faviconBackedRefs).toBeGreaterThan(0)
+    expect(glued.allGlued).toBe(true)
+  })
 })

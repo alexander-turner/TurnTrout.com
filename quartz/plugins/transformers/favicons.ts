@@ -507,13 +507,14 @@ export function glueFootnoteRefsToFavicons(tree: Root): void {
     // istanbul ignore next -- root node has no parent/index
     if (!parent || index === undefined) return
     if (!isFootnoteRefSup(node)) return
-    // Skip an empty text node the whitespace-stripping pass can leave behind
-    // (e.g. a source-level space between the link and the ref).
+    // Skip an empty text node the whitespace-stripping pass leaves behind when a
+    // source-level space separated the link from the ref. A non-empty space is
+    // its own break opportunity, so only truly empty nodes are transparent here.
     let prevIndex = index - 1
     while (
       prevIndex >= 0 &&
       parent.children[prevIndex].type === "text" &&
-      (parent.children[prevIndex] as Text).value.trim() === ""
+      (parent.children[prevIndex] as Text).value === ""
     ) {
       prevIndex -= 1
     }
