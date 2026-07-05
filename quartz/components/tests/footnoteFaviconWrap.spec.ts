@@ -26,6 +26,11 @@ test.describe("footnote reference after a favicon", () => {
       const build = (glue: string) => {
         const paragraph = document.createElement("p")
         paragraph.style.margin = "0"
+        // Force greedy wrapping: article text inherits `text-wrap: pretty`, which
+        // Chromium honors by pulling the favicon down to avoid the very orphan
+        // this test needs the control to exhibit. The word joiner still holds
+        // under greedy wrapping, which is the property under test.
+        paragraph.style.textWrap = "wrap"
         // Measure on one line first: no width cap so nothing wraps yet.
         paragraph.style.width = "1000px"
         paragraph.style.maxWidth = "none"
