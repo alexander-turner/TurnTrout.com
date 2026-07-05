@@ -2078,7 +2078,9 @@ def _canonicalize_annotation_href(href: str) -> str:
     """
     split = urllib.parse.urlsplit(href)
     host = split.netloc.rpartition("@")[2].lower()
-    for default_port in (":80", ":443"):
+    # WHATWG drops a port only when it is the default for the original scheme
+    default_port = {"http": ":80", "https": ":443"}.get(split.scheme.lower())
+    if default_port:
         host = host.removesuffix(default_port)
     path = split.path.removesuffix("/")
     result = f"https://{host}{path}"

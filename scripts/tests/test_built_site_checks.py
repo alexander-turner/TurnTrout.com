@@ -8219,6 +8219,10 @@ class TestAnnotatedLinkChecks:
                 "http://en.wikipedia.org:80/wiki/Foo",
                 "https://en.wikipedia.org/wiki/Foo",
             ),
+            (
+                "http://en.wikipedia.org:443/wiki/Foo",
+                "https://en.wikipedia.org:443/wiki/Foo",
+            ),
         ],
     )
     def test_canonicalize_annotation_href(
