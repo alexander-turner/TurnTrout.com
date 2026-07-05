@@ -472,6 +472,70 @@ export async function ModifyNode(
   await handleLink(normalized, node, faviconCounts)
 }
 
+/** True when `node` is a footnote-reference superscript (`<sup><a data-footnote-ref>…</a></sup>`). */
+export function isFootnoteRefSup(node: Element | Text | undefined): node is Element {
+  if (!node || node.type !== "element" || node.tagName !== "sup") return false
+  return node.children.some((child) => {
+    if (child.type !== "element" || child.tagName !== "a") return false
+    const id = child.properties?.id
+    return (
+      child.properties?.dataFootnoteRef !== undefined ||
+      (typeof id === "string" && id.startsWith("user-content-fnref"))
+    )
+  })
+}
+
+/** True when the deepest trailing descendant of `node` is a favicon element. */
+export function endsWithFavicon(node: Element): boolean {
+  const last = node.children.findLast(
+    (child) => !(child.type === "text" && child.value.trim() === ""),
+  )
+  if (!last || last.type !== "element") return false
+  return hasClass(last, "favicon") || endsWithFavicon(last)
+}
+
+/**
+ * A favicon is a replaced inline element, so browsers allow a line break on its
+ * trailing edge. When a footnote reference immediately follows a favicon-ending
+ * link, that break can orphan the tiny reference number onto its own line. Wrap
+ * the link and the `<sup>` in a `.favicon-footnote-span`, which suppresses the
+ * break between them (see favicon.scss).
+ */
+export function glueFootnoteRefsToFavicons(tree: Root): void {
+  const wraps: Array<{ parent: Parent; start: number; end: number }> = []
+  visit(tree, "element", (node: Element, index: number | undefined, parent: Parent | undefined) => {
+    // istanbul ignore next -- root node has no parent/index
+    if (!parent || index === undefined) return
+    if (!isFootnoteRefSup(node)) return
+    // Skip empty text nodes the whitespace-stripping pass leaves behind when a
+    // source-level space separated the link from the ref. A non-empty space is
+    // its own break opportunity, so only truly empty nodes are transparent here.
+    let prevIndex = index - 1
+    while (
+      prevIndex >= 0 &&
+      parent.children[prevIndex].type === "text" &&
+      (parent.children[prevIndex] as Text).value === ""
+    ) {
+      prevIndex -= 1
+    }
+    const prev = parent.children[prevIndex]
+    if (prev?.type === "element" && endsWithFavicon(prev)) {
+      wraps.push({ parent, start: prevIndex, end: index })
+    }
+  })
+  // Wrap later ranges first so earlier indices stay valid as we splice.
+  wraps.sort((a, b) => b.start - a.start)
+  for (const { parent, start, end } of wraps) {
+    const span: Element = {
+      type: "element",
+      tagName: "span",
+      properties: { className: "favicon-footnote-span" },
+      children: parent.children.slice(start, end + 1) as Element["children"],
+    }
+    parent.children.splice(start, end - start + 1, span)
+  }
+}
+
 /**
  * Plugin factory that processes HTML tree to add favicons to links.
  */
@@ -503,6 +567,8 @@ export const AddFavicons = () => {
             await Promise.all(
               nodesToProcess.map(([node, parent]) => ModifyNode(node, parent, faviconCounts)),
             )
+
+            glueFootnoteRefsToFavicons(tree)
           }
         },
       ]
