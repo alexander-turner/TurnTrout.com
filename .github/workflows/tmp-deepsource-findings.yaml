@@ -39,7 +39,8 @@ jobs:
               -d "$1"
           }
           q1=$(jq -n --arg uid "$run_uid" '{query: "query($uid: UUID!) { run(runUid: $uid) { status commitOid summary { occurrencesIntroduced occurrencesResolved occurrencesSuppressed } checks { edges { node { analyzer { shortcode } status summary { occurrencesIntroduced occurrencesResolved occurrencesSuppressed } } } } } }", variables: {uid: $uid}}')
-          q2=$(jq -n --arg uid "$run_uid" '{query: "query($uid: UUID!) { run(runUid: $uid) { checks { edges { node { analyzer { shortcode } concreteIssues(first: 100) { edges { node { shortcode title occurrenceCount } } } } } } } }", variables: {uid: $uid}}')
+          q2=$(jq -n '{query: "{ checkType: __type(name: \"Check\") { fields { name } } occurrenceType: __type(name: \"Occurrence\") { fields { name } } }"}')
+          q3=$(jq -n --arg uid "$run_uid" '{query: "query($uid: UUID!) { run(runUid: $uid) { checks { edges { node { analyzer { shortcode } occurrences(first: 50) { edges { node { issue { shortcode title } path beginLine } } } } } } } }", variables: {uid: $uid}}')
           {
             echo "<!-- tmp-deepsource-findings -->"
             echo "Run URL: $run_url"
@@ -47,9 +48,13 @@ jobs:
             echo '```json'
             gql "$q1" | jq . || true
             echo '```'
-            echo "Concrete issues:"
+            echo "Check/Occurrence schema fields:"
             echo '```json'
             gql "$q2" | jq . || true
+            echo '```'
+            echo "Occurrences:"
+            echo '```json'
+            gql "$q3" | jq . || true
             echo '```'
           } > /tmp/comment.md
           gh api "repos/${GITHUB_REPOSITORY}/issues/1552/comments" \
