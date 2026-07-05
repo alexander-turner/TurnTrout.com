@@ -13,6 +13,7 @@ import {
   HEADING_TAGS,
   simpleConstants,
   specialFaviconPaths,
+  WORD_JOINER,
 } from "../../components/constants"
 import { faviconCountsFile } from "../../components/constants.server"
 import {
@@ -472,6 +473,61 @@ export async function ModifyNode(
   await handleLink(normalized, node, faviconCounts)
 }
 
+/** True when `node` is a footnote-reference superscript (`<sup><a data-footnote-ref>…</a></sup>`). */
+export function isFootnoteRefSup(node: Element | Text | undefined): node is Element {
+  if (!node || node.type !== "element" || node.tagName !== "sup") return false
+  return node.children.some((child) => {
+    if (child.type !== "element" || child.tagName !== "a") return false
+    const id = child.properties?.id
+    return (
+      child.properties?.dataFootnoteRef !== undefined ||
+      (typeof id === "string" && id.startsWith("user-content-fnref"))
+    )
+  })
+}
+
+/** True when the deepest trailing descendant of `node` is a favicon element. */
+export function endsWithFavicon(node: Element): boolean {
+  const last = node.children.findLast(
+    (child) => !(child.type === "text" && child.value.trim() === ""),
+  )
+  if (!last || last.type !== "element") return false
+  return hasClass(last, "favicon") || endsWithFavicon(last)
+}
+
+/**
+ * A favicon is a replaced inline element, so browsers allow a line break on its
+ * trailing edge. When a footnote reference immediately follows a favicon-ending
+ * link, that break can orphan the tiny reference number onto its own line. Glue
+ * the two with a word joiner so the number stays with the favicon.
+ */
+export function glueFootnoteRefsToFavicons(tree: Root): void {
+  const inserts: [Parent, number][] = []
+  visit(tree, "element", (node: Element, index: number | undefined, parent: Parent | undefined) => {
+    // istanbul ignore next -- root node has no parent/index
+    if (!parent || index === undefined) return
+    if (!isFootnoteRefSup(node)) return
+    // Skip an empty text node the whitespace-stripping pass can leave behind
+    // (e.g. a source-level space between the link and the ref).
+    let prevIndex = index - 1
+    while (
+      prevIndex >= 0 &&
+      parent.children[prevIndex].type === "text" &&
+      (parent.children[prevIndex] as Text).value.trim() === ""
+    ) {
+      prevIndex -= 1
+    }
+    const prev = parent.children[prevIndex]
+    if (prev?.type === "element" && endsWithFavicon(prev)) {
+      inserts.push([parent, index])
+    }
+  })
+  // Splice high indices first so earlier insertion points stay valid.
+  for (const [parent, index] of inserts.reverse()) {
+    parent.children.splice(index, 0, { type: "text", value: WORD_JOINER })
+  }
+}
+
 /**
  * Plugin factory that processes HTML tree to add favicons to links.
  */
@@ -503,6 +559,8 @@ export const AddFavicons = () => {
             await Promise.all(
               nodesToProcess.map(([node, parent]) => ModifyNode(node, parent, faviconCounts)),
             )
+
+            glueFootnoteRefsToFavicons(tree)
           }
         },
       ]
