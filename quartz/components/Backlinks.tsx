@@ -161,7 +161,7 @@ export const Backlinks: QuartzComponent = ({ fileData, allFiles }: QuartzCompone
         </span>
         <div className="fold-admonition-icon" />
       </div>
-      <div className="admonition-content" id="backlinks-admonition">
+      <div className="admonition-content">
         <BacklinksList backlinkFiles={backlinkFiles} currentSlug={fileData.slug as FullSlug} />
       </div>
     </blockquote>

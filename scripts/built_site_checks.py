@@ -1331,6 +1331,11 @@ def should_skip(element: Tag | NavigableString) -> bool:
         # Embedded external READMEs: prose-quality checks target first-party
         # authoring, not third-party README text.
         "external-readme",
+        # Backlink excerpts are truncated, sanitized snippets of already-checked
+        # source prose; their `[...]` elision markers are derived artifacts, not
+        # authored consecutive periods. Checks that don't route through
+        # ``should_skip`` exempt excerpts via ``_in_backlink_excerpt`` instead.
+        "backlink-excerpt",
     }
 
     # Check current element and all parents
@@ -2507,9 +2512,10 @@ def _in_backlink_excerpt(element: Tag) -> bool:
     Backlink excerpts are truncated, sanitized snippets of source prose that has
     already been checked on its own page. Re-linting the snippet for authored-
     prose quality (emphasis spacing, inline-code boundaries, canary phrases)
-    only surfaces truncation artifacts—e.g. a leading ellipsis glued to an
-    ``<em>``—so these checks skip the excerpt, mirroring the ``external-readme``
-    carve-out.
+    only surfaces truncation artifacts—e.g. an excerpt that opens mid-sentence on
+    a colon—so these checks skip the excerpt, mirroring the ``external-readme``
+    carve-out. (The ``[...]`` elision markers are exempted separately, via
+    ``should_skip``.)
     """
     if "backlink-excerpt" in script_utils.get_classes(element):
         return True

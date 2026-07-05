@@ -87,10 +87,10 @@ async function setDummyContentMeta(page: Page) {
         '<a href="#" class="external" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-01-02">January <span class="date-ordinal-num">2</span><span class="ordinal-suffix">nd</span>, 2024</time>'
     }
 
-    const backlinksUl = document.querySelector("#backlinks-admonition ul")
+    const backlinksUl = document.querySelector("#backlinks .admonition-content ul")
     if (backlinksUl) {
       backlinksUl.innerHTML = `
-        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 1</a><div class="backlink-excerpt">…the first idea appears when <span class="backlink-highlight">this page</span> is cited in a longer sentence that wraps across several lines…</div></li>
+        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 1</a><div class="backlink-excerpt">[...] the first idea appears when <span class="backlink-highlight">this page</span> is cited in a longer sentence that wraps across several lines [...]</div></li>
         <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 2</a><div class="backlink-excerpt">A shorter excerpt mentioning <span class="backlink-highlight">this page</span> here.</div></li>
       `
     }

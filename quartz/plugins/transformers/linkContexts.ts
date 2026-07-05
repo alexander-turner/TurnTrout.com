@@ -24,8 +24,14 @@ export interface LinkContext {
 /** Longest excerpt we keep, in visible characters, before truncating around the citing link. */
 export const BACKLINK_EXCERPT_MAX_CHARS = 330
 
-/** Single ellipsis marker; never `...`, which would trip the consecutive-periods site check. */
-const ELLIPSIS = "…"
+/**
+ * Elision markers flagging where prose was trimmed. The space keeps the marker
+ * off the adjacent word: a left cut opens `[...] word`, a right cut ends
+ * `word [...]`. The literal `...` is why excerpts are exempt from the
+ * consecutive-periods site check (see `should_skip` in `built_site_checks.py`).
+ */
+const ELLIPSIS_LEADING = "[...] "
+const ELLIPSIS_TRAILING = " [...]"
 
 /**
  * Deterministic, page-namespaced anchor id for the citing link. Namespacing by
@@ -178,6 +184,7 @@ interface Measurement {
   total: number
   hlStart: number
   hlLen: number
+  found: boolean
 }
 
 /** Locates the highlight span's character offset/length within a fragment. */
@@ -185,6 +192,7 @@ function measureFragment(nodes: readonly ElementContent[]): Measurement {
   let cursor = 0
   let hlStart = 0
   let hlLen = 0
+  let found = false
   const walk = (children: readonly ElementContent[]): void => {
     for (const node of children) {
       if (node.type === "text") {
@@ -195,12 +203,13 @@ function measureFragment(nodes: readonly ElementContent[]): Measurement {
         if (hasClass(node, "backlink-highlight")) {
           hlStart = before
           hlLen = cursor - before
+          found = true
         }
       }
     }
   }
   walk(nodes)
-  return { total: cursor, hlStart, hlLen }
+  return { total: cursor, hlStart, hlLen, found }
 }
 
 /** Keeps only text within `[start, end)` (visible-char space), preserving inline structure. */
@@ -253,7 +262,11 @@ export function trimWindow(
 
 /** Truncates a sanitized fragment to ~{@link BACKLINK_EXCERPT_MAX_CHARS} around the highlight. */
 export function truncateFragment(nodes: readonly ElementContent[]): ElementContent[] {
-  const { total, hlStart: rawStart, hlLen: rawLen } = measureFragment(nodes)
+  const { total, hlStart: rawStart, hlLen: rawLen, found } = measureFragment(nodes)
+  // The highlight span is stamped on the citing link before sanitization; if it
+  // is gone the excerpt would center on offset 0 with no visible highlight, so
+  // fail loudly rather than ship a silently-degraded snippet.
+  if (!found) throw new Error("backlink excerpt lost its highlight span during sanitization")
   if (total <= BACKLINK_EXCERPT_MAX_CHARS) return [...nodes]
 
   const hlStart = Math.max(0, rawStart)
@@ -276,15 +289,20 @@ export function truncateFragment(nodes: readonly ElementContent[]): ElementConte
   const { winStart, winEnd } = trimWindow(full, hlStart, hlEnd, total, left, right)
 
   const sliced = sliceNodes(nodes, winStart, winEnd, { i: 0 })
-  if (winStart > 0) sliced.unshift({ type: "text", value: ELLIPSIS })
-  if (winEnd < total) sliced.push({ type: "text", value: ELLIPSIS })
+  if (winStart > 0) sliced.unshift({ type: "text", value: ELLIPSIS_LEADING })
+  if (winEnd < total) sliced.push({ type: "text", value: ELLIPSIS_TRAILING })
   return sliced
 }
 
-/** Builds the sanitized, truncated excerpt HTML for a block containing an anchored citing link. */
+/**
+ * Builds the sanitized, truncated excerpt HTML for a block containing an anchored
+ * citing link, or `""` when the block sanitizes down to no visible text (e.g. a
+ * citing link wrapping only dropped media) so no empty excerpt is rendered.
+ */
 export function buildExcerpt(block: Element, anchorId: string): string {
   const clone = structuredClone(block)
   const fragment = truncateFragment(sanitizeChildren(clone.children, anchorId))
+  if (fragmentText(fragment).trim() === "") return ""
   return toHtml({ type: "root", children: fragment })
 }
 

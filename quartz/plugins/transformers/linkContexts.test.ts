@@ -148,6 +148,17 @@ describe("buildExcerpt sanitizer", () => {
     expect(html).toBe('link <em>emph</em><span class="backlink-highlight">x</span>')
     expect(html).not.toContain("keepme")
   })
+
+  it("returns an empty string when the block sanitizes to no visible text", () => {
+    const img = h("img", { src: "/pic.png" }) as ElementContent
+    const anchorImageOnly: Element = {
+      type: "element",
+      tagName: "a",
+      properties: { className: ["internal"], id: ANCHOR, "data-slug": "other" },
+      children: [img],
+    }
+    expect(buildExcerpt(blockWith(anchorImageOnly), ANCHOR)).toBe("")
+  })
 })
 
 describe("trimWindow", () => {
@@ -194,12 +205,16 @@ function words(count: number): ElementContent {
 }
 
 describe("truncateFragment", () => {
+  it("throws when the highlight span is missing (sanitization dropped it)", () => {
+    expect(() => truncateFragment([words(100)])).toThrow(/highlight span/)
+  })
+
   it("returns the fragment unchanged when it is under the length cap", () => {
     const frag: ElementContent[] = [{ type: "text", value: "short " }, highlight("here")]
     expect(truncateFragment(frag)).toEqual(frag)
   })
 
-  it("adds ellipses on both sides when the highlight is surrounded by long prose", () => {
+  it("brackets both sides when the highlight is surrounded by long prose", () => {
     // Include a comment node so measurement/slicing skip non-text/element nodes.
     const frag: ElementContent[] = [
       words(100),
@@ -210,30 +225,32 @@ describe("truncateFragment", () => {
     const out = truncateFragment(frag)
     const text = out.map((n) => textOf(n)).join("")
     expect(text).toContain("HERE")
-    expect(text.startsWith("…")).toBe(true)
-    expect(text.endsWith("…")).toBe(true)
+    // Leading marker keeps a space before the first word; trailing keeps one after.
+    expect(text.startsWith("[...] ")).toBe(true)
+    expect(text.endsWith(" [...]")).toBe(true)
     expect(text.length).toBeLessThanOrEqual(BACKLINK_EXCERPT_MAX_CHARS + 10)
   })
 
-  it("only trims the right when the highlight starts the fragment", () => {
+  it("only brackets the right when the highlight starts the fragment", () => {
     const out = truncateFragment([highlight("HERE"), words(100)])
     const text = out.map((n) => textOf(n)).join("")
-    expect(text.startsWith("…")).toBe(false)
-    expect(text.endsWith("…")).toBe(true)
+    expect(text.startsWith("[...]")).toBe(false)
+    expect(text.endsWith(" [...]")).toBe(true)
   })
 
-  it("only trims the left when the highlight ends the fragment", () => {
+  it("only brackets the left when the highlight ends the fragment", () => {
     const out = truncateFragment([words(100), highlight("HERE")])
     const text = out.map((n) => textOf(n)).join("")
-    expect(text.startsWith("…")).toBe(true)
-    expect(text.endsWith("…")).toBe(false)
+    expect(text.startsWith("[...] ")).toBe(true)
+    expect(text.endsWith("[...]")).toBe(false)
+    expect(text.endsWith("HERE")).toBe(true)
   })
 
   it("redistributes budget to the long side when one side is short", () => {
     const out = truncateFragment([{ type: "text", value: "tiny " }, highlight("HERE"), words(200)])
     const text = out.map((n) => textOf(n)).join("")
     expect(text).toContain("tiny")
-    expect(text.endsWith("…")).toBe(true)
+    expect(text.endsWith(" [...]")).toBe(true)
   })
 
   it("drops inline elements that fall entirely outside the kept window", () => {
