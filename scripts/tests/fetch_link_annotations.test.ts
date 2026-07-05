@@ -39,7 +39,9 @@ function summaryPayload(overrides: Record<string, unknown> = {}): Record<string,
 
 function makeDeps(overrides: Partial<FetchDeps> = {}): FetchDeps {
   return {
-    fetchImpl: jest.fn(() => Promise.resolve(jsonResponse(summaryPayload()))) as unknown as typeof fetch,
+    fetchImpl: jest.fn(() =>
+      Promise.resolve(jsonResponse(summaryPayload())),
+    ) as unknown as typeof fetch,
     sleep: jest.fn(() => Promise.resolve()) as FetchDeps["sleep"],
     log: jest.fn(),
     today: () => TODAY,
@@ -77,7 +79,7 @@ describe("extractWikipediaUrls", () => {
   })
 
   it("stops at quotes and angle brackets", () => {
-    const markdown = `<a href="https://en.wikipedia.org/wiki/Foo">x</a>`
+    const markdown = '<a href="https://en.wikipedia.org/wiki/Foo">x</a>'
     expect(extractWikipediaUrls(markdown)).toEqual(["https://en.wikipedia.org/wiki/Foo"])
   })
 
