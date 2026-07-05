@@ -41,11 +41,19 @@
   }
 }
 
-#backlinks .admonition-content {
-  & li {
-    margin-bottom: calc(1.5 * $base-margin);
-  }
+// Each backlink entry wraps a multi-line excerpt, so give every entry the same
+// gap. The shared toc.scss `ul > li` rules (and their `:last-child` variant)
+// outrank a bare `li` selector, so match the blockquote's `.admonition` co-class
+// to lift specificity above them rather than relying on stylesheet order.
+#backlinks.admonition .admonition-content ul > li {
+  margin-bottom: $base-margin;
 
+  &:last-child {
+    margin-bottom: $base-margin;
+  }
+}
+
+#backlinks .admonition-content {
   // The excerpt of the citing paragraph, shown below each backlink title. The
   // shared toc.scss list rules stagger wrapped lines with a negative text-indent
   // and a tight line-height tuned for single-line TOC entries; both would mangle
