@@ -37,8 +37,9 @@ describe("validateLinkAnnotations", () => {
   it.each(["source", "title", "abstract_html", "retrieved"] as const)(
     "throws when %s is missing or empty",
     (field) => {
-      const missing = { ...annotation() } as Record<string, unknown>
-      delete missing[field]
+      const missing = Object.fromEntries(
+        Object.entries(annotation()).filter(([key]) => key !== field),
+      )
       expect(() => validateLinkAnnotations({ [KEY]: missing }, "test.json")).toThrow(
         `field "${field}" must be a non-empty string`,
       )
@@ -62,8 +63,9 @@ describe("validateLinkAnnotations", () => {
   it.each(["text", "license", "license_url"] as const)(
     "throws when attribution.%s is missing",
     (field) => {
-      const attribution = { ...annotation().attribution } as Record<string, unknown>
-      delete attribution[field]
+      const attribution = Object.fromEntries(
+        Object.entries(annotation().attribution).filter(([key]) => key !== field),
+      )
       expect(() =>
         validateLinkAnnotations({ [KEY]: { ...annotation(), attribution } }, "test.json"),
       ).toThrow(`field "${field}" must be a non-empty string`)
@@ -98,6 +100,7 @@ describe("validateLinkAnnotations", () => {
   })
 
   it.each([
+    // skipcq: JS-0087 -- string fixture proving the validator rejects script URLs; never executed
     ["a javascript: URL", "javascript:alert(1)", "must use https"],
     ["an http URL", "http://example.com/license", "must use https"],
     ["an unparseable URL", "not a url", "must be a valid URL"],

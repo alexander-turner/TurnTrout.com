@@ -11,9 +11,7 @@ import {
 } from "../../util/tests/annotationFixtures"
 
 jest.unstable_mockModule("./helpers", () => ({
-  write: jest.fn(async (opts: { slug: FullSlug; ext: string }) => {
-    return await Promise.resolve(`${opts.slug}${opts.ext}`)
-  }),
+  write: jest.fn((opts: { slug: FullSlug; ext: string }) => Promise.resolve(`${opts.slug}${opts.ext}`)),
 }))
 
 const mockCtx = { argv: { output: "public" } } as unknown as BuildCtx
@@ -39,7 +37,7 @@ describe("LinkAnnotations", () => {
     await fs.rm(dir, { recursive: true, force: true })
   })
 
-  async function emit(annotationsPath: string) {
+  function emit(annotationsPath: string) {
     const plugin = LinkAnnotations({ annotationsPath })
     return plugin.emit(mockCtx, [], { css: [], js: [] })
   }

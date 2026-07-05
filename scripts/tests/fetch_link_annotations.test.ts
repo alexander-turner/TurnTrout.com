@@ -39,8 +39,8 @@ function summaryPayload(overrides: Record<string, unknown> = {}): Record<string,
 
 function makeDeps(overrides: Partial<FetchDeps> = {}): FetchDeps {
   return {
-    fetchImpl: jest.fn(async () => jsonResponse(summaryPayload())) as unknown as typeof fetch,
-    sleep: jest.fn(async () => undefined) as FetchDeps["sleep"],
+    fetchImpl: jest.fn(() => Promise.resolve(jsonResponse(summaryPayload()))) as unknown as typeof fetch,
+    sleep: jest.fn(() => Promise.resolve()) as FetchDeps["sleep"],
     log: jest.fn(),
     today: () => TODAY,
     contentDir: "unused",
@@ -171,8 +171,8 @@ describe("fetchAnnotation", () => {
   it("truncates long extracts", async () => {
     const longExtract = `${"First sentence. ".repeat(100)}tail`
     const deps = makeDeps({
-      fetchImpl: jest.fn(async () =>
-        jsonResponse(summaryPayload({ extract: longExtract })),
+      fetchImpl: jest.fn(() =>
+        Promise.resolve(jsonResponse(summaryPayload({ extract: longExtract }))),
       ) as unknown as typeof fetch,
     })
     const annotation = await fetchAnnotation(WIKI_URL, deps)
@@ -182,7 +182,7 @@ describe("fetchAnnotation", () => {
 
   it("returns null and logs on 404", async () => {
     const deps = makeDeps({
-      fetchImpl: jest.fn(async () => jsonResponse({}, 404)) as unknown as typeof fetch,
+      fetchImpl: jest.fn(() => Promise.resolve(jsonResponse({}, 404))) as unknown as typeof fetch,
     })
     await expect(fetchAnnotation(WIKI_URL, deps)).resolves.toBeNull()
     expect(deps.log).toHaveBeenCalledWith(expect.stringContaining("No Wikipedia summary"))
@@ -193,7 +193,7 @@ describe("fetchAnnotation", () => {
     ["a missing extract", summaryPayload({ extract: undefined })],
   ])("returns null and logs on %s", async (_desc, payload) => {
     const deps = makeDeps({
-      fetchImpl: jest.fn(async () => jsonResponse(payload)) as unknown as typeof fetch,
+      fetchImpl: jest.fn(() => Promise.resolve(jsonResponse(payload))) as unknown as typeof fetch,
     })
     await expect(fetchAnnotation(WIKI_URL, deps)).resolves.toBeNull()
     expect(deps.log).toHaveBeenCalledWith(expect.stringContaining("Empty Wikipedia extract"))
@@ -213,7 +213,7 @@ describe("fetchAnnotation", () => {
 
   it("throws once retries are exhausted", async () => {
     const deps = makeDeps({
-      fetchImpl: jest.fn(async () => jsonResponse({}, 500)) as unknown as typeof fetch,
+      fetchImpl: jest.fn(() => Promise.resolve(jsonResponse({}, 500))) as unknown as typeof fetch,
     })
     await expect(fetchAnnotation(WIKI_URL, deps)).rejects.toThrow("HTTP 500")
   })
@@ -355,8 +355,10 @@ describe("main", () => {
   })
 
   it("omits URLs Wikipedia has no summary for", async () => {
-    const fetchMock = jest.fn<typeof fetch>(async (input) =>
-      input.toString().includes("Zebra") ? jsonResponse({}, 404) : jsonResponse(summaryPayload()),
+    const fetchMock = jest.fn<typeof fetch>((input) =>
+      Promise.resolve(
+        input.toString().includes("Zebra") ? jsonResponse({}, 404) : jsonResponse(summaryPayload()),
+      ),
     )
     const deps = mainDeps({ fetchImpl: fetchMock as unknown as typeof fetch })
     await expect(main([], deps)).resolves.toBe(0)
