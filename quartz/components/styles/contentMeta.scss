@@ -51,13 +51,12 @@
   font-size: var(--font-size-minus-2);
   line-height: normal;
   text-indent: 0;
-  color: var(--midground);
+  color: var(--midground-faint) !important;
 
   .backlink-highlight {
-    padding: 0 0.1rem;
+    padding: 0 calc(0.25 * $base-margin);
     border-radius: $border-radius;
     background-color: var(--highlight);
-    color: var(--foreground);
   }
 }
 
