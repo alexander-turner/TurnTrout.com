@@ -1,0 +1,40 @@
+# Temporary debugging workflow: the DeepSource dashboard and API are
+# unreachable from the authoring sandbox, so this dumps the CLI findings
+# for PR 1552 into a PR comment. Delete before merge.
+name: Temp DeepSource Findings
+on:
+  push:
+    branches: [claude/external-link-annotations-0cj6m1]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  findings:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      DEEPSOURCE_PAT: ${{ secrets.DEEPSOURCE_PAT }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install DeepSource CLI
+        run: |
+          curl -fsSL https://cli.deepsource.com/install | BINDIR="$HOME/.local/bin" sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch findings and post as PR comment
+        run: |
+          set -euo pipefail
+          deepsource auth login --with-token "$DEEPSOURCE_PAT"
+          issues_json=$(deepsource issues --pr 1552 --output json || echo '"CLI-ERROR"')
+          {
+            echo "<!-- tmp-deepsource-findings -->"
+            echo '```json'
+            echo "$issues_json"
+            echo '```'
+          } > /tmp/comment.md
+          gh api "repos/${GITHUB_REPOSITORY}/issues/1552/comments" \
+            -f body="$(cat /tmp/comment.md)"
