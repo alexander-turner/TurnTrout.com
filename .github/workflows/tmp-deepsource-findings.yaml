@@ -19,6 +19,8 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install DeepSource CLI
         run: |
@@ -29,11 +31,27 @@ jobs:
         run: |
           set -euo pipefail
           deepsource auth login --with-token "$DEEPSOURCE_PAT"
-          issues_json=$(deepsource issues --pr 1552 --output json || echo '"CLI-ERROR"')
+          pr_json=$(deepsource issues --pr 1552 --output json || echo '"CLI-ERROR"')
+          branch_json=$(deepsource issues --analyzer javascript --limit 100 --output json || echo '"CLI-ERROR"')
+          main_json=$(deepsource issues --default-branch --analyzer javascript --limit 100 --output json || echo '"CLI-ERROR"')
+          git diff --name-only origin/main...HEAD > /tmp/changed.txt
           {
             echo "<!-- tmp-deepsource-findings -->"
+            echo "PR issues:"
             echo '```json'
-            echo "$issues_json"
+            echo "$pr_json"
+            echo '```'
+            echo "Branch JS issue count: $(echo "$branch_json" | jq 'length' || echo '?')"
+            echo "Main JS issue count: $(echo "$main_json" | jq 'length' || echo '?')"
+            echo "Branch JS issues in changed files:"
+            echo '```json'
+            echo "$branch_json" | jq --rawfile changed /tmp/changed.txt \
+              '[.[] | select((.path // .location.path) as $p | $changed | split("\n") | index($p))]' \
+              || echo "$branch_json" | head -c 3000
+            echo '```'
+            echo "First 3 branch JS issues (raw shape):"
+            echo '```json'
+            echo "$branch_json" | jq '.[0:3]' || true
             echo '```'
           } > /tmp/comment.md
           gh api "repos/${GITHUB_REPOSITORY}/issues/1552/comments" \
