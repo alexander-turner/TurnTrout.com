@@ -98,13 +98,19 @@ test.describe("footnote reference after a favicon", () => {
       for (const sup of document.querySelectorAll("sup")) {
         if (!isFootnoteRef(sup)) continue
         let prev = sup.previousSibling
-        while (prev && prev.nodeType === Node.TEXT_NODE && prev.textContent === "") {
+        const immediatelyGlued =
+          prev?.nodeType === Node.TEXT_NODE && prev.textContent === WORD_JOINER
+        while (
+          prev &&
+          prev.nodeType === Node.TEXT_NODE &&
+          (prev.textContent === "" || prev.textContent === WORD_JOINER)
+        ) {
           prev = prev.previousSibling
         }
         const prevIsFaviconLink = prev instanceof Element && endsWithFavicon(prev)
         if (!prevIsFaviconLink) continue
         faviconBackedRefs += 1
-        if (sup.previousSibling?.textContent !== WORD_JOINER) allGlued = false
+        if (!immediatelyGlued) allGlued = false
       }
       return { faviconBackedRefs, allGlued }
     })
