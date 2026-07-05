@@ -4,24 +4,23 @@ import { gotoPage } from "./visual_utils"
 // A favicon is a replaced inline element, so browsers allow a line break on its
 // trailing edge. When a footnote reference immediately follows a favicon-ending
 // link, that break can orphan the tiny reference number onto its own line. The
-// favicon transformer defends against this by gluing the link and the footnote
-// `<sup>` with a word joiner (U+2060). The first test measures the rendered
-// effect (Chromium-scoped; see its note); the second asserts the joiner is
-// present in the DOM on every browser/viewport project.
+// favicon transformer defends against this by wrapping the link and the footnote
+// `<sup>` in a `white-space: nowrap` span (`.favicon-footnote-span`). The first
+// test measures the rendered effect (Chromium-scoped; see its note); the second
+// asserts the wrapper is present in the DOM on every browser/viewport project.
 test.describe("footnote reference after a favicon", () => {
   test("keeps the reference number from wrapping onto its own line", async ({ page }, testInfo) => {
     // This is a synthetic layout probe: it shrinks a paragraph to a knife-edge
-    // width and reads which line the reference lands on. That measurement rides
-    // on engine-specific line-break heuristics around replaced elements, which
-    // diverge across Firefox and WebKit. The cross-browser guarantee that the
-    // joiner is actually emitted is covered by the DOM assertion below, so scope
-    // this rendering probe to Chromium (as the sibling figcaption test does).
+    // width and reads which line the reference lands on. Proving the *control*
+    // orphans relies on greedy line-break heuristics around replaced elements,
+    // which diverge across Firefox and WebKit. The cross-browser guarantee that
+    // the wrapper is emitted is covered by the DOM assertion below, so scope this
+    // rendering probe to Chromium (as the sibling figcaption test does).
     test.skip(!testInfo.project.name.includes("Chrome"), "engine-specific line-break heuristics")
 
     await gotoPage(page, "http://localhost:8080/test-page")
 
     const measured = await page.evaluate(() => {
-      const WORD_JOINER = "⁠"
       const article = document.querySelector("article") ?? document.body
 
       // Mirrors what the favicon transformer emits: the link's last chars plus a
@@ -32,18 +31,20 @@ test.describe("footnote reference after a favicon", () => {
         'width:14px;height:14px;background:#888;vertical-align:middle"></span></span></a>'
       const supHtml = '<sup class="fn-ref"><a href="#fn">1</a></sup>'
 
-      const build = (glue: string) => {
+      // The fix wraps the link + sup in `.favicon-footnote-span`; the control
+      // leaves them as bare siblings so the break between them stays open.
+      const build = (wrap: boolean) => {
         const paragraph = document.createElement("p")
         paragraph.style.margin = "0"
         // Force greedy wrapping: article text inherits `text-wrap: pretty`, which
         // Chromium honors by pulling the favicon down to avoid the very orphan
-        // this test needs the control to exhibit. The word joiner still holds
-        // under greedy wrapping, which is the property under test.
+        // this test needs the control to exhibit.
         paragraph.style.textWrap = "wrap"
         // Measure on one line first: no width cap so nothing wraps yet.
         paragraph.style.width = "1000px"
         paragraph.style.maxWidth = "none"
-        paragraph.innerHTML = `${linkHtml}${glue}${supHtml}`
+        const inner = `${linkHtml}${supHtml}`
+        paragraph.innerHTML = wrap ? `<span class="favicon-footnote-span">${inner}</span>` : inner
         article.appendChild(paragraph)
         return paragraph
       }
@@ -64,8 +65,8 @@ test.describe("footnote reference after a favicon", () => {
         )
       }
 
-      const control = build("")
-      const fixed = build(WORD_JOINER)
+      const control = build(false)
+      const fixed = build(true)
 
       // With everything on one line, the only width that strands the reference
       // is the sliver between the favicon's right edge and the reference's right
@@ -95,17 +96,18 @@ test.describe("footnote reference after a favicon", () => {
 
     // Sanity: the chosen width genuinely leaves the reference no room on the line.
     expect(measured.windowExists).toBe(true)
-    // Without the joiner the reference is stranded on its own line.
+    // Without the wrapper the reference is stranded on its own line.
     expect(measured.controlOrphaned).toBe(true)
-    // The fix: the word joiner keeps the reference number glued to the favicon.
+    // The fix: the nowrap wrapper keeps the reference number glued to the favicon.
     expect(measured.fixedKeepsTogether).toBe(true)
   })
 
-  test("the transformer glues a real favicon-ending link to its footnote ref", async ({ page }) => {
+  test("the transformer wraps a real favicon-ending link and its footnote ref", async ({
+    page,
+  }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
 
     const glued = await page.evaluate(() => {
-      const WORD_JOINER = "⁠"
       const isFootnoteRef = (el: Element) =>
         el.tagName === "SUP" &&
         Boolean(el.querySelector("a[data-footnote-ref], a[id^='user-content-fnref']"))
@@ -118,30 +120,25 @@ test.describe("footnote reference after a favicon", () => {
       }
 
       // At least one footnote ref on the page follows a favicon-ending link, and
-      // each such ref must be immediately preceded by the word joiner.
+      // each such ref must sit in a `.favicon-footnote-span` beside that link so
+      // the nowrap wrapper suppresses the break between them.
       let faviconBackedRefs = 0
-      let allGlued = true
+      let allWrapped = true
       for (const sup of document.querySelectorAll("sup")) {
         if (!isFootnoteRef(sup)) continue
-        let prev = sup.previousSibling
-        const immediatelyGlued =
-          prev?.nodeType === Node.TEXT_NODE && prev.textContent === WORD_JOINER
-        while (
-          prev &&
-          prev.nodeType === Node.TEXT_NODE &&
-          (prev.textContent === "" || prev.textContent === WORD_JOINER)
-        ) {
-          prev = prev.previousSibling
-        }
-        const prevIsFaviconLink = prev instanceof Element && endsWithFavicon(prev)
-        if (!prevIsFaviconLink) continue
+        const prev = sup.previousElementSibling
+        if (!(prev instanceof Element) || !endsWithFavicon(prev)) continue
         faviconBackedRefs += 1
-        if (!immediatelyGlued) allGlued = false
+        const parent = sup.parentElement
+        const wrappedTogether =
+          parent?.classList.contains("favicon-footnote-span") === true &&
+          prev.parentElement === parent
+        if (!wrappedTogether) allWrapped = false
       }
-      return { faviconBackedRefs, allGlued }
+      return { faviconBackedRefs, allWrapped }
     })
 
     expect(glued.faviconBackedRefs).toBeGreaterThan(0)
-    expect(glued.allGlued).toBe(true)
+    expect(glued.allWrapped).toBe(true)
   })
 })

@@ -17,7 +17,6 @@ import {
   localTroutFaviconBasename,
   simpleConstants,
   specialFaviconPaths,
-  WORD_JOINER,
 } from "../../components/constants"
 import { normalizeFaviconListEntry } from "../../util/favicon-config"
 import { hasClass } from "./utils"
@@ -1010,68 +1009,82 @@ describe("glueFootnoteRefsToFavicons", () => {
   const asRoot = (...children: (Element | string)[]) =>
     ({ type: "root", children: [h("p", {}, children)] }) as unknown as import("hast").Root
 
-  it("inserts a word joiner between a favicon-ending link and a following footnote ref", () => {
+  const isGlueSpan = (node: Element | undefined): boolean =>
+    node?.type === "element" &&
+    node.tagName === "span" &&
+    node.properties?.className === "favicon-footnote-span"
+
+  it("wraps a favicon-ending link and a following footnote ref in a nowrap span", () => {
     const tree = asRoot(faviconLink(), footnoteRef(1))
     favicons.glueFootnoteRefsToFavicons(tree)
     const paragraphChildren = (tree.children[0] as Element).children
-    expect(paragraphChildren).toHaveLength(3)
-    expect(paragraphChildren[1]).toEqual({ type: "text", value: WORD_JOINER })
-    expect((paragraphChildren[2] as Element).tagName).toBe("sup")
+    expect(paragraphChildren).toHaveLength(1)
+    const span = paragraphChildren[0] as Element
+    expect(isGlueSpan(span)).toBe(true)
+    expect(span.children).toHaveLength(2)
+    expect((span.children[0] as Element).tagName).toBe("a")
+    expect((span.children[1] as Element).tagName).toBe("sup")
   })
 
-  it("does not glue when the preceding link has no favicon", () => {
+  it("does not wrap when the preceding link has no favicon", () => {
     const tree = asRoot(h("a", { href: "https://example.com" }, ["plain"]), footnoteRef(1))
     favicons.glueFootnoteRefsToFavicons(tree)
-    expect((tree.children[0] as Element).children).toHaveLength(2)
+    const paragraphChildren = (tree.children[0] as Element).children
+    expect(paragraphChildren).toHaveLength(2)
+    expect(paragraphChildren.some((child) => isGlueSpan(child as Element))).toBe(false)
   })
 
-  it("does not glue when the following sup is not a footnote reference", () => {
+  it("does not wrap when the following sup is not a footnote reference", () => {
     const tree = asRoot(faviconLink(), h("sup", {}, ["th"]))
     favicons.glueFootnoteRefsToFavicons(tree)
-    expect((tree.children[0] as Element).children).toHaveLength(2)
+    const paragraphChildren = (tree.children[0] as Element).children
+    expect(paragraphChildren).toHaveLength(2)
+    expect(paragraphChildren.some((child) => isGlueSpan(child as Element))).toBe(false)
   })
 
-  it("does not glue a footnote ref that opens a paragraph", () => {
+  it("does not wrap a footnote ref that opens a paragraph", () => {
     const tree = {
       type: "root",
       children: [h("p", {}, [footnoteRef(1)])],
     } as unknown as import("hast").Root
     favicons.glueFootnoteRefsToFavicons(tree)
-    expect((tree.children[0] as Element).children).toHaveLength(1)
+    const paragraphChildren = (tree.children[0] as Element).children
+    expect(paragraphChildren).toHaveLength(1)
+    expect(isGlueSpan(paragraphChildren[0] as Element)).toBe(false)
   })
 
-  it("glues each of several favicon/footnote pairs in one parent", () => {
+  it("wraps each of several favicon/footnote pairs in one parent", () => {
     const tree = asRoot(faviconLink(), footnoteRef(1), " and ", faviconLink(), footnoteRef(2))
     favicons.glueFootnoteRefsToFavicons(tree)
     const paragraphChildren = (tree.children[0] as Element).children
-    const joinerIndices = paragraphChildren
-      .map((child, i) => (child.type === "text" && child.value === WORD_JOINER ? i : -1))
-      .filter((i) => i >= 0)
-    expect(joinerIndices).toEqual([1, 5])
-    // Each word joiner sits immediately before a footnote sup.
-    const followedBySup = joinerIndices.map((i) =>
-      favicons.isFootnoteRefSup(paragraphChildren[i + 1] as Element),
-    )
-    expect(followedBySup).toEqual([true, true])
+    // Two glue spans separated by the " and " text node.
+    const spanChildCounts = paragraphChildren
+      .filter((child) => isGlueSpan(child as Element))
+      .map((span) => (span as Element).children.length)
+    expect(spanChildCounts).toEqual([2, 2])
+    // Each glue span ends with a footnote sup.
+    const endsWithSup = paragraphChildren
+      .filter((child) => isGlueSpan(child as Element))
+      .map((span) => favicons.isFootnoteRefSup((span as Element).children.at(-1) as Element))
+    expect(endsWithSup).toEqual([true, true])
   })
 
-  it("glues across an empty text node left by whitespace stripping", () => {
+  it("wraps across an empty text node left by whitespace stripping", () => {
     const tree = asRoot(faviconLink(), "", footnoteRef(1))
     favicons.glueFootnoteRefsToFavicons(tree)
     const paragraphChildren = (tree.children[0] as Element).children
-    // The word joiner is inserted immediately before the sup, past the empty node.
-    const supIndex = paragraphChildren.findIndex(
-      (child) => child.type === "element" && child.tagName === "sup",
-    )
-    expect(paragraphChildren[supIndex - 1]).toEqual({ type: "text", value: WORD_JOINER })
+    expect(paragraphChildren).toHaveLength(1)
+    const span = paragraphChildren[0] as Element
+    expect(isGlueSpan(span)).toBe(true)
+    // The empty text node is carried inside the span between the link and the sup.
+    expect((span.children[0] as Element).tagName).toBe("a")
+    expect(favicons.isFootnoteRefSup(span.children.at(-1) as Element)).toBe(true)
   })
 
-  it("does not glue when only empty text nodes precede a paragraph-opening ref", () => {
+  it("does not wrap when only empty text nodes precede a paragraph-opening ref", () => {
     const tree = asRoot("", footnoteRef(1))
     favicons.glueFootnoteRefsToFavicons(tree)
     const paragraphChildren = (tree.children[0] as Element).children
-    expect(
-      paragraphChildren.some((child) => child.type === "text" && child.value === WORD_JOINER),
-    ).toBe(false)
+    expect(paragraphChildren.some((child) => isGlueSpan(child as Element))).toBe(false)
   })
 })

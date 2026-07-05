@@ -4,6 +4,14 @@
   white-space: nowrap;
 }
 
+// Groups a favicon-ending link with its trailing footnote reference so the
+// reference number can't wrap onto its own line. A favicon is a replaced inline
+// element that opens a soft-wrap opportunity on its trailing edge; the nowrap
+// span suppresses that break so the `<sup>` stays glued to the favicon.
+.favicon-footnote-span {
+  white-space: nowrap;
+}
+
 .favicon {
   --size-decrease: 0rem; // Decrease in width and height of favicon size -- set this to a positive value to decrease the size
   --base-vertical-adjustment: calc(0.5 * #{$base-margin});

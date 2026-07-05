@@ -13,7 +13,6 @@ import {
   HEADING_TAGS,
   simpleConstants,
   specialFaviconPaths,
-  WORD_JOINER,
 } from "../../components/constants"
 import { faviconCountsFile } from "../../components/constants.server"
 import {
@@ -498,16 +497,18 @@ export function endsWithFavicon(node: Element): boolean {
 /**
  * A favicon is a replaced inline element, so browsers allow a line break on its
  * trailing edge. When a footnote reference immediately follows a favicon-ending
- * link, that break can orphan the tiny reference number onto its own line. Glue
- * the two with a word joiner so the number stays with the favicon.
+ * link, that break can orphan the tiny reference number onto its own line. Wrap
+ * the link and the `<sup>` in a `white-space: nowrap` span so the break between
+ * them is suppressed; the link keeps `white-space: normal` (see favicon.scss) so
+ * it can still wrap internally.
  */
 export function glueFootnoteRefsToFavicons(tree: Root): void {
-  const inserts: [Parent, number][] = []
+  const wraps: Array<{ parent: Parent; start: number; end: number }> = []
   visit(tree, "element", (node: Element, index: number | undefined, parent: Parent | undefined) => {
     // istanbul ignore next -- root node has no parent/index
     if (!parent || index === undefined) return
     if (!isFootnoteRefSup(node)) return
-    // Skip an empty text node the whitespace-stripping pass leaves behind when a
+    // Skip empty text nodes the whitespace-stripping pass leaves behind when a
     // source-level space separated the link from the ref. A non-empty space is
     // its own break opportunity, so only truly empty nodes are transparent here.
     let prevIndex = index - 1
@@ -520,12 +521,19 @@ export function glueFootnoteRefsToFavicons(tree: Root): void {
     }
     const prev = parent.children[prevIndex]
     if (prev?.type === "element" && endsWithFavicon(prev)) {
-      inserts.push([parent, index])
+      wraps.push({ parent, start: prevIndex, end: index })
     }
   })
-  // Splice high indices first so earlier insertion points stay valid.
-  for (const [parent, index] of inserts.reverse()) {
-    parent.children.splice(index, 0, { type: "text", value: WORD_JOINER })
+  // Wrap later ranges first so earlier indices stay valid as we splice.
+  wraps.sort((a, b) => b.start - a.start)
+  for (const { parent, start, end } of wraps) {
+    const span: Element = {
+      type: "element",
+      tagName: "span",
+      properties: { className: "favicon-footnote-span" },
+      children: parent.children.slice(start, end + 1) as Element["children"],
+    }
+    parent.children.splice(start, end - start + 1, span)
   }
 }
 
