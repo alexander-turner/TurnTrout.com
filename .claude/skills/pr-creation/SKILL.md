@@ -74,9 +74,11 @@ You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatt
 
 1. Push the branch: `git push -u origin HEAD`
 2. Check if a PR already exists for the current branch:
+
    ```bash
    EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number' 2>/dev/null)
    ```
+
    If a PR already exists, update it with `gh pr edit` instead of creating a new one.
 3. Create the PR using `gh pr create` with the template from the resource file. Make sure that you use the target branch
 
@@ -112,6 +114,46 @@ Each pass:
 
 If an open PR already exists for this branch, also run `bash scripts/check_deepsource_pr.sh` (or `deepsource issues --pr <N> --output json`) and address any findings before pushing. DeepSource is no longer a pre-push gate, so this step is your responsibility.
 
+#### When the DeepSource CLI/dashboard is unreachable (sandbox/egress-blocked)
+
+In remote/sandboxed sessions, `cli.deepsource.com`, `api.deepsource.io`, and `app.deepsource.com` are often egress-blocked, so the `deepsource` CLI isn't installed and the dashboard link is dead. **Do not guess at findings and push blind fixes**—each guess costs a full re-analysis round-trip, and `deepsource issues --pr <N>` under-reports (it can return `[]` while the `DeepSource: <analyzer>` status is red). Instead, surface the real findings through CI:
+
+1. Add a **temporary workflow** on your PR branch (`on: push:` scoped to that branch) that runs inside GitHub Actions, where `secrets.DEEPSOURCE_PAT` and network access exist.
+2. In it, query the DeepSource **GraphQL API** (`https://api.deepsource.io/graphql/`) for the blocking run and post the result as a PR comment (then read it via `gh api .../issues/<N>/comments`). The `occurrences` list is the canonical source—the CLI's `issues --pr` view is not:
+
+   ```graphql
+   query ($uid: UUID!) {
+     run(runUid: $uid) {
+       status
+       checks {
+         edges {
+           node {
+             analyzer {
+               shortcode
+             }
+             occurrences(first: 100) {
+               edges {
+                 node {
+                   issue {
+                     shortcode
+                     title
+                   }
+                   path
+                   beginLine
+                 }
+               }
+             }
+           }
+         }
+       }
+     }
+   }
+   ```
+
+   Get `runUid` from the `target_url` of the `DeepSource: <analyzer>` commit status (`.../run/<uid>/<analyzer>/`), fetched via `gh api repos/{owner}/{repo}/commits/<sha>/statuses`. DeepSource re-analyzes on every push and the status is the only feedback channel, so wait for the JavaScript/Python check to leave `pending` before reading the run.
+3. Fix every returned occurrence (even MINOR severity—they block the PR), push, and confirm the status flips green.
+4. **Delete the temporary workflow and its PR comments** before the task is done. Mirror the repo's action pins and `persist-credentials: false` conventions in the temp workflow so it doesn't itself trip `zizmor` / `check-action-pins`.
+
 ### Step 4: Push and Create the Pull Request
 
 You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatting guidelines before this step.
@@ -132,7 +174,7 @@ Push any commits made during the critique and validation steps, then update the 
 1. Push: `git push`
 
 1. Re-read the diff (`git diff $CLAUDE_CODE_BASE_REF...HEAD`) and commit log (`git log $CLAUDE_CODE_BASE_REF..HEAD --oneline`) to see the full scope
-2. Rewrite the title and body to accurately describe the **current totality** of changes, not just the original scope:
+1. Rewrite the title and body to accurately describe the **current totality** of changes, not just the original scope:
 
    ```bash
    gh pr edit <pr-number> --title "<type>: <updated description>" --body "$(cat <<'EOF'
@@ -225,3 +267,4 @@ State each insight as one concrete line. Skip this step if the task was trivial 
 - **Push fails**: Check branch permissions and remote configuration
 - **PR already exists (HTTP 422)**: Check for existing PRs first with `gh pr list --head "$(git branch --show-current)"`, then use `gh pr edit` to update
 - **No changes to PR**: Confirm with the user that work is committed
+- **`DeepSource: <analyzer>` status red but CLI/dashboard unreachable**: See Step 4's sandbox fallback—get the occurrence list from the DeepSource GraphQL `run(runUid:)` query via a temporary CI workflow; don't guess. A red analyzer status is yours to clear in this PR even if the offending file came in via a merge.
