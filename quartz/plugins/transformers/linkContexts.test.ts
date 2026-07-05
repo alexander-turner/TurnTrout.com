@@ -297,14 +297,33 @@ describe("LinkContexts transformer", () => {
     },
   )
 
-  it("keeps only the first occurrence per target (one excerpt per source page)", () => {
+  it("records every occurrence of a target as a distinct reference with its own anchor", () => {
     const tree = h("root", [
       h("p", [{ type: "text", value: "first " }, cite("other-page", "one")]),
       h("p", [{ type: "text", value: "second " }, cite("other-page", "two")]),
     ]) as unknown as Root
     const { contexts } = run(tree)
-    expect(contexts).toHaveLength(1)
+    expect(contexts).toHaveLength(2)
+    expect(contexts.every((c) => c.target === "other-page")).toBe(true)
     expect(contexts[0].excerptHtml).toContain("one")
+    expect(contexts[1].excerptHtml).toContain("two")
+    // Distinct deep-link anchors so each reference jumps to its own spot.
+    expect(contexts.map((c) => c.anchor)).toEqual([
+      "backlink-cite-test-page-0",
+      "backlink-cite-test-page-1",
+    ])
+  })
+
+  it("skips a citation whose block sanitizes to no visible text", () => {
+    const link: Element = {
+      type: "element",
+      tagName: "a",
+      properties: { className: ["internal"], "data-slug": "other-page" },
+      children: [h("img", { src: "/pic.png" }) as ElementContent],
+    }
+    const tree = h("root", [h("p", [link])]) as unknown as Root
+    const { contexts } = run(tree)
+    expect(contexts).toHaveLength(0)
   })
 
   it("assigns incrementing anchors across distinct targets", () => {

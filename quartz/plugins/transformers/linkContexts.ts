@@ -11,7 +11,11 @@ import { HEADING_TAGS } from "../../components/constants"
 import { type FullSlug, type SimpleSlug, simplifySlug } from "../../util/path"
 import { hasClass } from "./utils"
 
-/** One cited-paragraph excerpt recorded on the *citing* page, keyed by the page it points at. */
+/**
+ * One cited-paragraph excerpt recorded on the *citing* page, tagged with the
+ * page it points at. A page may record several with the same `target` — one per
+ * distinct citing location — each carrying its own deep-link `anchor`.
+ */
 export interface LinkContext {
   /** Simplified slug of the page the citing link resolves to. */
   target: SimpleSlug
@@ -307,9 +311,10 @@ export function buildExcerpt(block: Element, anchorId: string): string {
 }
 
 /**
- * Records, for each page, a sanitized excerpt of the first paragraph citing every
- * other page it links to. Consumed by the Backlinks component to show cited
- * context and to deep-link back to the citing location.
+ * Records, for each page, a sanitized excerpt of every paragraph citing another
+ * page it links to — one excerpt per citing location, so a page that references
+ * a target several times contributes several excerpts. Consumed by the Backlinks
+ * component to show cited context and to deep-link back to each citing location.
  *
  * Must run after the favicon, smallcaps, spoiler, and inline-code passes so
  * excerpts reflect the final rendered prose.
@@ -321,7 +326,6 @@ export const LinkContexts: QuartzTransformerPlugin = () => ({
       () => (tree: Root, file: VFile) => {
         const currentSlug = simplifySlug(file.data.slug as FullSlug)
         const contexts: LinkContext[] = []
-        const seen = new Set<string>()
         let counter = 0
 
         visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
@@ -330,7 +334,7 @@ export const LinkContexts: QuartzTransformerPlugin = () => ({
 
           const dataSlug = node.properties["data-slug"] as string
           const target = simplifySlug(dataSlug as FullSlug)
-          if (target === currentSlug || seen.has(target)) return
+          if (target === currentSlug) return
 
           const block = findEnclosingBlock(ancestors)
           if (!block) return
@@ -342,8 +346,12 @@ export const LinkContexts: QuartzTransformerPlugin = () => ({
               : anchorId(file.data.slug as string, counter++)
           node.properties.id = anchor
 
-          contexts.push({ target, excerptHtml: buildExcerpt(block, anchor), anchor })
-          seen.add(target)
+          const excerptHtml = buildExcerpt(block, anchor)
+          // A citation whose block sanitizes to no visible text has nothing to
+          // render as a clickable reference, so don't record it.
+          if (excerptHtml === "") return
+
+          contexts.push({ target, excerptHtml, anchor })
         })
 
         if (contexts.length > 0) file.data.linkContexts = contexts

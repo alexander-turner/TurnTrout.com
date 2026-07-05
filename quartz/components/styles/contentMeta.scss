@@ -54,10 +54,10 @@
 }
 
 #backlinks .admonition-content {
-  // The excerpt of the citing paragraph, shown below each backlink title. The
-  // shared toc.scss list rules stagger wrapped lines with a negative text-indent
-  // and a tight line-height tuned for single-line TOC entries; both would mangle
-  // multi-line prose, so reset them here.
+  // Each excerpt is a deep-link to the citing paragraph, shown below the backlink
+  // title. The shared toc.scss list rules stagger wrapped lines with a negative
+  // text-indent and a tight line-height tuned for single-line TOC entries; both
+  // would mangle multi-line prose, so reset them here.
   & .backlink-excerpt {
     display: block;
     margin-top: calc(0.25 * $base-margin);
@@ -65,6 +65,11 @@
     line-height: normal;
     text-indent: 0;
     color: var(--midground-faint);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--midground);
+    }
 
     .backlink-highlight {
       padding: 0 calc(0.25 * $base-margin);

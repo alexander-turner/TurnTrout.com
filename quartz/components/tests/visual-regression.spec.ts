@@ -90,8 +90,8 @@ async function setDummyContentMeta(page: Page) {
     const backlinksUl = document.querySelector("#backlinks .admonition-content ul")
     if (backlinksUl) {
       backlinksUl.innerHTML = `
-        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 1</a><div class="backlink-excerpt">[...] the first idea appears when <span class="backlink-highlight">this page</span> is cited in a longer sentence that wraps across several lines [...]</div></li>
-        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 2</a><div class="backlink-excerpt">A shorter excerpt mentioning <span class="backlink-highlight">this page</span> here.</div></li>
+        <li><a href="#" class="internal can-trigger-popover" title="Read the original post">Dummy Backlink 1</a><a href="#a" class="backlink-excerpt internal can-trigger-popover">[...] the first idea appears when <span class="backlink-highlight">this page</span> is cited in a longer sentence that wraps across several lines [...]</a><a href="#b" class="backlink-excerpt internal can-trigger-popover">a second place where <span class="backlink-highlight">this page</span> is referenced again [...]</a></li>
+        <li><a href="#" class="internal can-trigger-popover" title="Read the original post">Dummy Backlink 2</a><a href="#c" class="backlink-excerpt internal can-trigger-popover">A shorter excerpt mentioning <span class="backlink-highlight">this page</span> here.</a></li>
       `
     }
   })

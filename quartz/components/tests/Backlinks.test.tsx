@@ -391,7 +391,7 @@ describe("Backlinks", () => {
       linkContexts,
     })
 
-  it("renders the citing excerpt below the title and deep-links to the citing location", () => {
+  it("renders the excerpt as a deep-link and the title as a read-the-original-post link", () => {
     const currentFile = createFileData({ slug: "target-page" as FullSlug })
     const linkingFile = linkingWithExcerpt([
       {
@@ -403,11 +403,49 @@ describe("Backlinks", () => {
 
     const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
 
-    expect(html).toContain('class="backlink-excerpt"')
     expect(html).toContain('<span class="backlink-highlight">this idea</span>')
     expect(html).toContain("in context")
-    // The title link deep-links to the anchor stamped on the citing paragraph.
-    expect(html).toMatch(/href="[^"]*#backlink-cite-0"/)
+    // The excerpt itself is the deep-link to its citing location.
+    expect(html).toMatch(/href="[^"]*#backlink-cite-0"[^>]*class="backlink-excerpt/)
+    // The title reads the original post from the top (no citing anchor).
+    expect(html).toContain('title="Read the original post"')
+  })
+
+  it("renders multiple references from one article, each deep-linking to its own spot", () => {
+    const currentFile = createFileData({ slug: "target-page" as FullSlug })
+    const linkingFile = linkingWithExcerpt([
+      {
+        target: "target-page" as SimpleSlug,
+        excerptHtml: 'first <span class="backlink-highlight">ref</span>',
+        anchor: "backlink-cite-linking-page-0",
+      },
+      {
+        target: "target-page" as SimpleSlug,
+        excerptHtml: 'second <span class="backlink-highlight">ref</span>',
+        anchor: "backlink-cite-linking-page-1",
+      },
+    ])
+
+    const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
+
+    expect((html.match(/class="backlink-excerpt/g) ?? []).length).toBe(2)
+    expect(html).toMatch(/href="[^"]*#backlink-cite-linking-page-0"/)
+    expect(html).toMatch(/href="[^"]*#backlink-cite-linking-page-1"/)
+    expect(html).toContain("first")
+    expect(html).toContain("second")
+  })
+
+  it("skips a matching context that has no excerpt (renders title-only)", () => {
+    const currentFile = createFileData({ slug: "target-page" as FullSlug })
+    const linkingFile = linkingWithExcerpt([
+      { target: "target-page" as SimpleSlug, excerptHtml: "", anchor: "backlink-cite-0" },
+    ])
+
+    const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
+
+    expect(html).not.toContain("backlink-excerpt")
+    expect(html).not.toContain("#backlink-cite-0")
+    expect(normalizeNbsp(html)).toContain("Linking Page")
   })
 
   it("renders a title-only row when no linkContext matches the current page", () => {

@@ -77,10 +77,17 @@ function elementToJsx(elt: RootContent): JSX.Element {
   }
 }
 
-/** Parses a stored excerpt's inline HTML into JSX rendered below a backlink title. */
-function renderExcerpt(excerptHtml: string): JSX.Element {
+/**
+ * Parses a stored excerpt's inline HTML into a deep-link rendered below a
+ * backlink title; clicking it jumps to that specific citing location.
+ */
+function renderExcerpt(excerptHtml: string, href: string, key: string): JSX.Element {
   const htmlAst = fromHtml(excerptHtml, { fragment: true }) as unknown as Parent
-  return <div className="backlink-excerpt">{htmlAst.children.map(elementToJsx)}</div>
+  return (
+    <a key={key} href={href} className="backlink-excerpt internal can-trigger-popover">
+      {htmlAst.children.map(elementToJsx)}
+    </a>
+  )
 }
 
 /**
@@ -103,16 +110,24 @@ const BacklinksList = ({
           return null
         }
         const processedTitle = processBacklinkTitle(f.frontmatter.title)
-        const context = f.linkContexts?.find((lc) => lc.target === currentTarget)
+        const contexts = (f.linkContexts ?? []).filter(
+          (lc) => lc.target === currentTarget && lc.excerptHtml,
+        )
         const baseHref = resolveRelative(currentSlug, f.slug as FullSlug)
-        // Deep-link to the citing paragraph so the backlink opens where it references us.
-        const href = context?.anchor ? `${baseHref}#${context.anchor}` : baseHref
+        // The title reads the original post from the top; each excerpt below
+        // deep-links to its own citing location.
         return (
           <li key={f.slug}>
-            <a href={href} className="internal can-trigger-popover">
+            <a
+              href={baseHref}
+              className="internal can-trigger-popover"
+              title="Read the original post"
+            >
               {processedTitle.children.map(elementToJsx)}
             </a>
-            {context?.excerptHtml ? renderExcerpt(context.excerptHtml) : null}
+            {contexts.map((ctx) =>
+              renderExcerpt(ctx.excerptHtml, `${baseHref}#${ctx.anchor}`, ctx.anchor),
+            )}
           </li>
         )
       })}
