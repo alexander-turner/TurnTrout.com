@@ -44,6 +44,7 @@ jobs:
         timeout-minutes: 5
         with:
           fetch-depth: ${{ inputs.fetch-depth }}
+          persist-credentials: false
 
       # Cache keyed on commit SHA + fixture flag. Test builds and deploy
       # builds end up at different keys so fixtures can't leak from one to

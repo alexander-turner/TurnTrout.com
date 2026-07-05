@@ -2,11 +2,14 @@
 @use "sass:color";
 @use "./colors";
 
+$admonition-padding-inline: 1rem;
+$admonition-title-margin-block: calc(1.5 * $base-margin);
+
 .admonition,
 .timeline-card {
   margin: 1rem 0;
   overflow: hidden;
-  padding: 0 1rem;
+  padding: 0 $admonition-padding-inline;
 }
 
 .admonition {
@@ -173,6 +176,21 @@
   }
 
   &.is-collapsible {
+    // The pointer cursor and click target must cover the full title bar,
+    // including its surrounding spacing, not just its text/icon content.
+    // Block axis: the spacing lives in the title's padding (not margin), so it
+    // belongs to the title's box. A negative block margin would push the box
+    // past the padding edge, where .admonition's overflow:hidden clips it —
+    // .admonition has no block padding to absorb it.
+    // Inline axis: .admonition has inline padding, so a negative inline margin
+    // reaches into it (inside the padding box, unclipped) while the matching
+    // inline padding holds the text in place.
+    > .admonition-title {
+      cursor: pointer;
+      margin: 0 calc(-1 * #{$admonition-padding-inline});
+      padding: $admonition-title-margin-block $admonition-padding-inline;
+    }
+
     > .admonition-content {
       transition: max-height $transition-duration-medium ease;
       overflow: hidden;
@@ -216,13 +234,32 @@
       margin-top: 0;
     }
   }
+
+  // Block spacing lives in the title's padding so the full bar stays clickable.
+  // The metadata title carries its own ID-scoped block margins, so zero them
+  // here to keep padding the single source of block spacing.
+  &.is-collapsible {
+    & > .admonition-title {
+      margin-block: 0;
+      padding-top: var(--admonition-margin-outer);
+      padding-bottom: calc(0.75 * $base-margin);
+    }
+
+    &.is-collapsed > .admonition-title {
+      padding-bottom: var(--admonition-margin-outer);
+    }
+
+    & > .admonition-content {
+      margin-top: 0;
+    }
+  }
 }
 
 .admonition-title {
   display: flex;
   align-items: flex-start;
   gap: 0; // Used for fold-icon
-  margin: calc(1.5 * $base-margin) 0;
+  margin: $admonition-title-margin-block 0;
 
   --icon-size: calc(1.5 * #{$base-margin});
 

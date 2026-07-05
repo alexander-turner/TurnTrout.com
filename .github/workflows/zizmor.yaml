@@ -1,0 +1,51 @@
+name: zizmor
+
+# Security audit of GitHub Actions workflows and composite actions.
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  decide:
+    permissions:
+      contents: read
+      pull-requests: read
+    uses: ./.github/workflows/decide-reusable.yaml
+    with:
+      filters: |
+        run:
+          - '.github/**'
+
+  zizmor:
+    needs: decide
+    if: needs.decide.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+
+      - name: Run zizmor
+        run: uvx zizmor==1.25.2 .github/
+
+  zizmor-passed: # required-check: true
+    if: always()
+    needs: [decide, zizmor]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail if any required job did not pass
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

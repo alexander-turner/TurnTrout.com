@@ -139,6 +139,46 @@ describe("markdownPlugins", () => {
       expectedClass: "admonition note is-collapsible is-collapsed",
       expectedContent: ["data-admonition-fold"],
     },
+    {
+      name: "quote with a title-cased plain-text title (skips small-caps)",
+      input: "> [!quote] The Basic Reasons I Expect AGI Ruin",
+      expectedClass: "admonition quote",
+      expectedContent: ['<div class="admonition-title no-smallcaps">'],
+    },
+    {
+      name: "quote with a title-cased link title (skips small-caps)",
+      input:
+        "> [!quote] [Seeking Power Is Often Robustly Instrumental in MDPs](https://example.com)",
+      expectedClass: "admonition quote",
+      expectedContent: ['<div class="admonition-title no-smallcaps">'],
+    },
+    {
+      name: "quote with a prose title keeps small-caps",
+      input: "> [!quote] Does Proton VPN keep logs?",
+      expectedClass: "admonition quote",
+      expectedContent: ['<div class="admonition-title">'],
+      notExpectedContent: ["no-smallcaps"],
+    },
+    {
+      name: "blank-titled admonition never gets no-smallcaps (empty text is not a title)",
+      input: "> [!quote]\n> Just body content.",
+      expectedClass: "admonition quote",
+      expectedContent: ['<div class="admonition-title">'],
+      notExpectedContent: ["no-smallcaps"],
+    },
+    {
+      name: "non-quote admonition with a title-cased title also skips small-caps",
+      input: "> [!note] The CLOUD Act: A Dangerous Expansion of Police Snooping",
+      expectedClass: "admonition note",
+      expectedContent: ['<div class="admonition-title no-smallcaps">'],
+    },
+    {
+      name: "non-quote admonition with a prose title keeps small-caps",
+      input: "> [!warning] Watch out for the NASA launch schedule",
+      expectedClass: "admonition warning",
+      expectedContent: ['<div class="admonition-title">'],
+      notExpectedContent: ["no-smallcaps"],
+    },
   ]
 
   it.each(admonitionCases)(

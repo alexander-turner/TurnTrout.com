@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-01
+date_updated: 2026-07-04
 createBibtex: true
 ---
 
@@ -44,6 +44,24 @@ Subtitle: MATS (starting with smallcaps).
 # Title-binding links
 
 The `@title` sentinel ties a link's text to its target's current title at build time: [@title](/test-page) renders this page's title, and [@title](#header-4) renders the current text of the "Header 4" section.
+
+# `@title`s and quote smallcaps
+
+Acronyms in a resolved `@title` fill and in title-cased `[!quote]` titles render as plain caps instead of smallcaps.
+
+> [!quote] [Seeking Power Is Often Robustly Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps)
+> A quote whose link title is a hand-written cited work: "MDPs" stays plain rather than small-capped.
+
+> [!quote] [@title](/seeking-power-is-often-convergently-instrumental-in-mdps)
+> A quote whose title is an `@title` fill: the live title renders with plain acronyms.
+
+> [!quote] The Basic Reasons I Expect AGI Ruin
+> A plain-text title-cased quote title: "AGI" stays plain.
+
+> [!quote] Does Proton VPN keep logs?
+> A prose quote title: "VPN" is small-capped as usual.
+
+In-text work titles behave the same way: a title-cased link like [Seeking Power is Often Convergently Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps) and an italicized title like _Corrigibility Can Be VNM-Incoherent_ keep their acronyms as plain caps, while prose mentions of NASA, a lone italicized _LLM_, and sentence-cased links like [how the FBI does its work](/test-page) stay small-capped.
 
 # Lists
 

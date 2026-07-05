@@ -8,6 +8,7 @@ import type { Element, Text } from "hast"
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import {
+  applyInlineFormattingTransforms,
   processInlineCode,
   processKatex,
   processSmallCaps,
@@ -139,6 +140,23 @@ describe("renderInlineFormatting", () => {
     const out = nodes("LLM safety 🐟")
     expect(findByTag(out, "abbr")).toHaveLength(1)
     expect(findByTag(out, "img")).toHaveLength(1)
+  })
+
+  it("skips small-caps but keeps Twemoji for work titles", () => {
+    const out = renderInlineFormatting("Thoughts on LLM training \u{1F41F}", true)
+    expect(findByTag(out, "abbr")).toHaveLength(0)
+    expect(findByTag(out, "img")).toHaveLength(1)
+  })
+
+  it("applies small-caps by default when no workTitle argument is given", () => {
+    const container: Element = {
+      type: "element",
+      tagName: "span",
+      properties: {},
+      children: [{ type: "text", value: "Thoughts on LLM training" } as Text],
+    }
+    applyInlineFormattingTransforms(container)
+    expect(findByTag(container.children as (Text | Element)[], "abbr")).toHaveLength(1)
   })
 
   it("returns a single text node when nothing matches", () => {
