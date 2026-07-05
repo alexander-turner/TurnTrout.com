@@ -29,12 +29,13 @@
   }
 }
 
+#post-statistics li {
+  margin-bottom: calc($base-margin);
+}
+  
+
 #backlinks-admonition,
 #post-statistics {
-  li {
-    margin-bottom: calc($base-margin);
-  }
-
   ul {
     padding-left: $base-margin;
     margin-left: 0;
@@ -45,18 +46,24 @@
 // shared toc.scss list rules stagger wrapped lines with a negative text-indent
 // and a tight 1.05em line-height tuned for single-line TOC entries; both would
 // mangle multi-line prose, so reset them here.
-#backlinks-admonition .backlink-excerpt {
-  display: block;
-  margin-top: calc(0.25 * $base-margin);
-  font-size: var(--font-size-minus-2);
-  line-height: normal;
-  text-indent: 0;
-  color: var(--midground-faint) !important;
+#backlinks-admonition { 
+  & li {
+    margin-bottom: calc(1.5 * $base-margin);
+  }
 
-  .backlink-highlight {
-    padding: 0 calc(0.25 * $base-margin);
-    border-radius: $border-radius;
-    background-color: var(--highlight);
+  & .backlink-excerpt {
+    display: block;
+    margin-top: calc(0.25 * $base-margin);
+    font-size: var(--font-size-minus-2);
+    line-height: normal;
+    text-indent: 0;
+    color: var(--midground-faint) !important;
+  
+    .backlink-highlight {
+      padding: 0 calc(0.25 * $base-margin);
+      border-radius: $border-radius;
+      background-color: var(--highlight);
+    }
   }
 }
 
