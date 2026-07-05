@@ -145,6 +145,20 @@ export const PREVIEWABLE_CLASS = "previewable"
 export const CAN_TRIGGER_POPOVER_CLASS = "can-trigger-popover"
 export const SEARCH_MATCH_CLASS = "search-match"
 
+// Inline-content class names shared by the formatting pipeline (twemoji,
+// favicons, small-caps, KaTeX) and the consumers that sanitize or re-render its
+// output (backlink excerpts). Single source of truth so producers and
+// consumers can't drift. `EMOJI_CLASS`/`KATEX_CLASS` are emitted by the twemoji
+// and KaTeX libraries respectively; the constants document the value we match.
+export const EMOJI_CLASS = "emoji"
+export const EMOJI_SPAN_CLASS = "emoji-span"
+export const FAVICON_CLASS = "favicon"
+export const FAVICON_SPAN_CLASS = "favicon-span"
+export const KATEX_CLASS = "katex"
+export const SMALL_CAPS_CLASS = "small-caps"
+export const BACKLINK_HIGHLIGHT_CLASS = "backlink-highlight"
+export const BACKLINK_EXCERPT_CLASS = "backlink-excerpt"
+
 // Title-binding links: when an internal link's display text is exactly this
 // sentinel, its text is replaced at build time with the up-to-date title of the
 // target page (or the target section heading, for `#anchor` links). See

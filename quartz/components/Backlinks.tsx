@@ -8,6 +8,7 @@ import React from "react"
 import { type QuartzPluginData } from "../plugins/vfile"
 import { type FullSlug, resolveRelative, type SimpleSlug, simplifySlug } from "../util/path"
 import { applyInlineFormattingTransforms, formatTitle } from "./component_utils"
+import { BACKLINK_EXCERPT_CLASS } from "./constants"
 import { type QuartzComponent, type QuartzComponentProps } from "./types"
 
 function processBacklinkTitle(title: string): Parent {
@@ -78,15 +79,21 @@ function elementToJsx(elt: RootContent): JSX.Element {
 }
 
 /**
- * Parses a stored excerpt's inline HTML into a deep-link rendered below a
- * backlink title; clicking it jumps to that specific citing location.
+ * Renders a stored excerpt as a deep-link below a backlink title; clicking it
+ * jumps to that specific citing location. The excerpt HTML is the pipeline's
+ * own rendered output (twemoji, KaTeX, small-caps already baked in and
+ * sanitized in `linkContexts.ts`), so it is injected verbatim rather than
+ * re-rendered — the single source of truth for inline formatting.
  */
 function renderExcerpt(excerptHtml: string, href: string, key: string): JSX.Element {
-  const htmlAst = fromHtml(excerptHtml, { fragment: true }) as unknown as Parent
   return (
-    <a key={key} href={href} className="backlink-excerpt internal can-trigger-popover">
-      {htmlAst.children.map(elementToJsx)}
-    </a>
+    <a
+      key={key}
+      href={href}
+      className={`${BACKLINK_EXCERPT_CLASS} internal can-trigger-popover`}
+      // skipcq: JS-0440 excerptHtml is our own build-time output, sanitized in linkContexts.ts
+      dangerouslySetInnerHTML={{ __html: excerptHtml }}
+    />
   )
 }
 

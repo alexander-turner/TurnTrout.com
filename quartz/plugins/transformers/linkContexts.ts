@@ -7,7 +7,14 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { HEADING_TAGS } from "../../components/constants"
+import {
+  BACKLINK_HIGHLIGHT_CLASS,
+  EMOJI_CLASS,
+  FAVICON_CLASS,
+  FAVICON_SPAN_CLASS,
+  HEADING_TAGS,
+  KATEX_CLASS,
+} from "../../components/constants"
 import { type FullSlug, type SimpleSlug, simplifySlug } from "../../util/path"
 import { hasClass } from "./utils"
 
@@ -68,9 +75,33 @@ export function textOf(node: ElementContent): string {
   return ""
 }
 
-/** Total visible length of a fragment. */
+/**
+ * Placeholder standing in for one inline atom (twemoji/KaTeX) in the visible-text
+ * coordinate model. Non-whitespace so word-boundary trimming treats an atom as
+ * part of its adjacent word rather than a break.
+ */
+const ATOM_PLACEHOLDER = "￼"
+
+/**
+ * Visible-text string in the same coordinate model as {@link measureFragment}
+ * and {@link sliceNodes}: each inline atom counts as a single placeholder glyph
+ * so character offsets stay aligned across measuring, window-trimming, and
+ * slicing (descending into KaTeX's duplicated MathML text would desync them).
+ */
 function fragmentText(nodes: readonly ElementContent[]): string {
-  return nodes.map(textOf).join("")
+  let out = ""
+  const walk = (children: readonly ElementContent[]): void => {
+    for (const node of children) {
+      if (node.type === "text") {
+        out += node.value
+      } else if (node.type === "element") {
+        if (isInlineAtom(node)) out += ATOM_PLACEHOLDER
+        else walk(node.children)
+      }
+    }
+  }
+  walk(nodes)
+  return out
 }
 
 /** A citing link is a resolved internal link (not a same-page anchor) with a recorded target. */
@@ -107,13 +138,23 @@ function isInSkippedContext(ancestors: readonly Parent[]): boolean {
   })
 }
 
-/** Extracts the original TeX source from a KaTeX span's MathML `<annotation>`, or "" if absent. */
-function katexToTex(node: Element): string {
-  const annotations: string[] = []
-  visit(node, "element", (child: Element) => {
-    if (child.tagName === "annotation") annotations.push(textOf(child))
+/** Deep-clones an element and removes every `id` so the excerpt can't duplicate page ids. */
+function stripIdsDeep(node: Element): Element {
+  const clone = structuredClone(node)
+  visit(clone, "element", (child: Element) => {
+    delete child.properties.id
   })
-  return (annotations[0] ?? "").trim()
+  return clone
+}
+
+/**
+ * Inline atoms preserved verbatim from the rendered pipeline output — a twemoji
+ * image or a KaTeX span. They render as a single glyph, so measurement and
+ * slicing treat each as one visible character and never descend into or split
+ * them (KaTeX's duplicated MathML/HTML text would otherwise wreck both).
+ */
+function isInlineAtom(node: Element): boolean {
+  return hasClass(node, KATEX_CLASS) || (node.tagName === "img" && hasClass(node, EMOJI_CLASS))
 }
 
 /** True when a `<sup>` wraps a footnote reference link (`#user-content-fn…`). */
@@ -130,10 +171,12 @@ function isFootnoteRef(node: Element): boolean {
 }
 
 /**
- * Rewrites a cloned block's children into an excerpt-safe inline fragment:
- * strips favicons/media/footnote refs, replaces emoji imgs with their alt text
- * and KaTeX with its TeX source, unwraps non-citing links, marks the citing
- * link with a highlight span, and removes every `id` attribute.
+ * Rewrites a cloned block's children into an excerpt-safe inline fragment that
+ * reuses the pipeline's rendered output as the single source of truth: twemoji
+ * images, KaTeX, and small-caps are preserved verbatim (never re-rendered).
+ * Favicons, media, footnote refs, and footnote back-arrows are dropped, the
+ * citing link becomes a highlight span, non-citing links are unwrapped, and
+ * every `id` is removed so the excerpt can't collide with page anchors.
  */
 function sanitizeChildren(children: readonly ElementContent[], anchorId: string): ElementContent[] {
   return children.flatMap((child) => sanitizeNode(child, anchorId))
@@ -148,32 +191,23 @@ function sanitizeNode(node: ElementContent, anchorId: string): ElementContent[] 
       {
         type: "element",
         tagName: "span",
-        properties: { className: ["backlink-highlight"] },
+        properties: { className: [BACKLINK_HIGHLIGHT_CLASS] },
         children: sanitizeChildren(node.children, anchorId),
       },
     ]
   }
 
-  if (hasClass(node, "favicon")) return []
-  if (hasClass(node, "favicon-span") || hasClass(node, "emoji-span")) {
-    return sanitizeChildren(node.children, anchorId)
-  }
+  // Footnote back-reference arrow (↩): links out of a footnote body, useless
+  // in an excerpt. Matched by class so the check is robust to hast's
+  // camel-cased `data-*` property names.
+  if (node.tagName === "a" && hasClass(node, "data-footnote-backref")) return []
 
-  if (node.tagName === "img" && hasClass(node, "emoji")) {
-    const alt = node.properties?.alt
-    return typeof alt === "string" && alt ? [{ type: "text", value: alt }] : []
-  }
+  if (hasClass(node, FAVICON_CLASS)) return []
+  if (hasClass(node, FAVICON_SPAN_CLASS)) return sanitizeChildren(node.children, anchorId)
 
-  if (hasClass(node, "katex")) {
-    return [
-      {
-        type: "element",
-        tagName: "code",
-        properties: {},
-        children: [{ type: "text", value: katexToTex(node) }],
-      },
-    ]
-  }
+  // Preserve the pipeline's rendered inline atoms verbatim rather than
+  // reconstructing them downstream.
+  if (isInlineAtom(node)) return [stripIdsDeep(node)]
 
   if (isFootnoteRef(node)) return []
   if (DROP_TAGS.has(node.tagName)) return []
@@ -202,9 +236,13 @@ function measureFragment(nodes: readonly ElementContent[]): Measurement {
       if (node.type === "text") {
         cursor += node.value.length
       } else if (node.type === "element") {
+        if (isInlineAtom(node)) {
+          cursor += 1
+          continue
+        }
         const before = cursor
         walk(node.children)
-        if (hasClass(node, "backlink-highlight")) {
+        if (hasClass(node, BACKLINK_HIGHLIGHT_CLASS)) {
           hlStart = before
           hlLen = cursor - before
           found = true
@@ -233,6 +271,14 @@ function sliceNodes(
       if (to > from)
         out.push({ type: "text", value: node.value.slice(from - nodeStart, to - nodeStart) })
     } else if (node.type === "element") {
+      if (isInlineAtom(node)) {
+        const nodeStart = cursor.i
+        cursor.i += 1
+        // An atom is indivisible: keep it whole when its position lies inside
+        // the window, otherwise drop it.
+        if (nodeStart >= start && nodeStart < end) out.push(node)
+        continue
+      }
       const kids = sliceNodes(node.children, start, end, cursor)
       if (kids.length > 0) out.push({ ...node, children: kids })
     }

@@ -86,25 +86,28 @@ describe("buildExcerpt sanitizer", () => {
     expect(html).toBe('site <span class="backlink-highlight">x</span>')
   })
 
-  it("replaces emoji images with their alt text and drops empty-alt emoji", () => {
-    const withAlt = h("img.emoji", { alt: "🐟" }) as ElementContent
-    const emptyAlt = h("img.emoji", { alt: "" }) as ElementContent
-    const html = buildExcerpt(blockWith(withAlt, emptyAlt, anchored("x")), ANCHOR)
-    expect(html).toBe('🐟<span class="backlink-highlight">x</span>')
+  it("preserves twemoji images verbatim and strips their ids", () => {
+    const withId = h("img.emoji", { alt: "🐟", id: "drop-me" }) as ElementContent
+    const html = buildExcerpt(blockWith(withId, anchored("x")), ANCHOR)
+    expect(html).toBe('<img class="emoji" alt="🐟"><span class="backlink-highlight">x</span>')
+    expect(html).not.toContain("drop-me")
   })
 
-  it("unwraps emoji spans", () => {
+  it("keeps emoji spans with their inner twemoji image intact", () => {
     const emojiSpan = h("span.emoji-span", [
       { type: "text", value: "a" },
       h("img.emoji", { alt: "🐟" }),
     ]) as ElementContent
     const html = buildExcerpt(blockWith(emojiSpan, anchored("x")), ANCHOR)
-    expect(html).toBe('a🐟<span class="backlink-highlight">x</span>')
+    expect(html).toBe(
+      '<span class="emoji-span">a<img class="emoji" alt="🐟"></span>' +
+        '<span class="backlink-highlight">x</span>',
+    )
   })
 
-  it("replaces KaTeX with its TeX annotation source as code", () => {
-    const katex = h("span.katex", [
-      h("span.katex-mathml", [
+  it("preserves KaTeX spans verbatim and strips their descendant ids", () => {
+    const katex = h("span.katex", { id: "eq-1" }, [
+      h("span.katex-mathml", { id: "mml-1" }, [
         h("math", [
           h("semantics", [
             h("mrow", [h("mi", "x")]),
@@ -112,18 +115,29 @@ describe("buildExcerpt sanitizer", () => {
           ]),
         ]),
       ]),
-      h("span.katex-html", [{ type: "text", value: "garbled" }]),
+      h("span.katex-html", [{ type: "text", value: "rendered" }]),
     ]) as ElementContent
     const html = buildExcerpt(blockWith(katex, { type: "text", value: " " }, anchored("x")), ANCHOR)
-    expect(html).toBe('<code>x^2</code> <span class="backlink-highlight">x</span>')
+    expect(html).toContain('<span class="katex">')
+    expect(html).toContain("x^2")
+    expect(html).toContain("rendered")
+    expect(html).not.toContain("eq-1")
+    expect(html).not.toContain("mml-1")
+    expect(html.endsWith(' <span class="backlink-highlight">x</span>')).toBe(true)
   })
 
-  it("emits empty code when a KaTeX span has no annotation", () => {
-    const katex = h("span.katex", [
-      h("span.katex-html", [{ type: "text", value: "g" }]),
-    ]) as ElementContent
-    const html = buildExcerpt(blockWith(katex, anchored("x")), ANCHOR)
-    expect(html).toBe('<code></code><span class="backlink-highlight">x</span>')
+  it("drops footnote back-reference arrows", () => {
+    const backref = h(
+      "a.data-footnote-backref",
+      { href: "#user-content-fnref-1" },
+      "↩",
+    ) as ElementContent
+    const html = buildExcerpt(
+      blockWith({ type: "text", value: "note " }, backref, anchored("x")),
+      ANCHOR,
+    )
+    expect(html).toBe('note <span class="backlink-highlight">x</span>')
+    expect(html).not.toContain("↩")
   })
 
   it("drops footnote-reference superscripts but keeps ordinary superscripts", () => {
@@ -259,6 +273,22 @@ describe("truncateFragment", () => {
     const out = truncateFragment([farAway, near, highlight("HERE")])
     const serialized = JSON.stringify(out)
     expect(serialized).not.toContain('"x')
+    expect(out.map((n) => textOf(n)).join("")).toContain("HERE")
+  })
+
+  it("keeps an inline atom inside the window whole but drops one outside it", () => {
+    const nearEmoji = h("img.emoji", { alt: "🐟" }) as ElementContent
+    const farEmoji = h("img.emoji", { alt: "🦈" }) as ElementContent
+    const out = truncateFragment([
+      farEmoji,
+      words(100),
+      nearEmoji,
+      { type: "text", value: " tail " },
+      highlight("HERE"),
+    ])
+    const serialized = JSON.stringify(out)
+    expect(serialized).toContain("🐟")
+    expect(serialized).not.toContain("🦈")
     expect(out.map((n) => textOf(n)).join("")).toContain("HERE")
   })
 })

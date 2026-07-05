@@ -475,13 +475,16 @@ describe("Backlinks", () => {
     expect(normalizeNbsp(html)).toContain("Linking Page")
   })
 
-  it("preserves whitelisted tags and falls back to spans for others inside excerpts", () => {
+  it("preserves whitelisted tags and falls back to spans for others in titles", () => {
     const currentFile = createFileData({ slug: "target-page" as FullSlug })
-    const excerptHtml =
-      "<em>e</em><strong>s</strong><code>c</code><del>d</del><sub>b</sub><sup>p</sup><i>i</i>"
-    const linkingFile = linkingWithExcerpt([
-      { target: "target-page" as SimpleSlug, excerptHtml, anchor: "backlink-cite-1" },
-    ])
+    const linkingFile = createFileData({
+      slug: "rich-title-source" as FullSlug,
+      frontmatter: {
+        title:
+          "<em>e</em><strong>s</strong><code>c</code><del>d</del><sub>b</sub><sup>p</sup><i>i</i>",
+      },
+      links: ["target-page" as SimpleSlug],
+    })
 
     const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
 
@@ -494,6 +497,23 @@ describe("Backlinks", () => {
     // Non-whitelisted <i> collapses to a span.
     expect(html).not.toContain("<i>")
     expect(html).toMatch(/<span[^>]*>i<\/span>/)
+  })
+
+  it("injects excerpt HTML verbatim, preserving twemoji and KaTeX", () => {
+    const currentFile = createFileData({ slug: "target-page" as FullSlug })
+    const excerptHtml =
+      'see <img class="emoji" alt="🐟"> and ' +
+      '<span class="katex"><span class="katex-html">x²</span></span> ' +
+      '<span class="backlink-highlight">here</span>'
+    const linkingFile = linkingWithExcerpt([
+      { target: "target-page" as SimpleSlug, excerptHtml, anchor: "backlink-cite-1" },
+    ])
+
+    const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
+
+    expect(html).toMatch(/<img[^>]*class="emoji"[^>]*alt="🐟"[^>]*>/)
+    expect(html).toContain('<span class="katex">')
+    expect(html).toContain('<span class="backlink-highlight">here</span>')
   })
 })
 
