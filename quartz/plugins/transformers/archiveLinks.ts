@@ -8,6 +8,7 @@ import { fileURLToPath } from "url"
 
 import type { QuartzTransformerPlugin } from "../types"
 
+import { canonicalizeUrl } from "../../util/urls"
 import { isExternalLink } from "./links"
 
 const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
@@ -27,25 +28,6 @@ export interface ArchiveManifestEntry {
 }
 
 export type ArchiveManifest = ReadonlyMap<string, ArchiveManifestEntry>
-
-/**
- * Canonical URL form that the manifest key must match. Uses the WHATWG `new URL`
- * parser, then forces `https`, drops a single trailing `/`, and drops the
- * `#fragment` while keeping the query. The writer
- * (`scripts/archive_links.py`) mirrors this with the `ada-url` binding — the
- * same `ada` C++ parser Node uses — so the key it emits and the key looked up
- * here are byte-identical.
- *
- * @throws if `href` is not a parseable absolute URL.
- */
-export function canonicalizeUrl(href: string): string {
-  const url = new URL(href)
-  let pathname = url.pathname
-  if (pathname.endsWith("/")) {
-    pathname = pathname.slice(0, -1)
-  }
-  return `https://${url.host}${pathname}${url.search}`
-}
 
 function parseManifest(raw: string, source: string): ArchiveManifest {
   const parsed: unknown = JSON.parse(raw)

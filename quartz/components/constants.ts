@@ -140,6 +140,11 @@ export const EXTERNAL_LINK_REL = "noopener noreferrer"
 export const HEADING_TAGS: ReadonlySet<string> = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
 export const MEDIA_TAGS: ReadonlySet<string> = new Set(["img", "video", "audio", "iframe"])
 
+// Canonical URLs (see quartz/util/urls.ts) that must never get an annotation
+// popover even when the manifest has an entry for them. Explicit annotation
+// (readonly string[]) because JSON infers the empty default as never[].
+export const linkAnnotationBlocklist: readonly string[] = constantsJson.linkAnnotationBlocklist
+
 // Shared CSS class names (used across multiple components/scripts)
 export const PREVIEWABLE_CLASS = "previewable"
 export const CAN_TRIGGER_POPOVER_CLASS = "can-trigger-popover"

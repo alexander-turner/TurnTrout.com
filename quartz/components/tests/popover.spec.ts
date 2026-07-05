@@ -1,4 +1,4 @@
-import type { Locator } from "@playwright/test"
+import type { Locator, Page } from "@playwright/test"
 
 import { minDesktopWidth } from "../../styles/variables"
 import { popoverScrollOffset, scrollTolerance } from "../constants"
@@ -798,4 +798,71 @@ base("Popover with checked checkbox visual appearance (screenshot)", async ({ pa
     elementToScreenshot: popover,
     preserveSiblings: true,
   })
+})
+
+// --- Annotated external links (build-time annotations) ---
+
+const ANNOTATED_LINK_SELECTOR = 'a[data-annotated="true"]'
+
+/**
+ * Center the annotated link so the popover fits entirely in the viewport.
+ * Hover popovers close on scroll, so any later action that auto-scrolls
+ * (element click, element screenshot) would dismiss the popover mid-action.
+ */
+async function hoverCenteredAnnotatedLink(page: Page): Promise<void> {
+  const link = page.locator(ANNOTATED_LINK_SELECTOR).first()
+  await link.evaluate((el) => el.scrollIntoView({ block: "center", behavior: "instant" }))
+  await link.hover()
+}
+
+test("Annotated external link shows annotation popover on hover (screenshot)", async ({
+  page,
+}, testInfo) => {
+  await hoverCenteredAnnotatedLink(page)
+
+  const popover = page.locator(".popover.annotation-popover")
+  await expect(popover).toHaveClass(/popover-visible/, { timeout: 10_000 })
+  await expect(popover.locator(".annotation-title")).toHaveText("Reinforcement learning")
+  await expect(popover.locator(".annotation-abstract")).toContainText("Reinforcement learning")
+  await expect(popover.locator(".annotation-attribution")).toContainText(
+    "From Wikipedia (CC BY-SA 4.0)",
+  )
+
+  await takeRegressionScreenshot(page, testInfo, "annotation-popover", {
+    elementToScreenshot: popover,
+    preserveSiblings: true,
+  })
+})
+
+test("Annotation popover body click opens the external URL in a new tab", async ({ page }) => {
+  // Intercept window.open so the assertion is deterministic and offline-safe
+  await page.evaluate(() => {
+    const opened: string[] = []
+    ;(window as unknown as { __openedUrls: string[] }).__openedUrls = opened
+    window.open = (url?: string | URL) => {
+      opened.push(String(url))
+      return null
+    }
+  })
+
+  await hoverCenteredAnnotatedLink(page)
+  const popover = page.locator(".popover.annotation-popover")
+  await expect(popover).toHaveClass(/popover-visible/, { timeout: 10_000 })
+  const title = popover.locator(".annotation-title")
+  await expect(title).toBeVisible()
+
+  // Click by viewport coordinates: an element click auto-scrolls the window
+  // (headings have scroll-margin-top), and hover popovers close on window
+  // scroll. The body-click handler fires for any non-anchor element.
+  const box = await title.boundingBox()
+  if (!box) {
+    throw new Error("annotation title has no bounding box")
+  }
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+  const openedUrls = await page.evaluate(
+    () => (window as unknown as { __openedUrls: string[] }).__openedUrls,
+  )
+  expect(openedUrls).toEqual(["https://en.wikipedia.org/wiki/Reinforcement_learning"])
+  // The current page did not navigate away
+  expect(page.url()).toContain("/test-page")
 })

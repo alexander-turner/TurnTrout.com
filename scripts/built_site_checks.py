@@ -2067,6 +2067,53 @@ def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
     return problematic_metadata
 
 
+def _canonicalize_annotation_href(href: str) -> str:
+    """Mirror ``canonicalizeUrl`` in ``quartz/util/urls.ts`` for the URLs the
+    annotation pipeline emits (absolute URLs already normalized by the WHATWG
+    parser at build time): force https, drop a single trailing slash, drop the
+    fragment, keep the query."""
+    split = urllib.parse.urlsplit(href)
+    path = split.path.removesuffix("/")
+    result = f"https://{split.netloc}{path}"
+    if split.query:
+        result += f"?{split.query}"
+    return result
+
+
+def load_annotation_keys(public_dir: Path) -> frozenset[str]:
+    """
+    Keys of the emitted ``static/link-annotations.json``.
+
+    A missing file
+    yields an empty set, so any ``data-annotated`` link then fails the check.
+    """
+    path = public_dir / "static" / "link-annotations.json"
+    if not path.exists():
+        return frozenset()
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    return frozenset(data)
+
+
+def check_annotated_links_have_annotations(
+    soup: BeautifulSoup, annotation_keys: frozenset[str] | None
+) -> list[str]:
+    """Every ``data-annotated`` link must have an entry in the emitted
+    annotations JSON, otherwise its popover silently never appears."""
+    issues: list[str] = []
+    for link in _tags_only(
+        soup.find_all("a", attrs={"data-annotated": "true"})
+    ):
+        href = str(link.get("data-original-href") or link.get("href") or "")
+        key = _canonicalize_annotation_href(href)
+        if annotation_keys is None or key not in annotation_keys:
+            issues.append(
+                f"data-annotated link has no entry in link-annotations.json: {href}"
+            )
+    return issues
+
+
 @dataclass(frozen=True)
 class CheckOptions:
     """Configuration options shared across all file checks."""
@@ -2077,6 +2124,7 @@ class CheckOptions:
     # Loaded once in _process_html_files; passed through so each file
     # check doesn't have to re-read the JSON.
     invert_labels: Mapping[str, InvertLabel] | None = None
+    annotation_keys: frozenset[str] | None = None
 
 
 def check_related_posts(
@@ -2276,6 +2324,9 @@ def check_file_for_issues(
         "invalid_class_names": check_invalid_class_names(soup),
         "orphaned_subfigures": check_orphaned_subfigures(soup),
         "toc_ordering": check_toc_ordering(soup),
+        "annotated_links_without_annotations": check_annotated_links_have_annotations(
+            soup, opts.annotation_keys
+        ),
     }
 
     if opts.favicon_included_domains is not None:
@@ -3662,6 +3713,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
         defined_css_variables=defined_css_vars,
         favicon_included_domains=included_domains,
         invert_labels=invert_labels,
+        annotation_keys=load_annotation_keys(public_dir),
     )
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)

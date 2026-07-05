@@ -4638,6 +4638,7 @@ def test_main_handles_markdown_mapping(
                 should_check_fonts=False,
                 defined_css_variables={"--color-primary", "--color-secondary"},
                 favicon_included_domains=frozenset(),
+                annotation_keys=frozenset(),
             ),
         )
 
@@ -4700,6 +4701,7 @@ def test_main_command_line_args(
             should_check_fonts=True,
             defined_css_variables={"--color-primary", "--color-secondary"},
             favicon_included_domains=frozenset(),
+            annotation_keys=frozenset(),
         ),
     )
 
@@ -8174,3 +8176,111 @@ def test_process_html_files_duplicate_citations(tmp_path: Path):
             public_dir, content_dir, check_fonts=False
         )
     assert result is True
+
+
+class TestAnnotatedLinkChecks:
+    """Tests for the data-annotated <-> link-annotations.json consistency
+    check."""
+
+    WIKI_KEY = "https://en.wikipedia.org/wiki/Reinforcement_learning"
+
+    @pytest.mark.parametrize(
+        "href,expected",
+        [
+            (
+                "https://en.wikipedia.org/wiki/Foo",
+                "https://en.wikipedia.org/wiki/Foo",
+            ),
+            (
+                "http://en.wikipedia.org/wiki/Foo/",
+                "https://en.wikipedia.org/wiki/Foo",
+            ),
+            (
+                "https://en.wikipedia.org/wiki/Foo?x=1#frag",
+                "https://en.wikipedia.org/wiki/Foo?x=1",
+            ),
+            (
+                "https://en.wikipedia.org/wiki/Foo#frag",
+                "https://en.wikipedia.org/wiki/Foo",
+            ),
+        ],
+    )
+    def test_canonicalize_annotation_href(
+        self, href: str, expected: str
+    ) -> None:
+        # skipcq: PYL-W0212
+        assert built_site_checks._canonicalize_annotation_href(href) == expected
+
+    def _soup(self, html: str) -> BeautifulSoup:
+        return BeautifulSoup(html, "html.parser")
+
+    def test_annotated_link_with_entry_passes(self) -> None:
+        soup = self._soup(
+            f'<a href="{self.WIKI_KEY}" data-annotated="true">RL</a>'
+        )
+        issues = built_site_checks.check_annotated_links_have_annotations(
+            soup, frozenset({self.WIKI_KEY})
+        )
+        assert issues == []
+
+    def test_annotated_link_without_entry_fails(self) -> None:
+        soup = self._soup(
+            '<a href="https://en.wikipedia.org/wiki/Missing" data-annotated="true">x</a>'
+        )
+        issues = built_site_checks.check_annotated_links_have_annotations(
+            soup, frozenset({self.WIKI_KEY})
+        )
+        assert len(issues) == 1
+        assert "Missing" in issues[0]
+
+    def test_archived_link_checked_by_original_href(self) -> None:
+        soup = self._soup(
+            '<a href="https://assets.turntrout.com/link-archive/x/singlefile.html" '
+            f'data-original-href="{self.WIKI_KEY}" data-annotated="true">RL</a>'
+        )
+        issues = built_site_checks.check_annotated_links_have_annotations(
+            soup, frozenset({self.WIKI_KEY})
+        )
+        assert issues == []
+
+    def test_none_keys_flags_all_annotated_links(self) -> None:
+        soup = self._soup(
+            f'<a href="{self.WIKI_KEY}" data-annotated="true">RL</a>'
+        )
+        issues = built_site_checks.check_annotated_links_have_annotations(
+            soup, None
+        )
+        assert len(issues) == 1
+
+    def test_unannotated_links_ignored(self) -> None:
+        soup = self._soup('<a href="https://example.com">x</a>')
+        issues = built_site_checks.check_annotated_links_have_annotations(
+            soup, frozenset()
+        )
+        assert issues == []
+
+    def test_load_annotation_keys_missing_file(self, tmp_path: Path) -> None:
+        assert built_site_checks.load_annotation_keys(tmp_path) == frozenset()
+
+    def test_load_annotation_keys_reads_object_keys(
+        self, tmp_path: Path
+    ) -> None:
+        static_dir = tmp_path / "static"
+        static_dir.mkdir()
+        (static_dir / "link-annotations.json").write_text(
+            json.dumps({self.WIKI_KEY: {"title": "RL"}}), encoding="utf-8"
+        )
+        assert built_site_checks.load_annotation_keys(tmp_path) == frozenset(
+            {self.WIKI_KEY}
+        )
+
+    def test_load_annotation_keys_rejects_non_object(
+        self, tmp_path: Path
+    ) -> None:
+        static_dir = tmp_path / "static"
+        static_dir.mkdir()
+        (static_dir / "link-annotations.json").write_text(
+            "[]", encoding="utf-8"
+        )
+        with pytest.raises(ValueError, match="must contain a JSON object"):
+            built_site_checks.load_annotation_keys(tmp_path)

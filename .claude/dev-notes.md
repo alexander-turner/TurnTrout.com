@@ -258,6 +258,37 @@ The manifest is produced by a separate writer (ArchiveBox + R2), shipped in its
 own PR. Canonicalization uses the WHATWG `new URL` parser; the writer mirrors it
 with the same `ada` parser so the keys match.
 
+## External-link annotations (build-time popovers)
+
+Gwern-style hover previews for external links, static-first because the CSP's
+`connect-src` forbids any client-side cross-origin fetch. Pipeline:
+
+1. `scripts/fetch_link_annotations.ts` (run locally on demand — the site build
+   never fetches): scans `website_content/` for en.wikipedia.org links, pulls
+   plain-text extracts from the Wikipedia REST `/page/summary` endpoint at
+   ~1 req/s, converts them to HTML via hast text nodes (escape-by-construction;
+   never `extract_html`), and writes `config/link_annotations.json` keyed by
+   canonical URL (`quartz/util/urls.ts`). Flags: `--check` (CI-style: exit
+   non-zero listing missing entries, no writes), `--force`, `--max-age-days=N`.
+2. `quartz/plugins/transformers/annotateLinks.ts` (after `ArchiveLinks`; looks
+   up `data-original-href` first) adds `can-trigger-popover annotated` +
+   `data-annotated="true"` to manifest-hit links only, so clients never do
+   lookup misses. Per-URL opt-out: `linkAnnotationBlocklist` in
+   `config/constants.json`.
+3. `quartz/plugins/emitters/linkAnnotations.ts` validates the manifest (fails
+   the build loudly when malformed) and emits it as same-origin
+   `static/link-annotations.json`.
+4. `popover_helpers.ts` branches before any fetch for `data-annotated` links:
+   lazy-loads the JSON once (shared `lazyJson.ts` loader, also used by the
+   content index), renders title/abstract/attribution, and is strictly
+   annotation-or-nothing — on any miss or failure it returns null rather than
+   falling through to a CSP-blocked page fetch. A `matchMedia` desktop gate
+   keeps mobile tap-hover emulation from ever downloading the JSON.
+
+`scripts/built_site_checks.py` fails the build if any `data-annotated` link in
+built HTML lacks a key in the emitted JSON. Note: the fetcher cannot run from
+remote Claude sessions (egress policy blocks en.wikipedia.org) — run it locally.
+
 ## Tweet embeds (self-hosted, tracking-free)
 
 Author a tweet with a ` ```tweet ` fenced block holding one tweet URL per line

@@ -4,6 +4,7 @@ import {
   AfterArticle,
   AliasRedirects,
   AllTagsPage,
+  AnnotateLinks,
   ArchiveLinks,
   Assets,
   AutoCode,
@@ -23,6 +24,7 @@ import {
   InlineCodeSpacing,
   InvertInDarkMode,
   Latex,
+  LinkAnnotations,
   NotFoundPage,
   ObsidianFlavoredMarkdown,
   PopulateContainers,
@@ -161,6 +163,9 @@ const config: QuartzConfig = {
       // After CrawlLinks so it sees normalized https:// hrefs + the "external"
       // class; swaps confirmed-dead outbound links for their archived copy.
       ArchiveLinks(),
+      // After ArchiveLinks so archived links' live URLs (`data-original-href`)
+      // are in place; marks external links that have committed annotations.
+      AnnotateLinks(),
       rehypeCustomSpoiler(),
       TagSmallcaps(),
       AutoCode(),
@@ -193,6 +198,7 @@ const config: QuartzConfig = {
       }),
       Assets(),
       Static(),
+      LinkAnnotations(),
       NotFoundPage(),
     ],
   },

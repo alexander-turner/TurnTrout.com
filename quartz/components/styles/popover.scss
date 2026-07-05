@@ -175,6 +175,25 @@
     }
   }
 
+  &.annotation-popover {
+    & > .popover-inner {
+      box-sizing: border-box;
+      padding: 1rem;
+
+      .annotation-title {
+        margin-top: 0;
+        font-size: var(--font-size-plus-1);
+      }
+
+      .annotation-attribution {
+        display: block;
+        margin-top: calc(2 * $base-margin);
+        font-size: var(--font-size-minus-2);
+        color: var(--midground);
+      }
+    }
+  }
+
   // Close button lives on .popover (not .popover-inner) so it doesn't
   // scroll with content. Positioned at top-right corner of .popover-inner.
   .popover-close {

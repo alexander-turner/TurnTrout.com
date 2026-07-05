@@ -1,0 +1,13 @@
+{
+  "https://en.wikipedia.org/wiki/Reinforcement_learning": {
+    "source": "wikipedia",
+    "title": "Reinforcement learning",
+    "abstract_html": "<p>Reinforcement learning (RL) is an interdisciplinary area of machine learning and optimal control concerned with how an intelligent agent should take actions in a dynamic environment in order to maximize a reward signal. Reinforcement learning is one of the three basic machine learning paradigms, alongside supervised learning and unsupervised learning.</p>",
+    "attribution": {
+      "text": "Wikipedia",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/"
+    },
+    "retrieved": "2026-01-01"
+  }
+}
