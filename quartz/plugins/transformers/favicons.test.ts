@@ -1013,10 +1013,10 @@ describe("glueFootnoteRefsToFavicons", () => {
   it("inserts a word joiner between a favicon-ending link and a following footnote ref", () => {
     const tree = asRoot(faviconLink(), footnoteRef(1))
     favicons.glueFootnoteRefsToFavicons(tree)
-    const p = (tree.children[0] as Element).children
-    expect(p).toHaveLength(3)
-    expect(p[1]).toEqual({ type: "text", value: WORD_JOINER })
-    expect((p[2] as Element).tagName).toBe("sup")
+    const paragraphChildren = (tree.children[0] as Element).children
+    expect(paragraphChildren).toHaveLength(3)
+    expect(paragraphChildren[1]).toEqual({ type: "text", value: WORD_JOINER })
+    expect((paragraphChildren[2] as Element).tagName).toBe("sup")
   })
 
   it("does not glue when the preceding link has no favicon", () => {
@@ -1043,29 +1043,35 @@ describe("glueFootnoteRefsToFavicons", () => {
   it("glues each of several favicon/footnote pairs in one parent", () => {
     const tree = asRoot(faviconLink(), footnoteRef(1), " and ", faviconLink(), footnoteRef(2))
     favicons.glueFootnoteRefsToFavicons(tree)
-    const p = (tree.children[0] as Element).children
-    const joinerIndices = p
-      .map((c, i) => (c.type === "text" && c.value === WORD_JOINER ? i : -1))
+    const paragraphChildren = (tree.children[0] as Element).children
+    const joinerIndices = paragraphChildren
+      .map((child, i) => (child.type === "text" && child.value === WORD_JOINER ? i : -1))
       .filter((i) => i >= 0)
     expect(joinerIndices).toEqual([1, 5])
     // Each word joiner sits immediately before a footnote sup.
-    const followedBySup = joinerIndices.map((i) => favicons.isFootnoteRefSup(p[i + 1] as Element))
+    const followedBySup = joinerIndices.map((i) =>
+      favicons.isFootnoteRefSup(paragraphChildren[i + 1] as Element),
+    )
     expect(followedBySup).toEqual([true, true])
   })
 
   it("glues across an empty text node left by whitespace stripping", () => {
     const tree = asRoot(faviconLink(), "", footnoteRef(1))
     favicons.glueFootnoteRefsToFavicons(tree)
-    const p = (tree.children[0] as Element).children
+    const paragraphChildren = (tree.children[0] as Element).children
     // The word joiner is inserted immediately before the sup, past the empty node.
-    const supIndex = p.findIndex((c) => c.type === "element" && c.tagName === "sup")
-    expect(p[supIndex - 1]).toEqual({ type: "text", value: WORD_JOINER })
+    const supIndex = paragraphChildren.findIndex(
+      (child) => child.type === "element" && child.tagName === "sup",
+    )
+    expect(paragraphChildren[supIndex - 1]).toEqual({ type: "text", value: WORD_JOINER })
   })
 
   it("does not glue when only empty text nodes precede a paragraph-opening ref", () => {
     const tree = asRoot("", footnoteRef(1))
     favicons.glueFootnoteRefsToFavicons(tree)
-    const p = (tree.children[0] as Element).children
-    expect(p.some((c) => c.type === "text" && c.value === WORD_JOINER)).toBe(false)
+    const paragraphChildren = (tree.children[0] as Element).children
+    expect(
+      paragraphChildren.some((child) => child.type === "text" && child.value === WORD_JOINER),
+    ).toBe(false)
   })
 })

@@ -24,21 +24,21 @@ test.describe("footnote reference after a favicon", () => {
       const supHtml = '<sup class="fn-ref"><a href="#fn">1</a></sup>'
 
       const build = (glue: string) => {
-        const p = document.createElement("p")
-        p.style.margin = "0"
-        p.innerHTML = `Alpha beta gamma delta epsilon the ${linkHtml}${glue}${supHtml} zeta eta theta.`
-        article.appendChild(p)
-        return p
+        const paragraph = document.createElement("p")
+        paragraph.style.margin = "0"
+        paragraph.innerHTML = `Alpha beta gamma delta epsilon the ${linkHtml}${glue}${supHtml} zeta eta theta.`
+        article.appendChild(paragraph)
+        return paragraph
       }
 
       // A superscript `<sup>` and a middle-aligned favicon sit at different
       // heights on the same line, so compare against half a line box: a wrapped
       // reference drops a full line below, well past the threshold.
-      const sameLine = (p: HTMLElement) => {
-        const fav = p.querySelector<HTMLElement>(".fav-glyph")
-        const sup = p.querySelector<HTMLElement>(".fn-ref")
+      const sameLine = (paragraph: HTMLElement) => {
+        const fav = paragraph.querySelector<HTMLElement>(".fav-glyph")
+        const sup = paragraph.querySelector<HTMLElement>(".fn-ref")
         if (!fav || !sup) throw new Error("missing fixture elements")
-        const lineHeight = parseFloat(getComputedStyle(p).lineHeight) || 24
+        const lineHeight = parseFloat(getComputedStyle(paragraph).lineHeight) || 24
         return sup.getBoundingClientRect().top - fav.getBoundingClientRect().top < lineHeight * 0.5
       }
 
@@ -82,7 +82,7 @@ test.describe("footnote reference after a favicon", () => {
       const WORD_JOINER = "⁠"
       const isFootnoteRef = (el: Element) =>
         el.tagName === "SUP" &&
-        !!el.querySelector("a[data-footnote-ref], a[id^='user-content-fnref']")
+        Boolean(el.querySelector("a[data-footnote-ref], a[id^='user-content-fnref']"))
       const endsWithFavicon = (el: Element): boolean => {
         const last = [...el.childNodes]
           .filter((n) => !(n.nodeType === Node.TEXT_NODE && !n.textContent?.trim()))
