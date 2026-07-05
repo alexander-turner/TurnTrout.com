@@ -90,8 +90,8 @@ async function setDummyContentMeta(page: Page) {
     const backlinksUl = document.querySelector("#backlinks-admonition ul")
     if (backlinksUl) {
       backlinksUl.innerHTML = `
-        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 1</a></li>
-        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 2</a></li>
+        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 1</a><div class="backlink-excerpt">…the first idea appears when <span class="backlink-highlight">this page</span> is cited in a longer sentence that wraps across several lines…</div></li>
+        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 2</a><div class="backlink-excerpt">A shorter excerpt mentioning <span class="backlink-highlight">this page</span> here.</div></li>
       `
     }
   })
@@ -821,6 +821,27 @@ test.describe("Right sidebar", () => {
     // Don't hover over the backlinks
     await moveMouseToSafePosition(page)
     await takeRegressionScreenshot(page, testInfo, "backlinks-visible", {
+      elementToScreenshot: backlinks,
+    })
+  })
+
+  // ContentMeta (and thus backlinks) is visible on both desktop and mobile, so this
+  // screenshot runs across every viewport project to cover the stacked mobile layout.
+  test("Backlink excerpts render below titles (screenshot)", async ({ page }, testInfo) => {
+    await setDummyContentMeta(page)
+    const backlinks = page.locator("#backlinks").first()
+    await backlinks.scrollIntoViewIfNeeded()
+
+    const backlinksTitle = backlinks.locator(".admonition-title").first()
+    await backlinksTitle.click()
+
+    const firstExcerpt = backlinks.locator(".backlink-excerpt").first()
+    await firstExcerpt.scrollIntoViewIfNeeded()
+    await expect(firstExcerpt).toBeVisible()
+    await expect(backlinks.locator(".backlink-highlight").first()).toBeVisible()
+
+    await moveMouseToSafePosition(page)
+    await takeRegressionScreenshot(page, testInfo, "backlink-excerpts", {
       elementToScreenshot: backlinks,
     })
   })

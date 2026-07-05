@@ -23,6 +23,7 @@ import {
   InlineCodeSpacing,
   InvertInDarkMode,
   Latex,
+  LinkContexts,
   NotFoundPage,
   ObsidianFlavoredMarkdown,
   PopulateContainers,
@@ -173,6 +174,9 @@ const config: QuartzConfig = {
       // After whitespace stripping so the preceding-character check sees the
       // final inline structure (a glued "(" isn't separated by stray text).
       InlineCodeSpacing(),
+      // After the favicon, smallcaps, spoiler, and inline-code passes so backlink
+      // excerpts mirror the final rendered prose (favicons stripped, spoilers hidden).
+      LinkContexts(),
       ColorVariables(),
       TableOfContents({ minEntries: 3 }),
       addAssetDimensionsFromSrc(),

@@ -1,0 +1,336 @@
+import type { Element, ElementContent, Parent, Root } from "hast"
+import type { VFile } from "vfile"
+
+import { toHtml } from "hast-util-to-html"
+import { visit } from "unist-util-visit"
+import { visitParents } from "unist-util-visit-parents"
+
+import type { QuartzTransformerPlugin } from "../types"
+
+import { HEADING_TAGS } from "../../components/constants"
+import { type FullSlug, type SimpleSlug, simplifySlug } from "../../util/path"
+import { hasClass } from "./utils"
+
+/** One cited-paragraph excerpt recorded on the *citing* page, keyed by the page it points at. */
+export interface LinkContext {
+  /** Simplified slug of the page the citing link resolves to. */
+  target: SimpleSlug
+  /** Sanitized, truncated inline HTML of the paragraph containing the citing link. */
+  excerptHtml: string
+  /** `id` stamped on the citing link so a backlink can deep-link to the citing location. */
+  anchor: string
+}
+
+/** Longest excerpt we keep, in visible characters, before truncating around the citing link. */
+export const BACKLINK_EXCERPT_MAX_CHARS = 330
+
+/** Single ellipsis marker; never `...`, which would trip the consecutive-periods site check. */
+const ELLIPSIS = "…"
+
+/**
+ * Deterministic, page-namespaced anchor id for the citing link. Namespacing by
+ * the source page's slug keeps ids unique even when a page's content (with its
+ * ids already baked in) is transcluded into another page, where a bare
+ * per-page counter would collide and trip `check_duplicate_ids`.
+ */
+export function anchorId(sourceSlug: string, index: number): string {
+  const slugPart = sourceSlug.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "")
+  return `backlink-cite-${slugPart || "page"}-${index}`
+}
+
+/** Block-level containers whose inline content forms a backlink excerpt. */
+const BLOCK_TAGS: ReadonlySet<string> = new Set(["p", "li", "dd", "dt", "td", "th", "figcaption"])
+
+/** Media/embedded elements dropped wholesale from an excerpt. */
+const DROP_TAGS: ReadonlySet<string> = new Set([
+  "img",
+  "video",
+  "iframe",
+  "svg",
+  "picture",
+  "audio",
+])
+
+/** Recursively collects the visible text of a hast node. */
+export function textOf(node: ElementContent): string {
+  if (node.type === "text") return node.value
+  if (node.type === "element") return node.children.map(textOf).join("")
+  return ""
+}
+
+/** Total visible length of a fragment. */
+function fragmentText(nodes: readonly ElementContent[]): string {
+  return nodes.map(textOf).join("")
+}
+
+/** A citing link is a resolved internal link (not a same-page anchor) with a recorded target. */
+function isCitingLink(node: Element): boolean {
+  if (node.tagName !== "a") return false
+  if (!hasClass(node, "internal")) return false
+  if (hasClass(node, "same-page-link")) return false
+  const dataSlug = node.properties?.["data-slug"]
+  return typeof dataSlug === "string" && dataSlug.length > 0
+}
+
+/** Nearest block-level ancestor of a link, or null if the link sits outside any excerpt-able block. */
+function findEnclosingBlock(ancestors: readonly Parent[]): Element | null {
+  for (let i = ancestors.length - 1; i >= 0; i--) {
+    const ancestor = ancestors[i] as Element
+    if (ancestor.type === "element" && BLOCK_TAGS.has(ancestor.tagName)) return ancestor
+  }
+  return null
+}
+
+/** True when any ancestor is a heading or a spoiler container (excerpts must skip both). */
+function isInSkippedContext(ancestors: readonly Parent[]): boolean {
+  return ancestors.some((rawAncestor) => {
+    const ancestor = rawAncestor as Element
+    return (
+      ancestor.type === "element" &&
+      (HEADING_TAGS.has(ancestor.tagName) || hasClass(ancestor, "spoiler-container"))
+    )
+  })
+}
+
+/** Extracts the original TeX source from a KaTeX span's MathML `<annotation>`, or "" if absent. */
+function katexToTex(node: Element): string {
+  const annotations: string[] = []
+  visit(node, "element", (child: Element) => {
+    if (child.tagName === "annotation") annotations.push(textOf(child))
+  })
+  return (annotations[0] ?? "").trim()
+}
+
+/** True when a `<sup>` wraps a footnote reference link (`#user-content-fn…`). */
+function isFootnoteRef(node: Element): boolean {
+  if (node.tagName !== "sup") return false
+  let found = false
+  visit(node, "element", (child: Element) => {
+    const href = child.properties?.href
+    if (child.tagName === "a" && typeof href === "string" && href.startsWith("#user-content-fn")) {
+      found = true
+    }
+  })
+  return found
+}
+
+/**
+ * Rewrites a cloned block's children into an excerpt-safe inline fragment:
+ * strips favicons/media/footnote refs, replaces emoji imgs with their alt text
+ * and KaTeX with its TeX source, unwraps non-citing links, marks the citing
+ * link with a highlight span, and removes every `id` attribute.
+ */
+function sanitizeChildren(children: readonly ElementContent[], anchorId: string): ElementContent[] {
+  return children.flatMap((child) => sanitizeNode(child, anchorId))
+}
+
+function sanitizeNode(node: ElementContent, anchorId: string): ElementContent[] {
+  if (node.type === "text") return [{ type: "text", value: node.value }]
+  if (node.type !== "element") return []
+
+  if (node.tagName === "a" && node.properties?.id === anchorId) {
+    return [
+      {
+        type: "element",
+        tagName: "span",
+        properties: { className: ["backlink-highlight"] },
+        children: sanitizeChildren(node.children, anchorId),
+      },
+    ]
+  }
+
+  if (hasClass(node, "favicon")) return []
+  if (hasClass(node, "favicon-span") || hasClass(node, "emoji-span")) {
+    return sanitizeChildren(node.children, anchorId)
+  }
+
+  if (node.tagName === "img" && hasClass(node, "emoji")) {
+    const alt = node.properties?.alt
+    return typeof alt === "string" && alt ? [{ type: "text", value: alt }] : []
+  }
+
+  if (hasClass(node, "katex")) {
+    return [
+      {
+        type: "element",
+        tagName: "code",
+        properties: {},
+        children: [{ type: "text", value: katexToTex(node) }],
+      },
+    ]
+  }
+
+  if (isFootnoteRef(node)) return []
+  if (DROP_TAGS.has(node.tagName)) return []
+  if (node.tagName === "a") return sanitizeChildren(node.children, anchorId)
+
+  const properties = { ...node.properties }
+  delete properties.id
+  return [{ ...node, properties, children: sanitizeChildren(node.children, anchorId) }]
+}
+
+interface Measurement {
+  total: number
+  hlStart: number
+  hlLen: number
+}
+
+/** Locates the highlight span's character offset/length within a fragment. */
+function measureFragment(nodes: readonly ElementContent[]): Measurement {
+  let cursor = 0
+  let hlStart = 0
+  let hlLen = 0
+  const walk = (children: readonly ElementContent[]): void => {
+    for (const node of children) {
+      if (node.type === "text") {
+        cursor += node.value.length
+      } else if (node.type === "element") {
+        const before = cursor
+        walk(node.children)
+        if (hasClass(node, "backlink-highlight")) {
+          hlStart = before
+          hlLen = cursor - before
+        }
+      }
+    }
+  }
+  walk(nodes)
+  return { total: cursor, hlStart, hlLen }
+}
+
+/** Keeps only text within `[start, end)` (visible-char space), preserving inline structure. */
+function sliceNodes(
+  nodes: readonly ElementContent[],
+  start: number,
+  end: number,
+  cursor: { i: number },
+): ElementContent[] {
+  const out: ElementContent[] = []
+  for (const node of nodes) {
+    if (node.type === "text") {
+      const nodeStart = cursor.i
+      cursor.i += node.value.length
+      const from = Math.max(start, nodeStart)
+      const to = Math.min(end, cursor.i)
+      if (to > from)
+        out.push({ type: "text", value: node.value.slice(from - nodeStart, to - nodeStart) })
+    } else if (node.type === "element") {
+      const kids = sliceNodes(node.children, start, end, cursor)
+      if (kids.length > 0) out.push({ ...node, children: kids })
+    }
+  }
+  return out
+}
+
+/** Advances a window edge to a word boundary so truncation never cuts mid-word. */
+export function trimWindow(
+  full: string,
+  hlStart: number,
+  hlEnd: number,
+  total: number,
+  left: number,
+  right: number,
+): {
+  winStart: number
+  winEnd: number
+} {
+  let winStart = hlStart - left
+  let winEnd = hlEnd + right
+
+  while (winStart > 0 && winStart < hlStart && !/\s/.test(full[winStart - 1])) winStart++
+  while (winStart < hlStart && /\s/.test(full[winStart])) winStart++
+
+  while (winEnd < total && winEnd > hlEnd && !/\s/.test(full[winEnd])) winEnd--
+  while (winEnd > hlEnd && /\s/.test(full[winEnd - 1])) winEnd--
+
+  return { winStart, winEnd }
+}
+
+/** Truncates a sanitized fragment to ~{@link BACKLINK_EXCERPT_MAX_CHARS} around the highlight. */
+export function truncateFragment(nodes: readonly ElementContent[]): ElementContent[] {
+  const { total, hlStart: rawStart, hlLen: rawLen } = measureFragment(nodes)
+  if (total <= BACKLINK_EXCERPT_MAX_CHARS) return [...nodes]
+
+  const hlStart = Math.max(0, rawStart)
+  const hlLen = Math.max(0, rawLen)
+  const hlEnd = hlStart + hlLen
+  const avail = Math.max(0, BACKLINK_EXCERPT_MAX_CHARS - hlLen)
+  const half = Math.floor(avail / 2)
+
+  let left = Math.min(hlStart, half)
+  let right = Math.min(total - hlEnd, half)
+  let leftover = avail - left - right
+  if (leftover > 0) {
+    const addLeft = Math.min(leftover, hlStart - left)
+    left += addLeft
+    leftover -= addLeft
+    right += Math.min(leftover, total - hlEnd - right)
+  }
+
+  const full = fragmentText(nodes)
+  const { winStart, winEnd } = trimWindow(full, hlStart, hlEnd, total, left, right)
+
+  const sliced = sliceNodes(nodes, winStart, winEnd, { i: 0 })
+  if (winStart > 0) sliced.unshift({ type: "text", value: ELLIPSIS })
+  if (winEnd < total) sliced.push({ type: "text", value: ELLIPSIS })
+  return sliced
+}
+
+/** Builds the sanitized, truncated excerpt HTML for a block containing an anchored citing link. */
+export function buildExcerpt(block: Element, anchorId: string): string {
+  const clone = structuredClone(block)
+  const fragment = truncateFragment(sanitizeChildren(clone.children, anchorId))
+  return toHtml({ type: "root", children: fragment })
+}
+
+/**
+ * Records, for each page, a sanitized excerpt of the first paragraph citing every
+ * other page it links to. Consumed by the Backlinks component to show cited
+ * context and to deep-link back to the citing location.
+ *
+ * Must run after the favicon, smallcaps, spoiler, and inline-code passes so
+ * excerpts reflect the final rendered prose.
+ */
+export const LinkContexts: QuartzTransformerPlugin = () => ({
+  name: "LinkContexts",
+  htmlPlugins() {
+    return [
+      () => (tree: Root, file: VFile) => {
+        const currentSlug = simplifySlug(file.data.slug as FullSlug)
+        const contexts: LinkContext[] = []
+        const seen = new Set<string>()
+        let counter = 0
+
+        visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
+          if (!isCitingLink(node)) return
+          if (isInSkippedContext(ancestors)) return
+
+          const dataSlug = node.properties["data-slug"] as string
+          const target = simplifySlug(dataSlug as FullSlug)
+          if (target === currentSlug || seen.has(target)) return
+
+          const block = findEnclosingBlock(ancestors)
+          if (!block) return
+
+          const existingId = node.properties.id
+          const anchor =
+            typeof existingId === "string" && existingId
+              ? existingId
+              : anchorId(file.data.slug as string, counter++)
+          node.properties.id = anchor
+
+          contexts.push({ target, excerptHtml: buildExcerpt(block, anchor), anchor })
+          seen.add(target)
+        })
+
+        if (contexts.length > 0) file.data.linkContexts = contexts
+      },
+    ]
+  },
+})
+
+declare module "vfile" {
+  interface DataMap {
+    linkContexts: readonly LinkContext[]
+  }
+}

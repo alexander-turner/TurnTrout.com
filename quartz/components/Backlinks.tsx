@@ -24,6 +24,19 @@ function classNameString(properties: Element["properties"]): string {
   return Array.isArray(className) ? className.map(String).join(" ") : ""
 }
 
+/**
+ * Semantic inline tags preserved verbatim when rendering backlink titles and
+ * excerpts. Everything else falls back to a `<span>`.
+ */
+const SEMANTIC_INLINE_TAGS: ReadonlySet<string> = new Set([
+  "em",
+  "strong",
+  "code",
+  "del",
+  "sub",
+  "sup",
+])
+
 function elementToJsx(elt: RootContent): JSX.Element {
   switch (elt.type) {
     case "text":
@@ -45,6 +58,14 @@ function elementToJsx(elt: RootContent): JSX.Element {
           />
         )
       }
+      if (SEMANTIC_INLINE_TAGS.has(elt.tagName)) {
+        const Tag = elt.tagName as keyof JSX.IntrinsicElements
+        return (
+          <Tag className={classNameString(elt.properties) || undefined}>
+            {elt.children.map(elementToJsx)}
+          </Tag>
+        )
+      }
       return (
         <span className={classNameString(elt.properties) || undefined}>
           {elt.children.map(elementToJsx)}
@@ -54,6 +75,12 @@ function elementToJsx(elt: RootContent): JSX.Element {
       // skipcq: JS-0424 want to cast as JSX element
       return <></>
   }
+}
+
+/** Parses a stored excerpt's inline HTML into JSX rendered below a backlink title. */
+function renderExcerpt(excerptHtml: string): JSX.Element {
+  const htmlAst = fromHtml(excerptHtml, { fragment: true }) as unknown as Parent
+  return <div className="backlink-excerpt">{htmlAst.children.map(elementToJsx)}</div>
 }
 
 /**
@@ -67,26 +94,31 @@ const BacklinksList = ({
 }: {
   backlinkFiles: QuartzPluginData[]
   currentSlug: FullSlug
-}): JSX.Element => (
-  <ul>
-    {backlinkFiles.map((f) => {
-      if (!("frontmatter" in f) || !("slug" in f) || !f.frontmatter?.title) {
-        return null
-      }
-      const processedTitle = processBacklinkTitle(f.frontmatter.title)
-      return (
-        <li key={f.slug}>
-          <a
-            href={resolveRelative(currentSlug, f.slug as FullSlug)}
-            className="internal can-trigger-popover"
-          >
-            {processedTitle.children.map(elementToJsx)}
-          </a>
-        </li>
-      )
-    })}
-  </ul>
-)
+}): JSX.Element => {
+  const currentTarget = simplifySlug(currentSlug)
+  return (
+    <ul>
+      {backlinkFiles.map((f) => {
+        if (!("frontmatter" in f) || !("slug" in f) || !f.frontmatter?.title) {
+          return null
+        }
+        const processedTitle = processBacklinkTitle(f.frontmatter.title)
+        const context = f.linkContexts?.find((lc) => lc.target === currentTarget)
+        const baseHref = resolveRelative(currentSlug, f.slug as FullSlug)
+        // Deep-link to the citing paragraph so the backlink opens where it references us.
+        const href = context?.anchor ? `${baseHref}#${context.anchor}` : baseHref
+        return (
+          <li key={f.slug}>
+            <a href={href} className="internal can-trigger-popover">
+              {processedTitle.children.map(elementToJsx)}
+            </a>
+            {context?.excerptHtml ? renderExcerpt(context.excerptHtml) : null}
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
 
 /**
  * @param allFiles - The list of all files in the site

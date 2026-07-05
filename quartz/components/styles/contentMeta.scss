@@ -41,6 +41,26 @@
   }
 }
 
+// The excerpt of the citing paragraph, shown below each backlink title. The
+// shared toc.scss list rules stagger wrapped lines with a negative text-indent
+// and a tight 1.05em line-height tuned for single-line TOC entries; both would
+// mangle multi-line prose, so reset them here.
+#backlinks-admonition .backlink-excerpt {
+  display: block;
+  margin-top: calc(0.25 * $base-margin);
+  font-size: var(--font-size-minus-2);
+  line-height: normal;
+  text-indent: 0;
+  color: var(--midground);
+
+  .backlink-highlight {
+    padding: 0 0.1rem;
+    border-radius: $border-radius;
+    background-color: var(--highlight);
+    color: var(--foreground);
+  }
+}
+
 #tags ul {
   color: var(--midground);
   list-style: none;
