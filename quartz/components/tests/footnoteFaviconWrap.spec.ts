@@ -5,10 +5,19 @@ import { gotoPage } from "./visual_utils"
 // trailing edge. When a footnote reference immediately follows a favicon-ending
 // link, that break can orphan the tiny reference number onto its own line. The
 // favicon transformer defends against this by gluing the link and the footnote
-// `<sup>` with a word joiner (U+2060), which is universally supported, so this
-// assertion runs on every browser/viewport project.
+// `<sup>` with a word joiner (U+2060). The first test measures the rendered
+// effect (Chromium-scoped; see its note); the second asserts the joiner is
+// present in the DOM on every browser/viewport project.
 test.describe("footnote reference after a favicon", () => {
-  test("keeps the reference number from wrapping onto its own line", async ({ page }) => {
+  test("keeps the reference number from wrapping onto its own line", async ({ page }, testInfo) => {
+    // This is a synthetic layout probe: it shrinks a paragraph to a knife-edge
+    // width and reads which line the reference lands on. That measurement rides
+    // on engine-specific line-break heuristics around replaced elements, which
+    // diverge across Firefox and WebKit. The cross-browser guarantee that the
+    // joiner is actually emitted is covered by the DOM assertion below, so scope
+    // this rendering probe to Chromium (as the sibling figcaption test does).
+    test.skip(!testInfo.project.name.includes("Chrome"), "engine-specific line-break heuristics")
+
     await gotoPage(page, "http://localhost:8080/test-page")
 
     const measured = await page.evaluate(() => {
