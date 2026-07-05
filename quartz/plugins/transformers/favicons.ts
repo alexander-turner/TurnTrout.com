@@ -498,9 +498,8 @@ export function endsWithFavicon(node: Element): boolean {
  * A favicon is a replaced inline element, so browsers allow a line break on its
  * trailing edge. When a footnote reference immediately follows a favicon-ending
  * link, that break can orphan the tiny reference number onto its own line. Wrap
- * the link and the `<sup>` in a `white-space: nowrap` span so the break between
- * them is suppressed; the link keeps `white-space: normal` (see favicon.scss) so
- * it can still wrap internally.
+ * the link and the `<sup>` in a `.favicon-footnote-span`, which suppresses the
+ * break between them (see favicon.scss).
  */
 export function glueFootnoteRefsToFavicons(tree: Root): void {
   const wraps: Array<{ parent: Parent; start: number; end: number }> = []

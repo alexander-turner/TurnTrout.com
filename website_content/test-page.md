@@ -642,7 +642,7 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 
 A footnote reference right after a favicon-ending [same-page link](#external-links-with-favicons)[^favicon-footnote] must not wrap onto its own line.
 
-[^favicon-footnote]: The footnote number stays glued to the favicon via a word joiner.
+[^favicon-footnote]: The footnote number stays glued to the favicon so it can't wrap onto its own line.
 
 <div id="populate-favicon-container" class="no-favicon-span"></div>
 
