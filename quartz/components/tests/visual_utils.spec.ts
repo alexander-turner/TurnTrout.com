@@ -24,9 +24,12 @@ async function getImageDimensions(buffer: Buffer): Promise<{ width: number; heig
   }
 }
 
-// 1x1 transparent PNG.
+// 1x1 transparent PNG. Firefox rejects the more common minimal encoding as
+// "Image corrupt or truncated" (leaving `naturalWidth === 0`), so these bytes
+// are a full-header PNG that every engine decodes — otherwise a mocked image
+// never paints under Firefox and `waitForImagesInElement` waits it out.
 const onePixelPng = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADUlEQVR4nGNgYGBgAAAABQABpfZFQAAAAABJRU5ErkJggg==",
   "base64",
 )
 
