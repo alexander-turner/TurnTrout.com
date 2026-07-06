@@ -93,6 +93,26 @@ describe("buildExcerpt sanitizer", () => {
     expect(html).not.toContain("drop-me")
   })
 
+  it("preserves authored inline-img sprites verbatim and strips their ids", () => {
+    const chevron = h("img.inline-img", {
+      src: "https://assets.turntrout.com/static/images/chevron.avif",
+      alt: "chevron sprite",
+      width: "16",
+      height: "16",
+      id: "drop-me",
+    }) as ElementContent
+    const html = buildExcerpt(
+      blockWith({ type: "text", value: "the agent " }, chevron, { type: "text", value: " " }, anchored("moves")),
+      ANCHOR,
+    )
+    expect(html).toContain('<img class="inline-img"')
+    expect(html).toContain('alt="chevron sprite"')
+    expect(html).toContain('width="16"')
+    expect(html).toContain('height="16"')
+    expect(html).not.toContain("drop-me")
+    expect(html.endsWith('<span class="backlink-highlight">moves</span>')).toBe(true)
+  })
+
   it("keeps emoji spans with their inner twemoji image intact", () => {
     const emojiSpan = h("span.emoji-span", [
       { type: "text", value: "a" },

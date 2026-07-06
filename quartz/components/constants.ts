@@ -152,6 +152,11 @@ export const SEARCH_MATCH_CLASS = "search-match"
 // and KaTeX libraries respectively; the constants document the value we match.
 export const EMOJI_CLASS = "emoji"
 export const EMOJI_SPAN_CLASS = "emoji-span"
+// Authored glyph-sized inline images (SafeLife sprites, the agent chevron, …),
+// styled at `0.9rem` in `custom.scss`. Like emoji, each reads as a single inline
+// atom, so backlink excerpts preserve them verbatim rather than dropping them as
+// block media. The constant documents the value the sanitizer matches.
+export const INLINE_IMG_CLASS = "inline-img"
 // Intrinsic pixel dimensions of a Twemoji SVG (its `viewBox` is `0 0 36 36`).
 // In article bodies the `assetDimensions` transformer fetches and stamps this,
 // but titles render at component time without that pass, so their emoji `<img>`

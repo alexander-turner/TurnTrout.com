@@ -13,6 +13,7 @@ import {
   FAVICON_CLASS,
   FAVICON_SPAN_CLASS,
   HEADING_TAGS,
+  INLINE_IMG_CLASS,
   KATEX_CLASS,
 } from "../../components/constants"
 import { type FullSlug, type SimpleSlug, simplifySlug } from "../../util/path"
@@ -148,13 +149,18 @@ function stripIdsDeep(node: Element): Element {
 }
 
 /**
- * Inline atoms preserved verbatim from the rendered pipeline output — a twemoji
- * image or a KaTeX span. They render as a single glyph, so measurement and
- * slicing treat each as one visible character and never descend into or split
- * them (KaTeX's duplicated MathML/HTML text would otherwise wreck both).
+ * Inline atoms preserved verbatim from the rendered pipeline output — a KaTeX
+ * span, a twemoji image, or an authored glyph-sized inline image (`inline-img`,
+ * e.g. the SafeLife sprites and agent chevron). Each renders as a single glyph,
+ * so measurement and slicing treat it as one visible character and never descend
+ * into or split it (KaTeX's duplicated MathML/HTML text would otherwise wreck
+ * both). Their width/height are already stamped by `addAssetDimensionsFromSrc`,
+ * which runs before this pass, so the preserved `<img>` satisfies the
+ * `images_missing_dimensions` check.
  */
 function isInlineAtom(node: Element): boolean {
-  return hasClass(node, KATEX_CLASS) || (node.tagName === "img" && hasClass(node, EMOJI_CLASS))
+  if (hasClass(node, KATEX_CLASS)) return true
+  return node.tagName === "img" && (hasClass(node, EMOJI_CLASS) || hasClass(node, INLINE_IMG_CLASS))
 }
 
 /** True when a `<sup>` wraps a footnote reference link (`#user-content-fn…`). */

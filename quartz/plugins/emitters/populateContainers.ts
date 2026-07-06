@@ -9,11 +9,18 @@ import { render } from "preact-render-to-string"
 import { quote } from "shell-quote"
 import { visit } from "unist-util-visit"
 
+import { Backlinks } from "../../components/Backlinks"
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
 import { renderPostStatistics } from "../../components/ContentMeta"
 import { type QuartzComponentProps } from "../../components/types"
 import { createWinstonLogger } from "../../util/log"
-import { type FilePath, joinSegments } from "../../util/path"
+import {
+  type FilePath,
+  type FullSlug,
+  joinSegments,
+  type SimpleSlug,
+  simplifySlug,
+} from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
 import {
   createFaviconElement,
@@ -24,6 +31,7 @@ import {
 } from "../transformers/favicons"
 import { createNowrapSpan, hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
+import { type ProcessedContent } from "../vfile"
 
 const {
   minFaviconCount,
@@ -272,6 +280,40 @@ export const generateMetadataAdmonition = (): ContentGenerator => {
 }
 
 /**
+ * Renders the live "Links to this page" block for the design page, injected into
+ * the design essay so the backlinks feature is demonstrated in place. Uses the
+ * real Backlinks component over the site's actual link graph, so it stays in
+ * sync with whatever currently cites `/design`. The page layout already renders
+ * a copy carrying `id="backlinks"`, so this one's id is stripped to avoid a
+ * duplicate. Registered with `skipFavicons` so it matches the favicon-less block
+ * the layout renders rather than sprouting trailing favicons on each excerpt.
+ */
+export const generateBacklinksDemo = (content: ProcessedContent[]): ContentGenerator => {
+  return (): Element[] => {
+    const allFiles = content.map((entry) => entry[1].data)
+    const designData = allFiles.find(
+      (data) => simplifySlug(data.slug as FullSlug) === ("design" as SimpleSlug),
+    )
+    // istanbul ignore next -- the design page is always present in a full build
+    if (!designData) return []
+
+    const props = { fileData: designData, allFiles } as unknown as QuartzComponentProps
+    // Backlinks is typed as a QuartzComponent union (not directly callable); render
+    // it like renderPostStatistics by invoking it for a VNode `render` accepts.
+    const renderBacklinks = Backlinks as unknown as (
+      props: QuartzComponentProps,
+    ) => Parameters<typeof render>[0]
+    const root = fromHtml(render(renderBacklinks(props)), { fragment: true })
+    visit(root, "element", (node) => {
+      if (node.properties?.id === "backlinks") {
+        delete node.properties.id
+      }
+    })
+    return root.children.filter((c): c is Element => c.type === "element")
+  }
+}
+
+/**
  * Generates favicon elements based on favicon counts from the build process.
  */
 export const generateFaviconContent = (): ContentGenerator => {
@@ -337,6 +379,12 @@ export interface ElementPopulatorConfig {
   className?: string
   /** The content generator function */
   generator: ContentGenerator
+  /**
+   * Skip the favicon post-pass for this container. Set when the generated
+   * content already reflects final favicon state (e.g. the backlinks demo mirrors
+   * the layout's favicon-less block), so links must not sprout extra favicons.
+   */
+  skipFavicons?: boolean
 }
 
 /**
@@ -352,6 +400,7 @@ export const populateElements = async (
   const html = fs.readFileSync(htmlPath, "utf-8")
   const root = fromHtml(html)
   const populatedElements: Element[] = []
+  const faviconElements: Element[] = []
 
   for (const config of configs) {
     // Validate that config has exactly one of id or className
@@ -359,6 +408,7 @@ export const populateElements = async (
       throw new Error("Config cannot have both id and className")
     }
 
+    const configElements: Element[] = []
     if (config.id) {
       const element = findElementById(root, config.id)
       if (!element) {
@@ -368,7 +418,7 @@ export const populateElements = async (
 
       const content = await config.generator()
       element.children = content
-      populatedElements.push(element)
+      configElements.push(element)
     } else if (config.className) {
       const elements = findElementsByClass(root, config.className)
       if (elements.length === 0) {
@@ -380,18 +430,21 @@ export const populateElements = async (
       const content = await config.generator()
       for (const element of elements) {
         element.children = structuredClone(content)
-        populatedElements.push(element)
+        configElements.push(element)
       }
       logger.debug(`Added ${content.length} elements to each .${config.className}`)
     } else {
       throw new Error("Config missing both id and className")
     }
+
+    populatedElements.push(...configElements)
+    if (!config.skipFavicons) faviconElements.push(...configElements)
   }
 
   if (populatedElements.length > 0) {
     // Add favicons only to links within populated containers, not the entire page.
     // The favicon transformer already processed the rest of the page.
-    for (const element of populatedElements) {
+    for (const element of faviconElements) {
       await addFaviconsToLinks(element)
     }
     fs.writeFileSync(htmlPath, toHtml(root), "utf-8")
@@ -424,10 +477,12 @@ export async function addFaviconsToLinks(subtree: Element | Root): Promise<void>
  */
 const createPopulatorMap = (
   stats: Awaited<ReturnType<typeof computeRepoStats>>,
+  content: ProcessedContent[],
 ): Map<string, ContentGenerator> => {
   return new Map([
     // IDs
     ["populate-metadata-admonition", generateMetadataAdmonition()],
+    ["populate-backlinks-demo", generateBacklinksDemo(content)],
     ["populate-favicon-container", generateFaviconContent()],
     ["populate-favicon-threshold", generateConstantContent(minFaviconCount)],
     ["populate-max-size-card", generateConstantContent(maxCardImageSizeKb)],
@@ -502,6 +557,13 @@ const findPopulateTargets = (htmlPath: string): { ids: Set<string>; classes: Set
 }
 
 /**
+ * Populate IDs whose generated content already reflects final favicon state, so
+ * the favicon post-pass must be skipped. The backlinks demo mirrors the layout's
+ * favicon-less "Links to this page" block.
+ */
+const SKIP_FAVICON_IDS: ReadonlySet<string> = new Set(["populate-backlinks-demo"])
+
+/**
  * Emitter that populates containers across all HTML files after all files have been processed.
  */
 export const PopulateContainers: QuartzEmitterPlugin = () => {
@@ -511,9 +573,9 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
     getQuartzComponents() {
       return []
     },
-    async emit(ctx) {
+    async emit(ctx, content) {
       const stats = await computeRepoStats()
-      const populatorMap = createPopulatorMap(stats)
+      const populatorMap = createPopulatorMap(stats, content)
 
       const htmlFiles = await globby("**/*.html", {
         cwd: ctx.argv.output,
@@ -542,7 +604,7 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
             logger.warn(`No generator found for populate ID: ${id}`)
             continue
           }
-          configs.push({ id, generator })
+          configs.push({ id, generator, skipFavicons: SKIP_FAVICON_IDS.has(id) })
         }
 
         for (const className of classes) {

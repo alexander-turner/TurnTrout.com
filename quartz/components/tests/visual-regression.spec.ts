@@ -91,7 +91,7 @@ async function setDummyContentMeta(page: Page) {
     if (backlinksUl) {
       backlinksUl.innerHTML = `
         <li><a href="#" class="internal can-trigger-popover" title="Read the original post">Dummy Backlink 1</a><a href="#a" class="backlink-excerpt internal can-trigger-popover">[...] the first idea appears when <span class="backlink-highlight">this page</span> is cited in a longer sentence that wraps across several lines [...]</a><a href="#b" class="backlink-excerpt internal can-trigger-popover">a second place where <span class="backlink-highlight">this page</span> is referenced again [...]</a></li>
-        <li><a href="#" class="internal can-trigger-popover" title="Read the original post">Dummy Backlink 2</a><a href="#c" class="backlink-excerpt internal can-trigger-popover">A shorter excerpt mentioning <span class="backlink-highlight">this page</span> here.</a></li>
+        <li><a href="#" class="internal can-trigger-popover" title="Read the original post">Dummy Backlink 2</a><a href="#c" class="backlink-excerpt internal can-trigger-popover">A shorter excerpt where the agent <img class="inline-img" src="https://assets.turntrout.com/static/images/chevron.avif" alt="chevron sprite" width="16" height="16"> mentions <span class="backlink-highlight">this page</span> here.</a></li>
       `
     }
   })

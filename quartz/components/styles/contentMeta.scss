@@ -67,8 +67,18 @@
     color: var(--midground-faint);
     text-decoration: none;
 
+    // Full-color inline sprites (the agent chevron, SafeLife tiles) would pop
+    // against the faint excerpt prose, so dim them to the text's visual weight.
+    .inline-img {
+      opacity: 0.6;
+    }
+
     &:hover {
       color: var(--midground);
+
+      .inline-img {
+        opacity: 1;
+      }
     }
 
     .backlink-highlight {
