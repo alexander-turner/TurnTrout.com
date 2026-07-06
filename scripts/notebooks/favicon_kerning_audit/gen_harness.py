@@ -1,4 +1,5 @@
-"""Generate measurement harness pages inside public/.
+"""
+Generate measurement harness pages inside public/.
 
 `index.html`: one cell per mined bigram, rendered exactly as the site does
 (same nudge classes), glyph painted pure red and favicon pure blue so a
@@ -36,7 +37,8 @@ STYLE = """
 
 
 def production_head() -> str:
-    """A real page's <head> (scripts and redirects stripped) so fonts/CSS match."""
+    """A real page's <head> (scripts and redirects stripped) so fonts/CSS
+    match."""
     ref = (PUBLIC / "welcome.html").read_text(encoding="utf-8")
     head = re.search(r"<head[ >].*?</head>", ref, re.S).group(0)
     head = re.sub(r"<script\b.*?</script>", "", head, flags=re.S)

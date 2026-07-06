@@ -1,4 +1,5 @@
-"""Build a worst-first HTML gallery + markdown summary from measurement results."""
+"""Build a worst-first HTML gallery + markdown summary from measurement
+results."""
 
 import base64
 import json

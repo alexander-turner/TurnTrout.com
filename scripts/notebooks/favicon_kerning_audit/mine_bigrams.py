@@ -1,9 +1,10 @@
-"""Mine the built site for favicon bigrams.
+"""
+Mine the built site for favicon bigrams.
 
-A "bigram" is (preceding visible character, favicon domain). For every
-favicon occurrence in public/**/*.html, find the last non-whitespace text
-character rendered before it, and record the pair with counts, whether a
-spacing nudge class was applied, and example pages/contexts.
+A "bigram" is (preceding visible character, favicon domain). For every favicon
+occurrence in public/**/*.html, find the last non-whitespace text character
+rendered before it, and record the pair with counts, whether a spacing nudge
+class was applied, and example pages/contexts.
 """
 
 import json
