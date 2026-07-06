@@ -121,10 +121,11 @@ jobs:
 
           # Upsert a single sticky comment identified by the marker.
           body=$(cat /tmp/comment.md)
-          # --slurp yields an array of pages; .[][] flattens to every comment so
-          # a per-page --jq can't emit one id per page (a multiline result).
+          # gh rejects --slurp together with --jq, so slurp all comment pages
+          # (an array of page-arrays) and flatten with a standalone jq; .[][]
+          # yields every comment, first(...) picks the single marked one.
           existing=$(gh api --paginate --slurp "repos/$REPO/issues/$PR_NUMBER/comments" \
-            --jq "first(.[][] | select(.body | contains(\"$marker\")) | .id) // \"\"")
+            | jq -r "first(.[][] | select(.body | contains(\"$marker\")) | .id) // empty")
           if [ -n "$existing" ]; then
             gh api -X PATCH "repos/$REPO/issues/comments/$existing" -f body="$body" >/dev/null
           else
