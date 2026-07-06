@@ -31,10 +31,10 @@ const faviconSpanNode = {
 
 const createExpectedFavicon = (
   imgPath: string,
-  extraMarginLeft?: boolean,
+  nudgeClass?: "close-text" | "closer-text",
 ): Record<string, unknown> => {
   const faviconElement = favicons.createFaviconElement(imgPath)
-  faviconElement.properties.class = `favicon${extraMarginLeft ? " close-text" : ""}`
+  faviconElement.properties.class = `favicon${nudgeClass ? ` ${nudgeClass}` : ""}`
   return faviconElement as unknown as Record<string, unknown>
 }
 
@@ -488,11 +488,21 @@ describe("insertFavicon", () => {
       expect(span).toMatchObject(faviconSpanNode)
     })
 
-    it.each(favicons.charsToSpace)("applies close-text class for trailing %s", (char) => {
+    it.each([
+      ...favicons.charsToSpace.map((char) => [char, "close-text"] as const),
+      ...favicons.charsToSpaceMost.map((char) => [char, "closer-text"] as const),
+    ])("trailing %s gets the %s nudge class", (char, nudgeClass) => {
       const node = h("p", {}, [`Test${char}`])
       favicons.insertFavicon(imgPath, node)
       const span = node.children[1] as Element
-      expect(span.children[1]).toMatchObject(createExpectedFavicon(imgPath, true))
+      expect(span.children[1]).toMatchObject(createExpectedFavicon(imgPath, nudgeClass))
+    })
+
+    it("keeps charsToSpace and charsToSpaceMost disjoint", () => {
+      const overlap = favicons.charsToSpace.filter((char) =>
+        favicons.charsToSpaceMost.includes(char),
+      )
+      expect(overlap).toEqual([])
     })
 
     it("appends to existing favicon-span instead of creating a new one", () => {

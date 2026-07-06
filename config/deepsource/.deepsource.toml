@@ -3,7 +3,7 @@ version = 1
 exclude_patterns = [
   "**/*.min.*",
   "node_modules/**",
-  "scripts/notebooks/*"
+  "scripts/notebooks/**"
 ]
 test_patterns = ["**test.jsx?", "**test.tsx?", "**test_*.py", "scripts/tests/**/test_*.py"]
 
