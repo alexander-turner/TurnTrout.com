@@ -263,9 +263,9 @@ describe("Backlinks", () => {
 
     // The emoji becomes a Twemoji <img class="emoji"> rather than a bare glyph.
     expect(html).toMatch(/<img[^>]*class="emoji"[^>]*>/)
-    expect(html).toMatch(/<img[^>]*alt="🐟"[^>]*>/)
+    expect(html).toMatch(/<img[^>]*alt="🐟"[^>]*>/u)
     // The only occurrence of the raw glyph is inside the img's alt text.
-    expect(html.match(/🐟/g)).toHaveLength(1)
+    expect(html.match(/🐟/gu)).toHaveLength(1)
   })
 
   it("renders abbreviations without className using empty string fallback", () => {
@@ -471,7 +471,7 @@ describe("Backlinks", () => {
 
     const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
 
-    expect(html).toMatch(/<img[^>]*class="emoji"[^>]*alt="🐟"[^>]*>/)
+    expect(html).toMatch(/<img[^>]*class="emoji"[^>]*alt="🐟"[^>]*>/u)
     expect(html).toContain('<span class="katex">')
     expect(html).toContain('<span class="backlink-highlight">here</span>')
   })
