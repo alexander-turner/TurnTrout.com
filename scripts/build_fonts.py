@@ -122,7 +122,7 @@ _OPEN_QUOTE_GLYPHS: Final[tuple[str, ...]] = (
     "quotedblleft",
     "quoteleft",
 )
-_QUOTE_OPEN_BRACKET_KERN: Final[int] = 40
+_QUOTE_OPEN_BRACKET_KERN: Final[int] = 70
 
 # Comma-family punctuation carries a wide left sidebearing in the 08 master,
 # so it floats after a closing bracket (e.g. the ");" bigram). Pull it back so
