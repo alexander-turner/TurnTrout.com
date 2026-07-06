@@ -1390,6 +1390,10 @@ def build_sequence_data(markdown_files: list[Path]) -> dict[str, dict]:
             if permalink := metadata.get("permalink", ""):
                 all_sequence_data[permalink] = slug_mapping
             if aliases := metadata.get("aliases", []):
+                # ``aliases`` may be a single scalar string or a list; normalize
+                # to a list so a scalar isn't iterated character-by-character.
+                if isinstance(aliases, str):
+                    aliases = [aliases]
                 for alias in aliases:
                     if not alias:
                         continue
