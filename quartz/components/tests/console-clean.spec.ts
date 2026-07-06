@@ -1,3 +1,5 @@
+import type { Request } from "@playwright/test"
+
 import { expect, test } from "./fixtures"
 import { gotoPage } from "./visual_utils"
 
@@ -77,7 +79,16 @@ for (const slug of PAGES_TO_CHECK) {
       offenders.push(`[pageerror] ${err.message}`)
     })
 
+    // Sub-resource requests (fonts, images, analytics) can emit console
+    // errors after the `load` event, so every request that started must
+    // settle before `offenders` is read.
+    const inflightRequests = new Set<Request>()
+    page.on("request", (req) => inflightRequests.add(req))
+    page.on("requestfinished", (req) => inflightRequests.delete(req))
+    page.on("requestfailed", (req) => inflightRequests.delete(req))
+
     await gotoPage(page, `${BASE_URL}${slug}`)
+    await expect.poll(() => inflightRequests.size, { timeout: 15_000 }).toBe(0)
 
     expect(
       offenders,

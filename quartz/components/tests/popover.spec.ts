@@ -1,4 +1,4 @@
-import type { Locator } from "@playwright/test"
+import type { Locator, Page } from "@playwright/test"
 
 import { minDesktopWidth } from "../../styles/variables"
 import { popoverScrollOffset, scrollTolerance } from "../constants"
@@ -153,6 +153,62 @@ test("Multiple popovers don't stack without wait", async ({ page }) => {
   await expect(async () => {
     await expect(page.locator(".popover")).toHaveCount(0)
   }).toPass({ timeout: 5_000 })
+})
+
+/**
+ * Holds the first fetch of the popover fixture so a test can control when the
+ * in-flight popover creation resolves.
+ *
+ * @returns `intercepted` resolves once the fetch is in flight; `release` lets
+ * the held fetch complete.
+ */
+async function holdFirstPopoverFetch(
+  page: Page,
+): Promise<{ intercepted: Promise<void>; release: () => void }> {
+  // skipcq: JS-0321 -- placeholder reassigned inside the promise executor
+  let release = (): void => {}
+  const holdFetch = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  // skipcq: JS-0321 -- placeholder reassigned inside the promise executor
+  let onIntercepted = (): void => {}
+  const intercepted = new Promise<void>((resolve) => {
+    onIntercepted = resolve
+  })
+  let firstRequest = true
+  await page.route("**/popover-fixture", async (route) => {
+    if (firstRequest) {
+      firstRequest = false
+      onIntercepted()
+      await holdFetch
+    }
+    await route.continue()
+  })
+  return { intercepted, release }
+}
+
+test("Popover does not attach when mouse leaves during content fetch", async ({
+  page,
+  dummyLink,
+}) => {
+  const { intercepted, release } = await holdFirstPopoverFetch(page)
+
+  // Hover to start the popover timer; wait until the fetch is in flight.
+  await dummyLink.hover()
+  await intercepted
+
+  // The pointer leaves the link while the popover content is still loading.
+  await moveMouseToSafePosition(page)
+
+  // Release the held fetch and wait for the response so mouseEnterHandler has
+  // had a chance to process it.
+  const responsePromise = page.waitForResponse("**/popover-fixture")
+  release()
+  await responsePromise
+
+  // The popover must not attach: with the pointer already gone, no mouseleave
+  // could ever dismiss it.
+  await expect(page.locator(".popover")).toHaveCount(0)
 })
 
 test("Popover updates position on window resize", async ({ page, dummyLink }) => {
@@ -376,30 +432,11 @@ test("In-flight popover fetch does not create orphaned popover after navigation"
   await expect(dummyLink).toBeVisible()
 
   // Delay the popover fetch so it completes *after* SPA navigation.
-  // Use a promise to signal when the fetch has been intercepted, and a
-  // second one to control when it resolves (after navigation completes).
-
-  // skipcq: JS-0321 -- placeholder reassigned inside the promise
-  let releasePopoverFetch = (): void => {}
-  const popoverFetchIntercepted = new Promise<void>((resolve) => {
-    const holdFetch = new Promise<void>((release) => {
-      releasePopoverFetch = release
-    })
-    let firstRequest = true
-    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
-    void page.route("**/popover-fixture", async (route) => {
-      if (firstRequest) {
-        firstRequest = false
-        resolve() // signal that the popover fetch has started
-        await holdFetch // hold the response until we release it
-      }
-      await route.continue()
-    })
-  })
+  const { intercepted, release } = await holdFirstPopoverFetch(page)
 
   // Hover to start the popover timer; wait until the fetch is actually in-flight.
   await dummyLink.hover()
-  await popoverFetchIntercepted
+  await intercepted
 
   // Click the link to trigger SPA navigation while the popover fetch is held.
   await triggerAndWaitForSPANav(page, () => dummyLink.click())
@@ -407,7 +444,7 @@ test("In-flight popover fetch does not create orphaned popover after navigation"
   // Release the held fetch and wait for the response to complete, so we know
   // mouseEnterHandler has had a chance to process it (and should bail out).
   const responsePromise = page.waitForResponse("**/popover-fixture")
-  releasePopoverFetch()
+  release()
   await responsePromise
 
   // No orphaned popover should appear on the new page.
