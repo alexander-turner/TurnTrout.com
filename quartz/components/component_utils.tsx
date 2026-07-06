@@ -12,7 +12,7 @@ import { visitParents } from "unist-util-visit-parents"
 import { applyTextTransforms } from "../plugins/transformers/formatting_improvement_html"
 import { replaceSCInNode } from "../plugins/transformers/tagSmallcaps"
 import { processTree as processTwemojiTree } from "../plugins/transformers/twemoji"
-import { EMOJI_CLASS, locale, TWEMOJI_INTRINSIC_DIMENSION } from "./constants"
+import { EMOJI_CLASS, locale, TWEMOJI_INTRINSIC_DIMENSION, WORK_TITLE_CLASS } from "./constants"
 
 export function formatTitle(title: string): string {
   // Replace single quotes with double quotes for consistency
@@ -50,10 +50,18 @@ export function applyInlineFormattingTransforms(tree: Root | Element, workTitle 
  * hast inline nodes with {@link applyInlineFormattingTransforms} applied. For
  * callers whose source may contain HTML markup, parse it first and call
  * {@link applyInlineFormattingTransforms} on the resulting tree instead.
+ *
+ * When `workTitle` is true, the result is wrapped in a {@link WORK_TITLE_CLASS}
+ * span so every title-rendering surface gets the same typographic treatment
+ * (e.g. lining-figure numerals) from one shared CSS rule.
  */
 export function renderInlineFormatting(text: string, workTitle = false): (Text | Element)[] {
   const container = h("span", [{ type: "text", value: text } as Text])
   applyInlineFormattingTransforms(container, workTitle)
+  if (workTitle) {
+    container.properties = { ...container.properties, className: [WORK_TITLE_CLASS] }
+    return [container]
+  }
   return container.children as (Text | Element)[]
 }
 
@@ -134,13 +142,15 @@ export function elementToJsx(elt: RootContent): JSX.Element {
 /**
  * Parses an already-typography-formatted title string and applies the shared
  * inline-formatting pipeline (Twemoji; the small-caps pass is skipped for work
- * titles), returning the resulting hast inline nodes. Titles may carry inline
- * HTML (e.g. `<abbr>`), so the string is parsed before transforming.
+ * titles), returning the resulting hast inline nodes wrapped in a
+ * {@link WORK_TITLE_CLASS} span. Titles may carry inline HTML (e.g. `<abbr>`),
+ * so the string is parsed before transforming.
  */
 export function renderTitleNodes(formattedTitle: string): RootContent[] {
   const htmlAst = fromHtml(formattedTitle, { fragment: true }) as Root
   applyInlineFormattingTransforms(htmlAst, true)
-  return htmlAst.children
+  const wrapper = h("span", { className: [WORK_TITLE_CLASS] }, htmlAst.children as RootContent[])
+  return [wrapper]
 }
 
 /** Like {@link renderTitleNodes} but rendered to JSX for component consumers. */
