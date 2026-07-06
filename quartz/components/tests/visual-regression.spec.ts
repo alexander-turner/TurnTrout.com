@@ -157,23 +157,39 @@ test.describe("Test page sections", () => {
   })
 })
 
+// The index page's SPA fires an initial `nav` after load; a bare page.evaluate
+// racing that pass hits a destroyed execution context in Firefox. Poll with
+// waitForFunction (which survives the nav) until webfonts have swapped, then
+// drop every paragraph but the first — retrying once if the nav destroys the
+// context mid-call — so only the dropcap paragraph remains for the screenshot.
+async function keepOnlyFirstParagraph(page: Page): Promise<void> {
+  await page.waitForFunction(() => document.fonts?.status === "loaded", undefined, {
+    timeout: 10_000,
+  })
+  const removeTrailingParagraphs = (): void => {
+    const article = document.querySelector("article")
+    if (!article) return
+    article.querySelectorAll("p").forEach((p, idx) => {
+      if (idx > 0) p.remove()
+    })
+  }
+  try {
+    await page.evaluate(removeTrailingParagraphs)
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes("Execution context was destroyed")) {
+      await page.evaluate(removeTrailingParagraphs)
+    } else {
+      throw error
+    }
+  }
+}
+
 test.describe("Unique content around the site", () => {
   test("Welcome page (screenshot)", async ({ page }, testInfo) => {
     await gotoPage(page, "http://localhost:8080", "load")
     await page.locator("body").waitFor({ state: "visible" })
 
-    await page.evaluate(() => {
-      const article = document.querySelector("article")
-      if (article) {
-        const paragraphs = article.querySelectorAll("p")
-        paragraphs.forEach((p, idx) => {
-          // Keep the first paragraph for testing dropcap
-          if (idx > 0) {
-            p.remove()
-          }
-        })
-      }
-    })
+    await keepOnlyFirstParagraph(page)
 
     await takeRegressionScreenshot(page, testInfo, "site-page-welcome")
   })
