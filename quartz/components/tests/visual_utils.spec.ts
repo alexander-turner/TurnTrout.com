@@ -122,14 +122,16 @@ test.describe("visual_utils functions", () => {
 
     // Resolving before the inverted variant paints would let a screenshot
     // capture the light-mode pixels under the dark theme.
-    const { currentSrc, naturalWidth } = await page
-      .locator("#swap-img-container img")
-      .evaluate((el: HTMLImageElement) => ({
-        currentSrc: el.currentSrc,
-        naturalWidth: el.naturalWidth,
-      }))
-    expect(currentSrc).toContain("swap-visual-test-image-inverted.png")
-    expect(naturalWidth).toBeGreaterThan(0)
+    const swappedImg = page.locator("#swap-img-container img")
+    await expect
+      .poll(() => swappedImg.evaluate((el: HTMLImageElement) => el.currentSrc))
+      .toContain("swap-visual-test-image-inverted.png")
+    // Firefox restarts the request when accurateInvert re-assigns the same
+    // inverted src on the variant's load event, transiently resetting
+    // naturalWidth to 0 — poll rather than reading once.
+    await expect
+      .poll(() => swappedImg.evaluate((el: HTMLImageElement) => el.naturalWidth))
+      .toBeGreaterThan(0)
   })
 
   for (const theme of ["light", "dark", "auto"]) {
