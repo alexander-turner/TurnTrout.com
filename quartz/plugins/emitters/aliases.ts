@@ -100,13 +100,13 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
       const aliases = file.data.frontmatter?.aliases ?? []
       const slugs: FullSlug[] = aliases.map((alias) => path.posix.join(dir, alias) as FullSlug)
       const permalink = file.data.frontmatter?.permalink
-      // When a permalink exists it is the canonical URL and the original slug
-      // redirects to it. Derive the target locally rather than mutating
-      // file.data.slug, which is shared state other emitters read.
-      let canonicalSlug = (file.data.slug || "") as FullSlug
       if (typeof permalink === "string") {
-        slugs.push(canonicalSlug)
-        canonicalSlug = permalink as FullSlug
+        // When permalink exists, current slug becomes an alias and permalink becomes
+        // canonical. Emitters that run after this one (e.g. ContentIndex) read
+        // file.data.slug directly rather than re-deriving it from frontmatter, so the
+        // mutation must happen here for them to index the page at its canonical URL.
+        slugs.push(file.data.slug as FullSlug)
+        file.data.slug = permalink as FullSlug
       }
 
       for (let slug of slugs) {
@@ -114,14 +114,14 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
           slug = joinSegments(slug, "index") as FullSlug
         }
 
-        const redirUrl = resolveRelative(slug, canonicalSlug)
+        const redirUrl = resolveRelative(slug, file.data.slug || ("" as FullSlug))
 
         // Generate redirect HTML with full metadata for SEO
         const redirectMetadata = renderHead({
           cfg: ctx.cfg.configuration,
           fileData: file.data,
-          slug: canonicalSlug,
-          redirect: { slug, to: canonicalSlug },
+          slug: file.data.slug as FullSlug,
+          redirect: { slug, to: file.data.slug as FullSlug },
         })
 
         const fp = await write({
