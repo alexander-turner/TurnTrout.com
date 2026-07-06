@@ -30,7 +30,7 @@ jobs:
        github.event.check_run.conclusion == 'failure' &&
        github.event.check_run.pull_requests[0] != null)
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 8
     env:
       # The DeepSource CLI's `issues --pr` view under-reports (it can return an
       # empty list while the commit status is red), so this queries the
@@ -72,16 +72,26 @@ jobs:
           occ_query='query($uid: UUID!) { run(runUid: $uid) { status checks { edges { node { analyzer { shortcode } occurrences(first: 100) { edges { node { issue { shortcode title } path beginLine } } } } } } } }'
 
           # DeepSource re-analyzes on every push, so wait for the run to leave
-          # PENDING before trusting the occurrence list.
+          # PENDING before trusting the occurrence list. Bounded well under the
+          # job timeout so the report + comment steps always have budget left.
           payload=""
-          for _ in $(seq 1 20); do
+          status="PENDING"
+          for _ in $(seq 1 12); do
             # shellcheck disable=SC2016  # $q/$uid are jq --arg bindings, not shell vars
             payload=$(gql "$(jq -n --arg q "$occ_query" --arg uid "$run_uid" \
               '{query: $q, variables: {uid: $uid}}')")
             status=$(echo "$payload" | jq -r '.data.run.status // "PENDING"')
             if [ "$status" != "PENDING" ]; then break; fi
-            sleep 15
+            sleep 10
           done
+
+          # A run still analyzing has no trustworthy occurrence list yet;
+          # reporting it as clean would be a false negative. Leave any existing
+          # comment untouched and exit without failing.
+          if [ "$status" = "PENDING" ]; then
+            echo "::notice::DeepSource run $run_uid still analyzing $head_sha; skipping report."
+            exit 0
+          fi
 
           # Flatten every analyzer's occurrences to "path:line [code] title", sorted+deduped.
           echo "$payload" | jq -r '
