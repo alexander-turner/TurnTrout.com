@@ -315,8 +315,6 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
       ? "close-text"
       : null
   if (nudgeClass) {
-    // istanbul ignore next
-    imgNodeToAppend.properties = imgNodeToAppend.properties || {}
     imgNodeToAppend.properties.class = `favicon ${nudgeClass}`
   }
 
