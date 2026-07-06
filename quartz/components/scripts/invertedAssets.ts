@@ -59,11 +59,3 @@ export function invertedUrl(url: string): string {
 export function isInvertedUrl(url: string): boolean {
   return partsOf(url).stem.endsWith(INVERTED_SUFFIX)
 }
-
-/** Drop a URL's query string and fragment, leaving `stem + ext`. Lets
- * callers compare two URLs by their resource path while ignoring
- * cache-buster query params (e.g. the visual-test `?__visualRetry`). */
-export function withoutUrlTail(url: string): string {
-  const { stem, ext } = partsOf(url)
-  return `${stem}${ext}`
-}
