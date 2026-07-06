@@ -524,6 +524,53 @@ describe("PopulateContainers", () => {
       })
     })
 
+    describe("generateBacklinksDemo", () => {
+      const makeContent = (): import("../vfile").ProcessedContent[] => {
+        const designData = { slug: "design", frontmatter: { title: "Design" } }
+        const citingData = {
+          slug: "posts/citing",
+          frontmatter: { title: "Citing Post" },
+          links: ["design"],
+          linkContexts: [
+            {
+              target: "design",
+              anchor: "some-anchor",
+              excerptHtml: 'Cited <span class="backlink-highlight">here</span>.',
+            },
+          ],
+        }
+        return [
+          [{ type: "root", children: [] }, { data: designData }],
+          [{ type: "root", children: [] }, { data: citingData }],
+        ] as unknown as import("../vfile").ProcessedContent[]
+      }
+
+      it("renders the design page's backlinks block with the duplicate id stripped", async () => {
+        const generator = populateModule.generateBacklinksDemo(makeContent())
+        const elements = await generator()
+
+        expect(elements).toHaveLength(1)
+        const blockquote = elements[0]
+        expect(blockquote.tagName).toBe("blockquote")
+        expect(blockquote.properties?.id).toBeUndefined()
+
+        const html = toHtml(blockquote)
+        expect(html).toContain("Links to this page")
+        expect(html).toContain("Citing Post")
+      })
+
+      it("returns nothing when the design page has no backlinks", async () => {
+        const designOnly = [
+          [
+            { type: "root", children: [] },
+            { data: { slug: "design", frontmatter: { title: "Design" } } },
+          ],
+        ] as unknown as import("../vfile").ProcessedContent[]
+        const generator = populateModule.generateBacklinksDemo(designOnly)
+        expect(await generator()).toEqual([])
+      })
+    })
+
     describe("addFaviconsToLinks", () => {
       const countsFaviconElements = (html: string): number => {
         const root = fromHtml(html)
@@ -796,6 +843,47 @@ describe("PopulateContainers", () => {
           insideFaviconCount = countFaviconsInSubtree(node)
         })
         expect(insideFaviconCount).toBe(2) // favicon-span + favicon img
+      })
+
+      it("skips the favicon post-pass when skipFavicons is set", async () => {
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
+        favicons.faviconExistsCache.set(
+          "/static/images/external-favicons/github_com.svg",
+          Promise.resolve(true),
+        )
+
+        const html = '<html><body><div id="populate-me"></div></body></html>'
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        jest.spyOn(fs, "readFileSync").mockReturnValue(html)
+        let writtenContent = ""
+        jest.spyOn(fs, "writeFileSync").mockImplementation((_path, data) => {
+          writtenContent = data as string
+        })
+
+        const result = await populateModule.populateElements("/tmp/test.html", [
+          {
+            id: "populate-me",
+            skipFavicons: true,
+            generator: () => {
+              const fragment = fromHtml(
+                '<a class="external" href="https://github.com/inside">Inside</a>',
+                { fragment: true },
+              )
+              return fragment.children as Element[]
+            },
+          },
+        ])
+
+        // The container is still populated and the file rewritten...
+        expect(result).toEqual(["/tmp/test.html"])
+        // ...but no favicon is injected onto the link inside it.
+        const root = fromHtml(writtenContent)
+        let faviconCount = 0
+        visit(root, "element", (node) => {
+          const cls = String(node.properties?.class ?? node.properties?.className ?? "")
+          if (cls.includes("favicon")) faviconCount++
+        })
+        expect(faviconCount).toBe(0)
       })
     })
   })

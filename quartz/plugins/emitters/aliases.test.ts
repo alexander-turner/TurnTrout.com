@@ -180,7 +180,7 @@ describe("AliasRedirects", () => {
       "permalinks",
       "test-permalink.md",
       { permalink: "custom-permalink" },
-      ["public/custom-permalink.html"],
+      ["public/test-permalink.html"],
     ],
     [
       "trailing slashes",
@@ -207,6 +207,8 @@ describe("AliasRedirects", () => {
     const content = createMockContent(vfile)
 
     await testEmitFiles(plugin, mockCtx, content, ["old-alias.html", "test-permalink.html"])
+    // Emitters that run after this one (e.g. ContentIndex) read file.data.slug
+    // directly, so it must be mutated to the canonical permalink here.
     expect(vfile.data.slug).toBe("custom-permalink")
   })
 

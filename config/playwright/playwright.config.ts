@@ -109,7 +109,10 @@ export default defineConfig({
   // macOS ARM runners have 3 cores but Playwright defaults to 1 worker for
   // WebKit, causing shards to hit their job timeout. Force 3 workers on macOS.
   workers: process.env.PLAYWRIGHT_BROWSERS === "webkit" ? 3 : undefined,
+  // The CI retry distinguishes a flaky test from a consistently broken one in
+  // the report, but flaky is still a failure: zero-flakiness policy.
   retries: process.env.CI ? 1 : 0,
+  failOnFlakyTests: true,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
   // getScreenshotName already incorporates browser name into the

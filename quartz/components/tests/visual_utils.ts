@@ -138,6 +138,12 @@ export interface RegressionScreenshotOptions {
 // of a remote AVIF, short enough that a genuinely dead image can't hang the run.
 const IMAGE_PAINT_TIMEOUT_MS = 15000
 
+// WebKit's `document.fonts.ready` can hang indefinitely when a `@font-face`
+// request never settles, burning the whole test timeout. Bound the wait: the
+// two-equal-frames `captureStableScreenshot` loop is the real guarantee that
+// fonts have painted, so a late swap still shows up as a frame difference.
+const FONTS_READY_TIMEOUT_MS = 10000
+
 // WebKit paints images above its interpolation cutoff (800×800 source pixels)
 // with fast low-quality scaling whenever their painted size just changed
 // (e.g. a custom element upgrading and re-laying-out its slotted images), then
@@ -247,7 +253,12 @@ export async function waitForImagesInElement(
 }
 
 async function waitForVisualStability(page: Page, scope?: Locator): Promise<void> {
-  await page.evaluate(() => document.fonts.ready)
+  await page.evaluate(async (timeoutMs) => {
+    await Promise.race([
+      document.fonts.ready,
+      new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+    ])
+  }, FONTS_READY_TIMEOUT_MS)
   if (scope) {
     await waitForImagesInElement(scope)
   } else {

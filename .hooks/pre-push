@@ -3,6 +3,15 @@ set -e
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
+# Claude Code's web/remote environment lacks the credentials these checks rely
+# on (R2 for asset upload, Voyage for related posts), so the suite can't pass
+# there. Skip it and let CI enforce the same checks on the push. Local pushes
+# are unaffected and still run the full suite.
+if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ]; then
+  echo "Skipping pre-push checks in the Claude Code remote environment (CI enforces them)."
+  exit 0
+fi
+
 # Ensure uv-installed tools (e.g. alt-text-llm) are on PATH, plus
 # node_modules/.bin so source_file_checks can find sass and the
 # spellcheck wrapper can find vale/spellchecker.

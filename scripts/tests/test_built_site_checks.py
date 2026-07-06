@@ -1963,6 +1963,34 @@ def test_check_emphasis_spacing_allowed_patterns(html, expected):
     assert sorted(result) == sorted(expected)
 
 
+def test_backlink_excerpt_excluded_from_prose_checks():
+    """Backlink excerpts are derived content, exempt from prose-quality
+    checks."""
+    html = (
+        '<div id="backlinks"><div class="admonition-content">'
+        '<div class="backlink-excerpt">'
+        "[...] <em>credit assignment</em>, <strong>extremely hard</strong>"
+        " and <code>\\bigcirc</code> [...]</div>"
+        '<div class="backlink-excerpt">: In humans, drift happens.</div>'
+        "</div></div>"
+    )
+    soup = BeautifulSoup(html, "html.parser")
+    assert built_site_checks.check_emphasis_spacing(soup) == []
+    assert built_site_checks.check_inline_code_word_boundaries(soup) == []
+    assert built_site_checks.paragraphs_contain_canary_phrases(soup) == []
+    # The `[...]` elision markers must not trip the consecutive-periods check.
+    assert built_site_checks.check_consecutive_periods(soup) == []
+
+
+def test_prose_checks_flag_artifacts_outside_backlink_excerpt():
+    """Identical artifacts in ordinary prose are still flagged (control)."""
+    soup = BeautifulSoup("<p>word…<em>credit</em></p>", "html.parser")
+    assert built_site_checks.check_emphasis_spacing(soup) != []
+    # The same bracketed marker in ordinary prose is still flagged.
+    soup = BeautifulSoup("<p>text [...] more</p>", "html.parser")
+    assert built_site_checks.check_consecutive_periods(soup) != []
+
+
 def test_check_spacing_after_branch():
     html = "<p><a href='#'>link</a>missing_space</p>"
     soup = BeautifulSoup(html, "html.parser")
@@ -2321,14 +2349,25 @@ def test_check_invalid_internal_links(html, expected_count):
         ("<a>@title</a>", 1),
         # Whitespace around the sentinel still counts.
         ('<a href="/page">  @title  </a>', 1),
-        # Sentinel as ordinary (non-link) text must be ignored.
+        # Sentinel mentioned in code must be ignored.
         ("<p><code>@title</code> is the sentinel.</p>", 0),
+        ("<pre>@title-lower</pre>", 0),
         # Multiple leaked links.
         ('<a href="/a">@title</a><a href="/b">@title</a>', 2),
+        # Punctuation moved into the anchor around the sentinel still counts.
+        ('<a href="/page">@title-lower.</a>', 1),
+        ('<a href="/page">“@title.”</a>', 1),
+        # A leaked sentinel outside any anchor is also flagged.
+        ("<p>Check out @title-lower today.</p>", 1),
+        # Sentinel glued to letters/digits is prose, not a leak (mirrors the
+        # transformer, which leaves such anchors untouched).
+        ("<p>@titles and quote smallcaps</p>", 0),
+        ('<a href="/page">@title-lowered</a>', 0),
+        ("<p>mail user@title today</p>", 0),
     ],
 )
 def test_check_unrendered_title_sentinel(html, expected_count):
-    """The check flags only links whose visible text is the bare sentinel."""
+    """The check flags any non-code text still containing a sentinel."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unrendered_title_sentinel(soup)
     assert len(result) == expected_count

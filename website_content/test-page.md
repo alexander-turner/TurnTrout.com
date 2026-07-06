@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-04
+date_updated: 2026-07-05
 createBibtex: true
 ---
 
@@ -640,6 +640,10 @@ Here's a link to [another page](/shard-theory) with popover preview. [This same-
 
 Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons) Link to [`x.com`](https://x.com).
 
+A footnote reference right after a favicon-ending [same-page link](#external-links-with-favicons)[^favicon-footnote] must not wrap onto its own line.
+
+[^favicon-footnote]: The footnote number stays glued to the favicon so it can't wrap onto its own line.
+
 <div id="populate-favicon-container" class="no-favicon-span"></div>
 
 ## Favicon kerning iteration
@@ -700,7 +704,9 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 | descender + ] | g] j] p] q] y] |
 | descender + \} | g\} j\} p\} q\} y\} |
 | caps + close | T) T] V) V] Y) Y] |
+| quote + bracket | “\[ ‘\[ \]” \]’ |
 | In context | f(x), (glyph), (jpg), (query), [typography] |
+| In context | “\[sic\]” and ‘\[note\]’ |
 | close + ;, | \[1\]; \{2\}; (3); \[a\], \{b\}, (c), |
 | In context | the staff(s) called if’d a “buff” (Wolf) |
 | In context | the clipping (probably) happened (just) quickly |

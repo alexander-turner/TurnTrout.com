@@ -23,6 +23,7 @@ import {
   InlineCodeSpacing,
   InvertInDarkMode,
   Latex,
+  LinkContexts,
   NotFoundPage,
   ObsidianFlavoredMarkdown,
   PopulateContainers,
@@ -176,6 +177,13 @@ const config: QuartzConfig = {
       ColorVariables(),
       TableOfContents({ minEntries: 3 }),
       addAssetDimensionsFromSrc(),
+      // After the favicon, smallcaps, spoiler, inline-code, and asset-dimension
+      // passes so backlink excerpts mirror the final rendered prose: favicons
+      // stripped, spoilers hidden, and preserved emoji <img> already carrying the
+      // width/height addAssetDimensionsFromSrc stamps. The excerpt is serialized
+      // to a string here and never re-processed, so every inline atom must be
+      // final before it is captured.
+      LinkContexts(),
       InvertInDarkMode(),
     ],
     filters: [RemoveDrafts(), RemoveFixtures(), RemovePartials()],

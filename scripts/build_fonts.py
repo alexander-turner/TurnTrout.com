@@ -5,8 +5,10 @@ Applies two modifications to EBGaramond08-Regular and EBGaramond12-Regular:
 1. Bracket/brace harmonization: affine-maps Y coordinates of bracketleft,
    bracketright, braceleft, braceright so their yMin/yMax match parenleft.
 2. GPOS kerning: adds a PairPos Format 1 lookup to the kern feature
-   for f-variant glyphs x punctuation, open-punct x descender letters, and
-   close-punct x comma/semicolon (tightened to undo a wide left sidebearing).
+   for f-variant glyphs x punctuation, open-punct x descender letters,
+   close-punct x comma/semicolon (tightened to undo a wide left sidebearing),
+   and quote x bracket (loosened so a curly quote's ink clears an adjacent
+   bracket, both open-quote+"[" and "]"+close-quote).
 
 Usage:
     python scripts/build_fonts.py           # Build and verify
@@ -111,6 +113,21 @@ _CLOSE_DESCENDER_KERN: Final[dict[str, int]] = {
     "y": 40,
 }
 _CAP_CLOSE_KERN: Final[int] = 80
+
+# A curly quote's ink hangs at the top and its tail swings toward an adjacent
+# bracket, so an open quote before "[" and a close quote after "]" both read
+# cramped even though the advance gap is wide. A small symmetric kern clears
+# both. The 12 master's gaps are already roomy, so the space is imperceptible
+# there.
+_OPEN_QUOTE_GLYPHS: Final[tuple[str, ...]] = (
+    "quotedblleft",
+    "quoteleft",
+)
+_CLOSE_QUOTE_GLYPHS: Final[tuple[str, ...]] = (
+    "quotedblright",
+    "quoteright",
+)
+_QUOTE_BRACKET_KERN: Final[int] = 70
 
 # Comma-family punctuation carries a wide left sidebearing in the 08 master,
 # so it floats after a closing bracket (e.g. the ");" bigram). Pull it back so
@@ -294,6 +311,8 @@ _FIXED_KERN_SPECS: Final[
     (_OPEN_PUNCT_GLYPHS, _DESCENDER_GLYPHS, _OPEN_DESCENDER_KERN),
     (_DESCENDER_GLYPHS, _CLOSE_PUNCT_GLYPHS, _CLOSE_DESCENDER_KERN),
     (_CAP_OVERHANG_GLYPHS, _CLOSE_PUNCT_GLYPHS, _CAP_CLOSE_KERN),
+    (_OPEN_QUOTE_GLYPHS, ("bracketleft",), _QUOTE_BRACKET_KERN),
+    (("bracketright",), _CLOSE_QUOTE_GLYPHS, _QUOTE_BRACKET_KERN),
 )
 
 

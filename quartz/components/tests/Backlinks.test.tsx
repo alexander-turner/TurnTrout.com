@@ -1,4 +1,4 @@
-import type { Root, RootContent } from "hast"
+import type { Root } from "hast"
 
 /**
  * @jest-environment jest-fixed-jsdom
@@ -15,7 +15,7 @@ import { type GlobalConfiguration } from "../../util/config"
 import { type QuartzConfig } from "../../util/ctx"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, type SimpleSlug } from "../../util/path"
-import { Backlinks, elementToJsx, getBacklinkFileData } from "../Backlinks"
+import { Backlinks, getBacklinkFileData } from "../Backlinks"
 import { normalizeNbsp } from "../constants"
 
 // Helper function to create test file data
@@ -263,9 +263,9 @@ describe("Backlinks", () => {
 
     // The emoji becomes a Twemoji <img class="emoji"> rather than a bare glyph.
     expect(html).toMatch(/<img[^>]*class="emoji"[^>]*>/)
-    expect(html).toMatch(/<img[^>]*alt="🐟"[^>]*>/)
+    expect(html).toMatch(/<img[^>]*alt="🐟"[^>]*>/u)
     // The only occurrence of the raw glyph is inside the img's alt text.
-    expect(html.match(/🐟/g)).toHaveLength(1)
+    expect(html.match(/🐟/gu)).toHaveLength(1)
   })
 
   it("renders abbreviations without className using empty string fallback", () => {
@@ -288,26 +288,38 @@ describe("Backlinks", () => {
     expect(html).toMatch(/<abbr[^>]*class[^>]*>HTML<\/abbr>/u)
   })
 
-  // Test non-abbreviation inline HTML elements are wrapped in a <span>
-  it("wraps non-abbreviation inline elements in a span", () => {
+  // Whitelisted semantic inline tags (em/strong/code/del/sub/sup) are preserved.
+  it("preserves whitelisted semantic inline elements in titles", () => {
     const currentFile = createFileData({ slug: "target" as FullSlug })
     const innerText = "cool"
 
     const linkingFile = createFileData({
-      slug: "span-source" as FullSlug,
-      frontmatter: {
-        // Include italicized text which should be wrapped in a <span> by elementToJsx
-        title: `<em>${innerText}</em>`,
-      },
+      slug: "em-source" as FullSlug,
+      frontmatter: { title: `<em>${innerText}</em>` },
       links: ["target" as SimpleSlug],
     })
 
     const props = createProps(currentFile, [linkingFile])
-    const element = preactH(Backlinks, props)
-    const html = render(element)
+    const html = render(preactH(Backlinks, props))
 
-    // The original <em> tag should have been replaced by a <span>
-    expect(html).not.toContain("<em>")
+    expect(html).toMatch(new RegExp(`<em[^>]*>${innerText}</em>`))
+  })
+
+  // Non-whitelisted inline elements still fall back to a <span>.
+  it("wraps non-whitelisted inline elements in a span", () => {
+    const currentFile = createFileData({ slug: "target" as FullSlug })
+    const innerText = "emphasis"
+
+    const linkingFile = createFileData({
+      slug: "i-source" as FullSlug,
+      frontmatter: { title: `<i>${innerText}</i>` },
+      links: ["target" as SimpleSlug],
+    })
+
+    const props = createProps(currentFile, [linkingFile])
+    const html = render(preactH(Backlinks, props))
+
+    expect(html).not.toContain("<i>")
     expect(html).toMatch(new RegExp(`<span[^>]*>${innerText}</span>`))
   })
 
@@ -331,44 +343,137 @@ describe("Backlinks", () => {
     expect(html.match(/<li/gu)).toBeNull()
   })
 
-  it("renders an <img> without a class or draggable attribute when both are absent", () => {
-    const imgNode = {
-      type: "element",
-      tagName: "img",
-      properties: { src: "fish.svg", alt: "🐟" },
-      children: [],
-    } as unknown as RootContent
+  const linkingWithExcerpt = (linkContexts?: QuartzPluginData["linkContexts"]): QuartzPluginData =>
+    createFileData({
+      slug: "linking-page" as FullSlug,
+      frontmatter: { title: "Linking Page" },
+      links: ["target-page" as SimpleSlug],
+      linkContexts,
+    })
 
-    const html = render(elementToJsx(imgNode))
-    expect(html).toMatch(/<img[^>]*src="fish.svg"[^>]*>/)
-    expect(html).not.toContain("class=")
-    expect(html).not.toContain("draggable")
+  it("renders the excerpt as a deep-link and the title as a read-the-original-post link", () => {
+    const currentFile = createFileData({ slug: "target-page" as FullSlug })
+    const linkingFile = linkingWithExcerpt([
+      {
+        target: "target-page" as SimpleSlug,
+        excerptHtml: 'See <span class="backlink-highlight">this idea</span> in context',
+        anchor: "backlink-cite-0",
+      },
+    ])
+
+    const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
+
+    expect(html).toContain('<span class="backlink-highlight">this idea</span>')
+    expect(html).toContain("in context")
+    // The excerpt itself is the deep-link to its citing location.
+    expect(html).toMatch(/href="[^"]*#backlink-cite-0"[^>]*class="backlink-excerpt/)
+    // The title reads the original post from the top (no citing anchor).
+    expect(html).toContain('title="Read the original post"')
   })
 
-  it("handles abbr elements with no children gracefully", () => {
-    const abbrNode = {
-      type: "element",
-      tagName: "abbr",
-      properties: { className: ["small-caps"] },
-      children: [],
-    } as unknown as RootContent
+  it("renders multiple references from one article, each deep-linking to its own spot", () => {
+    const currentFile = createFileData({ slug: "target-page" as FullSlug })
+    const linkingFile = linkingWithExcerpt([
+      {
+        target: "target-page" as SimpleSlug,
+        excerptHtml: 'first <span class="backlink-highlight">ref</span>',
+        anchor: "backlink-cite-linking-page-0",
+      },
+      {
+        target: "target-page" as SimpleSlug,
+        excerptHtml: 'second <span class="backlink-highlight">ref</span>',
+        anchor: "backlink-cite-linking-page-1",
+      },
+    ])
 
-    const jsx = elementToJsx(abbrNode)
-    const html = render(jsx)
+    const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
 
-    expect(html).toMatch(/<abbr[^>]*class="small-caps"[^>]*><\/abbr>/u)
+    expect((html.match(/class="backlink-excerpt/g) ?? []).length).toBe(2)
+    expect(html).toMatch(/href="[^"]*#backlink-cite-linking-page-0"/)
+    expect(html).toMatch(/href="[^"]*#backlink-cite-linking-page-1"/)
+    expect(html).toContain("first")
+    expect(html).toContain("second")
   })
 
-  // Test unsupported RootContent type triggers default branch returning empty fragment
-  it("returns empty fragment for unsupported AST node types", () => {
-    // Create a comment node which is not handled explicitly by elementToJsx
-    const commentNode = { type: "comment", value: "ignored" } as unknown as RootContent
+  it("skips a matching context that has no excerpt (renders title-only)", () => {
+    const currentFile = createFileData({ slug: "target-page" as FullSlug })
+    const linkingFile = linkingWithExcerpt([
+      { target: "target-page" as SimpleSlug, excerptHtml: "", anchor: "backlink-cite-0" },
+    ])
 
-    const jsx = elementToJsx(commentNode)
-    const html = render(jsx)
+    const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
 
-    // Rendering an empty fragment yields an empty string
-    expect(html).toBe("")
+    expect(html).not.toContain("backlink-excerpt")
+    expect(html).not.toContain("#backlink-cite-0")
+    expect(normalizeNbsp(html)).toContain("Linking Page")
+  })
+
+  it("renders a title-only row when no linkContext matches the current page", () => {
+    const currentFile = createFileData({ slug: "target-page" as FullSlug })
+    const linkingFile = linkingWithExcerpt([
+      {
+        target: "some-other-page" as SimpleSlug,
+        excerptHtml: 'nope <span class="backlink-highlight">x</span>',
+        anchor: "backlink-cite-3",
+      },
+    ])
+
+    const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
+
+    expect(html).not.toContain("backlink-excerpt")
+    expect(html).not.toContain("#backlink-cite-3")
+    expect(normalizeNbsp(html)).toContain("Linking Page")
+  })
+
+  it("renders a title-only row when the file records no linkContexts", () => {
+    const currentFile = createFileData({ slug: "target-page" as FullSlug })
+    const linkingFile = linkingWithExcerpt()
+
+    const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
+
+    expect(html).not.toContain("backlink-excerpt")
+    expect(normalizeNbsp(html)).toContain("Linking Page")
+  })
+
+  it("preserves whitelisted tags and falls back to spans for others in titles", () => {
+    const currentFile = createFileData({ slug: "target-page" as FullSlug })
+    const linkingFile = createFileData({
+      slug: "rich-title-source" as FullSlug,
+      frontmatter: {
+        title:
+          "<em>e</em><strong>s</strong><code>c</code><del>d</del><sub>b</sub><sup>p</sup><i>i</i>",
+      },
+      links: ["target-page" as SimpleSlug],
+    })
+
+    const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
+
+    expect(html).toMatch(/<em[^>]*>e<\/em>/)
+    expect(html).toMatch(/<strong[^>]*>s<\/strong>/)
+    expect(html).toMatch(/<code[^>]*>c<\/code>/)
+    expect(html).toMatch(/<del[^>]*>d<\/del>/)
+    expect(html).toMatch(/<sub[^>]*>b<\/sub>/)
+    expect(html).toMatch(/<sup[^>]*>p<\/sup>/)
+    // Non-whitelisted <i> collapses to a span.
+    expect(html).not.toContain("<i>")
+    expect(html).toMatch(/<span[^>]*>i<\/span>/)
+  })
+
+  it("injects excerpt HTML verbatim, preserving twemoji and KaTeX", () => {
+    const currentFile = createFileData({ slug: "target-page" as FullSlug })
+    const excerptHtml =
+      'see <img class="emoji" alt="🐟"> and ' +
+      '<span class="katex"><span class="katex-html">x²</span></span> ' +
+      '<span class="backlink-highlight">here</span>'
+    const linkingFile = linkingWithExcerpt([
+      { target: "target-page" as SimpleSlug, excerptHtml, anchor: "backlink-cite-1" },
+    ])
+
+    const html = render(preactH(Backlinks, createProps(currentFile, [linkingFile])))
+
+    expect(html).toMatch(/<img[^>]*class="emoji"[^>]*alt="🐟"[^>]*>/u)
+    expect(html).toContain('<span class="katex">')
+    expect(html).toContain('<span class="backlink-highlight">here</span>')
   })
 })
 

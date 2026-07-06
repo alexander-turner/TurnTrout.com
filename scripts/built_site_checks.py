@@ -388,21 +388,45 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
     return invalid_internal_links
 
 
+# Longest sentinel first so "@title-lower" is not matched as "@title". The
+# boundary guards mirror the transformer's matcher: a sentinel glued to
+# letters/digits ("@titles", "user@title") is ordinary prose, not a leak.
+_TITLE_SENTINEL_PATTERN = re.compile(
+    r"(?<!\w)(?:"
+    + "|".join(
+        re.escape(sentinel)
+        for sentinel in sorted(LINK_TITLE_SENTINELS, key=len, reverse=True)
+    )
+    + r")(?![\w-])"
+)
+
+
 def check_unrendered_title_sentinel(soup: BeautifulSoup) -> list[str]:
     """
-    Check for links whose visible text is still a title sentinel (``@title`` or
+    Check for visible text still containing a title sentinel (``@title`` or
     ``@title-lower``).
 
-    A surviving sentinel means the build-time title binding never resolved (e.g.
-    the sentinel was placed on an external or unresolvable link), leaking the
-    raw token into the page instead of the target's title.
+    A surviving sentinel means the build-time title binding never resolved,
+    leaking the raw token into the page instead of the target's title. The
+    sentinel is matched as a substring of any non-code text node—not just as
+    exact link text—because formatting passes can move punctuation into the
+    anchor around the sentinel or split it into sibling text nodes.
+    Legitimate mentions of the sentinel live inside ``<code>`` elements, which
+    ``should_skip`` excludes.
     """
     leaked: list[str] = []
-    for link in _tags_only(soup.find_all("a")):
-        text = link.get_text(strip=True)
-        if text in LINK_TITLE_SENTINELS:
-            href = link.get("href", "")
-            leaked.append(f"{text} as link text (href={href})")
+    for element in soup.find_all(string=True):
+        if not isinstance(element, NavigableString):  # pragma: no cover
+            continue
+        if not element.strip() or should_skip(element):
+            continue
+        match = _TITLE_SENTINEL_PATTERN.search(str(element))
+        if match:
+            _append_to_list(
+                leaked,
+                str(element),
+                prefix=f"Unrendered title sentinel {match.group(0)}: ",
+            )
     return leaked
 
 
@@ -596,6 +620,8 @@ def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
     ):
         if any(parent.name in ("code", "svg") for parent in element.parents):
             continue
+        if _in_backlink_excerpt(element):
+            continue
 
         # Check with placeholders, report without code
         check_text = script_utils.get_non_code_text(
@@ -612,6 +638,8 @@ def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
     for container in _tags_only(
         soup.find_all(["article", "section", "div", "blockquote"])
     ):
+        if _in_backlink_excerpt(container):
+            continue
         for child in container.children:
             if not isinstance(child, NavigableString):
                 continue
@@ -1327,6 +1355,11 @@ def should_skip(element: Tag | NavigableString) -> bool:
         # Embedded external READMEs: prose-quality checks target first-party
         # authoring, not third-party README text.
         "external-readme",
+        # Backlink excerpts are truncated, sanitized snippets of already-checked
+        # source prose; their `[...]` elision markers are derived artifacts, not
+        # authored consecutive periods. Checks that don't route through
+        # ``should_skip`` exempt excerpts via ``_in_backlink_excerpt`` instead.
+        "backlink-excerpt",
     }
 
     # Check current element and all parents
@@ -2495,6 +2528,24 @@ ALLOWED_ELT_FOLLOWING_CHARS = (
 )
 
 
+def _in_backlink_excerpt(element: Tag) -> bool:
+    """
+    True when ``element`` is (or sits inside) an auto-generated backlink
+    excerpt.
+
+    Backlink excerpts are truncated, sanitized snippets of source prose that has
+    already been checked on its own page. Re-linting the snippet for authored-
+    prose quality (emphasis spacing, inline-code boundaries, canary phrases)
+    only surfaces truncation artifacts—e.g. an excerpt that opens mid-sentence on
+    a colon—so these checks skip the excerpt, mirroring the ``external-readme``
+    carve-out. (The ``[...]`` elision markers are exempted separately, via
+    ``should_skip``.)
+    """
+    if "backlink-excerpt" in script_utils.get_classes(element):
+        return True
+    return element.find_parent(class_="backlink-excerpt") is not None
+
+
 def _check_element_spacing(
     element: Tag,
     prev_allowed_chars: str,
@@ -2605,6 +2656,7 @@ def check_inline_code_word_boundaries(soup: BeautifulSoup) -> list[str]:
             code.find_parent("pre")
             or code.find_parent(class_="no-formatting")
             or code.find_parent(class_="external-readme")
+            or _in_backlink_excerpt(code)
         ):
             continue
         issues.extend(
@@ -2718,6 +2770,8 @@ def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:
 
     # Find all emphasis elements
     for element in _tags_only(soup.find_all(["em", "strong", "i", "b", "del"])):
+        if _in_backlink_excerpt(element):
+            continue
         prev_sibling = element.previous_sibling
         next_sibling = element.next_sibling
 
