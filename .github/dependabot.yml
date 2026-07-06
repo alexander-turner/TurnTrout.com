@@ -22,3 +22,5 @@ updates:
       npm-tracked:
         patterns:
           - "*"
+    cooldown:
+      default-days: 7

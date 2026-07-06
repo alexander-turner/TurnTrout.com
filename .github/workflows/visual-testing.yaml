@@ -33,6 +33,7 @@ jobs:
         timeout-minutes: 5
         with:
           sparse-checkout: .github/actions/ci-gate
+          persist-credentials: false
       - id: gate
         uses: ./.github/actions/ci-gate
         with:
@@ -87,6 +88,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
@@ -154,6 +157,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
 
       - name: Disable macOS firewall
         run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
@@ -265,7 +270,7 @@ jobs:
     steps:
       - name: Check results
         run: |
-          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
+          if [[ "${NEEDS_SHOULD_RUN_OUTPUTS_RUN}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
             echo "Tests were skipped (no label or filtered branch)"
             exit 0
           fi
@@ -285,10 +290,13 @@ jobs:
             echo "macOS visual tests had real failures"
             exit 1
           fi
-          if [[ "${{ needs.aggregate-visual-results.outputs.has-any-failures }}" == "true" ]]; then
+          if [[ "${NEEDS_AGGREGATE_VISUAL_RESULTS_OUTPUTS_HAS_ANY_FAILURES}" == "true" ]]; then
             echo "Visual diffs present (new or updated screenshots) — see publish-visual-report"
             exit 1
           fi
+        env:
+          NEEDS_SHOULD_RUN_OUTPUTS_RUN: ${{ needs.should-run.outputs.run }}
+          NEEDS_AGGREGATE_VISUAL_RESULTS_OUTPUTS_HAS_ANY_FAILURES: ${{ needs.aggregate-visual-results.outputs.has-any-failures }}
 
   summarize-failures:
     name: Summarize Failures
@@ -305,6 +313,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/summarize-failed-shards
         with:
           log-pattern: visual-testing-log-*
@@ -337,6 +347,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env

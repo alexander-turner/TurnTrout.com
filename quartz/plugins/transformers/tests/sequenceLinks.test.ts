@@ -86,6 +86,21 @@ describe("renderSequenceTitle", () => {
     expect(imgs[0].properties?.alt).toBe("🐟")
   })
 
+  it("renders sequence-title acronyms as plain caps, not small-caps", () => {
+    const fileData = {
+      frontmatter: {
+        "lw-sequence-title": "The Causes of Power-Seeking and AGI Risk",
+        "sequence-link": "/test-sequence",
+      },
+    } as unknown as QuartzPluginData
+    const link = renderSequenceTitle(fileData)?.children[2] as Element
+    const abbrs: Element[] = []
+    visit(link, "element", (el: Element) => {
+      if (el.tagName === "abbr") abbrs.push(el)
+    })
+    expect(abbrs).toHaveLength(0)
+  })
+
   it("should handle missing sequence-link", () => {
     const fileData = {
       frontmatter: {

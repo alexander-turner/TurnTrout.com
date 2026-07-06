@@ -50,7 +50,7 @@ runs:
     - name: Get pnpm store directory
       if: inputs.install-node-deps == 'true'
       shell: bash
-      run: |
+      run: | # zizmor: ignore[github-env] STORE_PATH comes from `pnpm store path`, a trusted value, not attacker-controllable input
         echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
     - name: Restore pnpm cache

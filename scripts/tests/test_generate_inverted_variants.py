@@ -193,6 +193,25 @@ def test_invert_image_file_preserves_alpha_only_when_source_had_it(
     assert Image.open(dst).mode == expected_mode
 
 
+def test_invert_image_file_preserves_palette_transparency(
+    tmp_path: Path,
+) -> None:
+    """A palette PNG whose transparency lives in a ``transparency`` info entry
+    (not in an alpha channel) must keep its transparent pixels rather than
+    flattening them to a solid color."""
+    src = tmp_path / "src.png"
+    im = Image.new("P", (4, 4), 0)
+    im.putpalette([10, 20, 30] * 256)
+    im.save(src, transparency=0)
+
+    dst = tmp_path / "dst.png"
+    giv.invert_image_file(src, dst)
+
+    out = Image.open(dst)
+    assert out.mode == "RGBA"
+    assert np.array(out)[0, 0, 3] == 0
+
+
 def test_url_to_local_path_decodes_percent_encoding(asset_dir: Path) -> None:
     url = f"{_BASE_URL}/Attachments/Pasted%20image.avif"
     assert giv._url_to_local_path(url, asset_dir, _BASE_URL) == (

@@ -31,6 +31,7 @@ import { escapeHTML } from "../../util/escape"
 import { type FilePath, slugifyFilePath, slugTag } from "../../util/path"
 import { UNICODE_WORD_CHAR } from "../../util/regex"
 import { resetSlugger, slugify as slugAnchor } from "./gfm"
+import { isEffectivelyTitleCased } from "./utils"
 
 const currentFilePath = fileURLToPath(import.meta.url)
 const currentDirPath = path.dirname(currentFilePath)
@@ -187,6 +188,7 @@ const createAdmonitionTitle = (
   titleContent: string,
   remainingChildren: ElementContent[],
   collapse: boolean,
+  noSmallcaps: boolean,
 ): Element => {
   const children: ElementContent[] = [
     createAdmonitionTitleInner(
@@ -201,6 +203,8 @@ const createAdmonitionTitle = (
     children.push(createFoldIcon())
   }
 
+  const className = noSmallcaps ? ["admonition-title", "no-smallcaps"] : ["admonition-title"]
+
   return {
     type: "element",
     tagName: "div",
@@ -208,12 +212,31 @@ const createAdmonitionTitle = (
     data: customData({
       hName: "div",
       hProperties: {
-        className: ["admonition-title"],
+        className,
       },
       position: {},
     }),
     children,
   }
+}
+
+/**
+ * Concatenates the visible text of inline mdast nodes (the link/emphasis/etc.
+ * that follow a bare-text admonition title), descending into their children.
+ * Non-text leaves such as images contribute nothing, which is fine here: the
+ * result only feeds the title-case heuristic, not the rendered title.
+ */
+function collectInlineText(nodes: readonly PhrasingContent[]): string {
+  let text = ""
+  for (const node of nodes) {
+    if ("value" in node) {
+      text += node.value
+    }
+    if ("children" in node) {
+      text += collectInlineText(node.children as PhrasingContent[])
+    }
+  }
+  return text
 }
 
 /** Creates the content container for an admonition. */
@@ -325,12 +348,24 @@ const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
   const useDefaultTitle = titleContent === "" && firstChild.children.length === 1
   const capitalizedTypeString = typeString.charAt(0).toUpperCase() + typeString.slice(1)
 
+  // An admonition title that already reads as a title-cased work name (a
+  // cited article, a named act) should not render its acronyms as
+  // small-caps, regardless of admonition type; prose-style titles still do.
+  // A blank title (the admonition type's own name, e.g. "Note") is never a
+  // work title, and an empty string is vacuously "title-cased" by the Hamming
+  // check, so guard on non-empty text first.
+  const fullTitleText = `${titleContent} ${collectInlineText(
+    firstChild.children.slice(1) as PhrasingContent[],
+  )}`.trim()
+  const noSmallcaps = fullTitleText !== "" && isEffectivelyTitleCased(fullTitleText)
+
   const admonitionTitle = createAdmonitionTitle(
     useDefaultTitle,
     capitalizedTypeString,
     titleContent,
     firstChild.children.slice(1) as ElementContent[],
     collapse,
+    noSmallcaps,
   ) as unknown as BlockContent
 
   /* istanbul ignore next -- admonition content handling edge case */
