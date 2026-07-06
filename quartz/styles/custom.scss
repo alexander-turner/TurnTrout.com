@@ -641,6 +641,8 @@ img {
   &.inline-img {
     display: inline;
     width: 0.9rem;
+    height: 0.9rem;
+    object-fit: contain;
     vertical-align: middle;
     margin: 0;
     margin-left: 0.05rem;
