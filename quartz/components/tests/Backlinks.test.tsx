@@ -1,4 +1,4 @@
-import type { Root, RootContent } from "hast"
+import type { Root } from "hast"
 
 /**
  * @jest-environment jest-fixed-jsdom
@@ -15,7 +15,7 @@ import { type GlobalConfiguration } from "../../util/config"
 import { type QuartzConfig } from "../../util/ctx"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, type SimpleSlug } from "../../util/path"
-import { Backlinks, elementToJsx, getBacklinkFileData } from "../Backlinks"
+import { Backlinks, getBacklinkFileData } from "../Backlinks"
 import { normalizeNbsp } from "../constants"
 
 // Helper function to create test file data
@@ -341,46 +341,6 @@ describe("Backlinks", () => {
     // A blockquote should still be rendered (backlinkFiles length > 0), but there should be no <li> entries
     expect(html).toContain("<blockquote")
     expect(html.match(/<li/gu)).toBeNull()
-  })
-
-  it("renders an <img> without a class or draggable attribute when both are absent", () => {
-    const imgNode = {
-      type: "element",
-      tagName: "img",
-      properties: { src: "fish.svg", alt: "🐟" },
-      children: [],
-    } as unknown as RootContent
-
-    const html = render(elementToJsx(imgNode))
-    expect(html).toMatch(/<img[^>]*src="fish.svg"[^>]*>/)
-    expect(html).not.toContain("class=")
-    expect(html).not.toContain("draggable")
-  })
-
-  it("handles abbr elements with no children gracefully", () => {
-    const abbrNode = {
-      type: "element",
-      tagName: "abbr",
-      properties: { className: ["small-caps"] },
-      children: [],
-    } as unknown as RootContent
-
-    const jsx = elementToJsx(abbrNode)
-    const html = render(jsx)
-
-    expect(html).toMatch(/<abbr[^>]*class="small-caps"[^>]*><\/abbr>/u)
-  })
-
-  // Test unsupported RootContent type triggers default branch returning empty fragment
-  it("returns empty fragment for unsupported AST node types", () => {
-    // Create a comment node which is not handled explicitly by elementToJsx
-    const commentNode = { type: "comment", value: "ignored" } as unknown as RootContent
-
-    const jsx = elementToJsx(commentNode)
-    const html = render(jsx)
-
-    // Rendering an empty fragment yields an empty string
-    expect(html).toBe("")
   })
 
   const linkingWithExcerpt = (linkContexts?: QuartzPluginData["linkContexts"]): QuartzPluginData =>

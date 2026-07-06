@@ -1,82 +1,13 @@
 import type { JSX } from "preact"
 
-import { type Element, type Parent, type RootContent } from "hast"
-import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
 
 import { type QuartzPluginData } from "../plugins/vfile"
 import { type FullSlug, resolveRelative, type SimpleSlug, simplifySlug } from "../util/path"
-import { applyInlineFormattingTransforms, formatTitle } from "./component_utils"
+import { formatTitle, renderTitleJsx } from "./component_utils"
 import { BACKLINK_EXCERPT_CLASS } from "./constants"
 import { type QuartzComponent, type QuartzComponentProps } from "./types"
-
-function processBacklinkTitle(title: string): Parent {
-  const formattedTitle = formatTitle(title)
-  // Titles may contain inline HTML (e.g. <abbr>), so parse before transforming.
-  const htmlAst = fromHtml(formattedTitle, { fragment: true })
-  applyInlineFormattingTransforms(htmlAst, true)
-  return htmlAst as unknown as Parent
-}
-
-/** Joins a hast `className` (an array, or absent) into a class string. */
-function classNameString(properties: Element["properties"]): string {
-  const className = properties?.className
-  return Array.isArray(className) ? className.map(String).join(" ") : ""
-}
-
-/**
- * Semantic inline tags preserved verbatim when rendering backlink titles and
- * excerpts. Everything else falls back to a `<span>`.
- */
-const SEMANTIC_INLINE_TAGS: ReadonlySet<string> = new Set([
-  "em",
-  "strong",
-  "code",
-  "del",
-  "sub",
-  "sup",
-])
-
-function elementToJsx(elt: RootContent): JSX.Element {
-  switch (elt.type) {
-    case "text":
-      // skipcq: JS-0424 want to cast as JSX element
-      return <>{elt.value}</>
-    case "element":
-      if (elt.tagName === "abbr") {
-        const firstChild = elt.children[0]
-        const abbrText = firstChild?.type === "text" ? firstChild.value : ""
-        return <abbr className={classNameString(elt.properties)}>{abbrText}</abbr>
-      }
-      if (elt.tagName === "img") {
-        return (
-          <img
-            className={classNameString(elt.properties) || undefined}
-            src={elt.properties?.src as string}
-            alt={elt.properties?.alt as string}
-            draggable={elt.properties?.draggable === "false" ? false : undefined}
-          />
-        )
-      }
-      if (SEMANTIC_INLINE_TAGS.has(elt.tagName)) {
-        const Tag = elt.tagName as keyof JSX.IntrinsicElements
-        return (
-          <Tag className={classNameString(elt.properties) || undefined}>
-            {elt.children.map(elementToJsx)}
-          </Tag>
-        )
-      }
-      return (
-        <span className={classNameString(elt.properties) || undefined}>
-          {elt.children.map(elementToJsx)}
-        </span>
-      )
-    default:
-      // skipcq: JS-0424 want to cast as JSX element
-      return <></>
-  }
-}
 
 /**
  * Renders a stored excerpt as a deep-link below a backlink title; clicking it
@@ -116,7 +47,7 @@ const BacklinksList = ({
         if (!("frontmatter" in f) || !("slug" in f) || !f.frontmatter?.title) {
           return null
         }
-        const processedTitle = processBacklinkTitle(f.frontmatter.title)
+        const titleJsx = renderTitleJsx(formatTitle(f.frontmatter.title))
         const contexts = (f.linkContexts ?? []).filter(
           (lc) => lc.target === currentTarget && lc.excerptHtml,
         )
@@ -130,7 +61,7 @@ const BacklinksList = ({
               className="internal can-trigger-popover"
               title="Read the original post"
             >
-              {processedTitle.children.map(elementToJsx)}
+              {titleJsx}
             </a>
             {contexts.map((ctx) =>
               renderExcerpt(ctx.excerptHtml, `${baseHref}#${ctx.anchor}`, ctx.anchor),
@@ -189,5 +120,3 @@ export const Backlinks: QuartzComponent = ({ fileData, allFiles }: QuartzCompone
     </blockquote>
   )
 }
-
-export { elementToJsx }

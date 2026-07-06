@@ -163,6 +163,32 @@ describe("buildExcerpt sanitizer", () => {
     expect(html).not.toContain("keepme")
   })
 
+  it("drops non-emoji media so excerpts never embed a large photo/video/iframe", () => {
+    const photo = h("img", {
+      src: "/huge-photo.jpg",
+      width: "1920",
+      height: "1080",
+    }) as ElementContent
+    const video = h("video", { src: "/clip.mp4" }, "fallback") as ElementContent
+    const iframe = h("iframe", { src: "https://example.com/embed" }) as ElementContent
+    const html = buildExcerpt(
+      blockWith(
+        { type: "text", value: "before " },
+        photo,
+        video,
+        iframe,
+        { type: "text", value: " after " },
+        anchored("x"),
+      ),
+      ANCHOR,
+    )
+    expect(html).toBe('before  after <span class="backlink-highlight">x</span>')
+    expect(html).not.toContain("huge-photo")
+    expect(html).not.toContain("<img")
+    expect(html).not.toContain("<video")
+    expect(html).not.toContain("<iframe")
+  })
+
   it("returns an empty string when the block sanitizes to no visible text", () => {
     const img = h("img", { src: "/pic.png" }) as ElementContent
     const anchorImageOnly: Element = {

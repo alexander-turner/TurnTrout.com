@@ -2,18 +2,23 @@
  * @jest-environment jest-fixed-jsdom
  */
 
-import type { Parent } from "hast"
+import type { Parent, RootContent } from "hast"
 import type { Element, Text } from "hast"
 
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
+import { Fragment, h as preactH } from "preact"
+import { render } from "preact-render-to-string"
 
 import {
   applyInlineFormattingTransforms,
+  elementToJsx,
   processInlineCode,
   processKatex,
   processSmallCaps,
   processTextWithArrows,
   renderInlineFormatting,
+  renderTitleJsx,
+  renderTitleNodes,
 } from "../component_utils"
 import { debounce } from "../scripts/component_script_utils"
 
@@ -335,5 +340,73 @@ describe("debounce", () => {
     // Advance time again and check it wasn't called spuriously
     waitWithRAF(debounceMs)
     expect(func).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe("elementToJsx", () => {
+  it("renders an <img> without a class or draggable attribute when both are absent", () => {
+    const imgNode = {
+      type: "element",
+      tagName: "img",
+      properties: { src: "fish.svg", alt: "🐟" },
+      children: [],
+    } as unknown as RootContent
+
+    const html = render(elementToJsx(imgNode))
+    expect(html).toMatch(/<img[^>]*src="fish.svg"[^>]*>/)
+    expect(html).not.toContain("class=")
+    expect(html).not.toContain("draggable")
+  })
+
+  it("renders an emoji <img> with its class and non-draggable attribute", () => {
+    const imgNode = {
+      type: "element",
+      tagName: "img",
+      properties: { className: ["emoji"], src: "fish.svg", alt: "🐟", draggable: "false" },
+      children: [],
+    } as unknown as RootContent
+
+    const html = render(elementToJsx(imgNode))
+    expect(html).toMatch(/<img[^>]*class="emoji"[^>]*>/)
+    expect(html).toMatch(/draggable="false"/)
+  })
+
+  it("preserves whitelisted semantic tags and falls back to a span otherwise", () => {
+    const em = { type: "element", tagName: "em", properties: {}, children: [] } as RootContent
+    const italic = { type: "element", tagName: "i", properties: {}, children: [] } as RootContent
+    expect(render(elementToJsx(em))).toMatch(/<em[^>]*><\/em>/)
+    expect(render(elementToJsx(italic))).toMatch(/<span[^>]*><\/span>/)
+  })
+
+  it("handles abbr elements with no children gracefully", () => {
+    const abbrNode = {
+      type: "element",
+      tagName: "abbr",
+      properties: { className: ["small-caps"] },
+      children: [],
+    } as unknown as RootContent
+
+    const html = render(elementToJsx(abbrNode))
+    expect(html).toMatch(/<abbr[^>]*class="small-caps"[^>]*><\/abbr>/u)
+  })
+
+  it("returns an empty fragment for unsupported AST node types", () => {
+    const commentNode = { type: "comment", value: "ignored" } as unknown as RootContent
+    expect(render(elementToJsx(commentNode))).toBe("")
+  })
+})
+
+describe("renderTitleNodes / renderTitleJsx", () => {
+  it("turns emoji into a Twemoji <img> and preserves inline HTML", () => {
+    const nodes = renderTitleNodes("A fish 🐟 and <em>emphasis</em>")
+    const html = render(preactH(Fragment, null, nodes.map(elementToJsx)))
+    expect(html).toMatch(/<img[^>]*class="emoji"[^>]*>/)
+    expect(html).toMatch(/<em[^>]*>emphasis<\/em>/)
+  })
+
+  it("leaves acronyms as plain caps (small-caps skipped for work titles)", () => {
+    const html = render(preactH(Fragment, null, renderTitleJsx("Read the GPT paper")))
+    expect(html).not.toContain("small-caps")
+    expect(html).toContain("GPT")
   })
 })

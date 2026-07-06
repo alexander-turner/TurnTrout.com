@@ -7,7 +7,7 @@ import readingTime from "reading-time"
 import { type QuartzPluginData } from "../plugins/vfile"
 import { type GlobalConfiguration } from "../util/config"
 import { Backlinks } from "./Backlinks"
-import { formatTitle } from "./component_utils"
+import { formatTitle, renderTitleJsx } from "./component_utils"
 import { DateElement } from "./Date"
 import style from "./styles/contentMeta.scss"
 import { TagList } from "./TagList"
@@ -224,7 +224,7 @@ export const renderPreviousPostJsx = (fileData: QuartzPluginData) => {
     <p style={{ margin: 0 }}>
       <b>Previous:</b>{" "}
       <a href={prevPostSlug} className="internal can-trigger-popover">
-        {prevPostTitleFormatted}
+        {renderTitleJsx(prevPostTitleFormatted)}
       </a>
     </p>
   )
@@ -243,7 +243,7 @@ export const renderNextPostJsx = (fileData: QuartzPluginData) => {
     <p style={{ marginTop: ".5rem" }}>
       <b>Next:</b>{" "}
       <a href={nextPostSlug} className="internal can-trigger-popover">
-        {nextPostTitleFormatted}
+        {renderTitleJsx(nextPostTitleFormatted)}
       </a>
     </p>
   )

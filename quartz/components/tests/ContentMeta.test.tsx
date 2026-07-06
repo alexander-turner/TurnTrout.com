@@ -4,6 +4,7 @@ import type { Root } from "hast"
  * @jest-environment jest-fixed-jsdom
  */
 import { describe, expect, it, jest } from "@jest/globals"
+import { render as renderToStaticMarkup } from "preact-render-to-string"
 // skipcq: JS-W1028
 import React from "react"
 import { createRoot } from "react-dom/client"
@@ -413,7 +414,7 @@ describe("renderPreviousPostJsx", () => {
     const link = result?.props.children[2]
     expect(link.type).toBe("a")
     expect(link.props.href).toBe(PREV_POST_SLUG)
-    expect(normalizeNbsp(link.props.children)).toBe(PREV_POST_TITLE)
+    expect(normalizeNbsp(renderToStaticMarkup(link))).toContain(PREV_POST_TITLE)
   })
 
   it("should format all-caps title", () => {
@@ -423,7 +424,7 @@ describe("renderPreviousPostJsx", () => {
     })
     const result = renderPreviousPostJsx(fileData)
     const link = result?.props.children[2]
-    expect(normalizeNbsp(link.props.children)).toBe(PREV_POST_TITLE_CAPS)
+    expect(normalizeNbsp(renderToStaticMarkup(link))).toContain(PREV_POST_TITLE_CAPS)
   })
 })
 
@@ -445,7 +446,7 @@ describe("renderNextPostJsx", () => {
     const link = result?.props.children[2]
     expect(link.type).toBe("a")
     expect(link.props.href).toBe(NEXT_POST_SLUG)
-    expect(normalizeNbsp(link.props.children)).toBe(NEXT_POST_TITLE)
+    expect(normalizeNbsp(renderToStaticMarkup(link))).toContain(NEXT_POST_TITLE)
   })
 
   it("should format all-caps title", () => {
@@ -455,7 +456,7 @@ describe("renderNextPostJsx", () => {
     })
     const result = renderNextPostJsx(fileData)
     const link = result?.props.children[2]
-    expect(normalizeNbsp(link.props.children)).toBe(NEXT_POST_TITLE_CAPS)
+    expect(normalizeNbsp(renderToStaticMarkup(link))).toContain(NEXT_POST_TITLE_CAPS)
   })
 })
 
