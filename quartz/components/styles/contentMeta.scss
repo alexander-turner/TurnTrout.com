@@ -69,7 +69,12 @@
 
     // Full-color inline sprites (the agent chevron, SafeLife tiles) would pop
     // against the faint excerpt prose, so dim them to the text's visual weight.
+    // They are also full-bleed images with none of a font glyph's built-in
+    // side bearings, so at the body-text size (0.9em) they tower over the
+    // small excerpt type; cap them at cap height so they sit within the line.
     .inline-img {
+      width: 0.65em;
+      height: 0.65em;
       opacity: 0.6;
     }
 
