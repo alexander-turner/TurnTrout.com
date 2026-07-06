@@ -178,21 +178,21 @@ function isFootnoteRef(node: Element): boolean {
  * citing link becomes a highlight span, non-citing links are unwrapped, and
  * every `id` is removed so the excerpt can't collide with page anchors.
  */
-function sanitizeChildren(children: readonly ElementContent[], anchorId: string): ElementContent[] {
-  return children.flatMap((child) => sanitizeNode(child, anchorId))
+function sanitizeChildren(children: readonly ElementContent[], highlightId: string): ElementContent[] {
+  return children.flatMap((child) => sanitizeNode(child, highlightId))
 }
 
-function sanitizeNode(node: ElementContent, anchorId: string): ElementContent[] {
+function sanitizeNode(node: ElementContent, highlightId: string): ElementContent[] {
   if (node.type === "text") return [{ type: "text", value: node.value }]
   if (node.type !== "element") return []
 
-  if (node.tagName === "a" && node.properties?.id === anchorId) {
+  if (node.tagName === "a" && node.properties?.id === highlightId) {
     return [
       {
         type: "element",
         tagName: "span",
         properties: { className: [BACKLINK_HIGHLIGHT_CLASS] },
-        children: sanitizeChildren(node.children, anchorId),
+        children: sanitizeChildren(node.children, highlightId),
       },
     ]
   }
@@ -203,7 +203,7 @@ function sanitizeNode(node: ElementContent, anchorId: string): ElementContent[] 
   if (node.tagName === "a" && hasClass(node, "data-footnote-backref")) return []
 
   if (hasClass(node, FAVICON_CLASS)) return []
-  if (hasClass(node, FAVICON_SPAN_CLASS)) return sanitizeChildren(node.children, anchorId)
+  if (hasClass(node, FAVICON_SPAN_CLASS)) return sanitizeChildren(node.children, highlightId)
 
   // Preserve the pipeline's rendered inline atoms verbatim rather than
   // reconstructing them downstream.
@@ -211,11 +211,11 @@ function sanitizeNode(node: ElementContent, anchorId: string): ElementContent[] 
 
   if (isFootnoteRef(node)) return []
   if (DROP_TAGS.has(node.tagName)) return []
-  if (node.tagName === "a") return sanitizeChildren(node.children, anchorId)
+  if (node.tagName === "a") return sanitizeChildren(node.children, highlightId)
 
   const properties = { ...node.properties }
   delete properties.id
-  return [{ ...node, properties, children: sanitizeChildren(node.children, anchorId) }]
+  return [{ ...node, properties, children: sanitizeChildren(node.children, highlightId) }]
 }
 
 interface Measurement {
@@ -349,9 +349,9 @@ export function truncateFragment(nodes: readonly ElementContent[]): ElementConte
  * citing link, or `""` when the block sanitizes down to no visible text (e.g. a
  * citing link wrapping only dropped media) so no empty excerpt is rendered.
  */
-export function buildExcerpt(block: Element, anchorId: string): string {
+export function buildExcerpt(block: Element, highlightId: string): string {
   const clone = structuredClone(block)
-  const fragment = truncateFragment(sanitizeChildren(clone.children, anchorId))
+  const fragment = truncateFragment(sanitizeChildren(clone.children, highlightId))
   if (fragmentText(fragment).trim() === "") return ""
   return toHtml({ type: "root", children: fragment })
 }
