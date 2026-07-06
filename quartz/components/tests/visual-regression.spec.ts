@@ -1474,9 +1474,9 @@ test.describe("Popovers on different page types", () => {
 
       await popoverLink.hover()
 
-      // The popover appears only after the 300ms hover-intent delay plus a
-      // fetch and render of the target page, so give it a generous timeout
-      // for slow CI runners.
+      // The popover appears only after the hover-intent delay
+      // (popoverRemovalDelayMs) plus a fetch and render of the target page,
+      // so give it a generous timeout for slow CI runners.
       const popover = page.locator(".popover.popover-visible")
       await expect(popover).toBeVisible({ timeout: 15_000 })
       const popoverInner = popover.locator(".popover-inner")

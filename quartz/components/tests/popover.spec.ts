@@ -187,6 +187,22 @@ async function holdFirstPopoverFetch(
   return { intercepted, release }
 }
 
+/**
+ * Releases a held popover-fixture fetch and waits until the request fully
+ * finishes (body included) plus two painted frames, so any DOM mutation from
+ * the resolved fetch has landed before a negative assertion runs.
+ */
+async function releaseAndProcessPopoverFetch(page: Page, release: () => void): Promise<void> {
+  const requestFinished = page.waitForEvent("requestfinished", (request) =>
+    request.url().includes("popover-fixture"),
+  )
+  release()
+  await requestFinished
+  await page.evaluate(
+    () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+  )
+}
+
 test("Popover does not attach when mouse leaves during content fetch", async ({
   page,
   dummyLink,
@@ -200,11 +216,7 @@ test("Popover does not attach when mouse leaves during content fetch", async ({
   // The pointer leaves the link while the popover content is still loading.
   await moveMouseToSafePosition(page)
 
-  // Release the held fetch and wait for the response so mouseEnterHandler has
-  // had a chance to process it.
-  const responsePromise = page.waitForResponse("**/popover-fixture")
-  release()
-  await responsePromise
+  await releaseAndProcessPopoverFetch(page, release)
 
   // The popover must not attach: with the pointer already gone, no mouseleave
   // could ever dismiss it.
@@ -441,11 +453,8 @@ test("In-flight popover fetch does not create orphaned popover after navigation"
   // Click the link to trigger SPA navigation while the popover fetch is held.
   await triggerAndWaitForSPANav(page, () => dummyLink.click())
 
-  // Release the held fetch and wait for the response to complete, so we know
-  // mouseEnterHandler has had a chance to process it (and should bail out).
-  const responsePromise = page.waitForResponse("**/popover-fixture")
-  release()
-  await responsePromise
+  // Let mouseEnterHandler fully process the released fetch (and bail out).
+  await releaseAndProcessPopoverFetch(page, release)
 
   // No orphaned popover should appear on the new page.
   const popover = page.locator(".popover")
