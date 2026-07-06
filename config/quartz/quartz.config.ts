@@ -174,12 +174,16 @@ const config: QuartzConfig = {
       // After whitespace stripping so the preceding-character check sees the
       // final inline structure (a glued "(" isn't separated by stray text).
       InlineCodeSpacing(),
-      // After the favicon, smallcaps, spoiler, and inline-code passes so backlink
-      // excerpts mirror the final rendered prose (favicons stripped, spoilers hidden).
-      LinkContexts(),
       ColorVariables(),
       TableOfContents({ minEntries: 3 }),
       addAssetDimensionsFromSrc(),
+      // After the favicon, smallcaps, spoiler, inline-code, and asset-dimension
+      // passes so backlink excerpts mirror the final rendered prose: favicons
+      // stripped, spoilers hidden, and preserved emoji <img> already carrying the
+      // width/height addAssetDimensionsFromSrc stamps. The excerpt is serialized
+      // to a string here and never re-processed, so every inline atom must be
+      // final before it is captured.
+      LinkContexts(),
       InvertInDarkMode(),
     ],
     filters: [RemoveDrafts(), RemoveFixtures(), RemovePartials()],
