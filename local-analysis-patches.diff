@@ -1,0 +1,108 @@
+diff --git a/quartz/plugins/transformers/.asset_dimensions.json b/quartz/plugins/transformers/.asset_dimensions.json
+index 51f8d2f7e..873035288 100644
+--- a/quartz/plugins/transformers/.asset_dimensions.json
++++ b/quartz/plugins/transformers/.asset_dimensions.json
+@@ -9570,5 +9570,41 @@
+   "https://assets.turntrout.com/static/images/posts/eb2E5Eg.avif?v=1": {
+     "width": 1937,
+     "height": 925
++  },
++  "https://assets.turntrout.com/static/images/claude-guard.png?v=1": {
++    "width": 1676,
++    "height": 938
++  },
++  "https://assets.turntrout.com/static/images/external-favicons/stackoverflow_com.svg": {
++    "width": 16.2,
++    "height": 17.5
++  },
++  "https://assets.turntrout.com/static/images/external-favicons/cbsnews_com.svg": {
++    "width": 24,
++    "height": 24
++  },
++  "https://assets.turntrout.com/static/images/external-favicons/arstechnica_com.svg": {
++    "width": 24,
++    "height": 24
++  },
++  "https://assets.turntrout.com/static/images/external-favicons/stackexchange_com.svg": {
++    "width": 24,
++    "height": 24
++  },
++  "https://assets.turntrout.com/static/images/external-favicons/playwright_dev.svg": {
++    "width": 22.224253,
++    "height": 16.686581
++  },
++  "https://assets.turntrout.com/static/images/external-favicons/theguardian_com.svg": {
++    "width": 40,
++    "height": 45
++  },
++  "https://assets.turntrout.com/twemoji/1f9c0.svg": {
++    "width": 36,
++    "height": 36
++  },
++  "https://assets.turntrout.com/twemoji/1f916.svg": {
++    "width": 36,
++    "height": 36
+   }
+ }
+diff --git a/quartz/plugins/transformers/assetDimensions.ts b/quartz/plugins/transformers/assetDimensions.ts
+index e8ba57519..0c53552e4 100644
+--- a/quartz/plugins/transformers/assetDimensions.ts
++++ b/quartz/plugins/transformers/assetDimensions.ts
+@@ -315,9 +315,17 @@ class AssetProcessor {
+     assetSrc: string,
+     retries = numRetries,
+   ): Promise<AssetDimensions | null> {
+-    return AssetProcessor.isRemoteUrl(assetSrc)
+-      ? await AssetProcessor.getRemoteAssetDimensions(assetSrc, retries)
+-      : await AssetProcessor.getLocalAssetDimensions(assetSrc)
++    if (AssetProcessor.isRemoteUrl(assetSrc)) {
++      if (process.env.ASSET_DIMS_FALLBACK) {
++        try {
++          return await AssetProcessor.getRemoteAssetDimensions(assetSrc, 1)
++        } catch {
++          return { width: 36, height: 36 }
++        }
++      }
++      return await AssetProcessor.getRemoteAssetDimensions(assetSrc, retries)
++    }
++    return await AssetProcessor.getLocalAssetDimensions(assetSrc)
+   }
+ 
+   /** Returns the src of a video element or that of its first source child.
+diff --git a/quartz/plugins/transformers/favicons.ts b/quartz/plugins/transformers/favicons.ts
+index 94f2566ba..eb81b46eb 100644
+--- a/quartz/plugins/transformers/favicons.ts
++++ b/quartz/plugins/transformers/favicons.ts
+@@ -110,6 +110,11 @@ export function transformUrl(faviconPath: string): string {
+  * Checks whether an SVG exists on the CDN via HTTP fetch.
+  */
+ async function checkCdnSvg(svgPath: string): Promise<boolean> {
++  const mirrorDir = process.env.FAVICON_MIRROR_DIR
++  if (mirrorDir) {
++    const base = svgPath.split("/").pop() ?? ""
++    return fs.existsSync(`${mirrorDir}/${base}`)
++  }
+   const url = svgPath.startsWith("http") ? svgPath : `${cdnBaseUrl}${svgPath}`
+   try {
+     return await pRetry(
+diff --git a/quartz/plugins/transformers/tweetEmbed.ts b/quartz/plugins/transformers/tweetEmbed.ts
+index 6868e161f..78435a955 100644
+--- a/quartz/plugins/transformers/tweetEmbed.ts
++++ b/quartz/plugins/transformers/tweetEmbed.ts
+@@ -130,6 +130,7 @@ const R2_FETCH_BACKOFF_MS = 1000
+  */
+ async function fetchSnapshotFromR2(id: string): Promise<TweetSnapshot | null> {
+   const url = snapshotCdnUrl(id)
++  if (process.env.TWEET_SNAPSHOT_STUB_FALLBACK) return null
+   for (let attempt = 0; attempt < R2_FETCH_RETRIES; attempt++) {
+     try {
+       const response = await fetch(url)
+@@ -174,7 +175,7 @@ function resolveSlots(refs: readonly TweetReference[], dir: string): Promise<Twe
+   return Promise.all(
+     refs.map(async (ref) => {
+       const snapshot = await loadSnapshot(ref.id, dir)
+-      if (!snapshot && !ref.unavailable) {
++      if (!snapshot && !ref.unavailable && !process.env.TWEET_SNAPSHOT_STUB_FALLBACK) {
+         throw new Error(
+           `tweetEmbed: no snapshot for tweet ${ref.id} (${ref.xcancelUrl}) on disk or R2. ` +
+             "Run `uv run python scripts/tweet_snapshot.py --write` to capture it and upload it to R2, or " +

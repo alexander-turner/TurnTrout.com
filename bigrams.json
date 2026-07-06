@@ -1,0 +1,8190 @@
+{
+ "favicons": {
+  "lesswrong_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/lesswrong_com.svg",
+   "tag": "svg"
+  },
+  "wikipedia_org": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/wikipedia_org.svg",
+   "tag": "svg"
+  },
+  "deepmind_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/deepmind_com.svg",
+   "tag": "svg"
+  },
+  "intelligence_org": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/intelligence_org.svg",
+   "tag": "svg"
+  },
+  "substack_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/substack_com.svg",
+   "tag": "svg"
+  },
+  "rss": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/rss.svg",
+   "tag": "svg"
+  },
+  "mail": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/mail.svg",
+   "tag": "svg"
+  },
+  "turntrout_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/turntrout_com.svg",
+   "tag": "svg"
+  },
+  "amazon_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/amazon_com.svg",
+   "tag": "svg"
+  },
+  "arbital_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/arbital_com.svg",
+   "tag": "svg"
+  },
+  "openai_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/openai_com.svg",
+   "tag": "svg"
+  },
+  "arxiv_org": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/arxiv_org.svg",
+   "tag": "svg"
+  },
+  "stackexchange_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/stackexchange_com.svg",
+   "tag": "svg"
+  },
+  "alignmentforum_org": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/alignmentforum_org.svg",
+   "tag": "svg"
+  },
+  "gwern_net": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/gwern_net.svg",
+   "tag": "svg"
+  },
+  "readthesequences_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/readthesequences_com.svg",
+   "tag": "svg"
+  },
+  "anchor": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/anchor.svg",
+   "tag": "svg"
+  },
+  "google_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/google_com.svg",
+   "tag": "svg"
+  },
+  "github_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/github_com.svg",
+   "tag": "svg"
+  },
+  "proton_me": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/proton_me.svg",
+   "tag": "svg"
+  },
+  "apple_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/apple_com.svg",
+   "tag": "svg"
+  },
+  "reddit_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/reddit_com.svg",
+   "tag": "svg"
+  },
+  "arstechnica_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/arstechnica_com.svg",
+   "tag": "svg"
+  },
+  "x_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/x_com.svg",
+   "tag": "svg"
+  },
+  "nytimes_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/nytimes_com.svg",
+   "tag": "svg"
+  },
+  "youtube_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/youtube_com.svg",
+   "tag": "svg"
+  },
+  "scholar_google_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/scholar_google_com.svg",
+   "tag": "svg"
+  },
+  "forum_effectivealtruism_org": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/forum_effectivealtruism_org.svg",
+   "tag": "svg"
+  },
+  "wordpress_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/wordpress_com.svg",
+   "tag": "svg"
+  },
+  "anthropic_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/anthropic_com.svg",
+   "tag": "svg"
+  },
+  "huggingface_co": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/huggingface_co.svg",
+   "tag": "svg"
+  },
+  "ai-alignment_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/ai-alignment_com.svg",
+   "tag": "svg"
+  },
+  "discord_gg": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/discord_gg.svg",
+   "tag": "svg"
+  },
+  "linkedin_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/linkedin_com.svg",
+   "tag": "svg"
+  },
+  "drive_google_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/drive_google_com.svg",
+   "tag": "svg"
+  },
+  "slatestarcodex_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.svg",
+   "tag": "svg"
+  },
+  "msnbc_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/msnbc_com.svg",
+   "tag": "svg"
+  },
+  "npmjs_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/npmjs_com.svg",
+   "tag": "svg"
+  },
+  "stackoverflow_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/stackoverflow_com.svg",
+   "tag": "svg"
+  },
+  "colab_research_google_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/colab_research_google_com.svg",
+   "tag": "svg"
+  },
+  "matsprogram_org": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/matsprogram_org.svg",
+   "tag": "svg"
+  },
+  "docs_google_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/docs_google_com.svg",
+   "tag": "svg"
+  },
+  "overleaf_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/overleaf_com.svg",
+   "tag": "svg"
+  },
+  "fatebook_io": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/fatebook_io.svg",
+   "tag": "svg"
+  },
+  "cbsnews_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/cbsnews_com.svg",
+   "tag": "svg"
+  },
+  "sfchronicle_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/sfchronicle_com.svg",
+   "tag": "svg"
+  },
+  "whitehouse_gov": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/whitehouse_gov.svg",
+   "tag": "svg"
+  },
+  "play_google_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/play_google_com.svg",
+   "tag": "svg"
+  },
+  "theguardian_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/theguardian_com.svg",
+   "tag": "svg"
+  },
+  "cnn_com": {
+   "url": "https://assets.turntrout.com/static/images/external-favicons/cnn_com.svg",
+   "tag": "svg"
+  }
+ },
+ "bigrams": [
+  {
+   "char": "s",
+   "domain": "turntrout_com",
+   "count": 342,
+   "pages": [
+    "MDPs-are-not-subjective.html",
+    "RL-textbook-review.html",
+    "RL-trains-policies-not-agents.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "MDPs",
+    "ames"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "turntrout_com",
+   "count": 230,
+   "pages": [
+    "a-certain-formalization-of-corrigibility-is-vnm-incoherent.html",
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "about.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    " us.",
+    "ves."
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "turntrout_com",
+   "count": 173,
+   "pages": [
+    "RL-textbook-review.html",
+    "RL-trains-policies-not-agents.html",
+    "a-certain-formalization-of-corrigibility-is-vnm-incoherent.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rget",
+    "rift"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "turntrout_com",
+   "count": 158,
+   "pages": [
+    "AI-textbook-review.html",
+    "RL-textbook-review.html",
+    "about.html"
+   ],
+   "close_text": 158,
+   "contexts": [
+    "ght”",
+    "ion”"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "mail",
+   "count": 154,
+   "pages": [
+    "AI-textbook-review.html",
+    "MDPs-are-not-subjective.html",
+    "RL-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ".com"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "substack_com",
+   "count": 153,
+   "pages": [
+    "AI-textbook-review.html",
+    "MDPs-are-not-subjective.html",
+    "RL-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tter"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "rss",
+   "count": 153,
+   "pages": [
+    "AI-textbook-review.html",
+    "MDPs-are-not-subjective.html",
+    "RL-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rss"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "turntrout_com",
+   "count": 142,
+   "pages": [
+    "RL-textbook-review.html",
+    "RL-trains-policies-not-agents.html",
+    "a-certain-formalization-of-corrigibility-is-vnm-incoherent.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ing,",
+    "ory,"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "turntrout_com",
+   "count": 130,
+   "pages": [
+    "AI-textbook-review.html",
+    "MDPs-are-not-subjective.html",
+    "about.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ease",
+    "ence"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "lesswrong_com",
+   "count": 109,
+   "pages": [
+    "AI-textbook-review.html",
+    "RL-textbook-review.html",
+    "RL-trains-policies-not-agents.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tsu.",
+    "ply."
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "arxiv_org",
+   "count": 80,
+   "pages": [
+    "RL-trains-policies-not-agents.html",
+    "a-certain-formalization-of-corrigibility-is-vnm-incoherent.html",
+    "a-shot-at-the-diamond-alignment-problem.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lip.",
+    "ent."
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "turntrout_com",
+   "count": 78,
+   "pages": [
+    "RL-textbook-review.html",
+    "a-certain-formalization-of-corrigibility-is-vnm-incoherent.html",
+    "a-shot-at-the-diamond-alignment-problem.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rney",
+    "lity"
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "turntrout_com",
+   "count": 73,
+   "pages": [
+    "RL-trains-policies-not-agents.html",
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "against-inner-outer-alignment.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rong",
+    "ding"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "turntrout_com",
+   "count": 69,
+   "pages": [
+    "AI-textbook-review.html",
+    "RL-textbook-review.html",
+    "RL-trains-policies-not-agents.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "nger",
+    "ower"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "wikipedia_org",
+   "count": 61,
+   "pages": [
+    "AI-textbook-review.html",
+    "RL-textbook-review.html",
+    "RL-trains-policies-not-agents.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "000.",
+    "nds."
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "turntrout_com",
+   "count": 50,
+   "pages": [
+    "RL-textbook-review.html",
+    "advanced-privacy.html",
+    "against-inner-outer-alignment.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion",
+    "vpn"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "lesswrong_com",
+   "count": 50,
+   "pages": [
+    "RL-trains-policies-not-agents.html",
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ons,",
+    "ent,"
+   ]
+  },
+  {
+   "char": "h",
+   "domain": "turntrout_com",
+   "count": 46,
+   "pages": [
+    "agi-risk-introduction.html",
+    "alignment-phd.html",
+    "attainable-utility-preservation-concepts.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "arch",
+    "onth"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "arxiv_org",
+   "count": 42,
+   "pages": [
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "against-inner-outer-alignment.html",
+    "attainable-utility-preservation-empirical-results.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rio,",
+    "and,"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "github_com",
+   "count": 37,
+   "pages": [
+    "dataset-protection.html",
+    "deep-causal-transcoding.html",
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ".",
+    "est."
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "arxiv_org",
+   "count": 36,
+   "pages": [
+    "RL-trains-policies-not-agents.html",
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "avoiding-side-effects-in-complex-environments.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "pers",
+    "rves"
+   ]
+  },
+  {
+   "char": ")",
+   "domain": "arxiv_org",
+   "count": 34,
+   "pages": [
+    "a-certain-formalization-of-corrigibility-is-vnm-incoherent.html",
+    "consistency-training.html",
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "AUP)",
+    "025)"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "anchor",
+   "count": 33,
+   "pages": [
+    "advanced-privacy.html",
+    "ban-development-of-unpredictable-powerful-models.html",
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ".",
+    "ter."
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "lesswrong_com",
+   "count": 32,
+   "pages": [
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "against-inner-outer-alignment.html",
+    "danger-of-suggestive-terminology.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ries",
+    "oals"
+   ]
+  },
+  {
+   "char": "D",
+   "domain": "turntrout_com",
+   "count": 31,
+   "pages": [
+    "AI-textbook-review.html",
+    "agi-risk-introduction.html",
+    "corrigibility-as-outside-view.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    " PhD",
+    " PhD"
+   ]
+  },
+  {
+   "char": "k",
+   "domain": "turntrout_com",
+   "count": 31,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "cheese-vector-paper.html",
+    "environmental-structure-can-cause-instrumental-convergence.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "work",
+    "back"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "lesswrong_com",
+   "count": 28,
+   "pages": [
+    "RL-trains-policies-not-agents.html",
+    "against-inner-outer-alignment.html",
+    "alignment-phd.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ence",
+    "Pope"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "turntrout_com",
+   "count": 27,
+   "pages": [
+    "advanced-privacy.html",
+    "attainable-utility-preservation-empirical-results.html",
+    "attainable-utility-preservation-scaling-to-superhuman.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "nism",
+    "Term"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "lesswrong_com",
+   "count": 26,
+   "pages": [
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "against-inner-outer-alignment.html",
+    "alignment-without-total-robustness.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "bout",
+    "ment"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "arxiv_org",
+   "count": 26,
+   "pages": [
+    "alignment-phd.html",
+    "attainable-utility-preservation-paper.html",
+    "avoiding-side-effects-in-complex-environments.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ower",
+    "aper"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "lesswrong_com",
+   "count": 25,
+   "pages": [
+    "AI-textbook-review.html",
+    "against-inner-outer-alignment.html",
+    "alignment-without-total-robustness.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion",
+    "ften"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "lesswrong_com",
+   "count": 25,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "alignment-without-total-robustness.html",
+    "attainable-utility-preservation-concepts.html"
+   ],
+   "close_text": 25,
+   "contexts": [
+    "es?”",
+    "es.”"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "lesswrong_com",
+   "count": 24,
+   "pages": [
+    "AI-textbook-review.html",
+    "a-certain-formalization-of-corrigibility-is-vnm-incoherent.html",
+    "against-inner-outer-alignment.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "dary",
+    "tomy"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "wikipedia_org",
+   "count": 23,
+   "pages": [
+    "AI-textbook-review.html",
+    "advanced-privacy.html",
+    "collider-bias-as-a-cognitive-blindspot.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "950,",
+    "025,"
+   ]
+  },
+  {
+   "char": "?",
+   "domain": "turntrout_com",
+   "count": 23,
+   "pages": [
+    "against-rewards-over-observations.html",
+    "ban-development-of-unpredictable-powerful-models.html",
+    "can-fear-of-the-dark-bias-us-more-generally.html"
+   ],
+   "close_text": 23,
+   "contexts": [
+    "le”?",
+    "res?"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "github_com",
+   "count": 22,
+   "pages": [
+    "advanced-privacy.html",
+    "design.html",
+    "high-dimensional-subspace-of-code-steering-vectors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ard,",
+    ","
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "turntrout_com",
+   "count": 21,
+   "pages": [
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "advanced-privacy.html",
+    "against-inner-outer-alignment.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rted",
+    "ited"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "anchor",
+   "count": 19,
+   "pages": [
+    "advanced-privacy.html",
+    "design.html",
+    "dont-design-agents-which-exploit-adversarial-inputs.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ess,",
+    "ias,"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "lesswrong_com",
+   "count": 19,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "best-reasons-for-pessimism-about-impact-measures.html",
+    "disagreements-with-list-of-lethalities.html"
+   ],
+   "close_text": 19,
+   "contexts": [
+    "ote:",
+    "ned:"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "wikipedia_org",
+   "count": 18,
+   "pages": [
+    "AI-textbook-review.html",
+    "about.html",
+    "against-inner-outer-alignment.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ance",
+    "eese"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "arxiv_org",
+   "count": 18,
+   "pages": [
+    "alignment-phd.html",
+    "attainable-utility-preservation-empirical-results.html",
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion",
+    "sion"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "wikipedia_org",
+   "count": 18,
+   "pages": [
+    "bruce-wayne-and-the-cost-of-inaction.html",
+    "deep-causal-transcoding.html",
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "gins",
+    "orks"
+   ]
+  },
+  {
+   "char": "3",
+   "domain": "arxiv_org",
+   "count": 18,
+   "pages": [
+    "consistency-training.html",
+    "gemini-steering.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2023",
+    "2013"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "turntrout_com",
+   "count": 16,
+   "pages": [
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "against-inner-outer-alignment.html",
+    "date-me.html"
+   ],
+   "close_text": 16,
+   "contexts": [
+    ":",
+    "tle:"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "amazon_com",
+   "count": 15,
+   "pages": [
+    "RL-textbook-review.html",
+    "advanced-privacy.html",
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ons.",
+    "200."
+   ]
+  },
+  {
+   "char": "?",
+   "domain": "lesswrong_com",
+   "count": 15,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "deep-causal-transcoding.html",
+    "problem-relaxation-as-a-tactic.html"
+   ],
+   "close_text": 15,
+   "contexts": [
+    "lse?",
+    "ing?"
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "arxiv_org",
+   "count": 15,
+   "pages": [
+    "attainable-utility-preservation-empirical-results.html",
+    "conclusion-to-reframing-impact.html",
+    "consistency-training.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "king",
+    "hing"
+   ]
+  },
+  {
+   "char": "4",
+   "domain": "arxiv_org",
+   "count": 15,
+   "pages": [
+    "consistency-training.html",
+    "gemini-steering.html",
+    "gradient-routing.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2024"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "wikipedia_org",
+   "count": 15,
+   "pages": [
+    "date-me.html",
+    "design.html",
+    "environmental-structure-can-cause-instrumental-convergence.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ment",
+    "tent"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "arbital_com",
+   "count": 14,
+   "pages": [
+    "RL-textbook-review.html",
+    "against-inner-outer-alignment.html",
+    "alignment-without-total-robustness.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ory.",
+    "ple."
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "lesswrong_com",
+   "count": 12,
+   "pages": [
+    "AI-textbook-review.html",
+    "against-inner-outer-alignment.html",
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rong",
+    "ding"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "lesswrong_com",
+   "count": 12,
+   "pages": [
+    "AI-textbook-review.html",
+    "distillation-robustifies-unlearning.html",
+    "dont-align-agents-to-evaluations-of-plans.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ized",
+    "tead"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "wikipedia_org",
+   "count": 12,
+   "pages": [
+    "RL-trains-policies-not-agents.html",
+    "advanced-privacy.html",
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion",
+    "rian"
+   ]
+  },
+  {
+   "char": "c",
+   "domain": "turntrout_com",
+   "count": 12,
+   "pages": [
+    "advanced-privacy.html",
+    "alignment-phd.html",
+    "best-reasons-for-pessimism-about-impact-measures.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "Sync",
+    "ctic"
+   ]
+  },
+  {
+   "char": ";",
+   "domain": "arxiv_org",
+   "count": 12,
+   "pages": [
+    "announcing-rewrite-of-power-seeking-post.html",
+    "gemini-steering.html",
+    "gradient-routing.html"
+   ],
+   "close_text": 12,
+   "contexts": [
+    "per;",
+    "023;"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "github_com",
+   "count": 12,
+   "pages": [
+    "design.html",
+    "gpt2-steering-vectors.html",
+    "human-values-and-biases-are-inaccessible-to-the-genome.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ript",
+    "ight"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "arxiv_org",
+   "count": 11,
+   "pages": [
+    "attainable-utility-preservation-empirical-results.html",
+    "distillation-robustifies-unlearning.html",
+    "recontextualization-mitigates-specification-gaming.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ency",
+    "fety"
+   ]
+  },
+  {
+   "char": "a",
+   "domain": "turntrout_com",
+   "count": 11,
+   "pages": [
+    "best-reasons-for-pessimism-about-impact-measures.html",
+    "corrigibility-as-outside-view.html",
+    "date-me.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rata",
+    "enda"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "proton_me",
+   "count": 11,
+   "pages": [
+    "privacy-despite-authoritarianism.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ent.",
+    "VPN."
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "wikipedia_org",
+   "count": 10,
+   "pages": [
+    "advanced-privacy.html",
+    "author-responsibility.html",
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "vacy",
+    "rity"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "github_com",
+   "count": 10,
+   "pages": [
+    "dataset-protection.html",
+    "design.html",
+    "effective-layer-horizon.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "hare",
+    "kage"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "lesswrong_com",
+   "count": 9,
+   "pages": [
+    "MDPs-are-not-subjective.html",
+    "effective-layer-horizon.html",
+    "gpt2-steering-vectors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ofer",
+    "ller"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "arbital_com",
+   "count": 9,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "alignment-without-total-robustness.html",
+    "dont-align-agents-to-evaluations-of-plans.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ital"
+   ]
+  },
+  {
+   "char": "x",
+   "domain": "turntrout_com",
+   "count": 9,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "all-of-statistics-textbook-review.html",
+    "emotionally-confronting-doom.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ndix",
+    "Crux"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "alignmentforum_org",
+   "count": 9,
+   "pages": [
+    "announcing-rewrite-of-power-seeking-post.html",
+    "human-values-and-biases-are-inaccessible-to-the-genome.html",
+    "humans-provide-alignment-evidence.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ion.",
+    "zed."
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "wikipedia_org",
+   "count": 9,
+   "pages": [
+    "formalizing-alignment-in-game-theory.html",
+    "insights-from-physiology.html",
+    "linear-algebra-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "vnm",
+    "stem"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "colab_research_google_com",
+   "count": 9,
+   "pages": [
+    "gpt2-steering-vectors.html",
+    "original-truthfulqa-weaknesses.html",
+    "residual-stream-norms-grow-exponentially-over-the-forward-pass.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ook.",
+    "lab."
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "arxiv_org",
+   "count": 8,
+   "pages": [
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "dangers-of-intrinsic-power-seeking.html",
+    "dont-align-agents-to-evaluations-of-plans.html"
+   ],
+   "close_text": 8,
+   "contexts": [
+    "ets:",
+    "rom:"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "turntrout_com",
+   "count": 8,
+   "pages": [
+    "about.html",
+    "against-inner-outer-alignment.html",
+    "date-me.html"
+   ],
+   "close_text": 7,
+   "contexts": [
+    "ond!",
+    "rds!"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "youtube_com",
+   "count": 8,
+   "pages": [
+    "advanced-privacy.html",
+    "alignment-tier-list.html",
+    "attainable-utility-landscape.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ion.",
+    "ube."
+   ]
+  },
+  {
+   "char": "I",
+   "domain": "turntrout_com",
+   "count": 8,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "danger-of-suggestive-terminology.html",
+    "date-me.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "n AI",
+    "n AI"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "anthropic_com",
+   "count": 8,
+   "pages": [
+    "ban-development-of-unpredictable-powerful-models.html",
+    "dataset-protection.html",
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ion.",
+    "ard."
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "wikipedia_org",
+   "count": 8,
+   "pages": [
+    "computability-and-logic-textbook-review.html",
+    "gradient-routing.html",
+    "invalid-ai-risk-arguments.html"
+   ],
+   "close_text": 8,
+   "contexts": [
+    "oPs”",
+    "ty.”"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "arxiv_org",
+   "count": 8,
+   "pages": [
+    "gpt2-steering-vectors.html",
+    "gradient-routing.html",
+    "invalid-ai-risk-arguments.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "gpt",
+    "ight"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "lesswrong_com",
+   "count": 7,
+   "pages": [
+    "AI-textbook-review.html",
+    "danger-of-suggestive-terminology.html",
+    "invalid-ai-risk-arguments.html"
+   ],
+   "close_text": 6,
+   "contexts": [
+    "me!",
+    "hem!"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "arxiv_org",
+   "count": 7,
+   "pages": [
+    "RL-trains-policies-not-agents.html",
+    "deep-causal-transcoding.html",
+    "overcoming-clinginess-in-impact-measures.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ited",
+    "uted"
+   ]
+  },
+  {
+   "char": "w",
+   "domain": "turntrout_com",
+   "count": 7,
+   "pages": [
+    "a-certain-formalization-of-corrigibility-is-vnm-incoherent.html",
+    "elk-proposal-thinking-via-a-human-imitator.html",
+    "formalizing-policy-modification-corrigibility.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "View"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "gwern_net",
+   "count": 7,
+   "pages": [
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "design.html",
+    "digital-minimalism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "hly.",
+    "."
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "arxiv_org",
+   "count": 7,
+   "pages": [
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "distillation-robustifies-unlearning.html",
+    "gemini-steering.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "till",
+    "nual"
+   ]
+  },
+  {
+   "char": "a",
+   "domain": "wikipedia_org",
+   "count": 7,
+   "pages": [
+    "about.html",
+    "design.html",
+    "game-theoretic-definition-of-defection.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "iola",
+    "edia"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "google_com",
+   "count": 7,
+   "pages": [
+    "advanced-privacy.html",
+    "design.html",
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lly.",
+    "."
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "anchor",
+   "count": 7,
+   "pages": [
+    "advanced-privacy.html",
+    "design.html",
+    "english-numbers-are-backwards.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "cons",
+    "lors"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "turntrout_com",
+   "count": 7,
+   "pages": [
+    "advanced-privacy.html",
+    "against-inner-outer-alignment.html",
+    "date-me.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "gnal",
+    "ural"
+   ]
+  },
+  {
+   "char": "k",
+   "domain": "lesswrong_com",
+   "count": 7,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "disagreements-with-list-of-lethalities.html",
+    "four-usages-of-loss-in-ai.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "work",
+    "back"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "arbital_com",
+   "count": 7,
+   "pages": [
+    "alignment-without-total-robustness.html",
+    "humane-values-despite-imperfections.html",
+    "review-of-but-exactly-how-complex-and-fragile.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "erse",
+    "urse"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "anthropic_com",
+   "count": 7,
+   "pages": [
+    "dataset-protection.html",
+    "deep-causal-transcoding.html",
+    "eval-cooperation.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ard,",
+    "ing,"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "alignmentforum_org",
+   "count": 7,
+   "pages": [
+    "deep-causal-transcoding.html",
+    "human-values-and-biases-are-inaccessible-to-the-genome.html",
+    "humans-provide-alignment-evidence.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ",",
+    "19),"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "intelligence_org",
+   "count": 6,
+   "pages": [
+    "AI-textbook-review.html",
+    "against-inner-outer-alignment.html",
+    "computability-and-logic-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ist.",
+    "tes."
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "arbital_com",
+   "count": 6,
+   "pages": [
+    "RL-textbook-review.html",
+    "alignment-without-total-robustness.html",
+    "corrigibility-as-outside-view.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "many",
+    "tegy"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "arbital_com",
+   "count": 6,
+   "pages": [
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "disagreements-with-list-of-lethalities.html",
+    "humans-provide-alignment-evidence.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "nds,",
+    "ich,"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "apple_com",
+   "count": 6,
+   "pages": [
+    "advanced-privacy.html",
+    "design.html",
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "Air.",
+    "Pro."
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "github_com",
+   "count": 6,
+   "pages": [
+    "advanced-privacy.html",
+    "design.html",
+    "mechanistically-eliciting-latent-behaviors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion",
+    "down"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "alignmentforum_org",
+   "count": 6,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "non-obstruction-motivates-corrigibility.html",
+    "shard-theory.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ment",
+    "most"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "arbital_com",
+   "count": 6,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "general-alignment-properties.html",
+    "seeking-power-is-often-convergently-instrumental-in-mdps.html"
+   ],
+   "close_text": 6,
+   "contexts": [
+    "egy”",
+    "ion”"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "arxiv_org",
+   "count": 6,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "agi-risk-introduction.html",
+    "invalid-ai-risk-arguments.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "bate",
+    "ence"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "readthesequences_com",
+   "count": 6,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "emotionally-confronting-doom.html",
+    "launch.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ons.",
+    "ket."
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "scholar_google_com",
+   "count": 6,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "gpt2-steering-vectors.html",
+    "research.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "set.",
+    "ons."
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "readthesequences_com",
+   "count": 6,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "computability-and-logic-textbook-review.html",
+    "human-values-and-biases-are-inaccessible-to-the-genome.html"
+   ],
+   "close_text": 6,
+   "contexts": [
+    "es.”",
+    "me,”"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "lesswrong_com",
+   "count": 6,
+   "pages": [
+    "alignment-without-total-robustness.html",
+    "best-reasons-for-pessimism-about-impact-measures.html",
+    "disagreements-with-list-of-lethalities.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "seem",
+    "doom"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "github_com",
+   "count": 6,
+   "pages": [
+    "attainable-utility-preservation-empirical-results.html",
+    "design.html",
+    "gpt2-steering-vectors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rlds",
+    ".cjs"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "wikipedia_org",
+   "count": 6,
+   "pages": [
+    "bruce-wayne-and-the-cost-of-inaction.html",
+    "design.html",
+    "managerial-decision-making-review.html"
+   ],
+   "close_text": 6,
+   "contexts": [
+    ":",
+    "ish:"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "wikipedia_org",
+   "count": 6,
+   "pages": [
+    "conclusion-to-reframing-impact.html",
+    "design.html",
+    "launch.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "gwar",
+    "iner"
+   ]
+  },
+  {
+   "char": "2",
+   "domain": "arxiv_org",
+   "count": 6,
+   "pages": [
+    "consistency-training.html",
+    "gemini-steering.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2022"
+   ]
+  },
+  {
+   "char": "o",
+   "domain": "github_com",
+   "count": 6,
+   "pages": [
+    "design.html",
+    "launch.html",
+    "open-source.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ilio",
+    "repo"
+   ]
+  },
+  {
+   "char": "b",
+   "domain": "github_com",
+   "count": 6,
+   "pages": [
+    "design.html",
+    "open-source.html",
+    "punctilio.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tHub"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "arxiv_org",
+   "count": 6,
+   "pages": [
+    "dont-design-agents-which-exploit-adversarial-inputs.html",
+    "eval-cooperation.html",
+    "gemini-steering.html"
+   ],
+   "close_text": 6,
+   "contexts": [
+    "ng,”",
+    "ess”"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "amazon_com",
+   "count": 5,
+   "pages": [
+    "advanced-privacy.html",
+    "digital-minimalism.html",
+    "ordinary-differential-equations-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "t 2,",
+    ","
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "amazon_com",
+   "count": 5,
+   "pages": [
+    "advanced-privacy.html",
+    "attainable-utility-preservation-paper.html",
+    "computability-and-logic-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "safe",
+    "ouse"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "anchor",
+   "count": 5,
+   "pages": [
+    "advanced-privacy.html",
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "pose",
+    "line"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "arbital_com",
+   "count": 5,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "humane-values-despite-imperfections.html",
+    "open-category-classification.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion",
+    "ften"
+   ]
+  },
+  {
+   "char": ";",
+   "domain": "turntrout_com",
+   "count": 5,
+   "pages": [
+    "all-of-statistics-textbook-review.html",
+    "excitement-about-impact-measures.html",
+    "formalizing-alignment-in-game-theory.html"
+   ],
+   "close_text": 5,
+   "contexts": [
+    "lts;",
+    "ral;"
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "wikipedia_org",
+   "count": 5,
+   "pages": [
+    "attainable-utility-preservation-scaling-to-superhuman.html",
+    "design.html",
+    "satisficers-tend-to-seek-power.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "xing",
+    "ying"
+   ]
+  },
+  {
+   "char": ")",
+   "domain": "lesswrong_com",
+   "count": 5,
+   "pages": [
+    "deep-causal-transcoding.html",
+    "disagreements-with-list-of-lethalities.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "023)",
+    "024)"
+   ]
+  },
+  {
+   "char": ")",
+   "domain": "turntrout_com",
+   "count": 5,
+   "pages": [
+    "deep-causal-transcoding.html",
+    "dont-align-agents-to-evaluations-of-plans.html",
+    "mechanistically-eliciting-latent-behaviors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "024)",
+    "rd”)"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "slatestarcodex_com",
+   "count": 5,
+   "pages": [
+    "design.html",
+    "reward-is-not-the-optimization-target.html",
+    "second-analysis-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rovide the color.\n\n\n",
+    "uch."
+   ]
+  },
+  {
+   "char": "b",
+   "domain": "colab_research_google_com",
+   "count": 5,
+   "pages": [
+    "design.html",
+    "gpt2-steering-vectors.html",
+    "understanding-and-controlling-a-maze-solving-policy-network.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "olab"
+   ]
+  },
+  {
+   "char": "9",
+   "domain": "arxiv_org",
+   "count": 5,
+   "pages": [
+    "environmental-structure-can-cause-instrumental-convergence.html",
+    "gemini-steering.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    " 6.9",
+    "E.49"
+   ]
+  },
+  {
+   "char": "1",
+   "domain": "arxiv_org",
+   "count": 5,
+   "pages": [
+    "gemini-steering.html",
+    "original-truthfulqa-weaknesses.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2021"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "wikipedia_org",
+   "count": 4,
+   "pages": [
+    "AI-textbook-review.html",
+    "insights-from-physiology.html",
+    "self-teaching-insights.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tail",
+    "tial"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "deepmind_com",
+   "count": 4,
+   "pages": [
+    "AI-textbook-review.html",
+    "advanced-privacy.html",
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ent.",
+    "ind."
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "readthesequences_com",
+   "count": 4,
+   "pages": [
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "against-inner-outer-alignment.html",
+    "computability-and-logic-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lues",
+    "tons"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "github_com",
+   "count": 4,
+   "pages": [
+    "advanced-privacy.html",
+    "design.html",
+    "open-source.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tool",
+    "pell"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "arbital_com",
+   "count": 4,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "humans-provide-alignment-evidence.html",
+    "problem-relaxation-as-a-tactic.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ulls",
+    "lues"
+   ]
+  },
+  {
+   "char": "?",
+   "domain": "wikipedia_org",
+   "count": 4,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "first-analysis-textbook-review.html",
+    "functional-analysis-textbook-review.html"
+   ],
+   "close_text": 4,
+   "contexts": [
+    "ked?",
+    "ion?"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "deepmind_com",
+   "count": 4,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "date-me.html",
+    "recontextualization-mitigates-specification-gaming.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ions",
+    "nd’s"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "stackexchange_com",
+   "count": 4,
+   "pages": [
+    "all-of-statistics-textbook-review.html",
+    "first-analysis-textbook-review.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lso.",
+    "ing."
+   ]
+  },
+  {
+   "char": ";",
+   "domain": "lesswrong_com",
+   "count": 4,
+   "pages": [
+    "computability-and-logic-textbook-review.html",
+    "open-problems-in-activation-engineering.html",
+    "review-of-but-exactly-how-complex-and-fragile.html"
+   ],
+   "close_text": 4,
+   "contexts": [
+    "his;",
+    "Kwa;"
+   ]
+  },
+  {
+   "char": "k",
+   "domain": "github_com",
+   "count": 4,
+   "pages": [
+    "deep-causal-transcoding.html",
+    "design.html",
+    "gpt2-steering-vectors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "book",
+    "lock"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "huggingface_co",
+   "count": 4,
+   "pages": [
+    "deep-causal-transcoding.html",
+    "eval-cooperation.html",
+    "llama2-steering-vectors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ier.",
+    "set."
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "github_com",
+   "count": 4,
+   "pages": [
+    "design.html",
+    "gradient-routing.html",
+    "mechanistically-eliciting-latent-behaviors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ally",
+    "e.py"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "readthesequences_com",
+   "count": 4,
+   "pages": [
+    "doctor-stone.html",
+    "emotionally-confronting-doom.html",
+    "linear-algebra-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    " Try",
+    "lity"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "readthesequences_com",
+   "count": 4,
+   "pages": [
+    "doctor-stone.html",
+    "humans-provide-alignment-evidence.html",
+    "shard-theory.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ence",
+    "side"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "wordpress_com",
+   "count": 4,
+   "pages": [
+    "dont-align-agents-to-evaluations-of-plans.html",
+    "formalizing-multi-agent-power.html",
+    "seeking-power-is-often-convergently-instrumental-in-mdps.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "inds",
+    "oals"
+   ]
+  },
+  {
+   "char": "c",
+   "domain": "arxiv_org",
+   "count": 4,
+   "pages": [
+    "gpt2-steering-vectors.html",
+    "power-as-easily-exploitable-opportunities.html",
+    "understanding-and-controlling-a-maze-solving-policy-network.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "etic",
+    "tric"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "github_com",
+   "count": 4,
+   "pages": [
+    "launch.html",
+    "mode-collapse-in-rl-may-be-fueled-by-the-update-equation.html",
+    "open-source.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "mond",
+    "ated"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "amazon_com",
+   "count": 4,
+   "pages": [
+    "privacy-despite-authoritarianism.html",
+    "reframing-impact.html",
+    "self-teaching-insights.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "bags",
+    "ents"
+   ]
+  },
+  {
+   "char": "1",
+   "domain": "anchor",
+   "count": 4,
+   "pages": [
+    "residual-stream-norms-grow-exponentially-over-the-forward-pass.html",
+    "shard-theory.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ix 1",
+    "on 1"
+   ]
+  },
+  {
+   "char": "p",
+   "domain": "wikipedia_org",
+   "count": 3,
+   "pages": [
+    "RL-textbook-review.html",
+    "design.html",
+    "formalizing-policy-modification-corrigibility.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    " map",
+    "pcap"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "openai_com",
+   "count": 3,
+   "pages": [
+    "RL-textbook-review.html",
+    "eval-cooperation.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "bot.",
+    "ata."
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "alignmentforum_org",
+   "count": 3,
+   "pages": [
+    "a-shot-at-the-diamond-alignment-problem.html",
+    "deep-causal-transcoding.html",
+    "dont-align-agents-to-evaluations-of-plans.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion",
+    "sion"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "mail",
+   "count": 3,
+   "pages": [
+    "about.html",
+    "test-page.html",
+    "understanding-and-controlling-a-maze-solving-policy-network.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ".",
+    "test."
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "x_com",
+   "count": 3,
+   "pages": [
+    "advanced-privacy.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ata.",
+    "."
+   ]
+  },
+  {
+   "char": "h",
+   "domain": "lesswrong_com",
+   "count": 3,
+   "pages": [
+    "advanced-privacy.html",
+    "collider-bias-as-a-cognitive-blindspot.html",
+    "environmental-structure-can-cause-instrumental-convergence.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "bash",
+    "raph"
+   ]
+  },
+  {
+   "char": "A",
+   "domain": "anchor",
+   "count": 3,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "shard-theory.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ix A"
+   ]
+  },
+  {
+   "char": "I",
+   "domain": "openai_com",
+   "count": 3,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "disagreements-with-list-of-lethalities.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "AI"
+   ]
+  },
+  {
+   "char": "?",
+   "domain": "arbital_com",
+   "count": 3,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "human-values-and-biases-are-inaccessible-to-the-genome.html",
+    "shard-theory.html"
+   ],
+   "close_text": 3,
+   "contexts": [
+    "ion?",
+    "ike?"
+   ]
+  },
+  {
+   "char": "I",
+   "domain": "anchor",
+   "count": 3,
+   "pages": [
+    "against-inner-outer-alignment.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "on I",
+    "n II"
+   ]
+  },
+  {
+   "char": "f",
+   "domain": "turntrout_com",
+   "count": 3,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "question-about-defining-alignment-in-simple-setting.html",
+    "satisficers-tend-to-seek-power.html"
+   ],
+   "close_text": 3,
+   "contexts": [
+    "of",
+    "yoff"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "forum_effectivealtruism_org",
+   "count": 3,
+   "pages": [
+    "agi-risk-introduction.html",
+    "read-hpmor.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lem.",
+    "say."
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "apple_com",
+   "count": 3,
+   "pages": [
+    "alignment-phd.html",
+    "humans-provide-alignment-evidence.html",
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "sts,",
+    ","
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "arbital_com",
+   "count": 3,
+   "pages": [
+    "alignment-without-total-robustness.html",
+    "humans-provide-alignment-evidence.html",
+    "open-category-classification.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "uter",
+    "izer"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "wordpress_com",
+   "count": 3,
+   "pages": [
+    "attainable-utility-preservation-empirical-results.html",
+    "dont-align-agents-to-evaluations-of-plans.html",
+    "whitelisting-impact-measure.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lity",
+    "vity"
+   ]
+  },
+  {
+   "char": "a",
+   "domain": "lesswrong_com",
+   "count": 3,
+   "pages": [
+    "best-reasons-for-pessimism-about-impact-measures.html",
+    "mechanistically-eliciting-latent-behaviors.html",
+    "understanding-and-controlling-a-maze-solving-policy-network.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ryka",
+    "acra"
+   ]
+  },
+  {
+   "char": "c",
+   "domain": "youtube_com",
+   "count": 3,
+   "pages": [
+    "bruce-wayne-and-the-cost-of-inaction.html",
+    "reframing-impact.html",
+    "research.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "usic",
+    "asic"
+   ]
+  },
+  {
+   "char": "f",
+   "domain": "wikipedia_org",
+   "count": 3,
+   "pages": [
+    "collider-bias-as-a-cognitive-blindspot.html",
+    "design.html",
+    "topology-textbook-review.html"
+   ],
+   "close_text": 3,
+   "contexts": [
+    "t if",
+    "Exif"
+   ]
+  },
+  {
+   "char": "8",
+   "domain": "arxiv_org",
+   "count": 3,
+   "pages": [
+    "consistency-training.html",
+    "gemini-steering.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2018"
+   ]
+  },
+  {
+   "char": "0",
+   "domain": "arxiv_org",
+   "count": 3,
+   "pages": [
+    "consistency-training.html",
+    "gemini-steering.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2020"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "wikipedia_org",
+   "count": 3,
+   "pages": [
+    "date-me.html",
+    "environmental-structure-can-cause-instrumental-convergence.html",
+    "linear-algebra-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "iend",
+    "ould"
+   ]
+  },
+  {
+   "char": "o",
+   "domain": "turntrout_com",
+   "count": 3,
+   "pages": [
+    "date-me.html",
+    "privacy-despite-authoritarianism.html",
+    "punctilio.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "do",
+    "s to"
+   ]
+  },
+  {
+   "char": ")",
+   "domain": "anthropic_com",
+   "count": 3,
+   "pages": [
+    "deep-causal-transcoding.html",
+    "mechanistically-eliciting-latent-behaviors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "024)",
+    "023)"
+   ]
+  },
+  {
+   "char": "h",
+   "domain": "github_com",
+   "count": 3,
+   "pages": [
+    "design.html",
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "orph",
+    "rich"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "github_com",
+   "count": 3,
+   "pages": [
+    "design.html",
+    "open-source.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "-llm",
+    "erum"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "github_com",
+   "count": 3,
+   "pages": [
+    "design.html",
+    "open-source.html",
+    "test-page.html"
+   ],
+   "close_text": 2,
+   "contexts": [
+    "ory!",
+    "test!"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "npmjs_com",
+   "count": 3,
+   "pages": [
+    "design.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ".",
+    "test."
+   ]
+  },
+  {
+   "char": "i",
+   "domain": "npmjs_com",
+   "count": 3,
+   "pages": [
+    "design.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "-cli",
+    "abi"
+   ]
+  },
+  {
+   "char": ";",
+   "domain": "anchor",
+   "count": 3,
+   "pages": [
+    "design.html",
+    "test-page.html"
+   ],
+   "close_text": 3,
+   "contexts": [
+    "pan;",
+    "ion;"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "matsprogram_org",
+   "count": 3,
+   "pages": [
+    "distillation-robustifies-unlearning.html",
+    "team-shard.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ".",
+    "pen."
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "alignmentforum_org",
+   "count": 3,
+   "pages": [
+    "dont-align-agents-to-evaluations-of-plans.html",
+    "the-catastrophic-convergence-conjecture.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ents",
+    "iors"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "intelligence_org",
+   "count": 3,
+   "pages": [
+    "dont-align-agents-to-evaluations-of-plans.html",
+    "excitement-about-impact-measures.html",
+    "set-theory-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "alue",
+    "date"
+   ]
+  },
+  {
+   "char": "i",
+   "domain": "wikipedia_org",
+   "count": 3,
+   "pages": [
+    "dont-design-agents-which-exploit-adversarial-inputs.html",
+    "english-numbers-are-backwards.html",
+    "general-alignment-properties.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "Aixi",
+    "ahmi"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "docs_google_com",
+   "count": 3,
+   "pages": [
+    "elk-proposal-thinking-via-a-human-imitator.html",
+    "original-truthfulqa-weaknesses.html",
+    "review-of-debate-on-instrumental-convergence.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "dge,",
+    "eet,"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "anchor",
+   "count": 3,
+   "pages": [
+    "english-numbers-are-backwards.html",
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion"
+   ]
+  },
+  {
+   "char": "w",
+   "domain": "lesswrong_com",
+   "count": 3,
+   "pages": [
+    "environmental-structure-can-cause-instrumental-convergence.html",
+    "lower-stakes-alignment-scenario.html",
+    "seeking-power-is-often-convergently-instrumental-in-mdps.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    " law"
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "anthropic_com",
+   "count": 3,
+   "pages": [
+    "eval-cooperation.html",
+    "self-fulfilling-misalignment.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ting",
+    "king"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "overleaf_com",
+   "count": 3,
+   "pages": [
+    "first-analysis-textbook-review.html",
+    "linear-algebra-textbook-review.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ofs.",
+    "test."
+   ]
+  },
+  {
+   "char": "6",
+   "domain": "arxiv_org",
+   "count": 3,
+   "pages": [
+    "gemini-steering.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2016"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "matsprogram_org",
+   "count": 3,
+   "pages": [
+    "gradient-routing.html",
+    "llama2-steering-vectors.html",
+    "recontextualization-mitigates-specification-gaming.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "hard"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "arbital_com",
+   "count": 3,
+   "pages": [
+    "humans-provide-alignment-evidence.html",
+    "open-category-classification.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ment",
+    "dset"
+   ]
+  },
+  {
+   "char": "?",
+   "domain": "readthesequences_com",
+   "count": 3,
+   "pages": [
+    "humans-provide-alignment-evidence.html",
+    "reward-is-not-the-optimization-target.html",
+    "shard-theory.html"
+   ],
+   "close_text": 3,
+   "contexts": [
+    "?",
+    "ith?"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "arbital_com",
+   "count": 3,
+   "pages": [
+    "impact-measure-desiderata.html",
+    "thoughts-on-human-compatible.html",
+    "towards-a-new-impact-measure.html"
+   ],
+   "close_text": 3,
+   "contexts": [
+    "den:",
+    "nce:"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "stackexchange_com",
+   "count": 3,
+   "pages": [
+    "linear-algebra-textbook-review.html",
+    "test-page.html",
+    "topology-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "post",
+    "test"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "npmjs_com",
+   "count": 3,
+   "pages": [
+    "open-source.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "font",
+    "test"
+   ]
+  },
+  {
+   "char": "b",
+   "domain": "huggingface_co",
+   "count": 3,
+   "pages": [
+    "output-feedback-can-obfuscate-chain-of-thought.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "8b",
+    "14b"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "intelligence_org",
+   "count": 3,
+   "pages": [
+    "overcoming-clinginess-in-impact-measures.html",
+    "seeking-power-is-often-convergently-instrumental-in-mdps.html",
+    "toy-instrumental-convergence-paper-walkthrough.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tems",
+    "oals"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "anchor",
+   "count": 3,
+   "pages": [
+    "research.html",
+    "test-page.html"
+   ],
+   "close_text": 2,
+   "contexts": [
+    "age!",
+    "wer!"
+   ]
+  },
+  {
+   "char": "k",
+   "domain": "arxiv_org",
+   "count": 3,
+   "pages": [
+    "research.html",
+    "thoughts-on-human-compatible.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "work"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "matsprogram_org",
+   "count": 3,
+   "pages": [
+    "research.html",
+    "team-shard.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "mats"
+   ]
+  },
+  {
+   "char": "k",
+   "domain": "anchor",
+   "count": 3,
+   "pages": [
+    "self-fulfilling-misalignment.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "mark",
+    "link"
+   ]
+  },
+  {
+   "char": "k",
+   "domain": "amazon_com",
+   "count": 3,
+   "pages": [
+    "self-teaching-insights.html",
+    "set-theory-textbook-review.html",
+    "swimming-upstream.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "book",
+    "Work"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "discord_gg",
+   "count": 3,
+   "pages": [
+    "shard-theory-confirmed.html",
+    "shard-theory.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rAI.",
+    "ver."
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "anchor",
+   "count": 2,
+   "pages": [
+    "advanced-privacy.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "Mint",
+    "test"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "proton_me",
+   "count": 2,
+   "pages": [
+    "advanced-privacy.html",
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ions",
+    "de’s"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "proton_me",
+   "count": 2,
+   "pages": [
+    "advanced-privacy.html",
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "VPN,",
+    "ocs,"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "alignmentforum_org",
+   "count": 2,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "reward-is-not-the-optimization-target.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ined",
+    "ward"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "scholar_google_com",
+   "count": 2,
+   "pages": [
+    "against-inner-outer-alignment.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ract",
+    "test"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "x_com",
+   "count": 2,
+   "pages": [
+    "against-shoggoth.html",
+    "dataset-protection.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ",",
+    "lar,"
+   ]
+  },
+  {
+   "char": "h",
+   "domain": "wikipedia_org",
+   "count": 2,
+   "pages": [
+    "against-shoggoth.html",
+    "conclusion-to-reframing-impact.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "goth",
+    "úath"
+   ]
+  },
+  {
+   "char": "2",
+   "domain": "turntrout_com",
+   "count": 2,
+   "pages": [
+    "agi-risk-introduction.html",
+    "predictions-for-shard-theory-mechanistic-interpretability.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2022",
+    "la-2"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "arxiv_org",
+   "count": 2,
+   "pages": [
+    "alignment-without-total-robustness.html",
+    "test-page.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ers!",
+    "test!"
+   ]
+  },
+  {
+   "char": "o",
+   "domain": "lesswrong_com",
+   "count": 2,
+   "pages": [
+    "alignment-without-total-robustness.html",
+    "output-feedback-can-obfuscate-chain-of-thought.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "to",
+    "ajlo"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "anchor",
+   "count": 2,
+   "pages": [
+    "alignment-without-total-robustness.html",
+    "understanding-and-controlling-a-maze-solving-policy-network.html"
+   ],
+   "close_text": 2,
+   "contexts": [
+    "ove:",
+    ":"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "amazon_com",
+   "count": 2,
+   "pages": [
+    "attainable-utility-preservation-paper.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rest",
+    "test"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "amazon_com",
+   "count": 2,
+   "pages": [
+    "attainable-utility-preservation-paper.html",
+    "reframing-impact.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ctor",
+    "for"
+   ]
+  },
+  {
+   "char": "T",
+   "domain": "github_com",
+   "count": 2,
+   "pages": [
+    "ban-development-of-unpredictable-powerful-models.html",
+    "residual-stream-norms-grow-exponentially-over-the-forward-pass.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "oGPT",
+    "nGPT"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "ai-alignment_com",
+   "count": 2,
+   "pages": [
+    "corrigibility-as-outside-view.html",
+    "reframing-impact.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lity"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "anchor",
+   "count": 2,
+   "pages": [
+    "dataset-protection.html",
+    "elk-proposal-thinking-via-a-human-imitator.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ater",
+    "ator"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "youtube_com",
+   "count": 2,
+   "pages": [
+    "design.html",
+    "insights-from-physiology.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "Tube",
+    "urce"
+   ]
+  },
+  {
+   "char": ";",
+   "domain": "wikipedia_org",
+   "count": 2,
+   "pages": [
+    "design.html",
+    "insights-from-physiology.html"
+   ],
+   "close_text": 2,
+   "contexts": [
+    ";",
+    "nts;"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "gwern_net",
+   "count": 2,
+   "pages": [
+    "design.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ".net",
+    "test"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "gwern_net",
+   "count": 2,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ted,",
+    ","
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "msnbc_com",
+   "count": 2,
+   "pages": [
+    "design.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ".\n\n\n",
+    "test."
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "npmjs_com",
+   "count": 2,
+   "pages": [
+    "design.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "aged",
+    "abd"
+   ]
+  },
+  {
+   "char": "w",
+   "domain": "github_com",
+   "count": 2,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "flow"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "amazon_com",
+   "count": 2,
+   "pages": [
+    "digital-minimalism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lism"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "matsprogram_org",
+   "count": 2,
+   "pages": [
+    "distillation-robustifies-unlearning.html",
+    "recontextualization-mitigates-specification-gaming.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "gram"
+   ]
+  },
+  {
+   "char": "i",
+   "domain": "lesswrong_com",
+   "count": 2,
+   "pages": [
+    "dont-align-agents-to-evaluations-of-plans.html",
+    "power-seeking-beyond-MDPs.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    " Dai",
+    "aixi"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "readthesequences_com",
+   "count": 2,
+   "pages": [
+    "dont-align-agents-to-evaluations-of-plans.html",
+    "human-values-and-biases-are-inaccessible-to-the-genome.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lan,",
+    "als,"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "lesswrong_com",
+   "count": 2,
+   "pages": [
+    "effective-layer-horizon.html",
+    "self-fulfilling-misalignment.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ndel",
+    "trol"
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "anchor",
+   "count": 2,
+   "pages": [
+    "english-numbers-are-backwards.html",
+    "self-fulfilling-misalignment.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "sing",
+    "ning"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "wordpress_com",
+   "count": 2,
+   "pages": [
+    "excitement-about-impact-measures.html",
+    "towards-a-new-impact-measure.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ion,",
+    "ver,"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "forum_effectivealtruism_org",
+   "count": 2,
+   "pages": [
+    "formalizing-alignment-in-game-theory.html",
+    "read-hpmor.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "orem",
+    "uism"
+   ]
+  },
+  {
+   "char": ";",
+   "domain": "alignmentforum_org",
+   "count": 2,
+   "pages": [
+    "gemini-steering.html",
+    "the-catastrophic-convergence-conjecture.html"
+   ],
+   "close_text": 2,
+   "contexts": [
+    "021;",
+    "ble;"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "colab_research_google_com",
+   "count": 2,
+   "pages": [
+    "gpt2-steering-vectors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2-xl",
+    "mall"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "huggingface_co",
+   "count": 2,
+   "pages": [
+    "gpt2-steering-vectors.html",
+    "recontextualization-mitigates-specification-gaming.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "xity",
+    "ancy"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "scholar_google_com",
+   "count": 2,
+   "pages": [
+    "gpt2-steering-vectors.html",
+    "reward-is-not-the-optimization-target.html"
+   ],
+   "close_text": 2,
+   "contexts": [
+    "ns.”",
+    "ng,”"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "deepmind_com",
+   "count": 2,
+   "pages": [
+    "gradient-routing.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "post",
+    "test"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "matsprogram_org",
+   "count": 2,
+   "pages": [
+    "gradient-routing.html",
+    "team-shard.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "pply"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "slatestarcodex_com",
+   "count": 2,
+   "pages": [
+    "interpersonal-approaches-for-x-risk-education.html",
+    "linear-algebra-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "cles",
+    "ines"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "youtube_com",
+   "count": 2,
+   "pages": [
+    "linear-algebra-textbook-review.html",
+    "ordinary-differential-equations-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lays",
+    "ions"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "fatebook_io",
+   "count": 2,
+   "pages": [
+    "llama2-steering-vectors.html",
+    "reward-hacking-doesnt-show-reward-is-optimization-target.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "readthesequences_com",
+   "count": 2,
+   "pages": [
+    "managerial-decision-making-review.html",
+    "world-state-is-the-wrong-abstraction-for-impact.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "sion",
+    "tion"
+   ]
+  },
+  {
+   "char": "T",
+   "domain": "turntrout_com",
+   "count": 2,
+   "pages": [
+    "mode-collapse-in-rl-may-be-fueled-by-the-update-equation.html",
+    "research.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    " CoT",
+    " CoT"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "ai-alignment_com",
+   "count": 2,
+   "pages": [
+    "non-obstruction-motivates-corrigibility.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ent,",
+    "nts,"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "intelligence_org",
+   "count": 2,
+   "pages": [
+    "open-category-classification.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tart",
+    "test"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "arbital_com",
+   "count": 2,
+   "pages": [
+    "open-category-classification.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tism",
+    "imum"
+   ]
+  },
+  {
+   "char": "6",
+   "domain": "github_com",
+   "count": 2,
+   "pages": [
+    "open-source.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "4346",
+    "6006"
+   ]
+  },
+  {
+   "char": "?",
+   "domain": "arxiv_org",
+   "count": 2,
+   "pages": [
+    "original-truthfulqa-weaknesses.html"
+   ],
+   "close_text": 2,
+   "contexts": [
+    "ess?",
+    "ion?"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "intelligence_org",
+   "count": 2,
+   "pages": [
+    "overcoming-clinginess-in-impact-measures.html",
+    "reframing-impact.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "inty",
+    "lity"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "linkedin_com",
+   "count": 2,
+   "pages": [
+    "posts.html",
+    "research.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "Pope"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "substack_com",
+   "count": 2,
+   "pages": [
+    "posts.html",
+    "test-page.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "zer!",
+    "test!"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "sfchronicle_com",
+   "count": 2,
+   "pages": [
+    "privacy-despite-authoritarianism.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ext.",
+    "test."
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "msnbc_com",
+   "count": 2,
+   "pages": [
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "022,",
+    "pus,"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "proton_me",
+   "count": 2,
+   "pages": [
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ited"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "theguardian_com",
+   "count": 2,
+   "pages": [
+    "privacy-despite-authoritarianism.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ript",
+    "test"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "proton_me",
+   "count": 2,
+   "pages": [
+    "privacy-despite-authoritarianism.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "Meet",
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "alignmentforum_org",
+   "count": 2,
+   "pages": [
+    "problem-relaxation-as-a-tactic.html",
+    "test-page.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "els!",
+    "test!"
+   ]
+  },
+  {
+   "char": "p",
+   "domain": "turntrout_com",
+   "count": 2,
+   "pages": [
+    "problem-relaxation-as-a-tactic.html",
+    "swimming-upstream.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "aup",
+    "up"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "openai_com",
+   "count": 2,
+   "pages": [
+    "recontextualization-mitigates-specification-gaming.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ment",
+    "test"
+   ]
+  },
+  {
+   "char": "h",
+   "domain": "alignmentforum_org",
+   "count": 2,
+   "pages": [
+    "research.html",
+    "understanding-and-controlling-a-maze-solving-policy-network.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "arch"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "readthesequences_com",
+   "count": 2,
+   "pages": [
+    "reward-is-not-the-optimization-target.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "that",
+    "test"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "intelligence_org",
+   "count": 2,
+   "pages": [
+    "seeking-power-is-often-convergently-instrumental-in-mdps.html",
+    "whitelisting-impact-measure.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "els,",
+    "ent,"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "alignmentforum_org",
+   "count": 2,
+   "pages": [
+    "shard-theory.html",
+    "the-catastrophic-convergence-conjecture.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "iate",
+    "rote"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "linkedin_com",
+   "count": 2,
+   "pages": [
+    "team-shard.html",
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "gart",
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "npmjs_com",
+   "count": 2,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "test!",
+    "ab!"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "wordpress_com",
+   "count": 2,
+   "pages": [
+    "test-page.html",
+    "topology-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test.",
+    "mma."
+   ]
+  },
+  {
+   "char": "’",
+   "domain": "npmjs_com",
+   "count": 2,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 2,
+   "contexts": [
+    "ab’"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "npmjs_com",
+   "count": 2,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 2,
+   "contexts": [
+    "ab”"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "colab_research_google_com",
+   "count": 2,
+   "pages": [
+    "top-right-steering-vector.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lab,",
+    "ook,"
+   ]
+  },
+  {
+   "char": ")",
+   "domain": "wikipedia_org",
+   "count": 1,
+   "pages": [
+    "AI-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "955)"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "stackexchange_com",
+   "count": 1,
+   "pages": [
+    "a-certain-formalization-of-corrigibility-is-vnm-incoherent.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rity"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "substack_com",
+   "count": 1,
+   "pages": [
+    "about.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "mals"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "mail",
+   "count": 1,
+   "pages": [
+    "about.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "mail"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "anchor",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "int”"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "amazon_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "sory"
+   ]
+  },
+  {
+   "char": "N",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "nVPN"
+   ]
+  },
+  {
+   "char": "N",
+   "domain": "turntrout_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    " VPN"
+   ]
+  },
+  {
+   "char": "p",
+   "domain": "reddit_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "t up"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "arstechnica_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "vice"
+   ]
+  },
+  {
+   "char": "k",
+   "domain": "apple_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "work"
+   ]
+  },
+  {
+   "char": "a",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lama"
+   ]
+  },
+  {
+   "char": "I",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ebUI"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "x_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ncel"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "nytimes_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "Move"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "reddit_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "gnal"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "proton_me",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "e2ee"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "arstechnica_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "gged"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "apple_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "mode"
+   ]
+  },
+  {
+   "char": "o",
+   "domain": "anchor",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "adio"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "anchor",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lity"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "reddit_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ions"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "reddit_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "nity"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "reddit_com",
+   "count": 1,
+   "pages": [
+    "advanced-privacy.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ter”"
+   ]
+  },
+  {
+   "char": "k",
+   "domain": "youtube_com",
+   "count": 1,
+   "pages": [
+    "against-inner-outer-alignment.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "talk"
+   ]
+  },
+  {
+   "char": "?",
+   "domain": "alignmentforum_org",
+   "count": 1,
+   "pages": [
+    "against-inner-outer-alignment.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "tem?"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "scholar_google_com",
+   "count": 1,
+   "pages": [
+    "against-inner-outer-alignment.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "icle"
+   ]
+  },
+  {
+   "char": "I",
+   "domain": "nytimes_com",
+   "count": 1,
+   "pages": [
+    "against-shoggoth.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "f AI"
+   ]
+  },
+  {
+   "char": "c",
+   "domain": "readthesequences_com",
+   "count": 1,
+   "pages": [
+    "alignment-phd.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "stic"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "amazon_com",
+   "count": 1,
+   "pages": [
+    "attainable-utility-preservation-paper.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "hion"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "youtube_com",
+   "count": 1,
+   "pages": [
+    "conclusion-to-reframing-impact.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ","
+   ]
+  },
+  {
+   "char": "3",
+   "domain": "huggingface_co",
+   "count": 1,
+   "pages": [
+    "consistency-training.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2023"
+   ]
+  },
+  {
+   "char": "5",
+   "domain": "huggingface_co",
+   "count": 1,
+   "pages": [
+    "consistency-training.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2025"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "ai-alignment_com",
+   "count": 1,
+   "pages": [
+    "corrigibility-as-outside-view.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "gned"
+   ]
+  },
+  {
+   "char": "f",
+   "domain": "arxiv_org",
+   "count": 1,
+   "pages": [
+    "dangers-of-intrinsic-power-seeking.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "self"
+   ]
+  },
+  {
+   "char": "2",
+   "domain": "wikipedia_org",
+   "count": 1,
+   "pages": [
+    "dataset-protection.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "uth2"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "discord_gg",
+   "count": 1,
+   "pages": [
+    "dataset-protection.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "cord"
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "linkedin_com",
+   "count": 1,
+   "pages": [
+    "dataset-protection.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "Wang"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "linkedin_com",
+   "count": 1,
+   "pages": [
+    "dataset-protection.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "stry"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "alignmentforum_org",
+   "count": 1,
+   "pages": [
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ion:"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "anthropic_com",
+   "count": 1,
+   "pages": [
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ion”"
+   ]
+  },
+  {
+   "char": "w",
+   "domain": "anchor",
+   "count": 1,
+   "pages": [
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "elow"
+   ]
+  },
+  {
+   "char": "x",
+   "domain": "anchor",
+   "count": 1,
+   "pages": [
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ndix"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "anthropic_com",
+   "count": 1,
+   "pages": [
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "anthropic_com",
+   "count": 1,
+   "pages": [
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "aude"
+   ]
+  },
+  {
+   "char": ")",
+   "domain": "alignmentforum_org",
+   "count": 1,
+   "pages": [
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "022)"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "anthropic_com",
+   "count": 1,
+   "pages": [
+    "deep-causal-transcoding.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ects"
+   ]
+  },
+  {
+   "char": "5",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "d435"
+   ]
+  },
+  {
+   "char": "L",
+   "domain": "lesswrong_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "hIQL"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "x_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ".com"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "drive_google_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ive,"
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "google_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ting"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "x_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "lf.”"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "youtube_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rien"
+   ]
+  },
+  {
+   "char": "/",
+   "domain": "wikipedia_org",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ə /"
+   ]
+  },
+  {
+   "char": "c",
+   "domain": "wikipedia_org",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "bloc"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "anchor",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "mond"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "apple_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ".com"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "drive_google_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ".com"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "slatestarcodex_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "masks a solid color:"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "google_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ":"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "amazon_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ":"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "msnbc_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    ":"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "google_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ller"
+   ]
+  },
+  {
+   "char": "p",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "gexp"
+   ]
+  },
+  {
+   "char": "S",
+   "domain": "wikipedia_org",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "eDoS"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "stackoverflow_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tool"
+   ]
+  },
+  {
+   "char": "v",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "design.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "uv"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "forum_effectivealtruism_org",
+   "count": 1,
+   "pages": [
+    "digital-minimalism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rown"
+   ]
+  },
+  {
+   "char": "u",
+   "domain": "lesswrong_com",
+   "count": 1,
+   "pages": [
+    "digital-minimalism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    " you"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "google_com",
+   "count": 1,
+   "pages": [
+    "digital-minimalism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ome,"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "mail",
+   "count": 1,
+   "pages": [
+    "digital-minimalism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "l me"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "reddit_com",
+   "count": 1,
+   "pages": [
+    "doctor-stone.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ors,"
+   ]
+  },
+  {
+   "char": "v",
+   "domain": "intelligence_org",
+   "count": 1,
+   "pages": [
+    "dont-align-agents-to-evaluations-of-plans.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "cev"
+   ]
+  },
+  {
+   "char": "k",
+   "domain": "alignmentforum_org",
+   "count": 1,
+   "pages": [
+    "dont-align-agents-to-evaluations-of-plans.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "elk"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "wordpress_com",
+   "count": 1,
+   "pages": [
+    "dont-align-agents-to-evaluations-of-plans.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "lign"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "docs_google_com",
+   "count": 1,
+   "pages": [
+    "elk-proposal-thinking-via-a-human-imitator.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rter"
+   ]
+  },
+  {
+   "char": "ī",
+   "domain": "wikipedia_org",
+   "count": 1,
+   "pages": [
+    "english-numbers-are-backwards.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "izmī"
+   ]
+  },
+  {
+   "char": "c",
+   "domain": "openai_com",
+   "count": 1,
+   "pages": [
+    "eval-cooperation.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "stic"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "arxiv_org",
+   "count": 1,
+   "pages": [
+    "eval-cooperation.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "nism"
+   ]
+  },
+  {
+   "char": "6",
+   "domain": "anthropic_com",
+   "count": 1,
+   "pages": [
+    "eval-cooperation.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2026"
+   ]
+  },
+  {
+   "char": "5",
+   "domain": "arxiv_org",
+   "count": 1,
+   "pages": [
+    "eval-cooperation.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "2025"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "overleaf_com",
+   "count": 1,
+   "pages": [
+    "first-analysis-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ded,"
+   ]
+  },
+  {
+   "char": "3",
+   "domain": "anchor",
+   "count": 1,
+   "pages": [
+    "four-usages-of-loss-in-ai.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "on 3"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "docs_google_com",
+   "count": 1,
+   "pages": [
+    "gpt2-steering-vectors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "licy"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "anthropic_com",
+   "count": 1,
+   "pages": [
+    "gpt2-steering-vectors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "nted"
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "ai-alignment_com",
+   "count": 1,
+   "pages": [
+    "gradient-routing.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ling"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "docs_google_com",
+   "count": 1,
+   "pages": [
+    "gradient-routing.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ples"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "ai-alignment_com",
+   "count": 1,
+   "pages": [
+    "human-values-and-biases-are-inaccessible-to-the-genome.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "ai-alignment_com",
+   "count": 1,
+   "pages": [
+    "humans-provide-alignment-evidence.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ible"
+   ]
+  },
+  {
+   "char": "?",
+   "domain": "ai-alignment_com",
+   "count": 1,
+   "pages": [
+    "humans-provide-alignment-evidence.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "del?"
+   ]
+  },
+  {
+   "char": ";",
+   "domain": "arbital_com",
+   "count": 1,
+   "pages": [
+    "humans-provide-alignment-evidence.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ed”;"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "wordpress_com",
+   "count": 1,
+   "pages": [
+    "impact-measure-desiderata.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ible"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "overleaf_com",
+   "count": 1,
+   "pages": [
+    "instrumental-convergence-for-realistic-agent-objectives.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "aper"
+   ]
+  },
+  {
+   "char": "x",
+   "domain": "alignmentforum_org",
+   "count": 1,
+   "pages": [
+    "instrumental-convergence-requires-psychology-assumptions.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    " tax"
+   ]
+  },
+  {
+   "char": "x",
+   "domain": "lesswrong_com",
+   "count": 1,
+   "pages": [
+    "internalizing-internal-double-crux.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "Crux"
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "wordpress_com",
+   "count": 1,
+   "pages": [
+    "internalizing-internal-double-crux.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "sing"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "openai_com",
+   "count": 1,
+   "pages": [
+    "invalid-ai-risk-arguments.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "le.”"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "mail",
+   "count": 1,
+   "pages": [
+    "launch.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ghts"
+   ]
+  },
+  {
+   "char": "0",
+   "domain": "wikipedia_org",
+   "count": 1,
+   "pages": [
+    "launch.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "1910"
+   ]
+  },
+  {
+   "char": "o",
+   "domain": "fatebook_io",
+   "count": 1,
+   "pages": [
+    "launch.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "k.io"
+   ]
+  },
+  {
+   "char": "o",
+   "domain": "youtube_com",
+   "count": 1,
+   "pages": [
+    "linear-algebra-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ideo"
+   ]
+  },
+  {
+   "char": "0",
+   "domain": "matsprogram_org",
+   "count": 1,
+   "pages": [
+    "llama2-steering-vectors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    " 4.0"
+   ]
+  },
+  {
+   "char": ")",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "mechanistically-eliciting-latent-behaviors.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "hat)"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "intelligence_org",
+   "count": 1,
+   "pages": [
+    "non-obstruction-motivates-corrigibility.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ff,”"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "ai-alignment_com",
+   "count": 1,
+   "pages": [
+    "non-obstruction-motivates-corrigibility.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ty,”"
+   ]
+  },
+  {
+   "char": "L",
+   "domain": "arxiv_org",
+   "count": 1,
+   "pages": [
+    "non-obstruction-motivates-corrigibility.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "n RL"
+   ]
+  },
+  {
+   "char": "c",
+   "domain": "lesswrong_com",
+   "count": 1,
+   "pages": [
+    "non-obstruction-motivates-corrigibility.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "opic"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "openai_com",
+   "count": 1,
+   "pages": [
+    "on-good-formal-definitions.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "bate"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "open-source.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "izer"
+   ]
+  },
+  {
+   "char": "2",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "open-source.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "4162"
+   ]
+  },
+  {
+   "char": "4",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "open-source.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "4164"
+   ]
+  },
+  {
+   "char": "1",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "open-source.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "4171"
+   ]
+  },
+  {
+   "char": "?",
+   "domain": "youtube_com",
+   "count": 1,
+   "pages": [
+    "ordinary-differential-equations-textbook-review.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "15%?"
+   ]
+  },
+  {
+   "char": "A",
+   "domain": "arxiv_org",
+   "count": 1,
+   "pages": [
+    "original-truthfulqa-weaknesses.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ulQA"
+   ]
+  },
+  {
+   "char": "A",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "original-truthfulqa-weaknesses.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ulQA"
+   ]
+  },
+  {
+   "char": "h",
+   "domain": "scholar_google_com",
+   "count": 1,
+   "pages": [
+    "original-truthfulqa-weaknesses.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "arch"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "colab_research_google_com",
+   "count": 1,
+   "pages": [
+    "original-truthfulqa-weaknesses.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "cbsnews_com",
+   "count": 1,
+   "pages": [
+    "original-truthfulqa-weaknesses.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "on),"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "amazon_com",
+   "count": 1,
+   "pages": [
+    "overcoming-clinginess-in-impact-measures.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "earl"
+   ]
+  },
+  {
+   "char": "a",
+   "domain": "wordpress_com",
+   "count": 1,
+   "pages": [
+    "overcoming-clinginess-in-impact-measures.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "xima"
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "intelligence_org",
+   "count": 1,
+   "pages": [
+    "parametrically-retargetable-power-seeking.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "zing"
+   ]
+  },
+  {
+   "char": "5",
+   "domain": "drive_google_com",
+   "count": 1,
+   "pages": [
+    "predictions-for-shard-theory-mechanistic-interpretability.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "on_5"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "whitehouse_gov",
+   "count": 1,
+   "pages": [
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ion”"
+   ]
+  },
+  {
+   "char": "7",
+   "domain": "whitehouse_gov",
+   "count": 1,
+   "pages": [
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "um 7"
+   ]
+  },
+  {
+   "char": "d",
+   "domain": "msnbc_com",
+   "count": 1,
+   "pages": [
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "sted"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "reddit_com",
+   "count": 1,
+   "pages": [
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tion"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "play_google_com",
+   "count": 1,
+   "pages": [
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tore"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "proton_me",
+   "count": 1,
+   "pages": [
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ency"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "proton_me",
+   "count": 1,
+   "pages": [
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "or.”"
+   ]
+  },
+  {
+   "char": "x",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "nfox"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "play_google_com",
+   "count": 1,
+   "pages": [
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ore,"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "cnn_com",
+   "count": 1,
+   "pages": [
+    "privacy-despite-authoritarianism.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ght,"
+   ]
+  },
+  {
+   "char": "x",
+   "domain": "wikipedia_org",
+   "count": 1,
+   "pages": [
+    "problem-relaxation-as-a-tactic.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "elax"
+   ]
+  },
+  {
+   "char": "a",
+   "domain": "arxiv_org",
+   "count": 1,
+   "pages": [
+    "recontextualization-mitigates-specification-gaming.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "sona"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "huggingface_co",
+   "count": 1,
+   "pages": [
+    "recontextualization-mitigates-specification-gaming.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "mpts"
+   ]
+  },
+  {
+   "char": "u",
+   "domain": "arxiv_org",
+   "count": 1,
+   "pages": [
+    "recontextualization-mitigates-specification-gaming.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "mmlu"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "slatestarcodex_com",
+   "count": 1,
+   "pages": [
+    "reframing-impact.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "the"
+   ]
+  },
+  {
+   "char": "h",
+   "domain": "readthesequences_com",
+   "count": 1,
+   "pages": [
+    "reframing-impact.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "with"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "readthesequences_com",
+   "count": 1,
+   "pages": [
+    "reframing-impact.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "eed:"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "huggingface_co",
+   "count": 1,
+   "pages": [
+    "residual-stream-norms-grow-exponentially-over-the-forward-pass.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ard,"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "intelligence_org",
+   "count": 1,
+   "pages": [
+    "review-of-but-exactly-how-complex-and-fragile.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "izer"
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "alignmentforum_org",
+   "count": 1,
+   "pages": [
+    "reward-is-not-the-optimization-target.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ding"
+   ]
+  },
+  {
+   "char": "h",
+   "domain": "stackexchange_com",
+   "count": 1,
+   "pages": [
+    "satisficers-tend-to-seek-power.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "each"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "stackexchange_com",
+   "count": 1,
+   "pages": [
+    "second-analysis-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "asks"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "anthropic_com",
+   "count": 1,
+   "pages": [
+    "self-fulfilling-misalignment.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ake:"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "alignmentforum_org",
+   "count": 1,
+   "pages": [
+    "self-fulfilling-misalignment.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "rs.”"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "github_com",
+   "count": 1,
+   "pages": [
+    "self-fulfilling-misalignment.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ns.”"
+   ]
+  },
+  {
+   "char": "”",
+   "domain": "gwern_net",
+   "count": 1,
+   "pages": [
+    "self-fulfilling-misalignment.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "rld”"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "scholar_google_com",
+   "count": 1,
+   "pages": [
+    "self-fulfilling-misalignment.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "pers"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "gwern_net",
+   "count": 1,
+   "pages": [
+    "self-teaching-insights.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "wern"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "overleaf_com",
+   "count": 1,
+   "pages": [
+    "set-theory-textbook-review.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "line"
+   ]
+  },
+  {
+   "char": "b",
+   "domain": "arxiv_org",
+   "count": 1,
+   "pages": [
+    "shard-theory-confirmed.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "-20b"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "alignmentforum_org",
+   "count": 1,
+   "pages": [
+    "shard-theory.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "stem"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "scholar_google_com",
+   "count": 1,
+   "pages": [
+    "shard-theory.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "(B),"
+   ]
+  },
+  {
+   "char": "a",
+   "domain": "nytimes_com",
+   "count": 1,
+   "pages": [
+    "shard-theory.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "area"
+   ]
+  },
+  {
+   "char": "i",
+   "domain": "wordpress_com",
+   "count": 1,
+   "pages": [
+    "swimming-upstream.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "Zvi"
+   ]
+  },
+  {
+   "char": "h",
+   "domain": "docs_google_com",
+   "count": 1,
+   "pages": [
+    "swimming-upstream.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "arch"
+   ]
+  },
+  {
+   "char": "k",
+   "domain": "slatestarcodex_com",
+   "count": 1,
+   "pages": [
+    "swimming-upstream.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "Risk"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "linkedin_com",
+   "count": 1,
+   "pages": [
+    "team-shard.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "rbal"
+   ]
+  },
+  {
+   "char": "4",
+   "domain": "anchor",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "er 4"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "wikipedia_org",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "arbital_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "amazon_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "readthesequences_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "anthropic_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "anthropic_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "intelligence_org",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "proton_me",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "youtube_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "youtube_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "colab_research_google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "colab_research_google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "wordpress_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "wordpress_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "huggingface_co",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "huggingface_co",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "matsprogram_org",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "matsprogram_org",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "scholar_google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "apple_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "apple_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "ai-alignment_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "ai-alignment_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "ai-alignment_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "gwern_net",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "deepmind_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "stackexchange_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "openai_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "reddit_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "reddit_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "reddit_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "x_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "x_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "docs_google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "docs_google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "docs_google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "mail",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "mail",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "overleaf_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "overleaf_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "slatestarcodex_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "slatestarcodex_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "linkedin_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "linkedin_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "forum_effectivealtruism_org",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "forum_effectivealtruism_org",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "nytimes_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "nytimes_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "nytimes_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "discord_gg",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "discord_gg",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "drive_google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "drive_google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "drive_google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "msnbc_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "msnbc_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "fatebook_io",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "fatebook_io",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "fatebook_io",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "substack_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "substack_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "arstechnica_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "arstechnica_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "arstechnica_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "whitehouse_gov",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "whitehouse_gov",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "whitehouse_gov",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "play_google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "play_google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "play_google_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "stackoverflow_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "stackoverflow_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "stackoverflow_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "sfchronicle_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "sfchronicle_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "theguardian_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "theguardian_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "cnn_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "cnn_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "cnn_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "t",
+   "domain": "cbsnews_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test"
+   ]
+  },
+  {
+   "char": ".",
+   "domain": "cbsnews_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test."
+   ]
+  },
+  {
+   "char": "!",
+   "domain": "cbsnews_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "test!"
+   ]
+  },
+  {
+   "char": "a",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "aba"
+   ]
+  },
+  {
+   "char": "b",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abb"
+   ]
+  },
+  {
+   "char": "c",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abc"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abe"
+   ]
+  },
+  {
+   "char": "f",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "abf"
+   ]
+  },
+  {
+   "char": "g",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abg"
+   ]
+  },
+  {
+   "char": "h",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abh"
+   ]
+  },
+  {
+   "char": "j",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abj"
+   ]
+  },
+  {
+   "char": "k",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abk"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abl"
+   ]
+  },
+  {
+   "char": "m",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abm"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abn"
+   ]
+  },
+  {
+   "char": "o",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abo"
+   ]
+  },
+  {
+   "char": "p",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abp"
+   ]
+  },
+  {
+   "char": "q",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "abq"
+   ]
+  },
+  {
+   "char": "r",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abr"
+   ]
+  },
+  {
+   "char": "s",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abs"
+   ]
+  },
+  {
+   "char": "u",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abu"
+   ]
+  },
+  {
+   "char": "v",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abv"
+   ]
+  },
+  {
+   "char": "w",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abw"
+   ]
+  },
+  {
+   "char": "x",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abx"
+   ]
+  },
+  {
+   "char": "y",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "aby"
+   ]
+  },
+  {
+   "char": "z",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abz"
+   ]
+  },
+  {
+   "char": "A",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abA"
+   ]
+  },
+  {
+   "char": "B",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abB"
+   ]
+  },
+  {
+   "char": "C",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abC"
+   ]
+  },
+  {
+   "char": "D",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abD"
+   ]
+  },
+  {
+   "char": "E",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abE"
+   ]
+  },
+  {
+   "char": "F",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abF"
+   ]
+  },
+  {
+   "char": "G",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abG"
+   ]
+  },
+  {
+   "char": "H",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abH"
+   ]
+  },
+  {
+   "char": "I",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abI"
+   ]
+  },
+  {
+   "char": "J",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abJ"
+   ]
+  },
+  {
+   "char": "K",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abK"
+   ]
+  },
+  {
+   "char": "L",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abL"
+   ]
+  },
+  {
+   "char": "M",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abM"
+   ]
+  },
+  {
+   "char": "N",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abN"
+   ]
+  },
+  {
+   "char": "O",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abO"
+   ]
+  },
+  {
+   "char": "P",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abP"
+   ]
+  },
+  {
+   "char": "Q",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abQ"
+   ]
+  },
+  {
+   "char": "R",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abR"
+   ]
+  },
+  {
+   "char": "S",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abS"
+   ]
+  },
+  {
+   "char": "T",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abT"
+   ]
+  },
+  {
+   "char": "U",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abU"
+   ]
+  },
+  {
+   "char": "V",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abV"
+   ]
+  },
+  {
+   "char": "W",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abW"
+   ]
+  },
+  {
+   "char": "X",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abX"
+   ]
+  },
+  {
+   "char": "Y",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abY"
+   ]
+  },
+  {
+   "char": "Z",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "abZ"
+   ]
+  },
+  {
+   "char": "0",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab0"
+   ]
+  },
+  {
+   "char": "1",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab1"
+   ]
+  },
+  {
+   "char": "2",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab2"
+   ]
+  },
+  {
+   "char": "3",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab3"
+   ]
+  },
+  {
+   "char": "4",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab4"
+   ]
+  },
+  {
+   "char": "5",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab5"
+   ]
+  },
+  {
+   "char": "6",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab6"
+   ]
+  },
+  {
+   "char": "7",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab7"
+   ]
+  },
+  {
+   "char": "8",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab8"
+   ]
+  },
+  {
+   "char": "9",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab9"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab,"
+   ]
+  },
+  {
+   "char": ";",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ab;"
+   ]
+  },
+  {
+   "char": ":",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ab:"
+   ]
+  },
+  {
+   "char": "?",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ab?"
+   ]
+  },
+  {
+   "char": "(",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab("
+   ]
+  },
+  {
+   "char": ")",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab)"
+   ]
+  },
+  {
+   "char": "[",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab["
+   ]
+  },
+  {
+   "char": "]",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ab]"
+   ]
+  },
+  {
+   "char": "{",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab{"
+   ]
+  },
+  {
+   "char": "}",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab}"
+   ]
+  },
+  {
+   "char": "-",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab-"
+   ]
+  },
+  {
+   "char": "/",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ab/"
+   ]
+  },
+  {
+   "char": "\\",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab\\"
+   ]
+  },
+  {
+   "char": "|",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ab|"
+   ]
+  },
+  {
+   "char": "&",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab&"
+   ]
+  },
+  {
+   "char": "*",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab*"
+   ]
+  },
+  {
+   "char": "@",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab@"
+   ]
+  },
+  {
+   "char": "#",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab#"
+   ]
+  },
+  {
+   "char": "%",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab%"
+   ]
+  },
+  {
+   "char": "$",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab$"
+   ]
+  },
+  {
+   "char": "+",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab+"
+   ]
+  },
+  {
+   "char": "=",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab="
+   ]
+  },
+  {
+   "char": "<",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab<"
+   ]
+  },
+  {
+   "char": ">",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab>"
+   ]
+  },
+  {
+   "char": "~",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab~"
+   ]
+  },
+  {
+   "char": "^",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab^"
+   ]
+  },
+  {
+   "char": "_",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab_"
+   ]
+  },
+  {
+   "char": "`",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab`"
+   ]
+  },
+  {
+   "char": "…",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab…"
+   ]
+  },
+  {
+   "char": "—",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab⁠—"
+   ]
+  },
+  {
+   "char": "–",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab⁠–"
+   ]
+  },
+  {
+   "char": "′",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab′"
+   ]
+  },
+  {
+   "char": "″",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab″"
+   ]
+  },
+  {
+   "char": "°",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab°"
+   ]
+  },
+  {
+   "char": "→",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "→"
+   ]
+  },
+  {
+   "char": "×",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab×"
+   ]
+  },
+  {
+   "char": "™",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab™"
+   ]
+  },
+  {
+   "char": "©",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab©"
+   ]
+  },
+  {
+   "char": "®",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab®"
+   ]
+  },
+  {
+   "char": "⁇",
+   "domain": "npmjs_com",
+   "count": 1,
+   "pages": [
+    "test-page.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ab⁇"
+   ]
+  },
+  {
+   "char": "l",
+   "domain": "ai-alignment_com",
+   "count": 1,
+   "pages": [
+    "the-catastrophic-convergence-conjecture.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "trol"
+   ]
+  },
+  {
+   "char": "k",
+   "domain": "wikipedia_org",
+   "count": 1,
+   "pages": [
+    "to-what-extent-is-gpt3-capable-of-reasoning.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "tank"
+   ]
+  },
+  {
+   "char": ";",
+   "domain": "intelligence_org",
+   "count": 1,
+   "pages": [
+    "toy-instrumental-convergence-paper-walkthrough.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ide;"
+   ]
+  },
+  {
+   "char": "f",
+   "domain": "lesswrong_com",
+   "count": 1,
+   "pages": [
+    "understanding-and-avoiding-value-drift.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    " off"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "matsprogram_org",
+   "count": 1,
+   "pages": [
+    "understanding-and-controlling-a-maze-solving-policy-network.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "ard,"
+   ]
+  },
+  {
+   "char": ";",
+   "domain": "readthesequences_com",
+   "count": 1,
+   "pages": [
+    "value-impact.html"
+   ],
+   "close_text": 1,
+   "contexts": [
+    "ces;"
+   ]
+  },
+  {
+   "char": "n",
+   "domain": "overleaf_com",
+   "count": 1,
+   "pages": [
+    "whitelisting-impact-measure.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "sion"
+   ]
+  },
+  {
+   "char": ",",
+   "domain": "deepmind_com",
+   "count": 1,
+   "pages": [
+    "whitelisting-impact-measure.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "nts,"
+   ]
+  },
+  {
+   "char": "e",
+   "domain": "deepmind_com",
+   "count": 1,
+   "pages": [
+    "whitelisting-impact-measure.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "duce"
+   ]
+  },
+  {
+   "char": "u",
+   "domain": "wordpress_com",
+   "count": 1,
+   "pages": [
+    "whitelisting-impact-measure.html"
+   ],
+   "close_text": 0,
+   "contexts": [
+    "itsu"
+   ]
+  }
+ ]
+}

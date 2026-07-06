@@ -1,0 +1,63 @@
+"""Build a sorted HTML gallery + markdown summary from measurement results."""
+
+import base64
+import json
+from pathlib import Path
+
+OUT = Path("/tmp/favicon_bigrams/report")
+DATA = json.loads(Path("/tmp/favicon_bigrams/bigrams.json").read_text())
+RESULTS = json.loads((OUT / "results.json").read_text())
+
+usage = {(b["char"], b["domain"]): b for b in DATA["bigrams"]}
+
+rows = []
+for r in RESULTS:
+    if r["min2dCss"] is None:
+        continue
+    b = usage.get((r["char"], r["domain"]), {})
+    rows.append({**r, "count": b.get("count", 0),
+                 "contexts": b.get("contexts", []), "pages": b.get("pages", [])})
+rows.sort(key=lambda r: r["min2dCss"])
+
+cells_html = []
+for r in rows:
+    png = (OUT / "cells" / f"{r['id']}.png").read_bytes()
+    b64 = base64.b64encode(png).decode()
+    ctx = "<br>".join(
+        c.replace("&", "&amp;").replace("<", "&lt;") for c in r["contexts"]
+    )
+    cells_html.append(f"""
+<div class="cell {'close' if r['close'] else ''}">
+  <img src="data:image/png;base64,{b64}" style="height:60px">
+  <div class="meta">
+    <b>“{r['char']}” + {r['domain']}</b><br>
+    min2d: {r['min2dCss']:.2f}px · hgap: {r['hgapCss']:.2f}px<br>
+    close-text: {'yes' if r['close'] else 'no'} · {r['count']} uses<br>
+    <span class="ctx">{ctx}</span>
+  </div>
+</div>""")
+
+html = f"""<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>Favicon bigram clearance (sorted worst-first)</title>
+<style>
+ body {{ font-family: sans-serif; background: #f6f6f6; }}
+ .cell {{ display:inline-block; vertical-align:top; width: 300px; margin:6px;
+          background:#fff; border:1px solid #ccc; padding:8px; border-radius:6px; }}
+ .cell.close {{ border-left: 4px solid #c60; }}
+ .meta {{ font-size: 12px; margin-top: 4px; }}
+ .ctx {{ color: #666; font-size: 11px; }}
+</style></head><body>
+<h1>Favicon bigrams, sorted by min ink distance (worst first)</h1>
+<p>{len(rows)} measurable bigrams. Orange left border = close-text spacing applied.</p>
+{''.join(cells_html)}
+</body></html>"""
+(OUT / "gallery.html").write_text(html)
+
+lines = ["| min2d px | hgap px | char | domain | close-text | uses |", "|--|--|--|--|--|--|"]
+for r in rows[:40]:
+    lines.append(f"| {r['min2dCss']:.2f} | {r['hgapCss']:.2f} | `{r['char']}` | "
+                 f"{r['domain']} | {'✓' if r['close'] else ''} | {r['count']} |")
+(OUT / "summary.md").write_text("\n".join(lines))
+print(f"gallery with {len(rows)} cells; worst 10:")
+for r in rows[:10]:
+    print(f"  {r['min2dCss']:5.2f}px  '{r['char']}' + {r['domain']:24s} close={r['close']} n={r['count']}")
