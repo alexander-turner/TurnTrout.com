@@ -381,9 +381,11 @@ figure,
   }
 }
 
-#article-title,
-.page-listing-title,
-.related-post > a {
+// Every title-rendering surface (article title, backlinks, prev/next post,
+// sequence links, related posts, page listings, …) wraps its output in
+// `.work-title` (see `renderTitleNodes`/`renderInlineFormatting` in
+// `component_utils.tsx`), so one rule covers all of them.
+.work-title {
   font-variant-numeric: lining-nums;
 }
 
@@ -641,6 +643,8 @@ img {
   &.inline-img {
     display: inline;
     width: 0.9rem;
+    height: 0.9rem;
+    object-fit: contain;
     vertical-align: middle;
     margin: 0;
     margin-left: 0.05rem;

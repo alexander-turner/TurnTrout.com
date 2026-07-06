@@ -70,7 +70,10 @@ describe("renderSequenceTitle", () => {
     expect(thirdChild.tagName).toBe("a")
     expect(thirdChild.properties?.href).toBe("/test-sequence")
     expect(thirdChild.properties?.className).toStrictEqual(["internal", "can-trigger-popover"])
-    expect(thirdChild.children).toStrictEqual([{ type: "text", value: "Test Sequence" }])
+    const titleSpan = thirdChild.children[0] as Element
+    expect(titleSpan.tagName).toBe("span")
+    expect(titleSpan.properties?.className).toContain("work-title")
+    expect(titleSpan.children).toStrictEqual([{ type: "text", value: "Test Sequence" }])
   })
 
   it("transforms emoji in the sequence title into a Twemoji <img>", () => {
@@ -164,7 +167,9 @@ describe("renderPreviousPost", () => {
     expect(thirdChild.tagName).toBe("a")
     expect(thirdChild.properties?.href).toBe("./prev-post")
     expect(thirdChild.properties?.className).toStrictEqual(["internal", "can-trigger-popover"])
-    expect(normalizeNbsp((thirdChild.children[0] as Text).value)).toBe("Previous Post")
+    const titleSpan = thirdChild.children[0] as Element
+    expect(titleSpan.properties?.className).toContain("work-title")
+    expect(normalizeNbsp((titleSpan.children[0] as Text).value)).toBe("Previous Post")
   })
 
   it("should handle missing prev-post-title", () => {
@@ -175,7 +180,8 @@ describe("renderPreviousPost", () => {
     } as QuartzPluginData
     const result = renderPreviousPost(fileData)
     expect(result).not.toBeNull()
-    expect((result?.children[2] as Element).children).toStrictEqual([{ type: "text", value: "" }])
+    const titleSpan = (result?.children[2] as Element).children[0] as Element
+    expect(titleSpan.children).toStrictEqual([{ type: "text", value: "" }])
   })
 
   it("transforms emoji in the previous-post title into a Twemoji <img>", () => {
@@ -242,7 +248,9 @@ describe("renderNextPost", () => {
     expect(thirdChild.tagName).toBe("a")
     expect(thirdChild.properties?.href).toBe("./next-post")
     expect(thirdChild.properties?.className).toStrictEqual(["internal", "can-trigger-popover"])
-    expect(normalizeNbsp((thirdChild.children[0] as Text).value)).toBe("Next Post")
+    const titleSpan = thirdChild.children[0] as Element
+    expect(titleSpan.properties?.className).toContain("work-title")
+    expect(normalizeNbsp((titleSpan.children[0] as Text).value)).toBe("Next Post")
   })
 
   it("should handle missing next-post-title", () => {
@@ -253,7 +261,8 @@ describe("renderNextPost", () => {
     } as QuartzPluginData
     const result = renderNextPost(fileData)
     expect(result).not.toBeNull()
-    expect((result?.children[2] as Element).children).toStrictEqual([{ type: "text", value: "" }])
+    const titleSpan = (result?.children[2] as Element).children[0] as Element
+    expect(titleSpan.children).toStrictEqual([{ type: "text", value: "" }])
   })
 
   it("transforms emoji in the next-post title into a Twemoji <img>", () => {

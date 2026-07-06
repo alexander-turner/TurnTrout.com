@@ -169,6 +169,11 @@ export const KATEX_CLASS = "katex"
 export const SMALL_CAPS_CLASS = "small-caps"
 export const BACKLINK_HIGHLIGHT_CLASS = "backlink-highlight"
 export const BACKLINK_EXCERPT_CLASS = "backlink-excerpt"
+// Marks rendered title-like text (page titles, backlink titles, prev/next post
+// titles, sequence titles, …) so every title-rendering surface gets the same
+// typographic treatment (e.g. lining-figure numerals) from one CSS rule
+// instead of a selector hand-maintained per component.
+export const WORK_TITLE_CLASS = "work-title"
 
 // Title-binding links: when an internal link's display text is exactly this
 // sentinel, its text is replaced at build time with the up-to-date title of the
