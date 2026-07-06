@@ -126,9 +126,6 @@ test.describe("visual_utils functions", () => {
     await expect
       .poll(() => swappedImg.evaluate((el: HTMLImageElement) => el.currentSrc))
       .toContain("swap-visual-test-image-inverted.png")
-    // Firefox restarts the request when accurateInvert re-assigns the same
-    // inverted src on the variant's load event, transiently resetting
-    // naturalWidth to 0 — poll rather than reading once.
     await expect
       .poll(() => swappedImg.evaluate((el: HTMLImageElement) => el.naturalWidth))
       .toBeGreaterThan(0)
