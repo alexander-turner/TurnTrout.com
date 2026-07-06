@@ -1,13 +1,13 @@
 name: Subfont Bisect
 
-# TEMPORARY: repurposed to mirror CDN favicon assets onto a scratch branch for
+# TEMPORARY: repurposed to mirror CDN favicon assets into an artifact for
 # sandboxed analysis. Will be reverted on this branch before review.
 
 on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   fetch-favicons:
@@ -27,12 +27,8 @@ jobs:
             fi
           done < .github/favicon_fetch_urls.txt
           echo "fetched: $(ls mirror | wc -l) files; missing: $(wc -l < mirror/missing.txt)"
-      - name: Push mirror to scratch branch
-        run: |
-          cd mirror
-          git init -q -b tmp/favicon-mirror
-          git config user.email "actions@github.com"
-          git config user.name "github-actions"
-          git add -A
-          git commit -qm "favicon mirror snapshot"
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" tmp/favicon-mirror
+      - uses: actions/upload-artifact@v4
+        with:
+          name: favicon-mirror
+          path: mirror/
+          retention-days: 1
