@@ -207,8 +207,8 @@ describe("AliasRedirects", () => {
     const content = createMockContent(vfile)
 
     await testEmitFiles(plugin, mockCtx, content, ["old-alias.html", "test-permalink.html"])
-    // The emitter no longer mutates the shared slug; the page still lands at
-    // the permalink because ContentPage derives its output slug from frontmatter.
+    // ContentPage derives its output slug from frontmatter, so this emitter
+    // doesn't need to mutate the shared vfile slug for the page to land at the permalink.
     expect(vfile.data.slug).toBe("test-permalink")
   })
 
