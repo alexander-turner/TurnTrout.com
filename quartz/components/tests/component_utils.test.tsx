@@ -369,6 +369,36 @@ describe("elementToJsx", () => {
     const html = render(elementToJsx(imgNode))
     expect(html).toMatch(/<img[^>]*class="emoji"[^>]*>/)
     expect(html).toMatch(/draggable="false"/)
+    // Emoji imgs render outside the assetDimensions pass, so the intrinsic
+    // Twemoji size is stamped here to satisfy images_missing_dimensions.
+    expect(html).toMatch(/width="36"/)
+    expect(html).toMatch(/height="36"/)
+  })
+
+  it("preserves explicit width and height over the emoji fallback", () => {
+    const imgNode = {
+      type: "element",
+      tagName: "img",
+      properties: { className: ["emoji"], src: "fish.svg", alt: "🐟", width: 72, height: 48 },
+      children: [],
+    } as unknown as RootContent
+
+    const html = render(elementToJsx(imgNode))
+    expect(html).toMatch(/width="72"/)
+    expect(html).toMatch(/height="48"/)
+  })
+
+  it("omits dimensions for a non-emoji <img> without explicit sizing", () => {
+    const imgNode = {
+      type: "element",
+      tagName: "img",
+      properties: { src: "fish.svg", alt: "🐟" },
+      children: [],
+    } as unknown as RootContent
+
+    const html = render(elementToJsx(imgNode))
+    expect(html).not.toContain("width=")
+    expect(html).not.toContain("height=")
   })
 
   it("preserves whitelisted semantic tags and falls back to a span otherwise", () => {

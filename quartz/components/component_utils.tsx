@@ -12,7 +12,7 @@ import { visitParents } from "unist-util-visit-parents"
 import { applyTextTransforms } from "../plugins/transformers/formatting_improvement_html"
 import { replaceSCInNode } from "../plugins/transformers/tagSmallcaps"
 import { processTree as processTwemojiTree } from "../plugins/transformers/twemoji"
-import { locale } from "./constants"
+import { EMOJI_CLASS, locale, TWEMOJI_INTRINSIC_DIMENSION } from "./constants"
 
 export function formatTitle(title: string): string {
   // Replace single quotes with double quotes for consistency
@@ -93,12 +93,22 @@ export function elementToJsx(elt: RootContent): JSX.Element {
         return <abbr className={classNameString(elt.properties)}>{abbrText}</abbr>
       }
       if (elt.tagName === "img") {
+        const classes = classNameString(elt.properties)
+        const isEmoji = classes.split(" ").includes(EMOJI_CLASS)
+        const width =
+          (elt.properties?.width as number | string | undefined) ??
+          (isEmoji ? TWEMOJI_INTRINSIC_DIMENSION : undefined)
+        const height =
+          (elt.properties?.height as number | string | undefined) ??
+          (isEmoji ? TWEMOJI_INTRINSIC_DIMENSION : undefined)
         return (
           <img
-            className={classNameString(elt.properties) || undefined}
+            className={classes || undefined}
             src={elt.properties?.src as string}
             alt={elt.properties?.alt as string}
             draggable={elt.properties?.draggable === "false" ? false : undefined}
+            width={width}
+            height={height}
           />
         )
       }

@@ -152,6 +152,12 @@ export const SEARCH_MATCH_CLASS = "search-match"
 // and KaTeX libraries respectively; the constants document the value we match.
 export const EMOJI_CLASS = "emoji"
 export const EMOJI_SPAN_CLASS = "emoji-span"
+// Intrinsic pixel dimensions of a Twemoji SVG (its `viewBox` is `0 0 36 36`).
+// In article bodies the `assetDimensions` transformer fetches and stamps this,
+// but titles render at component time without that pass, so their emoji `<img>`
+// need the size stamped here to satisfy the `images_missing_dimensions` check
+// and avoid layout shift. CSS still renders them at `1em`.
+export const TWEMOJI_INTRINSIC_DIMENSION = 36
 export const FAVICON_CLASS = "favicon"
 export const FAVICON_SPAN_CLASS = "favicon-span"
 export const KATEX_CLASS = "katex"
