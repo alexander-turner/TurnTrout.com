@@ -73,6 +73,11 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   }
 
   if (!popoverElement) {
+    // Annotated external links are annotation-or-nothing: a manifest miss,
+    // a failed annotations load, or a mobile viewport yields no popover.
+    if (this.dataset.annotated === "true") {
+      return
+    }
     throw new Error("Failed to create popover")
   }
   // Used by the click toggle logic to detect "is this popover already open for this link?"

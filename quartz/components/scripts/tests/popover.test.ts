@@ -4,23 +4,35 @@
 
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
+import { LINK_ANNOTATIONS_STATIC_PATH } from "../../../util/annotations"
+import { TEST_ANNOTATION_KEY, testAnnotation } from "../../../util/tests/annotationFixtures"
 import {
   attachPopoverEventListeners,
   computeLeft,
   computeTop,
+  createAnnotationPopover,
   createPopover,
   escapeLeadingIdNumber,
   fetchWithMetaRedirect,
   focusableSelector,
   footnoteForwardRefRegex,
   getVisibleFocusable,
+  isDesktopViewport,
   navigation,
   type PopoverOptions,
+  resetAnnotationsLoaderForTesting,
   setPopoverPosition,
   trapFocusInPopover,
 } from "../popover_helpers"
 
 jest.useFakeTimers()
+
+/** Unwraps createPopover for tests that expect a non-null popover. */
+async function createPopoverOrThrow(options: PopoverOptions): Promise<HTMLElement> {
+  const popover = await createPopover(options)
+  if (!popover) throw new Error("createPopover unexpectedly returned null")
+  return popover
+}
 
 // Reset mocks before each test
 beforeEach(() => {
@@ -57,7 +69,7 @@ describe("createPopover", () => {
   })
 
   it("should create a popover element", async () => {
-    const popover = await createPopover(options)
+    const popover = await createPopoverOrThrow(options)
     expect(popover).toBeInstanceOf(HTMLElement)
     expect(popover.classList.contains("popover")).toBe(true)
     expect(popover.classList.contains("footnote-popover")).toBe(false)
@@ -65,7 +77,7 @@ describe("createPopover", () => {
   })
 
   it("should handle HTML content", async () => {
-    const popover = await createPopover(options)
+    const popover = await createPopoverOrThrow(options)
     expect(popover.querySelector(".popover-inner")).not.toBeNull()
     expect(popover.querySelector("h1#test-popover")).not.toBeNull()
   })
@@ -89,7 +101,7 @@ describe("createPopover", () => {
   })
 
   it('should append "-popover" to only header IDs in the popover content', async () => {
-    const popover = await createPopover(options)
+    const popover = await createPopoverOrThrow(options)
     expect(popover.querySelector("h1#test-popover")).not.toBeNull()
     expect(popover.querySelector("div#not-a-header-popover")).toBeNull()
   })
@@ -123,7 +135,7 @@ describe("createPopover", () => {
     )
 
     options.linkElement.setAttribute("href", "#user-content-fn-1")
-    const popover = await createPopover(options)
+    const popover = await createPopoverOrThrow(options)
     const popoverInner = popover.querySelector(".popover-inner")
 
     expect(popover.classList.contains("footnote-popover")).toBe(true)
@@ -165,7 +177,7 @@ describe("createPopover", () => {
     )
 
     options.linkElement.setAttribute("href", "#user-content-fn-my-named-note")
-    const popover = await createPopover(options)
+    const popover = await createPopoverOrThrow(options)
     const popoverInner = popover.querySelector(".popover-inner")
 
     // Should NOT contain the li wrapper (content is unwrapped)
@@ -194,7 +206,7 @@ describe("createPopover", () => {
     )
 
     options.linkElement.setAttribute("href", "#user-content-fn-1")
-    const popover = await createPopover(options)
+    const popover = await createPopoverOrThrow(options)
     const innerLink = popover.querySelector(".popover-inner a")
     expect(innerLink).not.toBeNull()
     expect(innerLink?.classList.contains("can-trigger-popover")).toBe(false)
@@ -260,7 +272,7 @@ describe("createPopover", () => {
     )
 
     options.linkElement.setAttribute("href", "#user-content-fn-1")
-    const footnotePopover = await createPopover(options)
+    const footnotePopover = await createPopoverOrThrow(options)
     const footnoteInner = footnotePopover.querySelector(".popover-inner")
     expect(footnoteInner).not.toBeNull()
     if (!footnoteInner) throw new Error("footnoteInner is null")
@@ -272,7 +284,7 @@ describe("createPopover", () => {
       linkElement: document.createElement("a") as unknown as HTMLLinkElement,
     }
     fullArticleOptions.linkElement.setAttribute("href", "http://example.com")
-    const fullArticlePopover = await createPopover(fullArticleOptions)
+    const fullArticlePopover = await createPopoverOrThrow(fullArticleOptions)
     const fullArticleInner = fullArticlePopover.querySelector(".popover-inner")
     expect(fullArticleInner).not.toBeNull()
     if (!fullArticleInner) throw new Error("fullArticleInner is null")
@@ -989,4 +1001,193 @@ describe("fetchWithMetaRedirect", () => {
     expect(window.fetch).toHaveBeenCalledTimes(1)
     expect(response.ok).toBe(true)
   })
+})
+
+describe("annotation popovers", () => {
+  const WIKI_URL = TEST_ANNOTATION_KEY
+  const annotationFixture = testAnnotation()
+
+  let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
+  const originalMatchMedia = window.matchMedia
+
+  function setDesktopViewport(isDesktop: boolean): void {
+    window.matchMedia = jest.fn(() => ({ matches: isDesktop }) as MediaQueryList)
+  }
+
+  function mockAnnotationsFetch(payload: unknown): jest.MockedFunction<typeof fetch> {
+    const fetchMock = jest.fn((input: RequestInfo | URL) => {
+      if (input.toString() === LINK_ANNOTATIONS_STATIC_PATH) {
+        return Promise.resolve(
+          new Response(JSON.stringify(payload), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        )
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${input.toString()}`))
+    }) as jest.MockedFunction<typeof fetch>
+    window.fetch = fetchMock
+    return fetchMock
+  }
+
+  function annotatedLink(href: string = WIKI_URL): HTMLLinkElement {
+    const link = document.createElement("a") as unknown as HTMLLinkElement
+    link.href = href
+    link.dataset.annotated = "true"
+    return link
+  }
+
+  function annotatedOptions(link: HTMLLinkElement): PopoverOptions {
+    return {
+      parentElement: document.createElement("div"),
+      targetUrl: new URL(link.href),
+      linkElement: link,
+    }
+  }
+
+  beforeEach(() => {
+    resetAnnotationsLoaderForTesting()
+    setDesktopViewport(true)
+    // skipcq: JS-0321 -- intentional no-op: suppress console.error noise in tests
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore()
+    resetAnnotationsLoaderForTesting()
+    window.matchMedia = originalMatchMedia
+  })
+
+  it("renders title, abstract, and attribution from the manifest", async () => {
+    const fetchMock = mockAnnotationsFetch({ [WIKI_URL]: annotationFixture })
+    const popover = await createPopover(annotatedOptions(annotatedLink()))
+
+    expect(popover).not.toBeNull()
+    if (!popover) throw new Error("popover is null")
+    expect(popover.classList.contains("popover")).toBe(true)
+    expect(popover.classList.contains("annotation-popover")).toBe(true)
+    expect(popover.querySelector(".annotation-title")?.textContent).toBe(annotationFixture.title)
+    expect(popover.querySelector(".annotation-abstract")?.innerHTML).toBe(
+      annotationFixture.abstract_html,
+    )
+    const attributionLinks = popover.querySelectorAll<HTMLAnchorElement>(
+      ".annotation-attribution a",
+    )
+    expect(attributionLinks).toHaveLength(2)
+    expect(attributionLinks[0].href).toBe(WIKI_URL)
+    expect(attributionLinks[0].textContent).toBe("Wikipedia")
+    expect(attributionLinks[1].href).toBe(annotationFixture.attribution.license_url)
+    expect(attributionLinks[1].textContent).toBe("CC BY-SA 4.0")
+    for (const link of attributionLinks) {
+      expect(link.target).toBe("_blank")
+      expect(link.rel).toBe("noopener noreferrer")
+    }
+    // Only the same-origin manifest is fetched — never the external page.
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(LINK_ANNOTATIONS_STATIC_PATH)
+  })
+
+  it("reuses the cached manifest for subsequent popovers", async () => {
+    const fetchMock = mockAnnotationsFetch({ [WIKI_URL]: annotationFixture })
+    await createPopover(annotatedOptions(annotatedLink()))
+    await createPopover(annotatedOptions(annotatedLink()))
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("looks up archived links by their original URL", async () => {
+    mockAnnotationsFetch({ [WIKI_URL]: annotationFixture })
+    const link = annotatedLink("https://assets.turntrout.com/link-archive/abc/singlefile.html")
+    link.dataset.originalHref = WIKI_URL
+    const popover = await createPopover(annotatedOptions(link))
+    expect(popover?.querySelector(".annotation-title")?.textContent).toBe(annotationFixture.title)
+  })
+
+  it("returns null on a manifest miss", async () => {
+    mockAnnotationsFetch({})
+    await expect(createPopover(annotatedOptions(annotatedLink()))).resolves.toBeNull()
+  })
+
+  it("returns null when the manifest fails to load", async () => {
+    const fetchMock = jest.fn(() =>
+      Promise.reject(new Error("boom")),
+    ) as unknown as jest.MockedFunction<typeof fetch>
+    window.fetch = fetchMock
+    await expect(createPopover(annotatedOptions(annotatedLink()))).resolves.toBeNull()
+    expect(consoleErrorSpy).toHaveBeenCalled()
+  })
+
+  it("returns null on mobile without fetching anything", async () => {
+    setDesktopViewport(false)
+    const fetchMock = mockAnnotationsFetch({ [WIKI_URL]: annotationFixture })
+    await expect(createPopover(annotatedOptions(annotatedLink()))).resolves.toBeNull()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("returns null when the link URL cannot be canonicalized", async () => {
+    mockAnnotationsFetch({ [WIKI_URL]: annotationFixture })
+    const link = annotatedLink()
+    link.dataset.originalHref = "http://"
+    await expect(createAnnotationPopover(link)).resolves.toBeNull()
+  })
+
+  it("reports the desktop media query result", () => {
+    setDesktopViewport(true)
+    expect(isDesktopViewport()).toBe(true)
+    setDesktopViewport(false)
+    expect(isDesktopViewport()).toBe(false)
+  })
+})
+
+describe("attachPopoverEventListeners (annotation popover)", () => {
+  let popoverElement: HTMLElement
+  let linkElement: HTMLLinkElement
+  let cleanup: () => void
+  let openSpy: jest.SpiedFunction<typeof navigation.openInNewTab>
+  let goToSpy: jest.SpiedFunction<typeof navigation.goTo>
+
+  beforeEach(() => {
+    popoverElement = document.createElement("div")
+    popoverElement.classList.add("annotation-popover")
+    linkElement = document.createElement("a") as unknown as HTMLLinkElement
+    linkElement.href = "https://en.wikipedia.org/wiki/Reinforcement_learning"
+    cleanup = attachPopoverEventListeners(popoverElement, linkElement, jest.fn())
+    // skipcq: JS-0321 -- intentional no-op: silence real navigation in tests
+    openSpy = jest.spyOn(navigation, "openInNewTab").mockImplementation(() => {})
+    // skipcq: JS-0321 -- intentional no-op: silence real navigation in tests
+    goToSpy = jest.spyOn(navigation, "goTo").mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    cleanup()
+    openSpy.mockRestore()
+    goToSpy.mockRestore()
+  })
+
+  it.each`
+    clickInnerLink | expectedHref
+    ${false}       | ${"https://en.wikipedia.org/wiki/Reinforcement_learning"}
+    ${true}        | ${"https://creativecommons.org/licenses/by-sa/4.0/"}
+  `(
+    "click opens $expectedHref in a new tab (clickInnerLink=$clickInnerLink)",
+    ({ clickInnerLink, expectedHref }) => {
+      let clickEvent: MouseEvent
+      if (clickInnerLink) {
+        const innerLink = document.createElement("a")
+        innerLink.href = "https://creativecommons.org/licenses/by-sa/4.0/"
+        innerLink.target = "_blank"
+        popoverElement.appendChild(innerLink)
+        clickEvent = new MouseEvent("click", { bubbles: true, cancelable: true })
+        Object.defineProperty(clickEvent, "target", { value: innerLink })
+      } else {
+        clickEvent = new MouseEvent("click", { cancelable: true })
+      }
+
+      popoverElement.dispatchEvent(clickEvent)
+      expect(openSpy).toHaveBeenCalledWith(expectedHref as string)
+      expect(goToSpy).not.toHaveBeenCalled()
+      // The browser's own target="_blank" navigation must be suppressed so
+      // the URL opens exactly once.
+      expect(clickEvent.defaultPrevented).toBe(true)
+    },
+  )
 })

@@ -1,16 +1,13 @@
 import type { Element, Root } from "hast"
 
-import gitRoot from "find-git-root"
-import fs from "fs"
 import path from "path"
 import { visit } from "unist-util-visit"
-import { fileURLToPath } from "url"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { isExternalLink } from "./links"
-
-const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
+import { addClassesOnce } from "../../util/hast"
+import { projectRoot, readManifestFile } from "../../util/manifests"
+import { tryCanonicalizeUrl } from "../../util/urls"
 
 /** Committed source of truth for archived external links (keyed by canonical URL). */
 export const manifestPath = path.join(projectRoot, "config", "link_archive_manifest.json")
@@ -27,25 +24,6 @@ export interface ArchiveManifestEntry {
 }
 
 export type ArchiveManifest = ReadonlyMap<string, ArchiveManifestEntry>
-
-/**
- * Canonical URL form that the manifest key must match. Uses the WHATWG `new URL`
- * parser, then forces `https`, drops a single trailing `/`, and drops the
- * `#fragment` while keeping the query. The writer
- * (`scripts/archive_links.py`) mirrors this with the `ada-url` binding — the
- * same `ada` C++ parser Node uses — so the key it emits and the key looked up
- * here are byte-identical.
- *
- * @throws if `href` is not a parseable absolute URL.
- */
-export function canonicalizeUrl(href: string): string {
-  const url = new URL(href)
-  let pathname = url.pathname
-  if (pathname.endsWith("/")) {
-    pathname = pathname.slice(0, -1)
-  }
-  return `https://${url.host}${pathname}${url.search}`
-}
 
 function parseManifest(raw: string, source: string): ArchiveManifest {
   const parsed: unknown = JSON.parse(raw)
@@ -75,13 +53,8 @@ function parseManifest(raw: string, source: string): ArchiveManifest {
 
 /** Missing manifest → empty map; other I/O errors propagate. */
 export function loadArchiveManifest(filePath: string = manifestPath): ArchiveManifest {
-  let raw: string
-  try {
-    raw = fs.readFileSync(filePath, "utf-8")
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return new Map()
-    throw error
-  }
+  const raw = readManifestFile(filePath)
+  if (raw === null) return new Map()
   return parseManifest(raw, filePath)
 }
 
@@ -92,16 +65,12 @@ export function loadArchiveManifest(filePath: string = manifestPath): ArchiveMan
  */
 export function rewriteArchivedLink(node: Element, manifest: ArchiveManifest): boolean {
   const href = node.properties?.href
-  if (typeof href !== "string" || !href.startsWith("http") || !isExternalLink(href)) {
+  if (typeof href !== "string" || !href.startsWith("http")) {
     return false
   }
 
-  let canonical: string
-  try {
-    canonical = canonicalizeUrl(href)
-  } catch {
-    // A malformed href can't be in the manifest; leave the link untouched
-    // rather than crashing the build.
+  const canonical = tryCanonicalizeUrl(href)
+  if (canonical === null) {
     return false
   }
 
@@ -114,11 +83,7 @@ export function rewriteArchivedLink(node: Element, manifest: ArchiveManifest): b
 
   node.properties.href = entry.archive_url
   node.properties["data-original-href"] = href
-  const classes = (node.properties.className ?? []) as string[]
-  if (!classes.includes(ARCHIVED_LINK_CLASS)) {
-    classes.push(ARCHIVED_LINK_CLASS)
-  }
-  node.properties.className = classes
+  addClassesOnce(node, [ARCHIVED_LINK_CLASS])
   return true
 }
 

@@ -1,6 +1,10 @@
+import { minDesktopWidth } from "../../styles/variables"
+import { LINK_ANNOTATIONS_STATIC_PATH, type LinkAnnotation } from "../../util/annotations"
 import { normalizeRelativeURLs } from "../../util/path"
+import { tryCanonicalizeUrl } from "../../util/urls"
 import { CAN_TRIGGER_POPOVER_CLASS, popoverPadding, popoverRemovalDelayMs } from "../constants"
 import { type ContentRenderOptions, modifyElementIds, renderHTMLContent } from "./content_renderer"
+import { createLazyJsonLoader } from "./lazyJson"
 
 // Regex to detect footnote forward links (not back arrows which use fnref)
 // IDs can be alphanumeric with hyphens (e.g., fn-1, fn-some-name, fn-instr)
@@ -11,6 +15,10 @@ export const navigation = {
   /* istanbul ignore next -- jsdom does not implement navigation */
   goTo(url: string): void {
     window.location.href = url
+  },
+  /* istanbul ignore next -- jsdom does not implement window.open */
+  openInNewTab(url: string): void {
+    window.open(url, "_blank", "noopener")
   },
 }
 
@@ -103,13 +111,105 @@ function renderFullPageContent(popoverInner: HTMLElement, html: Document, target
   renderHTMLContent(popoverInner, html, renderOptions)
 }
 
+const annotationsLoader = createLazyJsonLoader<Record<string, LinkAnnotation>>(
+  "linkAnnotations",
+  () => LINK_ANNOTATIONS_STATIC_PATH,
+)
+
+/** Resets the cached annotations fetch between unit tests. */
+export function resetAnnotationsLoaderForTesting(): void {
+  annotationsLoader.reset()
+}
+
+/**
+ * Whether popovers can actually show: they are `display:none` below the
+ * desktop breakpoint (popover.scss), but hover listeners still run there via
+ * tap emulation, so callers must check this before paying for any fetch.
+ */
+export function isDesktopViewport(): boolean {
+  return window.matchMedia(`(min-width: ${minDesktopWidth}px)`).matches
+}
+
+/**
+ * Builds the popover for an annotated external link from the committed
+ * same-origin annotations JSON. Returns null when the popover cannot show
+ * (mobile viewport), the JSON fails to load, or the link has no entry —
+ * the site CSP forbids fetching the external page, so there is no fallback.
+ */
+export async function createAnnotationPopover(
+  linkElement: HTMLLinkElement,
+): Promise<HTMLElement | null> {
+  if (!isDesktopViewport()) {
+    return null
+  }
+
+  const annotations = await annotationsLoader.load()
+  if (!annotations) {
+    return null
+  }
+
+  // Archived links keep their live URL in data-original-href; the manifest is
+  // keyed by the live URL.
+  const liveUrl = linkElement.dataset.originalHref ?? linkElement.href
+  const key = tryCanonicalizeUrl(liveUrl)
+  if (key === null) {
+    return null
+  }
+  const annotation = annotations[key]
+  if (!annotation) {
+    return null
+  }
+
+  const popoverElement = document.createElement("div")
+  popoverElement.classList.add("popover", "annotation-popover")
+  const popoverInner = document.createElement("div")
+  popoverInner.classList.add("popover-inner")
+  popoverElement.appendChild(popoverInner)
+
+  const title = document.createElement("h2")
+  title.classList.add("annotation-title")
+  title.textContent = annotation.title
+  popoverInner.appendChild(title)
+
+  const abstract = document.createElement("div")
+  abstract.classList.add("annotation-abstract")
+  // abstract_html is escape-by-construction: the fetcher builds it from the
+  // provider's plain-text extract, and it is served same-origin.
+  abstract.innerHTML = annotation.abstract_html
+  popoverInner.appendChild(abstract)
+
+  const attribution = document.createElement("footer")
+  attribution.classList.add("annotation-attribution")
+  const sourceLink = document.createElement("a")
+  sourceLink.href = liveUrl
+  sourceLink.textContent = annotation.attribution.text
+  const licenseLink = document.createElement("a")
+  licenseLink.href = annotation.attribution.license_url
+  licenseLink.textContent = annotation.attribution.license
+  for (const link of [sourceLink, licenseLink]) {
+    link.target = "_blank"
+    link.rel = "noopener noreferrer"
+  }
+  attribution.append("From ", sourceLink, " (", licenseLink, ")")
+  popoverInner.appendChild(attribution)
+
+  return popoverElement
+}
+
 /**
  * Creates a popover element based on the provided options
  * @param options - The options for creating the popover
- * @returns A Promise that resolves to the created popover element
+ * @returns A Promise that resolves to the created popover element, or null
+ *   for an annotated external link whose annotation cannot be shown
  */
-export async function createPopover(options: PopoverOptions): Promise<HTMLElement> {
+export async function createPopover(options: PopoverOptions): Promise<HTMLElement | null> {
   const { targetUrl, linkElement, customFetch = fetch } = options
+
+  // Annotated external links render only their committed annotation — the
+  // CSP's connect-src blocks fetching the external page itself.
+  if (linkElement.dataset.annotated === "true") {
+    return createAnnotationPopover(linkElement)
+  }
 
   // Check if the link is a footnote back arrow
   const footnoteRefRegex = /^#user-content-fnref-\d+$/
@@ -288,6 +388,7 @@ export function attachPopoverEventListeners(
   onRemove: () => void,
 ): () => void {
   const isFootnote = popoverElement.classList.contains("footnote-popover")
+  const isAnnotation = popoverElement.classList.contains("annotation-popover")
   const controller = new AbortController()
   const listenerOpts = { signal: controller.signal }
 
@@ -317,12 +418,25 @@ export function attachPopoverEventListeners(
     "click",
     (e) => {
       const clickedLink = (e.target as HTMLElement).closest("a")
+      let targetHref: string
       if (clickedLink instanceof HTMLAnchorElement) {
-        navigation.goTo(clickedLink.href)
-      } else if (!isFootnote) {
-        // Footnote popovers are readable text; only non-footnote popovers
-        // navigate to the link target when the body is clicked.
-        navigation.goTo(linkElement.href)
+        targetHref = clickedLink.href
+      } else if (isFootnote) {
+        // Footnote popovers are readable text; only clicks on actual links
+        // inside them navigate.
+        return
+      } else {
+        targetHref = linkElement.href
+      }
+      // Annotation popovers preview an external link that itself opens in a
+      // new tab (target="_blank"); clicks inside them must match. Their inner
+      // anchors are also target="_blank", so suppress the browser's own
+      // navigation or the URL would open twice.
+      if (isAnnotation) {
+        e.preventDefault()
+        navigation.openInNewTab(targetHref)
+      } else {
+        navigation.goTo(targetHref)
       }
     },
     listenerOpts,

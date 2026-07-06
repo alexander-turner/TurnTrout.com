@@ -4638,6 +4638,7 @@ def test_main_handles_markdown_mapping(
                 should_check_fonts=False,
                 defined_css_variables={"--color-primary", "--color-secondary"},
                 favicon_included_domains=frozenset(),
+                annotation_keys=frozenset(),
             ),
         )
 
@@ -4700,6 +4701,7 @@ def test_main_command_line_args(
             should_check_fonts=True,
             defined_css_variables={"--color-primary", "--color-secondary"},
             favicon_included_domains=frozenset(),
+            annotation_keys=frozenset(),
         ),
     )
 
@@ -8174,3 +8176,136 @@ def test_process_html_files_duplicate_citations(tmp_path: Path):
             public_dir, content_dir, check_fonts=False
         )
     assert result is True
+
+
+class TestAnnotatedLinkChecks:
+    """Tests for the data-annotated <-> link-annotations.json consistency
+    check."""
+
+    WIKI_KEY = "https://en.wikipedia.org/wiki/Reinforcement_learning"
+
+    @pytest.mark.parametrize(
+        "href,expected",
+        [
+            (
+                "https://en.wikipedia.org/wiki/Foo",
+                "https://en.wikipedia.org/wiki/Foo",
+            ),
+            (
+                "http://en.wikipedia.org/wiki/Foo/",
+                "https://en.wikipedia.org/wiki/Foo",
+            ),
+            (
+                "https://en.wikipedia.org/wiki/Foo?x=1#frag",
+                "https://en.wikipedia.org/wiki/Foo?x=1",
+            ),
+            (
+                "https://en.wikipedia.org/wiki/Foo#frag",
+                "https://en.wikipedia.org/wiki/Foo",
+            ),
+            (
+                "https://en.wikipedia.org/wiki/Foo?",
+                "https://en.wikipedia.org/wiki/Foo",
+            ),
+            (
+                "https://EN.Wikipedia.org/wiki/Foo",
+                "https://en.wikipedia.org/wiki/Foo",
+            ),
+            (
+                "https://user:pw@en.wikipedia.org:443/wiki/Foo",
+                "https://en.wikipedia.org/wiki/Foo",
+            ),
+            (
+                "http://en.wikipedia.org:80/wiki/Foo",
+                "https://en.wikipedia.org/wiki/Foo",
+            ),
+            (
+                "http://en.wikipedia.org:443/wiki/Foo",
+                "https://en.wikipedia.org:443/wiki/Foo",
+            ),
+        ],
+    )
+    def test_canonicalize_annotation_href(
+        self, href: str, expected: str
+    ) -> None:
+        # skipcq: PYL-W0212
+        assert built_site_checks._canonicalize_annotation_href(href) == expected
+
+    def _soup(self, html: str) -> BeautifulSoup:
+        return BeautifulSoup(html, "html.parser")
+
+    @pytest.mark.parametrize(
+        "description,html,keys,expected_issue_count",
+        [
+            (
+                "manifest hit passes",
+                f'<a href="{WIKI_KEY}" data-annotated="true">RL</a>',
+                frozenset({WIKI_KEY}),
+                0,
+            ),
+            (
+                "manifest miss fails",
+                '<a href="https://en.wikipedia.org/wiki/Missing" '
+                'data-annotated="true">x</a>',
+                frozenset({WIKI_KEY}),
+                1,
+            ),
+            (
+                "archived link checked by original href",
+                '<a href="https://assets.turntrout.com/link-archive/x/'
+                'singlefile.html" '
+                f'data-original-href="{WIKI_KEY}" data-annotated="true">RL</a>',
+                frozenset({WIKI_KEY}),
+                0,
+            ),
+            (
+                "None keys flags all annotated links",
+                f'<a href="{WIKI_KEY}" data-annotated="true">RL</a>',
+                None,
+                1,
+            ),
+            (
+                "unannotated links ignored",
+                '<a href="https://example.com">x</a>',
+                frozenset(),
+                0,
+            ),
+        ],
+    )
+    def test_check_annotated_links(
+        self,
+        description: str,
+        html: str,
+        keys: frozenset[str] | None,
+        expected_issue_count: int,
+    ) -> None:
+        issues = built_site_checks.check_annotated_links_have_annotations(
+            self._soup(html), keys
+        )
+        assert len(issues) == expected_issue_count, description
+
+    def test_load_annotation_keys_missing_file(self, tmp_path: Path) -> None:
+        assert built_site_checks.load_annotation_keys(tmp_path) == frozenset()
+
+    def test_load_annotation_keys_reads_object_keys(
+        self, tmp_path: Path
+    ) -> None:
+        static_dir = tmp_path / "static"
+        static_dir.mkdir()
+        (static_dir / "link-annotations.json").write_text(
+            json.dumps({self.WIKI_KEY: {"title": "RL"}}), encoding="utf-8"
+        )
+        assert built_site_checks.load_annotation_keys(tmp_path) == frozenset(
+            {self.WIKI_KEY}
+        )
+
+    def test_load_annotation_keys_rejects_non_object(
+        self, tmp_path: Path
+    ) -> None:
+        static_dir = tmp_path / "static"
+        static_dir.mkdir()
+        (static_dir / "link-annotations.json").write_text(
+            "[]", encoding="utf-8"
+        )
+        with pytest.raises(ValueError, match="must contain a JSON object"):
+            built_site_checks.load_annotation_keys(tmp_path)

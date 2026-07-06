@@ -23,6 +23,17 @@ export async function getAllWithWait(locator: Locator): Promise<Locator[]> {
   return await locator.all()
 }
 
+/** Resolves a locator's bounding box, throwing if it's not visible/attached. */
+export async function requireBoundingBox(
+  locator: Locator,
+): Promise<{ x: number; y: number; width: number; height: number }> {
+  const box = await locator.boundingBox()
+  if (!box) {
+    throw new Error(`Expected a visible bounding box for locator: ${locator}`)
+  }
+  return box
+}
+
 // skipcq: JS-0098
 export async function isElementChecked(locator: Locator): Promise<boolean> {
   return await locator.evaluate((el: HTMLInputElement) => el.checked)

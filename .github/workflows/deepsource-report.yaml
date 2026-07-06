@@ -11,7 +11,7 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write
   checks: read
 
 # Multiple DeepSource analyzers (Python, JavaScript, Shell) may fail on the
@@ -23,48 +23,117 @@ concurrency:
 jobs:
   report:
     # Only react to DeepSource's own failing check_runs that are attached to a PR.
-    # workflow_dispatch always runs (for manual debugging).
+    # workflow_dispatch always runs (for manual queries, including clean PRs).
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event.check_run.app.slug == 'deepsource-io' &&
        github.event.check_run.conclusion == 'failure' &&
        github.event.check_run.pull_requests[0] != null)
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 8
     env:
+      # The DeepSource CLI's `issues --pr` view under-reports (it can return an
+      # empty list while the commit status is red), so this queries the
+      # GraphQL run occurrences directly — the canonical source.
       DEEPSOURCE_PAT: ${{ secrets.DEEPSOURCE_PAT }}
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.inputs.pr_number || github.event.check_run.pull_requests[0].number }}
+      EVENT_HEAD_SHA: ${{ github.event.check_run.head_sha }}
     steps:
-      - name: Install DeepSource CLI
-        run: |
-          curl -fsSL https://cli.deepsource.com/install | BINDIR="$HOME/.local/bin" sh
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-
-      - name: Authenticate
-        run: deepsource auth login --with-token "$DEEPSOURCE_PAT"
-
-      - name: Fetch and print issues
+      - name: Report DeepSource findings on the PR
         run: |
           set -euo pipefail
-          issues_json=$(deepsource issues --pr "$PR_NUMBER" --output json)
-          count=$(echo "$issues_json" | jq 'length')
 
-          if [ "$count" -eq 0 ]; then
-            echo "DeepSource clean on PR #$PR_NUMBER."
+          # Head SHA comes from the check_run payload; on manual dispatch look
+          # it up from the PR.
+          head_sha="$EVENT_HEAD_SHA"
+          if [ -z "$head_sha" ]; then
+            head_sha=$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.head.sha')
+          fi
+
+          # Every analyzer in one push shares a run UID; read it from any
+          # `DeepSource: *` commit status's target_url (.../run/<uid>/<analyzer>/).
+          run_uid=$(gh api "repos/$REPO/commits/$head_sha/statuses" \
+            --jq 'first(.[] | select(.context | startswith("DeepSource:")) | .target_url) // ""' \
+            | sed -nE 's#.*/run/([0-9a-f-]+)/.*#\1#p')
+          if [ -z "$run_uid" ]; then
+            echo "::notice::No DeepSource run found for $head_sha; nothing to report."
             exit 0
           fi
 
-          echo "::error::DeepSource has $count outstanding issue(s) on PR #$PR_NUMBER"
-          echo
-          echo "$issues_json" | jq -r '.[] | "  \(.path):\(.begin_line) [\(.issue_code)] \(.title)"'
-          echo
-          echo "Full JSON:"
-          echo "$issues_json" | jq .
-          {
-            echo "## DeepSource: $count outstanding issue(s) on PR #$PR_NUMBER"
-            echo
-            echo '| File | Line | Code | Title |'
-            echo '| --- | --- | --- | --- |'
-            echo "$issues_json" | jq -r '.[] | "| \(.path) | \(.begin_line) | \(.issue_code) | \(.title) |"'
-          } >> "$GITHUB_STEP_SUMMARY"
-          exit 1
+          gql() {
+            curl -sS --fail-with-body https://api.deepsource.io/graphql/ \
+              -H "Authorization: Bearer $DEEPSOURCE_PAT" \
+              -H "Content-Type: application/json" \
+              --data "$1"
+          }
+          # shellcheck disable=SC2016  # $uid is a GraphQL variable, expanded server-side
+          occ_query='query($uid: UUID!) { run(runUid: $uid) { status checks { edges { node { analyzer { shortcode } occurrences(first: 100) { edges { node { issue { shortcode title } path beginLine } } } } } } } }'
+
+          # DeepSource re-analyzes on every push, so wait for the run to leave
+          # PENDING before trusting the occurrence list. Bounded well under the
+          # job timeout so the report + comment steps always have budget left.
+          payload=""
+          status="PENDING"
+          for _ in $(seq 1 12); do
+            # shellcheck disable=SC2016  # $q/$uid are jq --arg bindings, not shell vars
+            payload=$(gql "$(jq -n --arg q "$occ_query" --arg uid "$run_uid" \
+              '{query: $q, variables: {uid: $uid}}')")
+            status=$(echo "$payload" | jq -r '.data.run.status // "PENDING"')
+            if [ "$status" != "PENDING" ]; then break; fi
+            sleep 10
+          done
+
+          # A run still analyzing has no trustworthy occurrence list yet;
+          # reporting it as clean would be a false negative. Leave any existing
+          # comment untouched and exit without failing.
+          if [ "$status" = "PENDING" ]; then
+            echo "::notice::DeepSource run $run_uid still analyzing $head_sha; skipping report."
+            exit 0
+          fi
+
+          # Flatten every analyzer's occurrences to "path:line [code] title", sorted+deduped.
+          echo "$payload" | jq -r '
+            [.data.run.checks.edges[].node.occurrences.edges[].node
+             | "\(.path):\(.beginLine) [\(.issue.shortcode)] \(.issue.title)"]
+            | unique | .[]' > /tmp/findings.txt || true
+          count=$(grep -c . /tmp/findings.txt || true)
+
+          marker="<!-- deepsource-report -->"
+          if [ "$count" -eq 0 ]; then
+            printf '%s\n\n_DeepSource: no outstanding findings on %s._\n' \
+              "$marker" "$head_sha" > /tmp/comment.md
+            echo "DeepSource clean on PR #$PR_NUMBER."
+          else
+            {
+              echo "$marker"
+              echo
+              echo "## DeepSource: $count outstanding finding(s) on \`$head_sha\`"
+              echo
+              echo '| File | Line | Code | Title |'
+              echo '| --- | --- | --- | --- |'
+              # shellcheck disable=SC2016  # single-quoted sed script; $ is a regex anchor
+              sed -E 's#^([^:]+):([0-9]+) \[([^]]+)\] (.*)$#| `\1` | \2 | \3 | \4 |#' /tmp/findings.txt
+            } > /tmp/comment.md
+            cat /tmp/comment.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          # Upsert a single sticky comment identified by the marker.
+          body=$(cat /tmp/comment.md)
+          # gh rejects --slurp together with --jq, so slurp all comment pages
+          # (an array of page-arrays) and flatten with a standalone jq; .[][]
+          # yields every comment, first(...) picks the single marked one.
+          existing=$(gh api --paginate --slurp "repos/$REPO/issues/$PR_NUMBER/comments" \
+            | jq -r "first(.[][] | select(.body | contains(\"$marker\")) | .id) // empty")
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$existing" -f body="$body" >/dev/null
+          else
+            gh api -X POST "repos/$REPO/issues/$PR_NUMBER/comments" -f body="$body" >/dev/null
+          fi
+
+          # Fail the report job when findings remain, matching the prior contract.
+          if [ "$count" -gt 0 ]; then
+            echo "::error::DeepSource has $count outstanding finding(s) on PR #$PR_NUMBER"
+            exit 1
+          fi

@@ -673,6 +673,10 @@ A footnote reference right after a favicon-ending [same-page link](#external-lin
 
 <!--spellchecker-enable-->
 
+# Annotated external links
+
+Hovering over [reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning) shows a build-time annotation popover with the article's title, abstract, and attribution. An external link without a committed annotation, like [`npmjs.com`](https://npmjs.com), shows no popover at all.
+
 # Typography
 
 ## Smallcaps

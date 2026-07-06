@@ -10,6 +10,7 @@
 
 import { type ContentDetails } from "../../plugins/vfile"
 import { type FullSlug } from "../../util/path"
+import { createLazyJsonLoader } from "./lazyJson"
 
 type ContentIndexData = Record<FullSlug, ContentDetails>
 
@@ -20,8 +21,13 @@ declare global {
   }
 }
 
-let fetchData: Promise<ContentIndexData | null> | null = null
-let indexLoaded = false
+const loader = createLazyJsonLoader<ContentIndexData>("getContentIndex", () => {
+  const path = window.__contentIndexPath
+  if (!path) {
+    throw new Error("window.__contentIndexPath is not set; cannot load the content index")
+  }
+  return path
+})
 
 /**
  * Returns the cached content-index fetch, starting one if needed. Pass
@@ -29,24 +35,7 @@ let indexLoaded = false
  * Resolves to `null` on failure so callers can retry.
  */
 export function getContentIndex(forceRefresh = false): Promise<ContentIndexData | null> {
-  if (forceRefresh || !fetchData) {
-    const path = window.__contentIndexPath
-    if (!path) {
-      throw new Error("window.__contentIndexPath is not set; cannot load the content index")
-    }
-    fetchData = fetch(path)
-      .then((res) => res.json() as Promise<ContentIndexData>)
-      .then((json) => {
-        indexLoaded = true
-        return json
-      })
-      .catch((err: unknown) => {
-        console.error("[getContentIndex] Failed to load content index:", err)
-        fetchData = null
-        return null
-      })
-  }
-  return fetchData
+  return loader.load(forceRefresh)
 }
 
 /**
@@ -56,7 +45,7 @@ export function getContentIndex(forceRefresh = false): Promise<ContentIndexData 
  * random-post needs the data.
  */
 export function refreshContentIndexOnVisible(): void {
-  if (!document.hidden && !indexLoaded) {
+  if (!document.hidden && !loader.hasLoaded()) {
     void getContentIndex(true)
   }
 }
@@ -69,6 +58,5 @@ export function setupContentIndexLoader(): void {
 
 /** Resets module-level cache state between unit tests. */
 export function resetContentIndexLoaderForTesting(): void {
-  fetchData = null
-  indexLoaded = false
+  loader.reset()
 }
