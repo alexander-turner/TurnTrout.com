@@ -11,7 +11,7 @@
  */
 
 import { forceHslInvertClass, invertInDarkModeClass } from "../constants"
-import { invertedUrl, isInvertedUrl } from "./invertedAssets"
+import { invertedUrl, isInvertedUrl, withoutUrlTail } from "./invertedAssets"
 
 const INVERT_SELECTOR = `img.${invertInDarkModeClass}, img.${forceHslInvertClass}`
 const REVERTABLE_SELECTOR = `img.${invertInDarkModeClass}:not(.${forceHslInvertClass})[data-invert-original-src]`
@@ -39,8 +39,11 @@ export function invertPictureSrc(img: HTMLImageElement): boolean {
     // function on the inverted image's own `load` event before the
     // once-listener below marks it processed, so reassigning unconditionally
     // would re-set `img.src` to the value it already holds — some browsers
-    // (Firefox) still restart the network request in that case.
-    if (img.src !== inverted) {
+    // (Firefox) still restart the network request in that case. Compare paths
+    // only: a cache-busted inverted URL (`…-inverted.png?__visualRetry=…` from
+    // the visual-test paint poller) already points at the inverted resource,
+    // so stripping its query to reassign would needlessly restart the fetch.
+    if (withoutUrlTail(img.src) !== withoutUrlTail(inverted)) {
       img.src = inverted
     }
     img.dataset["invertProcessed"] = "1"

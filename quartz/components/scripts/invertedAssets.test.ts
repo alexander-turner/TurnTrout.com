@@ -5,6 +5,7 @@ import {
   INVERTIBLE_IMAGE_EXTENSIONS,
   isInvertedUrl,
   isInvertibleImage,
+  withoutUrlTail,
 } from "./invertedAssets"
 
 describe("isInvertibleImage", () => {
@@ -64,5 +65,17 @@ describe("isInvertedUrl", () => {
     ["inverted-foo.avif", false],
   ])("%s → %s", (url, expected) => {
     expect(isInvertedUrl(url)).toBe(expected)
+  })
+})
+
+describe("withoutUrlTail", () => {
+  it.each([
+    ["foo-inverted.avif", "foo-inverted.avif"],
+    ["foo-inverted.avif?__visualRetry=123", "foo-inverted.avif"],
+    ["dir/foo.png#anchor", "dir/foo.png"],
+    ["https://cdn.example/foo-inverted.png?v=2#a", "https://cdn.example/foo-inverted.png"],
+    ["no-extension?q=1", "no-extension"],
+  ])("%s → %s", (url, expected) => {
+    expect(withoutUrlTail(url)).toBe(expected)
   })
 })

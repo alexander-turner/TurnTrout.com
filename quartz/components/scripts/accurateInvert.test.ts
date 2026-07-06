@@ -213,6 +213,37 @@ describe("invertPictureSrc", () => {
     expect(assignmentCount).toBe(0)
     expect(img.dataset["invertProcessed"]).toBe("1")
   })
+
+  it("does not reassign src when it holds a cache-busted inverted URL", () => {
+    // The visual-test paint poller retries a stalled image by appending a
+    // `?__visualRetry` cache-buster. That URL still points at the inverted
+    // resource, so reassigning to the query-less form would restart the fetch
+    // (and, on Firefox, re-zero naturalWidth) in a poller-vs-swap loop.
+    const img = makePictureWrappedImg("https://x/foo.avif")
+    // Mirror the state after the initial swap: the original is stashed, so
+    // `inverted` derives from it rather than double-inverting the current src.
+    img.dataset["invertOriginalSrc"] = "https://x/foo.avif"
+    const cacheBusted = "https://x/foo-inverted.avif?__visualRetry=123"
+    Object.defineProperty(img, "currentSrc", { value: cacheBusted, configurable: true })
+    let assignmentCount = 0
+    const originalSrcSetter = Object.getOwnPropertyDescriptor(
+      HTMLImageElement.prototype,
+      "src",
+    )?.set
+    Object.defineProperty(img, "src", {
+      configurable: true,
+      get: () => cacheBusted,
+      set: (value: string) => {
+        assignmentCount += 1
+        originalSrcSetter?.call(img, value)
+      },
+    })
+
+    expect(invertPictureSrc(img)).toBe(true)
+
+    expect(assignmentCount).toBe(0)
+    expect(img.dataset["invertProcessed"]).toBe("1")
+  })
 })
 
 describe("invertImage", () => {
