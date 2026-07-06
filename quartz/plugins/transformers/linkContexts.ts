@@ -178,7 +178,10 @@ function isFootnoteRef(node: Element): boolean {
  * citing link becomes a highlight span, non-citing links are unwrapped, and
  * every `id` is removed so the excerpt can't collide with page anchors.
  */
-function sanitizeChildren(children: readonly ElementContent[], highlightId: string): ElementContent[] {
+function sanitizeChildren(
+  children: readonly ElementContent[],
+  highlightId: string,
+): ElementContent[] {
   return children.flatMap((child) => sanitizeNode(child, highlightId))
 }
 
