@@ -388,21 +388,40 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
     return invalid_internal_links
 
 
+_TITLE_SENTINEL_PATTERN = re.compile(
+    "|".join(
+        re.escape(sentinel)
+        for sentinel in sorted(LINK_TITLE_SENTINELS, key=len, reverse=True)
+    )
+)
+
+
 def check_unrendered_title_sentinel(soup: BeautifulSoup) -> list[str]:
     """
-    Check for links whose visible text is still a title sentinel (``@title`` or
+    Check for visible text still containing a title sentinel (``@title`` or
     ``@title-lower``).
 
-    A surviving sentinel means the build-time title binding never resolved (e.g.
-    the sentinel was placed on an external or unresolvable link), leaking the
-    raw token into the page instead of the target's title.
+    A surviving sentinel means the build-time title binding never resolved,
+    leaking the raw token into the page instead of the target's title. The
+    sentinel is matched as a substring of any non-code text node—not just as
+    exact link text—because formatting passes can move punctuation into the
+    anchor around the sentinel or split it into sibling text nodes.
+    Legitimate mentions of the sentinel live inside ``<code>`` elements, which
+    ``should_skip`` excludes.
     """
     leaked: list[str] = []
-    for link in _tags_only(soup.find_all("a")):
-        text = link.get_text(strip=True)
-        if text in LINK_TITLE_SENTINELS:
-            href = link.get("href", "")
-            leaked.append(f"{text} as link text (href={href})")
+    for element in soup.find_all(string=True):
+        if not isinstance(element, NavigableString):  # pragma: no cover
+            continue
+        if not element.strip() or should_skip(element):
+            continue
+        match = _TITLE_SENTINEL_PATTERN.search(str(element))
+        if match:
+            _append_to_list(
+                leaked,
+                str(element),
+                prefix=f"Unrendered title sentinel {match.group(0)}: ",
+            )
     return leaked
 
 

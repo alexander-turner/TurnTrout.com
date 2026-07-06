@@ -1,4 +1,4 @@
-import type { Element, Root } from "hast"
+import type { Element, Root, Text } from "hast"
 import type { VFile } from "vfile"
 
 import fs from "fs"
@@ -54,13 +54,31 @@ export async function readTitleIndex(): Promise<TitleIndex> {
   return cachedIndex
 }
 
+const escapeRegExp = (literal: string): string => literal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+// HTMLFormattingImprovement runs before this plugin and migrates punctuation
+// into anchors (trailing periods/commas after the link, opening quotes before
+// it), so the sentinel may arrive flanked by punctuation, symbols, or
+// whitespace—possibly split across several text children. Any letter or digit
+// around the sentinel means the anchor text is ordinary prose, not a binding.
+// Longest sentinel first so "@title-lower" is not matched as "@title" + trail.
+const sentinelAlternation = [LINK_TITLE_LOWER_SENTINEL, LINK_TITLE_SENTINEL]
+  .map(escapeRegExp)
+  .join("|")
+const sentinelTextRegex = new RegExp(
+  `^(?<lead>[\\p{P}\\p{S}\\s]*?)(?<sentinel>${sentinelAlternation})(?<trail>[\\p{P}\\p{S}\\s]*)$`,
+  "u",
+)
+
 /**
  * Replace the text of every `@title` anchor with the up-to-date title of its
  * target page, or the live text of the target section heading when the link
  * carries an `#anchor`. Runs after CrawlLinks (so `data-slug`/`href` are
  * resolved) and before AddFavicons (so the favicon is woven into the real
- * title, not the sentinel). Throws when a bound link targets a missing page or
- * heading—this surfaces drift when a page or heading is renamed.
+ * title, not the sentinel). Punctuation surrounding the sentinel inside the
+ * anchor is preserved around the resolved title. Throws when a bound link
+ * targets a missing page or heading—this surfaces drift when a page or
+ * heading is renamed.
  */
 export function bindTitlesInTree(
   tree: Root,
@@ -71,11 +89,11 @@ export function bindTitlesInTree(
   visit(tree, "element", (node: Element) => {
     if (node.tagName !== "a") return
 
-    const onlyChild = node.children.length === 1 ? node.children[0] : undefined
-    if (onlyChild?.type !== "text") return
-    const sentinel = onlyChild.value.trim()
-    const lower = sentinel === LINK_TITLE_LOWER_SENTINEL
-    if (sentinel !== LINK_TITLE_SENTINEL && !lower) return
+    if (!node.children.every((child): child is Text => child.type === "text")) return
+    const text = node.children.map((child) => child.value).join("")
+    const match = sentinelTextRegex.exec(text)
+    if (!match?.groups) return
+    const lower = match.groups.sentinel === LINK_TITLE_LOWER_SENTINEL
 
     const href = node.properties.href
     if (typeof href !== "string") return
@@ -110,7 +128,11 @@ export function bindTitlesInTree(
     } else {
       resolved = target.title
     }
-    onlyChild.value = lower ? resolved.toLowerCase() : resolved
+    const bound = lower ? resolved.toLowerCase() : resolved
+    // Punctuation around the sentinel survives; stray whitespace does not.
+    const lead = match.groups.lead.trim()
+    const trail = match.groups.trail.trim()
+    node.children = [{ type: "text", value: `${lead}${bound}${trail}` }]
     // A resolved title is the name of a work, not prose, so acronyms in it
     // (AGI, GPT, …) should not render as small-caps.
     addClass(node, "no-smallcaps")

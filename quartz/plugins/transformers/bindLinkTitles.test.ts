@@ -96,6 +96,41 @@ describe("bindTitlesInTree", () => {
     expect(textOf(root)).toContain(">Local Heading<")
   })
 
+  it.each([
+    ["trailing period moved into the link", "@title-lower.", ">the live title.<"],
+    ["trailing comma and quote moved into the link", "@title.”", ">The Live Title.”<"],
+    ["leading quote moved into the link", "“@title", ">“The Live Title<"],
+  ])("binds when formatting moved punctuation into the anchor (%s)", (_desc, text, expected) => {
+    const root = tree(boundAnchor({ "data-slug": "other-page", href: "/other-page" }, text))
+    bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")
+    expect(textOf(root)).toContain(expected)
+  })
+
+  it("binds when a moved quote arrives as a separate text child", () => {
+    const anchor: Element = {
+      type: "element",
+      tagName: "a",
+      properties: { "data-slug": "other-page", href: "/other-page" },
+      children: [
+        { type: "text", value: "“" },
+        { type: "text", value: "@title.”" },
+      ],
+    }
+    const root = tree(anchor)
+    bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")
+    expect(textOf(root)).toContain(">“The Live Title.”<")
+  })
+
+  it.each([
+    ["letters after the sentinel", "@titles"],
+    ["letters before the sentinel", "see @title"],
+    ["letters after the lower sentinel", "@title-lowered"],
+  ])("leaves prose containing the sentinel untouched (%s)", (_desc, text) => {
+    const root = tree(boundAnchor({ "data-slug": "other-page", href: "/other-page" }, text))
+    bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")
+    expect(textOf(root)).toContain(`>${text}<`)
+  })
+
   it("re-resolves even when the text is no longer the sentinel", () => {
     const root = tree(boundAnchor({ "data-slug": "other-page", href: "/other-page" }, "Stale"))
     bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")
