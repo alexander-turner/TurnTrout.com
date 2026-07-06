@@ -145,6 +145,31 @@ export const PREVIEWABLE_CLASS = "previewable"
 export const CAN_TRIGGER_POPOVER_CLASS = "can-trigger-popover"
 export const SEARCH_MATCH_CLASS = "search-match"
 
+// Inline-content class names shared by the formatting pipeline (twemoji,
+// favicons, small-caps, KaTeX) and the consumers that sanitize or re-render its
+// output (backlink excerpts). Single source of truth so producers and
+// consumers can't drift. `EMOJI_CLASS`/`KATEX_CLASS` are emitted by the twemoji
+// and KaTeX libraries respectively; the constants document the value we match.
+export const EMOJI_CLASS = "emoji"
+export const EMOJI_SPAN_CLASS = "emoji-span"
+// Authored glyph-sized inline images (SafeLife sprites, the agent chevron, …),
+// styled at `0.9rem` in `custom.scss`. Like emoji, each reads as a single inline
+// atom, so backlink excerpts preserve them verbatim rather than dropping them as
+// block media. The constant documents the value the sanitizer matches.
+export const INLINE_IMG_CLASS = "inline-img"
+// Intrinsic pixel dimensions of a Twemoji SVG (its `viewBox` is `0 0 36 36`).
+// In article bodies the `assetDimensions` transformer fetches and stamps this,
+// but titles render at component time without that pass, so their emoji `<img>`
+// need the size stamped here to satisfy the `images_missing_dimensions` check
+// and avoid layout shift. CSS still renders them at `1em`.
+export const TWEMOJI_INTRINSIC_DIMENSION = 36
+export const FAVICON_CLASS = "favicon"
+export const FAVICON_SPAN_CLASS = "favicon-span"
+export const KATEX_CLASS = "katex"
+export const SMALL_CAPS_CLASS = "small-caps"
+export const BACKLINK_HIGHLIGHT_CLASS = "backlink-highlight"
+export const BACKLINK_EXCERPT_CLASS = "backlink-excerpt"
+
 // Title-binding links: when an internal link's display text is exactly this
 // sentinel, its text is replaced at build time with the up-to-date title of the
 // target page (or the target section heading, for `#anchor` links). See

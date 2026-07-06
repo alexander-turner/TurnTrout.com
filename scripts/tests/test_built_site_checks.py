@@ -1963,6 +1963,34 @@ def test_check_emphasis_spacing_allowed_patterns(html, expected):
     assert sorted(result) == sorted(expected)
 
 
+def test_backlink_excerpt_excluded_from_prose_checks():
+    """Backlink excerpts are derived content, exempt from prose-quality
+    checks."""
+    html = (
+        '<div id="backlinks"><div class="admonition-content">'
+        '<div class="backlink-excerpt">'
+        "[...] <em>credit assignment</em>, <strong>extremely hard</strong>"
+        " and <code>\\bigcirc</code> [...]</div>"
+        '<div class="backlink-excerpt">: In humans, drift happens.</div>'
+        "</div></div>"
+    )
+    soup = BeautifulSoup(html, "html.parser")
+    assert built_site_checks.check_emphasis_spacing(soup) == []
+    assert built_site_checks.check_inline_code_word_boundaries(soup) == []
+    assert built_site_checks.paragraphs_contain_canary_phrases(soup) == []
+    # The `[...]` elision markers must not trip the consecutive-periods check.
+    assert built_site_checks.check_consecutive_periods(soup) == []
+
+
+def test_prose_checks_flag_artifacts_outside_backlink_excerpt():
+    """Identical artifacts in ordinary prose are still flagged (control)."""
+    soup = BeautifulSoup("<p>word…<em>credit</em></p>", "html.parser")
+    assert built_site_checks.check_emphasis_spacing(soup) != []
+    # The same bracketed marker in ordinary prose is still flagged.
+    soup = BeautifulSoup("<p>text [...] more</p>", "html.parser")
+    assert built_site_checks.check_consecutive_periods(soup) != []
+
+
 def test_check_spacing_after_branch():
     html = "<p><a href='#'>link</a>missing_space</p>"
     soup = BeautifulSoup(html, "html.parser")

@@ -6,7 +6,7 @@ import { Fragment, jsx, jsxs } from "preact/jsx-runtime"
 import { type QuartzPluginData } from "../plugins/vfile"
 import { type GlobalConfiguration } from "../util/config"
 import { type FullSlug, resolveRelative } from "../util/path"
-import { formatTitle } from "./component_utils"
+import { formatTitle, renderTitleNodes } from "./component_utils"
 import { locale } from "./constants"
 import { getDate } from "./Date"
 import { formatTag } from "./TagList"
@@ -68,7 +68,7 @@ export function createPageTitleElement(
     h(
       "a.internal.can-trigger-popover",
       { href: resolveRelative(fileDataSlug, pageSlug) },
-      formattedTitle,
+      renderTitleNodes(formattedTitle),
     ),
   ])
 }

@@ -620,6 +620,8 @@ def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
     ):
         if any(parent.name in ("code", "svg") for parent in element.parents):
             continue
+        if _in_backlink_excerpt(element):
+            continue
 
         # Check with placeholders, report without code
         check_text = script_utils.get_non_code_text(
@@ -636,6 +638,8 @@ def paragraphs_contain_canary_phrases(soup: BeautifulSoup) -> list[str]:
     for container in _tags_only(
         soup.find_all(["article", "section", "div", "blockquote"])
     ):
+        if _in_backlink_excerpt(container):
+            continue
         for child in container.children:
             if not isinstance(child, NavigableString):
                 continue
@@ -1351,6 +1355,11 @@ def should_skip(element: Tag | NavigableString) -> bool:
         # Embedded external READMEs: prose-quality checks target first-party
         # authoring, not third-party README text.
         "external-readme",
+        # Backlink excerpts are truncated, sanitized snippets of already-checked
+        # source prose; their `[...]` elision markers are derived artifacts, not
+        # authored consecutive periods. Checks that don't route through
+        # ``should_skip`` exempt excerpts via ``_in_backlink_excerpt`` instead.
+        "backlink-excerpt",
     }
 
     # Check current element and all parents
@@ -2519,6 +2528,24 @@ ALLOWED_ELT_FOLLOWING_CHARS = (
 )
 
 
+def _in_backlink_excerpt(element: Tag) -> bool:
+    """
+    True when ``element`` is (or sits inside) an auto-generated backlink
+    excerpt.
+
+    Backlink excerpts are truncated, sanitized snippets of source prose that has
+    already been checked on its own page. Re-linting the snippet for authored-
+    prose quality (emphasis spacing, inline-code boundaries, canary phrases)
+    only surfaces truncation artifacts—e.g. an excerpt that opens mid-sentence on
+    a colon—so these checks skip the excerpt, mirroring the ``external-readme``
+    carve-out. (The ``[...]`` elision markers are exempted separately, via
+    ``should_skip``.)
+    """
+    if "backlink-excerpt" in script_utils.get_classes(element):
+        return True
+    return element.find_parent(class_="backlink-excerpt") is not None
+
+
 def _check_element_spacing(
     element: Tag,
     prev_allowed_chars: str,
@@ -2629,6 +2656,7 @@ def check_inline_code_word_boundaries(soup: BeautifulSoup) -> list[str]:
             code.find_parent("pre")
             or code.find_parent(class_="no-formatting")
             or code.find_parent(class_="external-readme")
+            or _in_backlink_excerpt(code)
         ):
             continue
         issues.extend(
@@ -2742,6 +2770,8 @@ def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:
 
     # Find all emphasis elements
     for element in _tags_only(soup.find_all(["em", "strong", "i", "b", "del"])):
+        if _in_backlink_excerpt(element):
+            continue
         prev_sibling = element.previous_sibling
         next_sibling = element.next_sibling
 

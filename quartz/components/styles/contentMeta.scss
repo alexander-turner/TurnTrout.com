@@ -29,15 +29,63 @@
   }
 }
 
-#backlinks-admonition,
-#post-statistics {
-  li {
-    margin-bottom: calc($base-margin);
-  }
+#post-statistics li {
+  margin-bottom: calc($base-margin);
+}
 
+#backlinks .admonition-content,
+#post-statistics {
   ul {
     padding-left: $base-margin;
     margin-left: 0;
+  }
+}
+
+// Each backlink entry wraps a multi-line excerpt, so give every entry the same
+// gap. The shared toc.scss `ul > li` rules (and their `:last-child` variant)
+// outrank a bare `li` selector, so match the blockquote's `.admonition` co-class
+// to lift specificity above them rather than relying on stylesheet order.
+#backlinks.admonition .admonition-content ul > li {
+  margin-bottom: $base-margin;
+
+  &:last-child {
+    margin-bottom: $base-margin;
+  }
+}
+
+#backlinks .admonition-content {
+  // Each excerpt is a deep-link to the citing paragraph, shown below the backlink
+  // title. The shared toc.scss list rules stagger wrapped lines with a negative
+  // text-indent and a tight line-height tuned for single-line TOC entries; both
+  // would mangle multi-line prose, so reset them here.
+  & .backlink-excerpt {
+    display: block;
+    margin-top: calc(0.25 * $base-margin);
+    font-size: var(--font-size-minus-2);
+    line-height: normal;
+    text-indent: 0;
+    color: var(--midground-faint);
+    text-decoration: none;
+
+    // Full-color inline sprites (the agent chevron, SafeLife tiles) would pop
+    // against the faint excerpt prose, so dim them to the text's visual weight.
+    .inline-img {
+      opacity: 0.6;
+    }
+
+    &:hover {
+      color: var(--midground);
+
+      .inline-img {
+        opacity: 1;
+      }
+    }
+
+    .backlink-highlight {
+      padding: 0 calc(0.25 * $base-margin);
+      border-radius: $border-radius;
+      background-color: var(--highlight);
+    }
   }
 }
 
