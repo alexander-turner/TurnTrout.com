@@ -373,9 +373,7 @@ test("Right sidebar is visible on desktop on page load", async ({ page }) => {
     })
   })
 
-  // The assertion only reads a value captured at DOMContentLoaded; waiting for
-  // the full `load` event ties the test to every CDN subresource on the heavy
-  // test-page, which can exceed the WebKit test timeout on macOS runners.
+  // The assertion only reads a value captured at DOMContentLoaded.
   await reloadPage(page, "domcontentloaded")
 
   const initialDisplayStyle = await page.evaluate(() => {
@@ -482,9 +480,8 @@ test("Video autoplay preference persists across page reloads", async ({ page }) 
   await expect(pauseIcon).toBeVisible()
   await expect(playIcon).toBeHidden()
 
-  // The test waits on the video's own readiness below; waiting for the full
-  // `load` event ties the reload to every CDN subresource on the heavy
-  // test-page, which can exceed the WebKit test timeout on macOS runners.
+  // Video readiness is awaited explicitly below, so the reload only needs the
+  // DOM and its deferred scripts.
   await reloadPage(page, "domcontentloaded")
 
   await expect(pauseIcon).toBeVisible()
