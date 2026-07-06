@@ -39,9 +39,10 @@ BLOCK_TAGS = (
 
 
 def preceding_char(el: Tag) -> tuple[str, str, bool]:
-    """Last non-space char before el within its block, plus context, plus
-    whether whitespace renders between that char and el (a spaced pair has a
-    visible gap already and is not a kerning bigram).
+    """
+    Last non-space char before el within its block, plus context, plus whether
+    whitespace renders between that char and el (a spaced pair has a visible gap
+    already and is not a kerning bigram).
 
     A line break separates the favicon from any earlier block's text, so the
     walk stops at the nearest block ancestor instead of crossing into it.
