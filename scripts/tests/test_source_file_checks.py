@@ -1218,6 +1218,27 @@ Test content
     assert sequence_data == expected_mapping
 
 
+def test_build_sequence_data_with_scalar_alias(create_test_file: Callable):
+    """A scalar (non-list) alias must be treated as a single key, not iterated
+    character-by-character."""
+    content = """---
+title: Test Post
+permalink: /test
+aliases: /single-alias
+---
+Test content
+"""
+    file_path = create_test_file("test.md", content)
+
+    sequence_data = source_file_checks.build_sequence_data([file_path])
+
+    assert "/single-alias" in sequence_data
+    assert sequence_data["/single-alias"] == {"title": "Test Post"}
+    # A scalar string must not be exploded into single-character keys.
+    assert "/" not in sequence_data
+    assert "s" not in sequence_data
+
+
 def test_build_sequence_data_multiple_files(
     create_test_file: Callable,
 ):

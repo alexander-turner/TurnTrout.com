@@ -1,5 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
+const timestampFormatPattern = /^\d{1,2}\/\d{1,2}\/\d{4}, \d{1,2}:\d{2}:\d{2} [AP]M/
+
 // All mocks use `jest.unstable_mockModule` because log.ts loads its
 // dependencies via ESM-style default imports inside `await import("./log")`.
 // `jest.mock` is unreliable in that combination on Node 22 CI runners
@@ -24,6 +26,7 @@ const mockLoggerInstance = {
 const mockCreateLogger = jest.fn(() => mockLoggerInstance)
 
 let capturedPrintfFormatter: ((info: { level: string; message: string }) => string) | null = null
+const mockTimestamp = jest.fn((opts: { format: unknown }) => opts)
 
 jest.unstable_mockModule("winston-daily-rotate-file", () => ({
   __esModule: true,
@@ -39,7 +42,7 @@ jest.unstable_mockModule("winston", () => ({
   createLogger: mockCreateLogger,
   format: {
     combine: jest.fn((...args) => args),
-    timestamp: jest.fn(() => "timestamp"),
+    timestamp: mockTimestamp,
     prettyPrint: jest.fn(() => "prettyPrint"),
     colorize: jest.fn(() => "colorize"),
     simple: jest.fn(() => "simple"),
@@ -107,6 +110,16 @@ describe("util/log", () => {
     })
     expect(callArgs.filename).toContain("test-logger.log")
     expect(callArgs.auditFile).toContain("test-logger-audit.json")
+  })
+
+  it("passes a timestamp formatter function that renders the current Los Angeles time", () => {
+    createWinstonLogger("test-logger")
+
+    const { format: timestampFormat } = mockTimestamp.mock.calls[0][0] as {
+      format: () => string
+    }
+    expect(typeof timestampFormat).toBe("function")
+    expect(timestampFormat()).toMatch(timestampFormatPattern)
   })
 
   it.each([

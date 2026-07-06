@@ -2349,14 +2349,25 @@ def test_check_invalid_internal_links(html, expected_count):
         ("<a>@title</a>", 1),
         # Whitespace around the sentinel still counts.
         ('<a href="/page">  @title  </a>', 1),
-        # Sentinel as ordinary (non-link) text must be ignored.
+        # Sentinel mentioned in code must be ignored.
         ("<p><code>@title</code> is the sentinel.</p>", 0),
+        ("<pre>@title-lower</pre>", 0),
         # Multiple leaked links.
         ('<a href="/a">@title</a><a href="/b">@title</a>', 2),
+        # Punctuation moved into the anchor around the sentinel still counts.
+        ('<a href="/page">@title-lower.</a>', 1),
+        ('<a href="/page">“@title.”</a>', 1),
+        # A leaked sentinel outside any anchor is also flagged.
+        ("<p>Check out @title-lower today.</p>", 1),
+        # Sentinel glued to letters/digits is prose, not a leak (mirrors the
+        # transformer, which leaves such anchors untouched).
+        ("<p>@titles and quote smallcaps</p>", 0),
+        ('<a href="/page">@title-lowered</a>', 0),
+        ("<p>mail user@title today</p>", 0),
     ],
 )
 def test_check_unrendered_title_sentinel(html, expected_count):
-    """The check flags only links whose visible text is the bare sentinel."""
+    """The check flags any non-code text still containing a sentinel."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unrendered_title_sentinel(soup)
     assert len(result) == expected_count

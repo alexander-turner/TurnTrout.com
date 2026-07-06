@@ -66,7 +66,9 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
       const slugs = aliases.map((alias) => path.posix.join(dir, alias) as FullSlug)
       const permalink = file.data.frontmatter?.permalink
       if (typeof permalink === "string") {
-        slugs.push(permalink as FullSlug)
+        // The canonical page is emitted at the permalink; the original slug is
+        // where the redirect file lands, so that is the output edge to declare.
+        slugs.push(file.data.slug as FullSlug)
       }
 
       for (let slug of slugs) {
@@ -99,7 +101,10 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
       const slugs: FullSlug[] = aliases.map((alias) => path.posix.join(dir, alias) as FullSlug)
       const permalink = file.data.frontmatter?.permalink
       if (typeof permalink === "string") {
-        // When permalink exists, current slug becomes an alias and permalink becomes canonical
+        // When permalink exists, current slug becomes an alias and permalink becomes
+        // canonical. Emitters that run after this one (e.g. ContentIndex) read
+        // file.data.slug directly rather than re-deriving it from frontmatter, so the
+        // mutation must happen here for them to index the page at its canonical URL.
         slugs.push(file.data.slug as FullSlug)
         file.data.slug = permalink as FullSlug
       }

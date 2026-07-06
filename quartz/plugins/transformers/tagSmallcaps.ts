@@ -362,6 +362,14 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
     combinedRegex,
     (match: RegExpMatchArray) => {
       const matchText = match[0]
+      // Read the named groups captured by combinedRegex directly. Re-running a
+      // sub-regex against the isolated matchText would re-anchor lookarounds
+      // like `(?<!^)` to the fragment's start, letting REGEX_ALL_CAPS_PHRASE
+      // skip a leading single-capital token (turning "Model X API" into
+      // "Model API"). The combined match already knows the exact boundaries.
+      // combinedRegex declares named capture groups, so every match carries a
+      // `groups` object; the fallback is unreachable defensive code.
+      const groups = match.groups ?? /* istanbul ignore next */ {}
 
       const allowed = isInAllowList(matchText)
       // Return unchanged - no formatting
@@ -370,10 +378,9 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
       }
 
       // Format the text based on match type
-      const allCapsPhraseMatch = REGEX_ALL_CAPS_PHRASE.exec(matchText)
       const shouldCapitalize = shouldCapitalizeMatch(match, node, index, ancestors)
-      if (allCapsPhraseMatch?.groups) {
-        const { phrase } = allCapsPhraseMatch.groups
+      if (groups.phrase !== undefined) {
+        const { phrase } = groups
         return {
           before: "",
           replacedMatch: processMatchedText(phrase, shouldCapitalize),
@@ -382,9 +389,8 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
         }
       }
 
-      const acronymMatch = REGEX_ACRONYM.exec(matchText)
-      if (acronymMatch?.groups) {
-        const { acronym, suffix } = acronymMatch.groups
+      if (groups.acronym !== undefined) {
+        const { acronym, suffix } = groups
         return {
           before: "",
           replacedMatch: processMatchedText(acronym, shouldCapitalize),
@@ -393,11 +399,22 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
         }
       }
 
-      const versionMatch = REGEX_VERSION_NUMBER.exec(matchText)
-      if (versionMatch) {
-        // Render the V at full cap height so it aligns with the lining digit.
-        // Small-caps would render the V ~70–80% of cap height, mismatching the
-        // lining figure. Original casing is preserved in data-original-text.
+      if (groups.number !== undefined) {
+        const { number, abbreviation } = groups
+        return {
+          before: "",
+          replacedMatch: number + abbreviation.toLowerCase(),
+          after: "",
+          originalText: number + abbreviation,
+        }
+      }
+
+      // Only the version-number branch of combinedRegex has no named groups.
+      // Render the V at full cap height so it aligns with the lining digit.
+      // Small-caps would render the V ~70–80% of cap height, mismatching the
+      // lining figure. Original casing is preserved in data-original-text.
+      /* istanbul ignore else -- combinedRegex always matches one of the branches above */
+      if (REGEX_VERSION_NUMBER.test(matchText)) {
         return {
           before: "",
           replacedMatch: h(
@@ -406,18 +423,6 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
             matchText.toUpperCase(),
           ),
           after: "",
-        }
-      }
-
-      const abbreviationMatch = REGEX_ABBREVIATION.exec(matchText)
-      /* istanbul ignore next -- falls through to unreachable throw when regex doesn't match */
-      if (abbreviationMatch?.groups) {
-        const { number, abbreviation } = abbreviationMatch.groups
-        return {
-          before: "",
-          replacedMatch: number + abbreviation.toLowerCase(),
-          after: "",
-          originalText: number + abbreviation,
         }
       }
 
