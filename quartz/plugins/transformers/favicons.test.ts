@@ -31,10 +31,10 @@ const faviconSpanNode = {
 
 const createExpectedFavicon = (
   imgPath: string,
-  extraMarginLeft?: boolean,
+  nudgeClass?: "close-text" | "closer-text",
 ): Record<string, unknown> => {
   const faviconElement = favicons.createFaviconElement(imgPath)
-  faviconElement.properties.class = `favicon${extraMarginLeft ? " close-text" : ""}`
+  faviconElement.properties.class = `favicon${nudgeClass ? ` ${nudgeClass}` : ""}`
   return faviconElement as unknown as Record<string, unknown>
 }
 
@@ -492,7 +492,14 @@ describe("insertFavicon", () => {
       const node = h("p", {}, [`Test${char}`])
       favicons.insertFavicon(imgPath, node)
       const span = node.children[1] as Element
-      expect(span.children[1]).toMatchObject(createExpectedFavicon(imgPath, true))
+      expect(span.children[1]).toMatchObject(createExpectedFavicon(imgPath, "close-text"))
+    })
+
+    it.each(favicons.charsToSpaceMost)("applies closer-text class for trailing %s", (char) => {
+      const node = h("p", {}, [`Test${char}`])
+      favicons.insertFavicon(imgPath, node)
+      const span = node.children[1] as Element
+      expect(span.children[1]).toMatchObject(createExpectedFavicon(imgPath, "closer-text"))
     })
 
     it("appends to existing favicon-span instead of creating a new one", () => {

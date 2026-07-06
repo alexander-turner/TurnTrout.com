@@ -236,10 +236,36 @@ export function insertFavicon(imgPath: string | null, node: Element): void {
   }
 }
 
-// Glyphs where top-right corner is occupied (ascenders with rightward
-// hooks/crossbars, tall punctuation) and which therefore visually crowd the
-// favicon without extra spacing.
-export const charsToSpace = ["!", "?", "|", "]", '"', "”", "’", "'", "f", "q", ":", ";", "/"]
+// Glyphs whose ink reaches (or overhangs) the right edge of their advance
+// width, crowding the favicon without a nudge. Membership is measured, not
+// guessed: scripts/notebooks/favicon_kerning_audit renders every real
+// (glyph, favicon) pair on the built site and reports each glyph's ink
+// clearance; glyphs land here when their median clearance falls more than
+// ~1px short of a round letter's.
+export const charsToSpace = [
+  "T",
+  "R",
+  "V",
+  "Y",
+  "q",
+  "w",
+  "v",
+  "y",
+  "x",
+  "N",
+  "F",
+  "J",
+  "K",
+  "E",
+  "U",
+  "(",
+  "[",
+  "\\",
+  "®",
+]
+// Glyphs that overhang so far right (per the same audit) that they need a
+// larger nudge than charsToSpace provides.
+export const charsToSpaceMost = ["f", "Q", "/"]
 // Distinct from the shared INLINE_PASSTHROUGH_TAGS (utils.ts) on purpose:
 // favicon placement descends into `<code>` and excludes `<a>` (links handled
 // separately), so its membership differs from the generic inline-wrapper set.
@@ -283,10 +309,12 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
 
   const lastChildText = lastChild as Text
   const lastChar = lastChildText.value.at(-1)
-  if (lastChar && charsToSpace.includes(lastChar)) {
+  if (lastChar && (charsToSpace.includes(lastChar) || charsToSpaceMost.includes(lastChar))) {
     // istanbul ignore next
     imgNodeToAppend.properties = imgNodeToAppend.properties || {}
-    imgNodeToAppend.properties.class = "favicon close-text"
+    imgNodeToAppend.properties.class = charsToSpaceMost.includes(lastChar)
+      ? "favicon closer-text"
+      : "favicon close-text"
   }
 
   return spliceAndWrapLastChars(lastChildText, node, imgNodeToAppend)

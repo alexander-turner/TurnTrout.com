@@ -28,20 +28,28 @@
   --vertical-adjustment: calc(var(--base-vertical-adjustment) + 0.5 * var(--size-decrease));
   --favicon-size: calc(#{$base-margin} * 1.25 - var(--size-decrease));
 
+  // Left-gap model: constant visual gap = base + glyph nudge − icon ink inset.
+  // `--glyph-nudge` compensates glyphs whose ink overhangs their advance width
+  // (set via .close-text / .closer-text, assigned per charsToSpace/-Most in
+  // quartz/plugins/transformers/favicons.ts). `--left-inset` is the fraction of
+  // the icon box left of its first ink column (measured by
+  // scripts/notebooks/favicon_kerning_audit, capped at ~2px); subtracting it
+  // puts every icon's visual left edge the same distance from the text.
+  --glyph-nudge: 0rem;
+  --left-inset: 0;
+
   display: inline;
   width: var(--favicon-size);
   height: var(--favicon-size);
-  margin: -20% auto -0.07em calc(0.125 * $base-margin);
+  margin: -20% auto -0.07em
+    calc(0.21 * #{$base-margin} + var(--glyph-nudge) - var(--left-inset) * var(--favicon-size));
   vertical-align: var(--vertical-adjustment);
 
   // Don't pollute copied text with favicon
   user-select: none;
 
   .subtitle & {
-    --subtitle-size: calc(var(--favicon-size) / #{$font-scale-factor});
-
-    width: var(--subtitle-size);
-    height: var(--subtitle-size);
+    --favicon-size: calc((#{$base-margin} * 1.25 - var(--size-decrease)) / #{$font-scale-factor});
   }
 
   // Make favicons align properly with headings
@@ -54,18 +62,17 @@
     vertical-align: 65%;
   }
 
-  // Glyphs whose top-right corner crowds the favicon (e.g. "f", "?", quotes)
-  // get a wider left margin so the favicon doesn't visually collide.
   &.close-text {
-    margin-left: calc(0.3125 * #{$base-margin});
+    --glyph-nudge: calc(0.125 * #{$base-margin});
   }
 
-  // A favicon appended after inline code sits inside the <code>, so the
-  // monospace cell tightens the gap to the word; widen the left margin to
-  // 0.1rem so it sits clear of the code. The right gap keeps a trailing
-  // ")" / "]" from cramping.
+  &.closer-text {
+    --glyph-nudge: calc(0.3 * #{$base-margin});
+  }
+
+  // A favicon appended after inline code sits inside the <code>; the right gap
+  // keeps a trailing ")" / "]" from cramping.
   code & {
-    margin-left: calc(0.2 * #{$base-margin});
     margin-right: calc(0.15 * #{$base-margin});
   }
 }
@@ -200,6 +207,52 @@ $domain-svg-colors: (
 @each $domain, $color in $domain-svg-colors {
   svg.favicon[data-domain="#{$domain}"] {
     --svg-color: #{$color};
+  }
+}
+
+// Per-domain ink insets as a fraction of the icon box, measured by
+// scripts/notebooks/favicon_kerning_audit (raw px inset / box px, capped at
+// 2px so round-left glyphs never land inside a deeply inset icon's box).
+$domain-left-insets: (
+  "fatebook_io": 0.059,
+  "alignmentforum_org": 0.067,
+  "anchor": 0.067,
+  "arstechnica_com": 0.067,
+  "cbsnews_com": 0.067,
+  "colab_research_google_com": 0.067,
+  "github_com": 0.067,
+  "linkedin_com": 0.067,
+  "npmjs_com": 0.067,
+  "overleaf_com": 0.067,
+  "readthesequences_com": 0.067,
+  "turntrout_com": 0.067,
+  "wordpress_com": 0.067,
+  "youtube_com": 0.067,
+  "drive_google_com": 0.075,
+  "openai_com": 0.075,
+  "discord_gg": 0.083,
+  "intelligence_org": 0.083,
+  "stackoverflow_com": 0.083,
+  "theguardian_com": 0.083,
+  "rss": 0.083,
+  "proton_me": 0.104,
+  "substack_com": 0.104,
+  "ai-alignment_com": 0.108,
+  "arxiv_org": 0.133,
+  "docs_google_com": 0.133,
+  "play_google_com": 0.133,
+  "sfchronicle_com": 0.133,
+  "matsprogram_org": 0.133,
+  "nytimes_com": 0.133,
+  "apple_com": 0.133,
+  "stackexchange_com": 0.133,
+  "forum_effectivealtruism_org": 0.133,
+  "gwern_net": 0.133,
+);
+
+@each $domain, $inset in $domain-left-insets {
+  svg.favicon[data-domain="#{$domain}"] {
+    --left-inset: #{$inset};
   }
 }
 

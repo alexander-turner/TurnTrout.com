@@ -161,6 +161,17 @@ PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/
   npx tsx quartz/bootstrap-cli.ts build --offline
 ```
 
+## Favicon kerning audit
+
+Favicon spacing (`quartz/styles/favicon.scss` `$domain-left-insets`,
+`quartz/plugins/transformers/favicons.ts` `charsToSpace`/`charsToSpaceMost`) is
+derived from pixel measurements, not eyeballing. When adding a favicon or
+tuning spacing, run the pipeline in `scripts/notebooks/favicon_kerning_audit/`
+(see its README): it mines every real (glyph, favicon) pair from the built
+site, renders them with production CSS, measures ink-to-ink clearance, and
+emits a worst-first gallery. Target band for the horizontal ink gap is roughly
+1.5–4px at a 24px root font size.
+
 ## Visual regression testing
 
 Uses Playwright’s native `toMatchSnapshot`. Baselines live in Cloudflare R2 (`r2:turntrout/visual-baselines/`); `tests/visual-baselines/` is gitignored. CI downloads baselines via `scripts/r2_baselines.py download`. On mismatch, CI uploads a merged HTML diff report as the `visual-diff-report` artifact and surfaces an “Approve baselines” link in the failed run’s step summary (and as a PR comment on PRs).
