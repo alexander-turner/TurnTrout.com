@@ -98,7 +98,7 @@ describe("bindTitlesInTree", () => {
 
   it.each([
     ["trailing period moved into the link", "@title-lower.", ">the live title.<"],
-    ["trailing comma and quote moved into the link", "@title.”", ">The Live Title.”<"],
+    ["trailing period and closing quote moved into the link", "@title.”", ">The Live Title.”<"],
     ["leading quote moved into the link", "“@title", ">“The Live Title<"],
   ])("binds when formatting moved punctuation into the anchor (%s)", (_desc, text, expected) => {
     const root = tree(boundAnchor({ "data-slug": "other-page", href: "/other-page" }, text))

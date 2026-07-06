@@ -388,11 +388,16 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
     return invalid_internal_links
 
 
+# Longest sentinel first so "@title-lower" is not matched as "@title". The
+# boundary guards mirror the transformer's matcher: a sentinel glued to
+# letters/digits ("@titles", "user@title") is ordinary prose, not a leak.
 _TITLE_SENTINEL_PATTERN = re.compile(
-    "|".join(
+    r"(?<!\w)(?:"
+    + "|".join(
         re.escape(sentinel)
         for sentinel in sorted(LINK_TITLE_SENTINELS, key=len, reverse=True)
     )
+    + r")(?![\w-])"
 )
 
 

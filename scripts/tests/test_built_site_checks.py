@@ -2331,6 +2331,11 @@ def test_check_invalid_internal_links(html, expected_count):
         ('<a href="/page">“@title.”</a>', 1),
         # A leaked sentinel outside any anchor is also flagged.
         ("<p>Check out @title-lower today.</p>", 1),
+        # Sentinel glued to letters/digits is prose, not a leak (mirrors the
+        # transformer, which leaves such anchors untouched).
+        ("<p>@titles and quote smallcaps</p>", 0),
+        ('<a href="/page">@title-lowered</a>', 0),
+        ("<p>mail user@title today</p>", 0),
     ],
 )
 def test_check_unrendered_title_sentinel(html, expected_count):
