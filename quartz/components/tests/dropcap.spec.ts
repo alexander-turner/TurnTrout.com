@@ -2,7 +2,13 @@ import type { Locator } from "@playwright/test"
 
 import { colorDropcapProbability, DROPCAP_COLORS } from "../constants"
 import { expect, test } from "./fixtures"
-import { gotoPage, triggerAndWaitForSPANav } from "./visual_utils"
+import {
+  gotoPage,
+  isDesktopViewport,
+  moveMouseToSafePosition,
+  search,
+  triggerAndWaitForSPANav,
+} from "./visual_utils"
 
 const DROPCAP_URL = "http://localhost:8080/test-page"
 // A solemn post that opts out of the random color via `no_dropcap_color`.
@@ -121,6 +127,59 @@ test.describe("Random dropcap color", () => {
     expect(await embellishmentColor(dropcapParagraph)).toBe(
       await midgroundFaintColor(dropcapParagraph),
     )
+  })
+
+  // Popovers and search previews mirror another page's article, so the host
+  // page's rolled --random-dropcap-color (set on the root element) would bleed
+  // in and tint their dropcaps. Both must stay monochrome regardless.
+  const forceRedRoll = async (page: Parameters<typeof gotoPage>[0]) => {
+    await page.addInitScript(mockRandom, [0.01, 0.0])
+    await gotoPage(page, DROPCAP_URL)
+    await expect(async () => {
+      const color = await page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--random-dropcap-color"),
+      )
+      expect(color).toBe("var(--dropcap-background-red)")
+    }).toPass({ timeout: 10_000 })
+  }
+
+  test("search preview dropcap stays monochrome even when a color rolls", async ({ page }) => {
+    test.skip(!isDesktopViewport(page), "Search preview dropcap is desktop-only")
+    await forceRedRoll(page)
+
+    await search(page, "test")
+    const previewArticle = page.locator("#preview-container > article.search-preview")
+    await expect(previewArticle).toHaveAttribute("data-use-dropcap", "true")
+
+    const dropcapParagraph = firstDropcapParagraph(previewArticle)
+    await expect(dropcapParagraph).toBeAttached({ timeout: 15_000 })
+    expect(await embellishmentColor(dropcapParagraph)).toBe(
+      await midgroundFaintColor(dropcapParagraph),
+    )
+  })
+
+  test("popover dropcap stays monochrome even when a color rolls", async ({ page }) => {
+    test.skip(!isDesktopViewport(page), "Popovers are desktop-only")
+    await forceRedRoll(page)
+    // Clear the post-nav flag that suppresses Safari's spurious mouseenter events.
+    await page.mouse.move(1, 1)
+
+    // Point a link at a dropcap-using page so the popover fetches its article.
+    const link = page.locator("a#first-link-test-page")
+    await expect(link).toBeVisible()
+    await link.evaluate((el) => (el as HTMLAnchorElement).setAttribute("href", "./test-page"))
+
+    await link.hover()
+    const popoverArticle = page.locator('.popover-inner article[data-use-dropcap="true"]').first()
+    await expect(popoverArticle).toBeVisible({ timeout: 10_000 })
+
+    const dropcapParagraph = firstDropcapParagraph(popoverArticle)
+    await expect(dropcapParagraph).toBeAttached({ timeout: 10_000 })
+    expect(await embellishmentColor(dropcapParagraph)).toBe(
+      await midgroundFaintColor(dropcapParagraph),
+    )
+
+    await moveMouseToSafePosition(page)
   })
 
   test("color re-rolls on SPA navigation", async ({ page }) => {
