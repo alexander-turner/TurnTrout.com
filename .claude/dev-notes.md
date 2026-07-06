@@ -222,6 +222,7 @@ After pushing to main:
 - Visual regression with Playwright snapshots (R2 baselines)
 - Lighthouse for layout shift
 - DeepSource static analysis. Use the `deepsource` CLI with `--commit`, `--pr`, or `--default-branch`. **Never** WebFetch DeepSource URLs—the web UI is auth-walled and returns no useful content.
+  - **In egress-restricted sandboxes** the DeepSource hosts (`cli.deepsource.com`, `api.deepsource.io`) are blocked by the environment's network policy, so the CLI can't install or reach the API—the SessionStart hook prints an actionable message when this happens. Findings still surface in CI: the `deepsource-report` workflow queries the GraphQL `run(runUid:)` occurrences (the canonical source; the CLI's `issues --pr` view under-reports) and posts them as a sticky PR comment. Read that comment instead of the CLI. To make the local CLI work, an env owner must allowlist those hosts in the Claude Code on the web network policy.
 
 ### How CI runs
 

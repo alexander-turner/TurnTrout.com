@@ -320,8 +320,22 @@ fi
 
 if ! command -v deepsource &>/dev/null; then
   echo "Installing DeepSource CLI..."
-  curl -fsSL https://cli.deepsource.com/install | BINDIR="$HOME/.local/bin" sh 2>/dev/null \
-    || warn "Failed to install DeepSource CLI"
+  # `curl | sh` reports sh's exit status, and sh exits 0 on the empty input a
+  # blocked curl produces — so check for the binary itself, then explain why
+  # it is missing. In egress-restricted sandboxes cli.deepsource.com is denied
+  # by policy (000/403 through the proxy); findings come from CI in that case.
+  curl -fsSL https://cli.deepsource.com/install | BINDIR="$HOME/.local/bin" sh
+  if ! command -v deepsource &>/dev/null; then
+    code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 https://cli.deepsource.com 2>/dev/null || true)
+    # A rejected CONNECT (egress policy) yields no HTTP response, so http_code is
+    # 000; a real policy page would be 403. Either way the host is unreachable.
+    case "$code" in
+      000* | 403 | "")
+        warn "DeepSource CLI host cli.deepsource.com is blocked by this environment's egress policy; the local 'deepsource' CLI is unavailable. Findings are reported by CI instead — the deepsource-report workflow posts them as a PR comment. To enable the local CLI, allow cli.deepsource.com and api.deepsource.io in the environment network policy." ;;
+      *)
+        warn "Failed to install DeepSource CLI (HTTP $code from cli.deepsource.com)." ;;
+    esac
+  fi
 fi
 
 if [ -n "${DEEPSOURCE_PAT:-}" ] && command -v deepsource &>/dev/null; then
