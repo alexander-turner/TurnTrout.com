@@ -1,3 +1,5 @@
+import type { Request } from "@playwright/test"
+
 import { expect, test } from "./fixtures"
 import { gotoPage } from "./visual_utils"
 
@@ -77,7 +79,29 @@ for (const slug of PAGES_TO_CHECK) {
       offenders.push(`[pageerror] ${err.message}`)
     })
 
+    // Sub-resource requests (fonts, images, analytics) can emit console
+    // errors after the `load` event, so every request that started must
+    // settle before `offenders` is read. Hand-rolled because the linter
+    // bans `waitForLoadState("networkidle")`; like networkidle, a quiet
+    // window is required so a momentary zero between dependent requests
+    // (a stylesheet finishing triggers a font request) doesn't count.
+    const inflightRequests = new Set<Request>()
+    page.on("request", (req) => inflightRequests.add(req))
+    page.on("requestfinished", (req) => inflightRequests.delete(req))
+    page.on("requestfailed", (req) => inflightRequests.delete(req))
+
+    const NETWORK_QUIET_WINDOW_MS = 500
     await gotoPage(page, `${BASE_URL}${slug}`)
+    await expect
+      .poll(
+        async () => {
+          if (inflightRequests.size > 0) return inflightRequests.size
+          await new Promise((resolve) => setTimeout(resolve, NETWORK_QUIET_WINDOW_MS))
+          return inflightRequests.size
+        },
+        { timeout: 15_000 },
+      )
+      .toBe(0)
 
     expect(
       offenders,

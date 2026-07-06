@@ -75,6 +75,13 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   if (!popoverElement) {
     throw new Error("Failed to create popover")
   }
+
+  // Hover popovers are dismissed by mouseleave on the link or the popover, so
+  // they must only attach while the pointer is still over the link: attaching
+  // after the pointer left would leave a popover with no dismissal path.
+  if (!shouldPin && !this.matches(":hover")) {
+    return
+  }
   // Used by the click toggle logic to detect "is this popover already open for this link?"
   popoverElement.dataset.linkHref = this.href
 

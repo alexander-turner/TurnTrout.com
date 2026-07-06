@@ -10,6 +10,7 @@ import {
 } from "../constants"
 import { expect, test } from "./fixtures"
 import {
+  captureStableScreenshot,
   gotoPage,
   isDesktopViewport,
   isElementChecked,
@@ -592,14 +593,22 @@ test.describe("Admonitions", () => {
       await admonition.click()
       await expect(admonition).not.toHaveClass(/.*is-collapsed.*/)
       await waitForTransitionEnd(admonition)
-      const openedScreenshot = await admonition.screenshot()
+      // The opened and after-content-click captures compare byte-for-byte,
+      // so both must be stable frames rather than raw one-shot captures.
+      const openedScreenshot = await captureStableScreenshot(
+        () => admonition.screenshot(),
+        `admonition-opened-${theme}`,
+      )
       expect(openedScreenshot).not.toEqual(initialScreenshot)
 
       // Click on content should NOT close it
       const content = admonition.locator(".admonition-content").first()
       await content.click()
       await expect(admonition).not.toHaveClass(/.*is-collapsed.*/)
-      const afterContentClickScreenshot = await admonition.screenshot()
+      const afterContentClickScreenshot = await captureStableScreenshot(
+        () => admonition.screenshot(),
+        `admonition-after-content-click-${theme}`,
+      )
       expect(afterContentClickScreenshot).toEqual(openedScreenshot)
 
       // Click on title should close it
@@ -1110,15 +1119,23 @@ test.describe("Video Speed Controller visibility", () => {
 test("First paragraph is the same before and after clicking on a heading", async ({ page }) => {
   const firstParagraph = page.locator("#center-content article > p").first()
 
-  // Capture the paragraph before navigating to a heading anchor.
-  const screenshotBefore = await firstParagraph.screenshot()
+  // The captures compare byte-for-byte, so the webfont swap must complete
+  // before the first one and each capture must be a stable frame.
+  await page.evaluate(() => document.fonts.ready)
+  const screenshotBefore = await captureStableScreenshot(
+    () => firstParagraph.screenshot(),
+    "first-paragraph-before-anchor-nav",
+  )
 
   // Navigate to a heading anchor (triggers SPA navigation).
   await gotoPage(page, `${page.url()}#header-3`)
   await firstParagraph.scrollIntoViewIfNeeded()
 
   // The paragraph should look identical after the navigation.
-  const screenshotAfter = await firstParagraph.screenshot()
+  const screenshotAfter = await captureStableScreenshot(
+    () => firstParagraph.screenshot(),
+    "first-paragraph-after-anchor-nav",
+  )
   expect(screenshotAfter).toEqual(screenshotBefore)
 })
 
@@ -1493,16 +1510,12 @@ test.describe("Popovers on different page types", () => {
       await expect(popoverLink).toBeVisible()
 
       await popoverLink.hover()
-      await page.waitForFunction(
-        () => {
-          const popover = document.querySelector(".popover.popover-visible")
-          return popover !== null
-        },
-        { timeout: 5000 },
-      )
 
+      // The popover appears only after the hover-intent delay
+      // (popoverRemovalDelayMs) plus a fetch and render of the target page,
+      // so give it a generous timeout for slow CI runners.
       const popover = page.locator(".popover.popover-visible")
-      await expect(popover).toBeVisible()
+      await expect(popover).toBeVisible({ timeout: 15_000 })
       const popoverInner = popover.locator(".popover-inner")
       await expect(popoverInner).toBeVisible()
 
