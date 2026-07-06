@@ -192,6 +192,20 @@ jobs:
             echo "::notice::No formatting changes needed"
             exit 0
           fi
+
+          # Prefer folding the fixes into the tip commit rather than adding a
+          # separate "style:" commit, so autofixes don't clutter history with
+          # an extra commit per push. --force-with-lease refuses if the
+          # remote moved since checkout, so a stale amend can't clobber a
+          # concurrent push; fall back to a normal commit (with the usual
+          # rebase-retry below) when that happens.
+          ORIG_HEAD=$(git rev-parse HEAD)
+          if git commit --amend --no-edit && git push --force-with-lease; then
+            echo "::notice::Amended tip commit with auto-fix formatting"
+            exit 0
+          fi
+          echo "::warning::Amend+force-push was rejected (remote moved); falling back to a separate commit."
+          git reset --soft "$ORIG_HEAD"
           git commit -m "style: auto-fix formatting [skip ci]"
           # Retry rebase+push to absorb concurrent pushes (manual edits, update-dates).
           # --autostash handles any unstaged residue from setup/formatter steps so
