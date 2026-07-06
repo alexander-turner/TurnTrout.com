@@ -7,8 +7,8 @@ Applies two modifications to EBGaramond08-Regular and EBGaramond12-Regular:
 2. GPOS kerning: adds a PairPos Format 1 lookup to the kern feature
    for f-variant glyphs x punctuation, open-punct x descender letters,
    close-punct x comma/semicolon (tightened to undo a wide left sidebearing),
-   and open-quote x open-bracket (loosened so the quote's ink clears the
-   bracket).
+   and quote x bracket (loosened so a curly quote's ink clears an adjacent
+   bracket, both open-quote+"[" and "]"+close-quote).
 
 Usage:
     python scripts/build_fonts.py           # Build and verify
@@ -114,15 +114,20 @@ _CLOSE_DESCENDER_KERN: Final[dict[str, int]] = {
 }
 _CAP_CLOSE_KERN: Final[int] = 80
 
-# An opening curly quote's ink hangs at the top and its tails swing toward a
-# following "[", so the pair reads cramped even though the advance gap is wide.
-# A small positive kern clears it. The 12 master's gap is already roomy, so the
-# added space there is imperceptible.
+# A curly quote's ink hangs at the top and its tail swings toward an adjacent
+# bracket, so an open quote before "[" and a close quote after "]" both read
+# cramped even though the advance gap is wide. A small symmetric kern clears
+# both. The 12 master's gaps are already roomy, so the space is imperceptible
+# there.
 _OPEN_QUOTE_GLYPHS: Final[tuple[str, ...]] = (
     "quotedblleft",
     "quoteleft",
 )
-_QUOTE_OPEN_BRACKET_KERN: Final[int] = 70
+_CLOSE_QUOTE_GLYPHS: Final[tuple[str, ...]] = (
+    "quotedblright",
+    "quoteright",
+)
+_QUOTE_BRACKET_KERN: Final[int] = 70
 
 # Comma-family punctuation carries a wide left sidebearing in the 08 master,
 # so it floats after a closing bracket (e.g. the ");" bigram). Pull it back so
@@ -306,7 +311,8 @@ _FIXED_KERN_SPECS: Final[
     (_OPEN_PUNCT_GLYPHS, _DESCENDER_GLYPHS, _OPEN_DESCENDER_KERN),
     (_DESCENDER_GLYPHS, _CLOSE_PUNCT_GLYPHS, _CLOSE_DESCENDER_KERN),
     (_CAP_OVERHANG_GLYPHS, _CLOSE_PUNCT_GLYPHS, _CAP_CLOSE_KERN),
-    (_OPEN_QUOTE_GLYPHS, ("bracketleft",), _QUOTE_OPEN_BRACKET_KERN),
+    (_OPEN_QUOTE_GLYPHS, ("bracketleft",), _QUOTE_BRACKET_KERN),
+    (("bracketright",), _CLOSE_QUOTE_GLYPHS, _QUOTE_BRACKET_KERN),
 )
 
 
