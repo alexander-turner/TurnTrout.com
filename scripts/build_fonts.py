@@ -5,8 +5,10 @@ Applies two modifications to EBGaramond08-Regular and EBGaramond12-Regular:
 1. Bracket/brace harmonization: affine-maps Y coordinates of bracketleft,
    bracketright, braceleft, braceright so their yMin/yMax match parenleft.
 2. GPOS kerning: adds a PairPos Format 1 lookup to the kern feature
-   for f-variant glyphs x punctuation, open-punct x descender letters, and
-   close-punct x comma/semicolon (tightened to undo a wide left sidebearing).
+   for f-variant glyphs x punctuation, open-punct x descender letters,
+   close-punct x comma/semicolon (tightened to undo a wide left sidebearing),
+   and open-quote x open-bracket (loosened so the quote's ink clears the
+   bracket).
 
 Usage:
     python scripts/build_fonts.py           # Build and verify
@@ -111,6 +113,16 @@ _CLOSE_DESCENDER_KERN: Final[dict[str, int]] = {
     "y": 40,
 }
 _CAP_CLOSE_KERN: Final[int] = 80
+
+# An opening curly quote's ink hangs at the top and its tails swing toward a
+# following "[", so the pair reads cramped even though the advance gap is wide.
+# A small positive kern clears it. The 12 master's gap is already roomy, so the
+# added space there is imperceptible.
+_OPEN_QUOTE_GLYPHS: Final[tuple[str, ...]] = (
+    "quotedblleft",
+    "quoteleft",
+)
+_QUOTE_OPEN_BRACKET_KERN: Final[int] = 40
 
 # Comma-family punctuation carries a wide left sidebearing in the 08 master,
 # so it floats after a closing bracket (e.g. the ");" bigram). Pull it back so
@@ -294,6 +306,7 @@ _FIXED_KERN_SPECS: Final[
     (_OPEN_PUNCT_GLYPHS, _DESCENDER_GLYPHS, _OPEN_DESCENDER_KERN),
     (_DESCENDER_GLYPHS, _CLOSE_PUNCT_GLYPHS, _CLOSE_DESCENDER_KERN),
     (_CAP_OVERHANG_GLYPHS, _CLOSE_PUNCT_GLYPHS, _CAP_CLOSE_KERN),
+    (_OPEN_QUOTE_GLYPHS, ("bracketleft",), _QUOTE_OPEN_BRACKET_KERN),
 )
 
 
