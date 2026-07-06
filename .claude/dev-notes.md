@@ -152,6 +152,13 @@ Wait for `http://localhost:8080`, then:
 npx playwright test --config config/playwright/playwright.config.ts -g "test name pattern"
 ```
 
+**Fast iteration loop.** A full site rebuild (~50s) + whole-spec run (~2min) per check is almost never needed:
+
+- Build once, keep the server running, and reuse both across runs (`PLAYWRIGHT_BASE_URL=http://localhost:8080` skips the config's webServer entirely; `pnpm serve public -l 8080` serves an existing build).
+- Rebuild the site **only** when bundled client code changes (`*.inline.ts`, transformers/emitters, styles). Edits to `*.spec.ts` or test helpers like `visual_utils.ts` run against the existing build — no rebuild.
+- Run the single affected test with `-g "exact test name"` and one `--project "Desktop Chrome"` instead of the whole file/matrix: ~8s instead of ~2min.
+- For flake-hunting a specific test, add `--repeat-each 5` to the targeted run rather than re-running the whole spec.
+
 ## Offline builds
 
 For sandboxed sessions / CI without network:
