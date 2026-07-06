@@ -51,12 +51,6 @@ _SVG_EXTENSIONS: Final[frozenset[str]] = frozenset(
 INVERTIBLE_EXTENSIONS: Final[frozenset[str]] = frozenset(
     script_utils.INVERT_RASTER_EXTENSIONS + script_utils.INVERT_SVG_EXTENSIONS
 ) - frozenset({".gif"})
-# Image modes without an alpha channel — save as RGB rather than RGBA so
-# formats like JPEG (no alpha support) don't error on write.
-_OPAQUE_MODES: Final[frozenset[str]] = frozenset(
-    {"1", "L", "P", "RGB", "I", "F", "CMYK", "YCbCr", "HSV"}
-)
-
 _DEFAULT_LABELS_PATH: Final[Path] = (
     Path(__file__).resolve().parent.parent
     / "quartz"
@@ -84,14 +78,19 @@ def invert_image_file(src: Path, dst: Path) -> None:
     without an alpha channel (JPEG) can save.
     """
     with Image.open(src) as im:
-        source_mode = im.mode
+        # A palette ("P") or RGB image can still carry transparency via a
+        # "transparency" info entry, which convert("RGBA") materializes into a
+        # real alpha channel. Keying opacity off the mode alone would flatten
+        # those transparent regions to a solid color, so consult the actual
+        # alpha data instead.
+        has_alpha = im.mode in ("RGBA", "LA", "PA") or "transparency" in im.info
         rgba = im.convert("RGBA")
     arr = np.array(rgba)
     rgb = arr[..., :3].astype(np.int16)
     delta = (255 - rgb.max(axis=-1) - rgb.min(axis=-1))[..., np.newaxis]
     arr[..., :3] = np.clip(rgb + delta, 0, 255).astype(np.uint8)
     output = Image.fromarray(arr, "RGBA")
-    if source_mode in _OPAQUE_MODES:
+    if not has_alpha:
         output = output.convert("RGB")
     output.save(dst, quality=compress.DEFAULT_IMAGE_QUALITY)
 
