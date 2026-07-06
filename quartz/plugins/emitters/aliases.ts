@@ -66,7 +66,9 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
       const slugs = aliases.map((alias) => path.posix.join(dir, alias) as FullSlug)
       const permalink = file.data.frontmatter?.permalink
       if (typeof permalink === "string") {
-        slugs.push(permalink as FullSlug)
+        // The canonical page is emitted at the permalink; the original slug is
+        // where the redirect file lands, so that is the output edge to declare.
+        slugs.push(file.data.slug as FullSlug)
       }
 
       for (let slug of slugs) {
@@ -98,10 +100,13 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
       const aliases = file.data.frontmatter?.aliases ?? []
       const slugs: FullSlug[] = aliases.map((alias) => path.posix.join(dir, alias) as FullSlug)
       const permalink = file.data.frontmatter?.permalink
+      // When a permalink exists it is the canonical URL and the original slug
+      // redirects to it. Derive the target locally rather than mutating
+      // file.data.slug, which is shared state other emitters read.
+      let canonicalSlug = (file.data.slug || "") as FullSlug
       if (typeof permalink === "string") {
-        // When permalink exists, current slug becomes an alias and permalink becomes canonical
-        slugs.push(file.data.slug as FullSlug)
-        file.data.slug = permalink as FullSlug
+        slugs.push(canonicalSlug)
+        canonicalSlug = permalink as FullSlug
       }
 
       for (let slug of slugs) {
@@ -109,14 +114,14 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
           slug = joinSegments(slug, "index") as FullSlug
         }
 
-        const redirUrl = resolveRelative(slug, file.data.slug || ("" as FullSlug))
+        const redirUrl = resolveRelative(slug, canonicalSlug)
 
         // Generate redirect HTML with full metadata for SEO
         const redirectMetadata = renderHead({
           cfg: ctx.cfg.configuration,
           fileData: file.data,
-          slug: file.data.slug as FullSlug,
-          redirect: { slug, to: file.data.slug as FullSlug },
+          slug: canonicalSlug,
+          redirect: { slug, to: canonicalSlug },
         })
 
         const fp = await write({

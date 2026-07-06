@@ -1220,6 +1220,12 @@ describe("replaceSCInNode", () => {
       expect(getHTML(parent)).toBe('They said <abbr class="small-caps">i love coding here</abbr>')
     })
 
+    it("keeps a leading single-capital token when small-capping an all-caps phrase", () => {
+      const { node, parent, ancestors } = createNodeWithParent("The Model X API is fast")
+      replaceSCInNode(node, ancestors)
+      expect(getHTML(parent)).toBe('The Model <abbr class="small-caps">x api</abbr> is fast')
+    })
+
     it("should handle acronyms with suffixes", () => {
       const { node, parent, ancestors } = createNodeWithParent("Multiple NASAs and FBIs")
       replaceSCInNode(node, ancestors)

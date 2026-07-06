@@ -180,7 +180,7 @@ describe("AliasRedirects", () => {
       "permalinks",
       "test-permalink.md",
       { permalink: "custom-permalink" },
-      ["public/custom-permalink.html"],
+      ["public/test-permalink.html"],
     ],
     [
       "trailing slashes",
@@ -207,7 +207,9 @@ describe("AliasRedirects", () => {
     const content = createMockContent(vfile)
 
     await testEmitFiles(plugin, mockCtx, content, ["old-alias.html", "test-permalink.html"])
-    expect(vfile.data.slug).toBe("custom-permalink")
+    // The emitter no longer mutates the shared slug; the page still lands at
+    // the permalink because ContentPage derives its output slug from frontmatter.
+    expect(vfile.data.slug).toBe("test-permalink")
   })
 
   it("should handle trailing slashes in emit function", async () => {
