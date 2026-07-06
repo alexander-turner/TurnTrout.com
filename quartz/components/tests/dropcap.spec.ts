@@ -151,7 +151,10 @@ test.describe("Random dropcap color", () => {
     const previewArticle = page.locator("#preview-container > article.search-preview")
     await expect(previewArticle).toHaveAttribute("data-use-dropcap", "true")
 
-    const dropcapParagraph = firstDropcapParagraph(previewArticle)
+    // The preview wraps the fetched page's own <article>, and that inner
+    // article is where the dropcap paragraph actually lives.
+    const innerArticle = previewArticle.locator('article[data-use-dropcap="true"]').first()
+    const dropcapParagraph = firstDropcapParagraph(innerArticle)
     await expect(dropcapParagraph).toBeAttached({ timeout: 15_000 })
     expect(await embellishmentColor(dropcapParagraph)).toBe(
       await midgroundFaintColor(dropcapParagraph),
