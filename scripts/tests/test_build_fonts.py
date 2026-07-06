@@ -288,7 +288,7 @@ class TestKerning:
         subtable = font["GPOS"].table.LookupList.Lookup[-1].SubTable[0]
 
         quote_set = set(_OPEN_QUOTE_GLYPHS)
-        seen = 0
+        kerned: set[str] = set()
         for i, src in enumerate(subtable.Coverage.glyphs):
             if src not in quote_set:
                 continue
@@ -297,8 +297,8 @@ class TestKerning:
                     assert pvr.Value1.XAdvance == _QUOTE_OPEN_BRACKET_KERN, (
                         f"{src}->bracketleft"
                     )
-                    seen += 1
-        assert seen == len(_OPEN_QUOTE_GLYPHS)
+                    kerned.add(src)
+        assert kerned == quote_set
 
     def _tighten_pairs(self, font: TTFont) -> dict[tuple[str, str], int]:
         subtable = font["GPOS"].table.LookupList.Lookup[-1].SubTable[0]
