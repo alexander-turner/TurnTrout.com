@@ -2,6 +2,7 @@
 results."""
 
 import base64
+import html
 import json
 from pathlib import Path
 
@@ -32,17 +33,15 @@ def main() -> None:
     for r in rows:
         png = (OUT / "cells" / f"{r['id']}.png").read_bytes()
         b64 = base64.b64encode(png).decode()
-        ctx = "<br>".join(
-            c.replace("&", "&amp;").replace("<", "&lt;") for c in r["contexts"]
-        )
+        ctx = "<br>".join(html.escape(c) for c in r["contexts"])
         cells_html.append(
             f"""
-<div class="cell {"close" if r["close"] else ""}">
+<div class="cell {"close" if r["nudge"] else ""}">
   <img src="data:image/png;base64,{b64}" style="height:60px" alt="">
   <div class="meta">
-    <b>“{r["char"]}” + {r["domain"]}</b><br>
+    <b>“{html.escape(r["char"])}” + {html.escape(r["domain"])}</b><br>
     min2d: {r["min2dCss"]:.2f}px · hgap: {r["hgapCss"]:.2f}px<br>
-    nudged: {"yes" if r["close"] else "no"} · {r["count"]} uses<br>
+    nudge: {html.escape(r["nudge"]) or "none"} · {r["count"]} uses<br>
     <span class="ctx">{ctx}</span>
   </div>
 </div>"""
@@ -65,13 +64,13 @@ def main() -> None:
     (OUT / "gallery.html").write_text(gallery)
 
     lines = [
-        "| min2d px | hgap px | char | domain | nudged | uses |",
+        "| min2d px | hgap px | char | domain | nudge | uses |",
         "|--|--|--|--|--|--|",
     ]
     for r in rows[:40]:
         lines.append(
             f"| {r['min2dCss']:.2f} | {r['hgapCss']:.2f} | `{r['char']}` | "
-            f"{r['domain']} | {'✓' if r['close'] else ''} | {r['count']} |"
+            f"{r['domain']} | {r['nudge']} | {r['count']} |"
         )
     (OUT / "summary.md").write_text("\n".join(lines))
 
@@ -79,7 +78,7 @@ def main() -> None:
     for r in rows[:10]:
         print(
             f"  {r['min2dCss']:5.2f}px hgap={r['hgapCss']:5.2f} '{r['char']}' + "
-            f"{r['domain']:<24} nudged={r['close']} n={r['count']}"
+            f"{r['domain']:<24} nudge={r['nudge'] or '-'} n={r['count']}"
         )
 
 

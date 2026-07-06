@@ -18,13 +18,39 @@ PUBLIC = REPO / "public"
 OUT = Path("/tmp/favicon_kerning_audit/bigrams.json")
 
 SKIP_PARENTS = frozenset(("script", "style", "noscript", "template"))
+BLOCK_TAGS = (
+    "p",
+    "li",
+    "dt",
+    "dd",
+    "td",
+    "th",
+    "caption",
+    "figcaption",
+    "blockquote",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "div",
+)
 
 
-def preceding_char(el: Tag) -> tuple[str, str]:
-    """Last non-space char before el in document order, plus context."""
+def preceding_char(el: Tag) -> tuple[str, str, bool]:
+    """Last non-space char before el within its block, plus context, plus
+    whether whitespace renders between that char and el (a spaced pair has a
+    visible gap already and is not a kerning bigram).
+
+    A line break separates the favicon from any earlier block's text, so the
+    walk stops at the nearest block ancestor instead of crossing into it.
+    """
     context = ""
+    spaced = False
+    block = el.find_parent(BLOCK_TAGS)
     node = el.previous
-    while node is not None:
+    while node is not None and node is not block:
         if isinstance(node, NavigableString):
             parent = node.parent.name if node.parent else ""
             if parent not in SKIP_PARENTS:
@@ -32,10 +58,11 @@ def preceding_char(el: Tag) -> tuple[str, str]:
                 stripped = text.rstrip()
                 if stripped:
                     context = (stripped + context)[-20:]
-                    return stripped[-1], context
+                    return stripped[-1], context, spaced or stripped != text
+                spaced = spaced or bool(text)
                 context = text + context
         node = node.previous
-    return "", context
+    return "", context, spaced
 
 
 def favicon_key(el: Tag) -> tuple[str, str]:
@@ -60,7 +87,12 @@ def main() -> None:
     )
     favicons: dict[str, dict] = {}
 
-    html_files = sorted(PUBLIC.rglob("*.html"))
+    html_files = sorted(
+        p
+        for p in PUBLIC.rglob("*.html")
+        # gen_harness.py writes its own favicon-laden pages into public/.
+        if "bigram-harness" not in p.parts
+    )
     print(f"scanning {len(html_files)} html files")
     for path in html_files:
         rel = str(path.relative_to(PUBLIC))
@@ -76,7 +108,9 @@ def main() -> None:
                 (c for c in ("closer-text", "close-text") if c in classes), ""
             )
             favicons.setdefault(domain, {"url": url, "tag": el.name})
-            char, ctx = preceding_char(el)
+            char, ctx, spaced = preceding_char(el)
+            if spaced:
+                continue
             entry = bigrams[(char, domain)]
             entry["count"] += 1
             entry["nudges"].append(nudge)

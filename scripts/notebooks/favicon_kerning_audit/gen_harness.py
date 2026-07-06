@@ -15,6 +15,7 @@ import json
 import os
 import re
 import shutil
+from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
@@ -42,8 +43,7 @@ def production_head() -> str:
     ref = (PUBLIC / "welcome.html").read_text(encoding="utf-8")
     head = re.search(r"<head[ >].*?</head>", ref, re.S).group(0)
     head = re.sub(r"<script\b.*?</script>", "", head, flags=re.S)
-    head = re.sub(r"<meta http-equiv=.refresh.[^>]*>", "", head)
-    return head
+    return re.sub(r"<meta http-equiv=.refresh.[^>]*>", "", head)
 
 
 def icon_url(fav: dict) -> str:
@@ -86,12 +86,12 @@ def main() -> None:
         if not char:
             continue  # nothing precedes the favicon; no bigram to measure
         # Reproduce what the site actually rendered (majority vote per pair).
-        majority = max(set(b["nudges"]), key=b["nudges"].count)
+        majority = Counter(b["nudges"]).most_common(1)[0][0]
         nudge = f" {majority}" if majority else ""
         esc = html.escape(char)
         cells.append(
             f'<p class="bigram-cell" id="cell-{i}" data-char="{esc}" '
-            f'data-domain="{html.escape(domain)}" data-close="{1 if nudge else 0}">'
+            f'data-domain="{html.escape(domain)}" data-nudge="{majority}">'
             f'<span class="bg-char">{esc}</span>{icon_markup(domain, data["favicons"][domain], nudge)}</p>'
         )
 

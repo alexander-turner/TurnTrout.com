@@ -26,7 +26,8 @@
   --size-decrease: 0rem; // Decrease in width and height of favicon size -- set this to a positive value to decrease the size
   --base-vertical-adjustment: calc(0.5 * #{$base-margin});
   --vertical-adjustment: calc(var(--base-vertical-adjustment) + 0.5 * var(--size-decrease));
-  --favicon-size: calc(#{$base-margin} * 1.25 - var(--size-decrease));
+  --favicon-base-size: calc(#{$base-margin} * 1.25 - var(--size-decrease));
+  --favicon-size: var(--favicon-base-size);
 
   // Left-gap model: constant visual gap = base + glyph nudge − icon ink inset.
   // `--glyph-nudge` compensates glyphs whose ink overhangs their advance width
@@ -49,7 +50,7 @@
   user-select: none;
 
   .subtitle & {
-    --favicon-size: calc((#{$base-margin} * 1.25 - var(--size-decrease)) / #{$font-scale-factor});
+    --favicon-size: calc(var(--favicon-base-size) / #{$font-scale-factor});
   }
 
   // Make favicons align properly with headings
@@ -213,6 +214,8 @@ $domain-svg-colors: (
 // Per-domain ink insets as a fraction of the icon box, measured by
 // scripts/notebooks/favicon_kerning_audit (raw px inset / box px, capped at
 // 2px so round-left glyphs never land inside a deeply inset icon's box).
+// Applies to svg.favicon only: <img> favicons carry no data-domain, so an
+// icon that falls back to .ico renders without its inset correction.
 $domain-left-insets: (
   "fatebook_io": 0.059,
   "alignmentforum_org": 0.067,

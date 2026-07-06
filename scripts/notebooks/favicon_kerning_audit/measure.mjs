@@ -6,7 +6,8 @@
  * Per bigram cell (text painted red, favicon blue):
  *  - hgapCss: horizontal gap between the rightmost text ink column and the
  *    leftmost icon ink column (CSS px; negative = horizontal overlap)
- *  - min2dCss: minimum Euclidean distance between text ink and icon ink
+ *  - min2dCss: minimum Euclidean distance between text ink and icon ink,
+ *    with horizontal overlap clamped to 0 so overlapping pairs sort worst
  * Per icon: left/right/top/bottom ink insets within its box.
  */
 import { chromium } from "@playwright/test"
@@ -48,6 +49,12 @@ function scanInk(data, info) {
   return { textMaxX, iconMinX, textRight, textCount, icon, W, H }
 }
 
+async function openHarness(page, url) {
+  await page.goto(url, { waitUntil: "networkidle" })
+  await page.evaluate(() => document.fonts.ready)
+  await page.waitForTimeout(300)
+}
+
 const browser = await chromium.launch()
 const page = await browser.newPage({
   viewport: { width: 1400, height: 1000 },
@@ -56,9 +63,7 @@ const page = await browser.newPage({
 
 // --- bigram cells ---
 mkdirSync(`${OUT}/cells`, { recursive: true })
-await page.goto(BASE, { waitUntil: "networkidle" })
-await page.evaluate(() => document.fonts.ready)
-await page.waitForTimeout(300)
+await openHarness(page, BASE)
 
 const cells = await page.$$(".bigram-cell")
 console.log(`${cells.length} cells`)
@@ -69,7 +74,7 @@ for (const cell of cells) {
     id: el.id,
     char: el.dataset.char,
     domain: el.dataset.domain,
-    close: el.dataset.close === "1",
+    nudge: el.dataset.nudge ?? "",
   }))
   const buf = await cell.screenshot()
   const { data, info } = await sharp(buf).raw().toBuffer({ resolveWithObject: true })
@@ -80,7 +85,8 @@ for (const cell of cells) {
     if (textMaxX[ty] < 0) continue
     for (let iy = 0; iy < H; iy++) {
       if (iconMinX[iy] < 0) continue
-      const dx = iconMinX[iy] - textMaxX[ty]
+      // Overlap on a row is zero clearance, not distance in the other direction.
+      const dx = Math.max(iconMinX[iy] - textMaxX[ty], 0)
       const dy = iy - ty
       const d = Math.sqrt(dx * dx + dy * dy)
       if (d < min2d) min2d = d
@@ -99,9 +105,7 @@ writeFileSync(`${OUT}/results.json`, JSON.stringify(results, null, 1))
 console.log(`wrote ${results.length} results`)
 
 // --- per-icon insets ---
-await page.goto(`${BASE}icons.html`, { waitUntil: "networkidle" })
-await page.evaluate(() => document.fonts.ready)
-await page.waitForTimeout(300)
+await openHarness(page, `${BASE}icons.html`)
 
 const insets = {}
 for (const probe of await page.$$(".icon-probe")) {
