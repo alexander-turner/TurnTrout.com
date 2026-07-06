@@ -642,14 +642,17 @@ img {
 
   &.inline-img {
     display: inline;
-    width: 0.9rem;
-    height: 0.9rem;
+
+    // Sized in `em` (like `img.emoji`) so the glyph scales with the surrounding
+    // font-size instead of staying a fixed root-relative size in headings/captions.
+    width: 0.9em;
+    height: 0.9em;
     object-fit: contain;
     vertical-align: middle;
     margin: 0;
-    margin-left: 0.05rem;
-    margin-right: 0.025rem;
-    margin-bottom: 0.1rem;
+    margin-left: 0.05em;
+    margin-right: 0.025em;
+    margin-bottom: 0.1em;
   }
 
   &.white-when-dark {
