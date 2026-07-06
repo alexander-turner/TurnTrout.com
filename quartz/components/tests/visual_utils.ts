@@ -243,10 +243,13 @@ function pollUntilImagePaints(
         }
         // Variant mismatch on a healthy image: fall through to the next poll
         // tick; the error-reload below is only for zero-dimension loads.
-      } else if (el.complete && now - lastReloadAt >= RELOAD_DEBOUNCE_MS) {
+      } else if (el.complete && variantMatchesTheme() && now - lastReloadAt >= RELOAD_DEBOUNCE_MS) {
         // Errored (complete with no dimensions): retry with a cache-busted
         // fetch. `set` overwrites the prior value, so retries don't
-        // accumulate query params.
+        // accumulate query params. Skip while a theme-swapped image is still
+        // mid-swap (variant not yet matching): `accurateInvert` owns that
+        // image's src, and a cache-bust built from the stale `currentSrc`
+        // would revert the in-flight variant swap and fight the swapper.
         lastReloadAt = now
         const url = new URL(el.currentSrc || el.src, document.baseURI)
         url.searchParams.set("__visualRetry", String(Math.trunc(now)))
