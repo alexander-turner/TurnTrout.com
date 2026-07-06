@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-06-28
+date_updated: 2026-07-04
 no_dropcap: false
 createBibtex: true
 ---
@@ -215,7 +215,7 @@ Eventually, the ultimate solution will be [progressive font enrichment](https://
 
 Among lossy compression formats, there are two kings: AVIF and WEBP. Under my tests, they achieved similar (amazing) compression ratios of about 10x over PNG. I chose AVIF. The upshot is that _images are nearly costless in terms of responsiveness_, which is liberating.
 
-To demonstrate this liberty, I perform a statistical analysis of the 941 AVIF files hosted on my CDN as of November 9, 2024.[^colab] I downloaded each AVIF file and used `magick` to convert it back to a PNG, measuring the size before and after.
+To demonstrate this liberty, I perform a statistical analysis of the 941 AVIF files hosted on my CDN as of November 9th, 2024.[^colab] I downloaded each AVIF file and used `magick` to convert it back to a PNG, measuring the size before and after.
 
 <img alt="Compression ratios: (PNG size) / (AVIF size). A left-skew histogram with tails reaching out to 75x." src="https://assets.turntrout.com/static/images/posts/compression_ratio.svg" class="compression-ratio-graph"/>
 
@@ -381,7 +381,7 @@ After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^
 
 If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
 
-[^characters]: 60 characters per line seemed awkwardly narrow to me, so I went for 75 per line.
+[^characters]: 60 characters per line seemed awkwardly narrow to me, so I went for 75 per line.  <!-- lint-ignore sentence-initial-numeral: author's prose, leading numeral kept as written -->
 
 ## Font selection
 
@@ -532,6 +532,8 @@ Typographically, capital letters are designed to be used one or two at a time - 
 Since smallcaps are rendered by lowercasing text and applying CSS `font-variant-caps`, I intercept clipboard events to ensure the copied text is correct. Further, many smallcaps uses (like "500km") actually render from lowercase text. I track `data-original-text` and ensure the clipboard copies the original text exactly.
 
 Furthermore, I apply smallcaps to letters which follow numbers (like "100GB") so that the letters have the same height as the numerals. For similar reasons as smallcaps, most of the site's numerals are [oldstyle](https://www.myfonts.com/pages/fontscom-learning-fontology-level-3-numbers-oldstyle-figures) ("100") rather than lining ("<span style="font-variant-numeric: lining-nums;">100</span>"). I uppercase the first letter of smallcaps if it begins a sentence or a paragraph element. Lastly, I set version numbers in uppercase (using lining numerals).
+
+Smallcaps belong in running prose, not in the name of a work. When text already reads as a title—a linked or italicized article title, a quote attribution citing a paper, a page title bound by `@title`—its acronyms stay as plain caps.
 
 > [!quote] NAFTA, [Wikipedia](https://en.wikipedia.org/wiki/North_American_Free_Trade_Agreement)
 > The **North American Free Trade Agreement** (**NAFTA** [/ˈnæftə/](https://en.wikipedia.org/wiki/Help:IPA/English "Help:IPA/English") [_NAF-tə_](https://en.wikipedia.org/wiki/Help:Pronunciation_respelling_key "Help:Pronunciation respelling key"); [Spanish](https://en.wikipedia.org/wiki/Spanish_language "Spanish language"): _Tratado de Libre Comercio de América del Norte_, **TLCAN**; [French](https://en.wikipedia.org/wiki/French_language "French language"): _Accord de libre-échange nord-américain_, **ALÉNA**) was an agreement signed by [Canada](https://en.wikipedia.org/wiki/Canada "Canada"), [Mexico](https://en.wikipedia.org/wiki/Mexico "Mexico"), and the  [United States](https://en.wikipedia.org/wiki/United_States "United States") that created a trilateral [trade bloc](https://en.wikipedia.org/wiki/Trade_bloc "Trade bloc") in [North America.](https://en.wikipedia.org/wiki/North_America "North America") The agreement came into force on January 1, 1994, and superseded the 1988 [Canada–United States Free Trade Agreement](https://en.wikipedia.org/wiki/Canada%E2%80%93United_States_Free_Trade_Agreement "Canada–United States Free Trade Agreement") between the United States and Canada. The NAFTA trade bloc formed one of the largest trade blocs in the world by [gross domestic product.](https://en.wikipedia.org/wiki/Gross_domestic_product "Gross domestic product")

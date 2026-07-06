@@ -6,8 +6,12 @@ import {
   addClass,
   type ElementMaybeWithParent,
   gatherTextBeforeIndex,
+  hammingDistance,
   hasAncestor,
   hasClass,
+  isEffectivelyTitleCased,
+  looksLikeWorkTitle,
+  removeClass,
   type ReplaceFnResult,
   replaceRegex,
   shouldCapitalizeNodeText,
@@ -446,6 +450,43 @@ describe("addClass", () => {
   })
 })
 
+describe("removeClass", () => {
+  const stringNode = (className?: string): Element => ({
+    type: "element",
+    tagName: "div",
+    properties: className === undefined ? {} : { className },
+    children: [],
+  })
+
+  it.each<[string, Element, string, string | string[] | undefined]>([
+    ["removes from array", h("div", { className: ["a", "b"] }), "a", ["b"]],
+    ["removes from string, preserving shape", stringNode("a b"), "a", "b"],
+    ["drops className when array empties", h("div", { className: ["a"] }), "a", undefined],
+    ["drops className when string empties", stringNode("a"), "a", undefined],
+    ["no-op when absent from array", h("div", { className: ["a"] }), "b", ["a"]],
+    ["no-op when className unset", h("div"), "a", undefined],
+  ])("%s", (_d, node, toRemove, expected) => {
+    removeClass(node, toRemove)
+    expect(node.properties.className).toEqual(expected)
+  })
+
+  // `hasClass` honors the `class` property too, so `removeClass` must strip it.
+  const classNode = (klass: string): Element => ({
+    type: "element",
+    tagName: "div",
+    properties: { class: klass },
+    children: [],
+  })
+
+  it.each<[string, Element, string, string | undefined]>([
+    ["removes from the class property", classNode("a b"), "a", "b"],
+    ["drops the class property when it empties", classNode("a"), "a", undefined],
+  ])("%s", (_d, node, toRemove, expected) => {
+    removeClass(node, toRemove)
+    expect(node.properties.class).toEqual(expected)
+  })
+})
+
 describe("hasAncestor", () => {
   const createNode = (
     tagName: string,
@@ -543,5 +584,65 @@ describe("hasAncestor", () => {
     expect(hasAncestor(node, predicate, ancestors)).toBe(true)
     // once for the node itself, and once for the parent (stops at first match)
     expect(callCount).toBe(2)
+  })
+})
+
+describe("hammingDistance", () => {
+  it.each([
+    { a: "", b: "", expected: 0 },
+    { a: "abc", b: "abc", expected: 0 },
+    { a: "abc", b: "abC", expected: 1 },
+    { a: "abc", b: "ABC", expected: 3 },
+    // Length mismatch: trailing characters count as mismatches.
+    { a: "abc", b: "abcd", expected: 1 },
+    { a: "abcd", b: "ab", expected: 2 },
+  ])("counts $expected mismatched positions between $a and $b", ({ a, b, expected }) => {
+    expect(hammingDistance(a, b)).toBe(expected)
+  })
+})
+
+describe("looksLikeWorkTitle", () => {
+  it.each([
+    "AGI Ruin: A List of Lethalities",
+    "Seeking Power is Often Convergently Instrumental in MDPs",
+    "Corrigibility Can Be VNM-Incoherent",
+    "Steered GPT-2",
+  ])("treats %j as a work title", (text) => {
+    expect(looksLikeWorkTitle(text)).toBe(true)
+  })
+
+  it.each([
+    // Single words never qualify, even acronyms.
+    "LLM",
+    "really",
+    // All-caps phrases stay small-capped.
+    "CC BY-SA",
+    // Short phrases with one mis-cased word are prose.
+    "The NASA program",
+    "FBI agent",
+    // Sentence-cased prose.
+    "How the FBI does its work",
+  ])("treats %j as prose", (text) => {
+    expect(looksLikeWorkTitle(text)).toBe(false)
+  })
+})
+
+describe("isEffectivelyTitleCased", () => {
+  it.each([
+    // Already title-cased work titles (0–1 flips) → true.
+    "Seeking Power Is Often Robustly Instrumental in MDPs",
+    "The Basic Reasons I Expect AGI Ruin",
+    "ACLU",
+    "GPT-3",
+  ])("treats already title-cased %j as a title", (text) => {
+    expect(isEffectivelyTitleCased(text)).toBe(true)
+  })
+
+  it.each([
+    // Prose/sentence fragments (≥2 flips) → false.
+    "Does Proton VPN keep logs?",
+    "Top Scoring exponential DCT vector",
+  ])("treats prose %j as not a title", (text) => {
+    expect(isEffectivelyTitleCased(text)).toBe(false)
   })
 })

@@ -42,17 +42,6 @@ fi
 # shebang are loaded by another hook and don't need +x.
 echo "Checking hook script permissions and syntax..."
 for f in .hooks/* .claude/hooks/*; do
-<<<<<<< local
-  [ -f "$f" ] || continue
-  if [ ! -x "$f" ]; then
-    error "$f is not executable"
-  fi
-  # Only syntax-check scripts with a bash/sh shebang (skip node, python, etc.)
-  if head -n 1 "$f" | grep -qE '^#!.*(bash|sh)'; then
-    if ! bash_err=$(bash -n "$f" 2>&1); then
-      error "$f has a bash syntax error: $bash_err"
-    fi
-=======
   [[ -f "$f" ]] || continue
   has_shebang=0
   # read returns 1 at EOF (empty file = no shebang, fine); >1 is a real error.
@@ -62,7 +51,6 @@ for f in .hooks/* .claude/hooks/*; do
   case "$first_line" in '#!'*) has_shebang=1 ;; esac
   if [[ "$has_shebang" = "1" ]] && [[ ! -x "$f" ]]; then
     error "$f has a shebang but is not executable"
->>>>>>> template
   fi
   case "$f" in
   *.py)

@@ -304,17 +304,19 @@ def _build_metrics(raw: dict) -> dict:
     return metrics
 
 
-def normalize(raw: dict, tweet_id: str) -> dict:
-    """
-    Convert a raw syndication payload into our snapshot schema.
+def _build_author(user: dict) -> dict:
+    """Normalize a payload's ``user`` object into our author schema."""
+    return {
+        "name": user["name"],
+        "handle": user["screen_name"],
+        "verified": bool(user.get("verified") or user.get("is_blue_verified")),
+        "avatarSrc": _avatar_url(user["profile_image_url_https"]),
+    }
 
-    Media URLs still
-    point at twimg here; ``localize_media`` rewrites them to the CDN.
-    """
-    user = raw["user"]
-    handle = user["screen_name"]
-    entities = raw.get("entities", {}) or {}
-    urls = [
+
+def _build_urls(entities: dict) -> list[dict]:
+    """Normalize a payload's ``t.co`` link entities."""
+    return [
         {
             "url": entity["url"],
             "display": entity.get("display_url", entity["url"]),
@@ -323,24 +325,60 @@ def normalize(raw: dict, tweet_id: str) -> dict:
         for entity in entities.get("urls", []) or []
     ]
 
+
+def _normalize_quoted(quoted: dict) -> dict | None:
+    """
+    Normalize a payload's ``quoted_tweet`` into the nested quote schema.
+
+    Returns ``None`` for a malformed quote (no id, or a user object missing the
+    fields the card needs), so a broken quote drops to a plain card instead of
+    crashing the whole snapshot run.
+    """
+    user = quoted.get("user") or {}
+    quoted_id = quoted.get("id_str")
+    if not quoted_id or not all(
+        user.get(key)
+        for key in ("screen_name", "name", "profile_image_url_https")
+    ):
+        return None
+    entities = quoted.get("entities", {}) or {}
     return {
+        "id": quoted_id,
+        "url": f"https://xcancel.com/{user['screen_name']}/status/{quoted_id}",
+        "author": _build_author(user),
+        "createdAt": quoted.get("created_at", ""),
+        "text": _display_text(quoted, entities),
+        "urls": _build_urls(entities),
+        "media": _build_media(quoted),
+    }
+
+
+def normalize(raw: dict, tweet_id: str) -> dict:
+    """
+    Convert a raw syndication payload into our snapshot schema.
+
+    Media URLs still
+    point at twimg here; ``localize_media`` rewrites them to the CDN.
+    """
+    handle = raw["user"]["screen_name"]
+    entities = raw.get("entities", {}) or {}
+
+    snapshot = {
         "id": tweet_id,
         "url": f"https://xcancel.com/{handle}/status/{tweet_id}",
-        "author": {
-            "name": user["name"],
-            "handle": handle,
-            "verified": bool(
-                user.get("verified") or user.get("is_blue_verified")
-            ),
-            "avatarSrc": _avatar_url(user["profile_image_url_https"]),
-        },
+        "author": _build_author(raw["user"]),
         "createdAt": raw.get("created_at", ""),
         "text": _display_text(raw, entities),
-        "urls": urls,
+        "urls": _build_urls(entities),
         "media": _build_media(raw),
         "metrics": _build_metrics(raw),
         "snapshotAt": _now().isoformat(),
     }
+    raw_quoted = raw.get("quoted_tweet")
+    quoted = _normalize_quoted(raw_quoted) if raw_quoted else None
+    if quoted:
+        snapshot["quoted"] = quoted
+    return snapshot
 
 
 def download_file(url: str, target: Path, session: requests.Session) -> None:
@@ -384,8 +422,9 @@ def localize_media(
     ``static/tweets/<id>/``.
 
     Each asset is stored under a role-and-index name (``avatar``, ``media-0``,
-    ``poster-0`` …) so two assets that happen to share a basename can't clobber
-    each other. Mutates ``snapshot`` in place.
+    ``poster-0`` …; a quoted tweet's assets get a ``quoted-`` prefix) so two
+    assets that happen to share a basename can't clobber each other. Mutates
+    ``snapshot`` in place.
     """
     tweet_id = snapshot["id"]
     staging_dir.mkdir(parents=True, exist_ok=True)
@@ -397,14 +436,21 @@ def localize_media(
         download_file(url, staging_dir / filename, session)
         return f"{cdn_prefix}/{filename}"
 
-    snapshot["author"]["avatarSrc"] = localize(
-        snapshot["author"]["avatarSrc"], "avatar"
-    )
+    def localize_assets(tweet: dict, prefix: str) -> None:
+        tweet["author"]["avatarSrc"] = localize(
+            tweet["author"]["avatarSrc"], f"{prefix}avatar"
+        )
+        for index, item in enumerate(tweet["media"]):
+            item["src"] = localize(item["src"], f"{prefix}media-{index}")
+            if item.get("poster"):
+                item["poster"] = localize(
+                    item["poster"], f"{prefix}poster-{index}"
+                )
 
-    for index, item in enumerate(snapshot["media"]):
-        item["src"] = localize(item["src"], f"media-{index}")
-        if item.get("poster"):
-            item["poster"] = localize(item["poster"], f"poster-{index}")
+    localize_assets(snapshot, "")
+    quoted = snapshot.get("quoted")
+    if quoted:
+        localize_assets(quoted, "quoted-")
 
 
 def _snapshot_json_remote(tweet_id: str) -> str:

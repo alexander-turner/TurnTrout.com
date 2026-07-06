@@ -1218,6 +1218,27 @@ Test content
     assert sequence_data == expected_mapping
 
 
+def test_build_sequence_data_with_scalar_alias(create_test_file: Callable):
+    """A scalar (non-list) alias must be treated as a single key, not iterated
+    character-by-character."""
+    content = """---
+title: Test Post
+permalink: /test
+aliases: /single-alias
+---
+Test content
+"""
+    file_path = create_test_file("test.md", content)
+
+    sequence_data = source_file_checks.build_sequence_data([file_path])
+
+    assert "/single-alias" in sequence_data
+    assert sequence_data["/single-alias"] == {"title": "Test Post"}
+    # A scalar string must not be exploded into single-character keys.
+    assert "/" not in sequence_data
+    assert "s" not in sequence_data
+
+
 def test_build_sequence_data_multiple_files(
     create_test_file: Callable,
 ):
@@ -2718,16 +2739,58 @@ def test_void_elements_are_allowed_self_closing(tag: str):
         # Plain prose without a leading numeral
         ("Just some ordinary text.", []),
         # Non-prose contexts are excluded
-        ("> 5 reasons it works", []),
         ("# 5 reasons it works", []),
         ("| 5 | column |", []),
         ("![5 boxes in a diagram](/img.png)", []),
-        (": 5 is the definition", []),
-        ("[^note]: 5 things to note", []),
-        ("- 5 things", []),
-        ("* 5 things", []),
-        ("1. 256-shot prompting", []),
-        ("1) 256-shot prompting", []),
+        # Blockquotes are verbatim quotations, excluded at any nesting and even
+        # when they wrap a list
+        ("> 5 reasons it works", []),
+        (">> 5 reasons nested", []),
+        ("> - 5 things in a quoted list", []),
+        # Rendered authorial prose is checked once its leading marker is peeled
+        (
+            ": 2024 Nobel laureate in Physics and a Turing Award winner.",
+            [
+                "Sentence-initial numeral at line 1: 2024 Nobel laureate in "
+                "Physics and a Turing Award winner."
+            ],
+        ),
+        (
+            ": 5 is the definition",
+            ["Sentence-initial numeral at line 1: 5 is the definition"],
+        ),
+        (
+            "[^note]: 5 things to note",
+            ["Sentence-initial numeral at line 1: 5 things to note"],
+        ),
+        ("- 5 things", ["Sentence-initial numeral at line 1: 5 things"]),
+        ("* 5 things", ["Sentence-initial numeral at line 1: 5 things"]),
+        (
+            "1. 256-shot prompting",
+            ["Sentence-initial numeral at line 1: 256-shot prompting"],
+        ),
+        (
+            "1) 256-shot prompting",
+            ["Sentence-initial numeral at line 1: 256-shot prompting"],
+        ),
+        # A Markdown enumerator is a number kept as written: the ordinal itself
+        # is stripped, so list content opening with a word is fine, including a
+        # numbered list nested inside a definition line
+        ("1. Some reasons here", []),
+        (": 1.  The error tolerance is too high", []),
+        # A bare enumerator (the item's text wraps to the next line) is the
+        # marker alone, not sentence-initial prose
+        ("1.", []),
+        ("12.", []),
+        ("256)", []),
+        ("1.\n   wrapped item text", []),
+        # A footnote definition whose body continues on the next line
+        ("[^note]:", []),
+        # A numeral rendered from a KaTeX equation is acceptable, even when it
+        # opens a definition line
+        (": $2024$ was the year", []),
+        # Image alt text is excluded even when an image opens a definition line
+        (": ![1. boxes, 2. arrows](/img.png)", []),
         # Blank lines are skipped, body numeral still flagged on its line
         (
             "   \n5 cats walked away.",
@@ -2779,4 +2842,69 @@ def test_void_elements_are_allowed_self_closing(tag: str):
 def test_check_sentence_initial_numerals(text: str, expected_errors: list[str]):
     """Test the check_sentence_initial_numerals function."""
     errors = source_file_checks.check_sentence_initial_numerals(text)
+    assert errors == expected_errors
+
+
+@pytest.mark.parametrize(
+    "text, expected_errors",
+    [
+        # Bare cardinal day is flagged
+        (
+            "It happened on January 26, 2026.",
+            ["Date missing ordinal suffix at line 1: January 26, 2026"],
+        ),
+        # Already-ordinal day is fine
+        ("It happened on January 26th, 2026.", []),
+        ("The deal closed on May 1st, 2020.", []),
+        ("She was born on June 2nd, 1990.", []),
+        ("He arrived on March 3rd, 2001.", []),
+        # Abbreviated month, with or without a trailing period
+        (
+            "As of Feb. 19, 2025, the plan changed.",
+            ["Date missing ordinal suffix at line 1: Feb. 19, 2025"],
+        ),
+        ("As of Feb. 19th, 2025, the plan changed.", []),
+        (
+            "As of Sept 3, 2019, it was over.",
+            ["Date missing ordinal suffix at line 1: Sept 3, 2019"],
+        ),
+        # No day-of-month present, just month + year: not a flagged pattern
+        ("Written in October 2024.", []),
+        ("Spring 2018 through June 2022.", []),
+        # Month + day with no year is not flagged (no comma+year to anchor it)
+        ("Meet me May 5 sometime.", []),
+        # Blockquotes are verbatim quotations
+        ("> Edited on August 29, 2022", []),
+        (">> Edited on August 29, 2022", []),
+        # Headings, tables, and images are non-prose contexts
+        ("# November 9, 2024", []),
+        ("| November 9, 2024 | column |", []),
+        ("![Taken November 9, 2024](/img.png)", []),
+        # Raw HTML lines (e.g. component demo fixtures) are excluded
+        ('<p class="subtitle">November 4, 2008</p>', []),
+        # Code and math are stripped before checking
+        ("`January 26, 2026`", []),
+        ("$January 26, 2026$", []),
+        # Two dates on one line both get flagged
+        (
+            "From January 1, 2020 to January 2, 2020.",
+            [
+                "Date missing ordinal suffix at line 1: January 1, 2020",
+                "Date missing ordinal suffix at line 1: January 2, 2020",
+            ],
+        ),
+        # Line number tracking across multiple lines
+        (
+            "Just prose.\nIt happened on January 26, 2026.",
+            ["Date missing ordinal suffix at line 2: January 26, 2026"],
+        ),
+        # Empty input
+        ("", []),
+    ],
+)
+def test_check_dates_missing_ordinal_suffix(
+    text: str, expected_errors: list[str]
+):
+    """Test the check_dates_missing_ordinal_suffix function."""
+    errors = source_file_checks.check_dates_missing_ordinal_suffix(text)
     assert errors == expected_errors

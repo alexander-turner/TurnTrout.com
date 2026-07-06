@@ -1,24 +1,24 @@
-# PR Templates and Formatting Reference
+# PR Templates and Formatting Reference
 
-## Check for Repository PR Guidance
+## Check for Repository PR Guidance
 
-Before writing any PR description, check the repository for guidance on how to structure PRs:
+Before writing any PR description, check the repository for guidance on how to structure PRs:
 
-1. Look for `CONTRIBUTING.md`, `CONTRIBUTING`, or `.github/CONTRIBUTING.md`
-2. Look for `.github/PULL_REQUEST_TEMPLATE.md` or `.github/PULL_REQUEST_TEMPLATE/`
-3. Look for `docs/CONTRIBUTING.md` or `docs/contributing.md`
+1. Look for `CONTRIBUTING.md`, `CONTRIBUTING`, or `.github/CONTRIBUTING.md`
+2. Look for `.github/PULL_REQUEST_TEMPLATE.md` or `.github/PULL_REQUEST_TEMPLATE/`
+3. Look for `docs/CONTRIBUTING.md` or `docs/contributing.md`
 
-If any of these exist, **read them** and adapt your PR description to follow the repository’s conventions. Repository-specific guidance takes precedence over the default template below. Merge both: use the repo’s structure/sections but still include the Lessons Learned section from this template if applicable.
+If any of these exist, **read them** and adapt your PR description to follow the repository’s conventions. Repository-specific guidance takes precedence over the default template below. Merge both: use the repo’s structure/sections but still include the Lessons Learned section from this template if applicable.
 
-## PR Creation Command
+## PR Creation Command
 
-First, check if a PR already exists for the current branch:
+First, check if a PR already exists for the current branch:
 
 ```bash
 EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number' 2>/dev/null)
 ```
 
-If `EXISTING_PR` is non-empty, update the existing PR with `gh pr edit` instead of creating a new one.
+If `EXISTING_PR` is non-empty, update the existing PR with `gh pr edit` instead of creating a new one.
 
 ```bash
 gh pr create --base "$CLAUDE_CODE_BASE_REF" --title "<type>: <description>" --body "$(cat <<'EOF'
@@ -42,26 +42,26 @@ EOF
 )"
 ```
 
-## Title Format
+## Title Format
 
-Use imperative mood with a Conventional Commits type prefix:
+Use imperative mood with a Conventional Commits type prefix:
 
-- `fix:` Bug fixes
-- `feat:` New features
+- `fix:` Bug fixes
+- `feat:` New features
 - `refactor:` Code refactoring
 - `docs:` Documentation
-- `test:` Test changes
+- `test:` Test changes
 - `chore:` Maintenance
 
-## Body Guidelines
+## Body Guidelines
 
-- Focus the summary on the “why,” not the “what”
-- List concrete changes
-- Note any breaking changes
-- Include a “Lessons Learned” section if you discovered generalizable insights that could improve the template (this triggers the phone-home workflow). Each lesson must specify **what** to change, **where**, and **why**—vague observations get ignored. Delete the section entirely if there are no lessons.
-- **Skip the Lessons Learned section entirely when the PR targets the `claude-automation-template` repo itself.** Phone-home propagates lessons _from_ downstream repos _into_ the template; a change made directly in the template is already there, so the section propagates nothing and is just noise.
+- Focus the summary on the “why,” not the “what”
+- List concrete changes
+- Note any breaking changes
+- Include a “Lessons Learned” section if you discovered generalizable insights that could improve the template (this triggers the phone-home workflow). Each lesson must specify **what** to change, **where**, and **why**—vague observations get ignored. Delete the section entirely if there are no lessons.
+- **Skip the Lessons Learned section entirely when the PR targets the `claude-automation-template` repo itself.** Phone-home propagates lessons _from_ downstream repos _into_ the template; a change made directly in the template is already there, so the section propagates nothing and is just noise.
 
-## Updating PR Description After Additional Commits
+## Updating PR Description After Additional Commits
 
 ```bash
 gh pr edit --body "$(cat <<'EOF'
@@ -84,7 +84,7 @@ EOF
 )"
 ```
 
-## Validation Commands
+## Validation Commands
 
 **TypeScript/JavaScript:**
 
@@ -97,14 +97,10 @@ pnpm lint         # Run linter
 **Python:**
 
 ```bash
-<<<<<<< local
-pyright
-=======
 pyright <changed_files>
->>>>>>> template
 pylint <changed_files>
 ruff check <changed_files>
 pytest <test_files>
 ```
 
-Customize these commands based on your project’s tooling.
+Customize these commands based on your project’s tooling.

@@ -15,6 +15,7 @@ export const {
   appleTouchIconUrl,
   faviconBasePath,
   minFaviconCount,
+  maxAtomicInlineCodeLength,
   googleSubdomainAllowlist,
   faviconCountAllowlist,
   faviconSubstringBlocklist,
@@ -72,6 +73,8 @@ export const {
   leftDoubleQuote: LEFT_DOUBLE_QUOTE,
   rightDoubleQuote: RIGHT_DOUBLE_QUOTE,
   wordJoiner: WORD_JOINER,
+  rightGuillemet: RIGHT_GUILLEMET,
+  ellipsis: ELLIPSIS,
 } = constantsJson.unicodeTypography
 
 /**

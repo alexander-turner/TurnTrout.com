@@ -4,6 +4,7 @@ import { h, s } from "hastscript"
 
 import { EXTERNAL_LINK_REL } from "../../components/constants"
 import { getOrdinalSuffix } from "../../components/Date"
+import { processTree } from "./twemoji"
 
 /** A single photo or video attached to a tweet. URLs already point at the CDN. */
 export interface TweetMedia {
@@ -29,20 +30,35 @@ export interface TweetMetrics {
   likes?: number
 }
 
-/** Normalized snapshot of one tweet, as written by `scripts/tweet_snapshot.py`. */
-export interface TweetSnapshot {
+/** The post author, as shown in the card header. */
+export interface TweetAuthor {
+  name: string
+  handle: string
+  verified: boolean
+  avatarSrc: string
+}
+
+/** The tweet a quote-tweet embeds: a nested card with no metrics row of its own. */
+export interface QuotedTweet {
   id: string
   url: string
-  author: {
-    name: string
-    handle: string
-    verified: boolean
-    avatarSrc: string
-  }
+  author: TweetAuthor
   createdAt: string
   text: string
   urls: readonly TweetUrl[]
   media: readonly TweetMedia[]
+}
+
+/** Normalized snapshot of one tweet, as written by `scripts/tweet_snapshot.py`. */
+export interface TweetSnapshot {
+  id: string
+  url: string
+  author: TweetAuthor
+  createdAt: string
+  text: string
+  urls: readonly TweetUrl[]
+  media: readonly TweetMedia[]
+  quoted?: QuotedTweet
   metrics?: TweetMetrics
   snapshotAt: string
 }
@@ -57,10 +73,13 @@ const VERIFIED_PATH =
   "M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.68.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.26 2.52-.81 3.91c-1.31.66-2.19 1.91-2.19 3.34s.88 2.67 2.19 3.34c-.45 1.39-.2 2.9.81 3.91s2.52 1.26 3.91.81c.66 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"
 const RETWEET_PATH =
   "M4.75 3.79l4.603 4.3-1.706 1.82L6 8.38v7.37c0 .97.784 1.75 1.75 1.75H13V20H7.75c-2.347 0-4.25-1.9-4.25-4.25V8.38L1.853 9.91.147 8.09l4.603-4.3zm11.5 2.71H11V4h5.25c2.347 0 4.25 1.9 4.25 4.25v7.37l1.647-1.53 1.706 1.82-4.603 4.3-4.603-4.3 1.706-1.82L18 15.62V8.25c0-.97-.784-1.75-1.75-1.75z"
+// The engagement-row icons (reply + like) are single-line outlines drawn at one
+// shared stroke width (see .tweet-metric-icon), so both read at the same visual
+// weight and the like count never looks like a filled "liked" heart.
 const REPLY_PATH =
-  "M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.37 2.77 6.08 6.138 6.01l1.952-.05v2.29l5.025-2.78c1.95-1.08 3.162-3.13 3.162-5.36 0-3.39-2.744-6.14-6.129-6.14H9.756z"
+  "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
 const HEART_PATH =
-  "M20.884 13.19c-1.351 2.48-4.001 5.12-8.379 7.67l-.503.3-.504-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z"
+  "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
 
 const MONTHS = [
   "January",
@@ -78,22 +97,45 @@ const MONTHS = [
 ] as const
 
 /**
- * Format a tweet's ISO timestamp as `Month Dth, YYYY, h:mm AM/PM` in UTC.
- * The date leads so the line begins with the capitalized month rather than a
- * digit. UTC keeps the output deterministic across build machines. Returns ""
- * for an unparseable timestamp so the date line is simply omitted.
+ * Format a tweet's ISO timestamp as `Month Dth, YYYY` in UTC (e.g.
+ * `June 30th, 2026`). UTC keeps the output deterministic across build machines.
+ * Returns "" for an unparseable timestamp so the date line is simply omitted.
  */
 export function formatTweetDate(iso: string): string {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) return ""
-  const hours24 = date.getUTCHours()
-  const meridiem = hours24 < 12 ? "AM" : "PM"
-  const hours12 = hours24 % 12 || 12
-  const minutes = String(date.getUTCMinutes()).padStart(2, "0")
   const month = MONTHS[date.getUTCMonth()]
   const dayNum = date.getUTCDate()
   const day = `${dayNum}${getOrdinalSuffix(dayNum)}`
-  return `${month} ${day}, ${date.getUTCFullYear()}, ${hours12}:${minutes} ${meridiem}`
+  return `${month} ${day}, ${date.getUTCFullYear()}`
+}
+
+const NAMED_ENTITIES: Readonly<Record<string, string>> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+}
+
+const HTML_ENTITY_RE = /&(#x[0-9a-f]+|#\d+|[a-z]+);/gi
+
+/**
+ * Decode the HTML entities Twitter's syndication API leaves in tweet text
+ * (`&amp;`, `&lt;`, `&gt;`). The snapshot stores that encoded text verbatim, so
+ * without decoding, a hast text node of `&amp;` has its `&` re-escaped by the
+ * serializer and the card shows a literal `&amp;`. Unknown names are left intact.
+ */
+export function decodeHtmlEntities(text: string): string {
+  return text.replace(HTML_ENTITY_RE, (match, body: string) => {
+    if (body[0] !== "#") {
+      return NAMED_ENTITIES[body.toLowerCase()] ?? match
+    }
+    const isHex = body[1] === "x" || body[1] === "X"
+    const codePoint = parseInt(isHex ? body.slice(2) : body.slice(1), isHex ? 16 : 10)
+    if (codePoint < 1 || codePoint > 0x10ffff) return match
+    return String.fromCodePoint(codePoint)
+  })
 }
 
 const MENTION_OR_TAG = /[@#$]\w+/g
@@ -157,7 +199,7 @@ function withLineBreaks(nodes: (Element | string)[]): (Element | string)[] {
  * #hashtags link to xcancel, and newlines become `<br>`.
  */
 export function linkifyTweetText(text: string, urls: readonly TweetUrl[]): (Element | string)[] {
-  let nodes: (Element | string)[] = [text]
+  let nodes: (Element | string)[] = [decodeHtmlEntities(text)]
   for (const entity of urls) {
     nodes = nodes.flatMap((node) => {
       if (typeof node !== "string" || !node.includes(entity.url)) return [node]
@@ -165,7 +207,13 @@ export function linkifyTweetText(text: string, urls: readonly TweetUrl[]): (Elem
       const out: (Element | string)[] = []
       segments.forEach((segment, index) => {
         if (index > 0) {
-          out.push(externalAnchor(entity.expanded, [entity.display], "tweet-entity tweet-link"))
+          out.push(
+            externalAnchor(
+              entity.expanded,
+              [decodeHtmlEntities(entity.display)],
+              "tweet-entity tweet-link",
+            ),
+          )
         }
         if (segment) out.push(segment)
       })
@@ -206,7 +254,7 @@ function mediaNode(media: TweetMedia): Element {
   const img = h("img", {
     className: "tweet-media tweet-media-photo",
     src: media.src,
-    alt: media.alt || "View image",
+    alt: decodeHtmlEntities(media.alt || "View image"),
     loading: "lazy",
     ...(media.width ? { width: media.width } : {}),
     ...(media.height ? { height: media.height } : {}),
@@ -271,15 +319,58 @@ function retweetContext(name: string): Element {
   ])
 }
 
-/** Build the rendered card for a single resolved tweet. */
-export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): Element {
-  const { author } = snapshot
-  const nameChildren: (Element | string)[] = [h("span", { className: "tweet-name" }, author.name)]
+/**
+ * The name line: the display name links to the profile, the verified seal sits
+ * beside it. The seal stays outside the anchor so only the name is the link.
+ */
+function authorNameRow(author: TweetAuthor, profileUrl: string): Element {
+  const children: (Element | string)[] = [
+    externalAnchor(
+      profileUrl,
+      [h("span", { className: "tweet-name" }, decodeHtmlEntities(author.name))],
+      "tweet-name-link",
+    ),
+  ]
   if (author.verified) {
-    nameChildren.push(
+    children.push(
       icon(VERIFIED_PATH, "tweet-verified", { "aria-label": "Verified account", role: "img" }),
     )
   }
+  return h("span", { className: "tweet-name-row" }, children)
+}
+
+/**
+ * Nested card for the tweet a quote-tweet embeds: header (avatar, name,
+ * `@handle`), body, media, and a bottom date. The date is omitted when it
+ * matches the quoting tweet's own date (`outerDate`), since repeating it reads
+ * as noise.
+ */
+function quotedCard(quoted: QuotedTweet, outerDate: string): Element {
+  const profileUrl = `${XCANCEL_BASE}/${quoted.author.handle}`
+  const header = h("div", { className: "tweet-quoted-header" }, [
+    h("img", {
+      className: "tweet-quoted-avatar",
+      src: quoted.author.avatarSrc,
+      alt: "",
+      loading: "lazy",
+      width: 24,
+      height: 24,
+    }),
+    authorNameRow(quoted.author, profileUrl),
+    externalAnchor(profileUrl, [`@${quoted.author.handle}`], "tweet-handle"),
+  ])
+  const body = h("div", { className: "tweet-body" }, linkifyTweetText(quoted.text, quoted.urls))
+  const children: Element[] = [header, body, ...mediaGrid(quoted.media)]
+  const formattedDate = formatTweetDate(quoted.createdAt)
+  if (formattedDate && formattedDate !== outerDate) {
+    children.push(h("span", { className: "tweet-quoted-date" }, formattedDate))
+  }
+  return h("div", { className: "tweet-quoted", "data-tweet-id": quoted.id }, children)
+}
+
+/** Build the rendered card for a single resolved tweet. */
+export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): Element {
+  const { author } = snapshot
 
   // The avatar, name, and handle point at the author's profile; the X logo is
   // the permalink to the post.
@@ -296,7 +387,7 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
       }),
     ]),
     h("div", { className: "tweet-author" }, [
-      externalAnchor(profileUrl, nameChildren, "tweet-name-link"),
+      authorNameRow(author, profileUrl),
       externalAnchor(profileUrl, [`@${author.handle}`], "tweet-handle"),
     ]),
     externalAnchor(
@@ -314,12 +405,17 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
   children.push(header, body, ...mediaGrid(snapshot.media))
 
   const formatted = formatTweetDate(snapshot.createdAt)
+  if (snapshot.quoted) children.push(quotedCard(snapshot.quoted, formatted))
   if (formatted) {
     children.push(h("span", { className: "tweet-date" }, formatted))
   }
   children.push(...metricsRow(snapshot.metrics))
 
-  return h("article", { className: "tweet-card", "data-tweet-id": snapshot.id }, children)
+  // TweetEmbed runs after the global Twemoji pass, so the card's text (names,
+  // body, quoted text) is built too late to be picked up. Twemojify it here so
+  // emoji in a tweet render as inline images like the rest of the site.
+  const article = h("article", { className: "tweet-card", "data-tweet-id": snapshot.id }, children)
+  return processTree(article) as Element
 }
 
 /** Fallback card for a tweet that resolved from neither a snapshot nor R2. */

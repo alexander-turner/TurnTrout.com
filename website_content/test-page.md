@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-06-28
+date_updated: 2026-07-05
 createBibtex: true
 ---
 
@@ -44,6 +44,24 @@ Subtitle: MATS (starting with smallcaps).
 # Title-binding links
 
 The `@title` sentinel ties a link's text to its target's current title at build time: [@title](/test-page) renders this page's title, and [@title](#header-4) renders the current text of the "Header 4" section.
+
+# `@title`s and quote smallcaps
+
+Acronyms in a resolved `@title` fill and in title-cased `[!quote]` titles render as plain caps instead of smallcaps.
+
+> [!quote] [Seeking Power Is Often Robustly Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps)
+> A quote whose link title is a hand-written cited work: "MDPs" stays plain rather than small-capped.
+
+> [!quote] [@title](/seeking-power-is-often-convergently-instrumental-in-mdps)
+> A quote whose title is an `@title` fill: the live title renders with plain acronyms.
+
+> [!quote] The Basic Reasons I Expect AGI Ruin
+> A plain-text title-cased quote title: "AGI" stays plain.
+
+> [!quote] Does Proton VPN keep logs?
+> A prose quote title: "VPN" is small-capped as usual.
+
+In-text work titles behave the same way: a title-cased link like [Seeking Power is Often Convergently Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps) and an italicized title like _Corrigibility Can Be VNM-Incoherent_ keep their acronyms as plain caps, while prose mentions of NASA, a lone italicized _LLM_, and sentence-cased links like [how the FBI does its work](/test-page) stay small-capped.
 
 # Lists
 
@@ -482,7 +500,7 @@ Equation and table nested in a list item (gaps must not stack with `<p>` margins
 
 <video autoplay muted loop playsinline aria-label="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"><track kind="captions" label="No audio"></video>
 
-<video aria-label="AI-generated voices of Barack Obama, Joe Biden, and Donald Trump humorously debate and create a tier list ranking different approaches to ensuring AI safety." controls="" width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"/><track kind="captions" label="English" src="/static/debate.vtt" srclang="en"/></video>
+<video aria-label="AI-generated voices of Barack Obama, Joe Biden, and Donald Trump humorously debate and create a tier list ranking different approaches to ensuring AI safety." controls="" width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"/><track kind="captions" label="English" src="https://assets.turntrout.com/static/debate.vtt" srclang="en"/></video>
 
 # Audio
 
@@ -508,6 +526,12 @@ A thread (one URL per line) renders as a connected stack:
 ```tweet
 https://xcancel.com/Turn_Trout/status/2055343603224879417
 https://xcancel.com/Turn_Trout/status/2055343603958878231
+```
+
+A quote-tweet renders the quoted post as a nested card:
+
+```tweet
+https://xcancel.com/ChrisMurphyCT/status/2071998353664000365
 ```
 
 # Images
@@ -558,6 +582,19 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 <!--spellchecker-enable-->
 
+## Floating image right with caption
+
+<!-- vale off -->
+![[https://assets.turntrout.com/static/images/posts/alex_rainbow_2.avif|Alex smiling at the camera; rainbow colored light splays off the wall in the background.]]{.float-right style="width:20%;"}
+Figure: The caption floats with the image instead of stranding above the following text.
+<!-- vale on -->
+
+<!--spellchecker-disable-->
+
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+
+<!--spellchecker-enable-->
+
 # Spoilers
 
 > Normal blockquote
@@ -602,6 +639,10 @@ Here's a link to [another page](/shard-theory) with popover preview. [This same-
 ## External links with favicons
 
 Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons) Link to [`x.com`](https://x.com).
+
+A footnote reference right after a favicon-ending [same-page link](#external-links-with-favicons)[^favicon-footnote] must not wrap onto its own line.
+
+[^favicon-footnote]: The footnote number stays glued to the favicon so it can't wrap onto its own line.
 
 <div id="populate-favicon-container" class="no-favicon-span"></div>
 
@@ -664,6 +705,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 | descender + \} | g\} j\} p\} q\} y\} |
 | caps + close | T) T] V) V] Y) Y] |
 | In context | f(x), (glyph), (jpg), (query), [typography] |
+| close + ;, | \[1\]; \{2\}; (3); \[a\], \{b\}, (c), |
 | In context | the staff(s) called if’d a “buff” (Wolf) |
 | In context | the clipping (probably) happened (just) quickly |
 
@@ -800,7 +842,7 @@ Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 
 Inline code ligature kerning: `$var` must be interpolated into `#{$var}`. See also `===`, `!==`, `=>`, and `custom-property-no-missing-interpolation`.
 
-Inline code left spacing after a crowding glyph: with the help of [`TomSmith`](#code-blocks), I got feedback from experts in military and surveillance law. In particular, I got feedback from the foremost expert on the law behind human / AI integration in war—a former chief judge on the US military appeals court. He said my Framework was "actually pretty good" 🙂 and suggested improvements. The monospace keeps a small gap mid-line but stays flush when it wraps to the start of a line.
+Inline code left spacing after a crowding glyph: with the help of [`TomSmith`](#code-blocks).
 
 Inline code flush against a glued delimiter: parentheses (`code`), brackets \[`code`\], braces \{`code`\}, quotes "`code`", a slash AI/`code`, a hyphen re-`code`, and equals x=`code` all hug the code, while a space `the regex` or an em dash—`code` keeps the small gap.
 

@@ -132,6 +132,32 @@ export function rewriteRelativeLinksToGitHub(
     content.replace(RELATIVE_LINK_RE, (_match, text, href) => `[${text}](${base}/${href})`)
 }
 
+/**
+ * Keeps the preamble plus the first `maxSections` top-level (`##`) sections,
+ * dropping the rest so a long technical README reads as a teaser instead of its
+ * full body. Subsections (`###` and deeper) ride along with their parent `##`,
+ * and `##`-looking lines inside fenced code blocks are not counted. Returns the
+ * content unchanged (same reference) when it has at most `maxSections` sections.
+ */
+export function truncateToSections(content: string, maxSections: number): string {
+  const lines = content.split("\n")
+  let inFence = false
+  let sectionCount = 0
+  for (let i = 0; i < lines.length; i++) {
+    if (/^(?:```|~~~)/.test(lines[i])) {
+      inFence = !inFence
+      continue
+    }
+    if (!inFence && /^##\s/.test(lines[i])) {
+      sectionCount += 1
+      if (sectionCount > maxSections) {
+        return `${lines.slice(0, i).join("\n").replace(/\s+$/, "")}\n`
+      }
+    }
+  }
+  return content
+}
+
 /** Class marking a wrapper around embedded external README content. */
 export const EXTERNAL_README_CLASS = "external-readme"
 /** Attribute holding the source slug used to namespace the README's heading ids. */
@@ -162,24 +188,54 @@ export function asQuoteAdmonition(content: string, title: string): string {
   return `> [!quote] ${title}\n${quoted}`
 }
 
+/** Options controlling how a GitHub README is rendered when embedded. */
+export interface GithubReadmeSourceOptions {
+  /**
+   * Keep only the preamble plus this many top-level (`##`) sections, appending a
+   * "Read the rest on GitHub" link when content is dropped. Omit to embed the
+   * whole README.
+   */
+  maxSections?: number
+}
+
 /**
  * Builds a GitHub README source: strips badges, drops a leading H1 (when it
  * leads the file) that would duplicate the embedding page's own section
- * heading, rewrites relative links to absolute blob URLs, renders the result
- * inside a `[!quote]` admonition titled with the repo link, and wraps it so its
- * heading ids stay unique on the host page.
+ * heading, rewrites relative links to absolute blob URLs, optionally truncates
+ * to the first `maxSections` sections (repointing surviving same-page anchors to
+ * the GitHub README and appending a link to the full README on GitHub), renders
+ * the result inside a `[!quote]` admonition titled with the repo link, and wraps
+ * it so its heading ids stay unique on the host page.
  */
-export function githubReadmeSource(owner: string, repo: string): GitHubMarkdownSource {
+export function githubReadmeSource(
+  owner: string,
+  repo: string,
+  options: GithubReadmeSourceOptions = {},
+): GitHubMarkdownSource {
+  const { maxSections } = options
   const rewriteLinks = rewriteRelativeLinksToGitHub(owner, repo)
-  const title = `[\`${owner}/${repo}\`](https://github.com/${owner}/${repo})`
+  const repoUrl = `https://github.com/${owner}/${repo}`
+  const title = `[\`${owner}/${repo}\`](${repoUrl})`
   return {
     owner,
     repo,
-    transform: (content) =>
-      wrapExternalReadme(
-        asQuoteAdmonition(rewriteLinks(stripLeadingH1(stripBadges(content))), title),
-        repo,
-      ),
+    transform: (content) => {
+      const stripped = rewriteLinks(stripLeadingH1(stripBadges(content)))
+      const truncated =
+        maxSections === undefined ? stripped : truncateToSections(stripped, maxSections)
+      if (truncated === stripped) {
+        return wrapExternalReadme(asQuoteAdmonition(stripped, title), repo)
+      }
+      // Truncation drops sections the surviving preamble may link to via
+      // same-page anchors; repoint those to the GitHub README so they resolve
+      // instead of dangling against ids that no longer exist on the page.
+      const externalized = truncated.replace(/\]\(#/g, `](${repoUrl}#`)
+      // Blank lines around the link let it parse as markdown inside the raw div
+      // (and inside the surrounding quote callout), matching wrapExternalReadme.
+      const readMore = `<div class="centered">\n\n[Read the rest on GitHub](${repoUrl})\n\n</div>`
+      const body = `${externalized}\n${readMore}`
+      return wrapExternalReadme(asQuoteAdmonition(body, title), repo)
+    },
   }
 }
 

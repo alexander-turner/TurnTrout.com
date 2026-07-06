@@ -18,6 +18,7 @@ import {
   stripBadges,
   stripLeadingH1,
   stripRelativeLinks,
+  truncateToSections,
   wrapExternalReadme,
 } from "./populateExternalMarkdown"
 
@@ -139,6 +140,36 @@ describe("PopulateExternalMarkdown", () => {
     })
   })
 
+  describe("truncateToSections", () => {
+    const doc = "Intro\n\n## One\n\na\n\n### Sub\n\nb\n\n## Two\n\nc\n\n## Three\n\nd"
+
+    it.each([
+      [
+        "keeps preamble plus the first section, dropping the rest",
+        1,
+        "Intro\n\n## One\n\na\n\n### Sub\n\nb\n",
+      ],
+      ["keeps the first two sections", 2, "Intro\n\n## One\n\na\n\n### Sub\n\nb\n\n## Two\n\nc\n"],
+    ])("%s", (_desc, maxSections, expected) => {
+      expect(truncateToSections(doc, maxSections)).toBe(expected)
+    })
+
+    it("returns content unchanged when it has at most maxSections sections", () => {
+      expect(truncateToSections(doc, 3)).toBe(doc)
+      expect(truncateToSections(doc, 5)).toBe(doc)
+    })
+
+    it("does not count ## inside fenced code blocks", () => {
+      const withFence = "Intro\n\n## Real\n\n```sh\n## not a heading\n```\n\nbody"
+      expect(truncateToSections(withFence, 1)).toBe(withFence)
+    })
+
+    it("does not count ### subsections as top-level sections", () => {
+      const withSubs = "Intro\n\n## Only\n\n### A\n\n### B\n\ntail"
+      expect(truncateToSections(withSubs, 1)).toBe(withSubs)
+    })
+  })
+
   describe("githubReadmeSource", () => {
     const badgeAndLink = "[![CI](badge.svg)](ci)\n\n# Repo title\n\nBody with [a](docs/g.md) link."
     const title = "[`owner/repo`](https://github.com/owner/repo)"
@@ -160,6 +191,32 @@ describe("PopulateExternalMarkdown", () => {
       const source = githubReadmeSource("owner", "repo")
       expect(source.transform?.("**Bold intro**\n\n## Usage")).toBe(
         wrap("**Bold intro**\n\n## Usage"),
+      )
+    })
+
+    it("truncates to maxSections and appends a centered link to the full README", () => {
+      const source = githubReadmeSource("owner", "repo", { maxSections: 1 })
+      expect(source.transform?.("# Title\n\nIntro\n\n## Keep\n\na\n\n## Drop\n\nb")).toBe(
+        wrap(
+          'Intro\n\n## Keep\n\na\n\n<div class="centered">\n\n[Read the rest on GitHub](https://github.com/owner/repo)\n\n</div>',
+        ),
+      )
+    })
+
+    it("repoints surviving same-page anchors to the GitHub README when truncating", () => {
+      const source = githubReadmeSource("owner", "repo", { maxSections: 0 })
+      expect(source.transform?.("Use the [CLI](#cli).\n\n## CLI\n\nbody")).toBe(
+        wrap(
+          "Use the [CLI](https://github.com/owner/repo#cli).\n\n" +
+            '<div class="centered">\n\n[Read the rest on GitHub](https://github.com/owner/repo)\n\n</div>',
+        ),
+      )
+    })
+
+    it("omits the read-more link when maxSections covers the whole README", () => {
+      const source = githubReadmeSource("owner", "repo", { maxSections: 5 })
+      expect(source.transform?.("# Title\n\nIntro\n\n## Only\n\nbody")).toBe(
+        wrap("Intro\n\n## Only\n\nbody"),
       )
     })
   })

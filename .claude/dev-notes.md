@@ -42,6 +42,24 @@ Three stages: **Transform → Filter → Emit**.
   assets already on R2: `uv run scripts/generate_inverted_variants.py
 --asset-directory ~/Downloads/website-media-r2`, then re-run `r2_upload`
   to push the new `-inverted` files.
+- **Video captions**: `scripts/transcribe_videos.py` (run by
+  `handle_assets.sh` after `convert_assets.py`, before `r2_upload.py`)
+  transcribes every `.mp4` with a real, non-silent audio stream via a
+  self-hosted [Scriberr](https://github.com/rishikanthc/Scriberr) instance,
+  writes a sibling `.vtt`, and injects `<track kind="captions">` into the
+  matching markdown `<video>` block. The `.vtt` then uploads to R2 like the
+  other sources (served as `text/vtt`). Requires `SCRIBERR_BASE_URL` (e.g.
+  `http://scriberr.<tailnet>.ts.net:8080`) and `SCRIBERR_API_KEY`; when unset
+  (CI, external contributors) the step self-skips with a warning. GIF-derived
+  muted videos (no audio stream) and videos with an existing sibling `.vtt`
+  are skipped. `built_site_checks.check_video_caption_tracks` then enforces
+  that every audio-bearing `<video>` ships a real `.vtt` track (or an explicit
+  `label="No audio"` marker).
+- **Linked (not embedded) videos**: `built_site_checks.check_linked_video_captions`
+  requires a captions companion for `<a href>` links to `.mp4`/`.mov`/`.m4v` on
+  the asset CDN — satisfied by an on-page sibling-`.vtt` reference, a HEAD probe
+  finding the `.vtt` on the CDN, or a `#no-audio` opt-out fragment. See the
+  function docstring for the full semantics.
 
 ### Text processing
 

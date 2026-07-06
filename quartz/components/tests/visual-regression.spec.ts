@@ -113,6 +113,34 @@ async function hideForceHslInvertInFirefox(page: Page, testInfo: TestInfo): Prom
   }, forceHslInvertClass)
 }
 
+/**
+ * The sidebar and mobile TOCs mirror every heading in test-page.md, so any
+ * screenshot including them would churn whenever a section is added, removed,
+ * or reordered — regardless of position on the page. Swap in a fixed stub list
+ * so every TOC-including shot (the whole-page integration screenshot and the
+ * dedicated "Table of contents" screenshots) stays decoupled from the page's
+ * heading set. The TOC component's data-driven behavior (active-heading
+ * tracking, click delegation) is covered by non-visual tests elsewhere in this
+ * file, which don't depend on the stub's exact structure. The stub entries
+ * still carry the markup real headings render into (small-caps, inline code,
+ * italics, a full-size number prefix) so those styles stay covered here too.
+ */
+const STUB_TOC_OL = `<ol>
+  <li><a href="#stub-one" class="internal same-page-link" data-for="stub-one"><span><abbr class="small-caps">Nasa</abbr> and the moon</span></a></li>
+  <li><a href="#stub-two" class="internal same-page-link" data-for="stub-two"><span>Second section with <code class="inline-code">inline_code</code></span></a><ol>
+    <li><a href="#stub-two-a" class="internal same-page-link" data-for="stub-two-a"><span>Nested <em>italic</em> entry</span></a></li>
+  </ol></li>
+  <li><a href="#stub-three" class="internal same-page-link" data-for="stub-three"><span><span class="number-prefix">1984: </span>Full-size numbers</span></a></li>
+</ol>`
+
+async function stubTableOfContents(page: Page): Promise<void> {
+  await page.evaluate((ol) => {
+    document.querySelectorAll("#toc-content, #toc-content-mobile").forEach((el) => {
+      el.innerHTML = ol
+    })
+  }, STUB_TOC_OL)
+}
+
 test.describe("Test page sections", () => {
   THEMES.forEach((theme) => {
     // Per-section detail is covered by the isolated fixtures in
@@ -122,6 +150,7 @@ test.describe("Test page sections", () => {
       await setTheme(page, theme as "light" | "dark")
 
       await hideForceHslInvertInFirefox(page, testInfo)
+      await stubTableOfContents(page)
 
       await takeRegressionScreenshot(page, testInfo, `test-page-normal-${theme}`)
     })
@@ -342,13 +371,11 @@ test.describe("Table of contents", () => {
     await expect(page.locator(selector)).toBeVisible()
   })
 
-  // Cap how many top-level TOC entries the screenshots include. Hiding the
-  // rest keeps the baseline stable when sections are added or removed from
-  // test-page.md beyond this prefix.
-  const TOC_VISIBLE_TOP_LEVEL_ENTRIES = 9
-
   test("Desktop TOC visual test (screenshot)", async ({ page }, testInfo) => {
     test.skip(!isDesktopViewport(page))
+
+    // Decouple this shot from test-page.md's heading set (see stubTableOfContents).
+    await stubTableOfContents(page)
 
     // Set .simulate-visited on first TOC link child
     const rightSidebar = page.locator("#right-sidebar #table-of-contents")
@@ -365,13 +392,6 @@ test.describe("Table of contents", () => {
       }
     })
 
-    await rightSidebar.evaluate((el, keep) => {
-      const items = el.querySelectorAll<HTMLElement>("#toc-content > ol > li")
-      items.forEach((li, idx) => {
-        if (idx >= keep) li.style.display = "none"
-      })
-    }, TOC_VISIBLE_TOP_LEVEL_ENTRIES)
-
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-sidebar", {
       elementToScreenshot: rightSidebar,
     })
@@ -379,6 +399,9 @@ test.describe("Table of contents", () => {
 
   test("TOC visual test (screenshot)", async ({ page }, testInfo) => {
     test.skip(isDesktopViewport(page))
+
+    // Decouple this shot from test-page.md's heading set (see stubTableOfContents).
+    await stubTableOfContents(page)
 
     // Hide the navbar
     await page.evaluate(() => {
@@ -389,12 +412,6 @@ test.describe("Table of contents", () => {
     })
 
     const tocContent = page.locator(":has(> #toc-content-mobile)").first()
-    await tocContent.evaluate((el, keep) => {
-      const items = el.querySelectorAll<HTMLElement>("#toc-content-mobile > ol > li")
-      items.forEach((li, idx) => {
-        if (idx >= keep) li.style.display = "none"
-      })
-    }, TOC_VISIBLE_TOP_LEVEL_ENTRIES)
 
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
       elementToScreenshot: tocContent,

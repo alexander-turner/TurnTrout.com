@@ -134,28 +134,115 @@ export interface RegressionScreenshotOptions {
   preserveSiblings?: boolean
 }
 
-async function waitForImagesInElement(scope: Locator): Promise<void> {
+// Generous per-image ceiling: long enough to absorb a couple of reload retries
+// of a remote AVIF, short enough that a genuinely dead image can't hang the run.
+const IMAGE_PAINT_TIMEOUT_MS = 15000
+
+// WebKit paints images above its interpolation cutoff (800×800 source pixels)
+// with fast low-quality scaling whenever their painted size just changed
+// (e.g. a custom element upgrading and re-laying-out its slotted images), then
+// repaints at high quality when its 500 ms `lowQualityTimeThreshold` timer
+// fires (WebCore/rendering/ImageQualityController.cpp). Consecutive captures
+// must be spaced wider than that window so a pending high-quality repaint
+// always lands between them and shows up as a frame difference.
+const WEBKIT_LOW_QUALITY_SCALE_WINDOW_MS = 550
+const SCREENSHOT_STABILIZATION_TIMEOUT_MS = 10_000
+
+/**
+ * Captures screenshots until two consecutive frames are byte-identical, so
+ * late async repaints (WebKit's deferred high-quality image rescale, font
+ * swaps) can't be baked into the compared capture. This is the same
+ * two-equal-frames contract Playwright's `toHaveScreenshot` applies
+ * internally; `toMatchSnapshot` on a raw buffer has no such loop, so we
+ * provide it here.
+ *
+ * @param takeScreenshot - Thunk performing one capture of the target.
+ * @param screenshotName - Name used in the timeout error message.
+ * @returns The first capture that matched its predecessor exactly.
+ */
+export async function captureStableScreenshot(
+  takeScreenshot: () => Promise<Buffer>,
+  screenshotName: string,
+): Promise<Buffer> {
+  const deadline = Date.now() + SCREENSHOT_STABILIZATION_TIMEOUT_MS
+  let previous = await takeScreenshot()
+  do {
+    await new Promise((resolve) => setTimeout(resolve, WEBKIT_LOW_QUALITY_SCALE_WINDOW_MS))
+    const current = await takeScreenshot()
+    if (current.equals(previous)) return current
+    previous = current
+  } while (Date.now() < deadline)
+  throw new Error(
+    `Screenshot ${screenshotName} did not stabilize within ${SCREENSHOT_STABILIZATION_TIMEOUT_MS}ms: consecutive captures kept differing, so something is still repainting the page`,
+  )
+}
+
+// Runs in the browser via `locator.evaluate` (Playwright serializes it), so it
+// must not reference module scope. Resolves true once the image has painted,
+// false at the deadline. A remote AVIF can intermittently fail to load
+// (notably Firefox in CI), so failed loads are retried until the deadline. The
+// loop POLLS instead of listening to load/error events: a reload fired from a
+// stale event timer changes `src` while a decode() is pending, which rejects
+// it and (on Firefox, where naturalWidth resets during the new request)
+// re-triggers reload forever.
+/* istanbul ignore next -- executed in the browser, not under Jest */
+function pollUntilImagePaints(el: HTMLImageElement, deadlineMs: number): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    // WebKit only starts a lazy image's request when it nears the viewport, so
+    // a below-fold `loading="lazy"` image would sit unloaded until the
+    // deadline. Promote it to eager for the wait.
+    if (el.loading === "lazy") {
+      el.loading = "eager"
+    }
+    const POLL_MS = 100
+    const RELOAD_DEBOUNCE_MS = 250
+    const startedAt = performance.now()
+    let lastReloadAt = -RELOAD_DEBOUNCE_MS
+    const settle = (): void => resolve(true)
+    const tick = (): void => {
+      if (performance.now() - startedAt >= deadlineMs) {
+        resolve(false)
+        return
+      }
+      if (el.complete && el.naturalWidth > 0) {
+        // Loaded. decode() flushes the bitmap so the paint is ready; WebKit
+        // spuriously rejects decode() for painted SVGs, so a rejection still
+        // settles.
+        el.decode().then(settle, settle)
+        return
+      }
+      const now = performance.now()
+      if (el.complete && now - lastReloadAt >= RELOAD_DEBOUNCE_MS) {
+        // Errored (complete with no dimensions): retry with a cache-busted
+        // fetch. `set` overwrites the prior value, so retries don't
+        // accumulate query params.
+        lastReloadAt = now
+        const url = new URL(el.currentSrc || el.src, document.baseURI)
+        url.searchParams.set("__visualRetry", String(Math.trunc(now)))
+        el.src = url.toString()
+      }
+      window.setTimeout(tick, POLL_MS)
+    }
+    tick()
+  })
+}
+
+export async function waitForImagesInElement(
+  scope: Locator,
+  timeoutMs: number = IMAGE_PAINT_TIMEOUT_MS,
+): Promise<void> {
   const images = await scope.locator("img").all()
   await Promise.all(
-    images.map((img) =>
-      img
-        .evaluate(
-          (el: HTMLImageElement) =>
-            new Promise<void>((resolve) => {
-              const timer = setTimeout(resolve, 5000)
-              const done = (): void => {
-                clearTimeout(timer)
-                resolve()
-              }
-              // `decode()` resolves only once the image is decoded and
-              // paint-ready. `complete`/`load` can fire before Firefox has
-              // painted a (remote AVIF) image, so screenshots intermittently
-              // captured a blank image. Resolve on decode success or failure.
-              el.decode().then(done, done)
-            }),
-        )
-        .catch(() => undefined),
-    ),
+    images.map(async (img) => {
+      const painted = await img.evaluate(pollUntilImagePaints, timeoutMs)
+      // Screenshotting an unpainted image bakes its alt text into the capture,
+      // which either churns the diff gallery or — if approved — corrupts the
+      // baseline. Fail the test instead; a real failure surfaces on the shard.
+      if (!painted) {
+        const src = (await img.getAttribute("src")) ?? "<unknown src>"
+        throw new Error(`Image did not paint within ${timeoutMs}ms despite retries: ${src}`)
+      }
+    }),
   )
 }
 
@@ -191,33 +278,11 @@ export async function takeRegressionScreenshot(
 ): Promise<Buffer> {
   if (!options?.skipMediaPause) {
     await pauseMediaElements(page, options?.elementToScreenshot)
-
-    // Wait for every video to be paused at time 0. Re-seeks if the initial
-    // seek timed out (e.g. slow CI).
-    const mediaScope = options?.elementToScreenshot ?? page
-    const videos = await mediaScope.locator("video").all()
-    for (const video of videos) {
-      const handle = await video.elementHandle()
-      if (!handle) throw new Error("Could not get element handle for video")
-      await page.waitForFunction(
-        (el) => {
-          const videoEl = el as HTMLVideoElement
-          if (videoEl.currentTime !== 0) {
-            videoEl.pause()
-            videoEl.currentTime = 0
-          }
-          return videoEl.paused && videoEl.currentTime === 0
-        },
-        handle,
-        { timeout: 5000 },
-      )
-    }
+    await waitForVideosPainted(options?.elementToScreenshot ?? page)
   }
 
   // Separate out the element option so we don't pass it to the screenshot API
-  const { elementToScreenshot: _elementOpt, ...remainingOptions } = options ?? {}
-  // skipcq: JS-0098
-  void _elementOpt // prevent unused variable lint error
+  const { elementToScreenshot, ...remainingOptions } = options ?? {}
 
   if (!options?.skipStabilityWait) {
     await waitForVisualStability(page, options?.elementToScreenshot)
@@ -232,17 +297,23 @@ export async function takeRegressionScreenshot(
 
   let screenshotBuffer: Buffer
   const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
-  if (options?.elementToScreenshot) {
-    const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
-    await performDOMIsolation(elementToIsolate, options.preserveSiblings ?? false)
+  if (elementToScreenshot) {
+    const elementToIsolate = options?.elementAboutWhichToIsolateDOM ?? elementToScreenshot
+    await performDOMIsolation(elementToIsolate, options?.preserveSiblings ?? false)
 
     try {
-      screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
+      screenshotBuffer = await captureStableScreenshot(
+        () => elementToScreenshot.screenshot(screenshotOptions),
+        screenshotName,
+      )
     } finally {
       await restoreDOMFromIsolation(page)
     }
   } else {
-    screenshotBuffer = await page.screenshot(screenshotOptions)
+    screenshotBuffer = await captureStableScreenshot(
+      () => page.screenshot(screenshotOptions),
+      screenshotName,
+    )
   }
 
   // PNG IHDR stores width at byte offset 16 and height at 20. Using the
@@ -463,6 +534,63 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
       await handle.evaluate((el) => el.removeAttribute("autoplay"))
       await handle.dispose()
     }
+  }
+}
+
+/**
+ * Blocks until every video has actually painted its frame-0 to the compositor.
+ *
+ * `pauseMediaElements` seeks videos to currentTime 0, but `paused`/`currentTime
+ * === 0` are satisfied even when the engine (notably WebKit) has presented no
+ * frame yet. Screenshotting that blank, never-painted state diffs against the
+ * painted baseline — the source of the flake. requestVideoFrameCallback fires
+ * only on a real paint, which is the signal we actually need.
+ */
+async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
+  for (const video of await scope.locator("video").all()) {
+    const handle = await video.elementHandle()
+    if (!handle) throw new Error("Could not get element handle for video")
+    await handle.evaluate(
+      (el) =>
+        new Promise<void>((resolve) => {
+          const videoEl = el as HTMLVideoElement & {
+            requestVideoFrameCallback?: (cb: () => void) => number
+          }
+          const timers: ReturnType<typeof setTimeout>[] = []
+          let settled = false
+          const finish = () => {
+            if (settled) return
+            settled = true
+            timers.forEach(clearTimeout)
+            resolve()
+          }
+          const waitForPaint = () => {
+            videoEl.pause()
+            if (videoEl.currentTime !== 0) videoEl.currentTime = 0
+            if (typeof videoEl.requestVideoFrameCallback !== "function") {
+              finish()
+              return
+            }
+            videoEl.requestVideoFrameCallback(finish)
+            // Fallback for the case where frame 0 is already on screen: no new
+            // frame is presented, so rVFC would never fire.
+            timers.push(setTimeout(finish, 1500))
+          }
+          if (videoEl.readyState >= 2) {
+            // HAVE_CURRENT_DATA or better: a frame is decodable now.
+            waitForPaint()
+          } else {
+            videoEl.addEventListener("loadeddata", waitForPaint, { once: true })
+            // Mirror pauseMediaElements: only force a reload when there is no
+            // data at all; for HAVE_METADATA the decode is already in flight.
+            if (videoEl.readyState === 0) videoEl.load()
+          }
+          // Never hang on a video whose data never arrives (e.g. a broken
+          // source); let the screenshot proceed and fail on its own terms.
+          timers.push(setTimeout(finish, 8000))
+        }),
+    )
+    await handle.dispose()
   }
 }
 

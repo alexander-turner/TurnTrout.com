@@ -20,20 +20,11 @@ permissions:
 
 jobs:
   phone-home:
-<<<<<<< local
-    # Only run for merged PRs that have the phone-home label
-    if: >
-      github.event.pull_request.merged == true &&
-      contains(github.event.pull_request.labels.*.name, 'phone-home')
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-=======
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     timeout-minutes: 10
->>>>>>> template
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           sparse-checkout: .github/scripts
           persist-credentials: false
@@ -60,14 +51,10 @@ jobs:
         if: steps.extract.outputs.has_lessons == 'true'
         env:
           GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
-<<<<<<< local
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-=======
           PR_TITLE: ${{ steps.extract.outputs.pr_title }}
           PR_URL: ${{ steps.extract.outputs.pr_url }}
           SOURCE_REPO: ${{ steps.extract.outputs.source_repo }}
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
->>>>>>> template
         with:
           github-token: ${{ env.GH_TOKEN }}
           script: |

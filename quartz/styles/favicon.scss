@@ -4,6 +4,24 @@
   white-space: nowrap;
 }
 
+// Groups a favicon-ending link with its trailing footnote reference so the
+// reference number can't wrap onto its own line. A favicon is a replaced inline
+// element that opens a soft-wrap opportunity on its trailing edge; the nowrap
+// span suppresses that break so the `<sup>` stays glued to the favicon.
+.favicon-footnote-span {
+  white-space: nowrap;
+  overflow-wrap: normal;
+
+  // The global `a { white-space: normal }` rule would otherwise reopen the
+  // wrap opportunity at the favicon's trailing edge and drop the `<sup>` to the
+  // next line, so re-assert nowrap on the wrapped link. `overflow-wrap: normal`
+  // stops the inherited `overflow-wrap: anywhere` from breaking at that edge.
+  > a {
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
+}
+
 .favicon {
   --size-decrease: 0rem; // Decrease in width and height of favicon size -- set this to a positive value to decrease the size
   --base-vertical-adjustment: calc(0.5 * #{$base-margin});
@@ -40,6 +58,15 @@
   // get a wider left margin so the favicon doesn't visually collide.
   &.close-text {
     margin-left: calc(0.3125 * #{$base-margin});
+  }
+
+  // A favicon appended after inline code sits inside the <code>, so the
+  // monospace cell tightens the gap to the word; widen the left margin to
+  // 0.1rem so it sits clear of the code. The right gap keeps a trailing
+  // ")" / "]" from cramping.
+  code & {
+    margin-left: calc(0.2 * #{$base-margin});
+    margin-right: calc(0.15 * #{$base-margin});
   }
 }
 
@@ -214,5 +241,18 @@ svg.favicon[data-domain="amazon_com"] {
 
   &.full-color {
     --color-percentage: 100%;
+  }
+}
+
+// Four captions across squeeze each into a column too narrow for phrases like
+// "is a radial-gradient:", so the atomic code wraps awkwardly. Cap at two
+// columns, and one on mobile, so each caption has room to wrap naturally.
+#big-favicon-demo .subfigure {
+  flex-basis: 45%;
+}
+
+@media all and (max-width: $mobile-breakpoint) {
+  #big-favicon-demo .subfigure {
+    flex-basis: 100%;
   }
 }

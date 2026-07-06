@@ -23,7 +23,16 @@
     var(--max-font-size)
   );
 
+  // Fallback for browsers without CSS round() support (Safari <18, Firefox <128).
   font-size: var(--base-font-size);
+
+  // Quantized to 1px steps: every rem/em measurement on the page derives from
+  // this value, so a continuously fluid root font-size forces a full-document
+  // restyle and layout on every pixel of viewport-width change during resize.
+  @supports (font-size: round(nearest, 1px, 1px)) {
+    font-size: round(nearest, var(--base-font-size), 1px);
+  }
+
   text-rendering: geometricprecision;
 }
 
@@ -353,17 +362,27 @@ code {
   }
 }
 
-// Inline code's leading glyph can crowd the preceding word, especially after
-// letters with a rightward hook ("f", "r"). The InlineCodeSpacing transformer
-// joins the code to its preceding word in a nowrap span so the code never falls
-// to a line start (where the gap would indent it), then gives the code a small
-// left margin for the gap.
-.inline-code-nowrap {
-  white-space: nowrap;
+// Inline code (not `pre > code`, which scrolls) may break an over-long token as a
+// last resort rather than clip or force horizontal scroll on narrow viewports.
+// `break-word` only breaks when the token wouldn't otherwise fit; a short code
+// (`.inline-code-atomic`) stays whole since `overflow-wrap` is inert under
+// `white-space: nowrap`.
+:not(pre) > code {
+  overflow-wrap: break-word;
 }
 
+// Inline code's monospace glyph can crowd the word before it (especially after
+// letters with a rightward hook, "f"/"r"). The InlineCodeSpacing transformer
+// wraps that word so it can carry a trailing gap. A trailing margin collapses at
+// a line end, so when the code wraps to a line start it stays flush there.
 .inline-code-gap {
-  margin-left: 0.1em;
+  margin-right: 0.1em;
+}
+
+// A short code is one token: it wraps to the next line whole instead of breaking
+// at an internal hyphen. Longer codes stay breakable (see InlineCodeSpacing).
+.inline-code-atomic {
+  white-space: nowrap;
 }
 
 // For usage in the middle of a paragraph

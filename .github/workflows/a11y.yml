@@ -27,6 +27,7 @@ jobs:
         timeout-minutes: 5
         with:
           sparse-checkout: .github/actions/ci-gate
+          persist-credentials: false
       - id: gate
         uses: ./.github/actions/ci-gate
         with:
@@ -63,6 +64,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
+        with:
+          persist-credentials: false
       - name: Setup site
         uses: ./.github/actions/setup-site
         with:
@@ -102,7 +105,7 @@ jobs:
     steps:
       - name: Check results
         run: |
-          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
+          if [[ "${NEEDS_SHOULD_RUN_OUTPUTS_RUN}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
             echo "Tests were skipped (no relevant changes or filtered actor)"
             exit 0
           fi
@@ -110,3 +113,5 @@ jobs:
             echo "a11y tests did not succeed (${{ needs.a11y-test.result }})"
             exit 1
           fi
+        env:
+          NEEDS_SHOULD_RUN_OUTPUTS_RUN: ${{ needs.should-run.outputs.run }}

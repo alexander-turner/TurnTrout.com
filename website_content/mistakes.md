@@ -12,7 +12,7 @@ authors:
 hideSubscriptionLinks: false
 card_image:
 date_published: 2024-10-31
-date_updated: 2026-06-27
+date_updated: 2026-07-02
 ---
 
 Inspired by Scott Alexander's [Mistakes](https://www.astralcodexten.com/p/mistakes) page:
@@ -22,14 +22,14 @@ Inspired by Scott Alexander's [Mistakes](https://www.astralcodexten.com/p/mistak
 
 # Not realizing that reward is not the optimization target
 
-Subtitle: July 25, 2022
+Subtitle: July 25th, 2022
 I spent thousands of hours proving theorems about the "tendencies" of "reinforcement learning" agents which are either [optimal](https://arxiv.org/abs/1912.01683) or [trained using a "good enough" learning algorithm](/parametrically-retargetable-power-seeking). (I'm using scare quotes to mark undue connotations.) I later realized that [reward is not the optimization target](/reward-is-not-the-optimization-target). I learned that even though ["reward" is a pleasant word](/dangers-of-suggestive-terminology), it's _definitely not a slam dunk that RL-trained policies will seek to optimize that quantity._ Reward often simply provides a per-datapoint learning rate multiplier - nothing spooky or fundamentally doomed.
 
 While the realization may seem simple or obvious, it opened up a crack in my alignment worldview.
 
 # Mispredicting the 2024 US presidential election
 
-Subtitle: November 5, 2024
+Subtitle: November 5th, 2024
 
 <iframe title="Prediction: Who Will Win The 2024 Presidential Election?" src="https://fatebook.io/embed/q/kamala-wins--cm34x28gv00004svvk2d1zvaz?compact=true&requireSignIn=false" width="450" height="200"></iframe>
 
@@ -45,7 +45,7 @@ To do better, I should have anchored more strongly to base rates via current pol
 
 # Wrongly expecting steering vectors to improve the general truthfulness of models
 
-Subtitle: January 30, 2025
+Subtitle: January 30th, 2025
 
 In 2023, [I (re?)discovered _steering vectors_](/research#steering-vectors): activation vectors which steer AI outputs to be e.g. more or less friendly ("Look Ma, no prompts!"). The way I saw it, model behavior was determined by two main factors: the abilities and "conversational modes" the model has learned ("[shards](/research#shard-theory)") and which shards are activated by the current situation.[^steering] Clearly - I thought - the model's "truthful mode" isn't always strongly activated. Clearly - I thought - one could more strongly activate that mode, possibly with a "be truthful" steering vector.
 

@@ -901,8 +901,11 @@ describe("htmlAccessibilityPlugin (integration)", () => {
 
   it.each([
     [
-      "adds <track> to video without one",
-      () => h("video", { controls: true }, [h("source", { src: "test.mp4", type: "video/mp4" })]),
+      "adds placeholder <track> to silent GIF-replacement video without one",
+      () =>
+        h("video", { autoplay: true, loop: true, muted: true }, [
+          h("source", { src: "test.mp4", type: "video/mp4" }),
+        ]),
       (el: Element) => {
         const track = el.children.find(
           (c) => c.type === "element" && c.tagName === "track",
@@ -913,9 +916,17 @@ describe("htmlAccessibilityPlugin (integration)", () => {
       },
     ],
     [
-      "does not add duplicate <track>",
+      "leaves audio-bearing video untracked so the caption check flags it",
+      () => h("video", { controls: true }, [h("source", { src: "test.mp4", type: "video/mp4" })]),
+      (el: Element) => {
+        const tracks = el.children.filter((c) => c.type === "element" && c.tagName === "track")
+        expect(tracks).toHaveLength(0)
+      },
+    ],
+    [
+      "does not add duplicate <track> to a GIF-replacement video",
       () =>
-        h("video", { controls: true }, [
+        h("video", { autoplay: true, loop: true, muted: true }, [
           h("source", { src: "test.mp4", type: "video/mp4" }),
           h("track", { kind: "captions", label: "No audio" }),
         ]),

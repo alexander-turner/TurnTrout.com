@@ -10,7 +10,7 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { hasClass } from "./utils"
+import { addClass, hasClass, removeClass } from "./utils"
 
 /**
  * Wraps an element node with a wrapper element of the specified tag name and class name, unless skipped.
@@ -158,6 +158,41 @@ function shouldNotWrapInFigure(element: Element, ancestors: Parent[]): boolean {
 }
 
 /**
+ * Returns the direct child carrying the `float-right` class, looking through a
+ * `<picture>` wrapper to its inner element (e.g. a dark-mode-inverted `<img>`).
+ */
+function findFloatRightChild(figure: Element): Element | undefined {
+  for (const child of figure.children) {
+    if (child.type !== "element") continue
+    if (hasClass(child, "float-right")) return child
+    if (child.tagName === "picture") {
+      const inner = child.children.find(
+        (c): c is Element => c.type === "element" && hasClass(c, "float-right"),
+      )
+      if (inner) return inner
+    }
+  }
+  return undefined
+}
+
+/**
+ * When a `<figure>` directly wraps a `float-right` element — as remark-captions
+ * does for a captioned float-right image — only the inner element floats while
+ * the figure (and its `<figcaption>`) stays in normal flow, stranding the
+ * caption. Move the class up to the figure so the whole figure floats together,
+ * matching the authored `<figure class="float-right">` pattern.
+ */
+function promoteFloatRightToFigure(element: Element): void {
+  if (element.tagName !== "figure" || hasClass(element, "float-right")) return
+
+  const floatChild = findFloatRightChild(element)
+  if (!floatChild) return
+
+  addClass(element, "float-right")
+  removeClass(floatChild, "float-right")
+}
+
+/**
  * Wraps elements with float-right class in a <figure>.
  * If an element contains a direct child with float-right, wraps the parent instead,
  * unless the parent is a semantic container that should not be wrapped (like paragraphs).
@@ -223,6 +258,9 @@ const rehypeWrapNakedElements: Plugin<[], Root> = () => {
     // Wrap naked videos and audio in containers with data-src for print
     visitParents(tree, "element", wrapVideo)
     visitParents(tree, "element", wrapAudio)
+    // Promote float-right from a captioned figure's child up to the figure, so
+    // the caption floats with the image rather than stranding in normal flow.
+    visitParents(tree, "element", promoteFloatRightToFigure)
     // Then wrap .float-right elements (or their parents) in figure
     visitParents(tree, "element", wrapFloatRight)
   }

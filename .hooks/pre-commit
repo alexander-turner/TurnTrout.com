@@ -14,7 +14,6 @@ if ! git diff --cached --check; then
   exit 1
 fi
 
-<<<<<<< local
 # Five guardrails (merge-conflict markers, large files, gitleaks, codespell,
 # actionlint) live in .pre-commit-config.yaml. Run them via the framework so
 # `pre-commit run --all-files` and the hook share the same source of truth.
@@ -27,11 +26,6 @@ fi
 
 # Skip remaining (Node) checks if this is not a Node project
 [ -f "$git_root/package.json" ] || exit 0
-=======
-if [[ -d "$git_root/.venv/bin" ]]; then
-  export PATH="$git_root/.venv/bin:$PATH"
-fi
->>>>>>> template
 
 if [[ ! -f "$git_root/node_modules/.bin/lint-staged" ]]; then
   exit 0

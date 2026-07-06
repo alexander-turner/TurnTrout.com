@@ -51,9 +51,6 @@ env:
   #
   # NOTE: If the target repo already has its own test/lint/format CI workflows,
   # exclude the template's equivalents here to avoid duplicate CI jobs.
-<<<<<<< local
-  EXCLUDE_PATHS: ".github/actions/setup-base-env .github/scripts/check-existing-security-pr.sh .github/scripts/check-symlinks.sh .github/scripts/fetch-security-report.sh .github/scripts/list-dependabot-prs.sh .github/scripts/script-configured.sh .github/workflows/dependabot-auto-merge.yaml .github/workflows/format-check.yaml .github/workflows/lint.yaml .github/workflows/node-tests.yaml .github/workflows/pre-commit.yaml .github/workflows/validate-config.yaml"
-=======
   # Common candidates: .github/workflows/node-tests.yaml,
   # .github/workflows/lint.yaml, .github/workflows/format-check.yaml
   #
@@ -74,12 +71,11 @@ env:
   # The security-vulnerability-scan workflow + prompt are intentionally NOT
   # propagated to downstream repos; each consumer owns its own security-scan
   # cadence and model pin, so the template stops overwriting them on sync.
-  EXCLUDE_PATHS: ".github/workflows/security-vulnerability-scan.yaml .github/prompts/security-vulnerability-scan.md"
+  EXCLUDE_PATHS: ".github/actions/setup-base-env .github/scripts/check-existing-security-pr.sh .github/scripts/check-symlinks.sh .github/scripts/fetch-security-report.sh .github/scripts/list-dependabot-prs.sh .github/scripts/script-configured.sh .github/workflows/dependabot-auto-merge.yaml .github/workflows/format-check.yaml .github/workflows/lint.yaml .github/workflows/node-tests.yaml .github/workflows/pre-commit.yaml .github/workflows/validate-config.yaml .github/workflows/auto-version.yaml .github/scripts/version-bump.sh .github/scripts/promote-changelog.mjs .github/scripts/lib/retry.bash"
 
 concurrency:
   group: template-sync
   cancel-in-progress: false
->>>>>>> template
 
 permissions:
   contents: write
@@ -87,41 +83,25 @@ permissions:
 
 jobs:
   sync:
-<<<<<<< local
-    runs-on: ubuntu-24.04
-    timeout-minutes: 60
-    steps:
-      - name: Checkout child repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          fetch-depth: 0
-
-      - name: Checkout template repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-=======
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Checkout child repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
           filter: blob:none
           persist-credentials: false
 
       - name: Checkout template repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
->>>>>>> template
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: ${{ env.TEMPLATE_REPO }}
           path: _template
           token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-<<<<<<< local
-=======
           filter: blob:none
           persist-credentials: false
->>>>>>> template
 
       - name: Check token workflow scope
         env:

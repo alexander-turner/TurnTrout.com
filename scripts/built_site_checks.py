@@ -3,6 +3,7 @@
 
 import argparse
 import copy
+import functools
 import html
 import json
 import mimetypes
@@ -318,6 +319,28 @@ def check_unrendered_footnotes(soup: BeautifulSoup) -> list[str]:
             unrendered_footnotes.extend(matches)
 
     return unrendered_footnotes
+
+
+def check_footnote_refs_in_sup(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that every footnote-reference anchor sits inside a ``<sup>``.
+
+    A footnote authored inside link text (``[text[^id]](url)``) compiles to
+    invalid nested anchors. The HTML re-parse splits them apart, stranding the
+    footnote-reference anchor as a sibling of the link instead of a child of its
+    ``<sup>`` (and leaving an empty ``<sup>`` behind in the link). A stranded
+    reference therefore signals a footnote nested in a link, which must be
+    rewritten in the source so the marker sits outside the link.
+
+    Returns a list of stranded footnote-reference identifiers.
+    """
+    stranded: list[str] = []
+    for ref in _tags_only(soup.select("a[data-footnote-ref]")):
+        parent = ref.parent
+        if parent is None or parent.name != "sup":
+            identifier = ref.get("id") or ref.get("href") or ref.get_text()
+            _append_to_list(stranded, str(identifier))
+    return stranded
 
 
 def _check_anchor_classes(
@@ -894,7 +917,7 @@ def _canonical_inline_video_source(video: Tag) -> str | None:
     """
     if video.get("id") == "pond-video":
         return None
-    if not all(video.has_attr(a) for a in ("autoplay", "loop", "muted")):
+    if not _is_gif_replacement(video):
         return None
     candidates: Iterable[str | list[str] | None] = (
         video.get("src"),
@@ -2197,6 +2220,7 @@ def check_file_for_issues(
         "problematic_katex": check_katex_elements_for_errors(soup),
         "unrendered_subtitles": check_unrendered_subtitles(soup),
         "unrendered_footnotes": check_unrendered_footnotes(soup),
+        "footnote_ref_not_in_sup": check_footnote_refs_in_sup(soup),
         "missing_critical_css": not check_critical_css(soup),
         "empty_body": script_utils.body_is_empty(soup),
         "duplicate_ids": check_duplicate_ids(soup),
@@ -2234,6 +2258,8 @@ def check_file_for_issues(
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
         ),
+        "video_missing_captions": check_video_caption_tracks(soup),
+        "linked_video_missing_captions": check_linked_video_captions(soup),
         "inline_style_variables": check_inline_style_variables(
             soup, opts.defined_css_variables
         ),
@@ -2942,6 +2968,160 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
         all_issues.extend(video_issues)
 
     return all_issues
+
+
+def _is_gif_replacement(video: Tag) -> bool:
+    """True for inline looping muted ``<video>`` GIF replacements, which carry
+    no audio and so need no captions."""
+    return all(video.has_attr(attr) for attr in ("autoplay", "loop", "muted"))
+
+
+def _video_source_hint(video: Tag) -> str:
+    """A human-readable source URL for issue messages."""
+    src = video.get("src")
+    if isinstance(src, str):
+        return src
+    for source in _tags_only(video.find_all("source")):
+        source_src = source.get("src")
+        if isinstance(source_src, str):
+            return source_src
+    return "(unknown source)"
+
+
+def _video_caption_issue(video: Tag) -> str | None:
+    """
+    Issue message if a captionable ``<video>`` lacks a real captions track.
+
+    A real ``<track kind="captions" src="….vtt">`` satisfies the check, as does
+    an explicit ``label="No audio"`` marker for an intentionally silent embed.
+    The empty ``data:text/vtt,WEBVTT`` placeholder (injected when nothing
+    assigned a real track) and a missing track both fail.
+    """
+    for track in _tags_only(video.find_all("track")):
+        if track.get("kind") != "captions":
+            continue
+        if str(track.get("label", "")) == "No audio":
+            return None
+        src = track.get("src")
+        if isinstance(src, str) and src.lower().endswith(".vtt"):
+            return None
+    return (
+        f"<video> {_video_source_hint(video)} has no real captions track "
+        "(.vtt) or 'No audio' marker"
+    )
+
+
+def check_video_caption_tracks(soup: BeautifulSoup) -> list[str]:
+    """
+    Every audio-bearing ``<video>`` must carry a real captions track.
+
+    Skips ``#pond-video`` and inline looping muted GIF replacements, which have
+    no audio.
+    """
+    issues: list[str] = []
+    for video in _tags_only(soup.find_all("video")):
+        if _should_skip_video(video) or _is_gif_replacement(video):
+            continue
+        issue = _video_caption_issue(video)
+        if issue is not None:
+            issues.append(issue)
+    return issues
+
+
+# Linked-video container formats that routinely carry speech.
+_CAPTIONABLE_LINKED_VIDEO_EXTS: frozenset[str] = frozenset(
+    {".mp4", ".mov", ".m4v"}
+)
+
+# Fragment on a linked video's href that opts it out of the captions
+# requirement, mirroring the ``label="No audio"`` marker on embedded <video>.
+_NO_AUDIO_LINK_MARKER = "no-audio"
+
+
+def _cdn_asset_base(url: str) -> tuple[str, str, str] | None:
+    """
+    Split an asset-CDN URL into ``(path_without_ext, ext, fragment)``, with the
+    query dropped and the extension lowercased.
+
+    Returns ``None`` for URLs hosted anywhere else.
+    """
+    parsed = urlparse(url)
+    if parsed.hostname != script_utils.CDN_HOSTNAME:
+        return None
+    base, ext = os.path.splitext(parsed.path)
+    return (base, ext.lower(), parsed.fragment)
+
+
+@functools.cache
+def _cdn_vtt_probe_issue(vtt_url: str) -> str | None:
+    """
+    ``None`` if a HEAD request finds the ``.vtt`` on the CDN, else the reason.
+
+    Results — failures included — are cached per URL: the checker runs over
+    every built page, and each unreferenced video gets exactly one probe per
+    run.
+    """
+    try:
+        response = _head_with_retry(vtt_url)
+    except requests.RequestException as exc:
+        return f"HEAD {vtt_url} failed: {exc}"
+    if response.ok:
+        return None
+    return f"HEAD {vtt_url} returned status {response.status_code}"
+
+
+def _referenced_cdn_vtt_bases(soup: BeautifulSoup) -> set[str]:
+    """Base paths of every ``.vtt`` on the asset CDN referenced by the page."""
+    bases: set[str] = set()
+    for tag in _tags_only(soup.find_all(["a", "track", "source"])):
+        ref = tag.get("href") or tag.get("src")
+        if not isinstance(ref, str):
+            continue
+        parsed = _cdn_asset_base(ref)
+        if parsed is not None and parsed[1] == ".vtt":
+            bases.add(parsed[0])
+    return bases
+
+
+def check_linked_video_captions(soup: BeautifulSoup) -> list[str]:
+    """
+    Every linked audio-container video on the asset CDN must have captions.
+
+    A bare ``<a href="…/foo.mp4">`` bypasses the embedded-``<video>`` caption
+    check. The link passes if the page references the sibling ``…/foo.vtt``,
+    or (checked via HEAD probe) the sibling ``.vtt`` exists on the CDN — the
+    transcription pipeline uploads it next to the video. Only
+    ``.mp4``/``.mov``/``.m4v`` links are checked (formats that routinely carry
+    speech); ``.webm``/``.gif`` links are exempt. A silent link opts out with
+    a ``#no-audio`` fragment, the link-side analog of the ``label="No audio"``
+    marker on embedded videos.
+    """
+    referenced_vtt_bases = _referenced_cdn_vtt_bases(soup)
+
+    issues: list[str] = []
+    for anchor in _tags_only(soup.find_all("a", href=True)):
+        href = anchor.get("href")
+        if not isinstance(href, str):  # pragma: no cover  # a simple typeguard
+            continue
+        parsed = _cdn_asset_base(href)
+        if parsed is None:
+            continue
+        base_path, ext, fragment = parsed
+        if ext not in _CAPTIONABLE_LINKED_VIDEO_EXTS:
+            continue
+        if fragment == _NO_AUDIO_LINK_MARKER:
+            continue
+        if base_path in referenced_vtt_bases:
+            continue
+        vtt_url = f"{script_utils.CDN_BASE_URL}{base_path}.vtt"
+        probe_issue = _cdn_vtt_probe_issue(vtt_url)
+        if probe_issue is not None:
+            issues.append(
+                f"Linked video {href} has no captions companion: "
+                f"{probe_issue}; no on-page .vtt reference or "
+                f"'#{_NO_AUDIO_LINK_MARKER}' marker"
+            )
+    return issues
 
 
 # Generic labels that don't describe the video's content, so they don't

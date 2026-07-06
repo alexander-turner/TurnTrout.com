@@ -955,8 +955,26 @@ _SENTENCE_INITIAL_MID_RE = re.compile(
     r"(?<!\.)([.!?])[ \t]+[" + _LEADING_QUOTE_CHARS + r"]*\d"
 )
 _TRAILING_WORD_RE = re.compile(r"([A-Za-z.]+)$")
-_LIST_MARKER_RE = re.compile(r"^\s*([-*+]\s+|\d+[.)]\s+)")
-_FOOTNOTE_DEFINITION_RE = re.compile(r"^\[\^[^\]]+\]:")
+# A bullet or numbered enumerator, with or without inline body: an item whose
+# text wraps to the next line leaves only the marker (``1.``) on this line, and
+# that bare enumerator is not sentence-initial prose.
+_LIST_MARKER_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])(?:\s+|$)")
+_FOOTNOTE_DEFINITION_RE = re.compile(r"^\[\^[^\]]+\]:\s*")
+# Leading markers that introduce authorial prose; each is stripped so the
+# numeral check runs on the text the reader actually sees. A definition or
+# subtitle line opens with ``:``.
+_DEFINITION_PREFIX_RE = re.compile(r"^\s*:\s+")
+_PROSE_MARKER_RES = (
+    _FOOTNOTE_DEFINITION_RE,
+    _LIST_MARKER_RE,
+    _DEFINITION_PREFIX_RE,
+)
+# Lines that carry no authorial sentence-initial prose. Blockquotes (``>``,
+# including ``[!quote]`` callouts) are verbatim quotations whose numerals must
+# stay as written. Headings have their own style rule, table rows are data
+# cells, and a leading ``![`` is a standalone image whose alt text is not body
+# prose.
+_NON_PROSE_PREFIXES = (">", "#", "|", "![")
 
 # Abbreviations whose trailing period is not a sentence boundary, so a digit
 # after them ("eq. 5", "e.g. 2", "Fig. 3") is not sentence-initial. Single
@@ -986,15 +1004,30 @@ def _blank_frontmatter_lines(lines: list[str]) -> None:
             return
 
 
-def _is_prose_line(line: str) -> bool:
-    """Whether a line is prose subject to the sentence-initial numeral check."""
+def _prose_content(line: str) -> str | None:
+    """
+    Return the rendered-prose portion of a line, or ``None`` if it has none.
+
+    Structural markers that introduce authorial prose are stripped so the
+    numeral check runs on what the reader actually sees: list bullets, numbered
+    enumerators, definition/subtitle colons, and footnote-definition labels.
+    Markers nest (a definition line may hold a numbered list, an enumerator a
+    sub-list), so they are peeled off repeatedly until prose remains. Lines that
+    carry no authorial prose return ``None``: blockquotes (verbatim
+    quotations), headings, table rows, and standalone images, including when
+    such a marker surfaces only after an outer marker is peeled away.
+    """
     stripped = line.strip()
-    if not stripped or stripped.startswith((">", "#", "|", "![", ":")):
-        return False
-    return not (
-        _FOOTNOTE_DEFINITION_RE.match(stripped)
-        or _LIST_MARKER_RE.match(stripped)
-    )
+    while True:
+        if not stripped or stripped.startswith(_NON_PROSE_PREFIXES):
+            return None
+        for marker in _PROSE_MARKER_RES:
+            match = marker.match(stripped)
+            if match:
+                stripped = stripped[match.end() :].strip()
+                break
+        else:
+            return stripped
 
 
 def check_sentence_initial_numerals(text: str) -> list[str]:
@@ -1003,11 +1036,18 @@ def check_sentence_initial_numerals(text: str) -> list[str]:
 
     English style spells out numbers that open a sentence ("Twenty-six people
     attended", not "26 people attended"). This flags a digit at the start of a
-    paragraph, or after sentence-ending punctuation, within prose. Code, math,
-    YAML frontmatter, headings, tables, blockquotes, list markers, image alt
-    text, and footnote definitions are excluded, as is a digit following an
-    ellipsis (a trailing-off continuation, not a new sentence). A line carrying
-    the "<!-- lint-ignore sentence-initial-numeral -->" marker is skipped so a
+    sentence in any rendered authorial prose: paragraphs, list items, numbered
+    list content, definition/subtitle lines, and footnote-definition bodies.
+
+    The leading structural marker of each context is stripped first, so a list
+    bullet or numbered enumerator (a Markdown number, kept as written) does not
+    itself trip the check. Code and math are blanked before checking, so a
+    numeral rendered from a $\\KaTeX$ equation is also fine. Headings (which
+    have their own style rule), tables, standalone image alt text, and
+    blockquotes (``[!quote]`` callouts and ``>`` quotations, where numerals are
+    verbatim) are excluded, as is a digit following an ellipsis (a trailing-off
+    continuation, not a new sentence). A line carrying the
+    "<!-- lint-ignore sentence-initial-numeral -->" marker is skipped so a
     deliberate leading numeral (e.g. one that refers to a literal figure) can be
     kept with a one-line reason.
     """
@@ -1019,16 +1059,18 @@ def check_sentence_initial_numerals(text: str) -> list[str]:
 
     errors: list[str] = []
     for line_num, line in enumerate(lines, 1):
-        if _SENTENCE_INITIAL_NUMERAL_IGNORE in line or not _is_prose_line(line):
+        if _SENTENCE_INITIAL_NUMERAL_IGNORE in line:
             continue
-        if _SENTENCE_INITIAL_START_RE.match(line):
+        content = _prose_content(line)
+        if content is None:
+            continue
+        if _SENTENCE_INITIAL_START_RE.match(content):
             errors.append(
-                f"Sentence-initial numeral at line {line_num}: "
-                f"{line.strip()[:60]}"
+                f"Sentence-initial numeral at line {line_num}: {content[:60]}"
             )
             continue
-        for match in _SENTENCE_INITIAL_MID_RE.finditer(line):
-            trailing = _TRAILING_WORD_RE.search(line[: match.start() + 1])
+        for match in _SENTENCE_INITIAL_MID_RE.finditer(content):
+            trailing = _TRAILING_WORD_RE.search(content[: match.start() + 1])
             word = (
                 trailing.group(1).replace(".", "").lower() if trailing else ""
             )
@@ -1036,8 +1078,74 @@ def check_sentence_initial_numerals(text: str) -> list[str]:
                 continue
             errors.append(
                 f"Sentence-initial numeral at line {line_num}: "
-                f"{line.strip()[max(0, match.start() - 20) : match.start() + 20]}"
+                f"{content[max(0, match.start() - 20) : match.start() + 20]}"
             )
+    return errors
+
+
+_DATE_MONTH_NAMES = (
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sept",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+)
+
+# Month name (optionally abbreviated with a trailing period), a 1-2 digit day
+# with an optional ordinal suffix, and a 4-digit year. The suffix is captured
+# so callers can tell "26" from "26th" instead of just matching the date.
+_DATE_WITHOUT_ORDINAL_RE = re.compile(
+    r"\b(?:" + "|".join(_DATE_MONTH_NAMES) + r")\.?\s+"
+    r"\d{1,2}(st|nd|rd|th)?,?\s+\d{4}\b"
+)
+
+# Blockquotes, headings, tables, raw HTML, and standalone images either quote
+# an external source verbatim or render structured/non-prose data, so their
+# dates are left as written.
+_DATE_NON_PROSE_PREFIXES = (">", "#", "|", "<", "![")
+
+
+def check_dates_missing_ordinal_suffix(text: str) -> list[str]:
+    """
+    Flag written-out dates ("Month Day, Year") whose day lacks an ordinal suffix
+    ("st"/"nd"/"rd"/"th").
+
+    The site's date convention spells the day ordinally ("January 26th, 2026"),
+    so a bare cardinal day ("January 26, 2026") is a formatting bug.
+    """
+    stripped_text = remove_math(remove_code(text))
+    errors = []
+    for line_num, line in enumerate(stripped_text.split("\n"), 1):
+        stripped_line = line.strip()
+        if not stripped_line or stripped_line.startswith(
+            _DATE_NON_PROSE_PREFIXES
+        ):
+            continue
+        for match in _DATE_WITHOUT_ORDINAL_RE.finditer(line):
+            if match.group(1) is None:
+                errors.append(
+                    f"Date missing ordinal suffix at line {line_num}: "
+                    f"{match.group().strip()}"
+                )
     return errors
 
 
@@ -1084,6 +1192,9 @@ def check_file_data(
         "footnote_references": check_footnote_references(text),
         "self_closing_non_void": check_self_closing_non_void_elements(text),
         "sentence_initial_numerals": check_sentence_initial_numerals(text),
+        "dates_missing_ordinal_suffix": check_dates_missing_ordinal_suffix(
+            text
+        ),
         "invalid_filename": (
             check_spaces_in_path(file_path)
             + check_filename_lowercase(file_path)
@@ -1279,6 +1390,10 @@ def build_sequence_data(markdown_files: list[Path]) -> dict[str, dict]:
             if permalink := metadata.get("permalink", ""):
                 all_sequence_data[permalink] = slug_mapping
             if aliases := metadata.get("aliases", []):
+                # ``aliases`` may be a single scalar string or a list; normalize
+                # to a list so a scalar isn't iterated character-by-character.
+                if isinstance(aliases, str):
+                    aliases = [aliases]
                 for alias in aliases:
                     if not alias:
                         continue

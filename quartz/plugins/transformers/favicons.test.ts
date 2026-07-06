@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import type { Element } from "hast"
+import type { Element, Properties } from "hast"
 
 import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { h } from "hastscript"
@@ -946,5 +946,145 @@ describe("favicon must be inside favicon-span", () => {
         hasClass(child as Element, "favicon"),
     )
     expect(directNakedFavicon).toBeUndefined()
+  })
+})
+
+describe("isFootnoteRefSup", () => {
+  const footnoteAnchor = (props: Properties) => h("sup", {}, [h("a", props, ["1"])])
+
+  it.each([
+    ["data-footnote-ref attribute", footnoteAnchor({ dataFootnoteRef: true }), true],
+    [
+      "user-content-fnref id",
+      footnoteAnchor({ id: "user-content-fnref-1", href: "#user-content-fn-1" }),
+      true,
+    ],
+    ["plain sup without footnote anchor", h("sup", {}, ["2"]), false],
+    ["sup wrapping a non-footnote link", footnoteAnchor({ href: "#other", id: "other-1" }), false],
+    ["non-sup element", h("span", {}, [h("a", { dataFootnoteRef: true }, ["1"])]), false],
+  ])("detects %s", (_name, node, expected) => {
+    expect(favicons.isFootnoteRefSup(node as Element)).toBe(expected)
+  })
+
+  it.each([
+    ["undefined", undefined],
+    ["a bare text node", { type: "text", value: "hi" } as import("hast").Text],
+  ])("returns false for %s", (_name, node) => {
+    expect(favicons.isFootnoteRefSup(node)).toBe(false)
+  })
+})
+
+describe("endsWithFavicon", () => {
+  const favicon = () => h("img", { className: "favicon" })
+  const faviconSpan = () => h("span", { className: "favicon-span" }, ["ext", favicon()])
+
+  it.each([
+    ["a bare trailing favicon", h("a", {}, ["link", favicon()]), true],
+    ["a trailing favicon-span", h("a", {}, ["li", faviconSpan()]), true],
+    ["a nested favicon inside code", h("a", {}, [h("code", {}, ["fn", favicon()])]), true],
+    ["trailing whitespace after the favicon", h("a", {}, ["li", faviconSpan(), "   "]), true],
+    ["a link with no favicon", h("a", {}, ["just text"]), false],
+    ["a favicon that is not the last child", h("a", {}, [favicon(), "trailing text"]), false],
+    ["an empty element", h("a", {}, []), false],
+  ])("returns %s", (_name, node, expected) => {
+    expect(favicons.endsWithFavicon(node as Element)).toBe(expected)
+  })
+})
+
+describe("glueFootnoteRefsToFavicons", () => {
+  const favicon = () => h("img", { className: "favicon" })
+  const faviconLink = () =>
+    h("a", { href: "https://example.com" }, [
+      "si",
+      h("span", { className: "favicon-span" }, ["te", favicon()]),
+    ])
+  const footnoteRef = (n: number) =>
+    h("sup", {}, [
+      h(
+        "a",
+        { dataFootnoteRef: true, id: `user-content-fnref-${n}`, href: `#user-content-fn-${n}` },
+        [String(n)],
+      ),
+    ])
+  const asRoot = (...children: (Element | string)[]) =>
+    ({ type: "root", children: [h("p", {}, children)] }) as unknown as import("hast").Root
+
+  const isGlueSpan = (node: Element | undefined): boolean =>
+    node?.type === "element" &&
+    node.tagName === "span" &&
+    node.properties?.className === "favicon-footnote-span"
+
+  it("wraps a favicon-ending link and a following footnote ref in a nowrap span", () => {
+    const tree = asRoot(faviconLink(), footnoteRef(1))
+    favicons.glueFootnoteRefsToFavicons(tree)
+    const paragraphChildren = (tree.children[0] as Element).children
+    expect(paragraphChildren).toHaveLength(1)
+    const span = paragraphChildren[0] as Element
+    expect(isGlueSpan(span)).toBe(true)
+    expect(span.children).toHaveLength(2)
+    expect((span.children[0] as Element).tagName).toBe("a")
+    expect((span.children[1] as Element).tagName).toBe("sup")
+  })
+
+  it("does not wrap when the preceding link has no favicon", () => {
+    const tree = asRoot(h("a", { href: "https://example.com" }, ["plain"]), footnoteRef(1))
+    favicons.glueFootnoteRefsToFavicons(tree)
+    const paragraphChildren = (tree.children[0] as Element).children
+    expect(paragraphChildren).toHaveLength(2)
+    expect(paragraphChildren.some((child) => isGlueSpan(child as Element))).toBe(false)
+  })
+
+  it("does not wrap when the following sup is not a footnote reference", () => {
+    const tree = asRoot(faviconLink(), h("sup", {}, ["th"]))
+    favicons.glueFootnoteRefsToFavicons(tree)
+    const paragraphChildren = (tree.children[0] as Element).children
+    expect(paragraphChildren).toHaveLength(2)
+    expect(paragraphChildren.some((child) => isGlueSpan(child as Element))).toBe(false)
+  })
+
+  it("does not wrap a footnote ref that opens a paragraph", () => {
+    const tree = {
+      type: "root",
+      children: [h("p", {}, [footnoteRef(1)])],
+    } as unknown as import("hast").Root
+    favicons.glueFootnoteRefsToFavicons(tree)
+    const paragraphChildren = (tree.children[0] as Element).children
+    expect(paragraphChildren).toHaveLength(1)
+    expect(isGlueSpan(paragraphChildren[0] as Element)).toBe(false)
+  })
+
+  it("wraps each of several favicon/footnote pairs in one parent", () => {
+    const tree = asRoot(faviconLink(), footnoteRef(1), " and ", faviconLink(), footnoteRef(2))
+    favicons.glueFootnoteRefsToFavicons(tree)
+    const paragraphChildren = (tree.children[0] as Element).children
+    // Two glue spans separated by the " and " text node.
+    const spanChildCounts = paragraphChildren
+      .filter((child) => isGlueSpan(child as Element))
+      .map((span) => (span as Element).children.length)
+    expect(spanChildCounts).toEqual([2, 2])
+    // Each glue span ends with a footnote sup.
+    const endsWithSup = paragraphChildren
+      .filter((child) => isGlueSpan(child as Element))
+      .map((span) => favicons.isFootnoteRefSup((span as Element).children.at(-1) as Element))
+    expect(endsWithSup).toEqual([true, true])
+  })
+
+  it("wraps across an empty text node left by whitespace stripping", () => {
+    const tree = asRoot(faviconLink(), "", footnoteRef(1))
+    favicons.glueFootnoteRefsToFavicons(tree)
+    const paragraphChildren = (tree.children[0] as Element).children
+    expect(paragraphChildren).toHaveLength(1)
+    const span = paragraphChildren[0] as Element
+    expect(isGlueSpan(span)).toBe(true)
+    // The empty text node is carried inside the span between the link and the sup.
+    expect((span.children[0] as Element).tagName).toBe("a")
+    expect(favicons.isFootnoteRefSup(span.children.at(-1) as Element)).toBe(true)
+  })
+
+  it("does not wrap when only empty text nodes precede a paragraph-opening ref", () => {
+    const tree = asRoot("", footnoteRef(1))
+    favicons.glueFootnoteRefsToFavicons(tree)
+    const paragraphChildren = (tree.children[0] as Element).children
+    expect(paragraphChildren.some((child) => isGlueSpan(child as Element))).toBe(false)
   })
 })

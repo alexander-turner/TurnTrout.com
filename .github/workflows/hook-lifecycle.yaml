@@ -6,29 +6,7 @@ name: Hook lifecycle
 on:
   push:
     branches: ["main"]
-    paths:
-      - ".claude/hooks/**"
-      - ".hooks/**"
-      - "setup.sh"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".pre-commit-config.yaml"
-      - ".github/scripts/run-hook-lifecycle.sh"
-      - ".github/workflows/hook-lifecycle.yaml"
-  pull_request: # not-required-check: single advisory job, path-gated, no required reporter
-    paths:
-      - ".claude/hooks/**"
-      - ".hooks/**"
-      - "setup.sh"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".pre-commit-config.yaml"
-      - ".github/scripts/run-hook-lifecycle.sh"
-      - ".github/workflows/hook-lifecycle.yaml"
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -38,11 +16,32 @@ permissions:
   contents: read
 
 jobs:
+  decide:
+    permissions:
+      contents: read
+      pull-requests: read
+    uses: ./.github/workflows/decide-reusable.yaml
+    with:
+      filters: |
+        run:
+          - '.claude/hooks/**'
+          - '.hooks/**'
+          - 'setup.sh'
+          - 'package.json'
+          - 'pnpm-lock.yaml'
+          - 'pyproject.toml'
+          - 'uv.lock'
+          - '.pre-commit-config.yaml'
+          - '.github/scripts/run-hook-lifecycle.sh'
+          - '.github/workflows/hook-lifecycle.yaml'
+
   hook-lifecycle:
+    needs: decide
+    if: needs.decide.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -53,3 +52,13 @@ jobs:
 
       - name: Run hook lifecycle
         run: bash .github/scripts/run-hook-lifecycle.sh
+
+  hook-lifecycle-passed: # required-check: true
+    if: always()
+    needs: [decide, hook-lifecycle]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail if any required job did not pass
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

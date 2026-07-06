@@ -25,6 +25,11 @@ def main() -> int:
     name = data.get("tool_name", "") or ""
     tool_input = data.get("tool_input", {}) or {}
     path = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
+    # MultiEdit carries an array of edits; use the first entry's file_path.
+    if not path and name == "MultiEdit":
+        edits = tool_input.get("edits") or []
+        if edits and isinstance(edits, list) and isinstance(edits[0], dict):
+            path = edits[0].get("file_path") or ""
     if path and not os.path.isabs(path):
         path = os.path.join(project_dir, path)
     print(name)

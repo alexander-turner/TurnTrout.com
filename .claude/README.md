@@ -1,6 +1,6 @@
 # Claude Code Configuration
 
-This directory contains configuration and skills for Claude Code.
+This directory contains configuration and skills for Claude Code.
 
 ## Structure
 
@@ -19,28 +19,28 @@ This directory contains configuration and skills for Claude Code.
         └── pr-templates.md     # PR formatting and validation reference
 ```
 
-## How It Works
+## How It Works
 
-### Session Start Hook
+### Session Start Hook
 
-When Claude Code starts a session, it automatically runs `session-setup.sh` which:
+When Claude Code starts a session, it automatically runs `session-setup.sh` which:
 
-1. **Installs tools**: shfmt, gh (GitHub CLI), jq, shellcheck
-2. **Configures git hooks**: Sets `core.hooksPath` to `.hooks/`
-3. **Validates GitHub CLI auth**: Fails fast if `GH_TOKEN` is missing
-4. **Detects GitHub repo**: Extracts `owner/repo` from proxy remotes in web sessions
-5. **Installs dependencies**: Node (pnpm/npm) and Python (uv) if applicable
+1. **Installs tools**: shfmt, gh (GitHub CLI), jq, shellcheck
+2. **Configures git hooks**: Sets `core.hooksPath` to `.hooks/`
+3. **Validates GitHub CLI auth**: Fails fast if `GH_TOKEN` is missing
+4. **Detects GitHub repo**: Extracts `owner/repo` from proxy remotes in web sessions
+5. **Installs dependencies**: Node (pnpm/npm) and Python (uv) if applicable
 
-### Pre-Push Check Hook
+### Pre-Push Check Hook
 
-Before `git push` or `gh pr` commands, `pre-push-check.sh` runs any configured checks:
+Before `git push` or `gh pr` commands, `pre-push-check.sh` runs any configured checks:
 
-- **build** (`pnpm build`): Catches type errors in TypeScript projects
-- **lint** (`pnpm lint`): Catches code quality issues
-- **typecheck** (`pnpm check`): Additional type checking if configured
-- **ruff**: Python linting if applicable
+- **build** (`pnpm build`): Catches type errors in TypeScript projects
+- **lint** (`pnpm lint`): Catches code quality issues
+- **typecheck** (`pnpm check`): Additional type checking if configured
+- **ruff**: Python linting if applicable
 
-Only runs scripts that are actually configured in `package.json`—skips placeholder scripts.
+Only runs scripts that are actually configured in `package.json`—skips placeholder scripts.
 
 ### PostToolUse: Narrative-Comments Check
 
@@ -50,17 +50,17 @@ and exits 2 (non-blocking) to surface a reminder. Skips docs/config files.
 
 ### Skills
 
-Skills in `skills/` are reusable workflows that guide Claude through complex tasks:
+Skills in `skills/` are reusable workflows that guide Claude through complex tasks:
 
 - **pr-creation**: Creating pull requests with mandatory self-critique before submission (invoke with `/pr-creation`)
 
-Skills are automatically available to Claude Code when working in this repository.
+Skills are automatically available to Claude Code when working in this repository.
 
 ## Customization
 
-### Adding Tools
+### Adding Tools
 
-Edit `hooks/session-setup.sh` to add more tools:
+Edit `hooks/session-setup.sh` to add more tools:
 
 ```bash
 # Via uv
@@ -75,15 +75,15 @@ if is_root; then
 fi
 ```
 
-### Adding Skills
+### Adding Skills
 
-Create new skill directories in `skills/` following the pattern in `pr-creation/SKILL.md`. Each skill should be a directory with a `SKILL.md` entrypoint and optional supporting files.
+Create new skill directories in `skills/` following the pattern in `pr-creation/SKILL.md`. Each skill should be a directory with a `SKILL.md` entrypoint and optional supporting files.
 
-### Customizing Hooks
+### Customizing Hooks
 
-Modify `settings.json` to add more hooks. See the [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) for available hook types.
+Modify `settings.json` to add more hooks. See the [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) for available hook types.
 
-**Always wrap PreToolUse hooks with `safe-launch.sh`.** A PreToolUse hook that fails to parse (e.g. unresolved merge conflict markers) exits non-zero, which Claude Code treats as a block—locking the session out of repairing the very file that’s broken. `safe-launch.sh` detects the parse failure and degrades open: edits under `.claude/hooks/` and `.hooks/` are allowed for self-repair; all other tools get `permissionDecision: "ask"`.
+**Always wrap PreToolUse hooks with `safe-launch.sh`.** A PreToolUse hook that fails to parse (e.g. unresolved merge conflict markers) exits non-zero, which Claude Code treats as a block—locking the session out of repairing the very file that’s broken. `safe-launch.sh` detects the parse failure and degrades open: edits under `.claude/hooks/` and `.hooks/` are allowed for self-repair; all other tools get `permissionDecision: "ask"`.
 
 ```json
 {
@@ -92,4 +92,4 @@ Modify `settings.json` to add more hooks. See the [Claude Code documentation](h
 }
 ```
 
-Any script under `.claude/hooks/` or `.hooks/` is also syntax-checked at session start by `session-setup.sh`—broken hooks surface as loud warnings before they can block the first tool call.
+Any script under `.claude/hooks/` or `.hooks/` is also syntax-checked at session start by `session-setup.sh`—broken hooks surface as loud warnings before they can block the first tool call.
