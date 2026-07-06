@@ -102,7 +102,12 @@ describe("buildExcerpt sanitizer", () => {
       id: "drop-me",
     }) as ElementContent
     const html = buildExcerpt(
-      blockWith({ type: "text", value: "the agent " }, chevron, { type: "text", value: " " }, anchored("moves")),
+      blockWith(
+        { type: "text", value: "the agent " },
+        chevron,
+        { type: "text", value: " " },
+        anchored("moves"),
+      ),
       ANCHOR,
     )
     expect(html).toContain('<img class="inline-img"')
