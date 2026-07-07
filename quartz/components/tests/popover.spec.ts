@@ -123,11 +123,7 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
 })
 
 test("Multiple popovers don't stack with wait", async ({ page }) => {
-  // `:visible` skips the mobile ToC (inside #center-content but display:none on
-  // desktop), whose hidden links would fail the `toBeVisible()` assertion below.
-  const allLinks = await getAllWithWait(
-    page.locator("#center-content .can-trigger-popover:visible"),
-  )
+  const allLinks = await getAllWithWait(page.locator("#center-content .can-trigger-popover"))
   const firstLinks = allLinks.slice(0, 5)
   for (const link of firstLinks) {
     await link.scrollIntoViewIfNeeded()
@@ -143,11 +139,7 @@ test("Multiple popovers don't stack with wait", async ({ page }) => {
 })
 
 test("Multiple popovers don't stack without wait", async ({ page }) => {
-  // `:visible` skips the mobile ToC (inside #center-content but display:none on
-  // desktop), whose hidden links would fail the `toBeVisible()` assertion below.
-  const allLinks = await getAllWithWait(
-    page.locator("#center-content .can-trigger-popover:visible"),
-  )
+  const allLinks = await getAllWithWait(page.locator("#center-content .can-trigger-popover"))
   const firstLinks = allLinks.slice(0, 5)
   for (const link of firstLinks) {
     await expect(link).toBeAttached()
@@ -733,10 +725,9 @@ base.describe("Footnote popover on mobile", () => {
   })
 
   base("Non-footnote popovers are still hidden on mobile", async ({ page }) => {
-    // Exclude every hash link (`#…`): footnote refs and popover-capable ToC
-    // anchors. `.first()` then lands on a cross-page internal link (the
-    // content-meta tag link), the case this test is meant to cover.
-    const regularLink = page.locator('.can-trigger-popover:not([href^="#"])').first()
+    const regularLink = page
+      .locator('.can-trigger-popover:not([href^="#user-content-fn-"])')
+      .first()
     await regularLink.scrollIntoViewIfNeeded()
     await regularLink.click()
     const popover = page.locator(".popover:not(.footnote-popover)")
@@ -840,16 +831,16 @@ base.describe("ToC hover previews on mobile", () => {
   })
 
   base(
-    "Desktop ToC hidden; mobile ToC links popover-capable but show no popover",
+    "Desktop ToC hidden; mobile ToC links are not popover-capable and show no popover",
     async ({ page }) => {
       // The desktop ToC is `.desktop-only`, so it's hidden at mobile width.
       await expect(page.locator("#table-of-contents")).toBeHidden()
 
-      // Mobile ToC links carry the capability class...
-      const mobileTocLink = page.locator("#toc-content-mobile a.can-trigger-popover").first()
-      await expect(mobileTocLink).toHaveClass(/can-trigger-popover/)
+      // Mobile ToC links don't carry the capability class — popovers are desktop-only.
+      const mobileTocLink = page.locator("#toc-content-mobile a").first()
+      await expect(mobileTocLink).not.toHaveClass(/can-trigger-popover/)
 
-      // ...but tapping one navigates within the page without showing a popover.
+      // Tapping one still navigates within the page, without ever showing a popover.
       await mobileTocLink.scrollIntoViewIfNeeded()
       await mobileTocLink.click()
       const popover = page.locator(".popover")

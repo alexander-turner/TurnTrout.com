@@ -284,6 +284,21 @@ describe("buildNestedList", () => {
     expect(result).toHaveLength(0)
   })
 
+  it("should propagate canTriggerPopover=false to every nested link", () => {
+    const entries = [
+      { depth: 1, text: "Heading 1", slug: "heading-1" },
+      { depth: 2, text: "Heading 1.1", slug: "heading-1-1" },
+    ]
+    const [result] = buildNestedList(entries, 0, entries[0].depth, false)
+
+    const firstItem = result[0]
+    const link = firstItem.props.children[0]
+    expect(link.props.className).toBe("internal same-page-link")
+
+    const nestedLink = firstItem.props.children[1].props.children[0].props.children
+    expect(nestedLink.props.className).toBe("internal same-page-link")
+  })
+
   it("should handle single level entries", () => {
     const entries = [
       { depth: 1, text: "First", slug: "first" },
@@ -456,13 +471,21 @@ describe("addListItem", () => {
 })
 
 describe("toJSXListItem", () => {
-  it("should mark the link as popover-capable so hover previews attach", () => {
+  it("should mark the link as popover-capable by default so hover previews attach", () => {
     const entry: TocEntry = { depth: 1, text: "Test Item", slug: "test-item" }
 
     const result = toJSXListItem(entry)
 
     const classNames = (result.props.className as string).split(" ")
     expect(classNames).toContain(CAN_TRIGGER_POPOVER_CLASS)
+  })
+
+  it("should omit the popover-capable class when canTriggerPopover is false", () => {
+    const entry: TocEntry = { depth: 1, text: "Test Item", slug: "test-item" }
+
+    const result = toJSXListItem(entry, false)
+
+    expect(result.props.className).toBe("internal same-page-link")
   })
 
   it("should convert TOC entry to JSX list item", () => {

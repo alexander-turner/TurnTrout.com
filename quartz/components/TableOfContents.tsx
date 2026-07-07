@@ -82,12 +82,16 @@ export const CreateTableOfContents: QuartzComponent = ({
  * @param entries - The TOC entries to process.
  * @param currentIndex - The current index in the entries array.
  * @param currentDepth - The current depth in the TOC hierarchy.
+ * @param canTriggerPopover - Whether generated links should be popover-capable.
+ *   The mobile ToC passes `false`: its links stay clickable but never trigger
+ *   a hover popover, since popovers are desktop-only.
  * @returns A tuple containing an array of JSX elements and the next index to process.
  */
 export function buildNestedList(
   entries: readonly TocEntry[],
   currentIndex = 0,
   currentDepth = entries[0]?.depth || 0,
+  canTriggerPopover = true,
 ): [JSX.Element[], number] {
   const listItems: JSX.Element[] = []
   const totalEntries = entries.length
@@ -99,7 +103,12 @@ export function buildNestedList(
     if (entry.depth < currentDepth) {
       break
     } else if (entry.depth > currentDepth) {
-      const [nestedListItems, nextIndex] = buildNestedList(entries, index, entry.depth)
+      const [nestedListItems, nextIndex] = buildNestedList(
+        entries,
+        index,
+        entry.depth,
+        canTriggerPopover,
+      )
       if (listItems.length > 0) {
         const lastItem = listItems[listItems.length - 1]
         listItems[listItems.length - 1] = (
@@ -117,7 +126,7 @@ export function buildNestedList(
       }
       index = nextIndex
     } else {
-      listItems.push(<li key={`li-${index}`}>{toJSXListItem(entry)}</li>)
+      listItems.push(<li key={`li-${index}`}>{toJSXListItem(entry, canTriggerPopover)}</li>)
       index++
     }
   }
@@ -142,16 +151,16 @@ export function addListItem(entries: TocEntry[]): JSX.Element {
 /**
  * Converts a table of contents entry into a JSX list item link.
  * @param entry - The TocEntry object representing the entry to convert.
+ * @param canTriggerPopover - Whether the link should be popover-capable.
  * @returns A JSX.Element representing the link list item.
  */
-export function toJSXListItem(entry: TocEntry): JSX.Element {
+export function toJSXListItem(entry: TocEntry, canTriggerPopover = true): JSX.Element {
   const entryParent: Parent = processTocEntry(entry)
+  const className = canTriggerPopover
+    ? `internal same-page-link ${CAN_TRIGGER_POPOVER_CLASS}`
+    : "internal same-page-link"
   return (
-    <a
-      href={`#${entry.slug}`}
-      className={`internal same-page-link ${CAN_TRIGGER_POPOVER_CLASS}`}
-      data-for={entry.slug}
-    >
+    <a href={`#${entry.slug}`} className={className} data-for={entry.slug}>
       {entryParent.children.map(elementToJsx)}
     </a>
   )

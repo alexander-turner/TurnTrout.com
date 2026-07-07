@@ -154,7 +154,7 @@ describe("Content component - mobile ToC rendering", () => {
     expect(admonitionContent.props.id).toBe("toc-content-mobile")
   })
 
-  it("should mark mobile ToC links as popover-capable", () => {
+  it("should not mark mobile ToC links as popover-capable, since popovers are desktop-only", () => {
     const props = createQuartzProps({
       toc: [
         { depth: 1, text: "Heading 1", slug: "heading-1" },
@@ -172,7 +172,7 @@ describe("Content component - mobile ToC rendering", () => {
     const anchor = findFirstAnchor(mobileOnlySpan)
     expect(anchor).not.toBeNull()
     const classNames = (anchor?.props.className as string).split(" ")
-    expect(classNames).toContain(CAN_TRIGGER_POPOVER_CLASS)
+    expect(classNames).not.toContain(CAN_TRIGGER_POPOVER_CLASS)
   })
 
   it("should render article without errors when filePath is undefined", () => {
