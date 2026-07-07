@@ -24,6 +24,15 @@ async function getImageDimensions(buffer: Buffer): Promise<{ width: number; heig
   }
 }
 
+// 1x1 transparent PNG. Firefox rejects the more common minimal encoding as
+// "Image corrupt or truncated" (leaving `naturalWidth === 0`), so these bytes
+// are a full-header PNG that every engine decodes — otherwise a mocked image
+// never paints under Firefox and `waitForImagesInElement` waits it out.
+const onePixelPng = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADUlEQVR4nGNgYGBgAAAABQABpfZFQAAAAABJRU5ErkJggg==",
+  "base64",
+)
+
 test.describe("visual_utils functions", () => {
   const preferredTheme = "light"
 
@@ -33,11 +42,6 @@ test.describe("visual_utils functions", () => {
   })
 
   test("waitForImagesInElement reloads an image whose first load fails", async ({ page }) => {
-    // 1x1 transparent PNG.
-    const onePixelPng = Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-      "base64",
-    )
     // Abort the first request to mimic a transient Firefox load failure; serve
     // every retry so the reload path can recover. Asserting the retry *request*
     // (route-observable) rather than the final paint state keeps the test
@@ -87,6 +91,47 @@ test.describe("visual_utils functions", () => {
     await expect(
       waitForImagesInElement(page.locator("#dead-img-container"), 1_000),
     ).rejects.toThrow(/did not paint within 1000ms/)
+  })
+
+  test("waitForImagesInElement waits for the theme-matching variant of swapped images", async ({
+    page,
+  }) => {
+    await page.route("**/swap-visual-test-image.png*", (route) =>
+      route.fulfill({ contentType: "image/png", body: onePixelPng }),
+    )
+    // Serve the precomputed dark variant slowly, so an unpainted-variant
+    // capture window exists for the helper to wait out.
+    await page.route("**/swap-visual-test-image-inverted.png*", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1_000))
+      await route.fulfill({ contentType: "image/png", body: onePixelPng })
+    })
+
+    await setTheme(page, "dark")
+    // The page-level load listener (accurateInvert.inline) swaps this image
+    // to its `-inverted` sibling once the original loads under a dark theme.
+    await page.evaluate(() => {
+      const container = document.createElement("div")
+      container.id = "swap-img-container"
+      const picture = document.createElement("picture")
+      const img = document.createElement("img")
+      img.className = "invert-in-dark-mode"
+      img.src = "https://assets.turntrout.com/swap-visual-test-image.png"
+      picture.appendChild(img)
+      container.appendChild(picture)
+      document.body.appendChild(container)
+    })
+
+    await waitForImagesInElement(page.locator("#swap-img-container"))
+
+    // Resolving before the inverted variant paints would let a screenshot
+    // capture the light-mode pixels under the dark theme.
+    const swappedImg = page.locator("#swap-img-container img")
+    await expect
+      .poll(() => swappedImg.evaluate((el: HTMLImageElement) => el.currentSrc))
+      .toContain("swap-visual-test-image-inverted.png")
+    await expect
+      .poll(() => swappedImg.evaluate((el: HTMLImageElement) => el.naturalWidth))
+      .toBeGreaterThan(0)
   })
 
   for (const theme of ["light", "dark", "auto"]) {

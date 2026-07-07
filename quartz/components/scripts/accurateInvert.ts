@@ -35,7 +35,14 @@ export function invertPictureSrc(img: HTMLImageElement): boolean {
   img.dataset["invertOriginalSrc"] ??= img.src
   const inverted = invertedUrl(img.dataset["invertOriginalSrc"])
   if (img.currentSrc && isInvertedUrl(img.currentSrc)) {
-    img.src = inverted
+    // The document-level capture listener (handleLoadEvent) reaches this
+    // function on the inverted image's own `load` event before the
+    // once-listener below marks it processed, so reassigning unconditionally
+    // would re-set `img.src` to the value it already holds — some browsers
+    // (Firefox) still restart the network request in that case.
+    if (img.src !== inverted) {
+      img.src = inverted
+    }
     img.dataset["invertProcessed"] = "1"
     return true
   }

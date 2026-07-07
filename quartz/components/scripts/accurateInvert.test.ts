@@ -184,6 +184,35 @@ describe("invertPictureSrc", () => {
     invertPictureSrc(img)
     expect(img.dataset["invertOriginalSrc"]).toBe("https://x/foo.avif")
   })
+
+  it("does not reassign src when it already holds the inverted URL", () => {
+    // The document-level capture listener reaches invertPictureSrc on the
+    // inverted image's own `load` event before the once-listener below marks
+    // it processed, so this call happens with img.src already inverted.
+    // Some browsers (Firefox) restart the network request on any src
+    // assignment, even to the same value, so this path must be a true no-op.
+    const img = makePictureWrappedImg("https://x/foo.avif")
+    invertPictureSrc(img)
+    dispatchSwapLoad(img)
+    let assignmentCount = 0
+    const originalSrcSetter = Object.getOwnPropertyDescriptor(
+      HTMLImageElement.prototype,
+      "src",
+    )?.set
+    Object.defineProperty(img, "src", {
+      configurable: true,
+      get: () => "https://x/foo-inverted.avif",
+      set: (value: string) => {
+        assignmentCount += 1
+        originalSrcSetter?.call(img, value)
+      },
+    })
+
+    expect(invertPictureSrc(img)).toBe(true)
+
+    expect(assignmentCount).toBe(0)
+    expect(img.dataset["invertProcessed"]).toBe("1")
+  })
 })
 
 describe("invertImage", () => {
