@@ -91,14 +91,18 @@
   margin: 0;
 }
 
+// Shared corner offset for the source-link icon, so its distance from the
+// top edge matches its distance from the right edge.
+$tweet-source-link-offset: calc(1 * $base-margin);
+
 .tweet-source-link {
   position: absolute;
 
   // Slightly above the card's padding edge so the icon reads as tucked into
   // the corner instead of pinned level with the name row — this holds
   // regardless of how long the display name is, since the name never wraps.
-  top: calc(1 * $base-margin);
-  right: calc(1.5 * $base-margin);
+  top: $tweet-source-link-offset;
+  right: $tweet-source-link-offset;
   background-color: transparent;
   line-height: 0;
 
