@@ -9642,5 +9642,13 @@
   "https://assets.turntrout.com/static/tweets/2071998353664000365/quoted-avatar.jpg?v=1": {
     "width": 400,
     "height": 400
+  },
+  "./asset_staging/nla-robustness-07072026-3.svg": {
+    "width": 614,
+    "height": 461
+  },
+  "./asset_staging/nla-robustness-07072026-1.svg": {
+    "width": 614,
+    "height": 461
   }
 }

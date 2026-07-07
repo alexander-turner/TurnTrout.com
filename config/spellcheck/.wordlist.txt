@@ -7,6 +7,7 @@
 10-timestep
 10.34mg
 100B
+100k
 100M
 1032th
 10GB
@@ -41,6 +42,7 @@
 2-20x
 200GB
 20B
+20k
 20px
 22px
 230B
@@ -97,6 +99,7 @@
 500B
 500GB
 500IQ
+500k
 500M
 500x200
 50GB
@@ -1718,6 +1721,7 @@ callout
 callouts
 capita
 cardinality
+Carthago
 carven
 caungus
 cbungus
@@ -1730,6 +1734,7 @@ central-to-EY
 ceungus
 cfungus
 cgungus
+Chalnev
 chatbot
 chatbots
 checkboxes
@@ -1878,6 +1883,7 @@ defensibility
 definitional
 definitionally
 del
+delenda
 demonſtrations
 deontological
 depetrification
@@ -2093,6 +2099,7 @@ fs
 fu4vhd1ud5y4niijbicd
 ful
 functionals
+FVE
 fórmula
 gameable
 gameplan
@@ -2284,6 +2291,7 @@ kern
 kerning
 keyring
 kiiiinda
+kinesiotherapy
 kludgy
 kmn
 kneeled
@@ -2476,6 +2484,7 @@ newsfeed
 nilpotent
 nitpickier
 nitty-gritty
+NLA
 no-brainer
 no_dropcap
 nomenclative
@@ -2777,6 +2786,7 @@ rebase
 rebrand
 recommender
 reconfused
+reconstructor
 recontextualization
 recontextualization-like
 recontextualize
@@ -2927,6 +2937,7 @@ situationally
 situationally-activated
 skillset
 skillsets
+Slava
 smallcaps
 snoozy
 snuck
@@ -3207,6 +3218,7 @@ vec
 vector-Jacobian
 vectorize
 ventralis
+verbalizer
 verifiably
 verifier
 vestibular

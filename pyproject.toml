@@ -68,10 +68,11 @@ skip = "*.lock,*pnpm-lock.yaml,*uv.lock,*public*,*node_modules*,*.venv*,*asset_s
 #   dataet     strips Mermaid's data-et SVG attribute (paired with
 #              data-edge/data-look/data-id/data-points)
 #   nd         codespell tokenizes "2nd" into "2" and "nd"
+#   ot         codespell splits the "Reward≠OT" heading token on the ≠
 #   processus  French test fixture ("améliorer le processus")
 #   te         single-letter token in test data
 #   wrold      intentional misspelling in spellcheck-triage test fixtures
-ignore-words-list = "afterall,allo,caf,dataet,nd,processus,te,wrold"
+ignore-words-list = "afterall,allo,caf,dataet,nd,ot,processus,te,wrold"
 
 [tool.ruff]
 line-length = 80
