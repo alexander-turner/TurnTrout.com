@@ -287,7 +287,9 @@ def test_transcript_to_vtt_missing_bounds_raises():
         transcribe_videos.transcript_to_vtt(transcript)
 
 
-@pytest.mark.parametrize("end", [1.0, 0.5])
+# 1.0004 is positive in raw seconds but rounds to the same millisecond cue
+# timestamp as the start, which WebVTT forbids just the same.
+@pytest.mark.parametrize("end", [1.0, 0.5, 1.0004])
 def test_transcript_to_vtt_non_positive_duration_raises(end: float):
     transcript = {"segments": [{"start": 1.0, "end": end, "text": "hi"}]}
     with pytest.raises(ValueError, match="non-positive duration"):
@@ -308,6 +310,14 @@ def _write_md(references_dir: Path, name: str, body: str) -> Path:
     md = references_dir / name
     md.write_text(body, encoding="utf-8")
     return md
+
+
+def _video_block(stem: str) -> str:
+    """A markdown ``<video>`` block with a single MP4 source for *stem*."""
+    return (
+        f'<video controls><source src="static/images/posts/{stem}.mp4" '
+        'type="video/mp4; codecs=hvc1"></video>'
+    )
 
 
 def test_inject_caption_track_adds_track(tmp_path: Path):
@@ -341,10 +351,7 @@ def test_inject_caption_track_idempotent(tmp_path: Path):
 
 def test_inject_caption_track_ignores_other_videos(tmp_path: Path):
     refs = tmp_path / "content"
-    original = (
-        '<video controls><source src="static/images/posts/other.mp4" '
-        'type="video/mp4; codecs=hvc1"></video>\n'
-    )
+    original = _video_block("other") + "\n"
     md = _write_md(refs, "post.md", original)
     transcribe_videos.inject_caption_track(Path("x/talk.mp4"), refs)
     assert md.read_text(encoding="utf-8") == original
@@ -353,14 +360,8 @@ def test_inject_caption_track_ignores_other_videos(tmp_path: Path):
 def test_inject_caption_track_adjacent_blocks(tmp_path: Path):
     """A track lands in the target block without merging the neighbour."""
     refs = tmp_path / "content"
-    other_block = (
-        '<video controls><source src="static/images/posts/other.mp4" '
-        'type="video/mp4; codecs=hvc1"></video>'
-    )
-    talk_block = (
-        '<video controls><source src="static/images/posts/talk.mp4" '
-        'type="video/mp4; codecs=hvc1"></video>'
-    )
+    other_block = _video_block("other")
+    talk_block = _video_block("talk")
     md = _write_md(refs, "post.md", f"{other_block}\n{talk_block}\n")
     transcribe_videos.inject_caption_track(Path("x/talk.mp4"), refs)
     updated = md.read_text(encoding="utf-8")
@@ -373,10 +374,7 @@ def test_inject_caption_track_adjacent_blocks(tmp_path: Path):
 def test_inject_caption_track_stem_not_substring(tmp_path: Path):
     """``bar.mp4`` must not match a ``foobar.mp4`` source (anchored stem)."""
     refs = tmp_path / "content"
-    original = (
-        '<video controls><source src="static/images/posts/foobar.mp4" '
-        'type="video/mp4; codecs=hvc1"></video>\n'
-    )
+    original = _video_block("foobar") + "\n"
     md = _write_md(refs, "post.md", original)
     transcribe_videos.inject_caption_track(Path("x/bar.mp4"), refs)
     assert md.read_text(encoding="utf-8") == original
@@ -385,26 +383,14 @@ def test_inject_caption_track_stem_not_substring(tmp_path: Path):
 # --- Asset orchestration ---
 
 
-def test_transcribe_video_asset_skips_existing_vtt(tmp_path: Path):
-    mp4 = tmp_path / "talk.mp4"
-    mp4.write_bytes(b"x")
-    (tmp_path / "talk.vtt").write_text("WEBVTT\n", encoding="utf-8")
-    assert transcribe_videos.transcribe_video_asset(mp4, tmp_path) is False
-
-
-def test_transcribe_video_asset_existing_vtt_still_injects(tmp_path: Path):
-    """A pre-existing VTT must not block caption injection into video blocks
-    written after the original transcription."""
+def test_transcribe_video_asset_existing_vtt_skips_but_injects(tmp_path: Path):
+    """A pre-existing VTT skips re-transcription without blocking caption
+    injection into video blocks written after the original transcription."""
     mp4 = tmp_path / "talk.mp4"
     mp4.write_bytes(b"x")
     (tmp_path / "talk.vtt").write_text("WEBVTT\n", encoding="utf-8")
     refs = tmp_path / "content"
-    md = _write_md(
-        refs,
-        "post.md",
-        '<video controls><source src="static/images/posts/talk.mp4" '
-        'type="video/mp4; codecs=hvc1"></video>\n',
-    )
+    md = _write_md(refs, "post.md", _video_block("talk") + "\n")
     assert transcribe_videos.transcribe_video_asset(mp4, refs) is False
     assert "talk.vtt" in md.read_text(encoding="utf-8")
 
@@ -441,12 +427,7 @@ def test_transcribe_video_asset_happy_path(tmp_path: Path):
     mp4 = static / "talk.mp4"
     mp4.write_bytes(b"x")
     refs = tmp_path / "content"
-    _write_md(
-        refs,
-        "post.md",
-        '<video controls><source src="static/images/posts/talk.mp4" '
-        'type="video/mp4; codecs=hvc1"></video>\n',
-    )
+    _write_md(refs, "post.md", _video_block("talk") + "\n")
     transcript = {"segments": [{"start": 0, "end": 1, "text": "hi"}]}
     with (
         mock.patch.object(
@@ -468,8 +449,9 @@ def test_transcribe_video_asset_happy_path(tmp_path: Path):
 
 def test_main_requires_asset_directory(monkeypatch):
     monkeypatch.setattr(sys, "argv", ["transcribe_videos.py"])
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as excinfo:
         transcribe_videos.main()
+    assert excinfo.value.code == 2  # argparse usage error, not a clean exit
 
 
 def test_main_skips_when_unconfigured(monkeypatch, capsys):

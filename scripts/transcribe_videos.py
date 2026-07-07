@@ -8,8 +8,9 @@ WebVTT file, and injects a ``<track kind="captions">`` into the matching
 markdown ``<video>`` block. The VTT then follows the same R2/CDN lifecycle as
 the ``.mp4``/``.webm`` sources (see ``r2_upload.py``).
 
-GIF-derived autoplay videos have no audio stream and are skipped, as are
-videos that already have a sibling ``.vtt``. Scriberr is the maintainer's
+GIF-derived autoplay videos have no audio stream and are skipped. Videos
+with a sibling ``.vtt`` skip re-transcription but still get their
+``<track>`` (re-)injected. Scriberr is the maintainer's
 private instance; when ``SCRIBERR_BASE_URL`` / ``SCRIBERR_API_KEY`` are unset
 (CI, external contributors) the whole step is skipped with a warning.
 """
@@ -249,7 +250,9 @@ def transcript_to_vtt(transcript: dict) -> str:
             raise ValueError(
                 f"Transcript segment has text but no start/end: {segment}"
             )
-        if segment["end"] <= segment["start"]:
+        # Compare at cue resolution: a positive-but-sub-millisecond duration
+        # still renders as start == end, which WebVTT forbids.
+        if round(segment["end"] * 1000) <= round(segment["start"] * 1000):
             raise ValueError(
                 "Transcript segment has a non-positive duration "
                 f"(WebVTT requires end > start): {segment}"
