@@ -36,6 +36,25 @@ from scripts import utils as script_utils  # noqa: E402
 
 console = Console()
 
+
+def _wrap_with_envchain(
+    command: Sequence[str], namespace: str
+) -> tuple[str, ...]:
+    """
+    Prefix ``command`` with ``envchain <namespace>`` when the R2 credentials
+    aren't already in the environment.
+
+    Mirrors scripts/handle_assets.sh: some environments (e.g. Claude Code)
+    inject the R2 creds directly and lack envchain on PATH, so the wrapper is
+    only added when the creds are absent. When creds are missing *and* envchain
+    isn't installed, the command runs unwrapped and fails loudly downstream.
+    """
+    creds_present = all(os.environ.get(k) for k in script_utils.R2_REQUIRED_ENV)
+    if creds_present or not shutil.which("envchain"):
+        return tuple(command)
+    return ("envchain", namespace, *command)
+
+
 # Compute git root once at module load time
 _GIT_ROOT = Path(
     subprocess.check_output(
@@ -713,12 +732,15 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
         # uncovered. The auto-commit step folds the updated JSON into the push.
         CheckStep(
             name="Generating related posts",
-            command=[
-                "uv",
-                "run",
-                "python",
-                "scripts/generate_related_posts.py",
-            ],
+            command=_wrap_with_envchain(
+                [
+                    "uv",
+                    "run",
+                    "python",
+                    "scripts/generate_related_posts.py",
+                ],
+                "cloudflare",
+            ),
             cwd=str(git_root_path),
             requires="rclone",
             requires_env="VOYAGE_API_KEY",
