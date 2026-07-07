@@ -13,8 +13,25 @@ import type { BuildCtx } from "../../util/ctx"
 import type { FullSlug } from "../../util/path"
 import type { QuartzComponentProps } from "../types"
 
-import { specialFaviconPaths } from "../constants"
+import { CAN_TRIGGER_POPOVER_CLASS, specialFaviconPaths } from "../constants"
 import Content, { createLinkWithFavicon } from "../pages/Content"
+
+// `buildNestedList(toc, 0, 0)` wraps its output in an extra <li><ol> layer
+// (currentDepth starts at 0, below every real heading depth), so the first
+// link's position in the tree varies with the TOC shape. Recurse to it
+// instead of hardcoding indices through that wrapping.
+function findFirstAnchor(node: unknown): (JSX.Element & { props: Record<string, unknown> }) | null {
+  if (!node || typeof node !== "object") return null
+  const element = node as JSX.Element & { props: Record<string, unknown> }
+  if (element.type === "a") return element
+  const children = element.props?.children
+  const childArray = Array.isArray(children) ? children : [children]
+  for (const child of childArray) {
+    const found = findFirstAnchor(child)
+    if (found) return found
+  }
+  return null
+}
 
 const mockConfig = {
   pageTitle: "Test",
@@ -135,6 +152,27 @@ describe("Content component - mobile ToC rendering", () => {
     const admonitionContent = blockquoteChildren[1]
     assertJSXElement(admonitionContent)
     expect(admonitionContent.props.id).toBe("toc-content-mobile")
+  })
+
+  it("should not mark mobile ToC links as popover-capable, since popovers are desktop-only", () => {
+    const props = createQuartzProps({
+      toc: [
+        { depth: 1, text: "Heading 1", slug: "heading-1" },
+        { depth: 2, text: "Heading 1.1", slug: "heading-1-1" },
+      ],
+    })
+    const ContentComponent = Content()
+    const result = ContentComponent(props)
+
+    assertJSXElement(result)
+    const children = result.props.children as JSX.Element[]
+    const mobileOnlySpan = children[0]
+    assertJSXElement(mobileOnlySpan)
+
+    const anchor = findFirstAnchor(mobileOnlySpan)
+    expect(anchor).not.toBeNull()
+    const classNames = (anchor?.props.className as string).split(" ")
+    expect(classNames).not.toContain(CAN_TRIGGER_POPOVER_CLASS)
   })
 
   it("should render article without errors when filePath is undefined", () => {

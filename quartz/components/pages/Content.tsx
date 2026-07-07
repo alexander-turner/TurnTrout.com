@@ -99,7 +99,8 @@ function renderTableOfContents(fileData: QuartzComponentProps["fileData"]): JSX.
   if (!fileData.toc || fileData.frontmatter?.toc === "false") {
     return null
   }
-  const toc = buildNestedList(fileData.toc, 0, 0)[0]
+  // Popovers are desktop-only, so the mobile ToC's links stay non-popover-capable.
+  const toc = buildNestedList(fileData.toc, 0, 0, false)[0]
   if (!toc || toc.length === 0) {
     return null
   }
