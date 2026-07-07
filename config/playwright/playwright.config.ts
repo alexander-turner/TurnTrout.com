@@ -86,6 +86,15 @@ function sanitizeConfigForBrowser(
   return config
 }
 
+// Playwright's screenshotter awaits `document.fonts.ready` with no bound
+// before every capture, so a FontFaceSet stuck in "loading" (seen on WebKit
+// after in-test DOM replacement) hangs the screenshot until the test timeout.
+// `waitForVisualStability` in visual_utils.ts already performs the fonts wait
+// with a 10s cap before each regression screenshot; disable Playwright's
+// internal unbounded one. This file is loaded by every worker process, so the
+// env var reaches the in-process screenshotter.
+process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY = "1"
+
 // `PLAYWRIGHT_BASE_URL` lets CI rerun selected specs against a deployed
 // preview (CF Pages) instead of the local dev server. When it's set we
 // skip the `webServer` entirely — the external URL is already up.
