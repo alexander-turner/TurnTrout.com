@@ -249,6 +249,11 @@ def transcript_to_vtt(transcript: dict) -> str:
             raise ValueError(
                 f"Transcript segment has text but no start/end: {segment}"
             )
+        if segment["end"] <= segment["start"]:
+            raise ValueError(
+                "Transcript segment has a non-positive duration "
+                f"(WebVTT requires end > start): {segment}"
+            )
         start = format_timestamp(segment["start"])
         end = format_timestamp(segment["end"])
         lines.append(f"{start} --> {end}")
@@ -307,12 +312,15 @@ def transcribe_video_asset(mp4_path: Path, references_dir: Path) -> bool:
     """
     Transcribe one ``.mp4`` asset and wire up its captions.
 
-    Returns True when a new VTT was produced; False when the asset was skipped
-    (existing sibling VTT or no real audio).
+    Returns True when a new VTT was produced; False when transcription was
+    skipped (existing sibling VTT or no real audio). A pre-existing VTT still
+    gets its ``<track>`` (re-)injected, so video blocks written after the
+    original transcription pick up captions on the next run.
     """
     vtt_path = mp4_path.with_suffix(".vtt")
     if vtt_path.exists():
         print(f"Skipping {mp4_path.name}: sibling .vtt already exists")
+        inject_caption_track(mp4_path, references_dir)
         return False
     if not has_real_audio(mp4_path):
         print(f"Skipping {mp4_path.name}: no real (non-silent) audio")
@@ -320,7 +328,13 @@ def transcribe_video_asset(mp4_path: Path, references_dir: Path) -> bool:
 
     print(f"Transcribing {mp4_path.name} via Scriberr...")
     transcript = transcribe(mp4_path)
-    vtt_path.write_text(transcript_to_vtt(transcript), encoding="utf-8")
+    vtt = transcript_to_vtt(transcript)
+    if "-->" not in vtt:
+        raise RuntimeError(
+            f"Scriberr returned no usable cues for {mp4_path.name}, which "
+            "has real audio; refusing to write an empty VTT"
+        )
+    vtt_path.write_text(vtt, encoding="utf-8")
     inject_caption_track(mp4_path, references_dir)
     print(f"Wrote captions: {vtt_path.name}")
     return True
@@ -334,6 +348,7 @@ def main() -> None:
     parser.add_argument(
         "--asset-directory",
         type=Path,
+        required=True,
         help="Directory containing video assets to transcribe",
     )
     parser.add_argument(

@@ -287,6 +287,13 @@ def test_transcript_to_vtt_missing_bounds_raises():
         transcribe_videos.transcript_to_vtt(transcript)
 
 
+@pytest.mark.parametrize("end", [1.0, 0.5])
+def test_transcript_to_vtt_non_positive_duration_raises(end: float):
+    transcript = {"segments": [{"start": 1.0, "end": end, "text": "hi"}]}
+    with pytest.raises(ValueError, match="non-positive duration"):
+        transcribe_videos.transcript_to_vtt(transcript)
+
+
 def test_transcript_to_vtt_escapes_cue_text():
     transcript = {"segments": [{"start": 0.0, "end": 1.0, "text": "a & b < c"}]}
     vtt = transcribe_videos.transcript_to_vtt(transcript)
@@ -385,6 +392,39 @@ def test_transcribe_video_asset_skips_existing_vtt(tmp_path: Path):
     assert transcribe_videos.transcribe_video_asset(mp4, tmp_path) is False
 
 
+def test_transcribe_video_asset_existing_vtt_still_injects(tmp_path: Path):
+    """A pre-existing VTT must not block caption injection into video blocks
+    written after the original transcription."""
+    mp4 = tmp_path / "talk.mp4"
+    mp4.write_bytes(b"x")
+    (tmp_path / "talk.vtt").write_text("WEBVTT\n", encoding="utf-8")
+    refs = tmp_path / "content"
+    md = _write_md(
+        refs,
+        "post.md",
+        '<video controls><source src="static/images/posts/talk.mp4" '
+        'type="video/mp4; codecs=hvc1"></video>\n',
+    )
+    assert transcribe_videos.transcribe_video_asset(mp4, refs) is False
+    assert "talk.vtt" in md.read_text(encoding="utf-8")
+
+
+def test_transcribe_video_asset_empty_transcript_raises(tmp_path: Path):
+    mp4 = tmp_path / "talk.mp4"
+    mp4.write_bytes(b"x")
+    with (
+        mock.patch.object(
+            transcribe_videos, "has_real_audio", return_value=True
+        ),
+        mock.patch.object(
+            transcribe_videos, "transcribe", return_value={"segments": []}
+        ),
+        pytest.raises(RuntimeError, match="no usable cues"),
+    ):
+        transcribe_videos.transcribe_video_asset(mp4, tmp_path)
+    assert not (tmp_path / "talk.vtt").exists()
+
+
 def test_transcribe_video_asset_skips_silent(tmp_path: Path):
     mp4 = tmp_path / "talk.mp4"
     mp4.write_bytes(b"x")
@@ -424,6 +464,12 @@ def test_transcribe_video_asset_happy_path(tmp_path: Path):
 
 
 # --- main() ---
+
+
+def test_main_requires_asset_directory(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["transcribe_videos.py"])
+    with pytest.raises(SystemExit):
+        transcribe_videos.main()
 
 
 def test_main_skips_when_unconfigured(monkeypatch, capsys):
