@@ -141,4 +141,54 @@ test.describe("footnote reference after a favicon", () => {
     expect(glued.faviconBackedRefs).toBeGreaterThan(0)
     expect(glued.allWrapped).toBe(true)
   })
+
+  test("a long favicon-ending link with a footnote ref wraps instead of overflowing", async ({
+    page,
+  }) => {
+    // The nowrap wrapper must freeze only the link↔`<sup>` boundary. If it also
+    // forces the link's own text nowrap, a long favicon-ending link is rendered
+    // on a single line that runs off the page. Build the exact structure the
+    // transformer emits inside a narrow container and assert it stays contained
+    // while the reference stays glued to the favicon.
+    await gotoPage(page, "http://localhost:8080/test-page")
+
+    const measured = await page.evaluate(() => {
+      const article = document.querySelector("article") ?? document.body
+
+      const container = document.createElement("div")
+      container.style.width = "320px"
+      container.style.margin = "0"
+      container.innerHTML =
+        '<p style="margin:0"><span class="favicon-footnote-span">' +
+        '<a href="#" style="text-decoration:underline">their Terms of Service promise to ' +
+        "&ldquo;send an email to the user account before disclosing information " +
+        '[to the government]<span class="favicon-span">&rdquo;' +
+        '<span class="fav-glyph" style="display:inline-block;width:14px;height:14px;' +
+        'background:#888;vertical-align:middle"></span></span></a>' +
+        '<sup class="fn-ref"><a href="#fn">1</a></sup></span></p>'
+      article.appendChild(container)
+
+      const paragraph = container.querySelector("p")
+      if (!paragraph) throw new Error("missing fixture paragraph")
+      const rectOf = (selector: string) => {
+        const el = container.querySelector<HTMLElement>(selector)
+        if (!el) throw new Error(`missing fixture element: ${selector}`)
+        return el.getBoundingClientRect()
+      }
+
+      const lineHeight = parseFloat(getComputedStyle(paragraph).lineHeight) || 24
+      const result = {
+        // The paragraph's content fits within the 320px container instead of
+        // spilling past its right edge on one unbreakable line.
+        overflow: paragraph.scrollWidth - container.clientWidth,
+        // The reference number still shares the favicon's line.
+        refGluedToFavicon: rectOf(".fn-ref").top - rectOf(".fav-glyph").top < lineHeight * 0.5,
+      }
+      container.remove()
+      return result
+    })
+
+    expect(measured.overflow).toBeLessThanOrEqual(1)
+    expect(measured.refGluedToFavicon).toBe(true)
+  })
 })

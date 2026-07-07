@@ -6,20 +6,14 @@
 
 // Groups a favicon-ending link with its trailing footnote reference so the
 // reference number can't wrap onto its own line. A favicon is a replaced inline
-// element that opens a soft-wrap opportunity on its trailing edge; the nowrap
-// span suppresses that break so the `<sup>` stays glued to the favicon.
+// element that opens a soft-wrap opportunity on its trailing edge; `nowrap` on
+// the wrapper freezes only the link↔`<sup>` boundary, which is enough because
+// the trailing favicon already lives in its own nowrap `.favicon-span`. The
+// link keeps the global `a { white-space: normal }`, so its own text still
+// wraps — a long favicon-ending link must not be forced onto one overflowing
+// line just to glue its reference number.
 .favicon-footnote-span {
   white-space: nowrap;
-  overflow-wrap: normal;
-
-  // The global `a { white-space: normal }` rule would otherwise reopen the
-  // wrap opportunity at the favicon's trailing edge and drop the `<sup>` to the
-  // next line, so re-assert nowrap on the wrapped link. `overflow-wrap: normal`
-  // stops the inherited `overflow-wrap: anywhere` from breaking at that edge.
-  > a {
-    white-space: nowrap;
-    overflow-wrap: normal;
-  }
 }
 
 .favicon {
