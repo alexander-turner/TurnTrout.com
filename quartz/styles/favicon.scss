@@ -13,7 +13,7 @@
 // break across the link↔`<sup>` boundary in every engine while the link's own
 // text stays free to wrap — a long favicon-ending link must not be forced onto
 // one overflowing line just to glue its reference number. Generated content
-// stays out of selection and clipboard, unlike a literal joiner in the HTML.
+// stays out of selection and clipboard.
 .favicon-footnote-span {
   white-space: nowrap;
 
