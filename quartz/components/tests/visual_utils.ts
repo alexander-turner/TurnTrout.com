@@ -710,10 +710,14 @@ export async function gotoPage(
   try {
     await page.goto(url, { waitUntil: loadState })
   } catch (error: unknown) {
-    // WebKit on Linux occasionally crashes with "internal error" on page.goto.
-    // Retry once — the second attempt typically succeeds.
-    if (error instanceof Error && error.message.includes("internal error")) {
-      console.warn(`[gotoPage] WebKit internal error navigating to ${url}, retrying once`)
+    // WebKit's page.goto can crash with "internal error" or stall past the
+    // config's navigationTimeout. Both are one-off browser faults: retry the
+    // navigation once — the second attempt typically succeeds.
+    const isRetryable =
+      error instanceof Error &&
+      (error.message.includes("internal error") || error.message.includes("Timeout"))
+    if (isRetryable) {
+      console.warn(`[gotoPage] navigation to ${url} failed, retrying once: ${error.message}`)
       await page.goto(url, { waitUntil: loadState })
     } else {
       throw error

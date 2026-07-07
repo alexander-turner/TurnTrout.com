@@ -148,6 +148,11 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "retain-on-failure",
+    // @playwright/test defaults navigationTimeout to 0 (bounded only by the
+    // test timeout), so a stalled WebKit page.goto silently eats the whole
+    // test budget. Bound it so gotoPage can catch the timeout and retry the
+    // navigation within the same attempt.
+    navigationTimeout: 30_000,
     screenshot: {
       mode: "only-on-failure",
       fullPage: true,
