@@ -9,8 +9,8 @@ markdown ``<video>`` block. The VTT then follows the same R2/CDN lifecycle as
 the ``.mp4``/``.webm`` sources (see ``r2_upload.py``).
 
 GIF-derived autoplay videos have no audio stream and are skipped. Videos
-with a sibling ``.vtt`` skip re-transcription but still get their
-``<track>`` (re-)injected. Scriberr is the maintainer's
+with a sibling ``.vtt`` skip re-transcription but still get a ``<track>``
+injected into blocks missing one. Scriberr is the maintainer's
 private instance; when ``SCRIBERR_BASE_URL`` / ``SCRIBERR_API_KEY`` are unset
 (CI, external contributors) the whole step is skipped with a warning.
 """
@@ -311,17 +311,32 @@ def inject_caption_track(video_path: Path, references_dir: Path) -> None:
         )
 
 
+def _has_cues(vtt: str) -> bool:
+    """
+    Return True iff *vtt* contains at least one cue timing line.
+
+    Cue text
+    escapes ``>``, so ``-->`` can only come from timings.
+    """
+    return "-->" in vtt
+
+
 def transcribe_video_asset(mp4_path: Path, references_dir: Path) -> bool:
     """
     Transcribe one ``.mp4`` asset and wire up its captions.
 
     Returns True when a new VTT was produced; False when transcription was
     skipped (existing sibling VTT or no real audio). A pre-existing VTT still
-    gets its ``<track>`` (re-)injected, so video blocks written after the
-    original transcription pick up captions on the next run.
+    gets a ``<track>`` injected into blocks missing one, so video blocks
+    written after the original transcription pick up captions on the next run.
     """
     vtt_path = mp4_path.with_suffix(".vtt")
     if vtt_path.exists():
+        if not _has_cues(vtt_path.read_text(encoding="utf-8")):
+            raise RuntimeError(
+                f"Existing {vtt_path.name} contains no cues; delete it to "
+                "re-transcribe"
+            )
         print(f"Skipping {mp4_path.name}: sibling .vtt already exists")
         inject_caption_track(mp4_path, references_dir)
         return False
@@ -332,7 +347,7 @@ def transcribe_video_asset(mp4_path: Path, references_dir: Path) -> bool:
     print(f"Transcribing {mp4_path.name} via Scriberr...")
     transcript = transcribe(mp4_path)
     vtt = transcript_to_vtt(transcript)
-    if "-->" not in vtt:
+    if not _has_cues(vtt):
         raise RuntimeError(
             f"Scriberr returned no usable cues for {mp4_path.name}, which "
             "has real audio; refusing to write an empty VTT"

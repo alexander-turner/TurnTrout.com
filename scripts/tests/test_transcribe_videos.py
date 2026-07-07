@@ -383,16 +383,27 @@ def test_inject_caption_track_stem_not_substring(tmp_path: Path):
 # --- Asset orchestration ---
 
 
+_CUED_VTT = "WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nhi\n"
+
+
 def test_transcribe_video_asset_existing_vtt_skips_but_injects(tmp_path: Path):
     """A pre-existing VTT skips re-transcription without blocking caption
     injection into video blocks written after the original transcription."""
     mp4 = tmp_path / "talk.mp4"
     mp4.write_bytes(b"x")
-    (tmp_path / "talk.vtt").write_text("WEBVTT\n", encoding="utf-8")
+    (tmp_path / "talk.vtt").write_text(_CUED_VTT, encoding="utf-8")
     refs = tmp_path / "content"
     md = _write_md(refs, "post.md", _video_block("talk") + "\n")
     assert transcribe_videos.transcribe_video_asset(mp4, refs) is False
     assert "talk.vtt" in md.read_text(encoding="utf-8")
+
+
+def test_transcribe_video_asset_cueless_existing_vtt_raises(tmp_path: Path):
+    mp4 = tmp_path / "talk.mp4"
+    mp4.write_bytes(b"x")
+    (tmp_path / "talk.vtt").write_text("WEBVTT\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="contains no cues"):
+        transcribe_videos.transcribe_video_asset(mp4, tmp_path)
 
 
 def test_transcribe_video_asset_empty_transcript_raises(tmp_path: Path):
