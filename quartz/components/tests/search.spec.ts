@@ -31,7 +31,10 @@ test.beforeEach(async ({ page }, testInfo) => {
   // Start from the popover fixture: a minimal stable page so anything that
   // bleeds through the search overlay (background, page chrome, page-level
   // styling) doesn't churn whenever /welcome's content changes.
-  await gotoPage(page, "http://localhost:8080/popover-fixture")
+  // Wait only for domcontentloaded: WebKit's load event can wedge on a stuck
+  // subresource fetch even with the page fully painted, and the assertions
+  // below plus each screenshot's stability wait cover actual readiness.
+  await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
 
   await expect(page.locator("#search-container")).toBeAttached()
   await expect(page.locator("#search-icon")).toBeVisible()
@@ -575,7 +578,7 @@ test("Checkbox search preview (screenshot)", async ({ page }, testInfo) => {
 })
 
 test("Search preview of checkboxes remembers user state", async ({ page }) => {
-  await gotoPage(page, "http://localhost:8080/test-page")
+  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
   const baseSelector = "h1 + ol #checkbox-0"
   const checkboxAfterHeader = page.locator(baseSelector).first()
@@ -958,7 +961,7 @@ test("Search bar accepts input immediately while index loads", async ({ page }) 
   await expect(searchContainer).not.toHaveClass(/active/)
 
   // Navigate to a fresh page to reset search initialization state
-  await gotoPage(page, "http://localhost:8080/test-page")
+  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
   // Intercept contentIndex.json to add a delay, simulating slow index loading
   await page.route("**/contentIndex.json", async (route) => {
