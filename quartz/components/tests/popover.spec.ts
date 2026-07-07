@@ -771,9 +771,12 @@ base.describe("Footnote popover on mobile", () => {
   })
 
   base("Non-footnote popovers are still hidden on mobile", async ({ page }) => {
-    const regularLink = page
-      .locator('.can-trigger-popover:not([href^="#user-content-fn-"])')
-      .first()
+    // Exclude every hash link (`#…`): footnote refs open pinned popovers, and
+    // same-page ToC anchors live in the desktop ToC, which is hidden at mobile
+    // width (scrolling to a hidden link would hang). `.first()` then lands on a
+    // cross-page internal link (the content-meta tag link), the case this test
+    // is meant to cover.
+    const regularLink = page.locator('.can-trigger-popover:not([href^="#"])').first()
     await regularLink.scrollIntoViewIfNeeded()
     await regularLink.click()
     const popover = page.locator(".popover:not(.footnote-popover)")
