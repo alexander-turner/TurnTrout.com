@@ -6,14 +6,20 @@
 
 // Groups a favicon-ending link with its trailing footnote reference so the
 // reference number can't wrap onto its own line. A favicon is a replaced inline
-// element that opens a soft-wrap opportunity on its trailing edge; `nowrap` on
-// the wrapper freezes only the link↔`<sup>` boundary, which is enough because
-// the trailing favicon already lives in its own nowrap `.favicon-span`. The
-// link keeps the global `a { white-space: normal }`, so its own text still
-// wraps — a long favicon-ending link must not be forced onto one overflowing
-// line just to glue its reference number.
+// element that opens a soft-wrap opportunity on its trailing edge. That edge
+// sits *inside* the link, where the global `a { white-space: normal }` governs
+// line breaking, so `nowrap` on the wrapper alone cannot close it in Chromium.
+// A generated U+2060 WORD JOINER at the start of the `<sup>` prohibits the
+// break across the link↔`<sup>` boundary in every engine while the link's own
+// text stays free to wrap — a long favicon-ending link must not be forced onto
+// one overflowing line just to glue its reference number. Generated content
+// stays out of selection and clipboard, unlike a literal joiner in the HTML.
 .favicon-footnote-span {
   white-space: nowrap;
+
+  > sup::before {
+    content: "\2060";
+  }
 }
 
 .favicon {
