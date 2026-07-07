@@ -16,7 +16,10 @@ import type { QuartzComponentProps } from "../types"
 import { CAN_TRIGGER_POPOVER_CLASS, specialFaviconPaths } from "../constants"
 import Content, { createLinkWithFavicon } from "../pages/Content"
 
-/** Recursively find the first anchor (`a`) element in a JSX tree. */
+// `buildNestedList(toc, 0, 0)` wraps its output in an extra <li><ol> layer
+// (currentDepth starts at 0, below every real heading depth), so the first
+// link's position in the tree varies with the TOC shape. Recurse to it
+// instead of hardcoding indices through that wrapping.
 function findFirstAnchor(node: unknown): (JSX.Element & { props: Record<string, unknown> }) | null {
   if (!node || typeof node !== "object") return null
   const element = node as JSX.Element & { props: Record<string, unknown> }

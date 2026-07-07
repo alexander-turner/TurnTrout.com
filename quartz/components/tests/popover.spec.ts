@@ -735,8 +735,8 @@ base.describe("Footnote popover on mobile", () => {
   })
 
   base("Non-footnote popovers are still hidden on mobile", async ({ page }) => {
-    // Exclude every hash link (`#…`): footnote refs and the now-popover-capable
-    // ToC anchors. `.first()` then lands on a cross-page internal link (the
+    // Exclude every hash link (`#…`): footnote refs and popover-capable ToC
+    // anchors. `.first()` then lands on a cross-page internal link (the
     // content-meta tag link), the case this test is meant to cover.
     const regularLink = page.locator('.can-trigger-popover:not([href^="#"])').first()
     await regularLink.scrollIntoViewIfNeeded()
@@ -809,8 +809,9 @@ base.describe("Desktop ToC hover previews", () => {
     await expect(page.locator(".popover")).toBeVisible()
 
     await tocLink.click()
-    // Section-scroll tracking still runs after the popover interaction, so the
-    // clicked link becomes the active entry once its section scrolls into view.
+    // The SPA router intercepts the same-page click and dispatches `nav`;
+    // toc.inline.ts's nav handler reads window.location.hash directly to mark
+    // the matching link active, independent of the popover interaction.
     await expect(tocLink).toHaveClass(/active/)
   })
 
