@@ -343,20 +343,18 @@ test("Popover appears at minimal viewport width", async ({ page, dummyLink }) =>
   await expect(popover).toBeVisible()
 })
 
-for (const id of ["navbar"]) {
-  test(`Popover does not show on ${id}`, async ({ page }) => {
-    const element = page.locator(`#${id}`)
-    await expect(element).toBeVisible()
+test("Popover does not show on navbar", async ({ page }) => {
+  const element = page.locator("#navbar")
+  await expect(element).toBeVisible()
 
-    // The popover handler only attaches to anchors with `can-trigger-popover`
-    // (see quartz/plugins/transformers/links.ts). Assert the class is absent
-    // on every descendant link, which is the real invariant — hovering each
-    // anchor would be 50+ no-op pointer moves in #toc-content and times out
-    // on Firefox.
-    const popoverCapableCount = element.locator("a.can-trigger-popover")
-    await expect(popoverCapableCount).toHaveCount(0)
-  })
-}
+  // The popover handler only attaches to anchors with `can-trigger-popover`
+  // (see quartz/plugins/transformers/links.ts). Assert the class is absent
+  // on every descendant link, which is the real invariant — hovering each
+  // anchor individually would be many no-op pointer moves and risks timing
+  // out on slower browsers.
+  const popoverCapableCount = element.locator("a.can-trigger-popover")
+  await expect(popoverCapableCount).toHaveCount(0)
+})
 
 test("Popover does not appear on next page after navigation", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
