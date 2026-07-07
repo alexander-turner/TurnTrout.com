@@ -6,12 +6,27 @@ set -euo pipefail
 
 git_root=$(git rev-parse --show-toplevel)
 
-# Reject unresolved merge conflict markers (and whitespace errors) in staged
-# content. A hook file left with <<<<<<< markers is a bash syntax error that
-# can block every Claude tool call until it's manually repaired.
-if ! git diff --cached --check; then
-  echo "pre-commit: refusing commit — fix the issues above" >&2
-  exit 1
+# Format staged files FIRST, so fixable issues (trailing whitespace, EOF
+# newlines, import order) are auto-corrected and re-staged before the gate at
+# the end rejects on them. lint-staged runs prettier/markdownlint/eslint/etc.
+# and re-stages whatever they modify.
+if [ -f "$git_root/package.json" ] && [ -f "$git_root/node_modules/.bin/lint-staged" ]; then
+  if command -v pnpm >/dev/null 2>&1; then
+    pnpm exec lint-staged --allow-empty
+  elif command -v npm >/dev/null 2>&1; then
+    npx lint-staged --allow-empty
+  fi
+fi
+
+# Run docformatter on staged Python files (can't run inside lint-staged
+# because it requires uv run and doesn't work well with lint-staged's
+# file passing)
+staged_py_files=$(git diff --cached --name-only --diff-filter=ACM -- '*.py' || true)
+if [ -n "$staged_py_files" ] && command -v uv >/dev/null 2>&1; then
+  echo "$staged_py_files" | xargs uv run python -m docformatter \
+    --in-place --config config/python/pyproject.toml 2>/dev/null || true
+  # Re-stage any files that docformatter modified
+  echo "$staged_py_files" | xargs git add
 fi
 
 # Five guardrails (merge-conflict markers, large files, gitleaks, codespell,
@@ -24,26 +39,11 @@ else
   echo "  Install: uv tool install pre-commit  (then 'pre-commit install')" >&2
 fi
 
-# Skip remaining (Node) checks if this is not a Node project
-[ -f "$git_root/package.json" ] || exit 0
-
-if [[ ! -f "$git_root/node_modules/.bin/lint-staged" ]]; then
-  exit 0
-fi
-
-if command -v pnpm >/dev/null 2>&1; then
-  pnpm exec lint-staged --allow-empty
-elif command -v npm >/dev/null 2>&1; then
-  npx lint-staged --allow-empty
-fi
-
-# Run docformatter on staged Python files (can't run inside lint-staged
-# because it requires uv run and doesn't work well with lint-staged's
-# file passing)
-staged_py_files=$(git diff --cached --name-only --diff-filter=ACM -- '*.py' || true)
-if [ -n "$staged_py_files" ] && command -v uv >/dev/null 2>&1; then
-  echo "$staged_py_files" | xargs uv run python -m docformatter \
-    --in-place --config config/python/pyproject.toml 2>/dev/null || true
-  # Re-stage any files that docformatter modified
-  echo "$staged_py_files" | xargs git add
+# Final gate: reject unresolved merge conflict markers and any whitespace
+# errors the formatters above could not fix (e.g. unsupported file types). A
+# hook file left with <<<<<<< markers is a bash syntax error that can block
+# every Claude tool call until it's manually repaired.
+if ! git diff --cached --check; then
+  echo "pre-commit: refusing commit — fix the issues above" >&2
+  exit 1
 fi
