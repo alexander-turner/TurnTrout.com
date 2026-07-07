@@ -1494,7 +1494,11 @@ test.describe("Popovers on different page types", () => {
       // Skip on non-desktop viewports since popovers are hidden on mobile/tablet
       test.skip(!isDesktopViewport(page), "Popovers only work on desktop viewports")
 
-      await gotoPage(page, `http://localhost:8080/${pageSlug}`, "load")
+      // These assertions only need the parsed DOM and the `nav` event below;
+      // waiting for the full `load` event ties the test to every CDN
+      // subresource on heavy listing pages (e.g. all-tags), which can exceed
+      // the WebKit test timeout on macOS runners.
+      await gotoPage(page, `http://localhost:8080/${pageSlug}`, "domcontentloaded")
       await page.locator("body").waitFor({ state: "visible" })
 
       // Dispatch the 'nav' event to initialize popover functionality
