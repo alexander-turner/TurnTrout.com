@@ -152,6 +152,13 @@ Wait for `http://localhost:8080`, then:
 npx playwright test --config config/playwright/playwright.config.ts -g "test name pattern"
 ```
 
+**Fast iteration loop.** A full site rebuild (~50s) + whole-spec run (~2min) per check is almost never needed:
+
+- Build once, keep the server running, and reuse both across runs (`PLAYWRIGHT_BASE_URL=http://localhost:8080` skips the config's webServer entirely; `pnpm serve public -l 8080` serves an existing build).
+- Rebuild the site **only** when bundled client code changes (`*.inline.ts`, transformers/emitters, styles). Edits to `*.spec.ts` or test helpers like `visual_utils.ts` run against the existing build — no rebuild.
+- Run the single affected test with `-g "exact test name"` and one `--project "Desktop Chrome"` instead of the whole file/matrix: ~8s instead of ~2min.
+- For flake-hunting a specific test, add `--repeat-each 5` to the targeted run rather than re-running the whole spec.
+
 ## Offline builds
 
 For sandboxed sessions / CI without network:
@@ -160,6 +167,17 @@ For sandboxed sessions / CI without network:
 PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/chrome-linux/*" | head -1) \
   npx tsx quartz/bootstrap-cli.ts build --offline
 ```
+
+## Favicon kerning audit
+
+Favicon spacing (`quartz/styles/favicon.scss` `$domain-left-insets`,
+`quartz/plugins/transformers/favicons.ts` `charsToSpace`/`charsToSpaceMost`) is
+derived from pixel measurements, not eyeballing. When adding a favicon or
+tuning spacing, run the pipeline in `scripts/notebooks/favicon_kerning_audit/`
+(see its README): it mines every real (glyph, favicon) pair from the built
+site, renders them with production CSS, measures ink-to-ink clearance, and
+emits a worst-first gallery. Target band for the horizontal ink gap is roughly
+1.5–4px at a 24px root font size.
 
 ## Visual regression testing
 

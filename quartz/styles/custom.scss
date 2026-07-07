@@ -381,9 +381,29 @@ figure,
   }
 }
 
-#article-title,
-.page-listing-title,
-.related-post > a {
+// Render both subfigures at an identical size. The source images differ slightly
+// in aspect ratio, so crop to a shared ratio rather than distorting. They sit
+// side by side on desktop and stack only at mobile width.
+#ice-killings {
+  .subfigure img {
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 731 / 878;
+    object-fit: cover;
+  }
+
+  @media all and (width <= 530px) {
+    .subfigure {
+      flex: 1 1 100%;
+    }
+  }
+}
+
+// Every title-rendering surface (article title, backlinks, prev/next post,
+// sequence links, related posts, page listings, …) wraps its output in
+// `.work-title` (see `renderTitleNodes`/`renderInlineFormatting` in
+// `component_utils.tsx`), so one rule covers all of them.
+.work-title {
   font-variant-numeric: lining-nums;
 }
 
@@ -483,8 +503,11 @@ figcaption,
   max-width: 45%;
 }
 
-.testimonial-maybe-negative-margin {
-  margin-top: calc(-7 * $base-margin);
+.float-desktop-pull-up {
+  // A floated image pulled up by a negative top margin overlaps the callout
+  // title once the title wraps at narrow widths, so the pull-up is desktop-only.
+  // Per-image desktop offsets can override via the custom property.
+  margin-top: var(--float-negative-margin-top, calc(-7 * $base-margin));
 
   @media all and (width <= 700px) {
     margin-top: initial;
@@ -640,12 +663,17 @@ img {
 
   &.inline-img {
     display: inline;
-    width: 0.9rem;
+
+    // Sized in `em` (like `img.emoji`) so the glyph scales with the surrounding
+    // font-size instead of staying a fixed root-relative size in headings/captions.
+    width: 0.9em;
+    height: 0.9em;
+    object-fit: contain;
     vertical-align: middle;
     margin: 0;
-    margin-left: 0.05rem;
-    margin-right: 0.025rem;
-    margin-bottom: 0.1rem;
+    margin-left: 0.05em;
+    margin-right: 0.025em;
+    margin-bottom: 0.1em;
   }
 
   &.white-when-dark {

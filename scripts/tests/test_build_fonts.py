@@ -13,11 +13,14 @@ from ..build_fonts import (
     _CAP_OVERHANG_GLYPHS,
     _CLOSE_DESCENDER_KERN,
     _CLOSE_PUNCT_GLYPHS,
+    _CLOSE_QUOTE_GLYPHS,
     _DESCENDER_GLYPHS,
     _FONT_DIR,
     _KERN_OFFSET,
     _OPEN_DESCENDER_KERN,
     _OPEN_PUNCT_GLYPHS,
+    _OPEN_QUOTE_GLYPHS,
+    _QUOTE_BRACKET_KERN,
     _SQUARE_BRACKET_GLYPHS,
     _TARGET_GLYPHS,
     _TIGHTEN_REFERENCE_GLYPH,
@@ -216,6 +219,8 @@ class TestKerning:
             | set(_OPEN_PUNCT_GLYPHS)
             | set(_DESCENDER_GLYPHS)
             | set(_CAP_OVERHANG_GLYPHS)
+            | set(_OPEN_QUOTE_GLYPHS)
+            | {"bracketright"}
         )
         if tighten_applies:
             expected |= set(_CLOSE_PUNCT_GLYPHS)
@@ -269,6 +274,60 @@ class TestKerning:
                     assert pvr.Value1.XAdvance == _CLOSE_DESCENDER_KERN[src], (
                         f"{src}->{pvr.SecondGlyph}"
                     )
+
+    @pytest.mark.parametrize(
+        "font_fixture",
+        ["upstream_08", "upstream_12"],
+        ids=["08pt", "12pt"],
+    )
+    def test_open_quote_bracket_kern_values(
+        self,
+        font_fixture: str,
+        request: pytest.FixtureRequest,
+    ) -> None:
+        font: TTFont = request.getfixturevalue(font_fixture)
+        _add_kerning(font, _get_f_glyphs(font))
+        subtable = font["GPOS"].table.LookupList.Lookup[-1].SubTable[0]
+
+        quote_set = set(_OPEN_QUOTE_GLYPHS)
+        kerned: set[str] = set()
+        for i, src in enumerate(subtable.Coverage.glyphs):
+            if src not in quote_set:
+                continue
+            for pvr in subtable.PairSet[i].PairValueRecord:
+                if pvr.SecondGlyph == "bracketleft":
+                    assert pvr.Value1.XAdvance == _QUOTE_BRACKET_KERN, (
+                        f"{src}->bracketleft"
+                    )
+                    kerned.add(src)
+        assert kerned == quote_set
+
+    @pytest.mark.parametrize(
+        "font_fixture",
+        ["upstream_08", "upstream_12"],
+        ids=["08pt", "12pt"],
+    )
+    def test_bracket_close_quote_kern_values(
+        self,
+        font_fixture: str,
+        request: pytest.FixtureRequest,
+    ) -> None:
+        font: TTFont = request.getfixturevalue(font_fixture)
+        _add_kerning(font, _get_f_glyphs(font))
+        subtable = font["GPOS"].table.LookupList.Lookup[-1].SubTable[0]
+
+        quote_set = set(_CLOSE_QUOTE_GLYPHS)
+        kerned: set[str] = set()
+        for i, src in enumerate(subtable.Coverage.glyphs):
+            if src != "bracketright":
+                continue
+            for pvr in subtable.PairSet[i].PairValueRecord:
+                if pvr.SecondGlyph in quote_set:
+                    assert pvr.Value1.XAdvance == _QUOTE_BRACKET_KERN, (
+                        f"bracketright->{pvr.SecondGlyph}"
+                    )
+                    kerned.add(pvr.SecondGlyph)
+        assert kerned == quote_set
 
     def _tighten_pairs(self, font: TTFont) -> dict[tuple[str, str], int]:
         subtable = font["GPOS"].table.LookupList.Lookup[-1].SubTable[0]

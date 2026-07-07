@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-07-04
+date_updated: 2026-07-07
 no_dropcap: false
 createBibtex: true
 ---
@@ -113,7 +113,7 @@ I later describe my [@title-lower](#deployment-pipeline) in more detail.
 
 ## Embedding tweets
 
-I allow rich, tracking-free embeds of tweets. Each card renders from a snapshot which I host on my own CDN, so it leaks nothing to X and still displays even if the original tweet is deleted. I also point the links at [`xcancel.com`](https://xcancel.com) rather than `x.com`, as I [avoid X for ethical reasons.](/advanced-privacy#gradually-migrate-your-social-network-away-from-x)
+I enable tracking-free embeds of tweets, rendered in my site's style. Each card renders from a tweet-info JSON which I host on my own CDN, so it leaks nothing to X and still displays even if the original tweet is deleted. I also point the links at [`xcancel.com`](https://xcancel.com) rather than `x.com`, as I [avoid X for ethical reasons.](/advanced-privacy#gradually-migrate-your-social-network-away-from-x)
 
 ```tweet
 https://xcancel.com/Turn_Trout/status/2064426233769742627
@@ -671,6 +671,12 @@ I showcase all included favicons on [the test page](/test-page#external-links-wi
 Subtitle: Inspired by [`gwern`](https://gwern.net/design#similar-links).
 
 I feed all of my articles through a text embedding model. For each article, I find the top 5 articles with highest [cosine-similarity](https://en.wikipedia.org/wiki/Cosine_similarity) (giving up on articles without sufficiently similar counterparts).
+
+## I display which pages link to the current article
+
+I want readers to be able to see how an idea is used later. I enable these _backlinks_ along with the citing contexts. Here are the backlinks for the design page. Clicking a backlink takes you to its location in the parent article.
+
+<div id="populate-backlinks-demo"></div>
 
 ## Admonitions encapsulate information
 

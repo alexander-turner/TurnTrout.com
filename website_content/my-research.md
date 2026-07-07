@@ -4,7 +4,7 @@ permalink: research
 hideSubscriptionLinks: false
 description: A tour of the research areas I've loved over the years.
 date_published: 2024-10-27
-date_updated: 2026-06-28
+date_updated: 2026-07-07
 tags:
   - AI
 title: My research
@@ -13,11 +13,9 @@ title: My research
 Over the years, I've worked on lots of research problems. Every time, I felt invested in my work. The work felt beautiful. Even though many days have passed since I have daydreamed about instrumental convergence, I'm proud of what I've accomplished and discovered.
 <span class="float-right" style="max-width: 40%;"><img src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me."/> While not _technically_ a part of my research, I've included a photo of myself anyways.</span>
 
-As of November 2023, I am a research scientist on Google DeepMind's scalable alignment team in the Bay area.[^disclaim] I lead [a MATS mentorship team called "Team Shard". If you want to break into the alignment field, consider applying to work with me](/team-shard). My [Google Scholar is here.](https://scholar.google.com/citations?user=thAHiVcAAAAJ)
+I lead [a MATS mentorship team called "Team Shard". If you want to break into the alignment field, consider applying to work with me](/team-shard). My [Google Scholar is here.](https://scholar.google.com/citations?user=thAHiVcAAAAJ)
 
 This page is chronological. For my most recent work, [navigate to the end of the page!](#footnotes)
-
-[^disclaim]: Of course, all of my hot takes are my own, not Google's.
 
 # Low-impact AI
 

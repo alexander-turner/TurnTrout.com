@@ -28,7 +28,11 @@ quartz/plugins/transformers/.titleIndex.json
 # Tweet snapshots. The build hydrates these from R2 (see tweetEmbed.ts); the
 # durable copy lives at static/tweets/<id>.json on R2, uploaded by
 # scripts/tweet_snapshot.py. A JSON force-added here pins/overrides one offline.
-quartz/plugins/transformers/.tweet_snapshots/
+quartz/plugins/transformers/.tweet_snapshots
+
+# Slug -> {title, heading text} index built by quartz/processors/buildTitleIndex.ts
+# and consumed by the bindLinkTitles transformer. Regenerated on every build.
+quartz/plugins/transformers/.titleIndex.json
 
 # Testing & Coverage
 .coverage*

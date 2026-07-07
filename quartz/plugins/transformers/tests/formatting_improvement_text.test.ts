@@ -5,6 +5,7 @@ import type { BuildCtx } from "../../../util/ctx"
 import {
   applyTextTransforms,
   editAdmonition,
+  encodeLinkDestinationSpaces,
   formattingImprovement,
   noteAdmonition,
   spaceAdmonitions,
@@ -438,6 +439,55 @@ And some hyphens-to-be-ignored.`
     ])("should handle %s", (input: string, expected: string) => {
       const result = formattingImprovement(input)
       expect(result).toBe(expected)
+    })
+  })
+
+  describe("encodeLinkDestinationSpaces", () => {
+    it.each([
+      [
+        "[video](https://assets.turntrout.com/static/Why I left Google DeepMind-2.mp4)",
+        "[video](https://assets.turntrout.com/static/Why%20I%20left%20Google%20DeepMind-2.mp4)",
+        "encodes spaces in a plain link destination",
+      ],
+      [
+        "![alt](https://assets.turntrout.com/a b c.avif)",
+        "![alt](https://assets.turntrout.com/a%20b%20c.avif)",
+        "encodes spaces in an image destination",
+      ],
+      [
+        "[two](/a b) and [more](/c d)",
+        "[two](/a%20b) and [more](/c%20d)",
+        "encodes every link on a line",
+      ],
+      [
+        "[ok](https://example.com/no-spaces)",
+        "[ok](https://example.com/no-spaces)",
+        "leaves spaceless destinations untouched",
+      ],
+      [
+        "[done](https://assets.turntrout.com/a%20b.mp4)",
+        "[done](https://assets.turntrout.com/a%20b.mp4)",
+        "is idempotent on already-encoded destinations",
+      ],
+      [
+        '[titled](https://example.com "My Title")',
+        '[titled](https://example.com "My Title")',
+        "preserves a link title with spaces",
+      ],
+      [
+        "[wiki](https://en.wikipedia.org/wiki/Foo_(bar))",
+        "[wiki](https://en.wikipedia.org/wiki/Foo_(bar))",
+        "leaves balanced-paren destinations untouched",
+      ],
+      ["[anchor](#some-heading)", "[anchor](#some-heading)", "leaves internal anchors untouched"],
+    ])("%s -> %s (%s)", (input: string, expected: string) => {
+      expect(encodeLinkDestinationSpaces(input)).toBe(expected)
+    })
+
+    it("runs as part of the full pipeline", () => {
+      const input = "[video](https://assets.turntrout.com/Why I left.mp4)"
+      const expected = "[video](https://assets.turntrout.com/Why%20I%20left.mp4)"
+      expect(formattingImprovement(input)).toBe(expected)
     })
   })
 

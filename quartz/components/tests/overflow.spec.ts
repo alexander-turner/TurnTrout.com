@@ -118,8 +118,7 @@ function describeOffenders(offenders: readonly Offender[]): string {
     .join("\n  ")
 }
 
-async function settle(page: Page, url: string) {
-  await gotoPage(page, url)
+async function waitSettled(page: Page): Promise<void> {
   await page.waitForFunction(pageSettled, undefined, { timeout: 10_000 })
   await page.evaluate(
     () =>
@@ -127,6 +126,22 @@ async function settle(page: Page, url: string) {
         requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
       ),
   )
+}
+
+async function settle(page: Page, url: string) {
+  await gotoPage(page, url)
+  try {
+    await waitSettled(page)
+  } catch (error: unknown) {
+    // WebKit/Safari can destroy the execution context briefly after load,
+    // failing an in-flight waitForFunction/evaluate with no real navigation
+    // underway. Retry once against the already-loaded page.
+    if (error instanceof Error && error.message.includes("Execution context was destroyed")) {
+      await waitSettled(page)
+    } else {
+      throw error
+    }
+  }
 }
 
 for (const url of PAGES_TO_CHECK) {

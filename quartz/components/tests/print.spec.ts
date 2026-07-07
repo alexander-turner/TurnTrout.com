@@ -1,5 +1,10 @@
 import { expect, test } from "./fixtures"
-import { gotoPage, setTheme, takeRegressionScreenshot } from "./visual_utils"
+import {
+  captureStableScreenshot,
+  gotoPage,
+  setTheme,
+  takeRegressionScreenshot,
+} from "./visual_utils"
 
 // Visual regression tests don't need assertions
 /* eslint-disable playwright/expect-expect */
@@ -31,23 +36,29 @@ test("Print media layout (screenshot)", async ({ page }, testInfo) => {
 })
 
 test("Print mode renders identically in light and dark themes", async ({ page }) => {
+  // Both captures compare byte-for-byte, so the webfont swap must complete
+  // before the first one; captureStableScreenshot then absorbs any other
+  // late repaints on each side of the comparison.
+  await page.evaluate(() => document.fonts.ready)
+
   await setTheme(page, "light")
   await page.emulateMedia({ media: "print" })
-  const lightScreenshot = await page.screenshot({
-    animations: "disabled",
-    scale: "css",
-  })
+  const lightScreenshot = await captureStableScreenshot(
+    () => page.screenshot({ animations: "disabled", scale: "css" }),
+    "print-theme-light",
+  )
 
   await page.emulateMedia({ media: "screen" })
   await setTheme(page, "dark")
   // Fire beforeprint to trigger the JS that swaps data-theme to light,
   // matching real browser behavior (emulateMedia alone doesn't fire it).
   await page.evaluate(() => window.dispatchEvent(new Event("beforeprint")))
+  await expect(page.locator(":root")).toHaveAttribute("data-theme", "light")
   await page.emulateMedia({ media: "print" })
-  const darkScreenshot = await page.screenshot({
-    animations: "disabled",
-    scale: "css",
-  })
+  const darkScreenshot = await captureStableScreenshot(
+    () => page.screenshot({ animations: "disabled", scale: "css" }),
+    "print-theme-dark",
+  )
 
   expect(darkScreenshot).toEqual(lightScreenshot)
 })

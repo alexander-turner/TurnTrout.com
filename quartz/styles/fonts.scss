@@ -26,11 +26,11 @@
   // Fallback for browsers without CSS round() support (Safari <18, Firefox <128).
   font-size: var(--base-font-size);
 
-  // Quantized to 2px steps: every rem/em measurement on the page derives from
+  // Quantized to 1px steps: every rem/em measurement on the page derives from
   // this value, so a continuously fluid root font-size forces a full-document
   // restyle and layout on every pixel of viewport-width change during resize.
   @supports (font-size: round(nearest, 1px, 1px)) {
-    font-size: round(nearest, var(--base-font-size), 2px);
+    font-size: round(nearest, var(--base-font-size), 1px);
   }
 
   text-rendering: geometricprecision;
@@ -472,6 +472,15 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
 // embellishment always falls back to the monochrome --midground-faint.
 article[data-use-dropcap="true"][data-no-dropcap-color="true"] > p:not(.subtitle):first-of-type {
   --before-color: var(--midground-faint);
+}
+
+// Popovers and search previews mirror a different page's article, so the
+// current page's rolled --random-dropcap-color (set on the root element) would
+// bleed in and tint their dropcaps. Reset it to the guaranteed-invalid value so
+// these embellishments always fall back to the monochrome --midground-faint.
+.popover,
+.search-preview {
+  --random-dropcap-color: initial;
 }
 
 // EG 1st, 2nd, 3rd. A raised, scaled glyph sized and positioned to match the

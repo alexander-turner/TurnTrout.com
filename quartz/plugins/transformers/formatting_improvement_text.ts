@@ -117,6 +117,23 @@ export function applyTextTransforms(text: string, transforms: [RegExp | string, 
   return text
 }
 
+// A markdown link/image destination can't hold raw spaces unless it's wrapped
+// in angle brackets, so a path like `.../Why I left ....mp4` silently fails to
+// parse as a link and renders as literal text. Match only "plain" destinations
+// — no title, parens, quotes, or existing angle brackets — to avoid disturbing
+// link titles (`url "title"`) or balanced-paren URLs.
+const linkDestSpaceRegex = /(?<=\]\()[^()<>"'\s]*(?: [^()<>"'\s]*)+(?=\))/g
+
+/**
+ * Percent-encodes spaces inside plain markdown link/image destinations so links
+ * to space-containing asset paths still parse.
+ * @param text - The input text to process.
+ * @returns The text with spaces in link destinations encoded as `%20`.
+ */
+export function encodeLinkDestinationSpaces(text: string): string {
+  return text.replace(linkDestSpaceRegex, (dest) => dest.replaceAll(" ", "%20"))
+}
+
 /**
  * Concentrates emphasis around links by moving asterisks or underscores inside the link brackets.
  * @param text - The input text to process.
@@ -154,6 +171,7 @@ export const formattingImprovement = (text: string) => {
   newContent = noteAdmonition(newContent)
   newContent = spaceAdmonitions(newContent)
   newContent = concentrateEmphasisAroundLinks(newContent)
+  newContent = encodeLinkDestinationSpaces(newContent)
   newContent = wrapLeadingNumbers(newContent)
   newContent = wrapNumbersBeforeColon(newContent)
   newContent = applyTextTransforms(newContent, massTransforms)

@@ -60,13 +60,15 @@ def _classify_with_events(tmp_path: Path, events: list[dict]) -> _Cls:
 
 
 @pytest.mark.parametrize(
-    "snapshot, real",
-    [(0, 0), (3, 0), (0, 2), (1, 1)],
+    "snapshot, real, flaky",
+    [(0, 0, 0), (3, 0, 0), (0, 2, 0), (1, 1, 0), (0, 0, 2), (1, 0, 1)],
 )
-def test_classification_flags(snapshot: int, real: int) -> None:
-    c = _Cls(snapshot_failures=snapshot, real_failures=real)
-    assert c.has_any_failures is (snapshot + real > 0)
-    assert c.has_real_failures is (real > 0)
+def test_classification_flags(snapshot: int, real: int, flaky: int) -> None:
+    c = _Cls(
+        snapshot_failures=snapshot, real_failures=real, flaky_failures=flaky
+    )
+    assert c.has_any_failures is (snapshot + real + flaky > 0)
+    assert c.has_real_failures is (real + flaky > 0)
 
 
 @pytest.mark.parametrize(
@@ -97,8 +99,16 @@ def test_classification_flags(snapshot: int, real: int) -> None:
                 _attach("t1", ["foo-actual.png"]),
                 _test_end("t1", "passed"),
             ],
-            _Cls(0, 0),
-            id="flaky_retry_passes",
+            _Cls(0, 0, 1),
+            id="flaky_retry_pass_is_flaky_failure",
+        ),
+        pytest.param(
+            [
+                _test_end("t1", "failed"),
+                _test_end("t1", "passed"),
+            ],
+            _Cls(0, 0, 1),
+            id="flaky_without_snapshot_is_flaky_failure",
         ),
         pytest.param(
             [_test_end("t1", "failed", expected_status="failed")],
@@ -254,6 +264,16 @@ def _flags_from(text: str) -> dict[str, str]:
             1,
             {"has_real_failures": "true"},
             id="real_failure_with_fail_on_real_exits_one",
+        ),
+        pytest.param(
+            [
+                _test_end("t1", "failed"),
+                _test_end("t1", "passed"),
+            ],
+            ["--fail-on-real"],
+            1,
+            {"has_real_failures": "true", "flaky_failures": "1"},
+            id="flaky_failure_with_fail_on_real_exits_one",
         ),
         pytest.param(
             [

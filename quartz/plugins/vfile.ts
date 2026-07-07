@@ -3,6 +3,7 @@ import type { Element as HastElement, Node, Parent, Root } from "hast"
 import { VFile } from "vfile"
 
 import type { FilePath, FullSlug, SimpleSlug } from "../util/path"
+import type { LinkContext } from "./transformers/linkContexts"
 
 /**
  * Represents a single entry in the Table of Contents
@@ -53,6 +54,8 @@ export interface Data {
   frontmatter?: FrontmatterData
   toc?: readonly TocEntry[]
   links?: readonly SimpleSlug[]
+  /** Sanitized excerpts of the paragraphs on this page that cite other pages. */
+  linkContexts?: readonly LinkContext[]
   slug?: FullSlug
   filePath?: FilePath
   relativePath?: FilePath

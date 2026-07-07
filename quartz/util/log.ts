@@ -46,10 +46,15 @@ const logDir = path.join(findGitRoot(), ".logs")
 // every `import` into a filesystem write and breaks tests in sandboxes that
 // mock the git-root to a non-writable path.
 
-const timezoneFormat = new Date().toLocaleString("en-US", {
-  timeZone: "America/Los_Angeles",
-  timeZoneName: "short",
-})
+// winston's `format.timestamp` treats a string `format` as a fecha token
+// pattern; a pre-rendered locale string would be parsed as tokens and garble
+// the output. Pass a function instead so winston calls it per log entry and
+// gets a fresh Los Angeles wall-clock timestamp.
+const timestampFormat = (): string =>
+  new Date().toLocaleString("en-US", {
+    timeZone: "America/Los_Angeles",
+    timeZoneName: "short",
+  })
 
 // winston-daily-rotate-file extends winston.transports; attach it.
 transports.DailyRotateFile = DailyRotateFile
@@ -97,7 +102,7 @@ export const createWinstonLogger = (name: string, level: string = getLogLevel())
 
   const logger = createLogger({
     level,
-    format: format.combine(format.timestamp({ format: timezoneFormat }), format.prettyPrint()),
+    format: format.combine(format.timestamp({ format: timestampFormat }), format.prettyPrint()),
     transports: loggerTransports,
   })
 

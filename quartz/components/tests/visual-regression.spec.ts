@@ -10,6 +10,7 @@ import {
 } from "../constants"
 import { expect, test } from "./fixtures"
 import {
+  captureStableScreenshot,
   gotoPage,
   isDesktopViewport,
   isElementChecked,
@@ -87,11 +88,11 @@ async function setDummyContentMeta(page: Page) {
         '<a href="#" class="external" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-01-02">January <span class="date-ordinal-num">2</span><span class="ordinal-suffix">nd</span>, 2024</time>'
     }
 
-    const backlinksUl = document.querySelector("#backlinks-admonition ul")
+    const backlinksUl = document.querySelector("#backlinks .admonition-content ul")
     if (backlinksUl) {
       backlinksUl.innerHTML = `
-        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 1</a></li>
-        <li><a href="#" class="internal can-trigger-popover">Dummy Backlink 2</a></li>
+        <li><a href="#" class="internal can-trigger-popover" title="Read the original post">Dummy Backlink 1</a><a href="#a" class="backlink-excerpt internal can-trigger-popover">[...] the first idea appears when <span class="backlink-highlight">this page</span> is cited in a longer sentence that wraps across several lines [...]</a><a href="#b" class="backlink-excerpt internal can-trigger-popover">a second place where <span class="backlink-highlight">this page</span> is referenced again [...]</a></li>
+        <li><a href="#" class="internal can-trigger-popover" title="Read the original post">Dummy Backlink 2</a><a href="#c" class="backlink-excerpt internal can-trigger-popover">A shorter excerpt where the agent <img class="inline-img" src="https://assets.turntrout.com/static/images/chevron.avif" alt="chevron sprite" width="16" height="16"> mentions <span class="backlink-highlight">this page</span> here.</a></li>
       `
     }
   })
@@ -157,23 +158,39 @@ test.describe("Test page sections", () => {
   })
 })
 
+// The index page's SPA fires an initial `nav` after load; a bare page.evaluate
+// racing that pass hits a destroyed execution context in Firefox. Poll with
+// waitForFunction (which survives the nav) until webfonts have swapped, then
+// drop every paragraph but the first — retrying once if the nav destroys the
+// context mid-call — so only the dropcap paragraph remains for the screenshot.
+async function keepOnlyFirstParagraph(page: Page): Promise<void> {
+  await page.waitForFunction(() => document.fonts?.status === "loaded", undefined, {
+    timeout: 10_000,
+  })
+  const removeTrailingParagraphs = (): void => {
+    const article = document.querySelector("article")
+    if (!article) return
+    article.querySelectorAll("p").forEach((p, idx) => {
+      if (idx > 0) p.remove()
+    })
+  }
+  try {
+    await page.evaluate(removeTrailingParagraphs)
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes("Execution context was destroyed")) {
+      await page.evaluate(removeTrailingParagraphs)
+    } else {
+      throw error
+    }
+  }
+}
+
 test.describe("Unique content around the site", () => {
   test("Welcome page (screenshot)", async ({ page }, testInfo) => {
     await gotoPage(page, "http://localhost:8080", "load")
     await page.locator("body").waitFor({ state: "visible" })
 
-    await page.evaluate(() => {
-      const article = document.querySelector("article")
-      if (article) {
-        const paragraphs = article.querySelectorAll("p")
-        paragraphs.forEach((p, idx) => {
-          // Keep the first paragraph for testing dropcap
-          if (idx > 0) {
-            p.remove()
-          }
-        })
-      }
-    })
+    await keepOnlyFirstParagraph(page)
 
     await takeRegressionScreenshot(page, testInfo, "site-page-welcome")
   })
@@ -576,14 +593,22 @@ test.describe("Admonitions", () => {
       await admonition.click()
       await expect(admonition).not.toHaveClass(/.*is-collapsed.*/)
       await waitForTransitionEnd(admonition)
-      const openedScreenshot = await admonition.screenshot()
+      // The opened and after-content-click captures compare byte-for-byte,
+      // so both must be stable frames rather than raw one-shot captures.
+      const openedScreenshot = await captureStableScreenshot(
+        () => admonition.screenshot(),
+        `admonition-opened-${theme}`,
+      )
       expect(openedScreenshot).not.toEqual(initialScreenshot)
 
       // Click on content should NOT close it
       const content = admonition.locator(".admonition-content").first()
       await content.click()
       await expect(admonition).not.toHaveClass(/.*is-collapsed.*/)
-      const afterContentClickScreenshot = await admonition.screenshot()
+      const afterContentClickScreenshot = await captureStableScreenshot(
+        () => admonition.screenshot(),
+        `admonition-after-content-click-${theme}`,
+      )
       expect(afterContentClickScreenshot).toEqual(openedScreenshot)
 
       // Click on title should close it
@@ -821,6 +846,27 @@ test.describe("Right sidebar", () => {
     // Don't hover over the backlinks
     await moveMouseToSafePosition(page)
     await takeRegressionScreenshot(page, testInfo, "backlinks-visible", {
+      elementToScreenshot: backlinks,
+    })
+  })
+
+  // ContentMeta (and thus backlinks) is visible on both desktop and mobile, so this
+  // screenshot runs across every viewport project to cover the stacked mobile layout.
+  test("Backlink excerpts render below titles (screenshot)", async ({ page }, testInfo) => {
+    await setDummyContentMeta(page)
+    const backlinks = page.locator("#backlinks").first()
+    await backlinks.scrollIntoViewIfNeeded()
+
+    const backlinksTitle = backlinks.locator(".admonition-title").first()
+    await backlinksTitle.click()
+
+    const firstExcerpt = backlinks.locator(".backlink-excerpt").first()
+    await firstExcerpt.scrollIntoViewIfNeeded()
+    await expect(firstExcerpt).toBeVisible()
+    await expect(backlinks.locator(".backlink-highlight").first()).toBeVisible()
+
+    await moveMouseToSafePosition(page)
+    await takeRegressionScreenshot(page, testInfo, "backlink-excerpts", {
       elementToScreenshot: backlinks,
     })
   })
@@ -1073,15 +1119,23 @@ test.describe("Video Speed Controller visibility", () => {
 test("First paragraph is the same before and after clicking on a heading", async ({ page }) => {
   const firstParagraph = page.locator("#center-content article > p").first()
 
-  // Capture the paragraph before navigating to a heading anchor.
-  const screenshotBefore = await firstParagraph.screenshot()
+  // The captures compare byte-for-byte, so the webfont swap must complete
+  // before the first one and each capture must be a stable frame.
+  await page.evaluate(() => document.fonts.ready)
+  const screenshotBefore = await captureStableScreenshot(
+    () => firstParagraph.screenshot(),
+    "first-paragraph-before-anchor-nav",
+  )
 
   // Navigate to a heading anchor (triggers SPA navigation).
   await gotoPage(page, `${page.url()}#header-3`)
   await firstParagraph.scrollIntoViewIfNeeded()
 
   // The paragraph should look identical after the navigation.
-  const screenshotAfter = await firstParagraph.screenshot()
+  const screenshotAfter = await captureStableScreenshot(
+    () => firstParagraph.screenshot(),
+    "first-paragraph-after-anchor-nav",
+  )
   expect(screenshotAfter).toEqual(screenshotBefore)
 })
 
@@ -1440,7 +1494,11 @@ test.describe("Popovers on different page types", () => {
       // Skip on non-desktop viewports since popovers are hidden on mobile/tablet
       test.skip(!isDesktopViewport(page), "Popovers only work on desktop viewports")
 
-      await gotoPage(page, `http://localhost:8080/${pageSlug}`, "load")
+      // These assertions only need the parsed DOM and the `nav` event below;
+      // waiting for the full `load` event ties the test to every CDN
+      // subresource on heavy listing pages (e.g. all-tags), which can exceed
+      // the WebKit test timeout on macOS runners.
+      await gotoPage(page, `http://localhost:8080/${pageSlug}`, "domcontentloaded")
       await page.locator("body").waitFor({ state: "visible" })
 
       // Dispatch the 'nav' event to initialize popover functionality
@@ -1456,16 +1514,12 @@ test.describe("Popovers on different page types", () => {
       await expect(popoverLink).toBeVisible()
 
       await popoverLink.hover()
-      await page.waitForFunction(
-        () => {
-          const popover = document.querySelector(".popover.popover-visible")
-          return popover !== null
-        },
-        { timeout: 5000 },
-      )
 
+      // The popover appears only after the hover-intent delay
+      // (popoverRemovalDelayMs) plus a fetch and render of the target page,
+      // so give it a generous timeout for slow CI runners.
       const popover = page.locator(".popover.popover-visible")
-      await expect(popover).toBeVisible()
+      await expect(popover).toBeVisible({ timeout: 15_000 })
       const popoverInner = popover.locator(".popover-inner")
       await expect(popoverInner).toBeVisible()
 

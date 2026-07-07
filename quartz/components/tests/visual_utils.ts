@@ -7,7 +7,7 @@ import sanitize from "sanitize-filename"
 
 import { minDesktopWidth } from "../../styles/variables"
 import { findGitRoot } from "../../util/log"
-import { savedThemeKey } from "../constants"
+import { forceHslInvertClass, invertInDarkModeClass, savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 
 /**
@@ -138,6 +138,12 @@ export interface RegressionScreenshotOptions {
 // of a remote AVIF, short enough that a genuinely dead image can't hang the run.
 const IMAGE_PAINT_TIMEOUT_MS = 15000
 
+// WebKit's `document.fonts.ready` can hang indefinitely when a `@font-face`
+// request never settles, burning the whole test timeout. Bound the wait: the
+// two-equal-frames `captureStableScreenshot` loop is the real guarantee that
+// fonts have painted, so a late swap still shows up as a frame difference.
+const FONTS_READY_TIMEOUT_MS = 10000
+
 // WebKit paints images above its interpolation cutoff (800×800 source pixels)
 // with fast low-quality scaling whenever their painted size just changed
 // (e.g. a custom element upgrading and re-laying-out its slotted images), then
@@ -177,6 +183,12 @@ export async function captureStableScreenshot(
   )
 }
 
+// Images the InvertInDarkMode transformer wrapped in a `<picture>` with a
+// precomputed `-inverted` sibling. `accurateInvert` swaps their src when
+// `data-theme` flips, so "painted" for them means painted with the variant
+// matching the active theme.
+const THEME_SWAPPED_IMAGE_SELECTOR = `picture > img.${invertInDarkModeClass}:not(.${forceHslInvertClass})`
+
 // Runs in the browser via `locator.evaluate` (Playwright serializes it), so it
 // must not reference module scope. Resolves true once the image has painted,
 // false at the deadline. A remote AVIF can intermittently fail to load
@@ -186,7 +198,10 @@ export async function captureStableScreenshot(
 // it and (on Firefox, where naturalWidth resets during the new request)
 // re-triggers reload forever.
 /* istanbul ignore next -- executed in the browser, not under Jest */
-function pollUntilImagePaints(el: HTMLImageElement, deadlineMs: number): Promise<boolean> {
+function pollUntilImagePaints(
+  el: HTMLImageElement,
+  { deadlineMs, swapSelector }: { deadlineMs: number; swapSelector: string },
+): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
     // WebKit only starts a lazy image's request when it nears the viewport, so
     // a below-fold `loading="lazy"` image would sit unloaded until the
@@ -199,20 +214,36 @@ function pollUntilImagePaints(el: HTMLImageElement, deadlineMs: number): Promise
     const startedAt = performance.now()
     let lastReloadAt = -RELOAD_DEBOUNCE_MS
     const settle = (): void => resolve(true)
+    // A theme-swapped image counts as painted only once its stem agrees with
+    // the active `data-theme` (stem check mirrors `isInvertedUrl` in
+    // invertedAssets.ts).
+    const variantMatchesTheme = (): boolean => {
+      if (!el.matches(swapSelector)) {
+        return true
+      }
+      const path = (el.currentSrc || el.src).split(/[?#]/)[0]
+      const dot = path.lastIndexOf(".")
+      const stem = dot < 0 ? path : path.slice(0, dot)
+      const dark = document.documentElement.getAttribute("data-theme") === "dark"
+      return stem.endsWith("-inverted") === dark
+    }
     const tick = (): void => {
       if (performance.now() - startedAt >= deadlineMs) {
         resolve(false)
         return
       }
-      if (el.complete && el.naturalWidth > 0) {
-        // Loaded. decode() flushes the bitmap so the paint is ready; WebKit
-        // spuriously rejects decode() for painted SVGs, so a rejection still
-        // settles.
-        el.decode().then(settle, settle)
-        return
-      }
       const now = performance.now()
-      if (el.complete && now - lastReloadAt >= RELOAD_DEBOUNCE_MS) {
+      if (el.complete && el.naturalWidth > 0) {
+        if (variantMatchesTheme()) {
+          // Loaded. decode() flushes the bitmap so the paint is ready; WebKit
+          // spuriously rejects decode() for painted SVGs, so a rejection still
+          // settles.
+          el.decode().then(settle, settle)
+          return
+        }
+        // Variant mismatch on a healthy image: fall through to the next poll
+        // tick; the error-reload below is only for zero-dimension loads.
+      } else if (el.complete && now - lastReloadAt >= RELOAD_DEBOUNCE_MS) {
         // Errored (complete with no dimensions): retry with a cache-busted
         // fetch. `set` overwrites the prior value, so retries don't
         // accumulate query params.
@@ -234,7 +265,10 @@ export async function waitForImagesInElement(
   const images = await scope.locator("img").all()
   await Promise.all(
     images.map(async (img) => {
-      const painted = await img.evaluate(pollUntilImagePaints, timeoutMs)
+      const painted = await img.evaluate(pollUntilImagePaints, {
+        deadlineMs: timeoutMs,
+        swapSelector: THEME_SWAPPED_IMAGE_SELECTOR,
+      })
       // Screenshotting an unpainted image bakes its alt text into the capture,
       // which either churns the diff gallery or — if approved — corrupts the
       // baseline. Fail the test instead; a real failure surfaces on the shard.
@@ -247,7 +281,12 @@ export async function waitForImagesInElement(
 }
 
 async function waitForVisualStability(page: Page, scope?: Locator): Promise<void> {
-  await page.evaluate(() => document.fonts.ready)
+  await page.evaluate(async (timeoutMs) => {
+    await Promise.race([
+      document.fonts.ready,
+      new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+    ])
+  }, FONTS_READY_TIMEOUT_MS)
   if (scope) {
     await waitForImagesInElement(scope)
   } else {

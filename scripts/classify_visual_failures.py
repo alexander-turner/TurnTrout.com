@@ -7,11 +7,15 @@ one ``*-actual.png`` — produced by ``toHaveScreenshot()`` for both
 missing and pixel-diff outcomes. Other failed tests (timeouts, page
 errors, exceptions before reaching ``toHaveScreenshot()``) are "real".
 
-Reads one or more blob-report ZIPs and writes two flags suitable for
+A "flaky failure" is a test that only reached its expected status after
+one or more retries. Zero-flakiness policy: nondeterminism is a defect,
+so flaky tests count as real failures and fail the shard.
+
+Reads one or more blob-report ZIPs and writes flags suitable for
 ``$GITHUB_OUTPUT``:
 
-- ``has_any_failures`` — at least one test ended unexpected
-- ``has_real_failures`` — at least one of those was not snapshot-only
+- ``has_any_failures`` — at least one test ended unexpected or flaky
+- ``has_real_failures`` — at least one real or flaky failure
 
 Snapshot-only shards stay green while the overall ``visual-testing``
 status and ``publish-visual-report`` still surface a failure.
@@ -47,16 +51,21 @@ class Classification:
 
     snapshot_failures: int
     real_failures: int
+    flaky_failures: int = 0
 
     @property
     def has_any_failures(self) -> bool:
-        """True iff any snapshot or real failure was observed."""
-        return self.snapshot_failures > 0 or self.real_failures > 0
+        """True iff any snapshot, real, or flaky failure was observed."""
+        return (
+            self.snapshot_failures > 0
+            or self.real_failures > 0
+            or self.flaky_failures > 0
+        )
 
     @property
     def has_real_failures(self) -> bool:
-        """True iff at least one non-snapshot failure was observed."""
-        return self.real_failures > 0
+        """True iff at least one non-snapshot or flaky failure was observed."""
+        return self.real_failures > 0 or self.flaky_failures > 0
 
 
 def _record_test_end(tests: dict[str, _TestState], params: dict) -> None:
@@ -85,8 +94,8 @@ def _record_attachments(tests: dict[str, _TestState], params: dict) -> None:
             return
 
 
-def _classify_blob(blob_zip: Path) -> tuple[int, int]:
-    """Return ``(snapshot_failures, real_failures)`` for one blob ZIP."""
+def _classify_blob(blob_zip: Path) -> tuple[int, int, int]:
+    """Return ``(snapshot, real, flaky)`` failure counts for one blob ZIP."""
     tests: dict[str, _TestState] = defaultdict(_TestState)
     for event in iter_events(blob_zip):
         method = event.get("method")
@@ -98,31 +107,42 @@ def _classify_blob(blob_zip: Path) -> tuple[int, int]:
 
     snapshot_failures = 0
     real_failures = 0
+    flaky_failures = 0
     for state in tests.values():
-        # A test is an "unexpected" outcome only when no retry produced
-        # its expected status. Flaky-but-eventually-passing tests are
-        # not failures and don't block the shard.
-        if state.expected_status in state.observed_statuses:
-            continue
         if not state.observed_statuses:
+            continue
+        needed_retry = any(
+            status != state.expected_status
+            for status in state.observed_statuses
+        )
+        if state.expected_status in state.observed_statuses:
+            # A test that reached its expected status only after a retry is
+            # flaky. Zero-flakiness policy: that nondeterminism is a defect
+            # in its own right, so it blocks the shard like a real failure.
+            if needed_retry:
+                flaky_failures += 1
             continue
         if state.has_snapshot_attachment:
             snapshot_failures += 1
         else:
             real_failures += 1
-    return snapshot_failures, real_failures
+    return snapshot_failures, real_failures, flaky_failures
 
 
 def classify_directory(blob_reports_dir: Path) -> Classification:
     """Classify every ``*.zip`` blob report under ``blob_reports_dir``."""
     snapshot_total = 0
     real_total = 0
+    flaky_total = 0
     for blob_zip in sorted(blob_reports_dir.rglob("*.zip")):
-        snapshot, real = _classify_blob(blob_zip)
+        snapshot, real, flaky = _classify_blob(blob_zip)
         snapshot_total += snapshot
         real_total += real
+        flaky_total += flaky
     return Classification(
-        snapshot_failures=snapshot_total, real_failures=real_total
+        snapshot_failures=snapshot_total,
+        real_failures=real_total,
+        flaky_failures=flaky_total,
     )
 
 
@@ -132,6 +152,7 @@ def _write_flags(result: Classification, output_path: Path | None) -> None:
         f"has_real_failures={'true' if result.has_real_failures else 'false'}",
         f"snapshot_failures={result.snapshot_failures}",
         f"real_failures={result.real_failures}",
+        f"flaky_failures={result.flaky_failures}",
     ]
     text = "\n".join(lines) + "\n"
     if output_path is None:

@@ -18,7 +18,7 @@ aliases:
   - mats-team
   - mentorship
 date_published: 2025-12-23
-date_updated: 2026-06-27
+date_updated: 2026-07-07
 lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
 
@@ -67,14 +67,14 @@ Figure: In MATS 9.0, I led program-wide lifting sessions. Here we stand assemble
 > [!quote] [Jacob Goldman-Wetzler](https://jacobgw.com)
 > Subtitle: MATS 6.0, [Gradient Routing](/gradient-routing)
 >
-> ![[https://assets.turntrout.com/static/images/posts/team-shard-12222025-5.avif|A young man in a dress shirt smiles at the camera.]]{.float-right .testimonial-maybe-negative-margin}
+> ![[https://assets.turntrout.com/static/images/posts/team-shard-12222025-5.avif|A young man in a dress shirt smiles at the camera.]]{.float-right .float-desktop-pull-up}
 >
 > Being a member of Team Shard helped me grow tremendously as a researcher. It gave me the necessary skills and confidence to work in AI Safety full-time.
 
 > [!quote] [Bruce Lee](https://brucewlee.com/)
 > Subtitle: MATS 7.0, [@title](/distillation-robustifies-unlearning)
 >
-> ![A Korean man flashes a grin.](https://assets.turntrout.com/static/images/posts/team-shard-12222025-2.avif){.float-right .testimonial-maybe-negative-margin}
+> ![A Korean man flashes a grin.](https://assets.turntrout.com/static/images/posts/team-shard-12222025-2.avif){.float-right .float-desktop-pull-up}
 >
 > I learned how to make progress when everyone in the room is uncertain. If you're interested in learning what making progress on a hard problem actually feels like, Team Shard is where you want to be.
 

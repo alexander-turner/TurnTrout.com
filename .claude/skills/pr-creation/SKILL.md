@@ -15,6 +15,8 @@ description: >
 
 **IMPORTANT: Always follow this skill before creating any PR.** Do not skip steps, especially the iterative compress-critique-fix loop.
 
+**Opening a PR is not optional and not something to ask permission for.** The moment a unit of work (a fix, feature, or refactor) is committed and pushed to a feature branch in this repo, create the PR unconditionally as part of finishing the task—don't stop and ask "would you like a PR?" or "let me know if you'd like one." Only skip PR creation if the user has explicitly said not to open one, or a PR for this branch already exists (update that one instead).
+
 ## When to Use
 
 Activate this skill when the user says any of the following (or similar):
@@ -74,10 +76,13 @@ You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatt
 
 1. Push the branch: `git push -u origin HEAD`
 2. Check if a PR already exists for the current branch:
+
    ```bash
    EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number' 2>/dev/null)
    ```
+
    If a PR already exists, update it with `gh pr edit` instead of creating a new one.
+
 3. Create the PR using `gh pr create` with the template from the resource file. Make sure that you use the target branch
 
 ### Step 3: Iterative Compress-Critique-Fix Loop
@@ -132,7 +137,7 @@ Push any commits made during the critique and validation steps, then update the 
 1. Push: `git push`
 
 1. Re-read the diff (`git diff $CLAUDE_CODE_BASE_REF...HEAD`) and commit log (`git log $CLAUDE_CODE_BASE_REF..HEAD --oneline`) to see the full scope
-2. Rewrite the title and body to accurately describe the **current totality** of changes, not just the original scope:
+1. Rewrite the title and body to accurately describe the **current totality** of changes, not just the original scope:
 
    ```bash
    gh pr edit <pr-number> --title "<type>: <updated description>" --body "$(cat <<'EOF'

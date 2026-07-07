@@ -281,8 +281,12 @@ describe("createPageTitleElement", () => {
     expect(anchor.properties?.className).toContain("internal")
     expect(anchor.properties?.className).toContain("can-trigger-popover")
 
-    // Ensure the anchor contains the provided title text node
-    const textNode = anchor.children[0] as { type: "text"; value: string }
+    // Ensure the anchor's title wraps the provided text in the shared
+    // work-title span (so it gets lining-figure numerals, etc.)
+    const titleSpan = anchor.children[0] as HastElement
+    expect(titleSpan.tagName).toBe("span")
+    expect(titleSpan.properties?.className).toContain("work-title")
+    const textNode = titleSpan.children[0] as { type: "text"; value: string }
     expect(textNode.type).toBe("text")
     expect(textNode.value).toBe(formattedTitle)
   })
