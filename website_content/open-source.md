@@ -17,7 +17,7 @@ aliases:
   - software
   - OSS
 date_published: 2025-10-28
-date_updated: 2026-06-30
+date_updated: 2026-07-07
 ---
 
 # Punctilio for meticulous typography

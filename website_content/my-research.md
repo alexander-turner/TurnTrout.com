@@ -4,7 +4,7 @@ permalink: research
 hideSubscriptionLinks: false
 description: A tour of the research areas I've loved over the years.
 date_published: 2024-10-27
-date_updated: 2026-06-28
+date_updated: 2026-07-07
 tags:
   - AI
 title: My research

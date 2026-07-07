@@ -582,14 +582,14 @@
       "title": "Review of 'Debate on Instrumental Convergence between LeCun, Russell, Bengio, Zador, and More'"
     },
     {
-      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
-      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
-      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
-    },
-    {
       "excerpt": "A list of some of my major conceptual mistakes.",
       "permalink": "mistakes",
       "title": "Mistaken claims I've made"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
     }
   ],
   "avoiding-side-effects-in-complex-environments": [
@@ -685,11 +685,6 @@
       "excerpt": "Insights from a management textbook on how to improve decision-making, negotiate effectively, and overcome cognitive biases.",
       "permalink": "managerial-decision-making-review",
       "title": "Judgment Day: Insights from 'Judgment in Managerial Decision Making'"
-    },
-    {
-      "excerpt": "Examining a statistical illusion that tricks us into seeing correlations where there are none. Can we rewire our brains to see through it?",
-      "permalink": "collider-bias-as-a-cognitive-blindspot",
-      "title": "Collider bias as a cognitive blindspot?"
     }
   ],
   "cheese-vector-paper": [
@@ -792,14 +787,14 @@
       "title": "Attainable Utility Preservation: Empirical Results"
     },
     {
-      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
-      "permalink": "attainable-utility-preservation-concepts",
-      "title": "Attainable Utility Preservation: Concepts"
-    },
-    {
       "excerpt": "A tour of the research areas I've loved over the years.",
       "permalink": "research",
       "title": "My research"
+    },
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
     },
     {
       "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
@@ -944,9 +939,9 @@
       "title": "My open source contributions"
     },
     {
-      "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "research",
-      "title": "My research"
+      "excerpt": "Showing off and explaining this site's beauty.",
+      "permalink": "design",
+      "title": "The design of this website"
     }
   ],
   "deducing-impact": [
@@ -1027,14 +1022,14 @@
       "title": "About me"
     },
     {
-      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
-      "permalink": "date-me",
-      "title": "I'm that \"other fish in the sea\""
-    },
-    {
       "excerpt": "Displaying the features of the website for use in visual regression testing.",
       "permalink": "test-page",
       "title": "Testing site features"
+    },
+    {
+      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
+      "permalink": "date-me",
+      "title": "I'm that \"other fish in the sea\""
     }
   ],
   "digital-minimalism": [
@@ -1725,9 +1720,9 @@
       "title": "Reasons for Excitement about Impact of Impact Measure Research"
     },
     {
-      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
-      "permalink": "towards-a-new-impact-measure",
-      "title": "Towards a New Impact Measure"
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
     }
   ],
   "how-to-dissolve-it": [
@@ -2212,11 +2207,6 @@
       "title": "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
     },
     {
-      "excerpt": "Fear of the dark increases our perception of risk. I ask: does this apply to decision-making more broadly?",
-      "permalink": "can-fear-of-the-dark-bias-us-more-generally",
-      "title": "Can fear of the dark bias us more generally?"
-    },
-    {
       "excerpt": "Three short essays written against the clock on instrumental rationality, confusion identification, and emotion propagation.",
       "permalink": "hammertime-final-exam",
       "title": "Unyielding Yoda Timers: Taking the Hammertime Final Exam"
@@ -2225,6 +2215,11 @@
       "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
       "permalink": "alignment-phd",
       "title": "Looking back on my alignment PhD"
+    },
+    {
+      "excerpt": "Fear of the dark increases our perception of risk. I ask: does this apply to decision-making more broadly?",
+      "permalink": "can-fear-of-the-dark-bias-us-more-generally",
+      "title": "Can fear of the dark bias us more generally?"
     },
     {
       "excerpt": "Textbook insights on economic policy, price gouging, and the surprising efficiency of competitive markets.",
@@ -2608,14 +2603,14 @@
       "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
     },
     {
-      "excerpt": "Shard theory, once speculative, is definitively confirmed by GPT-NeoX-20B. Time to stop arguing and start experimenting.",
-      "permalink": "shard-theory-confirmed",
-      "title": "Definitive confirmation of shard theory"
-    },
-    {
       "excerpt": "My team published a paper on steering a maze-solving AI by manipulating its internal goal representations.",
       "permalink": "cheese-vector-paper",
       "title": "Paper: Understanding and Controlling a Maze-Solving Policy Network"
+    },
+    {
+      "excerpt": "Shard theory, once speculative, is definitively confirmed by GPT-NeoX-20B. Time to stop arguing and start experimenting.",
+      "permalink": "shard-theory-confirmed",
+      "title": "Definitive confirmation of shard theory"
     }
   ],
   "privacy-despite-authoritarianism": [
@@ -2654,9 +2649,9 @@
   ],
   "punctilio": [
     {
-      "excerpt": "Showing off and explaining this site's beauty.",
-      "permalink": "design",
-      "title": "The design of this website"
+      "excerpt": "Displaying the features of the website for use in visual regression testing.",
+      "permalink": "test-page",
+      "title": "Testing site features"
     }
   ],
   "quantitative-strength-of-instrumental-convergence": [
@@ -2830,14 +2825,14 @@
   ],
   "research": [
     {
-      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
-      "permalink": "attainable-utility-preservation-paper",
-      "title": "Penalizing Impact via Attainable Utility Preservation"
-    },
-    {
       "excerpt": "AI agents trained with Attainable Utility Preservation avoid most side effects in Conway's Game of Life without explicit instructions.",
       "permalink": "avoiding-side-effects-in-complex-environments",
       "title": "Avoiding Side Effects in Complex Environments"
+    },
+    {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
     },
     {
       "excerpt": "The AUP technique encourages low-impact behavior in both simple and complex environments.",
@@ -2850,9 +2845,9 @@
       "title": "Conclusion to 'Reframing Impact'"
     },
     {
-      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
-      "permalink": "excitement-about-impact-measures",
-      "title": "Reasons for Excitement about Impact of Impact Measure Research"
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
     }
   ],
   "residual-stream-norms-grow-exponentially-over-the-forward-pass": [
@@ -3299,14 +3294,14 @@
       "title": "I'm that \"other fish in the sea\""
     },
     {
-      "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
-      "permalink": "a-shot-at-the-diamond-alignment-problem",
-      "title": "A shot at the diamond-alignment problem"
-    },
-    {
       "excerpt": "A tour of the research areas I've loved over the years.",
       "permalink": "research",
       "title": "My research"
+    },
+    {
+      "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
+      "permalink": "a-shot-at-the-diamond-alignment-problem",
+      "title": "A shot at the diamond-alignment problem"
     }
   ],
   "test-page": [
