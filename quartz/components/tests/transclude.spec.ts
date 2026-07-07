@@ -7,7 +7,10 @@ const TEST_PAGE_URL = "http://localhost:8080/test-page"
 // Because that transclude is from the same page (`![[/test-page#...]]`), the link
 // still resolves on this page, so both copies must stay normal same-page links
 // (anchor favicon kept, not demoted to an internal turntrout link).
-const WITHIN_PAGE_LINKS = 'a.same-page-link.can-trigger-popover[href="#admonitions"]'
+// Scoped to #center-content to exclude the desktop ToC's own #admonitions entry,
+// which also matches this selector.
+const WITHIN_PAGE_LINKS =
+  '#center-content a.same-page-link.can-trigger-popover[href="#admonitions"]'
 const DEMOTED_LINK = 'a[href$="test-page#admonitions"]'
 
 test.beforeEach(async ({ page }) => {
