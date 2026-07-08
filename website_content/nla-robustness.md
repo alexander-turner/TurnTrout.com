@@ -132,7 +132,7 @@ Claude almost always quotes the correct ending phrase, even though the rest of t
 
 Each of Claude's implausible explanations are false (factually speaking), but the final word is still quoted correctly.
 
-![[nla-robustness-07072026-3.svg|A line graph for the plausibility rates of the plausible- and implausible-initialized NLAs.]]
+![[https://assets.turntrout.com/static/images/posts/nla-robustness-07072026-3.svg|A line graph for the plausibility rates of the plausible- and implausible-initialized NLAs.]]
 
 Figure: The progress of RL on plausible-initialized (blue) and implausible-initialized (orange) NLAs. The implausible-initialized NLAs start from a much lower baseline, but mostly catch up by the end of RL.
 
@@ -142,7 +142,7 @@ Is this because RL trained the activation verbalizer to stop confabulating? To f
 
 > I will present to you a text snippet, wrapped in `<text></text>` tags, followed by an explanation, wrapped in `<explanation></explanation>` tags. Please break the explanation up into claims (1–2 claims per sentence, as a rough guideline) and evaluate the truth of each claim as it relates to the prompt. Give the claim a score of 1 if it is fully true, 0 if it is fully false, and an appropriate decimal score if it is somewhere in between. Please be lenient in assigning partial credit. If the claim is nonsensical, give it a score of 0. If it is not possible to determine the truth of the claim, skip it. Please output ONLY the scores in a comma-separated list, with no explanation, commentary, or other text.
 
-![[nla-robustness-07072026-1.svg|A line graph for the plausibility rates of the plausible- and implausible-initialized NLAs.]]
+![[https://assets.turntrout.com/static/images/posts/nla-robustness-07072026-1.svg|A line graph for the plausibility rates of the plausible- and implausible-initialized NLAs.]]
 
 Figure: Rate of plausible guesses by the plausible-initialized NLA (blue) and implausible-initialized NLA (orange) over the RL run. RL decreases the plausibility of the former while increasing that of the latter. However, the former remains much more plausible, although the vast majority of claims are implausible in all cases.
 
