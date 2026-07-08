@@ -641,9 +641,9 @@
       "title": "Best reasons for pessimism about impact of impact measures?"
     },
     {
-      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
-      "permalink": "consistency-training",
-      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
+      "excerpt": "Natural language autoencoders verbalize an LLM's activations in plain text, trained on Claude's guesses about what the model is thinking. We probe how robust these NLAs are to changes in Claude's guesses, finding that they reconstruct activations accurately even when initialized with entirely implausible explanations.",
+      "permalink": "natural-language-autoencoder-robustness",
+      "title": "How robust are natural language autoencoders to initialization?"
     }
   ],
   "best-reasons-for-pessimism-about-impact-measures": [
@@ -2306,6 +2306,33 @@
       "excerpt": "We challenge the assumption that output supervision preserves Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the CoTs.",
       "permalink": "output-feedback-can-obfuscate-chain-of-thought",
       "title": "Output Supervision Can Obfuscate the CoT"
+    }
+  ],
+  "natural-language-autoencoder-robustness": [
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
+      "permalink": "deep-causal-transcoding",
+      "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.",
+      "permalink": "self-fulfilling-misalignment",
+      "title": "Self-fulfilling misalignment data might be poisoning our AI models"
+    },
+    {
+      "excerpt": "Predictions about a cheese-finding AI model's internal workings, before the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖",
+      "permalink": "predictions-for-shard-theory-mechanistic-interpretability",
+      "title": "Predictions for shard theory mechanistic interpretability results"
+    },
+    {
+      "excerpt": "Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.",
+      "permalink": "llama2-steering-vectors",
+      "title": "Steering Llama-2 with contrastive activation additions"
     }
   ],
   "non-obstruction-motivates-corrigibility": [
