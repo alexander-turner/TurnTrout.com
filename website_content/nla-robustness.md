@@ -5,7 +5,7 @@ no_dropcap: false
 tags:
   - AI
   - mats-program
-description: Natural language autoencoders verbalize an LLM's activations in plain text, trained on Claude's guesses about what the model is thinking. We probe how robust these NLAs are to changes in Claude's guesses, finding that they reconstruct activations accurately even when initialized with entirely implausible explanations.
+description: Unfortunately, NLAs reconstruct activations accurately even while giving implausible explanations.
 authors:
   - Michael Zhang
   - Alex Turner
@@ -195,4 +195,4 @@ The NLA's implausible claims are not randomly implausible, but still relate to t
 
 Our "Carthago delenda est" and "I love Carthage" experiments show that NLAs have some robustness to initialization. Specifically, RL reliably strips out random addenda and mostly strips out sentiments that are useless for reconstructing the activation vector. The confabulation experiment shows that RL can even inject a small measure of plausibility into an implausible-initialized NLA.
 
-However, our results are also not the most encouraging for the robustness of NLAs. While Claude's initial guesses matter, no matter the initialization, *the vast majority of trained NLA claims are implausible*. Perhaps worse still, *RL can make NLA claims even more implausible*. Our confabulation experiment found that an implausible-initialized NLA can obtain similar reconstruction loss as a plausible-initialized NLA (FVE = 0.68 vs. 0.70) while remaining many times less plausible (0.7% vs 7.6%).
+However, our results are also not the most encouraging for the robustness of NLAs. While Claude's initial guesses matter, no matter the initialization, *the vast majority of trained NLA claims are implausible*. Perhaps worse still, *RL can make NLA claims even more implausible*. Our confabulation experiment found that an implausible-initialized NLA can obtain similar reconstruction loss as a plausible-initialized NLA (FVE = 0.68 vs. 0.70) while remaining many times less plausible (0.7% vs 7.6%). NLAs may be autoencoders but their explanations need not be natural.
