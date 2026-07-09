@@ -641,7 +641,7 @@
       "title": "Best reasons for pessimism about impact of impact measures?"
     },
     {
-      "excerpt": "Natural language autoencoders verbalize an LLM's activations in plain text, trained on Claude's guesses about what the model is thinking. We probe how robust these NLAs are to changes in Claude's guesses, finding that they reconstruct activations accurately even when initialized with entirely implausible explanations.",
+      "excerpt": "Unfortunately, NLAs reconstruct activations accurately even while giving implausible explanations.",
       "permalink": "natural-language-autoencoder-robustness",
       "title": "How robust are natural language autoencoders to initialization?"
     }
