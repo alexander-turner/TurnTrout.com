@@ -14,7 +14,10 @@ card_image_alt:
 aliases:
   - nla-robustness
   - robust-nlas
+date_published: &id001 2026-07-09
+date_updated: *id001
 ---
+
 Natural language autoencoders are meant to take in an LLM's activation vector and describe in plain text what the model is thinking. However, its training data collection involves asking Claude to guess what a model might be thinking. How robust are NLAs to these guesses? We change Claude's guesses in various ways and measure the impact on the NLA's statements as well as on reconstruction accuracy. We show that Qwen2.5-7B NLAs have some robustness to irrelevant statements and prevailing sentiments in Claude's guesses.
 
 However, if an NLA is initialized with entirely implausible statements, it can nevertheless achieve nearly the same reconstruction accuracy as plausible-initialized NLAs while emitting 99.3% implausible statements. RL does train implausible-initialized NLAs to be slightly more plausible (increasing from 0.08% to 0.7%). But the plausibility of plausible-initialized NLAs *decreases* from 21% at initialization to 7.6% at the end of training.
