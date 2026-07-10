@@ -54,11 +54,9 @@ jobs:
           install-system-deps: "true"
 
       - name: Restore built site from cache
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        uses: ./.github/actions/restore-site-cache
         with:
-          path: public/
           key: site-build-${{ github.sha }}-fixtures-false
-          fail-on-cache-miss: true
 
       - name: Install subfont fork at ${{ inputs.fork_ref }}
         env:
