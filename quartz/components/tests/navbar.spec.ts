@@ -473,6 +473,10 @@ test("Video toggle changes autoplay behavior", async ({ page }) => {
 
 test("Video autoplay preference persists across page reloads", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
+  // Video decode after a fresh reload competes with other parallel Playwright
+  // workers for CPU, so a contended CI runner can leave readyState at 0 well
+  // past a tight deadline even though the video eventually buffers.
+  test.slow()
 
   const { video, autoplayToggle, playIcon, pauseIcon } = getVideoElements(page)
 
@@ -499,7 +503,7 @@ test("Video autoplay preference persists across page reloads", async ({ page }) 
             `Video failed to reach playable state: readyState=${videoElement.readyState}, paused=${videoElement.paused}, currentTime=${videoElement.currentTime}`,
           ),
         )
-      }, 15_000)
+      }, 30_000)
 
       const checkPlayable = () => {
         if (videoElement.readyState >= 3 && !videoElement.paused && videoElement.currentTime > 0) {

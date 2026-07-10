@@ -27,6 +27,7 @@ test.describe("search index self-heals after the prefetch hangs", () => {
       calls += 1
       if (calls === 1) {
         // Simulate the prefetch started in a since-frozen tab: it never settles.
+        // skipcq: JS-0321 -- intentional no-op: executor deliberately never resolves
         await new Promise<void>(() => {})
         return
       }
