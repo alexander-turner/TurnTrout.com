@@ -346,6 +346,7 @@ export function removeClass(node: Element, className: string): void {
 
     const next = { ...node.properties }
     if (kept.length === 0) {
+      // skipcq: JS-0320 -- key is one of the literal "className"/"class" tuple values above, not attacker-controlled
       delete next[key]
     } else {
       next[key] = typeof existing === "string" ? kept.join(" ") : kept
