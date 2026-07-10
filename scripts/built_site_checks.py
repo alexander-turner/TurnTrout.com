@@ -483,14 +483,17 @@ def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
 # because it probably needed a newline before it
 def check_blockquote_elements(soup: BeautifulSoup) -> list[str]:
     r"""Check for blockquote elements ending with ">" as long as they don't end
-    in a "<\w+>" pattern."""
+    in a "</?\w+>" pattern (an opening or closing tag, e.g. a literal
+    ``<analysis>``/``</analysis>`` shown in a code span)."""
     problematic_blockquotes: list[str] = []
     blockquotes = soup.find_all("blockquote")
     for blockquote in blockquotes:
         contents = list(blockquote.stripped_strings)
         if contents:
             last_part = contents[-1].strip()
-            if last_part.endswith(">") and not re.search(r"<\w+>$", last_part):
+            if last_part.endswith(">") and not re.search(
+                r"</?\w+>$", last_part
+            ):
                 _append_to_list(
                     problematic_blockquotes,
                     " ".join(contents),
@@ -1307,6 +1310,12 @@ EMPHASIS_ELEMENTS_TO_SEARCH = (
     *(f"h{i}" for i in range(1, 7)),
 )
 
+# A standalone run of three or more underscores is a fill-in-the-blank (e.g.
+# ``the "21 of the ___" construction`` or ``works for at least one X vector ___
+# %``), not unrendered emphasis. Requiring non-alphanumeric neighbors keeps a
+# genuinely unrendered ``___word___`` flagged.
+_FILL_IN_THE_BLANK = re.compile(r"(?<![A-Za-z0-9])_{3,}(?![A-Za-z0-9])")
+
 
 def check_unrendered_emphasis(soup: BeautifulSoup) -> list[str]:
     """
@@ -1330,8 +1339,9 @@ def check_unrendered_emphasis(soup: BeautifulSoup) -> list[str]:
         # Get text excluding code and KaTeX elements
         stripped_text = script_utils.get_non_code_text(text_elt)
 
-        if stripped_text and (
-            re.search(rf"\*|\_(?!\_*[ {NBSP}]+\%)", stripped_text)
+        text_to_check = _FILL_IN_THE_BLANK.sub("", stripped_text)
+        if text_to_check and (
+            re.search(rf"\*|\_(?!\_*[ {NBSP}]+\%)", text_to_check)
         ):
             _append_to_list(
                 problematic_texts,

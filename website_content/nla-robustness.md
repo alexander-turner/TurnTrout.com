@@ -29,7 +29,7 @@ If our results scale, they cast doubt on the usefulness of NLAs.
 >
 > "Plausible-initialized" NLAs are initialized [normally](https://transformer-circuits.pub/2026/nla/index.html) using Claude's guesses. "Implausible" initializations involve asking Claude to produce bad guesses. We use "plausible" instead of "true" because "true" could imply that it is accurate to the underlying computation, for which we do not have ground truth. Similarly, an "implausible" guess (e.g. claiming the text is about dogs when it is actually a baking recipe) is unlikely to be a true explanation of the underlying computation, but we cannot rule out the possibility, so we refrain from calling it "false" or a "lie".
 
-> [!thanks] Produced as part of the [MATS program](https://www.matsprogram.org/) in the summer 2026 cohort of [team shard.](https://github.com/alexander-turner/TurnTrout.com/blob/dev/team-shard)
+> [!thanks] Produced as part of the [MATS program](https://www.matsprogram.org/) in the summer 2026 cohort of [Team Shard.](/team-shard)
 
 # Introduction
 

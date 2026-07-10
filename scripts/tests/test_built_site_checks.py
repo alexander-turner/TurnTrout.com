@@ -707,6 +707,31 @@ def test_complicated_blockquote(tmp_path):
     ]
 
 
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Bare trailing ">" (merged quote marker) is flagged
+        (
+            "<blockquote><p>broken quote &gt;</p></blockquote>",
+            ["Problematic blockquote: broken quote >"],
+        ),
+        # An opening tag ending the blockquote is fine
+        ("<blockquote><p>fine <code>&lt;BOS&gt;</code></p></blockquote>", []),
+        # A closing tag ending the blockquote is also fine
+        (
+            "<blockquote><p>momentum</p>"
+            "<p><code>&lt;/analysis&gt;</code></p></blockquote>",
+            [],
+        ),
+    ],
+)
+def test_check_blockquote_elements(html, expected):
+    """Opening/closing tags may legitimately end a blockquote; a bare ">" may
+    not."""
+    soup = BeautifulSoup(html, "html.parser")
+    assert built_site_checks.check_blockquote_elements(soup) == expected
+
+
 def test_check_file_for_issues_with_redirect(tmp_path):
     file_path = tmp_path / "public" / "test.html"
     file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1422,6 +1447,14 @@ def test_check_problematic_paragraphs_comprehensive(html, expected):
         ("<p>Text with ___ % coverage</p>", []),
         # Percentage with non-breaking space (should also be ignored)
         (f"<p>Text with ___{NBSP}% coverage</p>", []),
+        # Standalone fill-in-the-blank runs (not a percentage) are ignored
+        ('<p>completing the "21 of the ___" construction</p>', []),
+        ("<p>fill in the ____ blank</p>", []),
+        # Underscores adjacent to letters are still flagged (real emphasis)
+        (
+            "<p>this is ___word___ text</p>",
+            ["Unrendered emphasis: this is ___word___ text"],
+        ),
         # Mixed cases
         (
             "<p>Mixed *emphasis* with _100% value_</p>",
