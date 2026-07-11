@@ -340,8 +340,14 @@ test.describe("gotoPage", () => {
   } {
     const gotoCalls: Array<{ url: string; waitUntil: string | undefined }> = []
     const stub = {
-      on() {},
-      off() {},
+      // gotoPage registers/unregisters a "requestfailed" listener; this unit
+      // test only asserts the navigation gate, so the listener is a no-op.
+      on() {
+        /* no-op: listener registration is irrelevant to the loadState assertion */
+      },
+      off() {
+        /* no-op: see on() */
+      },
       goto(url: string, opts?: { waitUntil?: string }) {
         gotoCalls.push({ url, waitUntil: opts?.waitUntil })
         return Promise.resolve(null)
