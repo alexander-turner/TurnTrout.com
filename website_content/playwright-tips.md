@@ -77,7 +77,7 @@ Set `deviceScaleFactor: 1` to eliminate subpixel jitter
 : Different CI runners may have different DPR settings, causing text subpixel rendering differences. Explicitly setting `deviceScaleFactor: 1` in your config and using `scale: "css"` in screenshot options normalizes this across environments.
 
 Pin Chromium's rendering to kill "ordinary" antialiasing drift
-: Screenshots that shift by a tiny amount usually trace back to the CI runner's font or graphics libraries shifting under an older baseline. Three Chromium launch flags: `--force-color-profile=srgb` (fixed color mapping), `--disable-lcd-text` (grayscale instead of subpixel text antialiasing), and `--font-render-hinting=none` (no hinting-dependent glyph metrics). 
+: Screenshots that shift by a tiny amount usually trace back to the CI runner's font or graphics libraries shifting under an older baseline. Three Chromium launch flags: `--force-color-profile=srgb` (fixed color mapping), `--disable-lcd-text` (grayscale instead of subpixel text antialiasing), and `--font-render-hinting=none` (no hinting-dependent glyph metrics).
 
 ## For screenshots in particular
 
@@ -103,9 +103,6 @@ Scrub media elements to deterministic positions
 
 Verify videos are paused at frame 0 before screenshotting
 : Even with autoplay disabled and an initial `pause()` + `currentTime = 0` seek, slow CI runners can time out before the `seeked` event fires — leaving the video at a non-zero frame. Use `page.waitForFunction` to poll each video element, re-issuing `pause()` and `currentTime = 0` on each poll iteration until the browser confirms `paused && currentTime === 0`. This catches races that a single seek-and-hope approach misses.
-
-Give a video's own network fetch a real budget, not a borrowed one
-: Switching my navigation gate from `load` to `domcontentloaded` (see above) removed an unadvertised subsidy: `page.goto()` used to implicitly give `<video>` elements the whole page-load's wall-clock time to start fetching before my test code even ran. With `domcontentloaded`, test code resolves almost instantly, so a "wait for a video frame to paint" helper now has to cover the video's entire remote fetch on its own. My video-paint helper had an 8-second fallback that had quietly relied on that subsidy; once I switched to `domcontentloaded`, it started occasionally screenshotting a completely blank video. The fix was matching that budget to my equally generous image-load timeout (15 seconds), not discovering some clever wait condition. Whenever you change how much implicit warm-up your test setup gets, re-examine every fixed timeout downstream of it.
 
 Isolate the relevant DOM
 : While `toHaveScreenshot` guarantees stability _within_ a session, my screenshots were still wobbling in response to unrelated changes earlier in the page. For some reason, there were a few pixels of difference due to e.g. an additional line being present earlier in the page.
