@@ -308,6 +308,21 @@ describe("HTMLFormattingImprovement", () => {
     })
   })
 
+  describe("slashes adjacent across an inline-element boundary", () => {
+    // Two slashes separated only by an inline-element boundary make the first
+    // slash's trailing NBSP and the second slash's leading NBSP land at the
+    // same offset; punctilio rejects two pure insertions there. The pass now
+    // collapses the duplicate to a single NBSP instead of crashing the build.
+    it.each([
+      ["<p>a/<em></em>/b</p>", "<p>a / <em></em>/ b</p>"],
+      ["<p><em>x/</em>/y</p>", "<p><em>x /</em>/ y</p>"],
+      ["<p><em>a/</em><em>/b</em></p>", "<p><em>a /</em><em>/ b</em></p>"],
+      ["<p>a/<strong></strong>/b</p>", "<p>a / <strong></strong>/ b</p>"],
+    ])("does not crash on %s", (input: string, expected: string) => {
+      expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
+    })
+  })
+
   describe("non-breaking spaces around slashes and ampersands", () => {
     it.each([
       ["dog/cat", `dog${NBSP}/${NBSP}cat`],
