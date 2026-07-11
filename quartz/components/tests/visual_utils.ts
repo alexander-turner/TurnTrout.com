@@ -138,6 +138,12 @@ export interface RegressionScreenshotOptions {
 // of a remote AVIF, short enough that a genuinely dead image can't hang the run.
 const IMAGE_PAINT_TIMEOUT_MS = 15000
 
+// gotoPage gates navigation on "domcontentloaded", which returns control to
+// the test before a <video>'s own network fetch has had any wall-clock time
+// to progress. This budget must cover that full remote-asset fetch on its
+// own, so it matches IMAGE_PAINT_TIMEOUT_MS's generosity for the same reason.
+const VIDEO_PAINT_TIMEOUT_MS = 15000
+
 // WebKit's `document.fonts.ready` can hang indefinitely when a `@font-face`
 // request never settles, burning the whole test timeout. Bound the wait: the
 // two-equal-frames `captureStableScreenshot` loop is the real guarantee that
@@ -590,7 +596,7 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
     const handle = await video.elementHandle()
     if (!handle) throw new Error("Could not get element handle for video")
     await handle.evaluate(
-      (el) =>
+      (el, dataTimeoutMs) =>
         new Promise<void>((resolve) => {
           const videoEl = el as HTMLVideoElement & {
             requestVideoFrameCallback?: (cb: () => void) => number
@@ -626,8 +632,9 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
           }
           // Never hang on a video whose data never arrives (e.g. a broken
           // source); let the screenshot proceed and fail on its own terms.
-          timers.push(setTimeout(finish, 8000))
+          timers.push(setTimeout(finish, dataTimeoutMs))
         }),
+      VIDEO_PAINT_TIMEOUT_MS,
     )
     await handle.dispose()
   }
