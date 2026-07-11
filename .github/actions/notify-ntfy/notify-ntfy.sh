@@ -11,13 +11,13 @@
 set -euo pipefail
 
 topic="${NTFY_TOPIC:-}"
-if [[ -z "${topic}" ]]; then
+if [[ -z "$topic" ]]; then
   echo "notify-ntfy: GH_NTFY_SUBJECT is unset; skipping notification." >&2
   exit 0
 fi
 
 base_url="${NTFY_BASE_URL:-}"
-[[ -z "${base_url}" ]] && base_url="https://ntfy.sh"
+[[ -z "$base_url" ]] && base_url="https://ntfy.sh"
 base_url="${base_url%/}"
 
 message="${NTFY_MESSAGE:-A build or publish workflow failed.}"
@@ -38,8 +38,8 @@ curl_args=(
   -H "Tags: $(sanitize_header "${NTFY_TAGS:-rotating_light}")"
 )
 click="${NTFY_CLICK:-}"
-[[ -n "${click}" ]] && curl_args+=(-H "Click: $(sanitize_header "${click}")")
-curl_args+=(-d "${message}" "${base_url}/${topic}")
+[[ -n "$click" ]] && curl_args+=(-H "Click: $(sanitize_header "$click")")
+curl_args+=(-d "$message" "${base_url}/${topic}")
 
 # The topic is secret; keep it out of the logs even though Actions masks it.
 if curl "${curl_args[@]}"; then
