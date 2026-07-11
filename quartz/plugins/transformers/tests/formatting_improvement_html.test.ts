@@ -323,6 +323,25 @@ describe("HTMLFormattingImprovement", () => {
     })
   })
 
+  describe("loose inline text beside block children", () => {
+    // Loose text sitting directly in a container alongside block children owns
+    // no element of its own; formatting reaches it via punctilio's prose "run"
+    // units. Its quotes/slashes must still be transformed, without merging the
+    // container's block children across the boundary.
+    it.each([
+      [
+        '<div><p>p1</p>loose "text" here<p>p2</p></div>',
+        "<div><p>p1</p>loose “text” here<p>p2</p></div>",
+      ],
+      [
+        '<blockquote><p>a</p>loose "quote" text</blockquote>',
+        "<blockquote><p>a</p>loose “quote” text</blockquote>",
+      ],
+    ])("curls quotes in %s", (input: string, expected: string) => {
+      expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
+    })
+  })
+
   describe("non-breaking spaces around slashes and ampersands", () => {
     it.each([
       ["dog/cat", `dog${NBSP}/${NBSP}cat`],

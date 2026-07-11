@@ -13,7 +13,7 @@ import {
 } from "punctilio"
 import {
   applyPasses,
-  collectProseBlocks,
+  collectProseUnits,
   getTextContent,
   type PassEntry,
   type TextNodeSkipPredicate,
@@ -1001,11 +1001,13 @@ export const improveFormatting = (
       // punctilio's default skip tags (kbd, var, samp, ...) must not apply.
       // Form-control and metadata text (option labels, button captions) is a
       // literal value, not prose — drop those blocks from the collection.
-      const eltsToTransform = collectProseBlocks(node as Element, {
+      // Units include loose inline "runs" (text beside block children) that no
+      // single element owns, so a container's loose text still gets formatted.
+      const unitsToTransform = collectProseUnits(node as Element, {
         skipTags: [],
         shouldSkip: toSkip,
-      }).filter((elt) => !NON_PROSE_TAGS.has(elt.tagName))
-      eltsToTransform.forEach((elt) => {
+      }).filter((unit) => unit.kind === "run" || !NON_PROSE_TAGS.has(unit.element.tagName))
+      unitsToTransform.forEach((unit) => {
         const passes: PassEntry[] = [
           ...checkedTextPasses,
           ...activeUncheckedTransformers,
@@ -1013,18 +1015,17 @@ export const improveFormatting = (
           dashWordJoinerPass,
         ]
 
-        // Don't replace slashes in fractions, but give breathing room
-        // to others
-        const isNotFractionOrLink = (n: Element) => {
-          return !hasClass(n, "fraction") && n?.tagName !== "a"
-        }
-        if (isNotFractionOrLink(elt)) {
+        // Don't replace slashes in fractions or link text; loose runs are neither.
+        const isNotFractionOrLink =
+          unit.kind === "run" ||
+          (!hasClass(unit.element, "fraction") && unit.element?.tagName !== "a")
+        if (isNotFractionOrLink) {
           // Slash spacing alone also skips URL-text links, so its entry
           // carries the extra text-node predicate.
           passes.push({ pass: spacesAroundSlashes, shouldSkipText: shouldSkipLinkUrlText })
         }
 
-        applyPasses(elt, passes, { shouldSkip: toSkip })
+        applyPasses(unit, passes, { shouldSkip: toSkip })
       })
     })
 
