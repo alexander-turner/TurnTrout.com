@@ -154,11 +154,7 @@ function isHatTipSlash(view: ProseView, slashIdx: number): boolean {
  * Returns true when the slash matched (even if both sides kept their spaces),
  * so the digit-slash rule doesn't double-process it.
  */
-function applyMainSlashRule(
-  view: ProseView,
-  slashIdx: number,
-  insertNbsp: (offset: number, bind?: "left" | "right") => void,
-): boolean {
+function applyMainSlashRule(view: ProseView, slashIdx: number): boolean {
   const text = view.text
   const leftBoundary = view.hasBoundary(slashIdx)
   const spaceBefore = !leftBoundary && text[slashIdx - 1] === " "
@@ -184,14 +180,14 @@ function applyMainSlashRule(
   }
 
   if (leftBoundary) {
-    insertNbsp(slashIdx, "right")
+    view.replace(slashIdx, slashIdx, NBSP, { bind: "right" })
   } else if (!spaceBefore) {
-    insertNbsp(slashIdx)
+    view.replace(slashIdx, slashIdx, NBSP)
   }
   if (rightBoundary) {
-    insertNbsp(afterIdx, "left")
+    view.replace(afterIdx, afterIdx, NBSP, { bind: "left" })
   } else if (!spaceAfter) {
-    insertNbsp(afterIdx)
+    view.replace(afterIdx, afterIdx, NBSP)
   }
   return true
 }
@@ -218,23 +214,11 @@ function applyNumberSlashRule(view: ProseView, slashIdx: number): void {
 
 function applySlashSpacing(view: ProseView): void {
   const text = view.text
-  // Two adjacent slashes separated only by an inline-element boundary make the
-  // first slash's trailing NBSP and the second slash's leading NBSP target the
-  // same offset. A single NBSP there is the intended spacing, and punctilio
-  // rejects two pure insertions at one offset — so collapse the duplicate.
-  const insertedAt = new Set<number>()
-  const insertNbsp = (offset: number, bind?: "left" | "right"): void => {
-    if (insertedAt.has(offset)) {
-      return
-    }
-    insertedAt.add(offset)
-    view.replace(offset, offset, NBSP, bind ? { bind } : undefined)
-  }
   for (let i = 0; i < text.length; i++) {
     if (text[i] !== "/" || isHatTipSlash(view, i)) {
       continue
     }
-    if (!applyMainSlashRule(view, i, insertNbsp)) {
+    if (!applyMainSlashRule(view, i)) {
       applyNumberSlashRule(view, i)
     }
   }

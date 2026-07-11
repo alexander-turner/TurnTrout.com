@@ -309,15 +309,15 @@ describe("HTMLFormattingImprovement", () => {
   })
 
   describe("slashes adjacent across an inline-element boundary", () => {
-    // Two slashes separated only by an inline-element boundary make the first
-    // slash's trailing NBSP and the second slash's leading NBSP land at the
-    // same offset; punctilio rejects two pure insertions there. The pass now
-    // collapses the duplicate to a single NBSP instead of crashing the build.
+    // Two slashes separated only by an inline-element boundary each get their
+    // own NBSP at the shared boundary offset. punctilio routes the opposite-
+    // bound insertions into different nodes (v5.1+), so the build no longer
+    // aborts with "Two pure insertions at the same offset ... ambiguous".
     it.each([
-      ["<p>a/<em></em>/b</p>", "<p>a / <em></em>/ b</p>"],
-      ["<p><em>x/</em>/y</p>", "<p><em>x /</em>/ y</p>"],
+      ["<p>a/<em></em>/b</p>", "<p>a / <em></em> / b</p>"],
+      ["<p><em>x/</em>/y</p>", "<p><em>x /</em> / y</p>"],
       ["<p><em>a/</em><em>/b</em></p>", "<p><em>a /</em><em>/ b</em></p>"],
-      ["<p>a/<strong></strong>/b</p>", "<p>a / <strong></strong>/ b</p>"],
+      ["<p>a/<strong></strong>/b</p>", "<p>a / <strong></strong> / b</p>"],
     ])("does not crash on %s", (input: string, expected: string) => {
       expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
     })
@@ -1630,11 +1630,14 @@ describe("collectProseBlocks", () => {
     ],
     ["nested paragraphs", el("div", [el("div", [el("p", ["nested"])])]), [["p", ["nested"]]]],
     [
+      // punctilio's collectProseBlocks returns block-level prose units and no
+      // longer includes loose inline runs (`<span>text</span>`) sitting between
+      // block children; the visitor still reaches such a span directly, so its
+      // typography is unaffected.
       "mixed content",
       el("div", [el("p", ["p1"]), el("span", ["text"]), el("p", ["p2"])]),
       [
         ["p", ["p1"]],
-        ["span", ["text"]],
         ["p", ["p2"]],
       ],
     ],
