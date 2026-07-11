@@ -77,7 +77,7 @@ Set `deviceScaleFactor: 1` to eliminate subpixel jitter
 : Different CI runners may have different DPR settings, causing text subpixel rendering differences. Explicitly setting `deviceScaleFactor: 1` in your config and using `scale: "css"` in screenshot options normalizes this across environments.
 
 Pin Chromium's rendering to kill "ordinary" antialiasing drift
-: Screenshots that re-diff by a sub-perceptual amount — a handful of stray pixels on text or icon edges, no code change — usually trace back to the CI runner's font or graphics libraries shifting under an older baseline, not real noise. Three Chromium launch flags fix this at the source instead of loosening `maxDiffPixels`: `--force-color-profile=srgb` (fixed color mapping), `--disable-lcd-text` (grayscale instead of subpixel text antialiasing), and `--font-render-hinting=none` (no hinting-dependent glyph metrics). These make screenshots _more_ deterministic, not less strict — the right lever when "ordinary drift" keeps showing up.
+: Screenshots that shift by a tiny amount usually trace back to the CI runner's font or graphics libraries shifting under an older baseline. Three Chromium launch flags: `--force-color-profile=srgb` (fixed color mapping), `--disable-lcd-text` (grayscale instead of subpixel text antialiasing), and `--font-render-hinting=none` (no hinting-dependent glyph metrics). 
 
 ## For screenshots in particular
 
