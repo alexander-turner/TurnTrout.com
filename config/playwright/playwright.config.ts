@@ -179,6 +179,10 @@ export default defineConfig({
         // CI runners lack a real GPU, so Chromium falls back to SwiftShader
         // (software GL).  These flags disable GPU compositing entirely,
         // avoiding SwiftShader crashes — especially at mobile viewport sizes.
+        // The deterministic-rendering flags pin the sources of sub-perceptual
+        // pixel drift so screenshots stay byte-stable across runner-image and
+        // Skia/FreeType updates: a fixed sRGB color profile, grayscale (not
+        // subpixel LCD) text antialiasing, and no font hinting.
         ...(browser.engine === "chromium"
           ? {
               launchOptions: {
@@ -187,6 +191,9 @@ export default defineConfig({
                   "--disable-gpu-compositing",
                   "--disable-software-rasterizer",
                   "--disable-dev-shm-usage",
+                  "--force-color-profile=srgb",
+                  "--disable-lcd-text",
+                  "--font-render-hinting=none",
                 ],
               },
             }
