@@ -1544,6 +1544,7 @@ antecedent-computation-reinforcer
 antecedent-computation-reinforcer-thoughts
 anthropomorphized
 anthropomorphizing
+antialiasing
 anti-naturality
 anticorrelated
 antinatural
@@ -1593,6 +1594,7 @@ autofix
 automata
 automations
 autoplay
+autoplaying
 autorater
 autoregressive
 auungus
