@@ -14,6 +14,7 @@ card_image_alt:
 aliases:
   - nla-robustness
   - robust-nlas
+original_url: https://www.lesswrong.com/posts/LQXWiF8PyJ5ojNsEv/how-robust-are-natural-language-autoencoders-to
 date_published: 2026-07-09
 date_updated: 2026-07-12
 ---

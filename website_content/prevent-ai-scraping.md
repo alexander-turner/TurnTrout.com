@@ -19,6 +19,7 @@ aliases:
   - easy-dataset-share
   - dataset-protect
   - protect-datasets
+original_url: https://www.lesswrong.com/posts/DA3vbSEfABLdoCt59/we-built-a-tool-to-protect-your-dataset-from-simple-scrapers
 date_published: 2025-07-23
 date_updated: 2026-06-26
 createBibtex: true

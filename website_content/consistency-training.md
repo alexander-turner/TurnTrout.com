@@ -19,6 +19,7 @@ card_image:
 aliases:
   - consistency
   - activation-training
+original_url: https://www.lesswrong.com/posts/DLrQ2jjijqpX78mHJ/gdm-consistency-training-helps-limit-sycophancy-and
 date_published: 2025-11-06
 date_updated: 2026-06-28
 createBibtex: true
