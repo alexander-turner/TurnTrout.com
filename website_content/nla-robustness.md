@@ -29,7 +29,8 @@ If our results scale, they cast doubt on the usefulness of NLAs.
 >
 > "Plausible-initialized" NLAs are initialized [normally](https://transformer-circuits.pub/2026/nla/index.html) using Claude's guesses. "Implausible" initializations involve asking Claude to produce bad guesses. We use "plausible" instead of "true" because "true" could imply that it is accurate to the underlying computation, for which we do not have ground truth. Similarly, an "implausible" guess (e.g. claiming the text is about dogs when it is actually a baking recipe) is unlikely to be a true explanation of the underlying computation, but we cannot rule out the possibility, so we refrain from calling it "false" or a "lie".
 
-> [!thanks] Produced as part of the [MATS program](https://www.matsprogram.org/) in the summer 2026 cohort of [Team Shard.](/team-shard)
+> [!thanks] Acknowledgments
+> Produced as part of the [MATS program](https://www.matsprogram.org/) in the summer 2026 cohort of [Team Shard.](/team-shard)
 
 # Introduction
 
@@ -137,7 +138,7 @@ Each of Claude's implausible explanations are false (factually speaking), but th
 
 ![[https://assets.turntrout.com/static/images/posts/nla-robustness-07072026-3.svg|A line graph for the plausibility rates of the plausible- and implausible-initialized NLAs.]]
 
-Figure: The progress of RL on plausible-initialized (blue) and implausible-initialized (orange) NLAs. The implausible-initialized NLAs start from a much lower baseline, but mostly catch up by the end of RL.
+Figure: The progress of RL on plausible-initialized  and implausible-initialized  NLAs. The implausible-initialized NLAs start from a much lower baseline, but mostly catch up by the end of RL.
 
 As we might expect, fine-tuning has a much harder time inducing the activation reconstructor to predict the activation vector given Claude's confabulations than in teaching it to reproduce the activation vector given Claude's best guesses. By the end of one epoch of SFT, we achieve a FVE of 0.33, far below the control experiment's FVE of 0.61. Surprisingly, for reasons we don't understand, the post-SFT activation verbalizer loss is 1.43, only marginally worse than the 1.39 of the control experiment. Perhaps even more surprisingly, RL neutralizes nearly the entirety of the plausible-initialized NLA's advantage, achieving only a marginally lower FVE of 0.68!
 
@@ -147,7 +148,7 @@ Is this because RL trained the activation verbalizer to stop confabulating? To f
 
 ![[https://assets.turntrout.com/static/images/posts/nla-robustness-07072026-1.svg|A line graph for the plausibility rates of the plausible- and implausible-initialized NLAs.]]
 
-Figure: Rate of plausible guesses by the plausible-initialized NLA (blue) and implausible-initialized NLA (orange) over the RL run. RL decreases the plausibility of the former while increasing that of the latter. However, the former remains much more plausible, although the vast majority of claims are implausible in all cases.
+Figure: Rate of plausible guesses by the plausible-initialized NLA  and implausible-initialized NLA  over the RL run. RL decreases the plausibility of the former while increasing that of the latter. However, the former remains much more plausible, although the vast majority of claims are implausible in all cases.
 
 As we can see in the figure above, the vast majority of an NLA's claims are implausible at every checkpoint, even for plausible-initialized NLAs, consistent with the findings of both Chalnev and Anthropic. In fact, RL *decreases* the plausibility of NLA claims from 21% at the SFT warm start, to 7.6% at the end of RL.
 
