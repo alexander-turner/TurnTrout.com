@@ -27,6 +27,7 @@ import {
 } from "./pages/AllTagsContent"
 import PageShellConstructor from "./PageShell"
 // @ts-expect-error Not a module but a bundled inline script string
+// skipcq: JS-W1028 -- inline script has no named exports to import instead
 import contentIndexLoaderScript from "./scripts/contentIndex.inline"
 import { type QuartzComponent, type QuartzComponentProps } from "./types"
 

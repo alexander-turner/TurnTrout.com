@@ -1,0 +1,37 @@
+name: "Restore built site from cache"
+description: >-
+  Restores the public/ site-build cache, retrying once on a transient
+  cache-service failure (GitHub's cache CDN occasionally aborts a hit
+  mid-download) rather than failing the job outright. A genuine cache miss
+  still fails after the retry, since that indicates the upstream build job
+  never saved the artifact.
+
+inputs:
+  key:
+    description: "Cache key to restore."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Restore built site from cache (attempt 1)
+      id: restore-1
+      continue-on-error: true
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      with:
+        path: public/
+        key: ${{ inputs.key }}
+        fail-on-cache-miss: true
+
+    - name: Wait before retrying cache restore
+      if: steps.restore-1.outcome == 'failure'
+      shell: bash
+      run: sleep 5
+
+    - name: Restore built site from cache (retry)
+      if: steps.restore-1.outcome == 'failure'
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      with:
+        path: public/
+        key: ${{ inputs.key }}
+        fail-on-cache-miss: true

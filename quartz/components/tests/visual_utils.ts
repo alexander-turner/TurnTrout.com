@@ -138,6 +138,12 @@ export interface RegressionScreenshotOptions {
 // of a remote AVIF, short enough that a genuinely dead image can't hang the run.
 const IMAGE_PAINT_TIMEOUT_MS = 15000
 
+// gotoPage gates navigation on "domcontentloaded", which returns control to
+// the test before a <video>'s own network fetch has had any wall-clock time
+// to progress. This budget must cover that full remote-asset fetch on its
+// own, so it matches IMAGE_PAINT_TIMEOUT_MS's generosity for the same reason.
+const VIDEO_PAINT_TIMEOUT_MS = 15000
+
 // WebKit's `document.fonts.ready` can hang indefinitely when a `@font-face`
 // request never settles, burning the whole test timeout. Bound the wait: the
 // two-equal-frames `captureStableScreenshot` loop is the real guarantee that
@@ -590,7 +596,7 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
     const handle = await video.elementHandle()
     if (!handle) throw new Error("Could not get element handle for video")
     await handle.evaluate(
-      (el) =>
+      (el, dataTimeoutMs) =>
         new Promise<void>((resolve) => {
           const videoEl = el as HTMLVideoElement & {
             requestVideoFrameCallback?: (cb: () => void) => number
@@ -626,8 +632,9 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
           }
           // Never hang on a video whose data never arrives (e.g. a broken
           // source); let the screenshot proceed and fail on its own terms.
-          timers.push(setTimeout(finish, 8000))
+          timers.push(setTimeout(finish, dataTimeoutMs))
         }),
+      VIDEO_PAINT_TIMEOUT_MS,
     )
     await handle.dispose()
   }
@@ -690,7 +697,15 @@ export async function waitForTransitionEnd(element: Locator): Promise<void> {
 export async function gotoPage(
   page: Page,
   url: string,
-  loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
+  // Gate navigation on `domcontentloaded`, not `load`: every page embeds the
+  // navbar pond video (`preload="auto"`, looping), whose continuous range
+  // requests keep WebKit's `load` event pending indefinitely, so a
+  // `waitUntil:"load"` goto stalls until navigationTimeout even though the
+  // server has already served every byte. The parsed DOM is a reliable gate
+  // because callers assert on concrete elements (and run their own media/font
+  // stability waits) after navigating. Callers that genuinely need every
+  // subresource loaded pass "load" explicitly.
+  loadState: Parameters<Page["waitForLoadState"]>[0] = "domcontentloaded",
 ): Promise<void> {
   // Pass the caller's loadState directly as waitUntil so Playwright manages
   // the full navigation lifecycle in one call.  The previous approach used
@@ -757,7 +772,9 @@ function logFailedRequests(url: string, failures: Array<{ url: string; reason: s
  *  the subsequent navigation. */
 export async function reloadPage(
   page: Page,
-  loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
+  // Defaults to "domcontentloaded" for the same reason as gotoPage: the
+  // autoplaying looping navbar video keeps WebKit's `load` event from firing.
+  loadState: Parameters<Page["waitForLoadState"]>[0] = "domcontentloaded",
 ): Promise<void> {
   const url = new URL(page.url())
   // Serve a minimal same-origin page: preserves sessionStorage, no SPA interference
