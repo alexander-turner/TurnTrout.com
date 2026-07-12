@@ -1,0 +1,49 @@
+import { isCancel, outro } from "@clack/prompts"
+import chalk from "chalk"
+import { spawnSync } from "child_process"
+import fs from "fs"
+import process from "node:process"
+
+import { contentCacheFolder } from "./constants.js"
+
+// skipcq: JS-0045
+export function exitIfCancel(val) {
+  if (isCancel(val)) {
+    outro(chalk.red("Exiting"))
+    // skipcq: JS-0263
+    process.exit(0)
+  } else {
+    return val
+  }
+}
+
+export async function stashContentFolder(contentFolder) {
+  await fs.promises.rm(contentCacheFolder, { force: true, recursive: true })
+  await fs.promises.cp(contentFolder, contentCacheFolder, {
+    force: true,
+    recursive: true,
+    verbatimSymlinks: true,
+    preserveTimestamps: true,
+  })
+  await fs.promises.rm(contentFolder, { force: true, recursive: true })
+}
+
+export function gitPull(origin, branch) {
+  const flags = ["--no-rebase", "--autostash", "-s", "recursive", "-X", "ours", "--no-edit"]
+  // `--` ensures origin/branch are not interpreted as git options.
+  const out = spawnSync("git", ["pull", ...flags, "--", origin, branch], { stdio: "inherit" })
+  if (out.status !== 0) {
+    throw new Error(chalk.red(`Error while pulling updates (git exit status ${out.status})`))
+  }
+}
+
+export async function popContentFolder(contentFolder) {
+  await fs.promises.rm(contentFolder, { force: true, recursive: true })
+  await fs.promises.cp(contentCacheFolder, contentFolder, {
+    force: true,
+    recursive: true,
+    verbatimSymlinks: true,
+    preserveTimestamps: true,
+  })
+  await fs.promises.rm(contentCacheFolder, { force: true, recursive: true })
+}

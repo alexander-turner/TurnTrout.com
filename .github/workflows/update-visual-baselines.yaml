@@ -1,0 +1,267 @@
+name: Update visual baselines
+
+# Triggered by the "Approve these as baselines" button on the visual-diff
+# gallery (which POSTs to the workflow_dispatch endpoint). Downloads the
+# named visual-testing run's `*-actual.png` artifacts and uploads them
+# to R2 as the new baselines.
+#
+# For PR runs (`pr_number` supplied) the workflow then pushes an empty
+# commit to the PR branch so visual-testing reruns immediately. For main
+# runs it posts a synthetic passing `visual-testing` check-run + re-runs
+# failed jobs on the same-commit `deploy.yaml` run so the deploy
+# unblocks without a 30-minute visual-testing rerun.
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "visual-testing run ID whose actuals to adopt"
+        required: true
+        type: string
+      pr_number:
+        description: "PR number to retrigger + comment on (blank = main run)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  actions: write # re-run deploy on main
+  checks: write # post a synthetic passing visual-testing check-run on main
+  contents: write
+  pull-requests: read
+  issues: write
+
+concurrency:
+  # Key on PR number when one is supplied so concurrent button-clicks on
+  # the same PR queue cleanly. Main-run dispatches fall through to a
+  # per-run key so they never block each other.
+  group: update-visual-baselines-${{ github.event.inputs.pr_number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  approve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30 # 5 min R2 upload + up to 15 min polling deploy.yaml
+    steps:
+      - name: Resolve PR ref (if any)
+        id: resolve
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          DISPATCH_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        with:
+          script: |
+            const prNumber = process.env.DISPATCH_PR_NUMBER || '';
+            // Set pr_number first so the failure-comment step can find
+            // the PR even if the lookup below fails.
+            core.setOutput('pr_number', prNumber);
+            let ref = '';
+            if (prNumber) {
+              const pr = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: Number(prNumber),
+              });
+              ref = pr.data.head.ref;
+            }
+            core.setOutput('ref', ref);
+
+      - name: Checkout target ref
+        if: steps.resolve.outputs.ref != ''
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted GITHUB_TOKEN is used by the empty-commit push below
+        with:
+          ref: ${{ steps.resolve.outputs.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout default branch (main runs)
+        if: steps.resolve.outputs.ref == ''
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Download Playwright blob reports from the named run
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: blob-report-*
+          path: ./all-blob-reports
+          merge-multiple: true
+          run-id: ${{ github.event.inputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "false"
+          install-python: "true"
+
+      - name: Install rclone
+        uses: ./.github/actions/retry-external
+        with:
+          max-attempts: "3"
+          timeout-minutes: "5"
+          command: sudo apt-get update && sudo apt-get install -y rclone
+
+      - name: Upload screenshots to R2 as new baselines
+        env:
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+        run: uv run python scripts/approve_baselines_from_artifacts.py ./all-blob-reports
+
+      - name: Push empty commit to retrigger visual-testing (PR runs only)
+        if: steps.resolve.outputs.pr_number != ''
+        env:
+          REF: ${{ steps.resolve.outputs.ref }}
+          RUN_ID: ${{ github.event.inputs.run_id }}
+          APPROVER: ${{ github.actor }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "ci: rerun visual-testing against approved baselines (run $RUN_ID, approved by $APPROVER)"
+          git push origin "HEAD:$REF"
+
+      # Main runs can't push an empty commit (would pollute history). The
+      # actuals we just uploaded ARE the new baselines, so re-running
+      # visual-testing would always pass — skip it. Instead, post a
+      # synthetic passing `visual-testing` check-run on the head commit
+      # (deploy.yaml's verify-test-results polls `sort_by(.started_at)
+      # | last`, so the new success wins over the prior failure), then
+      # re-run failed jobs on the same-commit deploy.yaml run to unblock
+      # the deploy.
+      - name: Mark visual-testing passing + retrigger deploy on main
+        if: success() && steps.resolve.outputs.pr_number == ''
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          VISUAL_RUN_ID: ${{ github.event.inputs.run_id }}
+        with:
+          script: |
+            const runId = Number(process.env.VISUAL_RUN_ID);
+            const original = await github.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: runId,
+            });
+            const headSha = original.data.head_sha;
+            const detailsUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const nowIso = new Date().toISOString();
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'visual-testing',
+              head_sha: headSha,
+              status: 'completed',
+              conclusion: 'success',
+              started_at: nowIso,
+              completed_at: nowIso,
+              details_url: detailsUrl,
+              output: {
+                title: 'Baselines approved',
+                summary: `Baselines for ${headSha} were approved via run ${runId}; the uploaded actuals are now the new R2 baselines, so visual-testing on this commit would pass. Synthetic check-run posted to unblock \`verify-test-results\`.`,
+              },
+            });
+            core.info(`Posted passing visual-testing check-run for ${headSha}`);
+
+            // Find the deploy.yaml run for this commit, then poll until it
+            // reaches a terminal state — `rerun-failed-jobs` only works on
+            // completed runs. Typical wait is just `prepare-deploy`
+            // finishing (≈3–5 min); cap at 15 min so a stuck pipeline
+            // doesn't burn the workflow's 20-min timeout.
+            const listDeployRuns = () =>
+              github.rest.actions.listWorkflowRuns({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'deploy.yaml',
+                head_sha: headSha,
+                per_page: 5,
+              });
+            const POLL_INTERVAL_MS = 30_000;
+            const MAX_ATTEMPTS = 30; // 30 × 30s = 15 min
+            let deploy;
+            for (let i = 0; i < MAX_ATTEMPTS; i++) {
+              const { data } = await listDeployRuns();
+              const run = data.workflow_runs[0]; // most recent for this SHA
+              if (!run) {
+                core.info(`No deploy.yaml run for ${headSha} yet; waiting…`);
+              } else if (run.status === 'completed') {
+                deploy = run;
+                break;
+              } else {
+                core.info(
+                  `deploy.yaml run ${run.id} still ${run.status}; waiting…`
+                );
+              }
+              await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+            }
+            if (!deploy) {
+              core.warning(
+                `deploy.yaml run for ${headSha} didn't finish within 15 min; ` +
+                `re-run its failed jobs manually from the Actions UI to ` +
+                `unblock the deploy.`
+              );
+              return;
+            }
+            if (deploy.conclusion === 'success') {
+              core.info(
+                `deploy.yaml ${deploy.id} already succeeded; nothing to do`
+              );
+              return;
+            }
+            // Rerun just the `verify-test-results` job — `rerun-job`
+            // also reruns dependents, so `deploy` re-evaluates against
+            // the now-passing visual-testing check-run. More targeted
+            // than `rerun-failed-jobs`, which would also rerun anything
+            // else that happened to fail in this run.
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: deploy.id,
+              per_page: 50,
+            });
+            const verifyJob = jobs.data.jobs.find(
+              (j) => j.name === 'verify-test-results'
+            );
+            if (!verifyJob) {
+              core.warning(
+                `deploy.yaml ${deploy.id} has no verify-test-results job; ` +
+                `nothing to rerun`
+              );
+              return;
+            }
+            await github.rest.actions.reRunJobForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              job_id: verifyJob.id,
+            });
+            core.info(
+              `Re-running verify-test-results job ${verifyJob.id} ` +
+              `(part of deploy run ${deploy.id})`
+            );
+
+      - name: Comment success on PR
+        if: success() && steps.resolve.outputs.pr_number != ''
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          RUN_ID: ${{ github.event.inputs.run_id }}
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number(process.env.PR_NUMBER),
+              body: `Approved baselines from run ${process.env.RUN_ID} and pushed an empty commit to retrigger visual-testing.`,
+            });
+
+      - name: Comment failure on PR
+        if: failure() && steps.resolve.outputs.pr_number != ''
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number(process.env.PR_NUMBER),
+              body: `Approve-baselines failed: ${runUrl}`,
+            });

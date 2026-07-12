@@ -1,0 +1,309 @@
+@use "./variables" as *;
+@use "./palette" as *;
+
+@mixin dropcap-background-colors {
+  --dropcap-background-red: color-mix(in srgb, 55% var(--red), var(--midground-fainter));
+  --dropcap-background-maroon: color-mix(in srgb, 55% var(--maroon), var(--midground-fainter));
+  --dropcap-background-orange: color-mix(in srgb, 55% var(--orange), var(--midground-fainter));
+  --dropcap-background-gold: color-mix(in srgb, 65% var(--gold), var(--midground-fainter));
+  --dropcap-background-green: color-mix(in srgb, 65% var(--green), var(--midground-fainter));
+  --dropcap-background-teal: color-mix(in srgb, 65% var(--teal), var(--midground-fainter));
+  --dropcap-background-sky: color-mix(in srgb, 65% var(--sky), var(--midground-fainter));
+  --dropcap-background-blue: color-mix(in srgb, 65% var(--blue), var(--midground-fainter));
+  --dropcap-background-purple: color-mix(in srgb, 65% var(--purple), var(--midground-fainter));
+  --dropcap-background-lavender: color-mix(in srgb, 65% var(--lavender), var(--midground-fainter));
+  --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
+}
+
+// Midgrounds derive from --foreground and --background. Percentages live in
+// variables.ts so JS-side consumers stay in sync.
+@mixin midground-vars {
+  --midground-strong: color-mix(
+    in srgb,
+    var(--foreground) #{$midground-strong-pct},
+    var(--background)
+  );
+  --midground: color-mix(in srgb, var(--foreground) #{$midground-pct}, var(--background));
+  --midground-faint: color-mix(
+    in srgb,
+    var(--foreground) #{$midground-faint-pct},
+    var(--background)
+  );
+  --midground-fainter: color-mix(
+    in srgb,
+    var(--foreground) #{$midground-fainter-pct},
+    var(--background)
+  );
+  --midground-faintest: color-mix(
+    in srgb,
+    var(--foreground) #{$midground-faintest-pct},
+    var(--background)
+  );
+}
+
+// Default to light-mode colors so CSS custom properties are always defined,
+// even before detectInitialState.js sets the data-theme attribute.
+// Without this, color-mix() expressions that depend on --background etc. fail,
+// causing axe/pa11y color-contrast false positives.
+// data-theme="dark" overrides these; data-theme="light" is a no-op since
+// these defaults are already light.
+:root {
+  @include palette-vars($light-colors);
+
+  --background: #{$background-light};
+  --foreground: #{$foreground-light};
+  --light: var(--background);
+  --dark: var(--foreground);
+  --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
+
+  @include midground-vars;
+
+  --secondary: var(--blue);
+  --tertiary: var(--sky);
+  --highlight: color-mix(in srgb, var(--midground) #{$highlight-light-pct}, transparent);
+  --dark-gray: var(--midground-strong);
+
+  @include dropcap-background-colors;
+
+  --color-link: color-mix(in srgb, var(--secondary) 60%, var(--foreground));
+  --color-link-visited: color-mix(in srgb, var(--purple) 40%, var(--color-link));
+  --color-link-hover: color-mix(in srgb, var(--sky) 50%, var(--color-link));
+
+  @each $color in ("red", "pink", "green", "teal", "blue", "purple", "orange", "yellow") {
+    --background-#{$color}: color-mix(in srgb, var(--#{$color}) 30%, var(--background));
+    --border-#{$color}: color-mix(in srgb, var(--#{$color}) 50%, var(--background));
+  }
+}
+
+:root[data-theme="dark"],
+.dark-mode {
+  @include palette-vars($dark-colors);
+
+  --background: #{$background-dark};
+  --foreground: #{$foreground-dark};
+
+  // Always give access to light and dark colors
+  --light: var(--foreground);
+  --dark: var(--background);
+  --secondary: var(--blue);
+  --tertiary: var(--sky);
+  --highlight: color-mix(in srgb, var(--midground) #{$highlight-dark-pct}, transparent);
+  --dark-gray: var(--midground-faint);
+
+  @include dropcap-background-colors;
+
+  & img,
+  & video:not(:fullscreen),
+  // Unsure why this selector is needed
+  & #pond-video {
+    filter: grayscale(50%);
+  }
+
+  // `mix-blend-mode: screen` is the dark-mode counterpart to the light-mode
+  // `multiply` below: pure-black image backgrounds (matplotlib figure bg,
+  // any post-`.invert-in-dark-mode` inversion) blend into the dark page bg.
+  // For images without a black bg it is mostly a no-op; for photos it
+  // slightly brightens deep shadows.
+  // Videos: only inline GIF-replacements (autoplay+loop+muted) get screen
+  // blend. Regular embeds (with controls) and the persistent pond video
+  // keep their normal rendering.
+  & img,
+  & video[autoplay][loop][muted]:not(#pond-video, :fullscreen) {
+    mix-blend-mode: screen;
+  }
+}
+
+// Scoped light-mode class for inline demos (e.g. design.md color swatches).
+.light-mode {
+  @include palette-vars($light-colors);
+
+  --background: #{$background-light};
+  --foreground: #{$foreground-light};
+  --light: var(--background);
+  --dark: var(--foreground);
+  --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
+  --secondary: var(--blue);
+  --tertiary: var(--sky);
+  --highlight: color-mix(in srgb, var(--midground) #{$highlight-light-pct}, transparent);
+  --dark-gray: var(--midground-strong);
+
+  @include dropcap-background-colors;
+
+  & img:not([src$=".svg"]), // don't make SVGs fuzzy
+  & video:not(:fullscreen),
+  & iframe:not(:fullscreen) {
+    mix-blend-mode: multiply;
+  }
+
+  & #pond-video {
+    filter: saturate(85%);
+  }
+}
+
+body,
+section {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.text-highlight {
+  background-color: var(--highlight);
+}
+
+::selection {
+  background-color: var(--midground-strong);
+}
+
+// Simulating dark/light mode
+.dark-mode,
+.light-mode {
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+}
+
+.light-mode img {
+  filter: none !important;
+}
+
+.dark-mode img {
+  filter: grayscale(50%) !important;
+}
+
+// Images and inline looping muted videos flagged at build time by the
+// InvertInDarkMode transformer (quartz/plugins/transformers/invertInDarkMode.ts).
+// Class name is the canonical `invertInDarkModeClass` in config/constants.json;
+// SCSS can't read JSON, so the literal must stay in sync manually.
+// Images use pre-computed inverted variants via `<picture>` — no CSS
+// filter needed. Videos can't be pre-computed, so they keep the SVG
+// filter approximation. `brightness(95%)` darkens slightly so inverted
+// near-white backgrounds land closer to pure black.
+:root[data-theme="dark"] img.invert-in-dark-mode,
+.dark-mode img.invert-in-dark-mode {
+  filter: brightness(95%) !important;
+}
+
+:root[data-theme="dark"] video.invert-in-dark-mode,
+.dark-mode video.invert-in-dark-mode {
+  filter: url("#accurate-invert") brightness(95%) !important;
+}
+
+// Always-on HSL/SVG inversion regardless of theme. Used for the
+// design.md inversion demo and any image we want pre-inverted at the
+// source. Pure SVG filter — no grayscale or brightness adjustments,
+// since this is the inversion-as-stylistic-choice case rather than the
+// dark-mode-aesthetic case. The duplicated dark-context selectors
+// raise specificity to beat `:root[data-theme="dark"] img` (grayscale)
+// and `.dark-mode img` (grayscale). `accurateInvert.ts` processes
+// these images in both themes; once processed, the filter is dropped.
+img.force-hsl-invert,
+video.force-hsl-invert,
+:root[data-theme="dark"] img.force-hsl-invert,
+:root[data-theme="dark"] video.force-hsl-invert,
+.dark-mode img.force-hsl-invert,
+.dark-mode video.force-hsl-invert {
+  filter: url("#accurate-invert") !important;
+}
+
+img.force-hsl-invert[data-invert-processed],
+:root[data-theme="dark"] img.force-hsl-invert[data-invert-processed],
+.dark-mode img.force-hsl-invert[data-invert-processed] {
+  filter: none !important;
+}
+
+// Opt-in via inline `visibility: hidden;`: lets the design.md HSL
+// demo render only the final canvas-inverted result instead of
+// flashing the SVG fallback or the un-inverted source while the
+// canvas pass is in flight. `!important` lifts the inline declaration
+// back to visible once the canvas swap lands.
+img.force-hsl-invert[data-invert-processed] {
+  visibility: visible !important;
+}
+
+// Mermaid
+@each $color in ("red", "green", "blue", "yellow", "purple", "orange") {
+  rect {
+    color: var(--foreground) !important;
+    fill: var(--background) !important;
+    stroke: var(--midground-faint) !important;
+  }
+  .#{$color} > rect {
+    fill: var(--background-#{$color}) !important;
+    stroke: var(--border-#{$color}) !important;
+  }
+}
+
+p,
+ul,
+text,
+a,
+tr,
+td,
+li,
+ol,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+thead,
+.math {
+  color: var(--foreground);
+  fill: var(--foreground);
+}
+
+.katex {
+  color: inherit;
+  fill: var(--foreground);
+}
+
+hr {
+  background-color: var(--midground-faint);
+}
+
+pre {
+  background-color: var(--midground-faintest);
+
+  & [data-highlighted-chars] {
+    background-color: var(--highlight);
+  }
+
+  & [data-highlighted-line] {
+    background-color: var(--highlight);
+  }
+
+  & [data-rehype-pretty-code-title] {
+    color: var(--foreground);
+  }
+
+  &::before {
+    color: var(--midground-faint);
+  }
+}
+
+a {
+  color: var(--color-link);
+
+  // .simulate-visited for playwright testing
+  &:visited,
+  &:visited *,
+  &.simulate-visited,
+  &.simulate-visited * {
+    color: var(--color-link-visited);
+  }
+}
+
+a:hover,
+a:hover *,
+#toc-title button:hover {
+  color: var(--color-link-hover) !important; // otherwise eg #content-meta a would override
+}
+
+:focus-visible {
+  // Negative offset draws the outline inside the element so it can't be
+  // clipped by an overflow:auto/hidden/clip ancestor (sidebars, the
+  // overflow-x-clipped center column, etc.).
+  outline: 2px solid var(--color-link);
+  outline-offset: -2px;
+  border-radius: 2px;
+}

@@ -1,0 +1,72 @@
+name: "Setup Base Environment"
+description: "Sets up Node.js with pnpm and caching when a package.json is present (no-op otherwise). Optionally sets up Python with uv."
+inputs:
+  node-version:
+    description: "Node.js version to use"
+    required: false
+    default: "22"
+  registry-url:
+    description: "npm registry URL to configure (for publishing; lets setup-node wire up OIDC/auth)"
+    required: false
+    default: ""
+  setup-python:
+    description: "Whether to set up Python with uv"
+    required: false
+    default: "false"
+  python-version:
+    description: "Python version to use (if setup-python is true)"
+    required: false
+    default: "3.11"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Node.js
+      if: hashFiles('package.json') != ''
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      with:
+        node-version: ${{ inputs.node-version }}
+        registry-url: ${{ inputs.registry-url }}
+
+    - name: Install pnpm
+      if: hashFiles('package.json') != ''
+      uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+
+    - name: Get pnpm store directory
+      if: hashFiles('package.json') != ''
+      shell: bash
+      run: | # zizmor: ignore[github-env]
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Restore pnpm cache
+      if: hashFiles('package.json') != ''
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install Node Dependencies
+      if: hashFiles('package.json') != ''
+      run: pnpm install
+      shell: bash
+
+    - name: Set up uv
+      if: inputs.setup-python == 'true'
+      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      with:
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+
+    - name: Set up Python
+      if: inputs.setup-python == 'true'
+      run: uv python install "$PYTHON_VERSION"
+      shell: bash
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+
+    - name: Install Python Dependencies
+      if: inputs.setup-python == 'true'
+      run: uv sync --frozen
+      shell: bash

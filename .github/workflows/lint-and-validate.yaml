@@ -1,0 +1,434 @@
+name: Lint and validate
+
+concurrency:
+  group: lint-validate-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  update-dates:
+    needs: detect-changes
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      pushed: ${{ steps.push-result.outputs.pushed }}
+    # Only run on push to main when content changed.
+    # Amends the triggering commit with date changes and force-pushes,
+    # which cancels in-progress workflows and restarts them on the amended commit.
+    # On the re-triggered run, the script finds no changes (dates already set) and skips.
+    if: >
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.detect-changes.outputs.content == 'true'
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the amend + force-push below
+        timeout-minutes: 5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PUSH_TOKEN }}
+
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+
+      - name: Update article dates
+        run: uv run python scripts/update_date_on_publish.py --commit-range "${{ github.event.before }}..${{ github.event.after }}"
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Amend commit with date changes and force-push
+        id: push-result
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add website_content/*.md README.md
+          git commit --amend --no-edit
+          git push --force-with-lease
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Set output if no push
+        if: steps.check-changes.outputs.has_changes != 'true'
+        run: echo "pushed=false" >> "$GITHUB_OUTPUT"
+
+  detect-changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      content: ${{ steps.changes.outputs.content }}
+      code: ${{ steps.changes.outputs.code }}
+      styles: ${{ steps.changes.outputs.styles }}
+      python: ${{ steps.changes.outputs.python }}
+      source-checks: ${{ steps.changes.outputs.source-checks }}
+      workflows: ${{ steps.changes.outputs.workflows }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        id: changes
+        with:
+          filters: |
+            content:
+              - 'website_content/**'
+              - 'config/spellcheck/**'
+              - 'config/vale/**'
+              - 'scripts/strip_for_spellcheck.py'
+            code:
+              - 'quartz/**'
+              - 'config/javascript/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - '.github/actions/**'
+            styles:
+              - 'quartz/**/*.scss'
+              - 'config/stylelint/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - '.github/actions/**'
+            python:
+              - 'scripts/**/*.py'
+              - '.github/scripts/**/*.py'
+              - 'config/python/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+            source-checks:
+              - 'website_content/**'
+              - 'quartz/**'
+              - '!quartz/**/*.spec.ts'
+              - '!quartz/**/*.test.ts'
+              - '!quartz/**/*.test.tsx'
+              - '!quartz/**/tests/**'
+              - 'scripts/source_file_checks.py'
+              - 'config/quartz/**'
+              - 'config/constants.json'
+              - '.github/actions/**'
+            workflows:
+              - '.github/workflows/**'
+              - '.github/actions/**'
+
+  autofix:
+    needs: [detect-changes, update-dates]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    # Auto-fix formatting on PRs and pushes to main/dev.
+    # Depends on update-dates so it doesn't run until any potential force-push completes.
+    # always() lets this run even when update-dates is skipped (PRs, no content changes).
+    # Runs whenever any tracked source class changed (code, styles, python,
+    # content) — the underlying autofixer is idempotent, so "runs on unrelated
+    # file types" is a cheap no-op rather than a correctness issue.
+    if: >
+      always() && !cancelled() &&
+      needs.detect-changes.result == 'success' &&
+      !startsWith(github.head_ref, 'deepsource-') &&
+      (needs.detect-changes.outputs.code == 'true' ||
+       needs.detect-changes.outputs.styles == 'true' ||
+       needs.detect-changes.outputs.python == 'true' ||
+       needs.detect-changes.outputs.content == 'true') &&
+      (github.event_name == 'pull_request' ||
+       (github.event_name == 'push' && contains(fromJSON('["refs/heads/main","refs/heads/dev"]'), github.ref)))
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
+        timeout-minutes: 5
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.PUSH_TOKEN }}
+
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+
+      - name: Generate SCSS variables
+        if: needs.detect-changes.outputs.styles == 'true'
+        run: pnpm exec tsx quartz/styles/generate-variables.ts
+
+      # Single source of truth: runs the same autofixer list as the local
+      # pre-push hook (scripts/run_push_checks.py::get_formatter_steps). If
+      # one individual formatter fails we still want the others to commit
+      # their successful fixes, so we don't fail-fast on non-zero exit —
+      # any remaining real issue will be caught by the lint job below.
+      - name: Run shared autofixers
+        continue-on-error: true
+        run: uv run python scripts/run_push_checks.py --autofix-only --no-commit
+
+      - name: Commit and push fixes
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          # Only stage files the shared autofixers could have modified.
+          # ESLint --fix runs over the whole repo, so its targets are matched
+          # repo-wide by bare extension globs (a git pathspec like `*.ts`
+          # matches at any depth). The other fixers are scoped to specific
+          # trees; for those pass both `dir/*.ext` and `dir/**/*.ext`, since a
+          # `**` glob does NOT match top-level files.
+          git diff --name-only -z -- \
+            '*.js' '*.jsx' '*.cjs' '*.mjs' '*.ts' '*.tsx' \
+            'quartz/*.scss'           'quartz/**/*.scss' \
+            'scripts/*.py'            'scripts/**/*.py' \
+            '.github/scripts/*.py'    '.github/scripts/**/*.py' \
+            'website_content/*.md'    'website_content/**/*.md' \
+            | xargs -0 --no-run-if-empty git add --
+          if [[ -z $(git diff --cached --name-only) ]]; then
+            echo "::notice::No formatting changes needed"
+            exit 0
+          fi
+
+          # Prefer folding the fixes into the tip commit rather than adding a
+          # separate "style:" commit, so autofixes don't clutter history with
+          # an extra commit per push. --force-with-lease refuses if the
+          # remote moved since checkout, so a stale amend can't clobber a
+          # concurrent push; fall back to a normal commit (with the usual
+          # rebase-retry below) when that happens.
+          ORIG_HEAD=$(git rev-parse HEAD)
+          if git commit --amend --no-edit && git push --force-with-lease; then
+            echo "::notice::Amended tip commit with auto-fix formatting"
+            exit 0
+          fi
+          echo "::warning::Amend+force-push was rejected (remote moved); falling back to a separate commit."
+          git reset --soft "$ORIG_HEAD"
+          git commit -m "style: auto-fix formatting [skip ci]"
+          # Retry rebase+push to absorb concurrent pushes (manual edits, update-dates).
+          # --autostash handles any unstaged residue from setup/formatter steps so
+          # the rebase doesn't trip on "You have unstaged changes".
+          for attempt in 1 2 3; do
+            if ! git pull --rebase --autostash origin "$BRANCH"; then
+              echo "::error::Rebase failed on attempt $attempt — aborting to avoid pushing broken state"
+              git rebase --abort 2>/dev/null || true
+              exit 1
+            fi
+            if git push; then
+              echo "::notice::Pushed auto-fix formatting commit (attempt $attempt)"
+              exit 0
+            fi
+            echo "::warning::Push attempt $attempt failed; another commit may have landed. Retrying."
+            sleep $((attempt * 2))
+          done
+          echo "::error::Failed to push after 3 attempts"
+          exit 1
+
+  check-action-pins:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.workflows == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+      - name: Check for unpinned action references
+        run: |
+          # Find YAML uses: directives with tag-based refs (@v1, @v2, etc.) instead of SHA pins
+          # Only match lines where uses: is a YAML key (not inside comments or run blocks)
+          UNPINNED=$(grep -rn '^\s*-\?\s*uses:.*@v[0-9]' .github/workflows/ .github/actions/ || true)
+          if [ -n "$UNPINNED" ]; then
+            echo "::error::Found unpinned action references (must use SHA pins with version comment):"
+            echo "$UNPINNED"
+            echo ""
+            echo "Pin actions to a commit SHA, e.g.:"
+            echo "  uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6"
+            exit 1
+          fi
+          echo "All action references are SHA-pinned"
+
+  # Static analysis of the workflows themselves: actionlint (syntax, shell,
+  # expression checks) and zizmor (security audit). Gates the PR — both must
+  # pass. zizmor runs at medium confidence so the Medium/High-confidence
+  # findings we fixed stay enforced, while the Low-confidence categories
+  # (artipacked on read-only checkouts, template-injection on internal
+  # needs/steps outputs that are not attacker-controllable) don't block. Any
+  # genuinely-intentional High-confidence finding is suppressed inline with a
+  # `# zizmor: ignore[<audit>]` comment plus a rationale at the call site.
+  workflow-lint:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.workflows == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+
+      - name: Install actionlint
+        env:
+          ACTIONLINT_VERSION: "1.7.12"
+          ACTIONLINT_SHA256: "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
+        run: |
+          set -euo pipefail
+          TARBALL="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          wget -q "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/${TARBALL}"
+          echo "${ACTIONLINT_SHA256}  ${TARBALL}" | sha256sum --check
+          tar -xzf "${TARBALL}" actionlint
+          sudo mv actionlint /usr/local/bin/
+
+      - name: Run actionlint
+        run: actionlint -color .github/workflows/*.yml .github/workflows/*.yaml
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v7
+
+      - name: Run zizmor
+        env:
+          # No GH token, so no online (network) audits; --persona regular keeps
+          # the default low-confidence noise filtered the same way locally.
+          ZIZMOR_VERSION: "1.25.2"
+        run: |
+          uvx "zizmor@${ZIZMOR_VERSION}" \
+            --offline \
+            --persona regular \
+            --min-confidence=medium \
+            .github/workflows/
+
+  lint:
+    needs: [update-dates, detect-changes, autofix]
+    # Run if detect-changes found changes, and not a deepsource PR.
+    # update-dates is allowed to be skipped (runs only on push to main by users).
+    # always() ensures this runs even when update-dates or autofix are skipped.
+    if: >
+      !startsWith(github.head_ref, 'deepsource-') &&
+      (needs.detect-changes.outputs.content == 'true' ||
+       needs.detect-changes.outputs.code == 'true' ||
+       needs.detect-changes.outputs.styles == 'true' ||
+       needs.detect-changes.outputs.source-checks == 'true') &&
+      always() && !cancelled() &&
+      needs.detect-changes.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      # Always check out the branch tip (not the triggering SHA) so lint
+      # sees the final state after any update-dates or autofix commits.
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          persist-credentials: false
+
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+
+      - name: Install Vale
+        if: needs.detect-changes.outputs.content == 'true'
+        run: |
+          VALE_VERSION="$(cat config/vale/version)"
+          tarball="vale_${VALE_VERSION}_Linux_64-bit.tar.gz"
+          wget -q "https://github.com/errata-ai/vale/releases/download/v${VALE_VERSION}/${tarball}"
+          echo "fd39029bd9dbd0ecf8cbd5274b69dcff03ad27a5d7344c69c173c93a00f6d423  ${tarball}" | sha256sum --check
+          tar -xzf "${tarball}"
+          sudo mv vale /usr/local/bin/
+
+      - name: Generate SCSS variables
+        if: >
+          needs.detect-changes.outputs.styles == 'true' ||
+          needs.detect-changes.outputs.source-checks == 'true'
+        run: pnpm exec tsx quartz/styles/generate-variables.ts
+
+      - name: Add node_modules/.bin to PATH
+        if: needs.detect-changes.outputs.source-checks == 'true'
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> "$GITHUB_PATH"
+
+      - name: Strip quote blocks and math for linting
+        id: strip-for-spellcheck
+        if: needs.detect-changes.outputs.content == 'true'
+        run: |
+          STRIPPED_DIR=".stripped_for_spellcheck"
+          uv run python scripts/strip_for_spellcheck.py --source-dir website_content --output-dir "$STRIPPED_DIR"
+          echo "dir=$STRIPPED_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Run spellcheck
+        id: spellcheck
+        if: needs.detect-changes.outputs.content == 'true'
+        continue-on-error: true
+        env:
+          STRIP_QUOTES_CONTENT_DIR: ${{ steps.strip-for-spellcheck.outputs.dir }}
+        run: scripts/spellcheck.sh
+
+      - name: Run Vale
+        id: vale
+        if: needs.detect-changes.outputs.content == 'true'
+        continue-on-error: true
+        run: vale --config config/vale/.vale.ini "${STEPS_STRIP_FOR_SPELLCHECK_OUTPUTS_DIR}"
+        env:
+          STEPS_STRIP_FOR_SPELLCHECK_OUTPUTS_DIR: ${{ steps.strip-for-spellcheck.outputs.dir }}
+
+      - name: Clean up stripped content
+        if: always() && steps.strip-for-spellcheck.outputs.dir
+        run: rm -rf "${STEPS_STRIP_FOR_SPELLCHECK_OUTPUTS_DIR}"
+        env:
+          STEPS_STRIP_FOR_SPELLCHECK_OUTPUTS_DIR: ${{ steps.strip-for-spellcheck.outputs.dir }}
+
+      - name: Run ESLint
+        id: eslint
+        if: needs.detect-changes.outputs.code == 'true'
+        continue-on-error: true
+        run: pnpm eslint . --config config/javascript/eslint.config.js --max-warnings 0
+
+      - name: Run Stylelint
+        id: stylelint
+        if: needs.detect-changes.outputs.styles == 'true'
+        continue-on-error: true
+        run: |
+          pnpm exec stylelint \
+            --config config/stylelint/.stylelintrc.json \
+            "quartz/**/*.scss"
+
+      - name: Set publication date check flag
+        id: pub-date-flag
+        if: needs.detect-changes.outputs.source-checks == 'true'
+        run: |
+          # Check publication dates on PRs (pre-merge validation).
+          # Skip on push to main/dev (dates are auto-added by update-dates job).
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "flag=--check-publication-dates" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run source file checks
+        id: source-checks
+        if: needs.detect-changes.outputs.source-checks == 'true'
+        continue-on-error: true
+        # The flag is a single optional token (empty on push to main/dev);
+        # `${flag:+"$flag"}` expands to nothing when unset so an empty value
+        # becomes no argument rather than an empty-string positional arg.
+        run: |
+          flag="${STEPS_PUB_DATE_FLAG_OUTPUTS_FLAG}"
+          uv run python scripts/source_file_checks.py ${flag:+"$flag"}
+        env:
+          STEPS_PUB_DATE_FLAG_OUTPUTS_FLAG: ${{ steps.pub-date-flag.outputs.flag }}
+
+      - name: Check results
+        run: |
+          failed=""
+          if [[ "${STEPS_SPELLCHECK_OUTCOME}" == "failure" ]]; then failed="$failed spellcheck"; fi
+          if [[ "${STEPS_VALE_OUTCOME}" == "failure" ]]; then failed="$failed vale"; fi
+          if [[ "${STEPS_ESLINT_OUTCOME}" == "failure" ]]; then failed="$failed eslint"; fi
+          if [[ "${STEPS_STYLELINT_OUTCOME}" == "failure" ]]; then failed="$failed stylelint"; fi
+          if [[ "${STEPS_SOURCE_CHECKS_OUTCOME}" == "failure" ]]; then failed="$failed source-file-checks"; fi
+          if [[ -n "$failed" ]]; then
+            echo "The following checks failed:$failed"
+            exit 1
+          fi
+        env:
+          STEPS_SPELLCHECK_OUTCOME: ${{ steps.spellcheck.outcome }}
+          STEPS_VALE_OUTCOME: ${{ steps.vale.outcome }}
+          STEPS_ESLINT_OUTCOME: ${{ steps.eslint.outcome }}
+          STEPS_STYLELINT_OUTCOME: ${{ steps.stylelint.outcome }}
+          STEPS_SOURCE_CHECKS_OUTCOME: ${{ steps.source-checks.outcome }}

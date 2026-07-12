@@ -1,0 +1,330 @@
+name: Playwright Tests
+
+concurrency:
+  group: playwright-tests-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  # Gate: skip expensive tests for bot actors (dependabot, renovate, etc.).
+  # Otherwise yields run=true and full browser coverage (chromium,firefox + macOS).
+  should-run:
+    name: playwright-should-run
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+      run-macos: ${{ steps.gate.outputs.run-macos }}
+      browsers: ${{ steps.gate.outputs.browsers }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          sparse-checkout: .github/actions/ci-gate
+          persist-credentials: false
+      - id: gate
+        uses: ./.github/actions/ci-gate
+        with:
+          force-labels: "ci:full-tests,ci:run-playwright"
+          filters: |
+            relevant:
+              - "quartz/**"
+              - "config/quartz/**"
+              - "config/constants.json"
+              - "config/playwright/**"
+              - "package.json"
+              - "pnpm-lock.yaml"
+              - ".github/actions/**"
+
+  # Regenerate the per-section fixtures (not tracked in git) and publish them
+  # as an artifact. Even the non-screenshot shards need them present: Playwright
+  # collects section-fixtures.spec.ts (then grep-filters it out), and that spec
+  # reads the fixture directory at module load.
+  generate-fixtures:
+    name: playwright-generate-fixtures
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
+    uses: ./.github/workflows/generate-fixtures.yaml
+
+  build:
+    name: playwright-build
+    needs: [should-run, generate-fixtures]
+    if: needs.should-run.outputs.run == 'true'
+    uses: ./.github/workflows/build-site.yaml
+    with:
+      include-fixtures: true
+    secrets:
+      ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+      SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+      S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+
+  # Linux Chromium + Firefox.
+  playwright-tests-linux:
+    needs: [build, should-run, generate-fixtures]
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          [
+            "1/8",
+            "2/8",
+            "3/8",
+            "4/8",
+            "5/8",
+            "6/8",
+            "7/8",
+            "8/8",
+          ]
+    env:
+      PLAYWRIGHT_BROWSERS: ${{ needs.should-run.outputs.browsers }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "true"
+
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
+      - name: Install browsers
+        run: pnpm run install-browsers
+
+      - name: Restore built site from cache
+        uses: ./.github/actions/restore-site-cache
+        with:
+          key: site-build-${{ github.sha }}-fixtures-true
+
+      - name: Download section fixtures
+        uses: ./.github/actions/download-section-fixtures
+
+      - name: Run Playwright tests
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!screenshot).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
+
+      - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> "$GITHUB_ENV"
+        if: always()
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
+
+      # Critical log: surface upload failures (don't swallow with
+      # continue-on-error) so a missing log is visible on the shard.
+      - name: Upload Playwright logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: playwright-log-linux-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-run.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload Winston logs
+        if: steps.playwright.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: winston-logs-linux-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload webServer build logs
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: webserver-build-log-linux-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload Playwright traces
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: playwright-traces-linux-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Fail if playwright tests failed
+        if: steps.playwright.outcome != 'success'
+        run: exit 1
+
+  # WebKit (Safari) tests on macOS for real Safari fidelity.
+  # Linux WebKit (WPE) has known flakiness issues with timing, localStorage,
+  # and module loading that don't reproduce on real Safari.
+  playwright-tests-macos:
+    needs: [build, should-run, generate-fixtures]
+    if: needs.should-run.outputs.run-macos == 'true'
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          [
+            "1/3",
+            "2/3",
+            "3/3",
+          ]
+    env:
+      PLAYWRIGHT_BROWSERS: webkit
+      # Playwright 1.59.0 added Page.overridePlatform for WebKit device presets,
+      # which crashes WebKit on macOS ARM64 (microsoft/playwright#40009).
+      # Reverted upstream but no 1.59.2 release yet. Remove when upgrading Playwright.
+      PLAYWRIGHT_NO_UA_PLATFORM: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+
+      - name: Disable macOS firewall
+        run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "false"
+
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
+      - name: Install Playwright WebKit browser
+        run: pnpm exec playwright install webkit
+
+      - name: Strip macOS Gatekeeper quarantine attributes
+        run: xattr -cr ~/Library/Caches/ms-playwright
+
+      - name: Restore built site from cache
+        uses: ./.github/actions/restore-site-cache
+        with:
+          key: site-build-${{ github.sha }}-fixtures-true
+
+      - name: Download section fixtures
+        uses: ./.github/actions/download-section-fixtures
+
+      - name: Run Playwright tests
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!screenshot).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
+
+      - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> "$GITHUB_ENV"
+        if: always()
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
+
+      # Critical log: surface upload failures (don't swallow with
+      # continue-on-error) so a missing log is visible on the shard.
+      - name: Upload Playwright logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: playwright-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-run.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload Winston logs
+        if: steps.playwright.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: winston-logs-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload webServer build logs
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: webserver-build-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload Playwright traces
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: playwright-traces-macos-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Fail if playwright tests failed
+        if: steps.playwright.outcome != 'success'
+        run: exit 1
+
+  # Unified status check — required by branch protection
+  playwright-tests:
+    name: playwright-tests
+    if: always()
+    needs: [should-run, playwright-tests-linux, playwright-tests-macos]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${NEEDS_SHOULD_RUN_OUTPUTS_RUN}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
+            echo "Tests were skipped (no label or filtered branch)"
+            exit 0
+          fi
+          if [[ "${{ needs.playwright-tests-linux.result }}" != "success" ]]; then
+            echo "Linux tests did not succeed (${{ needs.playwright-tests-linux.result }})"
+            exit 1
+          fi
+          if [[ "${{ needs.playwright-tests-macos.result }}" != "success" ]]; then
+            echo "macOS tests did not succeed (${{ needs.playwright-tests-macos.result }})"
+            exit 1
+          fi
+        env:
+          NEEDS_SHOULD_RUN_OUTPUTS_RUN: ${{ needs.should-run.outputs.run }}
+
+  summarize-failures:
+    name: Summarize Failures
+    if: >-
+      always() && (
+        needs.playwright-tests-linux.result == 'failure' ||
+        needs.playwright-tests-linux.result == 'cancelled' ||
+        needs.playwright-tests-macos.result == 'failure' ||
+        needs.playwright-tests-macos.result == 'cancelled'
+      )
+    needs: [playwright-tests-linux, playwright-tests-macos]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/summarize-failed-shards
+        with:
+          log-pattern: playwright-log-*
+          final-log-name: playwright-failed-logs

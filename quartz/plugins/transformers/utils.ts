@@ -1,0 +1,446 @@
+import type { Element, ElementContent, Parent, Root, RootContent, Text } from "hast"
+
+import { toString } from "hast-util-to-string"
+import { h } from "hastscript"
+import { titleCase } from "title-case"
+import { visit } from "unist-util-visit"
+
+import type { QuartzTransformerPlugin } from "../types"
+
+import { locale } from "../../components/constants"
+
+export const urlRegex = new RegExp(
+  /(?<protocol>https?:\/\/)(?<domain>(?:[\da-z-]+\.)+)(?<path>[/?=\w.-]+(?:\([\w.\-,() ]*\))?)(?=\))/g,
+)
+
+// Non-global copy of `urlRegex` for stateless `.test()` calls. A global regex's
+// `.test()` advances `lastIndex` between calls, making repeated detection on the
+// same string order-dependent; this copy keeps detection deterministic.
+export const urlRegexNonGlobal = new RegExp(urlRegex.source, urlRegex.flags.replace("g", ""))
+
+const linkText = /\[(?<linkText>[^\]]+)\]/
+const linkURL = /\((?<linkURL>[^#].*?)\)/ // Ignore internal links, capture as little as possible
+export const mdLinkRegex = new RegExp(linkText.source + linkURL.source, "g")
+
+export const integerRegex = /\d{1,3}(?:,?\d{3})*/u
+export const numberRegex = new RegExp(`[-−]?${integerRegex.source}(?:\\.\\d+)?`, "u")
+
+// A fraction is a digit followed by a slash and another digit
+const ordinalSuffixes = /st|nd|rd|th/
+export const fractionRegex = new RegExp(
+  `(?<![\\w/.])(?!9/11)(?<numerator>${integerRegex.source})\\/(?<denominator>${integerRegex.source})(?<ordinal>${ordinalSuffixes.source})?(?![-−]?\\d)(?![\\w/])`,
+  "g",
+)
+
+export interface ReplaceFnResult {
+  before: string
+  replacedMatch: string | Element | Element[]
+  after: string
+  /** Original (pre-transform) text, stored as `data-original-text` on the wrapper element. */
+  originalText?: string
+}
+
+/**
+ * Replaces text in a node based on a regex pattern and a replacement function.
+ *
+ * @param node - The text node to process.
+ * @param index - The index of the node in its parent's children array.
+ * @param parent - The parent node containing the text node.
+ * @param regex - The regular expression to match against the node's text.
+ * @param replaceFn - A function that takes a regex match and returns an object with before, replacedMatch, and after properties.
+ * @param ignorePredicate - An optional function that determines whether to ignore a node. Default is to never ignore.
+ * @param newNodeStyle - The HTML tag name for the new node created for replacedMatch. Default is "span". "abbr.small-caps" yields e.g. <abbr class="small-caps">{content}</abbr>.
+ */
+export const replaceRegex = (
+  node: Text,
+  index: number,
+  parent: Parent,
+  regex: RegExp,
+  replaceFn: (match: RegExpMatchArray) => ReplaceFnResult,
+  // istanbul ignore next
+  ignorePredicate: (node: Text, index: number, parent: Parent) => boolean = () => false,
+  newNodeStyle = "span",
+): void => {
+  // If the node should be ignored or has no value, return early
+  // skipcq: JS-W1038
+  if (ignorePredicate(node, index, parent) || !node?.value) {
+    return
+  }
+
+  const matches: RegExpExecArray[] = []
+  let lastMatchEnd = 0
+  let match: RegExpExecArray | null
+
+  // Find all non-overlapping matches in the node's text
+  regex.lastIndex = 0 // Reset regex state before first pass with exec()
+  while ((match = regex.exec(node.value)) !== null) {
+    // A zero-width match leaves lastIndex unchanged; nudge it forward so the
+    // loop terminates instead of spinning on the same empty match.
+    if (match[0].length === 0) {
+      regex.lastIndex++
+      continue
+    }
+    /* istanbul ignore next -- exec() always advances past previous match on global regex */
+    if (match.index >= lastMatchEnd) {
+      matches.push(match)
+      lastMatchEnd = match.index + match[0].length
+    }
+  }
+
+  // If no matches found or node has no value, return early
+  if (!matches?.length || !node.value) return
+
+  const fragment: RootContent[] = []
+  let lastIndex = 0
+
+  for (const match of matches) {
+    const index = match.index
+    // Add any text before the match to the fragment
+    if (index > lastIndex) {
+      fragment.push({
+        type: "text",
+        value: node.value.substring(lastIndex, index),
+      })
+    }
+
+    const result = replaceFn(match)
+    const { before, replacedMatch, after } = result
+    if (before) {
+      fragment.push({ type: "text", value: before })
+    }
+    if (replacedMatch) {
+      if (Array.isArray(replacedMatch)) {
+        // For each element in the array, ensure it has text content
+        fragment.push(...replacedMatch)
+      } else if (typeof replacedMatch === "string") {
+        const props = result.originalText ? { "data-original-text": result.originalText } : {}
+        fragment.push(h(newNodeStyle, props, replacedMatch))
+      } else {
+        fragment.push(replacedMatch)
+      }
+    }
+    if (after) {
+      fragment.push({ type: "text", value: after })
+    }
+
+    // Update lastIndex to the end of the match
+    lastIndex = index + match[0].length
+  }
+
+  // Add any remaining text after the last match
+  if (lastIndex < node.value?.length) {
+    fragment.push({ type: "text", value: node.value.substring(lastIndex) })
+  }
+
+  // Replace the original text node with the new nodes in the parent's children array
+  /* istanbul ignore next -- parent always has children and index is always a number */
+  if (parent.children && typeof index === "number") {
+    parent.children.splice(index, 1, ...(fragment as RootContent[]))
+  }
+}
+
+/**
+ * Positional character mismatch count between two strings. Positions past the
+ * end of the shorter string count as mismatches, so it degrades gracefully when
+ * the lengths differ.
+ */
+export function hammingDistance(a: string, b: string): number {
+  const maxLength = Math.max(a.length, b.length)
+  let distance = 0
+  for (let i = 0; i < maxLength; i++) {
+    if (a[i] !== b[i]) distance++
+  }
+  return distance
+}
+
+/**
+ * True when `text` already reads as a title-cased work title rather than prose.
+ * `titleCase` only recases letters, so comparing it to the original by Hamming
+ * distance counts how many words the author cased differently from title case;
+ * fewer than two flips means the author already wrote it as a title (e.g. a
+ * cited article headline), where small-caps acronyms look out of place.
+ */
+export function isEffectivelyTitleCased(text: string): boolean {
+  return hammingDistance(titleCase(text, { locale }), text) < 2
+}
+
+/**
+ * True when inline text reads as the title of a work: a multi-word,
+ * title-cased phrase with at least one lowercase letter. The lowercase
+ * requirement keeps all-caps phrases (bare acronyms, "CC BY-SA")
+ * small-capped, and the multi-word requirement keeps single emphasized words
+ * like "_LLM_" out. Short phrases must match title case exactly — one
+ * mis-cased word in "The NASA program" makes it ordinary prose — while
+ * phrases of five words or more get one word of slack, since long titles are
+ * often written with a mid-title "is" or "the" the `titleCase` library would
+ * capitalize differently.
+ */
+export function looksLikeWorkTitle(text: string): boolean {
+  const trimmed = text.trim()
+  if (!/\s/.test(trimmed) || !/\p{Ll}/u.test(trimmed)) {
+    return false
+  }
+  const wordCount = trimmed.split(/\s+/).length
+  const allowedFlips = wordCount >= 5 ? 2 : 1
+  return hammingDistance(titleCase(trimmed, { locale }), trimmed) < allowedFlips
+}
+
+/**
+ * Checks if node has no previous sibling or previous sibling ends with period + with optional whitespace.
+ */
+export function shouldCapitalizeNodeText(index: number, parent: Parent): boolean {
+  if (index <= 0) return true
+
+  const prev = parent?.children[index - 1]
+  // istanbul ignore if
+  if (!prev) return true
+
+  if (prev.type === "text") {
+    return /\.\s*$/.test(prev.value ?? "")
+  }
+  return false
+}
+
+/**
+ * Gathers any text (including nested inline-element text) before a certain
+ * index in the parent's children array, with proper handling of <br> elements.
+ */
+export function gatherTextBeforeIndex(parent: Parent, upToIndex: number): string {
+  // Create a temporary parent with just the nodes up to our index
+  const tempParent = {
+    ...parent,
+    children: parent.children.slice(0, upToIndex).map((node) => {
+      // Convert <br> elements to newline text nodes
+      if (node.type === "element" && (node as Element).tagName === "br") {
+        return { type: "text", value: "\n" }
+      }
+      return node
+    }),
+  }
+
+  return toString(tempParent as Root)
+}
+
+/**
+ * Interface for elements that may have a parent reference
+ */
+export interface ElementMaybeWithParent extends Element {
+  parent: ElementMaybeWithParent | null
+}
+
+/**
+ * Check if a node or any of its ancestors satisfies the given predicate.
+ *
+ * @param node - The node to check
+ * @param ancestorPredicate - Function to test each node/ancestor
+ * @param ancestors - Array of ancestor nodes from visitParents
+ * @returns true if the node or any ancestor satisfies the predicate
+ */
+export function hasAncestor(
+  node: Element,
+  ancestorPredicate: (ancestor: Element) => boolean,
+  ancestors: Parent[],
+): boolean {
+  // Check the node itself first
+  if (ancestorPredicate(node)) return true
+
+  // Check all ancestors
+  return ancestors.some((ancestor) => ancestorPredicate(ancestor as Element))
+}
+
+/**
+ * Maximum characters to splice from the end of a text node when wrapping
+ * an inline icon (favicon, back arrow, etc.) in a nowrap span.
+ */
+export const maxCharsToRead = 4
+
+/**
+ * Creates a nowrap span element that wraps the given text and child element
+ * to prevent line-break orphaning via white-space: nowrap.
+ */
+export function createNowrapSpan(text: string, child: Element): Element {
+  return {
+    type: "element",
+    tagName: "span",
+    properties: { className: "favicon-span" },
+    children: [{ type: "text" as const, value: text }, child],
+  } as Element
+}
+
+/**
+ * Splices the last few characters from a text node and wraps them with
+ * the given element in a nowrap span, preventing line-break orphaning.
+ *
+ * Mutates `lastTextNode.value` in place. If all text is consumed, removes
+ * the text node from `parent.children`.
+ *
+ * @returns The nowrap span containing [spliced text, elementToWrap].
+ */
+export function spliceAndWrapLastChars(
+  lastTextNode: Text,
+  parent: Element,
+  elementToWrap: Element,
+): Element {
+  const text = lastTextNode.value
+  const charsToRead = Math.min(maxCharsToRead, text.length)
+  const lastChars = text.slice(-charsToRead)
+  lastTextNode.value = text.slice(0, -charsToRead)
+
+  // Remove the text node entirely if all text was moved into the span
+  if (lastChars === text) {
+    const idx = parent.children.indexOf(lastTextNode)
+    /* istanbul ignore next -- lastTextNode is always a child of parent */
+    if (idx !== -1) {
+      parent.children.splice(idx, 1)
+    }
+  }
+
+  return createNowrapSpan(lastChars, elementToWrap)
+}
+
+// Does node have a class that includes the given className?
+export function hasClass(node: Element, className: string): boolean {
+  // Check both className and class properties (hastscript uses class)
+  const classProp = node.properties?.className || node.properties?.class
+  if (typeof classProp === "string") {
+    return classProp.split(/\s+/).includes(className)
+  }
+  if (Array.isArray(classProp)) {
+    return classProp.includes(className)
+  }
+  return false
+}
+
+// Append a class to a node, preserving any existing classes and their shape
+// (string-form className stays a string; array stays an array; absent becomes
+// an array). No-op when the class is already present.
+export function addClass(node: Element, className: string): void {
+  const existing = node.properties?.className
+  if (typeof existing === "string") {
+    if (existing.split(/\s+/).filter(Boolean).includes(className)) return
+    node.properties = { ...node.properties, className: `${existing} ${className}` }
+    return
+  }
+  const list = Array.isArray(existing) ? existing.map(String) : []
+  if (!list.includes(className)) list.push(className)
+  node.properties = { ...node.properties, className: list }
+}
+
+// Remove a class from a node, preserving the shape of any remaining classes
+// (string-form stays a string; array stays an array). Handles both the
+// `className` and `class` property forms that `hasClass` honors, so a class
+// found by `hasClass` is always strippable. No-op when the class is absent.
+export function removeClass(node: Element, className: string): void {
+  for (const key of ["className", "class"] as const) {
+    const existing = node.properties?.[key]
+    const kept =
+      typeof existing === "string"
+        ? existing
+            .split(/\s+/)
+            .filter(Boolean)
+            .filter((c) => c !== className)
+        : Array.isArray(existing)
+          ? existing.map(String).filter((c) => c !== className)
+          : undefined
+    if (kept === undefined) continue
+
+    const next = { ...node.properties }
+    if (kept.length === 0) {
+      // skipcq: JS-0320 -- key is one of the literal "className"/"class" tuple values above, not attacker-controlled
+      delete next[key]
+    } else {
+      next[key] = typeof existing === "string" ? kept.join(" ") : kept
+    }
+    node.properties = next
+  }
+}
+
+/**
+ * Type guard to check if a node is a Text node.
+ * @param node - The node to check
+ * @returns True if the node is a Text node
+ */
+export function isTextNode(node: ElementContent): node is Text {
+  return node.type === "text"
+}
+
+/**
+ * Type guard to check if a node is an Element node.
+ * @param node - The node to check
+ * @returns True if the node is an Element node
+ */
+export function isElementNode(node: ElementContent): node is Element {
+  return node.type === "element"
+}
+
+/**
+ * Check if an element is a code element.
+ * @param node - The element to check
+ * @returns True if the element's tagName is "code"
+ */
+export function isCode(node: Element): boolean {
+  return node.tagName === "code"
+}
+
+/**
+ * Phrasing-content (inline) wrapper tags. Transforms treat these as inline
+ * context: tagSmallcaps ascends through them when deciding sentence-initial
+ * capitalization, and inlineCodeSpacing ascends out of them to find the
+ * character preceding inline code.
+ *
+ * `<abbr>` is intentionally excluded: tagSmallcaps emits `<abbr class="small-caps">`
+ * as its own output and skips text inside `<abbr>`, so it is a processing
+ * terminal rather than a passthrough wrapper.
+ *
+ * `favicons.ts` keeps its own `tagsToZoomInto` instead: favicon placement
+ * descends into `<code>` and excludes `<a>` (links are handled separately), so
+ * its membership intentionally differs.
+ */
+export const INLINE_PASSTHROUGH_TAGS: ReadonlySet<string> = new Set([
+  "a",
+  "b",
+  "del",
+  "em",
+  "i",
+  "ins",
+  "mark",
+  "s",
+  "small",
+  "span",
+  "strike",
+  "strong",
+  "sub",
+  "sup",
+  "u",
+])
+
+/**
+ * Factory function to create a Quartz transformer plugin that visits all elements in the HTML AST.
+ * Reduces boilerplate for simple transformer plugins that just need to visit and modify elements.
+ *
+ * @param name - The name of the plugin (e.g., "customSpoiler")
+ * @param visitor - A function that processes each element node in the tree
+ * @returns A QuartzTransformerPlugin that applies the visitor to all elements
+ *
+ * @example
+ * export const MyPlugin = createElementVisitorPlugin("MyPlugin", (node, index, parent) => {
+ *   if (node.tagName === "p") {
+ *     // Modify paragraph elements
+ *   }
+ * })
+ */
+export function createElementVisitorPlugin(
+  name: string,
+  visitor: (node: Element, index: number | undefined, parent: Parent | undefined) => void,
+): QuartzTransformerPlugin {
+  return () => ({
+    name,
+    htmlPlugins() {
+      return [
+        () => (tree: Root) => {
+          visit(tree, "element", visitor)
+        },
+      ]
+    },
+  })
+}

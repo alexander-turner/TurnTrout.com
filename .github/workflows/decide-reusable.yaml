@@ -1,0 +1,42 @@
+name: decide
+
+# Reusable path gate. A caller invokes this as a `decide` job and gates its work
+# jobs on `needs.decide.outputs.run == 'true'`. Because the decide job itself has
+# no `paths:` filter it ALWAYS runs, so the caller's `if: always()` reporter
+# always receives a conclusion — unlike a native `pull_request: paths:` filter,
+# which skips the whole workflow and strands a required check at "Expected —
+# Waiting". On non-pull_request events (e.g. push to main) the gate is always
+# open, so nothing is path-filtered there.
+
+on:
+  workflow_call:
+    inputs:
+      filters:
+        description: dorny/paths-filter filter spec (YAML). `run` is 'true' when any group matches.
+        required: true
+        type: string
+    outputs:
+      run:
+        description: "'true' if any configured path changed, or the event is not a pull_request."
+        value: ${{ jobs.decide.outputs.run }}
+
+permissions:
+  contents: read
+  pull-requests: read # dorny/paths-filter lists a PR's changed files via the API
+
+jobs:
+  decide:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # On a pull_request, open the gate iff paths-filter reported at least one
+    # matched group (`changes` is the JSON array of matched filter names, `[]`
+    # when none). On any other event the filter step is skipped (its outputs are
+    # empty) and the gate is unconditionally open.
+    outputs:
+      run: ${{ github.event_name != 'pull_request' || steps.filter.outputs.changes != '[]' }}
+    steps:
+      - id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3.0.3
+        with:
+          filters: ${{ inputs.filters }}

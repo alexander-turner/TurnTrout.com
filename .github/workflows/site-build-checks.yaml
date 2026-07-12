@@ -1,0 +1,188 @@
+name: Site build checks
+
+concurrency:
+  group: site-build-checks-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main", "dev"]
+    paths:
+      - "quartz/**"
+      - "!quartz/**/*.spec.ts"
+      - "!quartz/**/*.test.ts"
+      - "!quartz/**/*.test.tsx"
+      - "!quartz/**/tests/**"
+      - "website_content/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/stylelint/.variables-only-stylelintrc.json"
+      - "scripts/built_site_checks.py"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
+  pull_request:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  should-run:
+    name: site-checks-should-run
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          sparse-checkout: .github/actions/ci-gate
+          persist-credentials: false
+      - id: gate
+        uses: ./.github/actions/ci-gate
+        with:
+          force-labels: "ci:full-tests,ci:run-site-checks"
+          filters: |
+            relevant:
+              - "quartz/**"
+              - "!quartz/**/*.spec.ts"
+              - "!quartz/**/*.test.ts"
+              - "!quartz/**/*.test.tsx"
+              - "!quartz/**/tests/**"
+              - "website_content/**"
+              - "config/quartz/**"
+              - "config/constants.json"
+              - "config/stylelint/.variables-only-stylelintrc.json"
+              - "scripts/built_site_checks.py"
+              - "package.json"
+              - "pnpm-lock.yaml"
+              - ".github/actions/**"
+
+  build:
+    name: site-checks-build
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
+    uses: ./.github/workflows/build-site.yaml
+    with:
+      fetch-depth: 0
+    secrets:
+      ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+      SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+      S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+
+  built-site-checks:
+    needs: [should-run, build]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+        with:
+          install-system-deps: "true"
+
+      - name: Restore built site from cache
+        uses: ./.github/actions/restore-site-cache
+        with:
+          key: site-build-${{ github.sha }}-fixtures-false
+
+      - name: Check CSS variables
+        run: |
+          # Run stylelint to check for unknown CSS variables.
+          # Invoke the binary directly rather than via `pnpm exec`: pnpm's
+          # deps-status check can recreate node_modules and print install
+          # chatter to stderr, which the 2>&1 capture below would mistake
+          # for stylelint warnings.
+          # Filter out known false positives and check if any real issues remain
+          WARNINGS=$(node_modules/.bin/stylelint public/index.css \
+            --config config/stylelint/.variables-only-stylelintrc.json 2>&1 \
+            | grep -vE 'shiki|problem|public/index.css' \
+            | grep . || true)
+
+          if [ -n "$WARNINGS" ]; then
+            echo "Error: Found unknown CSS variable(s):"
+            echo "$WARNINGS"
+            exit 1
+          fi
+
+      - name: Run built site checks
+        run: uv run python scripts/built_site_checks.py
+
+  linkchecker:
+    needs: [should-run, build]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+
+      - name: Restore built site from cache
+        uses: ./.github/actions/restore-site-cache
+        with:
+          key: site-build-${{ github.sha }}-fixtures-false
+
+      - name: Start server
+        id: server
+        uses: ./.github/actions/wait-for-server
+        with:
+          path: public
+
+      # Internal links hit localhost only — no retry needed; a failure here
+      # is always a real broken link.
+      - name: Check internal links
+        run: uv run linkchecker http://localhost:8080 --threads 50
+
+      # External links go out to the public internet (assets.turntrout.com,
+      # github.com). Cloudflare / GitHub can return transient 5xx, so wrap
+      # in retry-external. A persistent 4xx still fails after max-attempts.
+      - name: Check external links (with retries)
+        uses: ./.github/actions/retry-external
+        with:
+          command: |
+            uv run linkchecker public/**/*.html \
+              --ignore-url='!^https://(assets\.turntrout\.com|github\.com/alexander-turner/TurnTrout\.com)' \
+              --check-extern \
+              --threads 30 \
+              --user-agent "linkchecker" \
+              --timeout 40
+          max-attempts: "3"
+          initial-delay-seconds: "10"
+
+      - name: Stop server
+        if: always()
+        env:
+          SERVER_PID: ${{ steps.server.outputs.server-pid }}
+        run: kill "$SERVER_PID" 2>/dev/null || true
+
+  # Unified status check — provides passing status when gated off on PRs
+  site-build-checks:
+    name: site-build-checks
+    if: always()
+    needs: [should-run, built-site-checks, linkchecker]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${NEEDS_SHOULD_RUN_OUTPUTS_RUN}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
+            echo "Tests were skipped (no relevant changes or filtered actor)"
+            exit 0
+          fi
+          if [[ "${{ needs.built-site-checks.result }}" != "success" ]] || \
+             [[ "${{ needs.linkchecker.result }}" != "success" ]]; then
+            echo "Site build checks did not succeed (checks=${{ needs.built-site-checks.result }}, links=${{ needs.linkchecker.result }})"
+            exit 1
+          fi
+        env:
+          NEEDS_SHOULD_RUN_OUTPUTS_RUN: ${{ needs.should-run.outputs.run }}

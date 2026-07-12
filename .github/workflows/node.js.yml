@@ -1,0 +1,85 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node tests
+
+concurrency:
+  group: node-tests-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: ["main", "dev"]
+    paths:
+      - "quartz/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/javascript/**"
+      - "config/typescript/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  should-run:
+    name: node-should-run
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          sparse-checkout: .github/actions/ci-gate
+          persist-credentials: false
+      - id: gate
+        uses: ./.github/actions/ci-gate
+        with:
+          force-labels: "ci:full-tests,ci:run-node"
+          filters: |
+            relevant:
+              - "quartz/**"
+              - "config/quartz/**"
+              - "config/constants.json"
+              - "config/javascript/**"
+              - "config/typescript/**"
+              - "package.json"
+              - "pnpm-lock.yaml"
+              - ".github/actions/**"
+
+  build:
+    needs: should-run
+    # Always materialize the (matrixed) `build` check context so a required
+    # status can't hang at "Expected — Waiting": skipping a matrixed job at the
+    # job level can report under the bare name instead of `build (<version>)`.
+    # The gate skips the expensive steps when no relevant files changed, so the
+    # job still finishes green without running the suite.
+    if: ${{ !cancelled() && !startsWith(github.head_ref, 'deepsource-') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    strategy:
+      matrix:
+        node-version: ["22.22.0"]
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+      - name: Setup site
+        if: needs.should-run.outputs.run == 'true'
+        uses: ./.github/actions/setup-site
+        with:
+          install-python: "false"
+      - name: Run tests
+        if: needs.should-run.outputs.run == 'true'
+        run: pnpm test

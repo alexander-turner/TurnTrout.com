@@ -1,0 +1,5 @@
+# Markdown hard line breaks are two trailing spaces, which git's default
+# `blank-at-eol` whitespace check flags as errors. markdownlint (MD009,
+# br_spaces=2) is the authority for markdown trailing whitespace, so exempt
+# markdown from the raw check while keeping blank-at-eof and space-before-tab.
+*.md whitespace=-blank-at-eol

@@ -1,0 +1,1203 @@
+---
+title: The design of this website
+permalink: design
+tags:
+  - website
+  - open-source
+description: Showing off and explaining this site's beauty.
+authors:
+  - Alex Turner
+hideSubscriptionLinks: false
+card_image:
+aliases:
+  - website-design
+  - site-design
+date_published: 2024-10-31
+date_updated: 2026-07-07
+no_dropcap: false
+createBibtex: true
+---
+
+When I decided to design my own website, I had no experience with web development. I've since made <span class="populate-commit-count"></span> commits, so I've learned a few things. :) I present `turntrout.com`, a work of beauty dear to my heart. Indulge me and let me explain the choices I made along the way.
+
+<figure>
+<img-comparison-slider>
+  <img slot="first" src="https://assets.turntrout.com/static/images/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies 'agents'. The website looks bare and amateurish."/>
+  <img slot="second" src="https://assets.turntrout.com/static/images/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents'."/>
+</img-comparison-slider>
+<figcaption>Drag to compare: my third commit (<a href="https://github.com/alexander-turner/TurnTrout.com/commit/6e687609a4b8f4bb14d1812c8fca5d833904729e"><code>6e687609</code></a>, April 2024) vs. commit <a href="https://github.com/alexander-turner/TurnTrout.com/commit/2531d4359a0fa1576a7be2cba729892dd190f0a3"><code>2531d435</code></a> (March 2026).</figcaption>
+</figure>
+
+> [!warning] My stance on AI-written content
+> For text meant to be in my voice, I always review and edit AI generations. I treat the AI's output as a bad first draft. I also use vetted AI outputs for e.g. `<meta name="description">`s which summarize a page's content and [for generating `alt` text descriptions](/open-source#automatic-alt-text-generation).
+>
+> In 2025, I started using AI to stress-test my posts. To reduce sycophancy, I prompt the AI to believe that someone I hate wrote the article. That prompt makes the AI far more likely to point out real problems. I iteratively strengthen the essay until the adversarial AI admits the article is good (despite my "hatred"), or until the AI's complaints are weaksauce.
+
+# Site rendering basics
+
+The site is a fork of the [Quartz](https://quartz.jzhao.xyz/) static site generator. While [the build process](https://quartz.jzhao.xyz/advanced/architecture) is rather involved, here's what you need to know for this article:
+
+1. Almost all of my content is written in Markdown.
+2. Each page has its metadata stored in plaintext [YAML](https://en.wikipedia.org/wiki/YAML).
+3. The Markdown pages are transformed in (essentially) two stages; a sequence of transformations are applied to the intermediate representations of each page.
+4. The intermediate representations are emitted as webpages.
+5. The webpages are pushed to Cloudflare and then walk their way into your browser!
+
+> [!note]- More detail on the transformations  
+> _Text transformations_ operate on the raw text content of each page. For example:
+>
+> ```typescript
+> const notePattern = /^\s*[*_]*note[*_]*:[*_]* (?<text>.*)(?<![*_])[*_]*/gim
+>
+> /**
+>  * Converts note patterns to admonition blocks.
+>  * @param text - The input text to process.
+>  * @returns The text with note patterns converted to admonitions.
+>  */
+> export function noteAdmonition(text: string): string {
+>   text = text.replaceAll(notePattern, "\n> [!note]\n>\n> $<text>")
+>   return text
+> }
+> ```
+>
+> Code: Detects when my Markdown contains a line beginning with "Note:" and then converts that content into an "admonition" (which is the bubble we're inside right now).
+>
+> _HTML transformations_ operate on the next stage. Basically, after all the text gets transformed into other text, the Markdown document gets parsed into proto-HTML. The build process represents the proto-HTML as an [abstract syntax tree.](https://en.wikipedia.org/wiki/Abstract_syntax_tree) The upshot: HTML transformations can be much more fine-grained. For example, I can easily avoid modifying links themselves.
+>
+> ```typescript
+> /**
+>  * Replaces hyphens with en dashes in number ranges
+>  *  Number ranges should use en dashes, not hyphens.
+>  *  Allows for page numbers in the form "p.206-207"
+>  *
+>  * @returns The text with en dashes in number ranges
+>  */
+> export function enDashNumberRange(text: string): string {
+>   return text.replace(
+>     new RegExp(`\\b(?<!\\.)((?:p\\.?)?\\d+${chr}?)-(${chr}?\\d+)(?!\\.\\d)\\b`, "g"),
+>     "$1–$2",
+>   )
+> }
+> ```
+>
+> Code: I wouldn't want to apply this transform to raw text because it would probably break link addresses (which often contain hyphenated sequences of numbers). However, many HTML transforms aren't text → text.
+
+# Importing the content from my old blog
+
+With the help of the LessWrong moderation team, I [migrated the content from my old blog](/welcome-to-the-pond) via their [GraphIQL](https://lesswrong.com/graphiql) tool. The tool outputs both Markdown and HTML versions of the posts. However, while attempting to import my posts, I found the included Markdown to be a mess. I was staring at 120 posts' worth of invalid Markdown, and - I found this out the hard way - the mess was too complicated to RegEx my way out of.
+
+So I decided to convert the HTML to Markdown on my own using [`turndown`](https://github.com/mixmark-io/turndown). That solved the formatting issues. I was then confronted with compatibility issues. For example, throughout my six years on my old blog, there were _at least three_ footnote formats which I used. I needed to be able to parse a single format. Now imagine that issue, but sprouting up one hundred-fold.
+
+That took a few months.
+
+> [!info]- Details on exporting my content
+> I exported my content using [this query](https://github.com/alexander-turner/TurnTrout.com/blob/import/scripts/graphiql.txt). After downloading the JSON, I ran [`process_json.cjs`](https://github.com/alexander-turner/TurnTrout.com/blob/import/scripts/process_json.cjs) to use [`turndown`](https://github.com/mixmark-io/turndown) to convert the raw HTML to (properly processed) Markdown. Finally, I [preprocessed the Markdown files.](https://github.com/alexander-turner/TurnTrout.com/blob/import/scripts/md_processing_single.py)
+
+# Archiving and dependencies
+
+[Cloudflare](https://www.cloudflare.com/) hosts `turntrout.com`. Overall, the site has few external dependencies. In nearly all cases, I host scripts, stylesheets, and media assets on my CDN. If the rest of the Web went down (besides Cloudflare), `turntrout.com` would look nearly the same.[^archive] Furthermore, minimizing embeds (e.g. `<iframe>`s) will minimize the number of invasive tracking cookies.[^video]
+
+[^video]: To avoid YouTube tracking cookies, I even self-host [AI presidents discuss AI alignment agendas](/alignment-tier-list).
+
+[^archive]: Examples of content which is not hosted on my website: There are several `<iframe>` embeds (e.g. interactive forms and such). I also use the privacy-friendlier [`umami.is`](https://umami.is/) analytics service and load the script from their site.
+
+My CDN brings me comfort - about 3% of my older image links had already died on LessWrong (e.g. `imgur` links expired). I think LessWrong now hosts assets on their own CDN. However, I do not want my site's content to be tied to their engineering and organizational decisions. I want my content to be timeless.
+
+I wrote [a script](https://github.com/alexander-turner/TurnTrout.com/blob/main/scripts/r2_upload.py) which uploads and backs up relevant media files. Before pushing new assets to my `main` branch, the script:
+
+1. Uploads the assets to my CDN (`assets.turntrout.com`);
+2. Copies the assets to my local mirror of the CDN content;
+3. Removes the assets so they aren't tracked by my `git` repo.
+
+I later describe my [@title-lower](#deployment-pipeline) in more detail.
+
+## Embedding tweets
+
+I enable tracking-free embeds of tweets, rendered in my site's style. Each card renders from a tweet-info JSON which I host on my own CDN, so it leaks nothing to X and still displays even if the original tweet is deleted. I also point the links at [`xcancel.com`](https://xcancel.com) rather than `x.com`, as I [avoid X for ethical reasons.](/advanced-privacy#gradually-migrate-your-social-network-away-from-x)
+
+```tweet
+https://xcancel.com/Turn_Trout/status/2064426233769742627
+```
+
+# Color scheme
+
+<figure>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
+  <span id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
+    <div class="centered">Light mode</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem; white-space: nowrap;">
+      <span style="color: var(--red);">Red</span>
+      <span style="color: var(--maroon);">Maroon</span>
+      <span style="color: var(--orange);">Orange</span>
+      <span style="color: var(--yellow);">Yellow</span>
+      <span style="color: var(--gold);">Gold</span>
+      <span style="color: var(--green);">Green</span>
+      <span style="color: var(--teal);">Teal</span>
+      <span style="color: var(--sky);">Sky</span>
+      <span style="color: var(--blue);">Blue</span>
+      <span style="color: var(--purple);">Purple</span>
+      <span style="color: var(--lavender);">Lavender</span>
+      <span style="color: var(--pink);">Pink</span>
+    </div>
+    <div class="centered"><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts"/></div>
+  </span>
+  <span id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid; background-color: var(--background, #303446);">
+    <div class="centered">Dark mode</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem; white-space: nowrap;">
+      <span style="color: var(--red);">Red</span>
+      <span style="color: var(--maroon);">Maroon</span>
+      <span style="color: var(--orange);">Orange</span>
+      <span style="color: var(--yellow);">Yellow</span>
+      <span style="color: var(--gold);">Gold</span>
+      <span style="color: var(--green);">Green</span>
+      <span style="color: var(--teal);">Teal</span>
+      <span style="color: var(--sky);">Sky</span>
+      <span style="color: var(--blue);">Blue</span>
+      <span style="color: var(--purple);">Purple</span>
+      <span style="color: var(--lavender);">Lavender</span>
+      <span style="color: var(--pink);">Pink</span>
+    </div>
+    <div class="centered"><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts"/></div>
+  </span>
+</div>
+<figcaption>The palettes for light and dark mode.</figcaption>
+</figure>
+
+I use the darkest text color sparingly. The margin text is medium-contrast, as are e.g. list numbers and bullets.
+
+To determine the text colors (including grayscale gradations), I just determine the main text color and the site background color. Revamping site contrast therefore requires tweaking fewer variables.
+
+## Inverting assets in dark mode
+
+In light mode, images with light backgrounds blend into the background via `mix-blend-mode: multiply`. These blended images achieve the illusion of transparency -- a classy touch, in my view. Similarly, dark-background images blend via `mix-blend-mode: screen`. In dark mode, I also decrease the saturation of media assets using `filter: grayscale(50%)`.
+
+Light-background images look good in light mode. Dark-background images look good in dark mode. So far, so good. But light-background images looked bad in dark mode.
+
+### Deciding how to invert
+
+<span class="populate-markdown-inversion-demo"></span>
+
+For images, I pre-compute perfectly inverted variants at build time. The browser determines which image to show. Videos only use the SVG filter.
+
+### Deciding when to invert
+
+<span class="float-right" style="max-width: 40%; margin-top: calc(-1.5 * $base-margin);"><img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but flipped."/>Evidently, the high-luminance rule is not always correct --- counterexamples exist. Scary. </span>
+
+A blanket invert would butcher certain photos. `gwern` trained a [machine learning classifier for exactly this question](https://gwern.net/invertornot). However, his classifier didn't have much better accuracy than a simple rule which says to invert images with average luminance exceeding 0.7 (since they're "mostly white") --- that's the baseline recommendation. I can quickly skim through a webpage showing light-mode vs dark-mode images in a grid, overriding any which the luminance rule misclassifies.
+
+## Color should accent content
+
+When designing visual content, I consider where the reader's eyes go. People visit my site to read my content, and so _the content should catch their eyes first_. The desktop pond scene (with the goose) is the only exception to this rule. I decided that on the desktop, I want a reader to load the page, marvel, and smile at the scenic pond, and then bring their eyes to the main text (which has high contrast and is the obvious next visual attractor).
+
+During the build process, I convert all naive CSS assignments of `color:red` (<span class="ignore-pa11y" style="color:rgb(255,0,0);">imagine if I made you read this</span>) to <span style="color:red">the site's red</span>. Lots of my old equations used raw `red` / `green` / `blue` colors because that's all that my old blog allowed; these colors are converted to the site theme. I even override and standardize the colors used for syntax highlighting in the code blocks.
+
+I color [@title-lower](#inline-favicons) using muted shades from the site's palette. For sites like [YouTube](https://youtube.com) and [Google Drive](https://drive.google.com), colored favicons enhance recognition and orient the reader.
+
+# Site responsiveness
+
+As a static webpage, my life is much simpler than the lives of most web developers. However, by default, users would have to wait a few seconds for each page to load, which I consider unacceptable. I want my site to be responsive even on mobile on slow connections.
+
+Quartz offers basic optimizations, such as [lazy loading](https://developer.mozilla.org/en-US/docs/Web/Performance/Lazy_loading) of assets and [minifying](<https://en.wikipedia.org/wiki/Minification_(programming)>) JavaScript and CSS files. I further marked the core CSS files for preloading. However, there are a range of more interesting optimizations which Quartz and I implement.
+
+## Asset compression
+
+### Fonts
+
+EB Garamond Regular 8pt takes 260KB as an `otf` file but compresses to 80KB under [the newer `woff2` format.](https://www.w3.org/TR/WOFF2/) In all, the font footprint shrinks from 1.5MB to about 609KB for most pages. I toyed around with manual [font subsetting](https://fonts.google.com/knowledge/glossary/subsetting) but it seemed too hard to predict which characters my site _never_ uses.
+
+Therefore, I use [my optimized fork of `subfont`](/open-source#faster-font-subsetting) to subset each font across my entire website, dropping unused OpenType tables and font features the CSS never references.
+
+<span class="populate-markdown-font-stats"></span>
+
+Eventually, the ultimate solution will be [progressive font enrichment](https://www.w3.org/TR/PFE-evaluation/), which will load just those glyphs needed for a webpage, and then cache those glyphs so that they aren't reloaded during future calls. Its successor standard, [Incremental Font Transfer](https://www.w3.org/TR/IFT/), has begun shipping in Chromium but isn't yet broadly available.
+
+### Images
+
+Among lossy compression formats, there are two kings: AVIF and WEBP. Under my tests, they achieved similar (amazing) compression ratios of about 10x over PNG. I chose AVIF. The upshot is that _images are nearly costless in terms of responsiveness_, which is liberating.
+
+To demonstrate this liberty, I perform a statistical analysis of the 941 AVIF files hosted on my CDN as of November 9th, 2024.[^colab] I downloaded each AVIF file and used `magick` to convert it back to a PNG, measuring the size before and after.
+
+<img alt="Compression ratios: (PNG size) / (AVIF size). A left-skew histogram with tails reaching out to 75x." src="https://assets.turntrout.com/static/images/posts/compression_ratio.svg" class="compression-ratio-graph"/>
+
+Figure: At first blush, most of the compression ratios seem unimpressive. However, back when I made this graph, the vast majority of the "images" were [favicons](#inline-favicons) which show up next to URLs. These images were already tiny as PNGs (e.g. 2KB), so AVIF could only compress them so much.
+
+<figure><img src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif" alt="A majestic painting of a white goose soaring through a bright blue sky with warm, sunlit clouds. Pink petals float around the goose." style="max-width: 85%;"> <figcaption>This friendly <abbr class="small-caps">avif</abbr> goose clocks in below <abbr class="small-caps">45kb</abbr>, while its <abbr class="small-caps">png</abbr> equivalent weighs <abbr class="small-caps">450kb</abbr>—a 10× increase!</figcaption></figure>
+
+![A scatterplot showing dramatic decreases in filesize from PNG to AVIF.](https://assets.turntrout.com/static/images/posts/avif_png_scatter.svg)
+Figure: Now the huge savings of AVIF are clearer. The site-wide image volume drops from 280MB (PNG) to 25MB (AVIF) -- 91% savings.
+
+[^colab]: I used a [publicly accessible Colab](https://colab.research.google.com/drive/1XScXuubpzcyhjU6uYRN0ikHVzLFmJj6X?usp=sharing) to generate the AVIF -> PNG compression graphs.
+
+### Videos
+
+Among modern formats, there appear to be two serious contenders: h265 MP4 ("HEVC") and WEBM (via the VP9 codec). [Reportedly,](https://bitmovin.com/blog/vp9-vs-hevc-h265/) HEVC has better compression than VP9 WEBM. In practice, I've found the opposite.
+
+|                 Metric                  | Value  |
+| :-------------------------------------: | :----- |
+|             Total MP4 size              | 76MB   |
+|             Total WEBM size             |  61MB  |
+| Overall space savings from MP4 -> WEBM  | 20%    |
+
+Both of these formats are good compared to GIFs. My WEBM files were 10x lighter than my GIFs! For example: [the "goose in a pond" video](https://assets.turntrout.com/static/pond.webm) weighed 561KB in GIF format. The MP4 weighs 260KB while the WEBM weighs 58KB.
+
+So why not just always use WEBM? While [Safari technically "supports" WEBM](https://caniuse.com/webm), _Safari refuses to autoplay & loop WEBMs, or to render transparency_. After reading [an article on how to stably display transparent videos across browsers](https://rotato.app/blog/transparent-videos-for-the-web), I implemented the following scheme:
+
+```html
+<video [attributes]>
+  <!-- Only Safari should support hvc1 -->
+  <source src="video.mp4" type="video/mp4; codecs=hvc1" />
+
+  <!-- All other browsers skip the MP4 and use the second source -->
+  <source src="video.webm" type="video/webm" />
+</video>
+```
+
+However, it was quite difficult to produce a transparent MP4 (as required by Safari). I eventually used `ffmpeg` to convert a non-transparent MP4 into a ProRes 444 file. I then used my Mac Finder's built-in encoding tool to convert the ProRes 444 to a MOV with transparency... Phew.
+
+#### Website video looping
+
+I love the desktop website's pond video. However, some find it distracting. Therefore, I pause the video by default but provide a play button for those who want it on loop.
+
+<figure class="float-right">
+<video aria-label="A demonstration of the play and pause controls for the website's animated pond scene. A cursor clicks the pause icon to stop the animation and then clicks the play icon to resume it." autoplay="" loop="" muted="" playsinline="" style="margin: 0;"><source src="https://assets.turntrout.com/static/images/posts/design-20250914111611.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/design-20250914111611.webm" type="video/webm"/></video>
+</figure>
+
+By using [`micromorph`](https://github.com/natemoo-re/micromorph) to preserve the video element, the video doesn't even unload as you navigate through the site. Therefore, the current video state remains stable, giving the appearance of a persistent pond scene which unfolds throughout your time on my site.
+
+Previously, I followed `gwern`'s suggestion and arranged the video to only play on hover. However, that prevented looping the video throughout the reading experience—a feature which several others missed.
+
+> [!quote]- [`gwern`](https://www.lesswrong.com/posts/Nq2BtFidsnhfLuNAx/announcing-turntrout-com-my-new-digital-home?commentId=vJAsuKGLMmuWCb45h) advocated for "loop on hover"
+>
+> In fact, why not make 'fun on hover' a core design principle? "If not friend, why friend-shaped?" Make everything on the site a little friend you can play with. (This would be a good time to try to write down a few catchphrases or design principles to sum up your goals here. Why dropcaps or the animated pond logo? etc) When I look at your pond, I feel like it would be wonderful if the pond was animated on hover - if when I hovered, _then_ it was animated.
+>
+> \[...\]
+>
+> I also still think that the logo should probably not play by default, and for animations like this, it's better to take an Apple-like attitude about them being enhancements, opted into by user actions, to 'spark joy', but not to be used by default. What do the worst websites do? They animate tons of stuff gratuitously. How much more delightful it is to discover a website with taste & restraint, where there are easter eggs and features to discover as you surf, where, say, the animated logo plays only when you hover over it... Truly an oasis or quiet little pond amidst the howling desert of the contemporary Internet.
+>
+> I'm reminded of a _Family Guy_ meme I re-ran into recently: why does Peter Griffin dislike _The Godfather_? Because ["It insists upon itself."](https://x.com/SethMacFarlane/status/1881825910040702979) A website animating the logo unasked for insists upon itself. And this helps instill a design feature: you the reader are in control, and you express this control in part because you can hover over _everything_ to learn more or focus on some things.
+
+### Caching improves load times
+
+I always revalidate content which I change often (like the webpages themselves). However, I cache media assets for a long time. (I also enjoyed learning about [the considerations which](https://hacks.mozilla.org/2017/01/using-immutable-caching-to-speed-up-the-web/) [go into caching](https://jakearchibald.com/2016/caching-best-practices/).)
+
+## Preventing layout shift
+
+When loading webpages with media assets, the browser knows there's an asset present but doesn't know how much space the asset will take. Specifically, my images and videos tend to fill (some fixed fraction of) the available width. The browser knows the width. However, the browser doesn't know how much _height_ the asset will require.
+
+The browser assumes the assets have zero height until the assets load, at which point they take up the right amount of vertical space. That expansion will [_shift_ the visible layout.](https://web.dev/articles/cls) If you were reading that text, that'd be disorienting and annoying.
+
+<figure>
+  <div class="subfigure">
+    <figcaption>Layout shift during a hard refresh:</figcaption>
+ <video aria-label="On turntrout.com's design page, the user refreshes without layout shift." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/cls_5_99s.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/cls_5_99s.webm" type="video/webm"/></video>
+  </div>
+  
+  <div class="subfigure">
+    <figcaption>No layout shift:</figcaption>
+ <video aria-label="A screen recording demonstrates cumulative layout shift. As a webpage is scrolled, an image loads, abruptly pushing the text below it further down the page and creating a jarring reading experience." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/no-cls_5_99.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/no-cls_5_99.webm" type="video/webm"/></video>
+  </div>
+</figure>
+
+Therefore, I wrote a plugin which fetches the width and height of each linked asset and stores them as attributes on the e.g. `<img>` tag. Then, the browser automatically computes the intended `aspect-ratio`. Given the browser already knows the intended width, it derives the height without needing to load the asset itself. The browser allocates space in advance. Voila - no layout shift!
+
+## Inlining critical CSS
+
+Before the client to loads the main CSS stylesheet, the site looks like garbage. One solution is to manually include the most crucial styles in the `<head>` element, but that's brittle.
+
+Instead, I hooked [the `critical` package](https://github.com/addyosmani/critical) into the end of the production build process. After emitting the webpages, the process computes which "critical" styles are necessary to display the first glimpse of the page. These critical styles are inlined so that they load immediately, without waiting for the entire stylesheet to load. When the page loads, it quickly notes the status of light vs dark mode and immediately applies the relevant theme. Once the main stylesheet loads, I delete the inlined styles (as they are superfluous at best).
+
+## Non-blocking CSS loading
+
+Since $\KaTeX$ math is rendered server-side, the client only needs the stylesheet for styling. I load `katex.min.css` with `media="print"` and swap it to `media="all"` on load, keeping it off the critical rendering path. The same technique applies to any stylesheet that isn't needed for the initial paint.
+
+## Preloading the first image
+
+The first content image on each page is typically the [Largest Contentful Paint](https://web.dev/articles/lcp) element. By default, Quartz lazy-loads all images, which delays LCP because the browser won't fetch the image until it scrolls into view. I override this for the first `<img>`: it gets `loading="eager"` and `fetchpriority="high"`, while all subsequent images remain lazy.
+
+## Deduplicating HTML requests
+
+When loading a new page, the [`micromorph` package](https://github.com/natemoo-re/micromorph) selectively loads the new elements in the page. The shared elements are not updated, cutting load times.
+
+## Seamless scroll restoration
+
+Picture this: you're reading an article, click a link, hit the back button, and the browser dumps you at the top of the page. You have to scroll back down to find where you were. Or perhaps you reload a page mid-article and watch it jump around chaotically as images load -- never quite settling where you left off. I refuse to subject my readers to this nonsense.
+
+### The core challenge
+
+Browsers provide [native scroll restoration](https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration), but it's unreliable.
+
+0. The browser briefly shows the top of the page before restoring the correct position. Disorienting.
+1. Also, the browser restores position before layout shifts complete. Despite my [significant efforts](#preventing-layout-shift), a few layout shifts still pollute the user experience. Late-loading media cause the page to jump around.
+
+### Solution: Preempt the page paint
+
+Subtitle: Implemented by [`instantScrollRestoration.js`](https://github.com/alexander-turner/TurnTrout.com/blob/main/quartz/static/scripts/instantScrollRestoration.js).
+
+To avoid disorienting the reader, I need to move _fast_ -- before the browser has painted the page even a single time!
+
+This inline script executes immediately, checking multiple possible storage locations for the user's last position. To accommodate late-loading content, the script then uses `requestAnimationFrame` to adjust the position over the next 3 seconds -- all without the user noticing!
+
+A complication: how does the script know whether a scroll event came from the user or from a late-loading image shifting the layout? Get this wrong, and the page annoyingly fights the user. I decided to cancel the adjustment period given user movement indicated by certain events:
+
+```javascript
+let userInteracted = false
+const markInteraction = () => {
+  userInteracted = true
+}
+for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
+  window.addEventListener(event, markInteraction, {
+    passive: true,
+    once: true,
+  })
+}
+```
+
+As a result of this finagling, while you're hanging out by The Pond, you never lose your place.
+
+# Text presentation
+
+## Sizing
+
+This website contains many design elements. To maintain a regular, assured style and to avoid patchwork chaos, I made two important design choices.
+
+### Exponential font sizing
+
+I fixed a base font size -- 20px on mobile, to 22px on tablets, to 24px on full displays. I read up on [how many characters should be on a single line in order to maximize readability](https://baymard.com/blog/line-length-readability) - apparently between 50 and 60. On desktop, I set the center column to 750PX (yielding about 75 characters per line).[^characters] I decided not to indent paragraphs because that made the left margin boundary too ragged.
+
+After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
+
+<div class="h1">Header 1</div>
+<div class="h2">Header 2</div>
+<div class="h3">Header 3</div>
+<div class="h4">Header 4</div>
+<div class="h5">Header 5</div>
+
+<div>Normal text</div>
+<div style="font-size:var(--font-size-minus-1)">Smaller text</div>
+<div style="font-size:var(--font-size-minus-2)">Smaller text</div>
+<div style="font-size:var(--font-size-minus-3)">Smaller text</div>
+
+### All spacing is a simple multiple of a base measurement
+
+If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
+
+[^characters]: 60 characters per line seemed awkwardly narrow to me, so I went for 75 per line.  <!-- lint-ignore sentence-initial-numeral: author's prose, leading numeral kept as written -->
+
+## Font selection
+
+The font family is the open-source [EB Garamond](https://github.com/georgd/EB-Garamond). The `monospace` font is [Fira Code VF](https://github.com/tonsky/FiraCode), which brings a range of ligatures.
+
+![A range of programming ligatures offered by Fira Code VF.](https://assets.turntrout.com/static/images/posts/fira_code.avif)
+Figure: _Ligatures_ transform sequences of characters (like "<span style="font-variant-ligatures:none;"><code>\<\=</code></span>") into a single glyph (like "`<=`").
+
+![Demonstrating how the monospace font aligns the x-height and cap-heights of common bigrams like 'Fl'.](https://assets.turntrout.com/static/images/posts/letter_pairs-1.avif)
+Figure: I love sweating the small stuff. :) Notice how aligned "`FlTl`" is!
+
+My site contains a range of fun fonts which I rarely use. For example, the _Lord of the Rings_ font "Tengwar Artano" renders Elvish glyphs in proper Quenya mode.
+
+> [!quote]- [_Namárië_: Galadriel's Lament in Lórien](https://www.youtube.com/watch?v=re5_lzlFS9M)
+>
+> Subtitle: Click a line to see the translation
+>
+> <div class="centered"><audio src="https://assets.turntrout.com/static/audio/namarie.mp3" controls></audio></div>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">long years numberless as the wings of trees!</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">The years have passed like swift draughts</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">of the sweet mead in lofty halls beyond the West,</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">   </span><span class="elvish-translation">beneath the blue vaults of Varda</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">   </span><span class="elvish-translation">wherein the stars tremble</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
+>
+> <br>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">     </span><span class="elvish-translation">Who now shall refill the cup for me?</span></span>
+>
+> <br>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    </span><span class="elvish-translation">For now the Kindler, Varda, the Queen of the Stars,</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">from Mount Everwhite has uplifted her hands like clouds,</span></span>
+>
+> <br>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">and all paths are drowned deep in shadow;</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">   </span><span class="elvish-translation">and out of a grey country darkness lies</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">   ⸱</span><span class="elvish-translation">on the foaming waves between us,</span></span>
+>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">     :</span><span class="elvish-translation">and mist covers the jewels of Calacirya for ever.</span></span>
+>
+> <br>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
+>
+> <br>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">   :</span><span class="elvish-translation">Farewell! Maybe thou shalt find Valimar.</span></span>
+>
+> <br>
+> <span class="elvish"><span class="elvish-tengwar" lang="qya">  : </span><span class="elvish-translation">Maybe even thou shalt find it. Farewell!</span></span>
+
+<span class="float-right" style="margin-top: 2rem; ">
+<div class="dropcap" data-first-letter="A" style="font-size: 4rem; color: var(--foreground);--before-color:var(--foreground);">A</div>
+<figcaption>Monochromatic dropcaps seem somewhat illegible.</figcaption>
+</span>
+
+## Dropcaps
+
+I have long appreciated [illuminated calligraphy.](https://www.atlasobscura.com/articles/illluminated-manuscript-calligraphy-guide) In particular, a [dropcap](https://en.wikipedia.org/wiki/Initial) lends gravity and elegance to a text. Furthermore, EB Garamond dropcaps are available.
+
+However, implementation was tricky. As shown with the figure's "A", CSS assigns a single color to each text element. To get around this obstacle, I took advantage of the fact that EB Garamond dropcaps can be split into the letter and the embellishment.
+
+<div class="centered" style="font-size:4rem;line-height:1.4 !important;">
+<span class="dropcap ignore-pa11y" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);" aria-hidden="true">A</span>
+<span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
+</div>
+  
+However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display) other text; only one letter can be in a given spot - right? Wrong! I render the letter and the embellishment separately, using [the CSS `::before` pseudo-element](https://developer.mozilla.org/en-US/docs/Web/CSS/::before) for the embellishment. The result:
+
+<div class="centered">
+<span class="dropcap" data-first-letter="A" style="font-size:4rem;">A</span>
+</div>
+
+> [!note]- Dropcap CSS
+>
+> Here are the basic styles.
+>
+> ```scss
+> .dropcap {
+>   font-family: var(--font-dropcap-background);
+>   color: var(--before-color);
+>   position: relative;
+>   text-transform: uppercase;
+>
+>   &::before {
+>     font-family: var(--font-dropcap-foreground);
+>     color: var(--foreground);
+>     content: attr(data-first-letter);
+>     position: absolute;
+>   }
+> }
+> ```
+
+### Rare dropcap coloring
+
+Every time you navigate to a new page, there's a <span id="populate-dropcap-probability"></span> chance to get a random dropcap color. :)
+
+<div id="the-pond-dropcaps" class="centered" style="font-size:min(4rem, 15vw); line-height: 1;">
+<span class="dropcap" data-first-letter="T" style="--before-color: var(--dropcap-background-red);">T</span>
+<span class="dropcap" data-first-letter="H" style="--before-color: var(--dropcap-background-orange);">H</span>
+<span class="dropcap" data-first-letter="E"  style="--before-color: var(--dropcap-background-gold);">E</span>
+<br/>
+<span class="dropcap" data-first-letter="P"  style="--before-color: var(--dropcap-background-green);">P</span>
+<span class="dropcap" data-first-letter="O"  style="--before-color: var(--dropcap-background-blue);">O</span>
+<span class="dropcap" data-first-letter="N"  style="--before-color: var(--dropcap-background-purple);">N</span>
+<span class="dropcap" data-first-letter="D"  style="--before-color: var(--dropcap-background-pink);">D</span>
+</div>
+
+## Formatting enhancement
+
+Undirected quote marks (`"test"`) look bad to me. Call me extra (I _am_ extra), but I ventured to _never have undirected quotes on my site._ Instead, double and single quotation marks automatically convert to their opening or closing counterparts. This seems like a bog-standard formatting problem, so surely there's a standard library. Right?
+
+Sadly, there wasn't. GitHub-flavored Markdown includes a `smartypants` option, but honestly, it's sloppy. So I wrote a bit of code.
+
+> [!quote] [@title](/open-source#punctilio-for-meticulous-typography)
+> ![[/open-source#punctilio-for-meticulous-typography]]
+
+### Hyphen replacement
+
+Subtitle: My `punctilio` library handles this, too.
+
+[Merriam-Webster ordains that](https://www.merriam-webster.com/grammar/em-dash-en-dash-how-to-use) - contrary to popular practice - hyphens (-) and em-dashes (—) be used in importantly different situations:
+
+> [!quote] [How to Use Em Dashes (—), En Dashes (–) , and Hyphens (-)](https://www.merriam-webster.com/grammar/em-dash-en-dash-how-to-use)
+> The em dash (—) can function like a comma, a colon, or parenthesis. Like commas and parentheses, em dashes set off extra information, such as examples, explanatory or descriptive phrases, or supplemental facts. Like a colon, an em dash introduces a clause that explains or expands upon something that precedes it.
+
+Technically, _en dashes_ should be used for ranges of dates and numbers. So "<span class="no-formatting">p. 202-203</span>" turns into "p. 202-203", and "<span class="no-formatting">Aug-Dec</span>" turns into "Aug-Dec"!
+
+Some hyphens should actually be _minus signs_. I find raw hyphens (<span class="no-formatting">-2</span>) to be distasteful when used with plaintext numbers. I opt for "-2" instead.
+
+### Automatic smallcaps
+
+How do the following sentences feel to read?
+
+1. <abbr>Signed in the 1990's, NAFTA was a trade deal.</abbr>
+2. Signed in the 1990's, NAFTA was a trade deal.
+
+Typographically, capital letters are designed to be used one or two at a time - not five in a row. <abbr> "NAFTA"</abbr> draws far too much attention to itself. I use regular expressions to detect at least three consecutive capital letters, excluding Roman numerals like XVI.
+
+Since smallcaps are rendered by lowercasing text and applying CSS `font-variant-caps`, I intercept clipboard events to ensure the copied text is correct. Further, many smallcaps uses (like "500km") actually render from lowercase text. I track `data-original-text` and ensure the clipboard copies the original text exactly.
+
+Furthermore, I apply smallcaps to letters which follow numbers (like "100GB") so that the letters have the same height as the numerals. For similar reasons as smallcaps, most of the site's numerals are [oldstyle](https://www.myfonts.com/pages/fontscom-learning-fontology-level-3-numbers-oldstyle-figures) ("100") rather than lining ("<span style="font-variant-numeric: lining-nums;">100</span>"). I uppercase the first letter of smallcaps if it begins a sentence or a paragraph element. Lastly, I set version numbers in uppercase (using lining numerals).
+
+Smallcaps belong in running prose, not in the name of a work. When text already reads as a title—a linked or italicized article title, a quote attribution citing a paper, a page title bound by `@title`—its acronyms stay as plain caps.
+
+> [!quote] NAFTA, [Wikipedia](https://en.wikipedia.org/wiki/North_American_Free_Trade_Agreement)
+> The **North American Free Trade Agreement** (**NAFTA** [/ˈnæftə/](https://en.wikipedia.org/wiki/Help:IPA/English "Help:IPA/English") [_NAF-tə_](https://en.wikipedia.org/wiki/Help:Pronunciation_respelling_key "Help:Pronunciation respelling key"); [Spanish](https://en.wikipedia.org/wiki/Spanish_language "Spanish language"): _Tratado de Libre Comercio de América del Norte_, **TLCAN**; [French](https://en.wikipedia.org/wiki/French_language "French language"): _Accord de libre-échange nord-américain_, **ALÉNA**) was an agreement signed by [Canada](https://en.wikipedia.org/wiki/Canada "Canada"), [Mexico](https://en.wikipedia.org/wiki/Mexico "Mexico"), and the  [United States](https://en.wikipedia.org/wiki/United_States "United States") that created a trilateral [trade bloc](https://en.wikipedia.org/wiki/Trade_bloc "Trade bloc") in [North America.](https://en.wikipedia.org/wiki/North_America "North America") The agreement came into force on January 1, 1994, and superseded the 1988 [Canada–United States Free Trade Agreement](https://en.wikipedia.org/wiki/Canada%E2%80%93United_States_Free_Trade_Agreement "Canada–United States Free Trade Agreement") between the United States and Canada. The NAFTA trade bloc formed one of the largest trade blocs in the world by [gross domestic product.](https://en.wikipedia.org/wiki/Gross_domestic_product "Gross domestic product")
+
+### Other display tweaks
+
+No hyphenated text wrapping
+: To improve readability, I don't allow words to wrap by being split by [`hyphens`](https://developer.mozilla.org/en-US/docs/Web/CSS/hyphens) - unless those hyphens were already there.
+
+Balanced text wrapping
+: I use [`text-wrap: balance`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap) to balance line lengths in headings, captions, and subtitles. I use `text-wrap: pretty` for body text, which lets the browser optimize line-break positions to reduce orphans. `punctilio`'s non-breaking spaces set hard constraints on which words must stay together, while `text-wrap` optimizes the remaining break points.
+
+No line-leading em or en dashes
+: An em dash (—) or en dash (–) can break onto a new line from _either_ side, so a wrapped line could start with a lonely dash. `punctilio` glues a [word joiner](https://en.wikipedia.org/wiki/Word_joiner) in front of every such dash, which keeps the dash bound to the text before it while still letting the line break _after_ the dash.
+
+Fractions
+: I chose slanted fractions in order to slightly increase the height of the numerals in the numerator and denominator. People are 2/3 water, but "01/01/2000" should not be rendered as a fraction.
+
+Detecting multipliers
+: Multipliers like "2x" are 2x more pleasant than "<span class="no-formatting">2x</span>."
+
+Spaced slashes
+: Used for separators like "cat" / "dog" in place of "cat"<span class="no-formatting">/</span>"dog".
+
+Trim space inside emphasis and links
+: Inline elements shouldn't carry stray whitespace at their boundary. Markdown like `_ italics_` parses oddly, but upstream transformers occasionally produce `<em> text </em>`. I trim the leading and trailing whitespace from the first and last text-child of tags like `<em>`.
+
+Mathematical definitions
+: In the past, I used the $:=$ symbol to denote definitions (as opposed to normal equations). I now convert these symbols to the self-explanatory $ :=$.
+
+Superscripting ordinal suffixes
+: By default, ordinal numbers look a bit strange: <span class="no-formatting">1st</span>. This HTML transformation allows me to write about what happened on e.g. August 8th.
+
+### I paid someone to tweak EB Garamond
+
+While EB Garamond is a nice font, it has a few problems. As of April 2024, EB Garamond did not support slashed zeroes (the `zero` feature). The result: zero looked too similar to "o." Here's a number rendered in the original font: <span style="font-family: 'EBGaramondOriginal'">"100"</span>; in my tweaked font it shows as "100." Furthermore, the italicized font did not support the `cv11` OpenType feature for oldstyle numerals. This meant that the italicized 1 looked like a slanted "<span style="font-family: var(--font-main); font-feature-settings: normal;">1</span>" - too similar to the smallcaps capital I ("<span class="small-caps">I</span>").
+
+Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to add these features. I have also notified the maintainer of the EB Garamond font.
+
+### Upright punctuation in italic text
+
+> [!quote] [Bringhurst’s rule 5.3.2](https://typographyforlawyers.com/a-brief-guide-to-bringhursts-elements.html)
+>
+> Use upright (roman) rather than sloped parentheses, brackets and braces, even if the context is italic.
+
+I modified the italic fonts to replace sloped punctuation glyphs with their upright counterparts. Over 3,000 kerning pairs per font compensate the resulting spacing, with special handling for f-ligatures and descender glyphs. A contextual glyph rule slopes apostrophes in contractions but keeps them upright as single closing quotes.
+
+|     Character |                     Original                      | With upright punctuation |
+| ------------: | :-----------------------------------------------: | :----------------------: |
+|   Parentheses |  <span class="italic-old">_(Hello world)_</span>  |     _(Hello world)_      |
+|      Brackets |  <span class="italic-old">_[Hello world]_</span>  |     _[Hello world]_      |
+|        Braces | <span class="italic-old">_\{Hello world\}_</span> |    _\{Hello world\}_     |
+| Double quotes |  <span class="italic-old">_“Hello world”_</span>  |     _“Hello world”_      |
+| Single quotes |  <span class="italic-old">_‘Hello world’_</span>  |     _‘Hello world’_      |
+|    Apostrophe |      <span class="italic-old">_don’t_</span>      |         _don’t_          |
+
+I also equalized the heights of parentheses, brackets, and braces. As time folded forward, my fonts became quite customized. I built a reproducible font patching pipeline which starts with [Harish's EB Garamond](#i-paid-someone-to-tweak-eb-garamond) and iteratively modifies the font.
+
+# Website features
+
+Subtitle: This list is not exhaustive.
+
+## Emoji styling
+
+Tasteful emoji usage helps brighten and vivify an article. However, it seems like there are over 9,000 emoji stylings:
+
+<span class="populate-markdown-emoji-comparison"></span>
+
+I want the user experience to be consistent, so my build process bakes in the Twitter emoji style: 🥰⭐️✨💘🐟😊🤡😏😮‍💨☺️🥰🎉🤷‍♂️🌊😠🏰❤️😞🙂‍↕️😌🥹🏝️🪂
+
+## Inline favicons
+
+Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The <span id="populate-turntrout-favicon"></span> favicon appears for links to other pages within this site, while within-page links use the <span id="populate-anchor-favicon"></span> icon.
+
+I wrote a server-side HTML transformation implementing the following algorithm:
+
+1. Takes as input a semi-processed HTML syntax tree,
+2. Finds all of the link elements,
+3. Looks up the favicon SVG for the link's hostname (locally or on the CDN),
+4. Appends a favicon element after the link.
+
+If a hostname passes the inclusion criteria (count threshold or whitelist) but no SVG exists for it, the build fails loudly so I can either add the SVG or blacklist the domain.
+
+### Favicons never wrap alone to a new line
+
+There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [noted](https://gwern.net/design-graveyard#link-icon-css-regexps), inline favicons sometimes appear on the next line (detached from their link). This looks bad - just like it would look bad if your browser displayed the last letter of a word on the next line, all on its own.
+
+To tackle this, the favicon transformation splices the last few characters from the link text and wraps them together with the favicon inside a `<span class="favicon-span">` with `white-space: nowrap`. This keeps the last few characters glued to the favicon, preventing line breaks at that position.
+
+### I only include recognizable favicons
+
+I [originally](https://github.com/alexander-turner/TurnTrout.com/blob/608b39512cf0e27e25ad48d0e14a38804a2aff18/website_content/design.md#inline-favicons) displayed favicons for _every_ external link. Since most people don't recognize the icons of most sites, these icons become clutter.
+
+Instead, I filter favicons as follows:
+
+1. I whitelist favicons which are definitely recognizable.
+2. I also include favicons for sites which I link to at least <span id="populate-favicon-threshold"></span> times.
+3. If I've blacklisted a domain (perhaps due to lack of brand recognition), then I leave out its favicon.
+4. I strip subdomains for visual consistency. For example, I don't display separate favicons for [`support.apple.com`](https://support.apple.com) and [`apple.com`](https://apple.com). I make a few exceptions, distinguishing [`drive.google.com`](https://drive.google.com) from [`google.com`](https://google.com).
+
+To avoid low-resolution images, I use SVGs. In many cases, I found the brand's SVG on [`simpleicons.org`](https://simpleicons.org). In other cases, I used [`recraft.ai`](https://www.recraft.ai/) to vectorize images.
+
+  <figure class="float-right no-favicon-span">
+    <svg class="favicon" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg); --favicon-size: 4rem; --color-percentage: 100%; display: block; margin: 0 auto 1rem;" alt=""></svg>
+    <figcaption>A favicon with its colors unleashed and unmuted. While pretty, the display is too much for my site's restrained aesthetic.</figcaption>
+  </figure>
+
+### Enforcing a consistent color scheme using CSS masks
+
+Many favicons are monochromatic to avoid chaos. However, some iconic brand logos benefit greatly from color. For such favicons, the SVG itself acts as a mask, while CSS `background-color` and `*-gradient` attributes provide the color.
+
+<figure style="display:flex;justify-content:center;" id="big-favicon-demo" class="no-favicon-span">
+  <div class="subfigure">
+    <svg class="favicon favicon-big" data-domain="slatestarcodex_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.svg);" alt=""></svg>
+    <figcaption><code>slatestarcodex.com</code> masks a solid color: <svg class="favicon no-mask favicon-demo-inline" data-domain="slatestarcodex_com" alt="A filled-in square."></svg>.</figcaption>
+  </div>
+  <div class="subfigure">
+    <svg class="favicon favicon-big" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg);" alt=""></svg>
+    <figcaption><code>google.com</code>'s background is a <code>conic-gradient</code>: <svg class="favicon no-mask favicon-demo-inline full-color" data-domain="google_com" alt="Google's four colors (red, blue, green, and yellow) in a kind of squared pie-chart arrangement."></svg>.</figcaption>
+  </div>
+  <div class="subfigure">
+    <svg class="favicon favicon-big" data-domain="amazon_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/amazon_com.svg);" alt=""></svg>
+    <figcaption><code>amazon.com</code>'s background is a <code>radial-gradient</code>: <svg class="favicon no-mask favicon-demo-inline" data-domain="amazon_com" alt="A disk of text-color surrounded by yellow to form a square."></svg>.</figcaption>
+  </div>
+  <div class="subfigure">
+    <svg class="favicon favicon-big" data-domain="msnbc_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/msnbc_com.svg);" alt=""></svg>
+    <figcaption><code>msnbc.com</code>'s peacock fans out from a <code>conic-gradient</code>: <svg class="favicon no-mask favicon-demo-inline full-color" data-domain="msnbc_com" alt="The six peacock colors (yellow, orange, red, purple, blue, and green) fanning out as wedges from a point near the bottom of a square."></svg>.</figcaption>
+  </div>
+  </figure>
+
+I showcase all included favicons on [the test page](/test-page#external-links-with-favicons) to verify that the favicons look good after several kinds of characters.
+
+## Suggest related posts based on embedding similarity
+
+Subtitle: Inspired by [`gwern`](https://gwern.net/design#similar-links).
+
+I feed all of my articles through a text embedding model. For each article, I find the top 5 articles with highest [cosine-similarity](https://en.wikipedia.org/wiki/Cosine_similarity) (giving up on articles without sufficiently similar counterparts).
+
+## I display which pages link to the current article
+
+I want readers to be able to see how an idea is used later. I enable these _backlinks_ along with the citing contexts. Here are the backlinks for the design page. Clicking a backlink takes you to its location in the parent article.
+
+<div id="populate-backlinks-demo"></div>
+
+## Admonitions encapsulate information
+
+I love these "admonition" bubbles which contain information. When an admonition is collapsed by default, the reader can decide whether or not they _want_ more detail on a topic, reducing ambient frustration.
+
+> [!note]- All admonitions for my site
+>
+> > [!abstract]
+>
+> > [!note]
+>
+> > [!info]
+>
+> > [!example]
+>
+> > [!math]
+>
+> > [!quote]
+> > A man may take to drink because he feels himself to be a failure, and then fail all the more completely because he drinks. It is rather the same thing that is happening to the English language. It becomes ugly and inaccurate because our thoughts are foolish, but the slovenliness of our language makes it easier for us to have foolish thoughts. The point is that the process is reversible.
+>
+> > [!goose]
+> > Geese are better than dogs.
+>
+> > [!idea]
+>
+> > [!todo]
+>
+> > [!question]
+>
+> > [!warning]
+>
+> > [!failure]
+>
+> > [!danger]
+>
+> > [!bug]
+>
+> > [!thanks]
+>
+> > [!success]
+>
+> > [!money]
+
+I [preload](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/preload) the admonition icons to avoid flickers. Each page only preloads the icons it uses.
+
+## Mermaid diagrams
+
+Often, websites embed diagrams as images. However, I find this unsatisfying for several reasons:
+
+1. Inconsistent styling as several different diagram suites may be used to generate images - the diagrams often use different color palettes,
+2. Bloated page size from embedding sparse graphical information into dense image data, and
+3. Inability to adapt to shifts between light and dark mode.
+
+[Mermaid](https://mermaid.js.org/) diagrams fix these problems. The main downside was the extra difficulty of generating diagrams, but modern multimodal LLMs can easily take an image of a diagram and output valid Mermaid code. The diagrams are rendered server-side, avoiding a bulky JavaScript download.
+
+```mermaid
+flowchart TD
+    EV["Entire video"]:::blue
+    AS["Action sequence"]:::orange
+    H["Human"]:::red
+    HQF["Human query function"]:::black
+    Q["Question(s)"]:::black
+    A["Answer(s)"]:::black
+
+    EV --> H
+    AS --> H
+    H --> HQF
+    Q --> HQF
+    HQF --> A
+```
+
+Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thinking-via-a-human-imitator).
+
+## Accessibility
+
+I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also enforce strict [@title](#lighthouse) scores across all four audit categories. Here are some highlights from my accessibility pipeline.
+
+Asset accessibility
+: I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
+
+> [!quote]- [@title](/open-source#automatic-alt-text-generation)
+> ![[/open-source#automatic-alt-text-generation]]
+
+I also subtitled the 22-minute [@title](/alignment-tier-list).
+
+Color contrast
+: I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context.
+
+ID uniqueness
+: In, [@title](#mermaid-diagrams) didn't scope their HTML `id`s. Therefore, a page with multiple diagrams would have `id` collisions, causing rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410). Mermaid merged the PR.
+
+Skip-to-content link
+: A hidden link lets keyboard and screen reader users skip the navigation and jump straight to the main content. The link text is rendered via a CSS `::after` pseudo-element so that it doesn't appear in Ctrl+F search results.
+
+Scrollable content regions
+: Overflowing tables and code blocks are wrapped in ARIA regions with descriptive labels and `tabIndex`, so screen reader users know the content is scrollable and keyboard users can scroll it.
+
+Miscellaneous improvements
+: Every interactive element is keyboard-navigable. Spoiler blocks, footnote popovers, and the mobile site menu all manage focus properly. I took extra care to ensure that screen readers do not blurt out unrevealed spoiler text. A route announcer announces new pages for screen readers, even though my site is a single-page application. Decorative elements are hidden from assistive technology; meaningful ones carry appropriate labels. A `prefers-reduced-motion` media query disables animations site-wide. I worked hard to ensure my HTML is [semantically correct.](https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html)
+
+## Lighthouse
+
+I run [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) against six representative pages, demanding a perfect 100 in accessibility, best practices, _and_ SEO, plus at least 90 in performance.[^lighthouse-perf] [A perfect 100 is rare in every category](https://www.tunetheweb.com/blog/what-do-lighthouse-scores-look-like-across-the-web/): across 6.8 million sites surveyed by the HTTP Archive, only about 1% score 100 in accessibility, 1% in best practices, and 1% in SEO. The median best practices score is just 71.
+
+[^lighthouse-perf]: The performance threshold is 90 rather than 100 because Lighthouse performance scores exhibit 5–10 points of run-to-run variance from network timing, server response jitter, and JavaScript execution variability. For a static site that renders KaTeX math, Mermaid diagrams, inline favicons, and popovers, a consistent 90+ is about as high as the score can be pinned without chasing noise.
+
+Furthermore, I run dedicated layout-shift-only Lighthouse checks on both desktop and mobile, requiring cumulative layout shift below 0.05 across several content-heavy pages. I verify the absence of browser console warnings or errors.
+
+## Auto-generated repository statistics
+
+To keep documentation up-to-date, the build process computes e.g. the number of commits I've made. The number is injected into special `<span>` elements with a `class` or `id` like `populate-commit-count`. The build process validates that all `populate-*` spans are properly filled, failing the build if any are left empty.
+
+|                       Metric | Count                                                |
+| ---------------------------: | :--------------------------------------------------- |
+|                Total commits | <span class="populate-commit-count"></span>          |
+|       Human-authored commits | <span class="populate-human-commit-count"></span>    |
+|        TypeScript unit tests | <span class="populate-js-test-count"></span>         |
+|            Python unit tests | <span class="populate-pytest-count"></span>          |
+| Playwright integration tests | <span class="populate-playwright-test-count"></span> |
+|                Lines of code | <span class="populate-lines-of-code"></span>         |
+
+## Smaller features
+
+Popovers
+: Desktop users conjure popovers by hovering over an internal link. 
+
+Search
+: Pressing `/` toggles the search modal. Navigating to a result temporarily highlights the query and scrolls to the first match.
+
+![Searching for 'Shrek' on mobile. Each result card shows a content preview with highlighted matches. The preview fades in at the top and out at the bottom.](https://assets.turntrout.com/static/images/posts/design-02152026-1.avif)
+Figure: Mobile previews.
+
+![Searching for 'Shrek' on desktop. surfacing the GPT-3 Gems article. A preview pane to the right shows the surrounding page.](https://assets.turntrout.com/static/images/posts/design-02152026.avif)
+Figure: Desktop previews.
+
+Metadata
+: Every page has an HTML description and [tags](/all-tags) (if appropriate), along with a table of contents which (on desktop) highlights the current section. I track original publication date and display when each was page was last modified by a `git push` to the `main` branch. I also support "sequences" of blog posts:
+
+  <div class="sequence-links" style="border: 2px var(--midground-faint) solid; padding-right: .5rem; padding-top: 1rem; border-radius: 5px;"><div class="sequence-title" style="text-align:center;"><div class="admonition-title-inner"><b>Sequence:</b> <a href="/posts#shard-theory" class="internal">Shard Theory</a></div></div><div class="sequence-nav" style="display:flex;justify-content:center;"><div class="prev-post sequence-links-postNavigation" style="text-align:right;"><p><b>Previous</b><br><a href="/reward-is-not-the-optimization-target" class="internal">Reward Is Not the Optimization Target</a></p></div><div class="sequence-links-divider"></div><div class="next-post sequence-links-postNavigation" style="text-align:left;"><p><b>Next</b><br><a href="/understanding-and-avoiding-value-drift" class="internal">Understanding and Avoiding Value Drift</a></p></div></div></div> <figcaption>The sequence metadata for my post on <a href="./shard-theory" class="internal alias" data-slug="shard-theory">shard theory.</a></figcaption>
+
+Code blocks soft-wrap long lines
+: Long lines in fenced code blocks used to scroll off the right edge. That suits real source code but punishes transcript dumps - LLM completions and chat logs vanish after a few words. Now every code block wraps long lines, with hanging indents that align the wrapped text under the line-number gutter so it stays readable.
+
+Spoilers hide text until clicked
+: I made a Markdown plugin which lets me specify spoilers by starting the line with `>!`. The results are unobtrusive but pleasant:
+
+> ! Have you heard? Snape kills Dumbledore.
+
+Server-side math rendering via $\KaTeX$
+: I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
+
+Scroll indicators for overflowing content
+: When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally. The right sidebar uses the same gradient hinting vertically.
+
+For example:
+
+$$
+e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \frac{x^6}{6!} + \frac{x^7}{7!} + \frac{x^8}{8!} + \frac{x^9}{9!} + \frac{x^{10}}{10!} + \frac{x^{11}}{11!} + \frac{x^{12}}{12!} + \frac{x^{13}}{13!} + \frac{x^{14}}{14!} + \frac{x^{15}}{15!} + \cdots
+$$
+
+Markdown element styling
+: Most of my tables are specified in Markdown. However, some tables need special styling. I don't want to write the full HTML for each table. 💀 Instead, I use [`remark-attributes`](https://github.com/manuelmeister/remark-attributes) to specify CSS classes in Markdown for such tables:
+
+| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
+
+Table: A table with unbalanced columns.
+
+| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
+
+{.full-width .center-table-headings}
+
+Table: A rebalanced table which pleases the eyes.
+
+Print mode
+: Print mode whittles away distractions like navbars and footnote "return" icons; displays URL sources next to `<video>` and `<audio>` elements and next to links (as paper does not permit clicking); renders in light mode with a white background (to reduce ink usage); and props open all collapsible admonitions.
+
+<figure>
+<img-comparison-slider>
+  <img slot="first" src="https://assets.turntrout.com/static/images/posts/design-03252026-1.avif" alt="A cluttered print preview for the article 'Humans Provide an Untapped Wealth of Evidence About Alignment.'"/>
+  <img slot="second" src="https://assets.turntrout.com/static/images/posts/design-03252026-2.avif" alt="A print preview for the same article, without clutter."/>
+</img-comparison-slider>
+<figcaption>Drag to compare: before vs. after print mode.</figcaption>
+</figure>
+
+Before/after image sliders
+: Drag-to-compare, powered by [`img-comparison-slider`](https://www.npmjs.com/package/img-comparison-slider).
+
+Video speed limits
+: I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their `playbackRate` attribute.
+
+Automatic BibTeX citations
+: I want to make it easy for people to cite my work in scientific contexts. Thanks to my BibTeX citation feature, all I have to do is tick a checkbox in the frontmatter of an article. The citation then shows up at the end of the post.
+
+# Deployment pipeline
+
+I quickly learned the importance of _comprehensive tests and documentation_. The repository now has strong code health. My test suite protects my site from _so_ many errors. Before a new commit touches the live site, it must pass a gauntlet of challenges:
+
+1. The `pre-commit` [`git` hook](https://git-scm.com/docs/githooks) runs before every commit is finalized.
+2. The `pre-push` hook runs before commits are pushed to the `main` branch.
+3. Github actions ensure that the site still works properly on the remote server.
+
+External static analysis alerts me to potential vulnerabilities and anti-patterns. If somehow a bad version slips through anyways, Cloudflare allows me to instantly revert the live site to a previous good version.
+
+## `pre-commit`
+
+[`lint-staged`](https://www.npmjs.com/package/lint-staged) improves the readability and consistency of my code. While I format some filetypes on save, there are a lot of files and a lot of types. Therefore, my `package.json` specifies what linting & formatting tools to run on what filetypes:
+
+<span class="populate-markdown-lint-staged"></span>
+
+[`docformatter`](https://pypi.org/project/docformatter/) reformats my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my `pre-commit` hook. I also learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
+
+Beyond reformatting, I run several commonsense guardrails through the [`pre-commit.com`](https://pre-commit.com) framework:
+
+- [`gitleaks`](https://github.com/gitleaks/gitleaks) scans staged content for API keys and credentials.
+- [`actionlint`](https://github.com/rhysd/actionlint) catches shell-in-YAML bugs and bad `uses:` refs whenever I edit a workflow file.
+- [`codespell`](https://github.com/codespell-project/codespell) flags common typos in code and comments. Prose in `website_content/` is covered separately by Vale and `spellchecker-cli`.
+- A size check rejects any staged file over <span class="populate-markdown-large-file-limit"></span>. Heavy assets belong in [R2](#compressing-and-uploading-assets), not the repo.
+- A merge-conflict check rejects unresolved markers (`<<<<<<<`, `=======`, `>>>>>>>`).
+
+## `pre-push`: local checks and auto-fixes
+
+The `pre-push` hook runs cheap checks for fast feedback, auto-fixing formatters that commit source-file changes, and operations requiring local credentials. The `push` operation is aborted if any check fails.
+
+```plaintext
+╰─ git push
+✓ Linting Python (ruff)
+✓ Linting TypeScript (ESLint --fix)
+✓ Formatting Python docstrings (docformatter --in-place)
+✓ Cleaning up SCSS (stylelint --fix)
+✓ Generate SCSS variables
+ℹ Running 4 checks in parallel: Pylint, Mypy, Source file checks, Spellcheck and Vale
+✓ Pylint
+✓ Mypy
+✓ Source file checks
+✓ Spellcheck and Vale
+✓ Compressing and uploading local assets
+⠹ Scanning for images without alt text...
+```
+
+Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my `pre-push` pipeline elegantly displays progress. The pipeline saves the last-passed step and allows resuming from the last point of failure.
+
+### Cheap checks
+
+Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. I enable the [`pyupgrade`](https://docs.astral.sh/ruff/rules/#pyupgrade-up) and [`return-statement`](https://docs.astral.sh/ruff/rules/#flake8-return-ret) rule families to modernize Python idioms (PEP 585 type hints, PEP 604 unions) and to simplify control flow. After the auto-fix steps, four more read-only checks sweep in parallel:
+
+- [`pylint`](https://pylint.readthedocs.io/) — the static-analysis nits DeepSource also flags, picked up before push instead of after merge.
+- [`pyright`](https://microsoft.github.io/pyright/) — type-checking across my Python scripts, with a handful of extra correctness rules switched on beyond its defaults.
+- My [Markdown and source-file validators](#static-validation-of-markdown-and-source-files).
+- A wrapper around [`spellchecker-cli`](https://www.npmjs.com/package/spellchecker-cli) and [Vale](https://vale.sh/). Before linting, I run a preprocessor that strips `[!quote]` callouts (so external quotes don't trip my dictionary), blanks the interior of LaTeX math (so `\cdot`-style commands aren't tokenized as words), and collapses inline `<span class="dropcap">…</span>` tags (so `dropcap` reads as one word, not split across the tag).
+
+Running them in parallel is essentially free — they don't modify files, they don't depend on each other. A single push reports every problem at once instead of one-at-a-time.
+
+### Auto-fixing formatters
+
+I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type or using unnamed regex capture groups. [`eslint-plugin-regexp`](https://github.com/ota-meshi/eslint-plugin-regexp) catches regex anti-patterns — [ReDoS](https://en.wikipedia.org/wiki/ReDoS)-prone character classes, dead lookaheads, redundant flags. [`eslint-plugin-perfectionist`](https://github.com/azat-io/eslint-plugin-perfectionist) auto-sorts imports, exports, and array includes for consistent ordering. I run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality and [`docformatter --in-place`](https://pypi.org/project/docformatter/) to reformat my Python docstrings.
+
+### Alt-text scanning
+
+I use [`alt-text-llm`](https://pypi.org/project/alt-text-llm/) to scan for images missing alt text, using an LLM to generate descriptions. This requires an API key and runs locally.
+
+### Compressing and uploading assets
+
+I want a zero-hassle process for adding assets to my website. [In order to increase resilience](#archiving-and-dependencies), I use [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/) to host assets which otherwise would bloat the size of my `git` repository.
+
+I edit my Markdown articles in [Obsidian](https://obsidian.md/). When I paste an asset into the document, the asset is saved in a special `asset_staging/` directory. Later, when I move to `push` changes to my site, the following algorithm runs:
+
+1. Move any assets from `asset_staging/` to a slightly more permanent `static/` asset directory, updating any filepath references in the Markdown articles;
+2. [Compress](#asset-compression) all relevant assets within `static/`, updating filepath references appropriately;
+3. Run [`exiftool`](https://stackoverflow.com/questions/66192531/exiftool-how-to-remove-all-metadata-from-all-files-possible-inside-a-folder-an) to strip [Exif](https://en.wikipedia.org/wiki/Exif) metadata from images, preventing unintended information leakage;
+4. Upload the assets to `assets.turntrout.com`, again updating references in the Markdown files;[^upload]
+5. Copy the assets to my local mirror of my R2 asset bucket (in case something happens to Cloudflare).
+
+While this pipeline took several weeks of part-time coding to iron out, I'm glad I took the time.
+
+[^upload]: When I upload assets to Cloudflare R2, I have to be careful. By default, the upload will overwrite existing assets. If I have a namespace collision and accidentally overwrite an older asset which happened to have the same name, there's no way for me to know without simply realizing that an older page no longer shows the older asset. For example, links to the older asset would still validate [under `linkchecker`](#validating-links). Therefore, I disable overwrites by default and instead print a warning that an overwrite was attempted.
+
+## Testing and validation
+
+### Static validation of Markdown and source files
+
+I lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these.
+
+> [!info]- Markdown and source file checks
+> **Metadata and structure:**
+>
+> 1. Each article's metadata has required fields filled in (like `title` and `description`).
+> 2. No pages attempt to share a URL.
+> 3. [@title](/posts#sequences) are well-defined. Post $n$ should link backwards to a post $n-1$ which marks post $n$ as its successor. Similar logic should hold for posts $n$ and $n-1$.
+> 4. Filenames do not contain spaces.
+> 5. Preview card image URLs are valid, end with `.jpg`, are hosted on my CDN, and are at most <span id="populate-max-size-card"></span>KB.
+>
+> **Math and LaTeX:**
+>
+> 1. $\KaTeX$ expressions avoid using `\tag{...}`, as that command wrecks the formatting in the rendered HTML.
+> 2. I don't leave stray $\KaTeX$ commands outside of math blocks.
+>
+> **Markdown syntax:**
+>
+> 1. Markdown tables specify column alignment to make their appearance robust to CSS changes.
+> 2. Markdown files do not use unescaped braces `{}` outside of code or math blocks. In my posts, I sometimes use braces for \{set notation\}. Without escaping the braces, the enclosed text is _not rendered in the HTML DOM_.
+> 3. Video tags cannot use `src` or `type` attributes --- they should use nested `<source>` tags instead.
+> 4. Footnote references match their definitions: each footnote is referenced exactly once, and there are no orphaned references.
+> 5. Avoid error patterns from incorrectly mixing Markdown into a line with raw HTML.
+> 6. Headings should not contain Markdown links (like `## Title [link](...)`).
+> 7. After a definition title in a definition list, continuation paragraphs should be indented properly.
+> 8. Headings use sentence case (only the first word and proper nouns are capitalized), with acronyms and the titles of cited works left as-is.
+>
+> **Typography:**
+>
+> 1. No forbidden typography patterns, like a closing quote followed by a space and then a period.
+>
+> **CSS validation:**
+>
+> 1. CSS defines `@font-face`s using fonts which actually exist in the filesystem.
+> 2. CSS does not refer to undeclared font families.
+> 3. CSS only references valid CSS variables.
+
+### Unit tests
+
+I have thousands of JavaScript unit tests and hundreds of Python tests. I am _quite thorough_ - these tests are my pride and joy. :) Writing tests is easy these days. I use [`cursor`](https://www.cursor.com/) - AI churns out dozens of high-coverage lines of test code in seconds, which I then skim for quality assurance. In fact, I use [`coverage.py`](https://github.com/nedbat/coveragepy) to ensure 100\% line coverage of my Python files. Using `jest`'s built in coverage tools, I require 100\% branch coverage of my TypeScript files. I also lint the JS tests using [`eslint-plugin-jest`](https://github.com/jest-community/eslint-plugin-jest).
+
+### Property-based testing and mutation testing
+
+Example-based tests only check the cases I thought to write down. So I also use property-based testing ([`fast-check`](https://fast-check.dev/) for TypeScript, [Hypothesis](https://hypothesis.readthedocs.io/) for Python) to fuzz my text-processing code with thousands of generated inputs, asserting invariants like "stripping math from a post never changes its line numbers" or "the typography pipeline never leaks internal marker characters." The generators run from fixed seeds, so CI stays deterministic. This fuzzing catches real bugs: my abbreviation normalizer used to grow `i.e..` by one period on every build.
+
+How do I know my tests would notice if the code broke? [Mutation testing](https://en.wikipedia.org/wiki/Mutation_testing) ([Stryker](https://stryker-mutator.io/) for TypeScript, [`mutmut`](https://mutmut.readthedocs.io/) for Python) answers that by deliberately introducing small bugs --- flipping a comparison, deleting a regex flag --- and checking that at least one test fails. Surviving mutants point at assertions I forgot to write; I either add a test or mark the mutation as not worth testing.
+
+### Simulating site interactions
+
+Pure unit tests cannot test the end-to-end experience of my site, nor can they easily interact with a local server. [Playwright](https://playwright.dev/) lets me test dynamic features like search, spoiler blocks, and light / dark mode. I can also guard against bugs like [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) upon page load. What's more, I test these features across a range of browsers and viewport dimensions (mobile vs desktop). macOS WebKit runs Desktop Safari only, since Playwright's WebKit crashes on mobile device emulation on Apple Silicon.
+
+### Visual regression testing
+
+Many errors cannot be caught by unit tests. For example, I want to ensure the stability of my site's appearance. To do so, I perform [visual regression testing](https://snappify.com/blog/visual-regression-testing-101). This testing ensures my site looks consistent and nice - no matter whether the user runs Chrome, Firefox, or Safari using a desktop, tablet, or mobile device.
+
+I use [Playwright](https://playwright.dev/) to interact with my website and screenshot it. Playwright renders the site at pre-specified locations, takes screenshots, and compares each one against a baseline stored in Cloudflare R2. If a picture differs by more than a small number of pixels, the test fails. The CI run posts a side-by-side diff gallery (expected / actual / diff) so I can skim every changed shot at a glance. If all changes are intended, then I click "approve." A workflow then promotes the run's screenshots straight into R2 as the new baselines.
+
+![An image of a mountain is changed to have snow on top. The pixel-level diff is highlighted to the user.](https://assets.turntrout.com/static/images/posts/visual_regression_testing.avif)
+
+However, it's not practical to test every single page. So I have a [test page](/test-page) which stably demonstrates site features. My tests screenshot that page from many angles. I also use visual regression testing to ensure the stability of features like search.
+
+> [!quote] [Lessons from my 428-day battle against flaky Playwright screenshots](/playwright)  
+> ![[playwright-tips#Background]]
+
+> [!info] Keeping CI fast
+> GitHub Actions runs free on public repos like this one, so every PR runs the full browser matrix: Chromium and Firefox on Linux, with WebKit run on macOS. For efficiency, each workflow has tight `paths` filters so docs-only edits don't fire the heavy suites. I share a single site build across as many workflows as possible. `dependabot` branches skip the rendering jobs. `[skip ci]` in a commit message bypasses CI altogether.
+
+### Validating links
+
+Over time, [links decay and rot](https://en.wikipedia.org/wiki/Link_rot), eventually emitting 404 errors. [Unlike `gwern`](https://gwern.net/archiving), I do not yet have a full solution to this problem. However, links I control should _never_ 404:
+
+- Internal links to `turntrout.com`,
+- Links to assets on my Cloudflare CDN, and
+- Links to [the Github repository for the website.](https://github.com/alexander-turner/TurnTrout.com)
+
+I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
+
+### Linking by title
+
+Sometimes I link by the title of a post, like "[@title](/towards-a-new-impact-measure)." But what if I change that title later? The linked title is just text in a Markdown file. To prevent drift, I write `@title` as the link text. Then the build fills in the target's current title.
+
+### Validating the emitted HTML files
+
+> [!info]- HTML validation checks
+>
+> I check to avoid a smattering of possible mishaps.
+>
+> **Asset management:**
+>
+> 1. Asset tags (like `<img>`) which source their content from external sources (not from my CDN);
+> 2. Local media files referenced but not present on disk;
+> 3. Assets present in the Markdown file but which are not present in the HTML DOM;
+> 4. `<video>` tags which do not provide multiple `<source>` options in the correct order (MP4 first, then WEBM);
+> 5. Required root files (`robots.txt`, `favicon.svg`, `favicon.ico`) which are missing;
+>
+> **Dark-mode inversion:**
+>
+> 1. `<img>`s and inline looping `<video>`s which don't have a confirmed judgment for "should this be inverted in dark mode?".
+> 2. `invert-in-dark-mode` class on a rendered element not matching the JSON's `invert` field (the source of truth);
+> 3. An invertible image which is not wrapped in `<picture>`.
+>
+> **CSS and styling:**
+>
+> 1. Inline styles which invoke nonexistent CSS variables;
+> 2. Failure to inline critical CSS;
+>
+> **Favicon validation:**
+>
+> 1. Favicons that aren't SVG elements with proper `mask-url` styling;
+> 2. Favicons not wrapped in a [favicon-span](#favicons-never-wrap-alone-to-a-new-line);
+>
+> **Common Markdown rendering errors:**
+>
+> 1. Footnotes may be unmatched (e.g. I deleted the reference to a footnote without deleting its content, leaving the content exposed in the text);
+> 2. Incorrectly terminated blockquotes (e.g. ending with `>`);
+> 3. Unrendered emphasis markers (often indicated by a trailing `*` or `_`);
+> 4. Failing to render spoiler boxes;
+> 5. Unrendered transclusions (links starting with "Transclude of");
+> 6. Unrendered subtitles (paragraphs starting with "Subtitle:");
+> 7. Failed attempts to specify captions (text starting with "Figure:", "Table:", "Code:", or "Caption:");
+> 8. Failed renders of HTML elements (raw HTML tags appearing in text);
+> 9. Unrendered image alt text declarations;
+>
+> **Link validation:**
+>
+> 1. Anchor links which don't exist (both same-page and cross-page);
+> 2. Same-page anchor links missing required CSS classes (`internal`, `same-page-link`);
+> 3. Internal links incorrectly marked or formatted;
+> 4. Duplicate `id` attributes on a page's HTML elements;
+> 5. Malformed `href` attributes (invalid URLs or email addresses);
+> 6. `git`-hosted assets, stylesheets, or scripts which don't exist;
+> 7. Links to my local server (`localhost:8080`) which will become invalid on the Web;
+>
+> **Typography and text formatting:**
+>
+> 1. Non-smart quotation marks (e.g. `'` or `"`);
+> 2. Multiple dashes in a row (should be em dashes);
+> 3. Consecutive periods (potential typos);
+> 4. Missing spaces before or after links and emphasis elements;
+> 5. Top-level paragraphs lacking end punctuation;
+> 6. Missing whitespace around inline elements produced by HTML transformations, including smallcaps abbreviations, ordinals, fractions, and arrows;
+>
+> **Math rendering:**
+>
+> 1. $\KaTeX$ rendering errors (indicated by error styling);
+> 2. $\KaTeX$ display elements that should be in blockquotes;
+> 3. Paragraphs containing only a $\KaTeX$ span (should be display math);
+> 4. HTML tags incorrectly inserted into $\KaTeX$ elements;
+>
+> **Iframe validation:**
+>
+> 1. Iframes missing `src` attributes;
+> 2. Iframe sources returning error status codes;
+>
+> **Metadata and SEO:**
+>
+> 1. Page descriptions missing, too short, or too long for social media previews (recommended 10-155 characters);
+> 2. Metadata mismatches between HTML and Markdown source files;
+>
+> **Dynamic content:**
+>
+> 1. Elements with IDs or classes starting with `populate-` that are empty;
+> 2. Articles with identical BibTeX keys;
+>
+> **Font preloading:**
+>
+> 1. Missing preload links for EBGaramond `subfont` files;
+>
+> **RSS validation:**
+>
+> 1. RSS file generation failure or schema validation errors.
+
+### Spellchecking
+
+[`spellchecker-cli`](https://www.npmjs.com/package/spellchecker-cli) runs over both Markdown source and rendered HTML against `config/spellcheck/.wordlist.txt`. Two layers cut manual dictionary edits:
+
+Possessive expansion (`scripts/augment_spellcheck_wordlist.sh`)
+: Emits `word's` and `word’s` for every non-possessive entry at runtime, so adding `KaTeX` alone covers both quote styles.
+
+Claude triage (`scripts/spellcheck_triage.py`)
+: Sends each still-unknown word with its source context to Claude Haiku. Obvious proper nouns are auto-added to the dictionary in alphabetical order, ambiguous ones are printed for review.
+
+## Build pipeline extras
+
+Reordering elements in `<head>` to ensure social media previews
+: I want nice previews for my site. Unfortunately, the behavior was flaky - working on Facebook, not on Twitter, not on Slack, working on Discord... Why? I had filled out all of the [OpenGraph](https://ogp.me/) fields.
+
+[Apparently](https://forums.slackcommunity.com/s/question/0D53a00008bbu4SCAQ/i-cant-understand-why-my-websites-url-does-not-unfurl-on-slack?language=en_US), Slack only reads the metadata from the first portion of the `<head>`. However, my OpenGraph `<meta>` tags were further back, so they weren't getting read in. Different sites read different lengths of the `<head>`, explaining the flakiness.
+
+: The solution: Include tags like `<meta>` and `<title>` as early as possible in the `<head>`. As a post-build check, I ensure that these tags are confined to the first 9KB of each file.
+
+Updating page metadata
+: Article publication dates are updated automatically via GitHub Actions after pushing to `main`. The workflow amends the pushed commit with updated `date_published` for new posts and `date_updated` for modified posts, then force-pushes. This avoids cluttering the history with extra "update dates" commits, and all other CI workflows restart on the amended commit.
+
+The workflow also refreshes the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
+
+Python dependency management
+: I use [`uv`](https://github.com/astral-sh/uv) to manage Python dependencies. Packages are declared in [`pyproject.toml`](https://github.com/alexander-turner/TurnTrout.com/blob/main/pyproject.toml) and pinned in [`uv.lock`](https://github.com/alexander-turner/TurnTrout.com/blob/main/uv.lock) for reproducible builds.
+
+Cryptographic timestamping
+: I use [Open Timestamps](https://opentimestamps.org/) to stamp each `git` commit hash onto the blockchain. By committing the hash to the blockchain, I provide cryptographic assurance that I have in fact published the claimed commits by the claimed date. This reduces the possibility of undetectably "hiding my tracks" by silently editing away incorrect or embarrassing claims after the fact, or by editing my commit history. In particular, I cannot make the positive claim that I wrote content by a given date, unless I had in fact committed that content at least once by that date.
+
+To verify that a commit `ABC012` was indeed committed by a given date, run:
+
+```shell
+git clone https://github.com/alexander-turner/.timestamps
+cd .timestamps
+ots --no-bitcoin verify "files/ABC012.txt.ots"
+```
+
+# GitHub Actions
+
+When I `push` commits to [the `main` branch on GitHub](https://github.com/alexander-turner/TurnTrout.com), an Action generates the webpages. Before these pages are sent off to Cloudflare, they must pass yet another gauntlet of tests:
+
+Site functionality
+: I have [hundreds of Playwright tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) — <span class="populate-playwright-configs"></span> combinations in total. Therefore, I need to run <span class="populate-playwright-configs"></span> × <span class="populate-playwright-test-count"></span> = <span class="populate-playwright-total-tests"></span> tests, each of which takes up to 90 seconds.
+
+I run these tests using 8 Linux shards (plus 5 macOS shards) for functional tests and 3 Linux shards (plus 2 macOS) for visual regression tests. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
+
+Lighthouse audits
+: I enforce strict [@title](#lighthouse) thresholds across all four audit categories, plus dedicated layout-shift checks on desktop and mobile.
+
+Quality gates
+: CI is the primary quality gate for checks that don't require local credentials or auto-fixing — linting, type-checking, tests, spellcheck, and link validation across the Python, TypeScript, and SCSS stacks. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed.
+
+Action SHA pinning
+: All GitHub Actions references are pinned to commit SHAs (e.g. `actions/checkout@de0fac2e...`) rather than mutable version tags (`@v6`), preventing a compromised upstream action from injecting code into CI. A CI lint job fails any commit that introduces an unpinned action reference.
+
+## Automated workflows
+
+Several GitHub workflows run on schedules or in response to external events. Much of this automation infrastructure comes from my [Claude Code automation template repo](/open-source#claude-code-automation-template).
+
+Monthly newsletter
+: A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/monthly-newsletter.yml) collects commits since the last newsletter, feeds them to the Claude API with a [prompt template](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/prompts/newsletter-prompt.md), and emails me the draft via [Resend](https://resend.com/).
+
+Template sync
+: A [daily workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/template-sync.yaml) diffs local automation files against the [template repo](https://github.com/alexander-turner/claude-automation-template), copies new files, and opens a PR.
+
+> [!thanks]
+> [Boyd Kane](https://github.com/beyarkay) made [a pull request](https://github.com/alexander-turner/TurnTrout.com/pull/1404) to wrap long lines in `pre` blocks.

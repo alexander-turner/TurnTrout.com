@@ -1,0 +1,282 @@
+"""Update the publish and update dates in markdown files."""
+
+import re  # Import the re module
+import subprocess
+import sys
+from datetime import date, datetime
+from pathlib import Path
+
+# Ensure the parent directory is in the sys path so we can import utils
+sys.path.append(str(Path(__file__).parent.parent))
+# pylint: disable=wrong-import-position
+import scripts.utils as script_utils
+
+yaml_parser = script_utils.get_yaml_parser()
+
+current_date = date.today()
+
+
+def _determine_commit_range(commit_range: str | None) -> str:
+    """
+    Determine the git commit range to check for file modifications.
+
+    Args:
+        commit_range (str | None): Git commit range from CI (e.g., "abc123..def456").
+            If None, checks for unpushed changes against origin/main.
+
+    Returns:
+        str: The commit range to check
+    """
+    # Local environment: check for unpushed changes
+    if not commit_range:
+        return "origin/main..HEAD"
+
+    # CI environment: extract before and after commits
+    if ".." not in commit_range:
+        return commit_range
+
+    before_commit, after_commit = commit_range.split("..", 1)
+
+    # Handle edge case: initial push has before=0000000000000000000000000000000000000000
+    if before_commit.strip("0"):
+        # Normal case: compare the range
+        return commit_range
+
+    # First push: check the after commit only
+    return f"{after_commit}^..{after_commit}"
+
+
+def _revision_exists(git_executable: str, revision: str) -> bool:
+    """Return True if ``revision`` resolves to a commit in the current repo."""
+    try:
+        subprocess.check_output(
+            [
+                git_executable,
+                "rev-parse",
+                "--verify",
+                "--quiet",
+                f"{revision}^{{commit}}",
+            ],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+def _resolve_range(git_executable: str, range_to_check: str) -> str:
+    """
+    Return a diff range whose endpoints exist in the current repo.
+
+    The update-dates CI job amends the pushed commit and force-pushes, so the
+    push event's "before" SHA is orphaned and a fresh checkout can't resolve
+    ``before..after``. When that happens, diff the "after" commit against its
+    own parent: same file set, without depending on the orphaned commit.
+    """
+    if ".." not in range_to_check:
+        return range_to_check
+
+    before, after = range_to_check.split("..", 1)
+    if before and after and not _revision_exists(git_executable, before):
+        return f"{after}^..{after}"
+    return range_to_check
+
+
+def is_file_modified(file_path: Path, commit_range: str | None = None) -> bool:
+    """
+    Check if file was modified in the relevant commit range.
+
+    Args:
+        file_path (Path): Path to the file to check
+        commit_range (str | None): Git commit range to check (e.g., "abc123..def456").
+            If None, checks for unpushed changes against origin/main.
+
+    Returns:
+        bool: True if file was modified, False otherwise
+
+    Raises:
+        RuntimeError: If a git command fails — surfacing the failure rather
+            than silently treating the file as unmodified.
+    """
+    git_executable = script_utils.find_executable("git")
+    range_to_check = _resolve_range(
+        git_executable, _determine_commit_range(commit_range)
+    )
+
+    try:
+        git_root = subprocess.check_output(
+            [git_executable, "rev-parse", "--show-toplevel"], text=True
+        ).strip()
+        rel_path = file_path.resolve().relative_to(Path(git_root))
+        result = subprocess.check_output(
+            [
+                git_executable,
+                "diff",
+                "--name-only",
+                range_to_check,
+                str(rel_path),
+            ],
+            text=True,
+        ).strip()
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(
+            f"Could not check git status for {file_path}: {exc}"
+        ) from exc
+
+    return bool(result)
+
+
+def maybe_convert_to_date(
+    raw_date_info: str | date | datetime,
+) -> date:
+    """Convert various date/datetime formats to a day-level ``date``."""
+    # datetime is a subclass of date, so check datetime first.
+    if isinstance(raw_date_info, datetime):
+        return raw_date_info.date()
+    if isinstance(raw_date_info, date):
+        return raw_date_info
+    if isinstance(raw_date_info, str):
+        # Non-ISO is ambiguous; do not catch errors for that
+        return datetime.fromisoformat(raw_date_info).date()
+    raise ValueError(f"Unknown date type {type(raw_date_info)}")
+
+
+def maybe_update_publish_date(yaml_metadata: dict) -> None:
+    """Update publish and update dates in a markdown file's frontmatter."""
+    # If date_published doesn't exist or is empty/None, create it
+    if not yaml_metadata.get("date_published"):
+        yaml_metadata["date_published"] = current_date
+        yaml_metadata["date_updated"] = current_date
+        return
+
+    if "date_updated" not in yaml_metadata:
+        yaml_metadata["date_updated"] = yaml_metadata["date_published"]
+
+
+def write_to_yaml(file_path: Path, metadata: dict, content: str) -> None:
+    """Write updated metadata to a markdown file."""
+    # Collapse any accumulated blank lines after the closing `---` to exactly
+    # one, so files that previously round-tripped don't keep growing.
+    content = "\n" + content.lstrip("\n")
+    script_utils.write_yaml_frontmatter(
+        file_path, metadata, content, parser=yaml_parser
+    )
+
+
+_README_PATH = Path("README.md")
+COPYRIGHT_PATTERN = re.compile(
+    r"©\s+(?P<start_year>\d{4})[-–](?P<end_year>\d{4})"
+)
+
+
+def update_readme_copyright_year(current_datetime: date) -> bool:
+    """
+    Update the copyright year in README.md if necessary.
+
+    Returns:
+        bool: True if README was modified, False otherwise
+    """
+    if not _README_PATH.exists():
+        raise FileNotFoundError(f"README.md not found at {_README_PATH}")
+
+    readme_content: str = _README_PATH.read_text(encoding="utf-8")
+
+    current_year = str(current_datetime.year)
+
+    match = COPYRIGHT_PATTERN.search(readme_content)
+    if not match:
+        raise ValueError("Could not find copyright line in README.md")
+
+    readme_end_year = match.group("end_year")
+    if readme_end_year == current_year:
+        return False
+
+    print(
+        f"Updating copyright year in {_README_PATH} "
+        f"from {readme_end_year} to {current_year}"
+    )
+    readme_start_year = match.group("start_year")
+    new_readme_content = COPYRIGHT_PATTERN.sub(
+        rf"© {readme_start_year}-{current_year}", readme_content
+    )
+    _README_PATH.write_text(new_readme_content, encoding="utf-8")
+    return True
+
+
+# pylint: disable=missing-function-docstring
+def commit_changes(message: str) -> None:
+    git_executable = script_utils.find_executable("git")
+    subprocess.run([git_executable, "add", "-A"], check=True)
+
+    # Check if there are staged changes before committing
+    result = subprocess.run(
+        [git_executable, "diff", "--cached", "--quiet"],
+        check=False,
+    )
+    if result.returncode == 0:
+        # No staged changes, nothing to commit
+        return
+
+    subprocess.run([git_executable, "commit", "-m", message], check=True)
+
+
+def main(
+    content_dir: Path = Path(script_utils.CONTENT_DIR_NAME),
+    commit_range: str | None = None,
+) -> None:
+    """
+    Main function to update dates in markdown files.
+
+    Args:
+        content_dir (Path, optional): Directory containing markdown files.
+            Defaults to "website_content" in current directory.
+        commit_range (str | None, optional): Git commit range to check for modifications
+            (e.g., "abc123..def456"). If None, checks for unpushed changes.
+    """
+    for md_file_path in content_dir.glob("*.md"):
+        metadata, content = script_utils.split_yaml(md_file_path)
+        if not metadata and not content:
+            continue
+        original_metadata = metadata.copy()
+
+        # If the file has never been marked as published, set the publish date
+        maybe_update_publish_date(metadata)
+
+        # Check for unpushed changes and update date_updated if needed
+        if is_file_modified(md_file_path, commit_range):
+            metadata["date_updated"] = current_date
+
+        # Normalize date fields to day-level ``date`` objects
+        for key in ("date_published", "date_updated"):
+            value = metadata.get(key)
+            if value:
+                metadata[key] = maybe_convert_to_date(value)
+
+        if metadata != original_metadata:
+            print(f"Updated date information on {md_file_path}")
+            write_to_yaml(md_file_path, metadata, content)
+
+    update_readme_copyright_year(current_date)
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Update publication dates in markdown files"
+    )
+    parser.add_argument(
+        "--commit-range",
+        type=str,
+        help="Git commit range to check (e.g., abc123..def456)",
+    )
+    parser.add_argument(
+        "--content-dir",
+        type=Path,
+        default=Path(script_utils.CONTENT_DIR_NAME),
+        help="Directory containing markdown files",
+    )
+    args = parser.parse_args()
+
+    main(content_dir=args.content_dir, commit_range=args.commit_range)

@@ -1,0 +1,414 @@
+"""Convert assets to optimized formats."""
+
+import argparse
+import json
+import logging
+import re
+import subprocess
+from pathlib import Path
+
+try:
+    from . import compress
+    from . import utils as script_utils
+except ImportError:  # pragma: no cover
+    import compress
+    import utils as script_utils
+
+
+ASSET_STAGING_PATTERN: str = r"(?:(?:\.?/)?asset_staging/)?"
+GIF_ATTRIBUTES: str = r"autoplay loop muted playsinline"
+
+
+def _parse_curly_brace_attributes(attr_string: str) -> str:
+    """
+    Parse curly brace attributes like {.class} or {width=50%} into HTML
+    attributes.
+
+    Args:
+        attr_string: String like "{.float-right}" or "{width=50%}"
+
+    Returns:
+        HTML attribute string like ' class="float-right"' or ' width="50%"'
+    """
+    if not attr_string or not attr_string.strip():
+        return ""
+
+    # Remove outer curly braces
+    content = attr_string.strip().strip("{}")
+    if not content:
+        return ""
+
+    attributes = []
+
+    # Split by whitespace to handle multiple attributes
+    for part in content.split():
+        part = part.strip()
+
+        if part.startswith("."):
+            # Class shorthand: .float-right -> class="float-right"
+            class_name = part[1:]
+            attributes.append(f'class="{class_name}"')
+        elif part.startswith("#"):
+            # ID shorthand: #myid -> id="myid"
+            id_name = part[1:]
+            attributes.append(f'id="{id_name}"')
+        elif "=" in part:
+            # Key-value pair: width=50% -> width="50%"
+            key, value = part.split("=", 1)
+            attributes.append(f'{key}="{value}"')
+
+    if attributes:
+        return " " + " ".join(attributes)
+    return ""
+
+
+def _video_original_pattern(input_file: Path) -> str:
+    # create named capture groups for different link patterns
+    def link_pattern_fn(tag: str) -> str:
+        return rf"(?P<link_{tag}>[^\)\]\"]*)"
+
+    input_file_pattern: str = rf"{input_file.stem}\{input_file.suffix}"
+
+    # Pattern for markdown image syntax: ![alt text](link){attributes}
+    # Alt text must not span a `]`, or an admonition directive plus a following
+    # link (`[!quote] [text](video.mp4)`) collapses into one match whose alt
+    # swallows the directive.
+    parens_pattern: str = (
+        rf"\!?\[(?P<markdown_alt_text>[^\]]*?)\]\({ASSET_STAGING_PATTERN}"
+        rf"{link_pattern_fn('parens')}{input_file_pattern}\)"
+        r"(?P<attributes_parens>\{[^}]*\})?"
+    )
+
+    # Pattern for wiki-link syntax: ![[link]]{attributes}
+    brackets_pattern: str = (
+        rf"\!?\[\[{ASSET_STAGING_PATTERN}"
+        rf"{link_pattern_fn('brackets')}{input_file_pattern}\]\]"
+        r"(?P<attributes_brackets>\{[^}]*\})?"
+    )
+
+    # Link pattern for HTML tags
+    tag_link_pattern: str = (
+        rf"{ASSET_STAGING_PATTERN}{link_pattern_fn('tag')}{input_file_pattern}"
+    )
+
+    if input_file.suffix == ".gif":
+        # Pattern for <img> tags (used for GIFs)
+        tag_pattern: str = (
+            r"<img (?P<earlyTagInfo>[^>]*)"
+            rf"src=\"{tag_link_pattern}\""
+            r"(?P<tagInfo>[^>]*(?<!/))"
+            # Ensure group exists; self-closing optional
+            r"(?P<endVideoTagInfo>)/?>"
+        )
+    else:
+        # Pattern for <video> tags (used for other video formats)
+        tag_pattern = (
+            r"<video (?P<earlyTagInfo>[^>]*)"
+            rf"src=\"{tag_link_pattern}\""
+            rf"(?P<tagInfo>[^>]*)(?:type=\"video/{input_file.suffix[1:]}\")?"
+            # NOTE will ignore existing source tags
+            r"(?P<endVideoTagInfo>[^>]*(?<!/))(?:/>|></video>)"
+        )
+
+    # Combine all patterns into one, separated by '|' (OR)
+    original_pattern: str = (
+        rf"{parens_pattern}|{brackets_pattern}|{tag_pattern}"
+    )
+
+    return original_pattern
+
+
+def _video_replacement_pattern(input_file: Path) -> str:
+    # Use a placeholder that will be replaced later with parsed attributes
+    attributes_placeholder = "___ATTRIBUTES_PLACEHOLDER___"
+
+    if input_file.suffix == ".gif":
+        # Add specific attributes for GIF autoplay
+        early_replacement_pattern = (
+            rf'<video {GIF_ATTRIBUTES} alt="\g<markdown_alt_text>"'
+            rf"{attributes_placeholder}>"
+        )
+    else:
+        # Preserve attributes captured from the original video tag
+        early_replacement_pattern = (
+            r"<video \g<earlyTagInfo>\g<tagInfo>"
+            rf'\g<endVideoTagInfo> alt="\g<markdown_alt_text>"'
+            rf"{attributes_placeholder}>"
+        )
+
+    # Combine all possible link capture groups
+    all_links = r"\g<link_parens>\g<link_brackets>\g<link_tag>"
+    end_of_replacement_pattern = (
+        # MP4 source for Safari
+        rf'<source src="{all_links}'
+        rf'{input_file.stem}.mp4" type="video/mp4; codecs=hvc1">'
+        # WebM source for other browsers
+        rf'<source src="{all_links}'
+        rf'{input_file.stem}.webm" type="video/webm">'
+        r"</video>"
+    )
+
+    return early_replacement_pattern + end_of_replacement_pattern
+
+
+def _image_patterns(input_file: Path) -> tuple[str, str]:
+    """Returns the original and replacement patterns for image files."""
+    relative_path = script_utils.path_relative_to_quartz_parent(input_file)
+    pattern_file = relative_path.relative_to("quartz")
+    output_file: Path = pattern_file.with_suffix(".avif")
+
+    # Handle paths that can start with ./, /, /quartz/, or /asset_staging/
+    return (
+        rf"(?:\./|/)?(?:quartz/)?(?:asset_staging/)?{re.escape(str(pattern_file))}",
+        str(output_file),
+    )
+
+
+# Tag names (without `Group:` prefix) that indicate user/source-derived
+# metadata in a WEBM. Anything starting with `GPS` is also treated as PII.
+_WEBM_PII_TAG_NAMES: frozenset[str] = frozenset(
+    {
+        "Artist",
+        "Author",
+        "Comment",
+        "Copyright",
+        "Creator",
+        "CreateDate",
+        "DateTimeOriginal",
+        "DateUTC",
+        "Description",
+        "HostComputer",
+        "LensModel",
+        "LocationInformation",
+        "LocationName",
+        "Make",
+        "Model",
+        "OwnerName",
+        "SerialNumber",
+        "Software",
+        "Title",
+    }
+)
+
+
+def _webm_pii_tags(tags: dict[str, object]) -> dict[str, object]:
+    """Return the subset of exiftool-reported tags that look like PII."""
+    leaked: dict[str, object] = {}
+    for key, value in tags.items():
+        _, _, name = key.rpartition(":")
+        if name.startswith("GPS") or name in _WEBM_PII_TAG_NAMES:
+            leaked[key] = value
+    return leaked
+
+
+def _assert_webm_clean(file_path: Path) -> None:
+    # exiftool cannot write to Matroska/WEBM, so verify ffmpeg's output is
+    # free of source-derived PII instead of trying (and failing) to strip it.
+    exiftool_executable = script_utils.find_executable("exiftool")
+    result = subprocess.run(
+        [exiftool_executable, "-j", "-G", str(file_path)],
+        capture_output=True,
+        check=True,
+    )
+    tags: dict[str, object] = json.loads(result.stdout)[0]
+    leaked = _webm_pii_tags(tags)
+    if leaked:
+        raise RuntimeError(
+            f"WEBM {file_path} carries source-derived metadata that "
+            f"exiftool cannot strip from Matroska; re-encode upstream to "
+            f"drop these tags: {leaked}"
+        )
+
+
+def _strip_metadata(file_path: Path) -> None:
+    if file_path.suffix == ".webm":
+        _assert_webm_clean(file_path)
+        return
+
+    exiftool_executable = script_utils.find_executable("exiftool")
+    result = subprocess.run(
+        [exiftool_executable, "-all=", str(file_path)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode != 0:
+        logging.warning(
+            "exiftool failed for %s (exit %d): %s",
+            file_path,
+            result.returncode,
+            result.stderr.decode(errors="replace").strip(),
+        )
+
+
+def _replace_content(
+    content: str, original_pattern: str, replacement_pattern: str
+) -> str:
+    def _process_match(match: re.Match[str]) -> str:
+        matched_text = match.group(0)
+
+        original_alt_was_empty = 'alt=""' in matched_text
+
+        replaced_text = re.sub(
+            original_pattern, replacement_pattern, matched_text
+        )
+
+        # Parse curly brace attributes and convert to HTML attributes
+        html_attrs = ""
+        groups = match.groupdict()
+        attr_parens = groups.get("attributes_parens") or ""
+        attr_brackets = groups.get("attributes_brackets") or ""
+        combined_attrs = attr_parens or attr_brackets
+
+        if combined_attrs:
+            html_attrs = _parse_curly_brace_attributes(combined_attrs)
+
+        # Replace the placeholder with parsed HTML attributes
+        replaced_text = replaced_text.replace(
+            "___ATTRIBUTES_PLACEHOLDER___", html_attrs
+        )
+
+        if not original_alt_was_empty:
+            replaced_text = replaced_text.replace('alt=""', "")
+        replaced_text = re.sub(r" +\>", ">", replaced_text)
+        return re.sub(r" {2,}", " ", replaced_text)
+
+    replaced_content = re.sub(original_pattern, _process_match, content)
+
+    # Handle the </video><br/>Figure: pattern
+    return re.sub(
+        r"</video>\s*(<br/?>)?\s*Figure:",
+        "</video>\n\nFigure:",
+        replaced_content,
+    )
+
+
+def convert_asset(
+    input_file: Path,
+    remove_originals: bool = False,
+    strip_metadata: bool = False,
+    md_references_dir: Path | None = Path(f"{script_utils.CONTENT_DIR_NAME}/"),
+) -> None:
+    """
+    Converts an image or video to a more efficient format.
+
+    Replaces references in markdown files.
+
+    Args:
+        input_file: The path to the file to convert.
+        remove_originals: Whether to remove the original file.
+        strip_metadata: Whether to strip metadata from the converted
+            file.
+        md_references_dir: The directory to search for markdown files
+    Side-effects:
+        - Converts the input file to a more efficient format.
+        - Replaces references to the input file in markdown files.
+        - Optionally removes the original file.
+        - Optionally strips metadata from the converted file.
+    Errors:
+        - `FileNotFoundError`: If the input file does not exist.
+        - `NotADirectoryError`: If the replacement directory does not exist.
+        - `ValueError`: If the input file is not an image or video or is not
+          in the quartz/static directory.
+    """
+    if not input_file.is_file():
+        raise FileNotFoundError(f"Error: File '{input_file}' not found.")
+
+    input_parts = input_file.resolve().parts
+    if not (
+        "quartz" in input_parts
+        and "static" in input_parts
+        and input_parts.index("static") == input_parts.index("quartz") + 1
+    ):
+        raise ValueError(
+            f"Error: Input file '{input_file}' is not in the quartz/static directory."
+        )
+
+    if md_references_dir and not md_references_dir.is_dir():
+        raise NotADirectoryError(
+            f"Error: Directory '{md_references_dir}' not found."
+        )
+
+    if input_file.suffix in compress.ALLOWED_IMAGE_EXTENSIONS:
+        # Get patterns first so that we trigger relative path errors if needed
+        original_pattern, replacement_pattern = _image_patterns(input_file)
+        compress.image(input_file)
+        if strip_metadata:
+            _strip_metadata(input_file.with_suffix(".avif"))
+    elif input_file.suffix in compress.ALLOWED_VIDEO_EXTENSIONS:
+        original_pattern = _video_original_pattern(input_file)
+        replacement_pattern = _video_replacement_pattern(input_file)
+        compress.video(input_file)
+        if strip_metadata:
+            for suffix in [".mp4", ".webm"]:
+                _strip_metadata(input_file.with_suffix(suffix))
+    else:
+        raise ValueError(f"Error: Unsupported file type '{input_file.suffix}'.")
+
+    for md_file in script_utils.get_files(
+        dir_to_search=md_references_dir, filetypes_to_match=(".md",)
+    ):
+        script_utils.update_markdown_file(
+            md_file,
+            lambda content: _replace_content(
+                content, original_pattern, replacement_pattern
+            ),
+        )
+
+    if remove_originals and input_file.suffix not in (".mp4", ".avif"):
+        input_file.unlink()
+
+
+def main() -> None:
+    """Convert assets to optimized formats."""
+    parser = argparse.ArgumentParser(
+        description="Convert assets to optimized formats."
+    )
+    parser.add_argument(
+        "--remove-originals",
+        action="store_true",
+        help="Remove original files after conversion",
+    )
+    parser.add_argument(
+        "--strip-metadata",
+        action="store_true",
+        help="Strip metadata from converted files",
+    )
+    parser.add_argument(
+        "--asset-directory",
+        help="Directory containing assets to convert",
+    )
+    parser.add_argument(
+        "--ignore-files",
+        nargs="+",
+        help="List of files to ignore during conversion",
+    )
+    args = parser.parse_args()
+    args.asset_directory = (
+        Path(args.asset_directory) if args.asset_directory else None
+    )
+
+    assets = script_utils.get_files(
+        dir_to_search=args.asset_directory,
+        filetypes_to_match=compress.ALLOWED_EXTENSIONS,
+        use_git_ignore=False,  # Git ignores eg favicons but we don't
+    )
+
+    for asset in assets:
+        if args.ignore_files and asset.name in args.ignore_files:
+            print(f"Ignoring file: {asset}")
+            continue
+        if asset.name.startswith("."):
+            print(f"Skipping hidden file: {asset}")
+            continue
+
+        convert_asset(
+            asset,
+            remove_originals=args.remove_originals,
+            strip_metadata=args.strip_metadata,
+            md_references_dir=Path(f"{script_utils.CONTENT_DIR_NAME}/"),
+        )
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,191 @@
+name: Sync from Template
+
+# Syncs updates from the template repository automatically.
+# Runs daily or manually via "Run workflow" button.
+# No setup required - works out of the box.
+#
+# Features:
+# - 3-way merges local customizations with template updates automatically
+# - Falls back to template version + Claude resolution when no merge base exists
+# - Detects new files, changed files, and deleted files from the template
+# - Tracks which template version the repo is synced to (.template-version)
+# - Requests @claude to resolve any remaining conflicts and finalize the merge
+#
+# =============================================================================
+# HANDLING CUSTOMIZATIONS DURING SYNC
+# =============================================================================
+# Projects may have local customizations in synced files (e.g., project-specific
+# tools in session-setup.sh, custom pre-commit checks). When resolving conflicts:
+#
+# 1. Look for header comments like "IMPORTANT: This file has project-specific
+#    customizations" or "Future Claudes: Leave these customizations as-is"
+# 2. Preserve local customizations while adopting new template features
+# 3. When in doubt, keep local changes - they exist for a reason
+# 4. Check for duplicate CI: if the target repo already has test/lint/format
+#    workflows, don't add the template's versions — exclude them via
+#    EXCLUDE_PATHS instead
+# =============================================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Show what would be synced without making changes"
+        required: false
+        default: "false"
+        type: boolean
+  schedule:
+    # Run weekly on Mondays at 9am UTC
+    - cron: "0 9 * * 1"
+
+env:
+  TEMPLATE_REPO: "alexander-turner/claude-automation-template"
+  # Whole directories of core automation files that are always template-owned.
+  # Every file under these paths propagates to downstream consumers; new files
+  # added to the template auto-sync without anyone having to edit this list.
+  # Downstream-added files in these directories are left alone (sync only
+  # copies files that exist in the template).
+  SYNC_PATHS: ".claude .hooks .github/actions .github/scripts .github/workflows .github/prompts"
+  # Paths to exclude from syncing. Supports both whole directories (matching
+  # entries in SYNC_PATHS) and individual files within synced directories.
+  #
+  # NOTE: If the target repo already has its own test/lint/format CI workflows,
+  # exclude the template's equivalents here to avoid duplicate CI jobs.
+  # Common candidates: .github/workflows/node-tests.yaml,
+  # .github/workflows/lint.yaml, .github/workflows/format-check.yaml
+  #
+  # VERSIONED-APP-ONLY: the release flow below only makes sense for a repo that
+  # is published to npm. auto-version.yaml runs on EVERY push to the default
+  # branch and, for a real (non-private) package, decides a Conventional-Commits
+  # semver bump and runs `pnpm publish` (OIDC provenance — no NPM_TOKEN). The
+  # template's own package.json sets "private": true, so version-bump.sh skips
+  # publishing there; a downstream repo opts in by dropping `private` and setting
+  # a real, publishable name. A repo that is not an npm package at all (e.g. a
+  # website like TurnTrout.com) should list these here to opt out entirely:
+  #   .github/workflows/auto-version.yaml
+  #   .github/scripts/version-bump.sh
+  #   .github/scripts/promote-changelog.mjs
+  #   .github/scripts/lib/retry.bash
+  # (CHANGELOG.md lives outside SYNC_PATHS and never syncs, so a versioned
+  # consumer must create it to bootstrap the flow.)
+  # The security-vulnerability-scan workflow + prompt are intentionally NOT
+  # propagated to downstream repos; each consumer owns its own security-scan
+  # cadence and model pin, so the template stops overwriting them on sync.
+  # sync-required-checks.yaml mutates branch protection via a RULESET_SYNC_TOKEN
+  # secret this repo does not provision, so it fails on every push to main; this
+  # repo opts out of the ruleset auto-sync entirely.
+  EXCLUDE_PATHS: ".github/actions/setup-base-env .github/scripts/check-existing-security-pr.sh .github/scripts/check-symlinks.sh .github/scripts/fetch-security-report.sh .github/scripts/list-dependabot-prs.sh .github/scripts/script-configured.sh .github/workflows/dependabot-auto-merge.yaml .github/workflows/format-check.yaml .github/workflows/lint.yaml .github/workflows/node-tests.yaml .github/workflows/pre-commit.yaml .github/workflows/validate-config.yaml .github/workflows/auto-version.yaml .github/scripts/version-bump.sh .github/scripts/promote-changelog.mjs .github/scripts/lib/retry.bash .github/workflows/sync-required-checks.yaml"
+
+concurrency:
+  group: template-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout child repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+
+      - name: Checkout template repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: ${{ env.TEMPLATE_REPO }}
+          path: _template
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+
+      - name: Check token workflow scope
+        env:
+          TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+        # Run the child repo's own copy — never execute scripts directly from
+        # the template checkout. Template script updates arrive via sync PRs
+        # and go through human review before they can execute.
+        run: bash .github/scripts/check-token-scope.sh
+
+      - name: Sync template files with conflict detection
+        id: sync
+        env:
+          SYNC_PATHS: ${{ env.SYNC_PATHS }}
+          EXCLUDE_PATHS: ${{ env.EXCLUDE_PATHS }}
+        run: bash .github/scripts/template-sync.sh
+
+      - name: Show diff (dry run)
+        if: inputs.dry-run == 'true' && steps.sync.outputs.has_changes == 'true'
+        env:
+          HAS_CONFLICTS: ${{ steps.sync.outputs.has_conflicts }}
+          HAS_DELETIONS: ${{ steps.sync.outputs.has_deletions }}
+          CONFLICT_FILES: ${{ steps.sync.outputs.conflict_files }}
+          DELETED_FILES: ${{ steps.sync.outputs.deleted_files }}
+        run: bash .github/scripts/show-sync-diff.sh
+
+      - name: Create Pull Request
+        if: inputs.dry-run != 'true' && (steps.sync.outputs.has_changes == 'true' || steps.sync.outputs.has_conflicts == 'true' || steps.sync.outputs.has_deletions == 'true')
+        id: create-pr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        with:
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          commit-message: "chore: sync from template repository (${{ steps.sync.outputs.template_sha_short }})"
+          title: "chore: sync from template repository"
+          body: |
+            This PR syncs updates from the template repository.
+
+            **Template version:** `${{ steps.sync.outputs.template_sha_short }}`
+            **Updated paths:** ${{ steps.sync.outputs.changed_paths }}
+            **Template repository:** ${{ env.TEMPLATE_REPO }}
+
+            ${{ steps.sync.outputs.changelog && format('### Changelog since last sync
+
+            ```
+            {0}
+            ```
+
+            ', steps.sync.outputs.changelog) }}${{ steps.sync.outputs.auto_merged_files && format('### Auto-merged files
+
+            The following files were merged automatically (3-way merge, no conflicts):
+
+            `{0}`
+
+            ', steps.sync.outputs.auto_merged_files) || '' }}${{ steps.sync.outputs.has_deletions == 'true' && format('---
+
+            ## Files Removed from Template
+
+            The following files were **deleted in the template** but still exist locally. Consider removing them if they are no longer needed:
+
+            `{0}`
+
+            ', steps.sync.outputs.deleted_files) || '' }}${{ steps.sync.outputs.has_conflicts == 'true' && '---
+
+            ## Conflicts for Claude to Resolve
+
+            The following files need conflict resolution. Claude will resolve these automatically.
+
+            ' || '' }}${{ steps.sync.outputs.conflict_report }}
+
+            ---
+            Please review the changes and merge if appropriate.
+          branch: template-sync
+          delete-branch: true
+          labels: ${{ steps.sync.outputs.has_conflicts == 'true' && 'template-sync,needs-conflict-resolution' || 'template-sync' }}
+
+      - name: Request Claude to resolve conflicts
+        if: inputs.dry-run != 'true' && (steps.sync.outputs.has_conflicts == 'true' || steps.sync.outputs.has_deletions == 'true') && steps.create-pr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || github.token }}
+          HAS_CONFLICTS: ${{ steps.sync.outputs.has_conflicts }}
+          HAS_DELETIONS: ${{ steps.sync.outputs.has_deletions }}
+          CONFLICT_FILES: ${{ steps.sync.outputs.conflict_files }}
+          DELETED_FILES: ${{ steps.sync.outputs.deleted_files }}
+          PR_NUM: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: bash .github/scripts/request-claude-resolve.sh

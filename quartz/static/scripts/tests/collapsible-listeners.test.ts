@@ -1,0 +1,99 @@
+/**
+ * @jest-environment jest-fixed-jsdom
+ *
+ * Regression test for memory leak fix in collapsible-listeners.js.
+ * The bug: repeated nav events would add duplicate click handlers, causing
+ * a single click to toggle the collapsible multiple times.
+ */
+
+import { afterEach, beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
+import { readFileSync } from "fs"
+import { dirname, join } from "path"
+import { fileURLToPath } from "url"
+
+import type { FullSlug } from "../../../util/path"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+const dispatchNavEvent = () => {
+  document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+}
+
+describe("collapsible-listeners", () => {
+  beforeAll(() => {
+    const scriptPath = join(__dirname, "..", "collapsible-listeners.js")
+    const scriptContent = readFileSync(scriptPath, "utf-8")
+    const fn = new Function(scriptContent)
+    fn()
+  })
+
+  beforeEach(() => {
+    document.body.innerHTML = ""
+  })
+
+  afterEach(() => {
+    jest.clearAllMocks()
+    document.body.innerHTML = ""
+  })
+
+  const createCollapsible = (id: string) => {
+    const collapsible = document.createElement("div")
+    collapsible.className = "collapsible"
+    collapsible.id = id
+
+    const title = document.createElement("div")
+    title.className = "collapsible-title"
+
+    const foldIcon = document.createElement("span")
+    foldIcon.className = "fold-icon"
+    foldIcon.setAttribute("aria-expanded", "false")
+
+    const content = document.createElement("div")
+    content.className = "content"
+
+    collapsible.appendChild(title)
+    collapsible.appendChild(foldIcon)
+    collapsible.appendChild(content)
+
+    return collapsible
+  }
+
+  it("should not add duplicate handlers on repeated nav events", () => {
+    const collapsible = createCollapsible("test-1")
+    document.body.appendChild(collapsible)
+
+    const content = collapsible.querySelector(".content") as HTMLElement
+    const title = collapsible.querySelector(".collapsible-title") as HTMLElement
+
+    // Fire nav event multiple times (simulates SPA navigation)
+    dispatchNavEvent()
+    dispatchNavEvent()
+    dispatchNavEvent()
+
+    // Click once - should toggle once, not 3 times
+    // Before the fix, this would toggle 3 times (ending at false)
+    expect(content.classList.contains("active")).toBe(false)
+    title.click()
+    expect(content.classList.contains("active")).toBe(true)
+  })
+
+  it("should handle collapsible toggling with event delegation", () => {
+    const collapsible = createCollapsible("test-2")
+    document.body.appendChild(collapsible)
+
+    dispatchNavEvent()
+
+    const content = collapsible.querySelector(".content") as HTMLElement
+    const title = collapsible.querySelector(".collapsible-title") as HTMLElement
+    const foldIcon = collapsible.querySelector(".fold-icon") as HTMLElement
+
+    expect(content.classList.contains("active")).toBe(false)
+    expect(foldIcon.getAttribute("aria-expanded")).toBe("false")
+
+    title.click()
+
+    expect(content.classList.contains("active")).toBe(true)
+    expect(foldIcon.getAttribute("aria-expanded")).toBe("true")
+  })
+})
