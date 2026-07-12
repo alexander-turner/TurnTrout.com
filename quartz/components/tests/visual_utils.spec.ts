@@ -327,6 +327,50 @@ test.describe("visual_utils functions", () => {
   })
 })
 
+test.describe("gotoPage", () => {
+  // Regression guard: navigations must default to a `domcontentloaded` gate.
+  // Every page embeds the autoplaying looping navbar video, whose continuous
+  // range requests keep WebKit's `load` event pending indefinitely — a
+  // `waitUntil:"load"` goto stalls until navigationTimeout and shows up as a
+  // flaky navigation timeout. Driving gotoPage with a stub Page (no browser
+  // needed) lets us assert the exact `waitUntil` deterministically.
+  function makeStubPage(): {
+    page: Parameters<typeof gotoPage>[0]
+    gotoCalls: Array<{ url: string; waitUntil: string | undefined }>
+  } {
+    const gotoCalls: Array<{ url: string; waitUntil: string | undefined }> = []
+    const stub = {
+      // gotoPage registers/unregisters a "requestfailed" listener; this unit
+      // test only asserts the navigation gate, so the listener is a no-op.
+      on() {
+        /* no-op: listener registration is irrelevant to the loadState assertion */
+      },
+      off() {
+        /* no-op: see on() */
+      },
+      goto(url: string, opts?: { waitUntil?: string }) {
+        gotoCalls.push({ url, waitUntil: opts?.waitUntil })
+        return Promise.resolve(null)
+      },
+    }
+    return { page: stub as unknown as Parameters<typeof gotoPage>[0], gotoCalls }
+  }
+
+  test("defaults to a domcontentloaded gate, never the load event", async () => {
+    const { page, gotoCalls } = makeStubPage()
+    await gotoPage(page, "http://localhost:8080/test-page")
+    expect(gotoCalls).toEqual([
+      { url: "http://localhost:8080/test-page", waitUntil: "domcontentloaded" },
+    ])
+  })
+
+  test("still honors an explicit loadState so callers can opt into load", async () => {
+    const { page, gotoCalls } = makeStubPage()
+    await gotoPage(page, "http://localhost:8080/test-page", "load")
+    expect(gotoCalls).toEqual([{ url: "http://localhost:8080/test-page", waitUntil: "load" }])
+  })
+})
+
 test.describe("isDesktopViewport", () => {
   const viewports = [
     { width: 1580, height: 800, expected: true },

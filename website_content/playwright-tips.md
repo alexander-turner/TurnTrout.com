@@ -15,7 +15,7 @@ aliases:
   - visual-regression
   - screenshot-testing
 date_published: 2025-08-12
-date_updated: 2026-05-12
+date_updated: 2026-07-12
 ---
 
 # Background
@@ -68,11 +68,16 @@ Prefer feature detection over timing buffers
 Use `domcontentloaded` instead of `load` when possible
 : Firefox can stall on subresource loads (images, fonts) in CI, causing 30-second timeouts on page navigation. Using `domcontentloaded` as the wait condition for `page.goto()` avoids this. Only wait for `load` when you specifically need all subresources to be ready.
 
+  I hit an even nastier version of this on WebKit: my navbar has an autoplaying, looping background video (`preload="auto"`). Its continuous range requests keep the `load` event pending indefinitely, so `page.goto(url, { waitUntil: "load" })` stalled every navigation until the timeout — even though the server had already served every byte in milliseconds. If any page has autoplaying or streaming media, `load` may simply never fire in WebKit. Default your navigation helper to `domcontentloaded` and let each test assert on the concrete elements it needs afterward.
+
 Move the mouse to a safe position before visual assertions
 : Using `page.mouse.move(0, 0)` can overlap with navbar or menu elements on certain viewports (especially tablets), triggering spurious `mouseenter` events. Move the mouse to a position where no UI elements live.
 
 Set `deviceScaleFactor: 1` to eliminate subpixel jitter
 : Different CI runners may have different DPR settings, causing text subpixel rendering differences. Explicitly setting `deviceScaleFactor: 1` in your config and using `scale: "css"` in screenshot options normalizes this across environments.
+
+Pin Chromium's rendering to kill "ordinary" antialiasing drift
+: Screenshots that shift by a tiny amount usually trace back to the CI runner's font or graphics libraries shifting under an older baseline. Three Chromium launch flags: `--force-color-profile=srgb` (fixed color mapping), `--disable-lcd-text` (grayscale instead of subpixel text antialiasing), and `--font-render-hinting=none` (no hinting-dependent glyph metrics).
 
 ## For screenshots in particular
 
