@@ -6,6 +6,7 @@ tags:
   - AI
   - instrumental-convergence
   - shard-theory
+original_url: https://www.lesswrong.com/posts/LWfYjZgXHN5GYtYpH/intrinsic-power-seeking-ai-might-seek-power-for-power-s-sake
 date_published: 2024-10-30
 date_updated: 2026-04-20
 ---

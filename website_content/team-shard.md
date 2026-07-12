@@ -17,6 +17,7 @@ card_image_alt: Five men strike a pose at Lighthaven, the community campus. Four
 aliases:
   - mats-team
   - mentorship
+original_url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/apply-for-alignment-mentorship-from-turntrout-and-alex-cloud
 date_published: 2025-12-23
 date_updated: 2026-07-07
 lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
