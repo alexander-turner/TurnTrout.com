@@ -4,7 +4,7 @@ permalink: red-line-framework
 no_dropcap: false
 tags:
   - AI
-description: ""
+description: A framework of two red-line Standards—human control over targeting and no untargeted profiling—plus an advisory Review Body that audits government AI contracts for compliance and publishes a yearly transparency report.
 authors:
   - Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/red-line-framework.jpg
@@ -303,7 +303,7 @@ To balance oversight rigor with contracting velocity, contracts are reviewed on
 Standard review
 : Applies to contracts involving targeting-adjacent applications, intelligence analysis of persons, surveillance or monitoring, predictive policing, biometric identification, or any application where Standards [1](#standard-1-human-control-over-targeting-and-use-of-force) or [2](#standard-2-no-untargeted-profiling) are plausibly implicated, as judged by an AI research member of the Review Body. These require pre-execution review, completed within ten business days of the Review Body confirming receipt of complete documentation.
 
-: The Review Body defines what constitutes complete documentation for each contract category as part of its standard review rubric. The Review Body may extend by up to ten additional business days by issuing a written hold. If no hold or non-compliance finding is issued within the review period, the contract may proceed.  
+  The Review Body defines what constitutes complete documentation for each contract category as part of its standard review rubric. The Review Body may extend by up to ten additional business days by issuing a written hold. If no hold or non-compliance finding is issued within the review period, the contract may proceed.  
 
   The Review Body will maintain a rubric defining which categories trigger standard review, updated annually. The updated rubric will be shared with Covered AI Employees as part of the annual transparency report.  
 
