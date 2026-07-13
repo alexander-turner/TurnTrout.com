@@ -3661,19 +3661,9 @@
       "title": "A red line and oversight framework for government AI contracts"
     },
     {
-      "excerpt": "Could human-designed AI kill all humans? I spent my PhD on this and still worry.",
-      "permalink": "agi-risk-introduction",
-      "title": "A simple explanation of AGI risk"
-    },
-    {
       "excerpt": "Considering how to ethically manage AI equity when my goal is to reduce AI risk, not maximize profit.",
       "permalink": "deepmind-equity-discussion",
       "title": "How should TurnTrout handle his DeepMind equity situation?"
-    },
-    {
-      "excerpt": "I dove headfirst into AI safety, even at the risk of my PhD. This is how.",
-      "permalink": "swimming-upstream",
-      "title": "Swimming Upstream: A Case Study in Instrumental Rationality"
     }
   ],
   "world-state-is-the-wrong-abstraction-for-impact": [

@@ -7,6 +7,9 @@ tags:
   - deepmind
   - personal
 description: "A story of how powerful people and institutions failed to keep their AI ethics promises in the face of pressure."
+similar_posts:
+  - red-line-framework
+  - deepmind-equity-discussion
 authors:
   - Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/why-i-left-google-deepmind.jpg

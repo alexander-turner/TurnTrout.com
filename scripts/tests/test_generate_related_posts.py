@@ -31,6 +31,7 @@ def _write_md(
     draft: bool = False,
     hide_metadata: bool = False,
     body: str = "Body text.",
+    similar_posts: list[str] | None = None,
 ) -> Path:
     lines = ["---"]
     if title is not None:
@@ -43,6 +44,9 @@ def _write_md(
         lines.append("draft: true")
     if hide_metadata:
         lines.append('hide_metadata: "true"')
+    if similar_posts is not None:
+        lines.append("similar_posts:")
+        lines.extend(f"  - {p}" for p in similar_posts)
     lines.append("---")
     lines.append("")
     lines.append(body)
@@ -121,6 +125,91 @@ class TestGatherArticles:
         _write_md(tmp_path, "x.md", description="  Spaced out.  ")
         (article,) = grp.gather_articles(tmp_path)
         assert article.excerpt == "Spaced out."
+
+    def test_captures_similar_posts_override(self, tmp_path: Path) -> None:
+        _write_md(tmp_path, "x.md", similar_posts=["/a/", "b"])
+        (article,) = grp.gather_articles(tmp_path)
+        assert article.override == ("a", "b")
+
+    def test_absent_similar_posts_is_none(self, tmp_path: Path) -> None:
+        _write_md(tmp_path, "x.md")
+        (article,) = grp.gather_articles(tmp_path)
+        assert article.override is None
+
+
+# --- _normalize_override -----------------------------------------------------
+
+
+class TestNormalizeOverride:
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [
+            (None, None),
+            ([], ()),
+            (["/a/", "b/", "/c"], ("a", "b", "c")),
+            (["a", "", "/", "b"], ("a", "b")),  # empties dropped
+        ],
+    )
+    def test_normalizes(
+        self, value: object, expected: tuple[str, ...] | None
+    ) -> None:
+        assert grp._normalize_override(value) == expected
+
+    @pytest.mark.parametrize("value", ["a", {"a": 1}, ["a", 2], [None]])
+    def test_rejects_non_list_of_strings(self, value: object) -> None:
+        with pytest.raises(ValueError, match="list of strings"):
+            grp._normalize_override(value)
+
+
+# --- resolve_override --------------------------------------------------------
+
+
+class TestResolveOverride:
+    def test_resolves_in_listed_order(self) -> None:
+        by_permalink = {s: _article(s) for s in ("a", "b", "c")}
+        source = grp.Article(
+            permalink="src",
+            title="Src",
+            excerpt="src",
+            embed_input="x",
+            text_hash="h",
+            override=("c", "a"),
+        )
+        neighbors = grp.resolve_override(source, by_permalink)
+        assert [n["permalink"] for n in neighbors] == ["c", "a"]
+        assert neighbors[0] == {
+            "permalink": "c",
+            "title": "C",
+            "excerpt": "about c",
+        }
+
+    def test_none_override_raises(self) -> None:
+        with pytest.raises(ValueError, match="no similar_posts"):
+            grp.resolve_override(_article("a"), {"a": _article("a")})
+
+    def test_unknown_permalink_raises(self) -> None:
+        source = grp.Article(
+            permalink="src",
+            title="Src",
+            excerpt="src",
+            embed_input="x",
+            text_hash="h",
+            override=("nope",),
+        )
+        with pytest.raises(ValueError, match="unknown or non-embeddable"):
+            grp.resolve_override(source, {"a": _article("a")})
+
+    def test_self_reference_raises(self) -> None:
+        source = grp.Article(
+            permalink="src",
+            title="Src",
+            excerpt="src",
+            embed_input="x",
+            text_hash="h",
+            override=("src",),
+        )
+        with pytest.raises(ValueError, match="references itself"):
+            grp.resolve_override(source, {"src": source})
 
 
 # --- cache I/O ---------------------------------------------------------------
@@ -391,6 +480,93 @@ class TestGenerate:
         assert result.embedded == 0
         assert result.uncovered == ()  # the lone cached article is covered
         assert cache_path.stat().st_mtime_ns == before
+
+    def test_override_replaces_computed_neighbors(self, tmp_path: Path) -> None:
+        content = tmp_path / "content"
+        content.mkdir()
+        # a's embedding is closest to b, but the override forces c.
+        _write_md(
+            content,
+            "a.md",
+            permalink="a",
+            description="alpha",
+            similar_posts=["c"],
+        )
+        _write_md(content, "b.md", permalink="b", description="beta")
+        _write_md(content, "c.md", permalink="c", description="gamma")
+        neighbors_path = tmp_path / "n.json"
+
+        def fake_embed(texts):
+            out = []
+            for t in texts:
+                if "alpha" in t:
+                    out.append([1.0, 0.0])
+                elif "beta" in t:
+                    out.append([0.9, 0.1])
+                else:
+                    out.append([0.0, 1.0])
+            return out
+
+        result = grp.generate(
+            grp.GenerateConfig(
+                cache_path=tmp_path / "cache.json",
+                content_dir=content,
+                neighbors_path=neighbors_path,
+                budget=10,
+            ),
+            embed=fake_embed,
+        )
+        assert result.uncovered == ()
+        neighbors = json.loads(neighbors_path.read_text(encoding="utf-8"))
+        assert [n["permalink"] for n in neighbors["a"]] == ["c"]
+        # b is untouched by the override and keeps its computed neighbor.
+        assert [n["permalink"] for n in neighbors["b"]] == ["a"]
+
+    def test_override_covers_article_without_embedding(
+        self, tmp_path: Path
+    ) -> None:
+        content = tmp_path / "content"
+        content.mkdir()
+        # "a" is never embedded (budget 0) yet its override still yields an
+        # entry, so it must not count as uncovered.
+        _write_md(content, "a.md", permalink="a", similar_posts=["b"])
+        _write_md(content, "b.md", permalink="b")
+        neighbors_path = tmp_path / "n.json"
+        result = grp.generate(
+            grp.GenerateConfig(
+                cache_path=tmp_path / "cache.json",
+                content_dir=content,
+                neighbors_path=neighbors_path,
+                budget=0,
+            ),
+            embed=lambda texts: pytest.fail("budget 0 embeds nothing"),
+        )
+        assert "a" not in result.uncovered
+        neighbors = json.loads(neighbors_path.read_text(encoding="utf-8"))
+        assert [n["permalink"] for n in neighbors["a"]] == ["b"]
+
+    def test_empty_override_suppresses_block(self, tmp_path: Path) -> None:
+        content = tmp_path / "content"
+        content.mkdir()
+        # Inline empty list: `similar_posts: []` → () → empty neighbor list.
+        (content / "a.md").write_text(
+            "---\ntitle: T\npermalink: a\ndescription: D\n"
+            "similar_posts: []\n---\n\nBody.",
+            encoding="utf-8",
+        )
+        _write_md(content, "b.md", permalink="b")
+        neighbors_path = tmp_path / "n.json"
+        grp.generate(
+            grp.GenerateConfig(
+                cache_path=tmp_path / "cache.json",
+                content_dir=content,
+                neighbors_path=neighbors_path,
+                budget=0,
+            ),
+            embed=lambda texts: pytest.fail("budget 0 embeds nothing"),
+        )
+        neighbors = json.loads(neighbors_path.read_text(encoding="utf-8"))
+        assert neighbors["a"] == []
 
     def test_default_embed_uses_embed_texts(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
