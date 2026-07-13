@@ -707,7 +707,7 @@ Indeed, it's not always rational to say what you think the moment you think it. 
 
 ## Maybe they thought you weren't worth their time; you aren't entitled to their help
 
-Entirely plausible. No one should be castigated simply because they didn't follow my particular recommendations. But what I would expect to see is any kind of action at all.
+Aboslutely. No one should be castigated simply because they didn't follow my particular recommendations. But what I would expect to see is any kind of action at all.
 
 More broadly, sympathetic stories predict visible impact, including "visible in its consequences." That's part of why I'm comfortable guessing that Jeff did not put his foot down and threaten to walk. If he *had* put his foot down, I expect the world would look different to me: in particular, I would expect the classified deal to contain at least *some* binding provisions.
 
