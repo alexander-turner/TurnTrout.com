@@ -1,0 +1,303 @@
+name: Playwright Flake Check
+
+# Runs each Playwright test multiple times to detect flaky tests.
+# Manual-only: use the "Run workflow" button in the Actions UI.
+
+concurrency:
+  group: playwright-flake-check-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      repeat-each:
+        description: "Number of times to repeat each test"
+        required: false
+        default: "3"
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  setup:
+    name: flake-check-setup
+    runs-on: ubuntu-24.04
+    outputs:
+      repeat: ${{ steps.check.outputs.repeat }}
+    steps:
+      - id: check
+        env:
+          REPEAT_EACH: ${{ github.event.inputs.repeat-each || '3' }}
+        run: echo "repeat=$REPEAT_EACH" >> "$GITHUB_OUTPUT"
+
+  # Regenerate the per-section fixtures (not tracked in git) and publish them
+  # as an artifact for the build and every shard to consume.
+  generate-fixtures:
+    name: flake-check-generate-fixtures
+    needs: setup
+    uses: ./.github/workflows/generate-fixtures.yaml
+
+  build:
+    name: flake-check-build
+    needs: [setup, generate-fixtures]
+    uses: ./.github/workflows/build-site.yaml
+    with:
+      include-fixtures: true
+    secrets:
+      ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+      SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+      S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+
+  # Chromium + Firefox flake check on Linux
+  flake-check-linux:
+    needs: [setup, build, generate-fixtures]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ["1/15", "2/15", "3/15", "4/15", "5/15", "6/15", "7/15", "8/15", "9/15", "10/15", "11/15", "12/15", "13/15", "14/15", "15/15"]
+    env:
+      PLAYWRIGHT_BROWSERS: chromium,firefox
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "true"
+
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
+      - name: Install browsers
+        run: pnpm run install-browsers
+
+      - name: Restore built site from cache
+        uses: ./.github/actions/restore-site-cache
+        with:
+          key: site-build-${{ github.sha }}-fixtures-true
+
+      - name: Download section fixtures
+        uses: ./.github/actions/download-section-fixtures
+
+      - name: Run Playwright tests (repeat-each=${{ needs.setup.outputs.repeat }})
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --grep "^(?:(?!screenshot).)*$" \
+            --shard ${{ matrix.shard }} \
+            --repeat-each "${NEEDS_SETUP_OUTPUTS_REPEAT}" \
+            | tee playwright-flake.log
+        env:
+          # 90 min job timeout → 85 min Playwright global timeout
+          PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "5100000"
+          NEEDS_SETUP_OUTPUTS_REPEAT: ${{ needs.setup.outputs.repeat }}
+
+      - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> "$GITHUB_ENV"
+        if: always()
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
+
+      # Critical log: surface upload failures (don't swallow with
+      # continue-on-error) so a missing log is visible on the shard.
+      - name: Upload flake check logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: flake-check-log-linux-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-flake.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload Winston logs
+        if: steps.playwright.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: flake-check-winston-linux-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload webServer build logs
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: flake-check-webserver-linux-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload Playwright traces
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: flake-check-traces-linux-shard-${{ env.SANITIZED_SHARD }}
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Fail if flaky tests detected
+        if: steps.playwright.outcome != 'success'
+        run: exit 1
+
+  # WebKit flake check on macOS
+  flake-check-macos:
+    needs: [setup, build, generate-fixtures]
+    runs-on: macos-15
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ["1/7", "2/7", "3/7", "4/7", "5/7", "6/7", "7/7"]
+    env:
+      PLAYWRIGHT_BROWSERS: webkit
+      # Playwright 1.59.0 added Page.overridePlatform for WebKit device presets,
+      # which crashes WebKit on macOS ARM64 (microsoft/playwright#40009).
+      # Reverted upstream but no 1.59.2 release yet. Remove when upgrading Playwright.
+      PLAYWRIGHT_NO_UA_PLATFORM: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+
+      - name: Disable macOS firewall
+        run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "false"
+
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
+      - name: Install Playwright WebKit browser
+        run: pnpm exec playwright install webkit
+
+      - name: Strip macOS Gatekeeper quarantine attributes
+        run: xattr -cr ~/Library/Caches/ms-playwright
+
+      - name: Restore built site from cache
+        uses: ./.github/actions/restore-site-cache
+        with:
+          key: site-build-${{ github.sha }}-fixtures-true
+
+      - name: Download section fixtures
+        uses: ./.github/actions/download-section-fixtures
+
+      - name: Run Playwright tests (repeat-each=${{ needs.setup.outputs.repeat }})
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --grep "^(?:(?!screenshot).)*$" \
+            --shard ${{ matrix.shard }} \
+            --repeat-each "${NEEDS_SETUP_OUTPUTS_REPEAT}" \
+            | tee playwright-flake.log
+        env:
+          # 90 min job timeout → 85 min Playwright global timeout
+          PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "5100000"
+          NEEDS_SETUP_OUTPUTS_REPEAT: ${{ needs.setup.outputs.repeat }}
+
+      - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> "$GITHUB_ENV"
+        if: always()
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
+
+      # Critical log: surface upload failures (don't swallow with
+      # continue-on-error) so a missing log is visible on the shard.
+      - name: Upload flake check logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: flake-check-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-flake.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload Winston logs
+        if: steps.playwright.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: flake-check-winston-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload webServer build logs
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: flake-check-webserver-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload Playwright traces
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: flake-check-traces-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Fail if flaky tests detected
+        if: steps.playwright.outcome != 'success'
+        run: exit 1
+
+  # Unified status check
+  flake-check:
+    name: flake-check
+    if: always()
+    needs: [flake-check-linux, flake-check-macos]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.flake-check-linux.result }}" != "success" ]] || \
+             [[ "${{ needs.flake-check-macos.result }}" != "success" ]]; then
+            echo "Flake check did not succeed (linux=${{ needs.flake-check-linux.result }}, macos=${{ needs.flake-check-macos.result }})"
+            exit 1
+          fi
+
+  summarize:
+    name: Flake Check Summary
+    if: >-
+      always() && (
+        needs.flake-check-linux.result == 'failure' ||
+        needs.flake-check-linux.result == 'cancelled' ||
+        needs.flake-check-macos.result == 'failure' ||
+        needs.flake-check-macos.result == 'cancelled'
+      )
+    needs: [flake-check-linux, flake-check-macos]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/summarize-failed-shards
+        with:
+          log-pattern: flake-check-log-*
+          final-log-name: flake-check-failed-logs

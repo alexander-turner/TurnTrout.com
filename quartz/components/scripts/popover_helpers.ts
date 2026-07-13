@@ -1,0 +1,430 @@
+import { normalizeRelativeURLs } from "../../util/path"
+import { CAN_TRIGGER_POPOVER_CLASS, popoverPadding, popoverRemovalDelayMs } from "../constants"
+import { type ContentRenderOptions, modifyElementIds, renderHTMLContent } from "./content_renderer"
+
+// Regex to detect footnote forward links (not back arrows which use fnref)
+// IDs can be alphanumeric with hyphens (e.g., fn-1, fn-some-name, fn-instr)
+export const footnoteForwardRefRegex = /^#user-content-fn-(?<footnoteId>[\w-]+)$/
+
+/** Navigation helper. Uses a mutable object so tests can spy on it (jsdom locks down window.location). */
+export const navigation = {
+  /* istanbul ignore next -- jsdom does not implement navigation */
+  goTo(url: string): void {
+    window.location.href = url
+  },
+}
+
+export interface PopoverOptions {
+  parentElement: HTMLElement
+  targetUrl: URL
+  linkElement: HTMLLinkElement
+  customFetch?: typeof fetch
+}
+
+/**
+ * Processes a footnote element for display in a popover
+ * @param footnoteElement - The footnote element to process
+ * @param html - The HTML document (used for creating temporary containers)
+ * @param targetUrl - The URL for normalizing relative links
+ * @returns A document fragment containing the processed footnote content
+ */
+function processFootnoteForPopover(
+  footnoteElement: HTMLElement,
+  html: Document,
+  targetUrl: URL,
+): DocumentFragment {
+  const clonedFootnote = footnoteElement.cloneNode(true) as HTMLElement
+
+  const backArrow = clonedFootnote.querySelector("[data-footnote-backref]")
+  if (backArrow) {
+    backArrow.remove()
+  }
+
+  const tempContainer = html.createElement("div")
+  tempContainer.appendChild(clonedFootnote)
+
+  // Normalize URLs only on the cloned footnote
+  normalizeRelativeURLs(tempContainer, targetUrl)
+
+  // modifyElementIds only modifies descendants, so also modify the element's own ID
+  /* istanbul ignore next -- footnotes always have IDs in practice */
+  if (clonedFootnote.id) {
+    clonedFootnote.id = `${clonedFootnote.id}-popover`
+  }
+  modifyElementIds([clonedFootnote], "-popover")
+
+  // Prevent meta-popovers: strip popover triggers from links inside footnote content
+  for (const link of clonedFootnote.querySelectorAll(`.${CAN_TRIGGER_POPOVER_CLASS}`)) {
+    link.classList.remove(CAN_TRIGGER_POPOVER_CLASS)
+  }
+
+  // Extract the content from the <li> wrapper and return as a fragment
+  const fragment = html.createDocumentFragment()
+  while (clonedFootnote.firstChild) {
+    fragment.appendChild(clonedFootnote.firstChild)
+  }
+
+  return fragment
+}
+
+/**
+ * Renders footnote content into the popover
+ * @param popoverInner - The popover inner container
+ * @param html - The parsed HTML document
+ * @param targetUrl - The URL for normalizing relative links
+ * @param footnoteId - The ID of the footnote to render
+ */
+function renderFootnoteContent(
+  popoverInner: HTMLElement,
+  html: Document,
+  targetUrl: URL,
+  footnoteId: string,
+): void {
+  const footnoteElement = html.getElementById(`user-content-fn-${footnoteId}`)
+  if (!footnoteElement) {
+    throw new Error(`Footnote element not found: user-content-fn-${footnoteId}`)
+  }
+
+  const processedFootnote = processFootnoteForPopover(footnoteElement, html, targetUrl)
+  popoverInner.appendChild(processedFootnote)
+}
+
+/**
+ * Renders full page content into the popover
+ * @param popoverInner - The popover inner container
+ * @param html - The parsed HTML document
+ * @param targetUrl - The URL for normalizing relative links
+ */
+function renderFullPageContent(popoverInner: HTMLElement, html: Document, targetUrl: URL): void {
+  const renderOptions: ContentRenderOptions = {
+    targetUrl,
+    idSuffix: "-popover",
+  }
+  renderHTMLContent(popoverInner, html, renderOptions)
+}
+
+/**
+ * Creates a popover element based on the provided options
+ * @param options - The options for creating the popover
+ * @returns A Promise that resolves to the created popover element
+ */
+export async function createPopover(options: PopoverOptions): Promise<HTMLElement> {
+  const { targetUrl, linkElement, customFetch = fetch } = options
+
+  // Check if the link is a footnote back arrow
+  const footnoteRefRegex = /^#user-content-fnref-\d+$/
+  if (footnoteRefRegex.test(linkElement.getAttribute("href") || "")) {
+    throw new Error("Footnote back arrow links are not supported for popovers")
+  }
+
+  const popoverElement = document.createElement("div")
+  popoverElement.classList.add("popover")
+  const popoverInner = document.createElement("div")
+  popoverInner.classList.add("popover-inner")
+  popoverElement.appendChild(popoverInner)
+
+  // Fetch with meta redirect support, then parse
+  const response = await fetchWithMetaRedirect(targetUrl, customFetch)
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
+
+  const contents = await response.text()
+  const parser = new DOMParser()
+  const html = parser.parseFromString(contents, "text/html")
+
+  // Check if this is a footnote forward link
+  const href = linkElement.getAttribute("href") || ""
+  const footnoteMatch = href.match(footnoteForwardRefRegex)
+
+  if (footnoteMatch?.groups) {
+    const footnoteId = footnoteMatch.groups.footnoteId
+    renderFootnoteContent(popoverInner, html, targetUrl, footnoteId)
+    popoverElement.classList.add("footnote-popover")
+
+    const closeBtn = document.createElement("button")
+    closeBtn.classList.add("popover-close")
+    closeBtn.setAttribute("aria-label", "Close footnote")
+    closeBtn.setAttribute("type", "button")
+    closeBtn.textContent = "\u00d7" // × multiplication sign
+    // Append to outer .popover so it doesn't scroll with .popover-inner content
+    popoverElement.appendChild(closeBtn)
+  } else {
+    renderFullPageContent(popoverInner, html, targetUrl)
+  }
+
+  return popoverElement
+}
+
+/**
+ * Fetches content while following HTML meta refresh redirects.
+ * @param url - The URL to fetch
+ * @param customFetch - Optional custom fetch implementation
+ * @param maxRedirects - Maximum number of redirects to follow (default: 3)
+ * @returns The final response after following any meta refreshes
+ */
+export async function fetchWithMetaRedirect(
+  url: URL,
+  customFetch: typeof fetch = fetch,
+  maxRedirects = 3,
+): Promise<Response> {
+  const initialOrigin = url.origin
+  let currentUrl = url
+  let redirectCount = 0
+
+  while (redirectCount < maxRedirects) {
+    const response = await customFetch(currentUrl.toString())
+
+    // If not HTML or response not OK, return as-is
+    const contentType = response.headers.get("Content-Type")
+    if (!response.ok || !contentType?.includes("text/html")) {
+      return response
+    }
+
+    const html = await response.text()
+    const metaRefresh = html.match(/<meta[^>]*?http-equiv=["']?refresh[^>]*>/i)
+
+    if (!metaRefresh) {
+      // No meta refresh found, return response with the HTML content
+      return new Response(html, {
+        headers: response.headers,
+        status: response.status,
+        statusText: response.statusText,
+      })
+    }
+
+    // Extract URL from content="[timeout]; url=[url]"
+    const urlMatch = metaRefresh[0].match(/url=(?<url>.*?)["'\s>]/i)
+    if (!urlMatch?.groups) {
+      return response
+    }
+
+    const nextUrl = new URL(urlMatch.groups.url, currentUrl)
+    if (nextUrl.origin !== initialOrigin) {
+      // The caller injects this HTML into the live page, so a meta-refresh that
+      // leaves the originating site's origin must not be followed and rendered.
+      // Stop here and return the same-origin page we already have.
+      return new Response(html, {
+        headers: response.headers,
+        status: response.status,
+        statusText: response.statusText,
+      })
+    }
+    currentUrl = nextUrl
+    redirectCount++
+  }
+
+  throw new Error(`Maximum number of redirects (${maxRedirects}) exceeded`)
+}
+
+// POSITIONING the popover
+
+/**
+ * Computes the left position of the popover
+ * @param linkRect - The bounding rectangle of the link element
+ * @param popoverWidth - The width of the popover element
+ * @returns The computed left position
+ */
+export function computeLeft(linkRect: DOMRect, popoverWidth: number): number {
+  const initialLeft = linkRect.left - popoverWidth - popoverPadding
+
+  // Ensure the popover doesn't go off the left or right edge of the screen
+  const maxLeft = window.innerWidth - popoverWidth - popoverPadding
+  const minLeft = popoverPadding
+
+  return Math.max(minLeft, Math.min(initialLeft, maxLeft))
+}
+
+/**
+ * Computes the top position of the popover
+ * @param linkRect - The bounding rectangle of the link element
+ * @param popoverHeight - The height of the popover element
+ * @returns The computed top position
+ */
+export function computeTop(linkRect: DOMRect, popoverHeight: number): number {
+  // Calculate top position to be centered vertically with the link
+  const initialTop = 0.5 * (linkRect.top + linkRect.bottom) - 0.5 * popoverHeight + window.scrollY
+
+  // Ensure the popover doesn't go off the top or bottom of the screen
+  const minTop = window.scrollY + popoverPadding
+  const maxTop = window.scrollY + window.innerHeight - popoverHeight - popoverPadding
+
+  return Math.max(minTop, Math.min(initialTop, maxTop))
+}
+
+/**
+ * Sets the position of the popover relative to the link element
+ * @param popoverElement - The popover element to position
+ * @param linkElement - The link element to position relative to
+ */
+export function setPopoverPosition(
+  popoverElement: HTMLElement,
+  linkElement: HTMLLinkElement,
+): void {
+  const linkRect = linkElement.getBoundingClientRect()
+  const popoverWidth = popoverElement.offsetWidth
+  const popoverHeight = popoverElement.offsetHeight
+
+  const left = computeLeft(linkRect, popoverWidth)
+  const top = computeTop(linkRect, popoverHeight)
+
+  Object.assign(popoverElement.style, {
+    position: "absolute",
+    left: `${left}px`,
+    top: `${top}px`,
+  })
+}
+
+/**
+ * Attaches event listeners to the popover and link elements
+ * @param popoverElement - The popover element
+ * @param linkElement - The link element
+ * @param onRemove - Callback function invoked when the popover is fully removed
+ * @returns A cleanup function to remove the event listeners
+ */
+export function attachPopoverEventListeners(
+  popoverElement: HTMLElement,
+  linkElement: HTMLLinkElement,
+  onRemove: () => void,
+): () => void {
+  const isFootnote = popoverElement.classList.contains("footnote-popover")
+  const controller = new AbortController()
+  const listenerOpts = { signal: controller.signal }
+
+  let isMouseOverLink = false
+  let isMouseOverPopover = false
+  let pendingRemovalTimer: ReturnType<typeof setTimeout> | null = null
+
+  const cancelPendingRemoval = () => {
+    if (pendingRemovalTimer === null) return
+    clearTimeout(pendingRemovalTimer)
+    pendingRemovalTimer = null
+  }
+
+  const scheduleRemoval = () => {
+    if (popoverElement.dataset.pinned) return
+    cancelPendingRemoval()
+    pendingRemovalTimer = setTimeout(() => {
+      pendingRemovalTimer = null
+      if (isMouseOverLink || isMouseOverPopover) return
+      popoverElement.classList.remove("popover-visible")
+      popoverElement.remove()
+      onRemove()
+    }, popoverRemovalDelayMs)
+  }
+
+  popoverElement.addEventListener(
+    "click",
+    (e) => {
+      const clickedLink = (e.target as HTMLElement).closest("a")
+      if (clickedLink instanceof HTMLAnchorElement) {
+        navigation.goTo(clickedLink.href)
+      } else if (!isFootnote) {
+        // Footnote popovers are readable text; only non-footnote popovers
+        // navigate to the link target when the body is clicked.
+        navigation.goTo(linkElement.href)
+      }
+    },
+    listenerOpts,
+  )
+
+  // Footnote popovers are click-only: opened by clicking the footnote ref,
+  // dismissed by clicking outside, pressing Escape, or clicking the close
+  // button. They don't need hover tracking.
+  if (!isFootnote) {
+    linkElement.addEventListener(
+      "mouseenter",
+      () => {
+        isMouseOverLink = true
+        popoverElement.classList.add("popover-visible")
+      },
+      listenerOpts,
+    )
+    linkElement.addEventListener(
+      "mouseleave",
+      () => {
+        isMouseOverLink = false
+        scheduleRemoval()
+      },
+      listenerOpts,
+    )
+    popoverElement.addEventListener(
+      "mouseenter",
+      () => {
+        isMouseOverPopover = true
+      },
+      listenerOpts,
+    )
+    popoverElement.addEventListener(
+      "mouseleave",
+      () => {
+        isMouseOverPopover = false
+        scheduleRemoval()
+      },
+      listenerOpts,
+    )
+  }
+
+  return () => {
+    controller.abort()
+    cancelPendingRemoval()
+    popoverElement.remove()
+    onRemove()
+  }
+}
+
+/**
+ * Escapes leading ID numbers in a string
+ * @param text - The text to escape
+ * @returns The escaped text
+ */
+export function escapeLeadingIdNumber(text: string): string {
+  return text.replace(/#(?<id>\d+)/, "#_$<id>")
+}
+
+export const focusableSelector =
+  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
+
+/**
+ * Returns focusable descendants of the popover, excluding any with
+ * `display:none` or `visibility:hidden`.
+ */
+export function getVisibleFocusable(popoverElement: HTMLElement): HTMLElement[] {
+  return [...popoverElement.querySelectorAll<HTMLElement>(focusableSelector)].filter((el) => {
+    if (el.offsetParent === null) return false // fast path: handles display:none
+    return getComputedStyle(el).visibility !== "hidden"
+  })
+}
+
+/**
+ * Traps keyboard focus within a popover element for pinned (click-opened)
+ * popovers. Cycles focus between the first and last focusable descendants
+ * so Tab/Shift+Tab wrap around instead of moving into the underlying page.
+ * Returns a cleanup function to remove the event listener.
+ */
+export function trapFocusInPopover(popoverElement: HTMLElement): () => void {
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key !== "Tab") return
+
+    const focusableElements = getVisibleFocusable(popoverElement)
+    if (focusableElements.length === 0) return
+
+    const first = focusableElements[0]
+    const last = focusableElements[focusableElements.length - 1]
+
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+  }
+
+  document.addEventListener("keydown", handleKeydown)
+  return () => document.removeEventListener("keydown", handleKeydown)
+}

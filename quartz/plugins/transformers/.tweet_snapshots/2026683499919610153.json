@@ -1,0 +1,38 @@
+{
+  "id": "2026683499919610153",
+  "url": "https://xcancel.com/JeffDean/status/2026683499919610153",
+  "author": {
+    "name": "Jeff Dean",
+    "handle": "JeffDean",
+    "verified": true,
+    "avatarSrc": "https://assets.turntrout.com/static/tweets/2026683499919610153/avatar.jpg"
+  },
+  "createdAt": "2026-02-25T15:39:34.000Z",
+  "text": "@TopherSpiro In 2018 I signed this letter and my position hasn't changed.\n\nLetter: \nhttps://t.co/jR0e5AZWTz\n\nArticle about it: https://t.co/SSpwFqU370",
+  "urls": [
+    {
+      "url": "https://t.co/jR0e5AZWTz",
+      "display": "futureoflife.org/open-letter/le…",
+      "expanded": "https://futureoflife.org/open-letter/lethal-autonomous-weapons-pledge/"
+    },
+    {
+      "url": "https://t.co/SSpwFqU370",
+      "display": "weforum.org/stories/2018/0…",
+      "expanded": "https://www.weforum.org/stories/2018/07/the-worlds-tech-leaders-and-scientists-have-signed-a-pledge-against-autonomous-killer-robots/"
+    }
+  ],
+  "media": [
+    {
+      "type": "photo",
+      "src": "https://assets.turntrout.com/static/tweets/2026683499919610153/media-0.jpg",
+      "width": 960,
+      "height": 2142,
+      "alt": ""
+    }
+  ],
+  "metrics": {
+    "replies": 7,
+    "likes": 392
+  },
+  "snapshotAt": "2026-07-01T03:55:10.719234+00:00"
+}

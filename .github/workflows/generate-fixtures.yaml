@@ -1,0 +1,37 @@
+name: Generate Fixtures
+
+# Reusable workflow that regenerates the per-section visual-regression
+# fixtures from website_content/test-page.md and uploads them as the
+# `section-fixtures` artifact. These fixtures are not tracked in git
+# (see .gitignore); every job that needs them — the site build and each
+# Playwright shard — downloads this artifact instead. Centralizing
+# generation in one job keeps the fixtures from drifting from test-page.md.
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-fixtures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+
+      # The generator uses only the Python standard library, so the
+      # runner's preinstalled python3 is enough — no uv/venv setup needed.
+      - name: Generate section fixtures
+        run: python3 scripts/split_test_page_sections.py
+
+      - name: Upload section fixtures
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: section-fixtures
+          path: website_content/fixtures/test-sections
+          if-no-files-found: error
+          retention-days: 1

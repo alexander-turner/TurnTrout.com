@@ -1,0 +1,60 @@
+#!/bin/bash
+
+set -e # Exit immediately if a command exits with a non-zero status
+
+GIT_ROOT=$(git rev-parse --show-toplevel)
+cd "$GIT_ROOT" || exit
+
+cleanup() {
+    find "$GIT_ROOT" -type f -name "*_temp.*" -delete
+}
+
+trap cleanup EXIT
+
+bash "$GIT_ROOT"/scripts/remove_unreferenced_assets.sh
+
+# Convert card images in markdown files
+uv run python "$GIT_ROOT"/scripts/convert_markdown_yaml.py --markdown-directory "$GIT_ROOT"/website_content
+
+# Download external media files (non-assets.turntrout.com) to asset_staging
+uv run python "$GIT_ROOT"/scripts/download_external_media.py
+
+STATIC_DIR="$GIT_ROOT"/quartz/static
+
+ASSET_STAGING_DIR="$GIT_ROOT"/website_content/asset_staging
+# Only proceed if asset staging directory is not empty
+if [ -n "$(ls "$ASSET_STAGING_DIR" 2>/dev/null)" ]; then
+    uv run python "$GIT_ROOT"/scripts/replace_asset_staging_refs.py
+    mkdir -p "$STATIC_DIR"/images/posts
+    mv "$ASSET_STAGING_DIR"/* "$STATIC_DIR"/images/posts
+fi
+
+# Convert images to AVIF format, mp4s to webm/HEVC, and remove metadata
+IGNORE_FILES=(favicon.svg favicon.ico pond.mov pond.webm pond_frame.avif new_site.avif original_site.avif)
+uv run python "$GIT_ROOT"/scripts/convert_assets.py --strip-metadata --asset-directory "$STATIC_DIR" --ignore-files "example_com.png" "${IGNORE_FILES[@]}" --remove-originals
+
+# Transcribe videos that carry real audio via Scriberr and inject caption
+# tracks. Self-skips with a warning when SCRIBERR_BASE_URL / SCRIBERR_API_KEY
+# are unset (CI, external contributors).
+uv run python "$GIT_ROOT"/scripts/transcribe_videos.py --asset-directory "$STATIC_DIR" --references-dir "$GIT_ROOT"/website_content --ignore-files "${IGNORE_FILES[@]}"
+
+# Generate HSL-inverted variants for invert-labeled rasters in $STATIC_DIR.
+# These ship to R2 alongside their originals so the dark-mode <picture> swap
+# can fetch a precomputed bitmap instead of running canvas inversion at
+# runtime (which trips Firefox's anti-fingerprinting prompt).
+uv run python "$GIT_ROOT"/scripts/generate_inverted_variants.py --asset-directory "$STATIC_DIR"
+
+# Left over original files
+cleanup
+
+# Upload assets to R2 bucket (ignore pond files - they're needed locally for tests)
+LOCAL_ASSET_DIR="$GIT_ROOT"/../website-media-r2/
+
+# Only wrap with envchain when the R2 creds aren't already in the env
+# (e.g. Claude Code injects them directly and doesn't have envchain on PATH).
+R2_UPLOAD_CMD=(uv run python "$GIT_ROOT"/scripts/r2_upload.py --move-to-dir "$LOCAL_ASSET_DIR" --references-dir "$GIT_ROOT"/website_content --upload-from-directory "$STATIC_DIR" --ignore-files "${IGNORE_FILES[@]}")
+if [ -n "$ACCESS_KEY_ID_TURNTROUT_MEDIA" ] && [ -n "$SECRET_ACCESS_TURNTROUT_MEDIA" ] && [ -n "$S3_ENDPOINT_ID_TURNTROUT_MEDIA" ]; then
+    "${R2_UPLOAD_CMD[@]}"
+else
+    envchain cloudflare "${R2_UPLOAD_CMD[@]}"
+fi

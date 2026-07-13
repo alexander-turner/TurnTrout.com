@@ -1,0 +1,122 @@
+---
+title: Lessons from my 428-day battle against flaky Playwright screenshots
+permalink: playwright-tips
+no_dropcap: false
+tags:
+  - website
+  - practical
+description: Hard-won best practices for stable visual regression testing.
+authors:
+  - Alex Turner
+hideSubscriptionLinks: false
+card_image:
+aliases:
+  - playwright
+  - visual-regression
+  - screenshot-testing
+date_published: 2025-08-12
+date_updated: 2026-07-12
+---
+
+# Background
+
+I began working on visual regression testing [on June 4th, 2024](https://github.com/alexander-turner/TurnTrout.com/commit/450764dede34619d6d0c9fb82be80fb2be4fd388). On August 5th, 2025 - the day before my 31st birthday - I accepted all of a build's screenshots for the first time. Thus ended 428 days of sporadic toil.
+
+I've had the tests practically finalized for a while. Problem was, they were <span class="corrupted">flaky</span>. I tried reading Playwright documentation, tutorials, and [best-practice](https://playwright.dev/docs/best-practices) guides. I long conversed with AIs. I even offered to pay \$400 so that a professional would help me tidy up. The response was -- and I _quote_ -- "this is 100% a trap lol... I've debugged playwright before and it's not worth \$400." 💀
+
+I was on my own, but hopefully I can transfer some of my painful learning. Here are the tricks I learned to keep my code clean, my tests reliable, and my site not visually regressed.
+
+![[https://assets.turntrout.com/static/images/posts/playwright-tips-20250810165347.avif|A visual regression testing tool showing a side-by-side comparison. The left panel displays the expected webpage with clear text. The right panel highlights a regression by showing the pixel-level diff. A toolbar at the bottom provides options to approve or reject the change.]]
+Figure: Examining and rejecting an unintended visual change.
+
+# Best practices
+
+To get started, here are two best-practices guides which I recommend:
+
+1. [Official Playwright best practices](https://playwright.dev/docs/best-practices), and
+2. [Say Goodbye to Flaky Tests: Playwright Best Practices Every Test Automation Engineer Must Know.](https://medium.com/@samuel.sperling/say-goodbye-to-flaky-tests-playwright-best-practices-every-test-automation-engineer-must-know-9dfeb9bb5017)
+
+## For Playwright in general
+
+Don't wait for a set amount of time
+: Both `page.waitForTimeout` and `expect.poll` rely on explicit timings. You should almost always use [a better alternative.](https://www.checklyhq.com/learn/playwright/waits-and-timeouts/)
+
+Test approximate equality for scalars
+: If you're testing the `y` position of an element, use `expect(...).toBeCloseTo` instead of `expect(...).toBe`.
+
+Use `fullyParallel` with sharding
+: [Parallelism](https://playwright.dev/docs/test-parallel) within a single machine originally didn't work for me due to other flakiness, but `fullyParallel: true` combined with heavy sharding on CI now works well. I run ~30 shards, each executing a few tests in parallel.
+
+Lint, lint, and then lint some more
+: Linting is not a luxury. My Playwright struggles went from "hopeless" to "winning" when I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
+
+Create a dedicated "test page"
+: I can scroll my [test page](/test-page) and see nearly all of the site's styling conditions. The page is a living document, expanding as I add new formatting features or remember additional edge cases.
+
+[Debug failures using Playwright traces](https://playwright.dev/docs/trace-viewer)
+: Traces let you inspect every moment of the test. You can see the state of the DOM before and after every Playwright command. On CI, save the traces as artifacts and use the `retain-on-failure` option.
+
+Wait for SPA navigation events, not URL changes
+: If your site uses SPA navigation, `page.waitForURL` resolves as soon as `pushState` fires — long before the DOM is ready. Instead, listen for a custom event that your SPA dispatches after the DOM morph is complete. Start listening _before_ the trigger action so you never miss the event.
+
+Beware browser-specific event ordering
+: `mousemove` may fire slightly _after_ `mouseenter` when Playwright teleports the cursor. I had a `mouseMovedSinceNav` flag that was set by `mousemove` and read by the `mouseenter` handler to decide whether to show a popover. The bug: `mouseenter` fired first and saw the flag as `false`, so the popover was suppressed even though the user had genuinely moved the mouse. The fix was to read the flag inside a `setTimeout` callback (300ms later) instead of synchronously — by then, `mousemove` had fired and set it.
+
+Prefer feature detection over timing buffers
+: When a browser quirk fires spurious events (e.g. Safari emitting `mouseenter` after an SPA navigation morphs the DOM under a stationary cursor), resist the urge to add a millisecond buffer like "ignore hovers for 500ms." Instead, track whether the triggering condition actually occurred — e.g. a `mouseMovedSinceNav` boolean that resets on navigation and flips on `mousemove`. The boolean is timing-independent and self-documenting.
+
+Use `domcontentloaded` instead of `load` when possible
+: Firefox can stall on subresource loads (images, fonts) in CI, causing 30-second timeouts on page navigation. Using `domcontentloaded` as the wait condition for `page.goto()` avoids this. Only wait for `load` when you specifically need all subresources to be ready.
+
+  I hit an even nastier version of this on WebKit: my navbar has an autoplaying, looping background video (`preload="auto"`). Its continuous range requests keep the `load` event pending indefinitely, so `page.goto(url, { waitUntil: "load" })` stalled every navigation until the timeout — even though the server had already served every byte in milliseconds. If any page has autoplaying or streaming media, `load` may simply never fire in WebKit. Default your navigation helper to `domcontentloaded` and let each test assert on the concrete elements it needs afterward.
+
+Move the mouse to a safe position before visual assertions
+: Using `page.mouse.move(0, 0)` can overlap with navbar or menu elements on certain viewports (especially tablets), triggering spurious `mouseenter` events. Move the mouse to a position where no UI elements live.
+
+Set `deviceScaleFactor: 1` to eliminate subpixel jitter
+: Different CI runners may have different DPR settings, causing text subpixel rendering differences. Explicitly setting `deviceScaleFactor: 1` in your config and using `scale: "css"` in screenshot options normalizes this across environments.
+
+Pin Chromium's rendering to kill "ordinary" antialiasing drift
+: Screenshots that shift by a tiny amount usually trace back to the CI runner's font or graphics libraries shifting under an older baseline. Three Chromium launch flags: `--force-color-profile=srgb` (fixed color mapping), `--disable-lcd-text` (grayscale instead of subpixel text antialiasing), and `--font-render-hinting=none` (no hinting-dependent glyph metrics).
+
+## For screenshots in particular
+
+I use Playwright's native `toMatchSnapshot` against baselines stored in Cloudflare R2 to examine screenshot deltas and judge visual diffs. No matter what tool you use, though, you'll want your screenshots to be targeted and stable.
+
+1. _Targeted_ screenshots only track a specific part of the site, like [the different fonts](/test-page#formatting). They don't include e.g. the sidebars next to the fonts.
+2. _Stable_ screenshots only change when the styling in question changes. For example, I often dealt with issues where a video's loading bar would display differently in different screenshots due to slight timing differences - that is not stable. If the video didn't appear at all, however, I would want the screenshot to reflect that.
+
+It took me a long time to achieve these goals. Practically, I recommend directly using my [`visual_utils.ts`](https://github.com/alexander-turner/TurnTrout.com/blob/main/quartz/components/tests/visual_utils.ts). Here are screenshot lessons I learned:
+
+Use Playwright's native snapshot APIs with baselines kept out of git
+: I take screenshots into a buffer and call [`expect.soft(buffer).toMatchSnapshot(name)`](https://playwright.dev/docs/test-snapshots). Baselines live in Cloudflare R2 (`r2:turntrout/visual-baselines/`) — `tests/visual-baselines/` is gitignored so the repo stays slim. CI downloads the current set into the local directory before running tests via `rclone copy`. Using `expect.soft` lets every shot in a test report a diff in the HTML report instead of halting at the first mismatch. A `visual-approved` PR label triggers a workflow that re-runs with `--update-snapshots=all`, uploads the regenerated PNGs back to R2, then pushes an empty commit so visual-testing reruns against the new baselines.
+
+  Remember to pass `--update-snapshots` when running `npx playwright test` to bootstrap baselines, or Playwright will error on missing files.
+
+Target screenshots to specific elements
+: Instead of taking a screenshot of the entire page, I take a screenshot of e.g. a particular table. The idea is that modifying table styling only affects the table-containing screenshots.
+
+Scrub media elements to deterministic positions
+: Embedded audio and video elements fetch a varying number of bytes before the test takes a screenshot. That varying number of bytes means a varying "loaded" portion of the loading bar, creating a flaky visual difference. I scrub audio elements to the _end_ (showing a fully loaded bar) and video elements to _frame 0_ (showing the first frame consistently). Use `MutationObserver` in `addInitScript` to intercept media elements as the DOM is parsed — disabling `autoplay` and setting `preload: "metadata"` before any frames can advance.
+
+  ![[https://assets.turntrout.com/static/images/posts/design-20250810160319.avif|An HTML audio player under the heading "Audio". The progress bar shows a small, lighter-colored segment at the beginning, indicating the portion of audio data that has been fetched.]] <figcaption>In the loading bar, the medium shade displays how much data has been fetched.</figcaption>
+
+Verify videos are paused at frame 0 before screenshotting
+: Even with autoplay disabled and an initial `pause()` + `currentTime = 0` seek, slow CI runners can time out before the `seeked` event fires — leaving the video at a non-zero frame. Use `page.waitForFunction` to poll each video element, re-issuing `pause()` and `currentTime = 0` on each poll iteration until the browser confirms `paused && currentTime === 0`. This catches races that a single seek-and-hope approach misses.
+
+Isolate the relevant DOM
+: While `toHaveScreenshot` guarantees stability _within_ a session, my screenshots were still wobbling in response to unrelated changes earlier in the page. For some reason, there were a few pixels of difference due to e.g. an additional line being present earlier in the page.
+
+  I made a helper function which deletes unrelated parts of the DOM. For example, suppose I have five `<span>`s in a row. I want to screenshot the third `<span>`. The position of the first two `<span>`s affects the position of the third. Therefore, I edit the DOM to exclude siblings of ancestors of the element I want to screenshot. I would then exclude the other four `<span>`s.
+
+Mock the content
+: When I take screenshots of site styling, they're almost all of the test page content. The test page decouples site styling from updates to content around my site, ruling out alerts from "changed" screenshots which only show updated content.
+
+Use isolated fixture pages for visual regression testing
+: I used to take screenshot of searching for [the emoji section of the test page](/test-page#emoji-examples). However, test page modifications would jitter the screenshot, churning against baselines. I fixed this by writing fixture pages to decouple e.g. the search appearance from the specific (changing) content of the test page.
+
+Run WebKit tests on macOS, not Linux
+: Playwright's Linux WebKit engine (WPE) is _not_ the same as real Safari. WPE is flaky. The Playwright team [recommends running WebKit on macOS](https://playwright.dev/docs/browsers#webkit) for Safari fidelity. I split my CI into Linux jobs (Chromium & Firefox) and macOS jobs (WebKit only).
+
+Know when to give up
+: In my visual regression testing, there are five or so discrepancies between the CI screenshots and the local screenshots. I tried for at least an hour to fix each discrepancy, but ultimately gave up. After all, visual regression testing just needs to tell me when the appearance _changes_. I've just approved those screenshots and kept an explicit list of what's different.

@@ -1,0 +1,31 @@
+public
+# Obsidian-flavored content uses custom syntax (spoilers, subtitles, table
+# captions) that prettier can mangle; format the markdown source by hand.
+website_content
+**.min.*
+node_modules
+.quartz-cache
+.quartz_checks
+**/.github/workflows/*.yaml
+.github/
+coverage/
+htmlcov/
+.venv/
+.vale-styles
+.logs/
+.pytest_cache/
+test-results/
+.lighthouseci/
+pnpm-lock.yaml
+**/asset_queue.json
+**/.asset_dimensions.json
+**/img-comparison-slider.js
+.beads/
+.vscode/
+**/suggested_alts.json
+**/website_content/.obsidian/**
+# Jinja2 templates: prettier-html mangles `{% %}` blocks inside attributes.
+**/scripts/templates/**
+.claude-tooling/
+.worktrees
+.pnpm-store

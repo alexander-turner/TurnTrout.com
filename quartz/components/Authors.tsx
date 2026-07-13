@@ -1,0 +1,34 @@
+import React from "react"
+
+import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
+
+import { RenderPublicationInfo } from "./ContentMeta"
+
+/** Joins author names into a natural-language list (Oxford-comma style); defaults to "Alex Turner". */
+export function formatAuthors(authors: readonly string[]): string {
+  if (authors.length === 0) return "Alex Turner"
+  if (authors.length === 1) return authors[0]
+  if (authors.length === 2) return `${authors[0]} and ${authors[1]}`
+  return `${authors.slice(0, -1).join(", ")}, and ${authors.at(-1)}`
+}
+
+const Authors: QuartzComponent = ({ fileData, cfg }: QuartzComponentProps) => {
+  if (fileData.frontmatter?.hide_metadata || fileData.frontmatter?.hide_authors) {
+    return null
+  }
+
+  const authorList = fileData.frontmatter?.authors ?? ["Alex Turner"]
+  const authorsText = `By ${formatAuthors(authorList)}`
+
+  // Add the publication info
+  const publicationInfo = RenderPublicationInfo(cfg, fileData)
+
+  return (
+    <div className="authors">
+      <p>{authorsText}</p>
+      {publicationInfo && <p>{publicationInfo}</p>}
+    </div>
+  )
+}
+
+export default (() => Authors) satisfies QuartzComponentConstructor

@@ -1,0 +1,53 @@
+name: "Summarize Failed Shards"
+description: "Downloads log artifacts from failed shards, concatenates them, and uploads a summary."
+inputs:
+  log-pattern:
+    description: "Pattern for the log artifacts to download."
+    required: true
+  final-log-name:
+    description: "Name of the final concatenated log artifact."
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Download all log artifacts
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        path: logs
+        pattern: ${{ inputs.log-pattern }}
+
+    - name: Concatenate logs
+      if: always()
+      shell: bash
+      run: |
+        # download-artifact doesn't create the dir if no matching
+        # artifacts exist (e.g. when all shards were cancelled before
+        # uploading). Make sure it's there so the cd doesn't fail.
+        mkdir -p logs
+        cd logs
+        {
+          echo "Concatenated logs from failed shards:";
+          shopt -s nullglob
+          had_any=false
+          for logfile in */playwright-run.log; do
+            had_any=true
+            shard_dir=$(dirname "$logfile")
+            echo ""
+            echo "=================================================="
+            echo "Logs from artifact: $shard_dir"
+            echo "=================================================="
+            cat "$logfile"
+          done
+          if [ "$had_any" = "false" ]; then
+            echo ""
+            echo "No shard logs were uploaded — likely all shards were cancelled before producing artifacts."
+          fi
+        } > ../combined-logs.log
+
+    - name: Upload concatenated log
+      if: always()
+      continue-on-error: true
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      with:
+        name: ${{ inputs.final-log-name }}
+        path: combined-logs.log

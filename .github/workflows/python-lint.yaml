@@ -1,0 +1,76 @@
+name: Python linting
+
+concurrency:
+  group: python-lint-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      python: ${{ steps.changes.outputs.python }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        id: changes
+        with:
+          filters: |
+            python:
+              - 'scripts/**'
+              - 'config/python/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - '.github/actions/**'
+              - '.github/scripts/**'
+
+  python-lint:
+    needs: detect-changes
+    if: >
+      !startsWith(github.head_ref, 'deepsource-') &&
+      needs.detect-changes.outputs.python == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+        with:
+          install-node-deps: "false"
+
+      - name: Run pyright
+        run: uv run pyright
+
+      # Ruff is the formatter/linter authority (config in pyproject.toml's
+      # [tool.ruff]). Run via `uvx` (ephemeral, version-pinned) since it isn't
+      # a locked project dependency.
+      - name: Run ruff format check
+        run: uvx ruff@0.15.8 format --check --config pyproject.toml scripts/
+
+      - name: Run ruff check
+        run: uvx ruff@0.15.8 check --config pyproject.toml scripts/
+
+      - name: Run pylint
+        run: |
+          uv run python -m pylint \
+            --rcfile config/python/.pylintrc \
+            .

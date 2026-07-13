@@ -1,0 +1,187 @@
+import type { Node } from "hast"
+import type { Heading, Root } from "mdast"
+
+import { SKIP } from "unist-util-visit"
+import { visitParents } from "unist-util-visit-parents"
+
+import type { QuartzTransformerPlugin } from "../types"
+import type { TocEntry } from "../vfile"
+
+import { footnoteHeadingId, normalizeNbsp, tocMaxDepth } from "../../components/constants"
+import { createWinstonLogger } from "../../util/log"
+import { applyTextTransforms } from "./formatting_improvement_html"
+import { resetSlugger, slugify } from "./gfm"
+import { EXTERNAL_README_CLASS } from "./populateExternalMarkdown"
+import { type ElementMaybeWithParent, hasAncestor } from "./utils"
+
+/**
+ * Configuration options for the Table of Contents transformer
+ * @interface Options
+ */
+export interface Options {
+  /** Maximum heading depth to include in TOC (h1-h6) */
+  maxDepth: 1 | 2 | 3 | 4 | 5 | 6
+  /** Minimum number of entries required to show TOC */
+  minEntries: number
+  /** Whether to show TOC by default when not specified in frontmatter */
+  showByDefault: boolean
+  /** Whether TOC should be collapsed by default */
+  collapseByDefault: boolean
+}
+
+const defaultOptions: Options = {
+  // Deepest heading level shown; shared with the built-site checker via
+  // config/constants.json so the two can't disagree on the cutoff.
+  maxDepth: tocMaxDepth as Options["maxDepth"],
+  minEntries: 1,
+  showByDefault: true,
+  collapseByDefault: false,
+}
+
+const logger = createWinstonLogger("TableOfContents")
+
+/** Debug-log a single TOC entry. */
+function logTocEntry(entry: TocEntry) {
+  logger.debug(`TOC Entry: depth=${entry.depth}, text="${entry.text}", slug="${entry.slug}"`)
+}
+
+/**
+ * Converts a node's content to a string representation
+ * @param node - The AST node to convert
+ * @returns String representation of the node's content
+ */
+export function customToString(node: Node): string {
+  if ((node.type === "inlineMath" || node.type === "math") && "value" in node) {
+    return node.type === "inlineMath" ? `$${node.value}$` : `$$${node.value}$$`
+  }
+
+  if (["code", "inlineCode"].includes(node.type) && "value" in node) {
+    return `\`${node.value}\``
+  }
+
+  if ("children" in node) {
+    return (node.children as Node[]).map(customToString).join("")
+  }
+  return "value" in node ? String(node.value) : ""
+}
+
+/** Removes any HTML tags from a string, returning the text content only. */
+export function stripHtmlTagsFromString(html: string): string {
+  return html.replace(/<[^>]*>/g, "")
+}
+
+/**
+ * Quartz transformer plugin that generates a table of contents from document headings
+ * @param userOpts - Optional configuration options
+ * @returns Plugin configuration object
+ */
+export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefined> = (
+  userOpts,
+) => {
+  const opts = { ...defaultOptions, ...userOpts }
+  logger.debug(`TableOfContents plugin initialized with options: ${JSON.stringify(opts)}`)
+
+  return {
+    name: "TableOfContents",
+    markdownPlugins() {
+      return [
+        () => {
+          return (tree: Root, file) => {
+            resetSlugger()
+            const display = file.data.frontmatter?.enableToc ?? opts.showByDefault
+            logger.debug(`Processing file: ${file.path}, TOC display: ${display}`)
+
+            if (display) {
+              const toc: TocEntry[] = []
+              let highestDepth: number = opts.maxDepth
+              let hasFootnotes = false
+              // Embedded external READMEs are inlined as raw HTML, so their
+              // headings aren't nested under the wrapper at the mdast stage.
+              // Track the wrapper's `<div>`/`</div>` nesting in document order to
+              // skip them — their headings are namespaced and belong to third
+              // parties. Depth counting tolerates divs inside the README itself.
+              let readmeDivDepth = 0
+
+              visitParents(tree, (node: Node, ancestors) => {
+                if (node.type === "html") {
+                  const value = (node as { value?: string }).value ?? ""
+                  if (readmeDivDepth === 0 && value.includes(`class="${EXTERNAL_README_CLASS}"`)) {
+                    readmeDivDepth = 1
+                  } else if (readmeDivDepth > 0) {
+                    const opens = value.match(/<div\b/g)?.length ?? 0
+                    const closes = value.match(/<\/div>/g)?.length ?? 0
+                    readmeDivDepth += opens - closes
+                  }
+                  return undefined
+                }
+                if (readmeDivDepth > 0) return undefined
+
+                if (
+                  hasAncestor(
+                    node as ElementMaybeWithParent,
+                    (ancestor: Node) => {
+                      return ancestor.type === "blockquote"
+                    },
+                    ancestors,
+                  )
+                )
+                  return SKIP
+
+                if (node.type === "heading" && (node as Heading).depth <= opts.maxDepth) {
+                  const heading = node as Heading
+                  const text = applyTextTransforms(customToString(heading), { useNbsp: false })
+                  const plainText = stripHtmlTagsFromString(text)
+                  highestDepth = Math.min(highestDepth, heading.depth)
+
+                  const slug = slugify(normalizeNbsp(plainText))
+
+                  toc.push({
+                    depth: heading.depth,
+                    text,
+                    slug,
+                  })
+                  logger.debug(
+                    `Added TOC entry: depth=${heading.depth}, text="${text}", slug="${slug}"`,
+                  )
+                } else if (node.type === "footnoteDefinition") {
+                  hasFootnotes = true
+                }
+                return null
+              })
+              if (hasFootnotes) {
+                toc.push({
+                  depth: 1,
+                  text: "Footnotes",
+                  slug: footnoteHeadingId,
+                })
+                logger.debug("Added Footnotes to TOC")
+              }
+
+              if (toc.length > 0 && toc.length >= opts.minEntries) {
+                const adjustedToc = toc.map((entry) => ({
+                  ...entry,
+                  depth: entry.depth - highestDepth,
+                }))
+                file.data.toc = adjustedToc
+                file.data.collapseToc = opts.collapseByDefault
+                logger.debug(`Generated TOC for ${file.path} with ${adjustedToc.length} entries`)
+                adjustedToc.forEach(logTocEntry)
+              } else {
+                logger.debug(`Skipped TOC generation for ${file.path}: not enough entries`)
+              }
+            } else {
+              logger.debug(`TOC generation skipped for ${file.path}: display is false`)
+            }
+          }
+        },
+      ]
+    },
+  }
+}
+
+declare module "vfile" {
+  interface DataMap {
+    toc: readonly TocEntry[]
+    collapseToc: boolean
+  }
+}

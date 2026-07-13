@@ -1,0 +1,543 @@
+import type { Element, ElementContent, Root } from "hast"
+
+import childProcess, { type SpawnSyncReturns } from "child_process"
+import crypto from "crypto"
+import gitRoot from "find-git-root"
+import fs from "fs/promises"
+import sizeOf from "image-size"
+import path from "path"
+import { visit } from "unist-util-visit"
+import { fileURLToPath } from "url"
+import { VFile } from "vfile"
+
+import type { BuildCtx } from "../../util/ctx"
+
+import { createWinstonLogger } from "../../util/log"
+import { isDraftPath } from "../filters/draft"
+
+export const logger = createWinstonLogger("assetDimensions")
+
+const __filepath = fileURLToPath(import.meta.url)
+const projectRoot = path.dirname(gitRoot(__filepath))
+export const paths = {
+  _filepath: __filepath,
+  projectRoot,
+  assetDimensions: path.join(
+    projectRoot,
+    "quartz",
+    "plugins",
+    "transformers",
+    ".asset_dimensions.json",
+  ),
+}
+export const numRetries = 3
+
+export interface AssetDimensions {
+  width: number
+  height: number
+}
+
+export interface AssetDimensionMap {
+  [src: string]: AssetDimensions | undefined
+}
+
+/**
+ * Resolves paths containing 'asset_staging/' to their location in website_content.
+ * Handles paths like: ../asset_staging/file.png, /asset_staging/file.png, asset_staging/file.png
+ * @param localPath - The path that may contain asset_staging
+ * @returns The resolved path to website_content/asset_staging, or null if not an asset_staging path
+ */
+export function maybeResolveAssetStagingPath(localPath: string): string | null {
+  const idx = localPath.indexOf("asset_staging/")
+  if (idx === -1) {
+    return null
+  }
+  return path.join(paths.projectRoot, "website_content", localPath.substring(idx))
+}
+
+/**
+ * Handles asset dimension processing for images and videos, including caching and fetching dimensions
+ * from both local and remote sources.
+ */
+class AssetProcessor {
+  private assetDimensionsCache: AssetDimensionMap | null = null
+  private needToSaveCache = false
+
+  /** Test-only: clears in-memory cache and the dirty flag. */
+  public resetDirectCacheAndDirtyFlag(): void {
+    this.assetDimensionsCache = null
+    this.needToSaveCache = false
+  }
+
+  /** Test-only: directly replaces the in-memory dimension cache. */
+  public setDirectCache(cache: AssetDimensionMap | null): void {
+    this.assetDimensionsCache = cache
+  }
+
+  /** Test-only: directly sets the "cache needs persisting" flag. */
+  public setDirectDirtyFlag(isDirty: boolean): void {
+    this.needToSaveCache = isDirty
+  }
+
+  /** Loads (or returns the cached) on-disk asset dimensions map; missing file yields empty map. */
+  public async maybeLoadDimensionCache(): Promise<AssetDimensionMap> {
+    if (this.assetDimensionsCache !== null) {
+      return this.assetDimensionsCache
+    }
+    try {
+      const data = await fs.readFile(paths.assetDimensions, "utf-8")
+      this.assetDimensionsCache = JSON.parse(data) as AssetDimensionMap
+    } catch (error) {
+      logger.warn(
+        `Could not load asset dimension cache from ${paths.assetDimensions}: ${error}. Starting fresh.`,
+      )
+      this.assetDimensionsCache = {}
+    }
+    return this.assetDimensionsCache
+  }
+
+  // Save asset dimensions if needed
+  public async maybeSaveAssetDimensions(): Promise<void> {
+    if (this.assetDimensionsCache && this.needToSaveCache) {
+      // Use unique temp file to avoid race conditions with parallel workers
+      const tempFilePath = `${paths.assetDimensions}.tmp.${process.pid}.${crypto.randomUUID()}`
+      const data = `${JSON.stringify(this.assetDimensionsCache, null, 2)}\n`
+
+      await fs.writeFile(tempFilePath, data, "utf-8")
+      try {
+        await fs.rename(tempFilePath, paths.assetDimensions)
+      } catch (error) {
+        // Clean up temp file on failure (ignore errors - file may already be gone)
+        await fs.unlink(tempFilePath).catch(() => undefined)
+        // ENOENT means another worker may have saved successfully, or there was a race
+        // In either case, the cache should be saved, so we can continue
+        // istanbul ignore next -- race condition that's hard to reliably test
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+          this.needToSaveCache = false
+          return
+        }
+        throw error
+      }
+      this.needToSaveCache = false
+    }
+  }
+
+  /**
+   * Uses ffprobe to get dimensions of video or image assets.
+   * @param assetSrc - The source path or URL of the asset
+   * @returns Asset dimensions
+   */
+  public static getAssetDimensionsFfprobe(assetSrc: string): AssetDimensions {
+    const ffprobe: SpawnSyncReturns<string> = childProcess.spawnSync(
+      "ffprobe",
+      [
+        "-v",
+        "error",
+        "-select_streams",
+        "v:0",
+        "-show_entries",
+        "stream=width,height",
+        "-of",
+        "csv=s=x:p=0",
+        assetSrc,
+      ],
+      { encoding: "utf-8" },
+    )
+    if (ffprobe.error) {
+      if ((ffprobe.error as NodeJS.ErrnoException).code === "ENOENT") {
+        throw new Error(
+          "ffprobe command not found. Please install ffmpeg to get dimensions for assets.",
+        )
+      } else {
+        throw new Error(`Error spawning ffprobe: ${ffprobe.error.message}`)
+      }
+    }
+
+    const output = ffprobe.stdout.trim()
+    const dimensionsMatch = output.match(/^(?<width>\d+)x(?<height>\d+)/)
+
+    if (dimensionsMatch?.groups) {
+      const width = parseInt(dimensionsMatch.groups.width, 10)
+      const height = parseInt(dimensionsMatch.groups.height, 10)
+
+      /* istanbul ignore if */
+      if (isNaN(width) || isNaN(height)) {
+        throw new Error(`Could not get dimensions for local video asset ${assetSrc}`)
+      }
+      logger.debug(`Local video dimensions for ${assetSrc}: ${width}x${height}`)
+      return { width, height }
+    }
+
+    throw new Error(`Could not parse dimensions from ffprobe output: ${output}`)
+  }
+
+  /**
+   * Determine whether a given source string points to a remote (HTTP/S) resource.
+   * Any non-HTTP(S) protocol (including "file://" and relative or absolute paths) is considered local.
+   */
+  public static isRemoteUrl(src: string): boolean {
+    try {
+      const parsed = new URL(src)
+      return parsed.protocol === "http:" || parsed.protocol === "https:"
+    } catch {
+      // If URL constructor throws, treat as local path
+      return false
+    }
+  }
+
+  /**
+   * Resolves a local asset path, handling file:// URLs and relative/absolute paths.
+   */
+  private static async resolveLocalAssetPath(src: string): Promise<string> {
+    if (src.startsWith("file://")) {
+      const localPath = fileURLToPath(src)
+      await fs.access(localPath)
+      return localPath
+    }
+
+    let localPath = src
+
+    // Check if path contains asset_staging anywhere (handles ../asset_staging/, /asset_staging/, asset_staging/)
+    const assetStagingResolved = maybeResolveAssetStagingPath(localPath)
+    if (assetStagingResolved) {
+      await fs.access(assetStagingResolved)
+      return assetStagingResolved
+    }
+
+    if (localPath.startsWith("/")) {
+      // Treat as relative to the project root
+      localPath = path.join(paths.projectRoot, "quartz", localPath.substring(1))
+    } else if (!path.isAbsolute(localPath)) {
+      // Assumes asset is in website_content for relative paths
+      localPath = path.join(paths.projectRoot, "website_content", localPath)
+    }
+    await fs.access(localPath)
+    return localPath
+  }
+
+  private static readonly videoExts: ReadonlySet<string> = new Set([
+    ".mp4",
+    ".mov",
+    ".m4v",
+    ".webm",
+    ".mpeg",
+    ".mpg",
+    ".avi",
+    ".mkv",
+  ])
+
+  // Get dimensions for a local asset: use ffprobe for videos, image-size for images/SVGs
+  private static async getLocalAssetDimensions(assetSrc: string): Promise<AssetDimensions> {
+    const localPath = await AssetProcessor.resolveLocalAssetPath(assetSrc)
+    const ext = path.extname(localPath).toLowerCase()
+    const { videoExts } = AssetProcessor
+    if (videoExts.has(ext)) {
+      return await AssetProcessor.getAssetDimensionsFfprobe(localPath)
+    }
+
+    const buffer = await fs.readFile(localPath)
+    const dimensions = sizeOf(buffer)
+    if (
+      dimensions &&
+      typeof dimensions.width === "number" &&
+      typeof dimensions.height === "number"
+    ) {
+      logger.debug(
+        `Local image dimensions for ${assetSrc}: ${dimensions.width}x${dimensions.height}`,
+      )
+      return { width: dimensions.width, height: dimensions.height }
+    }
+    /* istanbul ignore next */
+    throw new Error(
+      `Unable to determine local asset dimensions for ${assetSrc}. Type: ${dimensions?.type}`,
+    )
+  }
+
+  // Get dimensions for a remote asset: fetch + ffprobe or image-size fallback
+  private static async getRemoteAssetDimensions(
+    assetSrc: string,
+    /* istanbul ignore next */
+    retries = 1,
+    /* istanbul ignore next */
+    delay = 1000,
+  ): Promise<AssetDimensions> {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const response = await fetch(assetSrc)
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch asset ${assetSrc}: ${response.status} ${response.statusText}`,
+          )
+        }
+
+        const contentType = response.headers.get("Content-Type")
+        const isSvgRemote = contentType === "image/svg+xml" || assetSrc.endsWith(".svg")
+        if (
+          !isSvgRemote &&
+          (contentType?.startsWith("video/") || contentType?.startsWith("image/"))
+        ) {
+          // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+          void response.body?.cancel()
+          return await AssetProcessor.getAssetDimensionsFfprobe(assetSrc)
+        }
+
+        const buffer = Buffer.from(await response.arrayBuffer())
+        const dimensions = sizeOf(buffer)
+        if (
+          dimensions &&
+          typeof dimensions.width === "number" &&
+          typeof dimensions.height === "number"
+        ) {
+          logger.debug(
+            `Remote image dimensions for ${assetSrc}: ${dimensions.width}x${dimensions.height}`,
+          )
+          return { width: dimensions.width, height: dimensions.height }
+        }
+        /* istanbul ignore next */
+        throw new Error(
+          `Unable to determine remote asset dimensions for ${assetSrc}. Type: ${dimensions?.type}`,
+        )
+      } catch (error) {
+        if (i === retries - 1) throw error
+        await new Promise((resolve) => setTimeout(resolve, delay * (i + 1)))
+      }
+    }
+    throw new Error(`Failed to fetch ${assetSrc} after ${retries} attempts.`)
+  }
+
+  /**
+   * Fetches and parses asset dimensions for both local and remote assets.
+   * @param assetSrc - The source URL or path of the asset
+   * @param retries - Number of retry attempts for remote assets
+   * @returns Promise resolving to asset dimensions or null if failed
+   */
+  public static async fetchAndParseAssetDimensions(
+    assetSrc: string,
+    retries = numRetries,
+  ): Promise<AssetDimensions | null> {
+    return AssetProcessor.isRemoteUrl(assetSrc)
+      ? await AssetProcessor.getRemoteAssetDimensions(assetSrc, retries)
+      : await AssetProcessor.getLocalAssetDimensions(assetSrc)
+  }
+
+  /** Returns the src of a video element or that of its first source child.
+   * In this project, each video element should have two source elements, one for mp4 and one for webm.
+   */
+  public static getVideoSource(node: Element): string | undefined {
+    const directSrc = node.properties?.src as string | undefined
+    if (directSrc) {
+      return directSrc
+    }
+
+    const source = node.children.find(
+      (child: ElementContent) => child.type === "element" && child.tagName === "source",
+    ) as Element | undefined
+    if (source && source.properties?.src && typeof source.properties.src === "string") {
+      return source.properties.src
+    }
+    return undefined
+  }
+
+  public imageTagsToProcess = ["img", "svg"]
+
+  /** Extracts the URL inside `--mask-url: url(...)` from an inline style string, or null. */
+  public static extractMaskUrl(style: string | undefined): string | null {
+    if (style === undefined) return null
+    const match = style.match(/--mask-url:\s*url\((?<url>[^)]+)\)/)
+    return match?.groups?.url ?? null
+  }
+
+  /**
+   * Collects all asset nodes (images and videos) from the AST tree that need dimension processing.
+   */
+  public collectAssetNodes(tree: Root): { node: Element; src: string }[] {
+    const imageAssetsToProcess: { node: Element; src: string }[] = []
+    visit(tree, "element", (node: Element) => {
+      if (
+        typeof node.properties?.src === "string" &&
+        this.imageTagsToProcess.includes(node.tagName)
+      ) {
+        imageAssetsToProcess.push({ node, src: node.properties.src })
+        return
+      }
+
+      if (node.tagName === "svg") {
+        const maskUrl = AssetProcessor.extractMaskUrl(node.properties?.style as string | undefined)
+        if (maskUrl) {
+          imageAssetsToProcess.push({ node, src: maskUrl })
+        }
+      }
+    })
+
+    const videoAssetsToProcess: { node: Element; src: string }[] = []
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName === "video") {
+        const src = AssetProcessor.getVideoSource(node)
+        if (src) {
+          videoAssetsToProcess.push({ node, src })
+        }
+      }
+    })
+
+    return [...imageAssetsToProcess, ...videoAssetsToProcess]
+  }
+
+  /**
+   * Processes a single asset by fetching its dimensions and applying them to the node.
+   * @param assetInfo - Object containing the DOM node and source URL
+   * @param currentDimensionsCache - The current dimensions cache
+   * @param retries - Number of retry attempts for remote assets
+   * @param offline - If true, skip remote fetches and use cached dimensions only
+   */
+  public async processAsset(
+    assetInfo: { node: Element; src: string },
+    currentDimensionsCache: AssetDimensionMap,
+    retries = numRetries,
+    offline = false,
+  ): Promise<void> {
+    const { node, src } = assetInfo
+    let dims = currentDimensionsCache[src]
+
+    if (!dims) {
+      // In offline mode, skip fetching uncached remote assets
+      if (offline && AssetProcessor.isRemoteUrl(src)) {
+        logger.debug(`Skipping remote asset in offline mode: ${src}`)
+        return
+      }
+      const fetchedDims = await AssetProcessor.fetchAndParseAssetDimensions(src, retries)
+      if (fetchedDims) {
+        dims = fetchedDims
+        currentDimensionsCache[src] = fetchedDims
+        this.needToSaveCache = true
+      }
+    }
+
+    if (dims && dims.width > 0 && dims.height > 0) {
+      node.properties = node.properties || {}
+      node.properties.width = dims.width
+      node.properties.height = dims.height
+      let styles = `aspect-ratio: ${dims.width} / ${dims.height};`
+      // A video reports no usable intrinsic width until its resource loads, so a
+      // shrink-to-fit float-right figure sizes to the 300px default object width
+      // and then jumps to the real width on load. Expose the known width so CSS
+      // can give such figures a definite width up front.
+      if (node.tagName === "video") {
+        styles += ` --natural-width: ${dims.width}px;`
+      }
+      prependStyles(node, styles)
+    }
+  }
+}
+
+export const assetProcessor = new AssetProcessor()
+
+export { AssetProcessor }
+
+/**
+ * Prepends CSS declarations to an element's inline style.
+ */
+export function prependStyles(node: Element, newStyles: string): void {
+  node.properties = node.properties || {}
+  const existingStyle = (
+    typeof node.properties.style === "string" ? node.properties.style : ""
+  ).trim()
+  node.properties.style = existingStyle ? `${newStyles} ${existingStyle}` : newStyles
+}
+
+/**
+ * Given the child images of an img-comparison-slider, returns the dimensions
+ * of the image with the widest aspect ratio (i.e. shortest rendered height at
+ * equal width). Throws if any image lacks valid dimensions.
+ */
+export function findWidestAspectRatio(images: Element[]): AssetDimensions {
+  if (images.length === 0) {
+    throw new Error("findWidestAspectRatio requires at least one image")
+  }
+
+  let widest: AssetDimensions = { width: 0, height: 0 }
+  let widestRatio = -Infinity
+  for (const image of images) {
+    const imageWidth = Number(image.properties?.width)
+    const imageHeight = Number(image.properties?.height)
+    if (!(imageWidth > 0) || !(imageHeight > 0)) {
+      throw new Error(
+        `img-comparison-slider image missing dimensions: src="${image.properties?.src}"`,
+      )
+    }
+    const aspectRatio = imageWidth / imageHeight
+    if (aspectRatio > widestRatio) {
+      widestRatio = aspectRatio
+      widest = { width: imageWidth, height: imageHeight }
+    }
+  }
+  return widest
+}
+
+/**
+ * After image dimensions are set, constrain each img-comparison-slider's
+ * aspect-ratio to the shorter image so both sides render at the same height.
+ * The shadow DOM's overflow:hidden clips the taller image at the bottom.
+ */
+export function constrainSliderHeight(tree: Root): void {
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "img-comparison-slider") return
+
+    const images = node.children.filter(
+      (child): child is Element => child.type === "element" && child.tagName === "img",
+    )
+    if (images.length < 2) {
+      throw new Error("img-comparison-slider must have at least 2 child <img> elements")
+    }
+
+    const shortest = findWidestAspectRatio(images)
+
+    // overflow:hidden is required on the element itself so that aspect-ratio
+    // is authoritative for non-replaced elements: e.g. a slider 800px wide with
+    // aspect-ratio 16/9 has a preferred height of 450px, but the shadow DOM's
+    // .second div may contain a 2700px-tall image whose content height would
+    // stretch the box beyond 450px without overflow:hidden to enforce the cap.
+    prependStyles(node, `aspect-ratio: ${shortest.width} / ${shortest.height}; overflow: hidden;`)
+  })
+}
+
+/**
+ * Creates a Quartz plugin that adds width, height, and aspect-ratio CSS to image and video elements.
+ * In offline mode, uses cached dimensions only and skips remote asset fetches.
+ */
+export const addAssetDimensionsFromSrc = () => {
+  return {
+    name: "AddAssetDimensionsFromSrc",
+    htmlPlugins(ctx: BuildCtx) {
+      /* istanbul ignore next -- defensive default for offline flag */
+      const offline = ctx.argv.offline ?? false
+      return [
+        () => {
+          return async (tree: Root, file: VFile) => {
+            // Drafts are stripped by RemoveDrafts before emission, so don't fail
+            // the build over a draft that references an asset not yet on disk.
+            if (isDraftPath(file.data.filePath ?? file.path ?? "")) {
+              return
+            }
+            const currentDimensionsCache = await assetProcessor.maybeLoadDimensionCache()
+            const assetsToProcess = assetProcessor.collectAssetNodes(tree)
+
+            for (const assetInfo of assetsToProcess) {
+              await assetProcessor.processAsset(
+                assetInfo,
+                currentDimensionsCache,
+                numRetries,
+                offline,
+              )
+            }
+            if (assetProcessor["needToSaveCache"]) {
+              await assetProcessor.maybeSaveAssetDimensions()
+              assetProcessor["needToSaveCache"] = false
+            }
+
+            constrainSliderHeight(tree)
+          }
+        },
+      ]
+    },
+  }
+}

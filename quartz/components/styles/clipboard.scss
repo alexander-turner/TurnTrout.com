@@ -1,0 +1,52 @@
+@use "../../styles/variables.scss" as *;
+
+pre {
+  position: relative;
+
+  & > code {
+    overflow: auto;
+  }
+}
+
+pre:hover > .clipboard-button,
+.punctilio-output-wrapper:hover > .clipboard-button {
+  opacity: 1;
+  transition: opacity $transition-duration-quick;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .clipboard-button {
+    opacity: 1;
+  }
+}
+
+.clipboard-button {
+  display: flex;
+  position: absolute;
+  z-index: $z-raised;
+  margin: $base-margin;
+  padding: 0;
+  color: var(--midground);
+  border: 1px solid var(--midground-faint);
+  background-color: var(--background);
+  border-radius: $border-radius;
+  opacity: 0;
+  transition: $transition-duration-quick;
+  right: 0;
+
+  & > svg {
+    fill: var(--midground);
+    filter: contrast(0.3);
+    padding: 0;
+    margin: calc(0.5 * $base-margin);
+  }
+
+  &:hover {
+    cursor: pointer;
+    border-color: var(--blue);
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: 0;
+  }
+}

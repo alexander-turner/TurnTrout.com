@@ -1,0 +1,290 @@
+/**
+ * @jest-environment jest-fixed-jsdom
+ */
+
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
+
+import { type FullSlug } from "../../util/path"
+import { savedThemeKey } from "../constants"
+import { rotateTheme, setupDarkMode } from "./darkmode"
+
+// Test constants
+const SYSTEM_PREFERENCES = ["dark", "light"] as const
+const DOM_SETUP = `
+  <div id="darkmode-span">
+    <button id="theme-toggle" type="button" aria-label="Toggle theme">
+      <svg id="day-icon"></svg>
+      <svg id="night-icon"></svg>
+    </button>
+    <p id="theme-label">Auto</p>
+  </div>
+`
+const NAV_EVENT_DETAIL = { url: "" as FullSlug }
+
+// Mock MediaQueryListEvent if not available in test environment
+class MockMediaQueryListEvent extends Event {
+  matches: boolean
+  media: string
+
+  constructor(type: string, init: { matches: boolean; media: string }) {
+    super(type)
+    this.matches = init.matches
+    this.media = init.media
+  }
+}
+
+global.MediaQueryListEvent = global.MediaQueryListEvent || MockMediaQueryListEvent
+
+type MediaQueryCallback = (e: MediaQueryListEvent) => void
+
+const createMockMediaQueryList = (
+  matches: boolean,
+): MediaQueryList & { addEventListener: jest.Mock } => ({
+  matches,
+  media: "(prefers-color-scheme: dark)",
+  onchange: null,
+  addEventListener: jest.fn(),
+  removeEventListener: jest.fn(),
+  dispatchEvent: () => false,
+  addListener: jest.fn(),
+  removeListener: jest.fn(),
+})
+
+describe("darkmode", () => {
+  let localStorageSpy: ReturnType<typeof jest.spyOn>
+  let matchMediaSpy: jest.Mock<(query: string) => MediaQueryList>
+
+  const triggerToggle = () => {
+    const toggle = document.querySelector("#theme-toggle") as HTMLButtonElement
+    toggle.click()
+  }
+
+  const getThemeLabelContent = (): string => {
+    const customPropertyValue =
+      document.documentElement.style.getPropertyValue("--theme-label-content")
+    // Remove surrounding quotes if present
+    return customPropertyValue.replace(/"/g, "")
+  }
+
+  const flush = () => new Promise((r) => setTimeout(r, 0))
+
+  const initializeAndDispatchNav = async () => {
+    setupDarkMode()
+    document.dispatchEvent(new CustomEvent("nav", { detail: NAV_EVENT_DETAIL }))
+    await flush()
+  }
+
+  beforeEach(() => {
+    document.body.innerHTML = DOM_SETUP
+    localStorageSpy = jest.spyOn(Storage.prototype, "setItem")
+
+    // Mock window.matchMedia
+    matchMediaSpy = jest.fn((query: string) =>
+      createMockMediaQueryList(query === "(prefers-color-scheme: dark)"),
+    )
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      value: matchMediaSpy,
+    })
+
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    jest.clearAllMocks()
+    document.body.innerHTML = ""
+    // Clean up window.matchMedia mock
+    Object.defineProperty(window, "matchMedia", {
+      writable: true,
+      value: undefined,
+    })
+  })
+
+  describe("theme initialization", () => {
+    it.each(SYSTEM_PREFERENCES)(
+      "should set theme to %s when system prefers %s",
+      async (systemPrefers) => {
+        matchMediaSpy.mockReturnValue(createMockMediaQueryList(systemPrefers === "dark"))
+        setupDarkMode()
+        document.dispatchEvent(new CustomEvent("nav", { detail: NAV_EVENT_DETAIL }))
+        await flush()
+
+        expect(document.documentElement.getAttribute("data-theme")).toBe(systemPrefers)
+        expect(getThemeLabelContent()).toBe("Auto")
+      },
+    )
+
+    it("should respect stored theme preference over system preference", async () => {
+      matchMediaSpy.mockReturnValue(createMockMediaQueryList(false)) // system prefers light
+      localStorage.setItem(savedThemeKey, "dark")
+
+      setupDarkMode()
+      document.dispatchEvent(new CustomEvent("nav", { detail: NAV_EVENT_DETAIL }))
+      await flush()
+
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
+      expect(getThemeLabelContent()).toBe("Dark")
+    })
+  })
+
+  describe("theme toggle", () => {
+    it("should emit theme change event when toggle is clicked", async () => {
+      await initializeAndDispatchNav()
+      triggerToggle()
+      await flush()
+      expect(getThemeLabelContent()).toBe("Light")
+    })
+
+    it("should update localStorage when theme is changed", async () => {
+      await initializeAndDispatchNav()
+      triggerToggle()
+      await flush()
+
+      expect(localStorageSpy).toHaveBeenCalledWith(savedThemeKey, "light")
+      expect(getThemeLabelContent()).toBe("Light")
+    })
+  })
+
+  describe("system preference change", () => {
+    it("should update theme when system preference changes", async () => {
+      const mediaQueryList = createMockMediaQueryList(false)
+      matchMediaSpy.mockReturnValue(mediaQueryList)
+
+      await initializeAndDispatchNav()
+
+      // Initially in auto mode
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light")
+      expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
+      expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
+
+      // Get the callback that was registered
+      const callback = mediaQueryList.addEventListener.mock.calls[0][1] as MediaQueryCallback
+      const event = new MediaQueryListEvent("change", {
+        matches: true,
+        media: "(prefers-color-scheme: dark)",
+      })
+      callback(event)
+
+      // Theme should change to dark but mode should stay auto
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
+      expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
+      expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
+
+      // But localStorage should preserve auto mode
+      expect(localStorageSpy).toHaveBeenCalledWith(savedThemeKey, "auto")
+    })
+  })
+
+  describe("auto mode", () => {
+    it("should follow system preference when in auto mode", async () => {
+      localStorage.setItem(savedThemeKey, "auto")
+      const mediaQueryList = createMockMediaQueryList(true)
+      matchMediaSpy.mockReturnValue(mediaQueryList)
+
+      await initializeAndDispatchNav()
+
+      // Initially dark theme but auto mode
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
+      expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
+      expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
+
+      // Change system preference to light
+      const lightMediaQueryList = createMockMediaQueryList(false)
+      matchMediaSpy.mockReturnValue(lightMediaQueryList)
+
+      const callback = mediaQueryList.addEventListener.mock.calls[0][1] as MediaQueryCallback
+      const event = new MediaQueryListEvent("change", {
+        matches: false,
+        media: "(prefers-color-scheme: dark)",
+      })
+      callback(event)
+
+      // Theme should change but mode should stay auto
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light")
+      expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
+      expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
+    })
+  })
+
+  describe("theme cycling", () => {
+    it("should cycle through themes in order: auto -> light -> dark -> auto", async () => {
+      localStorage.setItem(savedThemeKey, "auto")
+      // Mock a system preference of dark
+      matchMediaSpy.mockReturnValue(createMockMediaQueryList(true))
+
+      await initializeAndDispatchNav()
+
+      expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
+      expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
+
+      // auto -> light
+      rotateTheme()
+      await flush()
+      expect(localStorage.getItem(savedThemeKey)).toBe("light")
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light")
+      expect(document.documentElement.getAttribute("data-theme-mode")).toBe("light")
+      expect(getThemeLabelContent()).toBe("Light")
+
+      // light -> dark
+      rotateTheme()
+      await flush()
+      expect(localStorage.getItem(savedThemeKey)).toBe("dark")
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
+      expect(document.documentElement.getAttribute("data-theme-mode")).toBe("dark")
+      expect(getThemeLabelContent()).toBe("Dark")
+
+      // dark -> auto
+      rotateTheme()
+      await flush()
+      expect(localStorage.getItem(savedThemeKey)).toBe("auto")
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
+      expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
+      expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
+    })
+
+    it("should default to auto for invalid stored theme", async () => {
+      // Set an invalid theme in localStorage
+      localStorage.setItem(savedThemeKey, "invalid-theme")
+      matchMediaSpy.mockReturnValue(createMockMediaQueryList(false))
+
+      await initializeAndDispatchNav()
+
+      // Clicking the toggle should go from invalid -> auto (default) -> light
+      rotateTheme()
+      await flush()
+      expect(localStorage.getItem(savedThemeKey)).toBe("auto")
+      expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
+      expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
+    })
+  })
+
+  describe("print theme override", () => {
+    it("should force light theme on beforeprint and restore on afterprint", async () => {
+      localStorage.setItem(savedThemeKey, "dark")
+      matchMediaSpy.mockReturnValue(createMockMediaQueryList(true))
+      await initializeAndDispatchNav()
+
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
+
+      window.dispatchEvent(new Event("beforeprint"))
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light")
+
+      window.dispatchEvent(new Event("afterprint"))
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
+    })
+
+    it("should be a no-op when already in light theme", async () => {
+      localStorage.setItem(savedThemeKey, "light")
+      matchMediaSpy.mockReturnValue(createMockMediaQueryList(false))
+      await initializeAndDispatchNav()
+
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light")
+
+      window.dispatchEvent(new Event("beforeprint"))
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light")
+
+      window.dispatchEvent(new Event("afterprint"))
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light")
+    })
+  })
+})

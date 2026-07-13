@@ -1,0 +1,240 @@
+import type { Root } from "hast"
+
+import { toHtml } from "hast-util-to-html"
+
+import { formatTitle } from "../../components/component_utils"
+import { uiStrings } from "../../components/constants"
+import { getDate } from "../../components/Date"
+import DepGraph from "../../depgraph"
+import { type GlobalConfiguration } from "../../util/config"
+import { escapeHTML } from "../../util/escape"
+import {
+  type FilePath,
+  type FullSlug,
+  joinSegments,
+  type SimpleSlug,
+  simplifySlug,
+} from "../../util/path"
+import { applyTextTransforms } from "../transformers/formatting_improvement_html"
+import { type QuartzEmitterPlugin } from "../types"
+import { type ContentDetails } from "../vfile"
+import { write } from "./helpers"
+
+/** Build-time content entry with required date (always set by emit via getDate). */
+type BuildContentDetails = ContentDetails & {
+  date: Date
+  description?: string
+}
+
+type BuildContentIndex = Map<FullSlug, BuildContentDetails>
+
+interface ContentIndexOptions {
+  enableSiteMap: boolean
+  enableRSS: boolean
+  rssLimit?: number
+  rssFullHtml: boolean
+  includeEmptyFiles: boolean
+}
+
+const defaultOptions: ContentIndexOptions = {
+  enableSiteMap: true,
+  enableRSS: true,
+  rssLimit: 10,
+  rssFullHtml: false,
+  includeEmptyFiles: false,
+}
+/**
+ * Generates a sitemap URL entry for a given content slug.
+ */
+const createSiteMapURLEntry = (
+  base: string,
+  slug: SimpleSlug,
+  content: BuildContentDetails,
+): string => `<url>
+    <loc>https://${joinSegments(base, encodeURI(slug))}</loc>
+    <lastmod>${content.date.toISOString()}</lastmod>
+  </url>`
+
+/**
+ * Generates a sitemap from the given content index.
+ *
+ * @param cfg The global configuration.
+ * @param idx The content index to generate the sitemap from.
+ * @returns An XML string representing the sitemap.
+ */
+function generateSiteMap(cfg: GlobalConfiguration, idx: BuildContentIndex): string {
+  const base = cfg.baseUrl ?? ""
+  const urls = Array.from(idx)
+    .map(([slug, content]) => createSiteMapURLEntry(base, simplifySlug(slug), content))
+    .join("")
+  return `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${urls}</urlset>`
+}
+
+/**
+ * Transforms a description string by applying text transforms and then escaping for XML.
+ * Text transforms are applied first (smart quotes, etc.), then the result is escaped
+ * to be safe for XML/RSS output.
+ */
+const textTransformDescription = (description: string): string => {
+  const transformed = applyTextTransforms(description)
+  return escapeHTML(transformed)
+}
+
+/**
+ * Generates an RSS feed URL entry for a given content slug.
+ */
+const createRSSURLEntry = (
+  base: string,
+  slug: SimpleSlug,
+  content: BuildContentDetails,
+): string => `<item>
+    <title>${escapeHTML(content.title)}</title>
+    <link>https://${joinSegments(base, encodeURI(slug))}</link>
+    <description>${content.richContent ?? textTransformDescription(content.description ?? "")}</description>
+    <guid isPermaLink="true">https://${joinSegments(base, encodeURI(slug))}</guid>
+    <pubDate>${content.date.toUTCString()}</pubDate>
+  </item>`
+
+/**
+ * Generates an RSS feed from the given content index.
+ * @returns An XML string representing the RSS feed.
+ */
+function generateRSSFeed(
+  cfg: GlobalConfiguration,
+  idx: BuildContentIndex,
+  maxItemsInFeed?: number,
+): string {
+  const base = cfg.baseUrl ?? ""
+
+  const items = Array.from(idx)
+    .sort(([, f1], [, f2]) => f2.date.getTime() - f1.date.getTime())
+    .map(([slug, content]) => createRSSURLEntry(base, simplifySlug(slug), content))
+    .slice(0, maxItemsInFeed ?? idx.size)
+    .join("")
+
+  return `<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+    <channel>
+      <title>${escapeHTML(cfg.pageTitle)}</title>
+      <link>https://${base}</link>
+      <description>${maxItemsInFeed ? uiStrings.pages.rss.lastFewNotes(maxItemsInFeed) : uiStrings.pages.rss.recentNotes} on ${escapeHTML(
+        cfg.pageTitle,
+      )}</description>
+      ${items}
+    </channel>
+  </rss>`
+}
+
+/**
+ * This plugin creates a content index for the entire site.
+ *
+ * This index is a JSON file that maps each content slug to its details,
+ * including title, links, tags, and content. It can be used for search functionality
+ * or for other plugins that need to access information about all pages.
+ *
+ * This plugin also optionally generates a sitemap and an RSS feed.
+ *
+ * @param opts Options for configuring the plugin.
+ */
+export const ContentIndex: QuartzEmitterPlugin<Partial<ContentIndexOptions>> = (opts) => {
+  opts = { ...defaultOptions, ...opts }
+  return {
+    name: "ContentIndex",
+    getDependencyGraph(ctx, content) {
+      const graph = new DepGraph<FilePath>()
+
+      for (const [, file] of content) {
+        const sourcePath = file.data.filePath as FilePath
+
+        graph.addEdge(
+          sourcePath,
+          joinSegments(ctx.argv.output, "static/contentIndex.json") as FilePath,
+        )
+        if (opts?.enableSiteMap) {
+          graph.addEdge(sourcePath, joinSegments(ctx.argv.output, "sitemap.xml") as FilePath)
+        }
+        if (opts?.enableRSS) {
+          graph.addEdge(sourcePath, joinSegments(ctx.argv.output, "rss.xml") as FilePath)
+        }
+      }
+
+      return graph
+    },
+    async emit(ctx, content) {
+      const cfg = ctx.cfg.configuration
+      const emitted: FilePath[] = []
+      const linkIndex: BuildContentIndex = new Map()
+
+      for (const [tree, file] of content) {
+        const slug = file.data.slug as FullSlug
+        const date = getDate(ctx.cfg.configuration, file.data) ?? new Date()
+
+        // `avoidIndexing` pages are kept out of search, sitemap, and RSS (they
+        // already carry a robots `noindex`). Visual-regression section fixtures
+        // use this so they don't pollute search results during test builds.
+        if (file.data.frontmatter?.avoidIndexing) {
+          continue
+        }
+
+        if (opts?.includeEmptyFiles || (file.data.text && file.data.text !== "")) {
+          linkIndex.set(slug, {
+            title: formatTitle(file.data.frontmatter?.title ?? ""),
+            links: file.data.links ?? [],
+            tags: file.data.frontmatter?.tags ?? [],
+            content: (file.data.text as string) ?? "",
+            richContent: opts?.rssFullHtml
+              ? escapeHTML(toHtml(tree as Root, { allowDangerousHtml: true }))
+              : undefined,
+            date,
+            description: (file.data.description as string) ?? undefined,
+            authors: file.data.frontmatter?.authors ?? [],
+          })
+        }
+      }
+
+      if (opts?.enableSiteMap) {
+        emitted.push(
+          await write({
+            ctx,
+            content: generateSiteMap(cfg, linkIndex),
+            slug: "sitemap" as FullSlug,
+            ext: ".xml",
+          }),
+        )
+      }
+
+      // Only generate RSS feed if we're on main branch
+      if (opts?.enableRSS) {
+        emitted.push(
+          await write({
+            ctx,
+            content: generateRSSFeed(cfg, linkIndex, opts.rssLimit),
+            slug: "rss" as FullSlug,
+            ext: ".xml",
+          }),
+        )
+      }
+
+      const fp = joinSegments("static", "contentIndex") as FullSlug
+      // Strip date and description — only needed for RSS/sitemap, not the client-side JSON
+      const simplifiedIndex = Object.fromEntries(
+        Array.from(linkIndex).map(([slug, entry]): [string, ContentDetails] => {
+          const { title, links, tags, content: text, richContent, authors } = entry
+          return [slug, { title, links, tags, content: text, richContent, authors }]
+        }),
+      )
+
+      emitted.push(
+        await write({
+          ctx,
+          content: JSON.stringify(simplifiedIndex),
+          slug: fp,
+          ext: ".json",
+        }),
+      )
+
+      return emitted
+    },
+    getQuartzComponents: () => [],
+  }
+}

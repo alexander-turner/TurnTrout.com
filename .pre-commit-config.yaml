@@ -1,0 +1,32 @@
+# Five guardrails enforced via the pre-commit.com framework. The hooks below
+# are mirrored on .hooks/pre-commit (which invokes `pre-commit run`) so that
+# `core.hooksPath=.hooks` and `pre-commit run --all-files` both work.
+#
+# Version pins are kept in sync with what we shipped in the inline hook era so
+# upgrades to any analyzer happen in a single PR.
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+        args: [--config, config/gitleaks/.gitleaks.toml]
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.7
+    hooks:
+      - id: actionlint
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.2
+    hooks:
+      - id: codespell
+        # Read skip/ignore lists from [tool.codespell] in pyproject.toml.
+        additional_dependencies: ["tomli"]

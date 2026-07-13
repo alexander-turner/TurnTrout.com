@@ -1,0 +1,192 @@
+/* global SAVED_THEME_KEY, AUTOPLAY_STORAGE_KEY, DROPCAP_COLORS, COLOR_DROPCAP_PROBABILITY -- injected at build time by Static emitter (see buildStaticScriptDefines) */
+;(() => {
+  const themeMode = localStorage.getItem(SAVED_THEME_KEY) || "auto"
+  document.documentElement.setAttribute("data-theme-mode", themeMode)
+
+  // Determine the actual theme to apply
+  let actualTheme = themeMode
+  if (themeMode === "auto") {
+    const windowMatchMedia = window.matchMedia("(prefers-color-scheme: dark)")
+    actualTheme = windowMatchMedia.matches ? "dark" : "light"
+  }
+
+  document.documentElement.setAttribute("data-theme", actualTheme)
+
+  // When the manual theme disagrees with system preference, the browser's
+  // <picture> source selection would show the wrong variant during parse.
+  // Intercept <source> elements as they're added and fix them before paint.
+  if (themeMode !== "auto") {
+    const systemIsDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    const systemTheme = systemIsDark ? "dark" : "light"
+    if (actualTheme !== systemTheme) {
+      const fixSource = (el) => {
+        if (el.tagName !== "SOURCE" || el.parentElement?.tagName !== "PICTURE") return
+        if (!el.media || !el.media.includes("prefers-color-scheme")) return
+        if (actualTheme === "light") {
+          el.setAttribute(
+            "srcset",
+            (el.getAttribute("srcset") || "").replace(/-inverted(\.[^.]+)$/, "$1"),
+          )
+        } else {
+          el.removeAttribute("media")
+        }
+      }
+      const srcObs = new MutationObserver((muts) => {
+        for (const m of muts) {
+          for (const n of m.addedNodes) {
+            if (n.nodeType !== 1) continue
+            if (n.tagName === "SOURCE") fixSource(n)
+            else if (n.querySelectorAll)
+              n.querySelectorAll("picture > source[media]").forEach(fixSource)
+          }
+        }
+      })
+      srcObs.observe(document.documentElement, { childList: true, subtree: true })
+      document.addEventListener("DOMContentLoaded", () => srcObs.disconnect(), { once: true })
+    }
+  }
+
+  // Set theme label content in CSS custom property - show the mode, not the resolved theme
+  document.documentElement.style.setProperty(
+    "--theme-label-content",
+    `"${themeMode[0].toUpperCase()}${themeMode.slice(1)}"`,
+  )
+
+  // Random chance of a colored dropcap (keep in sync with --dropcap-background-* in colors.scss)
+  // Re-rolls on every SPA navigation via the "nav" event listener below.
+  const colors = DROPCAP_COLORS
+  function rollDropcapColor() {
+    if (Math.random() < COLOR_DROPCAP_PROBABILITY) {
+      const color = colors[Math.floor(Math.random() * colors.length)]
+      document.documentElement.style.setProperty(
+        "--random-dropcap-color",
+        `var(--dropcap-background-${color})`,
+      )
+    } else {
+      document.documentElement.style.removeProperty("--random-dropcap-color")
+    }
+  }
+  rollDropcapColor()
+  // Skip the first "nav" event (initial page load) since the IIFE already
+  // rolled above. Only re-roll on subsequent SPA navigations.
+  let isInitialNav = true
+  document.addEventListener("nav", () => {
+    if (isInitialNav) {
+      isInitialNav = false
+      return
+    }
+    rollDropcapColor()
+  })
+
+  // Set video autoplay button state in CSS custom properties
+  const autoplayEnabled = localStorage.getItem(AUTOPLAY_STORAGE_KEY) === "true" // Default to true
+  document.documentElement.style.setProperty(
+    "--video-play-display",
+    autoplayEnabled ? "none" : "block",
+  )
+  document.documentElement.style.setProperty(
+    "--video-pause-display",
+    autoplayEnabled ? "block" : "none",
+  )
+
+  // Pre-load boolean states from localStorage into Maps
+  const loadBooleanStates = (keyPattern) => {
+    const states = new Map()
+    for (const key of Object.keys(localStorage)) {
+      if (key.includes(keyPattern)) states.set(key, localStorage.getItem(key) === "true")
+    }
+    return states
+  }
+  window.__quartz_checkbox_states = loadBooleanStates("-checkbox-")
+  window.__quartz_collapsible_states = loadBooleanStates("-collapsible-")
+
+  /** djb2 hash → 8-char hex. Exposed on window for reuse by other scripts. */
+  window.__quartz_hash = (str) => {
+    let hash = 5381
+    for (let i = 0; i < str.length; i++) hash = ((hash << 5) + hash) ^ str.charCodeAt(i)
+    return (hash >>> 0).toString(16).padStart(8, "0")
+  }
+
+  const hashCounts = new Map()
+  window.__quartz_reset_collapsible_counts = () => hashCounts.clear()
+
+  /** Generates collapsible ID from content hash with index tiebreaker for duplicates. */
+  window.__quartz_collapsible_id = (slug, content) => {
+    const hash = window.__quartz_hash(content || "empty")
+    const key = `${slug}-${hash}`
+    const index = hashCounts.get(key) || 0
+    hashCounts.set(key, index + 1)
+    return `${slug}-collapsible-${hash}-${index}`
+  }
+
+  /** Applies saved state immediately when element added to DOM (prevents layout shift). */
+  function applyCollapsibleState(element) {
+    if (element.dataset.collapsibleId) return // Already processed
+    const slug = document.body?.dataset?.slug
+    if (!slug) return
+    // During streaming parse, the MutationObserver fires when the <blockquote>
+    // is added but before its .admonition-title child is parsed. An empty title
+    // produces a wrong hash, causing the Map lookup to miss and the default
+    // is-collapsed class to persist. Defer to setupAdmonition() on "nav" instead.
+    const titleEl = element.querySelector(".admonition-title")
+    if (!titleEl?.textContent?.trim()) return
+    const title = titleEl.textContent.trim()
+    element.dataset.collapsibleId = window.__quartz_collapsible_id(slug, title)
+    if (window.__quartz_collapsible_states.has(element.dataset.collapsibleId))
+      element.classList.toggle(
+        "is-collapsed",
+        window.__quartz_collapsible_states.get(element.dataset.collapsibleId),
+      )
+  }
+
+  // MutationObserver applies saved state before first paint
+  const collapsibleObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node.nodeType !== Node.ELEMENT_NODE) continue
+        if (node.classList?.contains("is-collapsible")) applyCollapsibleState(node)
+        node.querySelectorAll?.(".admonition.is-collapsible").forEach(applyCollapsibleState)
+      }
+    }
+  })
+  collapsibleObserver.observe(document.documentElement, { childList: true, subtree: true })
+  window.addEventListener("load", () => collapsibleObserver.disconnect(), { once: true })
+
+  // Restore checkbox states as soon as they appear in the DOM (before first paint).
+  // Reads from the pre-loaded cache first, then falls back to localStorage directly
+  // (handles edge cases where the cache was populated before values were available).
+  const restoreCheckboxState = (checkbox, index) => {
+    const slug = document.body?.dataset?.slug
+    if (!slug) return
+    const checkboxId = `${slug}-checkbox-${index}`
+    let savedState = window.__quartz_checkbox_states.get(checkboxId)
+    if (savedState === undefined) {
+      const raw = localStorage.getItem(checkboxId)
+      if (raw !== null) {
+        savedState = raw === "true"
+        window.__quartz_checkbox_states.set(checkboxId, savedState)
+      }
+    }
+    if (savedState !== undefined) checkbox.checked = savedState
+  }
+
+  const restoreAllCheckboxes = () => {
+    const checkboxes = document.querySelectorAll("input.checkbox-toggle")
+    if (checkboxes.length > 0) checkboxes.forEach(restoreCheckboxState)
+  }
+
+  const checkboxObserver = new MutationObserver(restoreAllCheckboxes)
+  checkboxObserver.observe(document.documentElement, { childList: true, subtree: true })
+
+  // WebKit may batch MutationObserver callbacks during parsing, so the observer
+  // might not fire before `load` disconnects it. DOMContentLoaded guarantees all
+  // DOM nodes exist and gives us a reliable fallback to restore any missed checkboxes.
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+      restoreAllCheckboxes()
+      checkboxObserver.disconnect()
+    },
+    { once: true },
+  )
+})()

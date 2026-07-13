@@ -1,0 +1,6 @@
+extends: existence
+message: "Repeated comma in '%s'."
+level: error
+nonword: true
+tokens:
+  - ',,+'

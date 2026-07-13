@@ -1,0 +1,582 @@
+import type { CheerioAPI } from "cheerio"
+import type { Element as CheerioElement } from "domhandler"
+
+import { Mutex } from "async-mutex"
+import chalk from "chalk"
+import { load as cheerioLoad } from "cheerio"
+import { watch } from "chokidar"
+// @ts-expect-error no critical types
+import { generate } from "critical"
+import { randomUUID } from "crypto"
+import { analyzeMetafile, context, build as esBuild } from "esbuild"
+import { sassPlugin } from "esbuild-sass-plugin"
+import fs, { promises as fsPromises } from "fs"
+import http from "http"
+import { type Context } from "node:vm"
+import path from "path"
+import prettyBytes from "pretty-bytes"
+import serveHandler from "serve-handler"
+import { type WebSocket, WebSocketServer } from "ws"
+
+import { generateCritical } from "../styles/generate-critical"
+import { generatePalette, generateScss, generateScssRecord } from "../styles/generate-variables"
+import { type FilePath, slugifyFilePath } from "../util/path"
+import { launchCriticalCssBrowser } from "./browser"
+// @ts-expect-error Importing from a JS file, no types
+import { cacheFile, fp } from "./constants.js"
+
+interface BuildArguments {
+  serve?: boolean
+  bundleInfo?: boolean
+  output: string
+  baseDir: string
+  port: number
+  wsPort: number
+  directory: string
+}
+let cachedCriticalCSS = ""
+
+/**
+ * Resets the cached critical CSS (for testing purposes)
+ */
+export function resetCriticalCSSCache(): void {
+  cachedCriticalCSS = ""
+}
+
+/**
+ * Checks if a port is available by attempting to listen on it
+ */
+export async function checkPortAvailability(port: number): Promise<void> {
+  const testServer = http.createServer()
+  try {
+    await new Promise<void>((resolve, reject) => {
+      testServer.once("error", reject)
+      testServer.once("listening", () => {
+        testServer.close()
+        resolve()
+      })
+      testServer.listen(port)
+    })
+  } catch {
+    console.error(
+      chalk.red(
+        `\nError: Port ${port} is already in use. Please free the port or use a different one.`,
+      ),
+    )
+    console.log(chalk.yellow(`Hint: Kill the process using: lsof -ti:${port} | xargs kill`))
+    throw new Error(`Port ${port} is already in use`)
+  }
+}
+
+/**
+ * Handles `npx quartz build`
+ */
+export async function handleBuild(argv: BuildArguments): Promise<void> {
+  console.log(chalk.bgGreen.black("\n turntrout.com \n"))
+
+  if (argv.serve) {
+    await checkPortAvailability(argv.port)
+  }
+
+  // Generate SCSS files before building
+  await generateScss()
+  await generatePalette()
+  await generateCritical()
+  console.log("SCSS files generated successfully!")
+
+  const ctx: Context = await context({
+    entryPoints: [fp],
+    outfile: cacheFile,
+    bundle: true,
+    keepNames: true,
+    minifyWhitespace: true,
+    minifySyntax: true,
+    platform: "node",
+    format: "esm",
+    jsx: "automatic",
+    jsxImportSource: "preact",
+    packages: "external",
+    sourcemap: true,
+    sourcesContent: false,
+    plugins: [
+      sassPlugin({
+        type: "css-text",
+        cssImports: true,
+      }),
+      {
+        name: "inline-script-loader",
+        setup(build) {
+          build.onLoad({ filter: /\.inline\.(?:ts|js)$/ }, async (args) => {
+            let pathText: string = await fsPromises.readFile(args.path, "utf8")
+
+            // Remove default exports that we manually inserted
+            pathText = pathText.replace("export default", "")
+            pathText = pathText.replace("export", "")
+
+            const sourcefile: string = path.relative(path.resolve("."), args.path)
+            const resolveDir: string = path.dirname(sourcefile)
+            const transpiled = await esBuild({
+              stdin: {
+                contents: pathText,
+                loader: "ts",
+                resolveDir,
+                sourcefile,
+              },
+              write: false,
+              bundle: true,
+              minify: true,
+              platform: "browser",
+              format: "esm",
+            })
+            const rawMod: string = transpiled.outputFiles[0].text
+            return {
+              contents: rawMod,
+              loader: "text",
+            }
+          })
+        },
+      },
+    ],
+  })
+
+  const buildMutex = new Mutex()
+  let lastBuildMs = 0
+  let cleanupBuild: (() => Promise<void>) | null = null
+
+  /**
+   * Builds the site
+   */
+  const build = async (clientRefresh: () => void): Promise<void> => {
+    const buildStart = Date.now()
+    lastBuildMs = buildStart
+    const release = await buildMutex.acquire()
+    let result: Awaited<ReturnType<typeof ctx.rebuild>>
+    try {
+      if (lastBuildMs > buildStart) {
+        return
+      }
+
+      if (cleanupBuild) {
+        await cleanupBuild()
+        console.log(chalk.yellow("Detected a source code change, doing a hard rebuild..."))
+      }
+
+      result = await ctx.rebuild().catch((err: Error) => {
+        throw new Error(`Couldn't parse turntrout.com configuration: ${fp}\nReason: ${err}`)
+      })
+    } finally {
+      release()
+    }
+
+    if (argv.bundleInfo) {
+      const outputFileName = "quartz/.quartz-cache/transpiled-build.mjs"
+      const meta = result.metafile.outputs[outputFileName]
+      console.log(
+        `Successfully transpiled ${Object.keys(meta.inputs).length} files (${prettyBytes(
+          meta.bytes,
+        )})`,
+      )
+      console.log(await analyzeMetafile(result.metafile, { color: true }))
+    }
+
+    // Construct the module path dynamically
+    const modulePath = `../../${cacheFile}?update=${randomUUID()}`
+
+    // Use the dynamically constructed path in the import statement
+    const { default: buildQuartz } = await import(modulePath)
+    cleanupBuild = await buildQuartz(argv, buildMutex, clientRefresh)
+
+    clientRefresh()
+  }
+
+  if (!argv.serve) {
+    // skipcq: JS-0321
+    await build(() => {
+      // Callback placeholder
+    })
+    await ctx.dispose()
+    return
+  }
+
+  const connections = new Set<WebSocket>()
+  // Send a rebuild message to all connected clients. One bad socket must not
+  // prevent the broadcast from reaching the others.
+  const clientRefresh = (): void => {
+    for (const conn of connections) {
+      try {
+        conn.send("rebuild")
+      } catch (err) {
+        console.warn(chalk.yellow(`Failed to notify a WebSocket client of rebuild: ${err}`))
+        connections.delete(conn)
+      }
+    }
+  }
+
+  if (argv.baseDir !== "" && !argv.baseDir.startsWith("/")) {
+    argv.baseDir = `/${argv.baseDir}`
+  }
+
+  await build(clientRefresh)
+
+  // skipcq: JS-0255
+  const server = http.createServer((req, res) => {
+    if (argv.baseDir && !req.url?.startsWith(argv.baseDir)) {
+      console.log(
+        chalk.red(`[404] ${req.url} (warning: link outside of site, this is likely a Quartz bug)`),
+      )
+      res.writeHead(404)
+      res.end()
+      return
+    }
+
+    // Strip baseDir prefix
+    req.url = req.url?.slice(argv.baseDir.length)
+
+    // Serve the site while logging requests
+    const serve = async (publicDir: string = argv.output) => {
+      const release = await buildMutex.acquire()
+      try {
+        await serveHandler(req, res, {
+          public: publicDir,
+          directoryListing: false,
+          headers: [
+            {
+              source: "**/*.*",
+              headers: [{ key: "Content-Disposition", value: "inline" }],
+            },
+          ],
+        })
+        const status: number = res.statusCode
+        const statusString: string =
+          status >= 200 && status < 300 ? chalk.green(`[${status}]`) : chalk.red(`[${status}]`)
+        console.log(statusString + chalk.grey(` ${argv.baseDir}${req.url}`))
+      } finally {
+        release()
+      }
+    }
+
+    // Staged assets live under <contentDir>/asset_staging/ until the pre-push
+    // pipeline uploads them to R2 and rewrites refs to /static/images/posts/.
+    // Serve them directly from the content tree so drafts preview in dev.
+    // Wikilinked references arrive slug-cased (spaces → dashes), but files on
+    // disk keep their original names — rewrite to the literal filename when
+    // the slugged path isn't present.
+    if (req.url?.startsWith("/asset_staging/")) {
+      const rawPath = decodeURIComponent(req.url.split("?")[0])
+      const literal = path.posix.join(argv.directory, rawPath)
+      if (!fs.existsSync(literal)) {
+        const stagingDir = path.posix.join(argv.directory, "asset_staging")
+        const wanted = path.posix.basename(rawPath)
+        try {
+          const match = fs
+            .readdirSync(stagingDir)
+            .find((f) => slugifyFilePath(f as FilePath) === wanted)
+          if (match) {
+            req.url = `/asset_staging/${encodeURIComponent(match)}`
+          }
+        } catch {
+          // asset_staging missing or unreadable; let serve() return 404
+        }
+      }
+      // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+      void serve(argv.directory)
+      return
+    }
+
+    // Handle and log redirects
+    const redirect = (newFp: string) => {
+      newFp = argv.baseDir + newFp
+      res.writeHead(302, {
+        Location: newFp,
+      })
+      console.log(chalk.yellow("[302]") + chalk.grey(` ${argv.baseDir}${req.url} -> ${newFp}`))
+      res.end()
+      return true
+    }
+
+    const filepath: string = req.url?.split("?")[0] ?? "/"
+
+    if (filepath.endsWith("/")) {
+      // Does /trailing/index.html exist? If so, serve it
+      const indexFp: string = path.posix.join(filepath, "index.html")
+      if (fs.existsSync(path.posix.join(argv.output, indexFp))) {
+        req.url = filepath
+        // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+        void serve()
+        return
+      }
+
+      // Does /trailing.html exist? If so, redirect to /trailing
+      let base: string = filepath.slice(0, -1)
+      if (path.extname(base) === "") {
+        base += ".html"
+      }
+      if (fs.existsSync(path.posix.join(argv.output, base))) {
+        if (redirect(filepath.slice(0, -1))) return
+      }
+    } else {
+      // Does /regular.html exist? If so, serve it
+      let base: string = filepath
+      if (path.extname(base) === "") {
+        base += ".html"
+      }
+      if (fs.existsSync(path.posix.join(argv.output, base))) {
+        req.url = filepath
+        // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+        void serve()
+        return
+      }
+
+      // Does /regular/index.html exist? If so, redirect to /regular/
+      const indexFp: string = path.posix.join(filepath, "index.html")
+      if (fs.existsSync(path.posix.join(argv.output, indexFp))) {
+        if (redirect(`${filepath}/`)) return
+      }
+    }
+
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+    void serve()
+  })
+
+  server.listen(argv.port)
+  const wss = new WebSocketServer({ port: argv.wsPort })
+  wss.on("connection", (ws: WebSocket) => {
+    connections.add(ws)
+    ws.on("close", () => connections.delete(ws))
+    ws.on("error", () => connections.delete(ws))
+  })
+  console.log(
+    chalk.cyan(
+      `Started a turntrout.com server listening at http://localhost:${argv.port}${argv.baseDir}`,
+    ),
+  )
+  console.log("Hint: exit with Ctrl+C")
+
+  watch(["**/*.ts", "**/*.tsx", "**/*.scss", "package.json"], {
+    ignoreInitial: true,
+    ignored: [
+      "**/test/**",
+      "**/tests/**",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.spec.ts",
+      "**/*.spec.tsx",
+    ],
+  }).on("all", (_event, fp) => {
+    if (fp.endsWith(".scss")) {
+      cachedCriticalCSS = ""
+      console.log(chalk.yellow("SCSS change detected, invalidating critical CSS cache."))
+    }
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
+    void build(clientRefresh)
+  })
+}
+
+/**
+ * Cheerio load settings for parsing HTML.
+ */
+export const loadSettings = {
+  xml: false,
+  decodeEntities: false,
+  _useHtmlParser2: true,
+}
+/**
+ * Handles critical CSS injection into HTML files
+ * Prevents emitting files until critical CSS is successfully generated
+ */
+export async function injectCriticalCSSIntoHTMLFiles(
+  htmlFiles: string[],
+  outputDir: string,
+): Promise<void> {
+  await maybeGenerateCriticalCSS(outputDir)
+
+  if (!cachedCriticalCSS) {
+    throw new Error("Critical CSS generation failed. Build aborted.")
+  }
+
+  for (const file of htmlFiles) {
+    try {
+      const htmlContent: string = await fsPromises.readFile(file, "utf-8")
+      const querier = cheerioLoad(htmlContent, loadSettings)
+
+      // Remove existing critical CSS
+      querier("style#critical-css").remove()
+
+      // Insert the new critical CSS at the end of the head
+      const styleTag = `<style id="critical-css">${cachedCriticalCSS}</style>`
+      querier("head").append(styleTag)
+
+      // Reorder the head elements if needed
+      const updatedQuerier: CheerioAPI = reorderHead(querier)
+
+      await fsPromises.writeFile(file, updatedQuerier.html(loadSettings))
+    } catch (err) {
+      // A failed injection ships a page with no critical CSS (FOUC), so abort
+      // the build rather than continuing.
+      throw new Error(`Failed to inject critical CSS into ${file}`, { cause: err })
+    }
+  }
+}
+
+/**
+ * Generates and caches critical CSS if not already cached
+ * Throws an error if generation fails
+ */
+export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void> {
+  if (cachedCriticalCSS !== "") {
+    return
+  }
+
+  let attempts = 0
+  const maxAttempts = 5 // Maximum number of retry attempts
+  const retryDelayMs = 2000 // Delay between retries in milliseconds
+
+  while (cachedCriticalCSS === "" && attempts < maxAttempts) {
+    attempts++
+    if (attempts > 1) {
+      console.log(`Retrying critical CSS generation (attempt ${attempts}/${maxAttempts})...`)
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs))
+    } else {
+      console.log("Computing and caching critical CSS...")
+    }
+
+    try {
+      const { css } = await generate({
+        inline: false,
+        base: outputDir,
+        src: "test-page.html",
+        width: 1700,
+        height: 900,
+        css: [
+          path.join(outputDir, "index.css"),
+          path.join(outputDir, "static", "styles", "katex.min.css"),
+        ],
+        penthouse: {
+          timeout: 120000,
+          blockJSRequests: false,
+          waitForStatus: "networkidle0",
+          renderWaitTime: 2000,
+          puppeteer: {
+            getBrowser: launchCriticalCssBrowser,
+          },
+        },
+      })
+
+      // Append essential theme variables
+      const manualCriticalCss = await fsPromises.readFile(
+        path.resolve("quartz/styles/critical.scss"),
+        "utf-8",
+      )
+      let replacedCss = manualCriticalCss
+      const scssVars: Record<string, string> = generateScssRecord()
+      // Fill in the SCSS variables since they are not in the CSS
+      // Handle both SCSS interpolation syntax #{$var} and bare $var references
+      for (const [key, value] of Object.entries(scssVars)) {
+        replacedCss = replacedCss.replaceAll(`#{$${key}}`, value)
+        // Match `$key` only as a whole token: not followed by an identifier
+        // continuation char, so replacing `$color` never touches `$color-light`.
+        const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+        replacedCss = replacedCss.replace(new RegExp(`\\$${escapedKey}(?![\\w-])`, "g"), value)
+      }
+
+      cachedCriticalCSS = css + replacedCss
+      console.log("Cached critical CSS with manually-provided styles")
+    } catch (error) {
+      console.error(`Error generating critical CSS (attempt ${attempts}/${maxAttempts}):`, error)
+      cachedCriticalCSS = "" // Ensure it's reset on failure
+      if (attempts >= maxAttempts) {
+        throw new Error(`Critical CSS generation failed after ${maxAttempts} attempts.`, {
+          cause: error,
+        })
+      }
+    }
+  }
+}
+
+/**
+ * Sorts <head> contents to optimize metadata and CSS loading
+ */
+export function reorderHead(querier: CheerioAPI): CheerioAPI {
+  const head = querier("head")
+  const originalChildren = new Set(head.children())
+
+  // Group <head> children by type
+  const headChildren = head.children()
+  // These scripts should load first to avoid FOUC
+  const scriptNamesToPutAtTop = ["detect-initial-state", "instant-scroll-restoration"]
+  /** Cheerio filter predicate: matches `<script>` elements whose id is in `scriptNamesToPutAtTop`. */
+  const isScriptToPutAtTop = (_i: number, el: CheerioElement): boolean =>
+    el.type === "script" && scriptNamesToPutAtTop.includes(el.attribs.id)
+  const scriptsToPutAtTop = headChildren.filter(isScriptToPutAtTop)
+
+  // Meta and title tags
+  const metaAndTitle = headChildren.filter(
+    (_i: number, el: CheerioElement): boolean =>
+      el.type === "tag" && (el.tagName === "meta" || el.tagName === "title"),
+  )
+
+  const isCriticalCSS = (_i: number, el: CheerioElement): boolean =>
+    el.type === "style" && el.attribs.id === "critical-css"
+  const criticalCSS = headChildren.filter(isCriticalCSS)
+
+  // Links cause Firefox FOUC, so we need to move them before scripts
+  const isLink = (_i: number, el: CheerioElement): boolean =>
+    el.type === "tag" && el.tagName === "link"
+  const allLinks = headChildren.filter(isLink)
+
+  // Preloads and preconnects must come before sync scripts so the browser
+  // starts downloading CSS/fonts and establishing connections while the
+  // parser-blocking scripts execute.
+  const isPreloadOrPreconnect = (_i: number, el: CheerioElement): boolean =>
+    el.attribs.rel === "preload" || el.attribs.rel === "preconnect"
+  const preloadAndPreconnect = allLinks.filter(isPreloadOrPreconnect)
+
+  // Check if an element is a favicon
+  const isFavicon = (_i: number, el: CheerioElement): boolean => {
+    if (el.type !== "tag" || el.tagName !== "link") return false
+    const rel = el.attribs.rel
+    return rel === "icon" || rel === "apple-touch-icon"
+  }
+  const faviconLinks = allLinks.filter(isFavicon)
+  const otherLinks = allLinks.filter((i, el) => !isFavicon(i, el) && !isPreloadOrPreconnect(i, el))
+
+  // Anything else (scripts, etc.)
+  const elementsSoFar = new Set([
+    ...scriptsToPutAtTop,
+    ...metaAndTitle,
+    ...criticalCSS,
+    ...allLinks,
+  ])
+  // Filter to elements that are not already in the set
+  const notAlreadySeen = (_i: number, el: CheerioElement): boolean => !elementsSoFar.has(el)
+  const otherElements = headChildren.filter(notAlreadySeen)
+
+  head
+    .empty()
+    .append(metaAndTitle)
+    .append(preloadAndPreconnect)
+    .append(scriptsToPutAtTop)
+    .append(faviconLinks)
+    .append(criticalCSS)
+    .append(otherLinks)
+    .append(otherElements)
+
+  // Ensure we haven't gained any child elements
+  const finalChildren = new Set(head.children())
+  if (!finalChildren.isSubsetOf(originalChildren)) {
+    throw new Error("New elements were added to the head")
+  }
+
+  // If we've lost any elements, throw an error
+  if (!finalChildren.isSupersetOf(originalChildren)) {
+    const lostElements = originalChildren.difference(finalChildren)
+    const lostTags: string[] = Array.from(lostElements).map(
+      (el): string => (el as CheerioElement).tagName,
+    )
+    throw new Error(
+      `Head reordering changed number of elements: ${originalChildren.size} -> ${finalChildren.size}. Specifically, the elements ${lostTags.join(", ")} were lost.`,
+    )
+  }
+
+  return querier
+}

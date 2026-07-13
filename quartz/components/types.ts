@@ -1,0 +1,40 @@
+import type { Node } from "hast"
+import type { ComponentType, JSX } from "preact"
+
+import { type QuartzPluginData } from "../plugins/vfile"
+import { type GlobalConfiguration } from "../util/config"
+import { type BuildCtx } from "../util/ctx"
+import { type StaticResources } from "../util/resources"
+
+export type QuartzComponentProps = {
+  ctx: BuildCtx
+  externalResources: StaticResources
+  fileData: QuartzPluginData
+  cfg: GlobalConfiguration
+  children: (QuartzComponent | JSX.Element)[]
+  tree: Node
+  allFiles: QuartzPluginData[]
+} & JSX.IntrinsicAttributes & {
+    [key: string]: unknown
+  }
+
+export type QuartzComponent = ComponentType<QuartzComponentProps> & {
+  css?: string
+  beforeDOMLoaded?: string
+  afterDOMLoaded?: string | string[]
+}
+
+export type QuartzComponentConstructor<Options extends object | undefined = undefined> = (
+  opts: Options,
+) => QuartzComponent
+
+export interface FullPageLayout {
+  head: QuartzComponent
+  beforeBody: QuartzComponent[]
+  pageBody: QuartzComponent
+  left: QuartzComponent[]
+  right: QuartzComponent[]
+}
+
+export type PageLayout = Pick<FullPageLayout, "beforeBody" | "left" | "right">
+export type SharedLayout = Pick<FullPageLayout, "head" | "left">

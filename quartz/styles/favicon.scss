@@ -1,0 +1,314 @@
+@use "./variables.scss" as *;
+
+.favicon-span {
+  white-space: nowrap;
+}
+
+// Groups a favicon-ending link with its trailing footnote reference so the
+// reference number can't wrap onto its own line. A favicon is a replaced inline
+// element that opens a soft-wrap opportunity on its trailing edge. That edge
+// sits *inside* the link, where the global `a { white-space: normal }` governs
+// line breaking, so `nowrap` on the wrapper alone cannot close it in Chromium.
+// A generated U+2060 WORD JOINER at the start of the `<sup>` prohibits the
+// break across the link↔`<sup>` boundary in every engine while the link's own
+// text stays free to wrap — a long favicon-ending link must not be forced onto
+// one overflowing line just to glue its reference number. Generated content
+// stays out of selection and clipboard.
+.favicon-footnote-span {
+  white-space: nowrap;
+
+  > sup::before {
+    content: "\2060";
+  }
+}
+
+.favicon {
+  --size-decrease: 0rem; // Decrease in width and height of favicon size -- set this to a positive value to decrease the size
+  --base-vertical-adjustment: calc(0.5 * #{$base-margin});
+  --vertical-adjustment: calc(var(--base-vertical-adjustment) + 0.5 * var(--size-decrease));
+  --favicon-base-size: calc(#{$base-margin} * 1.25 - var(--size-decrease));
+  --favicon-size: var(--favicon-base-size);
+
+  // Left-gap model: constant visual gap = base + glyph nudge − icon ink inset.
+  // `--glyph-nudge` compensates glyphs whose ink overhangs their advance width
+  // (set via .close-text / .closer-text, assigned per charsToSpace/-Most in
+  // quartz/plugins/transformers/favicons.ts). `--left-inset` is the fraction of
+  // the icon box left of its first ink column (measured by
+  // scripts/notebooks/favicon_kerning_audit, capped at ~2px); subtracting it
+  // puts every icon's visual left edge the same distance from the text.
+  --glyph-nudge: 0rem;
+  --left-inset: 0;
+
+  display: inline;
+  width: var(--favicon-size);
+  height: var(--favicon-size);
+  margin: -20% auto -0.07em
+    calc(0.21 * #{$base-margin} + var(--glyph-nudge) - var(--left-inset) * var(--favicon-size));
+  vertical-align: var(--vertical-adjustment);
+
+  // Don't pollute copied text with favicon
+  user-select: none;
+
+  .subtitle & {
+    --favicon-size: calc(var(--favicon-base-size) / #{$font-scale-factor});
+  }
+
+  // Make favicons align properly with headings
+  h1 &,
+  h2 &,
+  h3 &,
+  h4 &,
+  h5 &,
+  h6 & {
+    vertical-align: 65%;
+  }
+
+  &.close-text {
+    --glyph-nudge: calc(0.125 * #{$base-margin});
+  }
+
+  &.closer-text {
+    --glyph-nudge: calc(0.3 * #{$base-margin});
+  }
+
+  // A favicon appended after inline code sits inside the <code>; the right gap
+  // keeps a trailing ")" / "]" from cramping.
+  code & {
+    margin-right: calc(0.15 * #{$base-margin});
+  }
+}
+
+// SVG-specific styling using masks for color control
+svg.favicon {
+  --mask-url: none; // Overridden by inline styles
+  --color-percentage: 40%;
+  --svg-color: var(--foreground);
+  --attenuated-red: color-mix(in srgb, var(--red) var(--color-percentage), var(--svg-color));
+  --attenuated-blue: color-mix(in srgb, var(--blue) var(--color-percentage), var(--svg-color));
+  --attenuated-green: color-mix(in srgb, var(--green) var(--color-percentage), var(--svg-color));
+  --attenuated-yellow: color-mix(in srgb, var(--gold) var(--color-percentage), var(--svg-color));
+  --attenuated-orange: color-mix(in srgb, var(--orange) var(--color-percentage), var(--svg-color));
+  --attenuated-purple: color-mix(in srgb, var(--purple) var(--color-percentage), var(--svg-color));
+
+  mask: var(--mask-url) no-repeat center / contain;
+  filter: none; // Don't apply img filters to masks
+
+  // Per-domain colors using color-mix
+  background-color: color-mix(in srgb, var(--foreground), var(--svg-color) var(--color-percentage));
+
+  :root[data-theme="dark"] & {
+    --color-percentage: 30%;
+  }
+
+  // Rotate and flip anchor icon to resemble the trout within-site icon
+  &[data-domain="anchor"] {
+    transform: rotate(-90deg) scaleX(-1);
+  }
+
+  &[data-domain="proton_me"] {
+    --size-decrease: calc(0.25 * #{$base-margin});
+  }
+
+  &[data-domain="substack_com"],
+  &[data-domain="rss"] {
+    --size-decrease: calc(0.25 * #{$base-margin});
+  }
+
+  &[data-domain="arbital_com"] {
+    --color-percentage: 25%;
+  }
+
+  &[data-domain="google_com"] {
+    background: conic-gradient(
+      from -70deg at 45% 50%,
+      var(--attenuated-red) 0deg 120deg,
+      var(--attenuated-blue) 120deg 220deg,
+      var(--attenuated-green) 220deg 310deg,
+      var(--attenuated-yellow) 310deg 360deg
+    );
+  }
+
+  &[data-domain="drive_google_com"] {
+    background: conic-gradient(
+      from -19deg at 50% 50%,
+      var(--attenuated-yellow) 0deg 129deg,
+      var(--attenuated-blue) 129deg 240deg,
+      var(--attenuated-green) 240deg 360deg
+    );
+  }
+
+  &[data-domain="play_google_com"] {
+    background: conic-gradient(
+      from -135deg at 50% 50%,
+      var(--attenuated-blue) 0deg 95deg,
+      var(--attenuated-green) 95deg 180deg,
+      var(--attenuated-yellow) 180deg 260deg,
+      var(--attenuated-red) 260deg 360deg
+    );
+  }
+
+  // NBC peacock: six feathers fan out from a single point, so a conic-gradient
+  // anchored there paints each feather its own hue. Going left-to-right across
+  // the fan: yellow, orange, red, purple, blue, green. The ~24:15 artwork is
+  // letterboxed into the square favicon box, so its fan base sits at 80.8% of
+  // the box height (not 100%); anchoring there keeps each feather one solid
+  // color. The 0deg/360deg seam sits at 180deg (straight down), inside the
+  // empty wedge below the fan, so no feather straddles the wrap.
+  &[data-domain="msnbc_com"] {
+    background: conic-gradient(
+      from 0deg at 50% 80.8%,
+      var(--attenuated-purple) 0deg 25deg,
+      var(--attenuated-blue) 25deg 54deg,
+      var(--attenuated-green) 54deg 180deg,
+      var(--attenuated-yellow) 180deg 306deg,
+      var(--attenuated-orange) 306deg 334deg,
+      var(--attenuated-red) 334deg 360deg
+    );
+  }
+
+  &[data-domain="intelligence_org"] {
+    background: conic-gradient(
+      from -90deg at 50% 50%,
+      var(--attenuated-orange) 0deg 25deg,
+      var(--attenuated-green) 25deg 35deg,
+      var(--attenuated-blue) 35deg 360deg
+    );
+  }
+}
+
+// Per-domain SVG colors
+$domain-svg-colors: (
+  "arbital_com": var(--green),
+  "arstechnica_com": var(--orange),
+  "arxiv_org": var(--red),
+  "cnn_com": var(--red),
+  "stackexchange_com": var(--blue),
+  "theguardian_com": var(--blue),
+  "deepmind_com": var(--blue),
+  "discord_gg": color-mix(in srgb, var(--purple) 50%, var(--blue)),
+  "fatebook_io": var(--purple),
+  "forum_effectivealtruism_org": var(--teal),
+  "colab_research_google_com": var(--gold),
+  "docs_google_com": var(--blue),
+  "scholar_google_com": var(--blue),
+  "huggingface_co": var(--yellow),
+  "linkedin_com": var(--blue),
+  "matsprogram_org": var(--red),
+  "open_spotify_com": var(--green),
+  "overleaf_com": var(--green),
+  "proton_me": var(--purple),
+  "reddit_com": var(--red),
+  "rss": var(--orange),
+  "substack_com": var(--orange),
+  "youtube_com": var(--red),
+  "wordpress_com": var(--blue),
+  "npmjs_com": var(--red),
+);
+
+@each $domain, $color in $domain-svg-colors {
+  svg.favicon[data-domain="#{$domain}"] {
+    --svg-color: #{$color};
+  }
+}
+
+// Per-domain ink insets as a fraction of the icon box, measured by
+// scripts/notebooks/favicon_kerning_audit (raw px inset / box px, capped at
+// 2px so round-left glyphs never land inside a deeply inset icon's box).
+// Applies to svg.favicon only: <img> favicons carry no data-domain, so an
+// icon that falls back to .ico renders without its inset correction.
+$domain-left-insets: (
+  "fatebook_io": 0.059,
+  "alignmentforum_org": 0.067,
+  "anchor": 0.067,
+  "arstechnica_com": 0.067,
+  "cbsnews_com": 0.067,
+  "colab_research_google_com": 0.067,
+  "github_com": 0.067,
+  "linkedin_com": 0.067,
+  "npmjs_com": 0.067,
+  "overleaf_com": 0.067,
+  "readthesequences_com": 0.067,
+  "turntrout_com": 0.067,
+  "wordpress_com": 0.067,
+  "youtube_com": 0.067,
+  "drive_google_com": 0.075,
+  "openai_com": 0.075,
+  "discord_gg": 0.083,
+  "intelligence_org": 0.083,
+  "stackoverflow_com": 0.083,
+  "theguardian_com": 0.083,
+  "rss": 0.083,
+  "proton_me": 0.104,
+  "substack_com": 0.104,
+  "ai-alignment_com": 0.108,
+  "arxiv_org": 0.133,
+  "docs_google_com": 0.133,
+  "play_google_com": 0.133,
+  "sfchronicle_com": 0.133,
+  "matsprogram_org": 0.133,
+  "nytimes_com": 0.133,
+  "apple_com": 0.133,
+  "stackexchange_com": 0.133,
+  "forum_effectivealtruism_org": 0.133,
+  "gwern_net": 0.133,
+);
+
+@each $domain, $inset in $domain-left-insets {
+  svg.favicon[data-domain="#{$domain}"] {
+    --left-inset: #{$inset};
+  }
+}
+
+svg.favicon[data-domain="huggingface_co"] {
+  --target-percentage: 100%;
+}
+
+// Yellow arrow on bottom
+svg.favicon[data-domain="amazon_com"] {
+  :root[data-theme="dark"] & {
+    --target-percentage: var(--color-percentage);
+  }
+
+  :root[data-theme="light"] & {
+    --target-percentage: 60%;
+  }
+
+  --yellow-target: color-mix(in srgb, var(--gold) var(--target-percentage), var(--foreground));
+
+  background: radial-gradient(
+    circle at 50% 40%,
+    var(--foreground) 0%,
+    var(--foreground) 60%,
+    var(--yellow-target) 60%
+  );
+}
+
+.favicon-big {
+  --favicon-size: 4rem;
+
+  display: block;
+  margin: 0 auto 1rem;
+  flex-flow: row wrap;
+}
+
+.favicon-demo-inline {
+  vertical-align: unset;
+  margin-right: 0.125rem;
+
+  &.full-color {
+    --color-percentage: 100%;
+  }
+}
+
+// Four captions across squeeze each into a column too narrow for phrases like
+// "is a radial-gradient:", so the atomic code wraps awkwardly. Cap at two
+// columns, and one on mobile, so each caption has room to wrap naturally.
+#big-favicon-demo .subfigure {
+  flex-basis: 45%;
+}
+
+@media all and (max-width: $mobile-breakpoint) {
+  #big-favicon-demo .subfigure {
+    flex-basis: 100%;
+  }
+}

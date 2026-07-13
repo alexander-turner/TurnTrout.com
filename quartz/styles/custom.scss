@@ -1,0 +1,1138 @@
+@use "./base";
+@use "./variables.scss" as *;
+@use "table";
+@use "colors";
+@use "favicon";
+@use "scroll-indicator";
+@use "print";
+@use "../components/styles/punctilioDemo";
+@use "../components/styles/relatedPosts";
+@use "../components/styles/tweet";
+
+// Shared bottom-margin for the after-article box, the footnotes heading,
+// and the footnotes section itself, so the page-bottom rhythm stays balanced.
+$page-end-bottom-margin: calc(3 * $base-margin);
+
+// Distance a footnote block quote is nudged right so its border clears the
+// marker. The same amount is shaved off padding-left so the text stays put;
+// one variable keeps the two from drifting apart.
+$footnote-blockquote-indent: 0.5 * $base-margin;
+
+body {
+  min-height: 100vh;
+}
+
+.popover dl,
+.popover article {
+  color: var(--foreground);
+}
+
+// The <a> link back up to content is the last child of the <li>
+li[id^="user-content-fn-"] > * {
+  &:is(blockquote):nth-last-child(2) {
+    margin-bottom: $base-margin;
+  }
+
+  &:not(blockquote):nth-last-child(2) {
+    margin-bottom: 0; /* Do not have unnecessary space before the list item */
+  }
+}
+
+// Ensure not too much margin before blockquote
+li > blockquote:first-child {
+  margin-top: $base-margin;
+}
+
+// Keep the block-quote border from crowding the footnote marker. Admonitions
+// are also block quotes but carry their own chrome, so they are excluded.
+li[id^="user-content-fn-"] > blockquote:not(.admonition) {
+  margin-left: $footnote-blockquote-indent;
+  padding-left: calc(2 * $base-margin - $footnote-blockquote-indent);
+}
+
+.footnotes {
+  margin-bottom: $page-end-bottom-margin;
+
+  & > h1 {
+    margin-bottom: $page-end-bottom-margin;
+  }
+
+  & ul {
+    margin-top: calc(2 * $base-margin);
+  }
+
+  // Footnotes narrower than normal lists
+  & > ol {
+    padding-left: calc(2.5 * $base-margin);
+    padding-right: 0;
+  }
+
+  // Ordered lists in footnotes should start at 1, 2, 3, etc.
+  & > li > ol {
+    counter-reset: list;
+
+    & li {
+      counter-increment: list;
+
+      &::marker {
+        content: counter(list) ".";
+      }
+    }
+  }
+}
+
+// Ensure that last ol of a li has no bottom margin
+li[id^="user-content-fn-"] {
+  & > ol {
+    margin-bottom: 0;
+  }
+
+  & > p:last-child > a[class*="footnote-backref"]:last-child,
+  & > a[class*="footnote-backref"]:last-child {
+    display: inline-block; // Show the last backref
+    color: color-mix(in srgb, var(--color-link) 70%, transparent);
+    text-decoration: none;
+    background-color: transparent;
+    font-family: DejaVuSerifCondensed-Bold, serif;
+    vertical-align: top;
+  }
+}
+
+a[id*="fnref-"] {
+  // When scrolling back to a footnote, scroll up farther than default
+  scroll-margin-top: calc(2 * $base-margin);
+  background-color: var(--midground-faintest);
+  padding: 0 calc(0.125 * $base-margin);
+  margin: 0 calc(0.125 * $base-margin);
+  border-radius: $border-radius;
+
+  @media all and (max-width: $max-mobile-width) {
+    scroll-margin-top: calc(7 * $base-margin);
+  }
+}
+
+dd > ul:first-child,
+dd > ol:first-child {
+  margin-top: 0;
+}
+
+dd {
+  margin-top: calc(0.5 * $base-margin);
+  margin-left: $list-padding-left;
+  margin-bottom: calc(2 * $base-margin);
+  overflow-wrap: break-word;
+
+  & > p:first-child {
+    margin-top: 0;
+  }
+}
+
+ol,
+ul {
+  margin-bottom: calc(2 * $base-margin);
+
+  dl & {
+    margin-top: calc(0.5 * $base-margin);
+  }
+
+  & li::marker {
+    color: var(--midground);
+  }
+}
+
+// ul are not as indented as ol, so we need to add some padding-left
+ul {
+  padding-left: calc(#{$list-padding-left} + 1 * #{$li-padding-left});
+}
+
+ol {
+  // Ensure list items are spaced more than just line-height
+  --li-margin-bottom: 4px;
+
+  // Simulate the implicit padding-left of ul (the bullet isn't flush with the text)
+  padding-left: $list-padding-left;
+
+  & > li {
+    padding-left: $li-padding-left;
+    counter-increment: list; // Increment the list counter for each list item
+    margin-bottom: var(--li-margin-bottom);
+
+    // If in safari, use the marker to display the list counter
+    @supports (-webkit-hyphens: none) {
+      :not(#toc-content, #toc-content-mobile, .footnotes) & {
+        padding-left: 0; // Safari effectively has extra padding-left
+        margin-left: calc(
+          0.5 * $base-margin
+        ); // Somehow margin-left is better than padding-left here
+      }
+    }
+
+    &::marker {
+      font-variant-numeric: lining-nums; // Use lining numbers for list items
+      content: counters(list, ".") "."; // Display the list counter with periods
+    }
+
+    // Nested lists
+    & > ol {
+      counter-reset: sublist; // Each nested ordered list has its own sublist counter
+      margin-bottom: 0;
+      margin-top: 0;
+
+      li {
+        counter-increment: sublist; // Increment the sublist counter for nested list items
+        &::marker {
+          content: counters(list, ".") "." counters(sublist, "."); // Display combined list and sublist counters for nested list items
+        }
+
+        &:first-child {
+          margin-top: var(--li-margin-bottom); // Remove top margin from the first nested list item
+        }
+      }
+    }
+  }
+
+  & li[id^="user-content-fn-"] {
+    counter-increment: footnote; // Increment the footnote counter for each matching li
+    margin-bottom: $base-margin; // Add a bottom margin to the list items
+
+    // Make the backref arrows look nice
+    & .data-footnote-backref {
+      color: color-mix(in srgb, var(--color-link) 70%, transparent);
+      text-decoration: none;
+      background-color: transparent;
+      font-family: DejaVuSerifCondensed-Bold, serif;
+      vertical-align: top;
+    }
+
+    & p:first-child {
+      margin-top: 0; // Remove top margin from the first paragraph in the footnote
+    }
+
+    & p:last-child {
+      margin-bottom: 0; // Remove top margin from the first paragraph in the footnote
+    }
+
+    &::marker {
+      margin-left: calc(-0.25 * $base-margin);
+      vertical-align: baseline;
+      font-size: var(--font-size-plus-0);
+      content: counter(footnote) "."; // Display the counter followed by a period
+    }
+
+    & > figure {
+      display: inline; // Else it's misaligned with top of table
+    }
+
+    // Ensure tables are aligned with the footnote marker
+    & .table-container {
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    // Constrain footnote content on mobile so tables/admonitions don't overflow
+    @media all and (max-width: $max-mobile-width) {
+      & .table-container,
+      & .scroll-indicator {
+        display: block;
+        max-width: 100%;
+      }
+    }
+  }
+}
+
+// Adjust spacing around lists
+p:has(+ ol),
+p:has(+ ul) {
+  margin-bottom: 0;
+}
+
+/* Wrap links properly */
+a {
+  white-space: normal;
+  overflow-wrap: break-word;
+  margin-top: 0;
+  text-underline-offset: 2.5px; // Default underline too close to text
+
+  // Don't have anchor links with box behind them
+  &[role="anchor"] {
+    background-color: transparent;
+  }
+
+  &[id^="user-content-fnref-"] {
+    text-decoration: none;
+  }
+}
+
+.footnotes ul,
+.footnotes ol {
+  margin-top: $base-margin;
+}
+
+audio {
+  width: 85%;
+}
+
+// Partially blends audio player with background
+[data-theme="dark"] audio {
+  mix-blend-mode: luminosity;
+}
+
+sup {
+  line-height: 0; // Don't push other lines away
+}
+
+#trout-ornament-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+
+  & > span {
+    vertical-align: middle;
+    font-family: "EBGaramond12", serif;
+    font-size: 3rem;
+    filter: saturate(90%);
+    color: var(--blue);
+    opacity: 0.6;
+    opacity: light-dark(0.6, 0.7);
+  }
+
+  // Left text flourish
+  & > span:first-of-type {
+    margin-right: calc(0.75 * $base-margin);
+  }
+
+  // Trout ornament
+  & > img {
+    width: calc(6 * $base-margin);
+    margin-top: calc(2 * $base-margin);
+    margin-bottom: calc(2 * $base-margin);
+    filter: none !important;
+    filter: light-dark(none, invert(66%)) !important;
+    opacity: 0.5;
+    opacity: light-dark(0.5, 1);
+  }
+
+  // Right text flourish
+  & > span:last-of-type {
+    margin-left: calc($base-margin);
+  }
+}
+
+.video-container {
+  position: relative;
+}
+
+.video-container > .vsc-controller {
+  position: absolute !important; /* remove from flow */
+  inset: 0; /* stretch over the whole video */
+  pointer-events: none; /* keep clicks for the extension if you prefer, otherwise remove */
+  background: none !important; /* no extra paint */
+  z-index: $z-sticky; // Ensure it's on top of the video but behind eg search-container
+}
+
+// Hide video speed controller
+.vsc-controller:has(+ video.no-vsc),
+// Sometimes there's an img between the video and the vsc-controller
+.vsc-controller:has(+ * + video.no-vsc),
+.vsc-controller:has(+ video[autoplay]) {
+  display: none !important;
+}
+
+:root[data-theme="dark"] video,
+:root[data-theme="dark"] img {
+  & .invert {
+    filter: url("#accurate-invert") grayscale(50%) brightness(95%);
+  }
+}
+
+figure:has(> .subfigure) {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  > figcaption {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+figure {
+  margin: 0; // Use maximal space
+}
+
+.subfigure {
+  margin: $base-margin;
+}
+
+figure,
+.subfigure {
+  flex: 1 1 0px;
+
+  & img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  // IDK why but there can be an empty p between the figure and the next element
+  & + figure:not(.subfigure),
+  & + p:empty + figure:not(.subfigure) {
+    margin-top: calc(3 * $base-margin);
+  }
+}
+
+// Render both subfigures at an identical size. The source images differ slightly
+// in aspect ratio, so crop to a shared ratio rather than distorting. They sit
+// side by side on desktop and stack only at mobile width.
+#ice-killings {
+  .subfigure img {
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 731 / 878;
+    object-fit: cover;
+  }
+
+  @media all and (width <= 530px) {
+    .subfigure {
+      flex: 1 1 100%;
+    }
+  }
+}
+
+// Every title-rendering surface (article title, backlinks, prev/next post,
+// sequence links, related posts, page listings, …) wraps its output in
+// `.work-title` (see `renderTitleNodes`/`renderInlineFormatting` in
+// `component_utils.tsx`), so one rule covers all of them.
+.work-title {
+  font-variant-numeric: lining-nums;
+}
+
+#article-title {
+  margin: calc(4 * $base-margin) 0 0;
+
+  @media all and (max-width: $max-mobile-width) {
+    margin-top: $base-margin;
+  }
+
+  .popover & {
+    margin-top: calc(1.5 * $base-margin) !important;
+  }
+}
+
+#article-title:has(+ .subtitle),
+h1:has(+ .subtitle),
+h2:has(+ .subtitle),
+h3:has(+ .subtitle),
+h4:has(+ .subtitle),
+h5:has(+ .subtitle),
+h6:has(+ .subtitle),
+p:has(+ .subtitle),
+.admonition-title:not(.is-collapsed *):has(+ .admonition-content > .subtitle) {
+  margin-bottom: 0;
+}
+
+.subtitle {
+  color: var(--midground);
+  margin-top: calc(0.25 * $base-margin);
+  font-size: var(--font-size-minus-1);
+  text-wrap: pretty;
+
+  .admonition & {
+    color: color-mix(in srgb, var(--midground) 60%, var(--color));
+
+    & a,
+    & a:visited {
+      &,
+      & * {
+        color: inherit;
+      }
+    }
+  }
+
+  .timeline & {
+    color: var(--midground-strong);
+  }
+}
+
+figure > img,
+figure > picture > img {
+  z-index: $z-below;
+}
+
+figcaption {
+  margin-top: calc(0.5 * $base-margin);
+  position: relative;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+
+  // `pretty` (not `balance`) so the favicon nowrap-span at a caption's end
+  // can't strand on its own line; `balance` is silently disabled by the
+  // browser for taller captions, which reintroduces the orphan.
+  text-wrap: pretty;
+}
+
+img,
+figcaption,
+.float-right {
+  text-align: center;
+  color: var(--midground-strong);
+  font-size: var(--font-size-minus-1); /* smaller than the surrounding text */
+}
+
+.float-right {
+  margin: calc(1.5 * $base-margin) 0 calc(1.5 * $base-margin) calc(2 * $base-margin);
+
+  & img,
+  img.float-right {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+  }
+
+  // A video has no usable intrinsic width before its resource loads, so without
+  // a definite width the shrink-to-fit float collapses to the 300px default and
+  // shifts layout once the video arrives. `--natural-width` is set per video by
+  // the asset-dimensions transformer.
+  & video,
+  video.float-right {
+    width: var(--natural-width, 100%);
+  }
+
+  float: right;
+  max-width: 45%;
+}
+
+.float-desktop-pull-up {
+  // A floated image pulled up by a negative top margin overlaps the callout
+  // title once the title wraps at narrow widths, so the pull-up is desktop-only.
+  // Per-image desktop offsets can override via the custom property.
+  margin-top: var(--float-negative-margin-top, calc(-7 * $base-margin));
+
+  @media all and (width <= 700px) {
+    margin-top: initial;
+  }
+}
+
+.no-select {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.book-citation {
+  font-style: italic;
+}
+
+.collapsible {
+  & .collapsible-title {
+    display: flex;
+
+    & h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+
+  & .content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height $transition-duration-quick ease-out;
+  }
+}
+
+svg.fold-icon {
+  --icon-size: 18px;
+
+  display: inline-flex; /* Use inline-flex for better alignment */
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  margin-left: calc(0.5 * $base-margin);
+  margin-top: 0.25rem;
+  cursor: pointer;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  fill: var(--midground); /* Set the default color here */
+  transition: transform $transition-duration-quick ease-out; /* Add a smooth transition */
+  transform: rotate(-90deg); /* Initial 90-degree rotation */
+
+  &[aria-expanded="true"] {
+    transform: rotate(0deg); /* Rotate 180 degrees when expanded */
+  }
+}
+
+hr {
+  max-width: 97.5%; // Looks weird if it extends all the way to the right
+  margin: calc(3 * $base-margin) 0;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.right {
+  & h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  a,
+  li {
+    // Don't make popover text gray
+    &:not(* .popover-inner *) {
+      color: var(--midground);
+    }
+  }
+
+  & #content-meta {
+    font-size: var(--font-size-minus-1);
+    margin-bottom: 0;
+  }
+}
+
+.authors {
+  & p {
+    color: var(--midground);
+    margin-top: 0;
+    text-indent: -0.2rem;
+    padding-left: 0.2rem;
+    line-height: 1.25rem;
+
+    & a {
+      color: inherit;
+    }
+
+    &:not(:last-child) {
+      margin-bottom: 0;
+    }
+  }
+
+  // The masthead dateline reads as a prominent header, so keep it at full cap
+  // height (lining figures) for the whole date — overriding the year-adjacent
+  // oldstyle rule that .date-ordinal-num applies elsewhere.
+  & .publication-str {
+    &,
+    & .date-ordinal-num {
+      font-variant-numeric: lining-nums;
+    }
+
+    // Figures are lining here, so the suffix stays at lining height.
+    & .date-ordinal-num + .ordinal-suffix {
+      vertical-align: 0.34em;
+    }
+  }
+}
+
+img,
+video {
+  width: 100%;
+  height: auto; // override manual heights
+  max-width: 100%;
+  margin-bottom: calc(2 * $base-margin);
+  margin-top: $base-margin;
+
+  article > p &,
+  article > p picture > &,
+  article > &,
+  article > picture > &,
+  article > figure > &:not(.float-right),
+  article > figure > picture > &:not(.float-right),
+  .video-container &:not(.float-right),
+  figure > &:not(.float-right),
+  figure > picture > &:not(.float-right) {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+  }
+}
+
+// don't apply in fullscreen (backdrop)
+[data-theme="light"] img,
+[data-theme="light"] video:not(:fullscreen) {
+  mix-blend-mode: multiply;
+}
+
+img {
+  margin-top: $base-margin;
+
+  &.inline-img {
+    display: inline;
+
+    // Sized in `em` (like `img.emoji`) so the glyph scales with the surrounding
+    // font-size instead of staying a fixed root-relative size in headings/captions.
+    width: 0.9em;
+    height: 0.9em;
+    object-fit: contain;
+    vertical-align: middle;
+    margin: 0;
+    margin-left: 0.05em;
+    margin-right: 0.025em;
+    margin-bottom: 0.1em;
+  }
+
+  &.white-when-dark {
+    :root[data-theme="dark"] & {
+      background-color: white;
+    }
+  }
+
+  &.fade-image-border {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      var(--background) 20%,
+      var(--background) 80%,
+      transparent 100%
+    );
+  }
+}
+
+// Ordering the z stacks
+#left-sidebar {
+  z-index: $z-raised;
+  background-color: var(--background);
+
+  // Sync with the navbar's translateY/opacity transition so the mobile
+  // backdrop fades alongside the bar instead of snapping in.
+  @media all and (max-width: $max-mobile-width) {
+    transition: background-color $transition-duration-slow ease;
+  }
+
+  &:has(#navbar.hide-above-screen) {
+    background-color: transparent;
+  }
+}
+
+svg {
+  margin-bottom: $base-margin;
+}
+
+body.no-mix-blend-mode {
+  & img,
+  & video,
+  & svg {
+    mix-blend-mode: normal;
+  }
+
+  & #search-layout {
+    [data-theme="light"] & img:not([src$=".svg"]),
+    [data-theme="light"] & video {
+      mix-blend-mode: multiply;
+    }
+  }
+}
+
+p > img,
+p > picture > img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+img.emoji,
+.theme-emoji {
+  mix-blend-mode: normal !important;
+}
+
+img.emoji {
+  display: inline;
+  border-radius: 0; // Don't want to cut off corners
+  height: 1em;
+  width: 1em;
+  margin: 0 0.05em 0 0.1em;
+  vertical-align: -0.1em;
+}
+
+// Keeps an emoji glued to its preceding glyph so it never wraps alone to the
+// start of a new line (a joiner can't suppress the wrap opportunity an inline
+// img creates at its box boundary).
+.emoji-span {
+  white-space: nowrap;
+}
+
+.theme-emoji {
+  width: 100px;
+  max-width: 100px;
+  height: 100px;
+  max-height: 100px;
+  margin-top: 1rem;
+}
+
+.sequence-links {
+  margin-top: calc(2 * $base-margin);
+  margin-bottom: calc(2 * $base-margin);
+}
+
+.sequence-links-divider {
+  color: var(--midground-faint);
+  height: calc(8 * $base-margin);
+  margin-top: calc(2 * $base-margin);
+  margin-left: $base-margin;
+  margin-right: $base-margin;
+  border-left-style: solid;
+  border-left-width: 1px;
+}
+
+.sequence-links-post-navigation {
+  width: 45%;
+}
+
+.sequence-nav {
+  display: flex;
+  justify-content: space-between;
+
+  & a {
+    flex: 0 0 auto;
+  }
+
+  & .prev-post {
+    margin-right: auto;
+  }
+
+  & .next-post {
+    margin-left: auto;
+  }
+}
+
+// Fixing issue where eqn numbers overlap with katex math
+//  https://github.com/KaTeX/KaTeX/issues/3066
+.katex-html {
+  .base {
+    margin: 0 auto;
+  }
+}
+
+// For some reason, the last one messes up katex sub on safari (eg https://turntrout.com/statistics-of-a-maze-solving-network#statistically-informed-impressions)
+.vlist-r:last-of-type {
+  display: none;
+}
+
+.katex-display .katex {
+  padding-top: 1px; // Prevent exponents from clipping
+}
+
+.katex-html:has(span.tag) {
+  display: flex !important;
+}
+
+.katex-display > .katex > .katex-html > .tag {
+  position: relative !important;
+  float: right;
+  margin-left: 0.25rem;
+}
+
+// Spoilers (remark-spoiler)
+.spoiler-container {
+  position: relative;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.spoiler-overlay {
+  --spoiler-bg: var(--bg, var(--background));
+
+  position: absolute;
+  height: 90%; // Visually center the overlay
+  width: 100%;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &::after {
+    content: "Click to show";
+    text-shadow: 0 0 16px var(--spoiler-bg);
+  }
+}
+
+.spoiler-content {
+  filter: blur(4px);
+  opacity: 0.65;
+
+  // Safari needs this
+  & > * {
+    filter: inherit;
+  }
+}
+
+.spoiler-overlay:focus-visible,
+.spoiler-container.revealed .spoiler-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.spoiler-overlay:focus-visible + .spoiler-content,
+.spoiler-container.revealed .spoiler-content {
+  filter: blur(0);
+  opacity: 1;
+}
+
+// Make sure the bullet points don't feel choked
+#center-content li,
+#search-preview li,
+.popover-inner li {
+  margin-bottom: calc(0.5 * $base-margin);
+}
+
+/* Mermaid styles */
+/* stylelint-disable selector-class-pattern */
+.edgeLabel > div,
+.edgeLabel > p {
+  align-items: baseline !important;
+  background-color: var(--midground-faintest) !important;
+  padding: calc(0.5 * $base-margin);
+  border-radius: $border-radius;
+}
+
+.flowchart {
+  display: block !important; // Allows the diagram to be centered
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cluster {
+  & rect {
+    transform: translateY(calc(-0.5 * $base-margin));
+  }
+
+  & .cluster-label {
+    font-size: 1.2em;
+    text-decoration: underline; // Bolding makes the width too small
+
+    & div {
+      text-align: center; // Keep the enlarged title centered over its box
+    }
+  }
+}
+
+// Ensure the point ends of arrows are the same color as the edges
+[id$="flowchart-v2-pointEnd"] {
+  fill: var(--midground-faint) !important;
+}
+
+// Edge labels  - TODO not working on safari
+.edgeLabel > .label > foreignObject > div {
+  background-color: transparent !important;
+  padding: 0 !important;
+
+  &:has(.edgeLabel:empty) {
+    display: none !important;
+    background-color: transparent !important;
+  }
+}
+
+// Ensure all mermaid diagram text has sufficient contrast
+svg[id*="mermaid"] {
+  font-size: 14px !important;
+  fill: var(--midground-faint) !important; // Ensure arrowheads are visible
+
+  & span,
+  & p,
+  & .label,
+  & .nodeLabel,
+  & .edgeLabel {
+    color: var(--foreground) !important;
+    fill: var(--foreground) !important;
+  }
+}
+
+.flowchart-link {
+  stroke: var(--midground-faint) !important;
+}
+
+foreignObject > div {
+  display: block !important; // "table-cell" default is not centered
+}
+
+.edgeLabel > div,
+.flowchart p,
+.flowchart .katex,
+foreignObject {
+  overflow: visible !important;
+}
+
+.flowchart .nodeLabel,
+.flowchart .label,
+.flowchart .edgeLabel {
+  & .katex {
+    margin-left: 0.25em;
+  }
+}
+
+.flowchart .katex {
+  margin-left: 0.375em;
+  margin-right: 0.375em;
+}
+/* stylelint-enable selector-class-pattern */
+
+.manifold-embed {
+  position: relative;
+  width: 100%;
+  height: 18rem;
+  max-width: 35rem;
+  border-radius: $border-radius;
+}
+
+.after-article-components {
+  margin-bottom: $page-end-bottom-margin;
+  margin-top: calc(2 * $base-margin);
+
+  & p {
+    margin-bottom: $base-margin; // Less separation than usual
+  }
+}
+
+#subscription-and-contact {
+  border-radius: $border-radius;
+  border: 1px solid var(--midground);
+  padding-bottom: 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  max-width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.centered {
+  text-align: center;
+}
+
+iframe {
+  border: none;
+  width: 95%;
+  border-radius: $border-radius;
+  margin-top: calc(2 * $base-margin);
+  margin-bottom: calc(2 * $base-margin);
+}
+
+.right-arrow,
+.monospace-arrow {
+  vertical-align: bottom;
+}
+
+// EG ← looks better in FiraCode
+.monospace-arrow {
+  font-family: var(--font-monospace);
+  color: var(--foreground);
+}
+
+// Specific graph in design doc has too much whitespace in light
+:root[data-theme="light"] {
+  .compression-ratio-graph {
+    margin-bottom: -0.25rem;
+  }
+}
+
+#emoji-comparison-figure {
+  & div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  & img {
+    width: min(100px, 12vw);
+    aspect-ratio: 1;
+    object-fit: contain;
+    margin: 0 auto;
+  }
+
+  & .subfigure {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 calc(15%);
+    align-items: center;
+  }
+}
+
+.light-svg {
+  :root[data-theme="light"] & {
+    filter: invert(35%); // Lighten to match the text color
+  }
+
+  // Use a lighter color in dark mode
+  :root[data-theme="dark"] & {
+    filter: invert(75%);
+  }
+}
+
+.mirix-subscript {
+  vertical-align: calc(-0.25 * $base-margin);
+  line-height: 100%; // Prevent the lines from being more spaced
+}
+
+figure#goose-terminal {
+  line-height: 1.1rem;
+
+  & pre > code > [data-line] {
+    text-wrap: nowrap;
+  }
+}
+
+pre,
+code,
+figure#goose-terminal {
+  // Ligatures can mess up spacing, esp in Firefox for "===" in FiraCode VF
+  font-variant-ligatures: none;
+}
+
+// img-comparison-slider: hide until the web component renders
+img-comparison-slider {
+  display: block;
+  visibility: hidden;
+  margin: calc(2 * $base-margin) 0;
+
+  // Reset inherited img styles on images inside the slider
+  > img {
+    width: 100%;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  &.rendered {
+    visibility: inherit;
+  }
+
+  [slot="second"] {
+    display: none;
+  }
+
+  &.rendered [slot="second"] {
+    display: unset;
+  }
+
+  // Customize handle visibility
+  --divider-width: 1px;
+  --divider-color: var(--foreground);
+  --divider-shadow: 0 0 8px var(--background);
+  --default-handle-color: var(--foreground);
+  --default-handle-shadow: 0 0 1px var(--background);
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 0.15rem solid var(--color-link);
+    outline-offset: 0.1rem;
+    border-radius: 0.15rem;
+  }
+
+  // Fallback for Safari and older browsers: the vendored slider library
+  // patches `.focus({ focusVisible: false })` into its mousedown/touchmove
+  // paths, which keeps Chromium and Firefox quiet. Safari ignores the option,
+  // so suppress the keyboard-style outline while the slider is actively
+  // pressed.
+  &:focus-visible:active {
+    outline: none;
+  }
+}

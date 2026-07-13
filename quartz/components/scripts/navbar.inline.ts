@@ -1,0 +1,189 @@
+import { autoplayStorageKey, pondVideoId, sessionStoragePondVideoKey } from "../constants"
+import { setupDarkMode } from "./darkmode"
+import { setupHamburgerMenu } from "./hamburgerMenu"
+import { setupRandomPostLink } from "./randomPost"
+import { setupScrollHandler } from "./scrollHandler"
+import { setupSearch } from "./search"
+
+let pondVideoCleanupController: AbortController | null = null
+
+function getAutoplayEnabled(): boolean {
+  const saved = localStorage.getItem(autoplayStorageKey)
+  return saved !== null ? saved === "true" : false // Default to disabled
+}
+
+function updatePlayPauseButton(): void {
+  const button = document.getElementById("video-toggle") as HTMLButtonElement | null
+
+  if (button) {
+    const autoplayEnabled = getAutoplayEnabled()
+    button.setAttribute(
+      "aria-label",
+      autoplayEnabled ? "Disable video autoplay" : "Enable video autoplay",
+    )
+
+    // Update CSS custom properties to control icon visibility
+    document.documentElement.style.setProperty(
+      "--video-play-display",
+      autoplayEnabled ? "none" : "block",
+    )
+    document.documentElement.style.setProperty(
+      "--video-pause-display",
+      autoplayEnabled ? "block" : "none",
+    )
+  }
+}
+
+function setupAutoplayToggle(): void {
+  const button = document.getElementById("video-toggle") as HTMLButtonElement | null
+
+  if (button) {
+    button.removeEventListener("click", handleVideoToggle) // Remove first to avoid duplicates
+    button.addEventListener("click", handleVideoToggle)
+    updatePlayPauseButton()
+  }
+}
+
+function handleVideoToggle(): void {
+  const autoplayEnabled = getAutoplayEnabled()
+  localStorage.setItem(autoplayStorageKey, (!autoplayEnabled).toString())
+  updatePlayPauseButton()
+
+  // Immediately apply the new autoplay state to the video
+  const videoElement = document.getElementById(pondVideoId) as HTMLVideoElement | null
+  if (videoElement) {
+    if (!autoplayEnabled) {
+      // If we're enabling autoplay
+      videoElement.play().catch((error: Error) => {
+        console.debug("[handleVideoToggle] Play failed:", error)
+      })
+    } else {
+      // If we're disabling autoplay
+      videoElement.pause()
+    }
+  }
+}
+
+function setupPondVideo(): void {
+  // Clean up listeners from previous invocations to prevent accumulation
+  if (pondVideoCleanupController) {
+    pondVideoCleanupController.abort()
+  }
+
+  const videoElement = document.getElementById(pondVideoId) as HTMLVideoElement | null
+  if (!videoElement) return
+
+  pondVideoCleanupController = new AbortController()
+  const { signal } = pondVideoCleanupController
+
+  const savedTime = sessionStorage.getItem(sessionStoragePondVideoKey)
+  const autoplayEnabled = getAutoplayEnabled()
+
+  console.debug(
+    "[setupPondVideo] readyState:",
+    videoElement.readyState,
+    "autoplay:",
+    autoplayEnabled,
+    "savedTime:",
+    savedTime,
+  )
+
+  const restoreVideoState = () => {
+    console.debug("[restoreVideoState] Running, readyState:", videoElement.readyState)
+
+    // Restore timestamp first (safe while paused)
+    if (savedTime) {
+      videoElement.currentTime = parseFloat(savedTime)
+    }
+
+    // Then start playback if autoplay enabled
+    if (autoplayEnabled) {
+      videoElement.play().catch((error: Error) => {
+        console.error("[setupPondVideo] Play failed:", error)
+      })
+    } else if (savedTime && parseFloat(savedTime) > 0) {
+      // Safari/WebKit may not apply currentTime on paused videos reliably.
+      // A brief play/pause cycle forces the seek through the video pipeline.
+      // Only do this for non-zero timestamps — seeking to 0 doesn't need the
+      // workaround and would briefly advance the video (breaking visual tests).
+      videoElement
+        .play()
+        .then(() => videoElement.pause())
+        .catch(() => {
+          // AbortError is expected if pause() races with play() — harmless
+        })
+    }
+  }
+
+  // Wait for video metadata to load. readyState >= 1 (HAVE_METADATA) is sufficient
+  // for setting currentTime. We listen for loadedmetadata, loadeddata, and canplay
+  // because Safari may not reliably fire later events after DOM morphing or page refresh.
+  if (videoElement.readyState >= 1) {
+    console.debug("[setupPondVideo] Video already ready, readyState:", videoElement.readyState)
+    restoreVideoState()
+  } else {
+    console.debug("[setupPondVideo] Waiting for video ready, readyState:", videoElement.readyState)
+    let restored = false
+    const restoreOnce = () => {
+      if (restored) return
+      restored = true
+      restoreVideoState()
+    }
+    videoElement.addEventListener("loadedmetadata", restoreOnce, { once: true, signal })
+    videoElement.addEventListener("loadeddata", restoreOnce, { once: true, signal })
+    videoElement.addEventListener("canplay", restoreOnce, { once: true, signal })
+
+    // Safari/WebKit may not eagerly load video metadata after a full page reload
+    // when autoplay is disabled, despite preload="auto". Explicitly call load()
+    // so the metadata events above will fire. However, calling load() while
+    // Firefox is mid-source-selection (iterating hvc1→webm fallbacks) aborts the
+    // chain. Defer the kick briefly so Firefox can finish source selection
+    // naturally, while still unblocking Safari's stalled loader.
+    if (savedTime && !autoplayEnabled) {
+      if (videoElement.networkState !== HTMLMediaElement.NETWORK_LOADING) {
+        videoElement.load()
+      } else {
+        setTimeout(() => {
+          if (!restored && videoElement.readyState < 1) {
+            videoElement.load()
+          }
+        }, 200)
+      }
+    }
+  }
+
+  // Save timestamp before page unload/refresh
+  const saveTimestamp = () => {
+    sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
+    console.debug("[setupPondVideo] Saving video timestamp", videoElement.currentTime)
+  }
+
+  window.addEventListener("beforeunload", saveTimestamp, { signal })
+  window.addEventListener("pagehide", saveTimestamp, { signal })
+
+  // Save timestamp during playback
+  videoElement.addEventListener(
+    "timeupdate",
+    () => {
+      sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
+    },
+    { signal },
+  )
+}
+
+// Initial setup
+setupDarkMode()
+setupHamburgerMenu()
+setupSearch()
+setupScrollHandler()
+setupPondVideo()
+setupAutoplayToggle()
+setupRandomPostLink()
+
+// The pond `<video>` and its listeners survive SPA navigation — see the
+// video-container reconciliation in spa.inline.ts — so setupPondVideo runs
+// only on initial document load.
+document.addEventListener("nav", () => {
+  setupHamburgerMenu()
+  setupAutoplayToggle()
+})
