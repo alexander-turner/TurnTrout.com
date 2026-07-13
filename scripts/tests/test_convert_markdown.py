@@ -41,6 +41,8 @@ except ImportError:
     pass
 
 actual_max_size = 300
+actual_card_width = 1200
+actual_card_height = 630
 
 
 @pytest.fixture
@@ -48,7 +50,11 @@ def mock_load_shared_constants(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         script_utils,
         "load_shared_constants",
-        lambda: {"maxCardImageSizeKb": actual_max_size},
+        lambda: {
+            "maxCardImageSizeKb": actual_max_size,
+            "cardImageWidth": actual_card_width,
+            "cardImageHeight": actual_card_height,
+        },
     )
 
 
@@ -327,10 +333,10 @@ def test_convert_to_jpeg(jpeg_conversion_setup, mock_load_shared_constants):
         assert args[-1] == str(output_path)
 
 
-def test_convert_to_jpeg_resizes_to_height_1200(
+def test_convert_to_jpeg_crops_to_card_dimensions(
     jpeg_conversion_setup, mock_load_shared_constants
 ):
-    """Test that JPEG conversion resizes images to height of 1200 pixels."""
+    """JPEG conversion fills-and-center-crops to the ~1.91:1 card dimensions."""
     input_path, output_path = jpeg_conversion_setup
 
     with (
@@ -345,15 +351,18 @@ def test_convert_to_jpeg_resizes_to_height_1200(
 
         convert_markdown_yaml._convert_to_jpeg(input_path, output_path)
 
-    # Verify the resize parameter is present and correct
     mock_run.assert_called_once()
     args = mock_run.call_args[0][0]
+    geometry = f"{actual_card_width}x{actual_card_height}"
 
+    # Resize fills the card box (^), then extent center-crops the overflow.
     assert "-resize" in args
     resize_idx = args.index("-resize")
-    assert args[resize_idx + 1] == "x1200", (
-        f"Expected resize parameter 'x1200', got '{args[resize_idx + 1]}'"
+    assert args[resize_idx + 1] == f"{geometry}^", (
+        f"Expected resize parameter '{geometry}^', got '{args[resize_idx + 1]}'"
     )
+    assert args[args.index("-gravity") + 1] == "center"
+    assert args[args.index("-extent") + 1] == geometry
 
 
 def test_convert_to_jpeg_iterative_compression(jpeg_conversion_setup):

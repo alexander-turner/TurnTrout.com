@@ -115,6 +115,8 @@
   "urlBarScrollTolerance": 60,
   "listTolerance": 5,
   "maxCardImageSizeKb": 300,
+  "cardImageWidth": 1200,
+  "cardImageHeight": 630,
   "playwrightConfigs": 9,
   "savedThemeKey": "saved-theme",
   "autoplayStorageKey": "pond-video-autoplay",
