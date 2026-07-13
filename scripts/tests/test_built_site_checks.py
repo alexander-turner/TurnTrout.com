@@ -5332,6 +5332,24 @@ def test_check_video_accessibility_reports_offending_tag():
             '<a class="external" href="https://shard%20theory">Malformed 3 (Space)</a>',
             ["Syntactically invalid href: https://shard%20theory"],
         ),
+        # --- Empty query segments are browser-valid: strip before validating ---
+        (
+            '<a class="external" href="https://research.google/p/?&type=google">q</a>',
+            [],
+        ),
+        (
+            '<a class="external" href="https://example.com/?a=1&&b=2">q</a>',
+            [],
+        ),
+        (
+            '<a class="external" href="https://example.com/?x=1&">q</a>',
+            [],
+        ),
+        # Stripping empty segments does not rescue a genuinely malformed URL.
+        (
+            '<a class="external" href="notaurl?&x=1">q</a>',
+            ["Syntactically invalid href: notaurl?&x=1"],
+        ),
         # --- Cases that should NOT be flagged (missing class="external") ---
         (
             '<a href="http://">Missing Domain (Internal)</a>',

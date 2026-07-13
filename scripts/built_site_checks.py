@@ -1944,6 +1944,20 @@ def check_preloaded_fonts(soup: BeautifulSoup) -> bool:
     return False
 
 
+def _strip_empty_query_segments(url: str) -> str:
+    """
+    Drop empty ``&``-separated query segments (e.g. ``?&x=1`` -> ``?x=1``).
+
+    Browsers accept empty query segments, but the ``validators`` regex rejects
+    them, so normalize the query before validating to avoid false positives.
+    """
+    split = urllib.parse.urlsplit(url)
+    if not split.query:
+        return url
+    segments = [seg for seg in split.query.split("&") if seg]
+    return urllib.parse.urlunsplit(split._replace(query="&".join(segments)))
+
+
 def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
     """Check for syntactically malformed href attributes in `<a>` tags using the
     `validators` library."""
@@ -1975,7 +1989,8 @@ def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
             continue
 
         # Allow spaces in URLs for readability
-        if not validators.url(href) and " " not in href:
+        normalized = _strip_empty_query_segments(href)
+        if not validators.url(normalized) and " " not in href:
             _append_to_list(
                 malformed_links, href, prefix="Syntactically invalid href: "
             )

@@ -114,10 +114,10 @@ He suggested it'd be reasonable for me to email a few guys. Their names: Sundar 
 >
 >   History will judge the tech sector by its involvement in these events. I love working at Google, and I want to ensure Google is on the right side of that history.
 >
->   <table border="0" cellspacing="0" cellpadding="0" class="no-favicon-span" style="max-width:600px;margin-top:0;margin-bottom:0;">
+>   <table border="0" cellspacing="0" cellpadding="0" style="max-width:600px;margin-top:0;margin-bottom:0;">
 >     <tr style="border:none;">
 >       <td valign="middle" style="border:none; vertical-align:middle;">
->         <svg class="favicon" data-domain="deepmind_com" style="aspect-ratio:24 / 24;--mask-url:url(https://assets.turntrout.com/static/images/external-favicons/deepmind_com.svg); width:2.5rem; height:2.5rem;" alt="Google DeepMind logo"></svg>
+>         <span class="favicon-span"><svg class="favicon" data-domain="deepmind_com" style="aspect-ratio:24 / 24;--mask-url:url(https://assets.turntrout.com/static/images/external-favicons/deepmind_com.svg); width:2.5rem; height:2.5rem;" alt="Google DeepMind logo"></svg></span>
 >       </td>
 >       <td valign="middle" style="border:none;">
 >         <div>Alexander Matt Turner</div>
@@ -372,7 +372,7 @@ The way I saw it was: I don't need to get Jeff to agree to quit over this. In a 
 >
 > We, the undersigned, call upon governments and government leaders to create a future with strong international norms, regulations and laws against lethal autonomous weapons. These currently being absent, we opt to hold ourselves to a high standard: we will neither participate in nor support the development, manufacture, trade, or use of lethal autonomous weapons.
 
-Signers include: Google DeepMind (the organization), Demis Hassabis, Shane Legg (cofounder, [now Chief AGI Scientist](https://en.wikipedia.org/wiki/Shane_Legg)), Raia Hadsell ([VP of Research](https://raiahadsell.com/index.html)), Jay Yagnik ([VP and Engineering Fellow at Google, leading large parts of Google AI](https://research.google/people/author36197/?type=google)) and 🥁🥁🥁 Jeff Dean:
+Signers include: Google DeepMind (the organization), Demis Hassabis, Shane Legg (cofounder, [now Chief AGI Scientist](https://en.wikipedia.org/wiki/Shane_Legg)), Raia Hadsell ([VP of Research](https://raiahadsell.com/index.html)), Jay Yagnik ([VP and Engineering Fellow at Google, leading large parts of Google AI](https://research.google/people/author36197/?&type=google)) and 🥁🥁🥁 Jeff Dean:
 
 ```tweet
 https://xcancel.com/JeffDean/status/2026566490619879574
