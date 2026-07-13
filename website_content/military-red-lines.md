@@ -113,7 +113,7 @@ This enumeration is illustrative, not exhaustive. The Review Body will interpre
 
 **Authorization** that applies categorically to a class, population, nationality, or dataset—rather than being grounded in facts particular to each individual—does not satisfy the individualized identification requirement, regardless of whether individual names are known.
 
-## Protections by Territory
+## Protections by territory
 
 ### For U.S. persons
 
@@ -175,11 +175,11 @@ The Review Body will maintain and publish annually a list of organizational un
 
 The Company will conduct a preliminary review within 90 days and complete the compliance assessment of all existing contracts within 180 days. Remediation timelines run from the date the Review Body issues its recommended remediation (if any) for each contract:
 
-1. 30 days for [Standard 1](#standard-1-human-control-over-targeting-and-use-of-force) violations involving targeting systems.
+1. 30 days for [Standard 1](#standard-1-human-control-over-targeting-and-use-of-force) violations involving targeting systems. <!-- lint-ignore sentence-initial-numeral: literal policy deadline -->
 
-2. 90 days for [Standard 2](#standard-2-no-untargeted-profiling) violations involving untargeted profiling of persons in the United States.
+2. 90 days for [Standard 2](#standard-2-no-untargeted-profiling) violations involving untargeted profiling of persons in the United States. <!-- lint-ignore sentence-initial-numeral: literal policy deadline -->
 
-3. 365 days for all other programs requiring modification.
+3. 365 days for all other programs requiring modification. <!-- lint-ignore sentence-initial-numeral: literal policy deadline -->
 
 Remediation findings are subject to the same override and escalation process described in Section “[Findings and Corrective Action](#findings-and-corrective-action).” The transparency report will separately identify overrides of initial remediation findings.
 
@@ -461,7 +461,7 @@ The existence, mandate, and membership of the Review Body will be communicated
 
 This summary will not include classified or contractually confidential details, but will include sufficient information for Covered AI Employees to assess whether the oversight mechanism is functioning effectively. The operative standard review rubric will be shared alongside the transparency report.
 
-## Resignation Disclosures
+## Resignation disclosures
 
 If a Review Body member resigns due to a substantive disagreement regarding the handling of compliance findings, the member will notify Covered AI Employees of the resignation and the general nature of the disagreement, without disclosing privileged deliberations or specific contract details. This notification will be distributed through the same channels used for other Review Body communications, without prior approval.
 
