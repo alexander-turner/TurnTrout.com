@@ -342,10 +342,11 @@ def _run_ffmpeg_hevc(
         _print_filepath_warning(input_video_path)
         return
 
-    # A non-mp4 source whose .mp4 already exists has been converted before; skip
-    # the expensive x265 re-encode (and the overwrite of the existing output),
-    # mirroring the WebM path. The guard excludes an mp4 input converting itself
-    # in place (output_path == input_video_path), which the check above handles.
+    # A non-mp4 source whose .mp4 already exists was converted on an earlier
+    # run; skip the expensive x265 re-encode instead of overwriting it,
+    # mirroring the WebM path. The output must be a distinct file from the
+    # input so an in-place mp4 re-encode (output_path == input_video_path)
+    # still runs.
     if output_path != input_video_path and output_path.exists():
         _print_filepath_warning(output_path)
         return
