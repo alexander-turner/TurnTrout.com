@@ -83,6 +83,8 @@ def _download_image(url: str, output_path: Path) -> None:
         # ``Content-Encoding: gzip`` response is written decoded rather than as
         # still-compressed bytes.
         response.raw.decode_content = True
+        # skipcq: PTC-W6004 - build-time script; output_path is a temp-dir path
+        # derived from the author's own frontmatter, not untrusted user input.
         with open(output_path, "wb") as out_file:
             shutil.copyfileobj(response.raw, out_file)
     finally:
