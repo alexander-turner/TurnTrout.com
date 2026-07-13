@@ -395,9 +395,10 @@ jobs:
         id: pub-date-flag
         if: needs.detect-changes.outputs.source-checks == 'true'
         run: |
-          # Check publication dates on PRs (pre-merge validation).
-          # Skip on push to main/dev (dates are auto-added by update-dates job).
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          # Enforce publication dates only on PRs into main (the release gate).
+          # PRs into dev carry in-progress drafts whose dates aren't set yet,
+          # and pushes to main/dev have dates auto-added by the update-dates job.
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.base_ref }}" == "main" ]]; then
             echo "flag=--check-publication-dates" >> "$GITHUB_OUTPUT"
           fi
 

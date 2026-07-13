@@ -88,7 +88,7 @@ retweeted-by: Jeff Dean
 
 Jeff is considered a saint at Google. He was Google's 30th employee, developed key algorithms, and is known as a man of principle. A common joke: it's easier for Jeff Dean's resume to list what he *hasn't* achieved than what he has. He's Google's Chief Scientist and a co-lead of Google's Gemini effort. A Jeff departure would be a disaster for the company.  
 
-Yet if Jeff cared so much *and* had so much leverage, why was Google in these ICE contracts in the first place? Of course, you can't be Chief Scientist and constantly get what you want by threatening to quit. But I still felt confused.
+But if Jeff cared so much *and* had so much leverage, why was Google in these ICE contracts in the first place? Of course, you can't be Chief Scientist and constantly get what you want by threatening to quit. But I still felt confused.
 
 # Talking to Jeff Dean
 
@@ -232,7 +232,7 @@ I told Mark that the situation was urgent: Google and OpenAI could move at any p
 
 Friday morning. Stuart had not made any public statement. I asked Mark, "What is possibly more important than spending a few minutes composing an email to his favorite reporter?". From my conversation with Mark, I learned that neither Stuart nor IASEAI would act.
 
-Here's the thing, though. Mark committed [publicly](#stuart-closes-out-iaseai) at closing that IASEAI would hold a member poll. Mark encouraged people to pay dues and become members to participate. Then IASEAI leadership silently cancelled the poll.[^workshop] No statement ever came.
+But here's the thing. Mark committed [publicly](#stuart-closes-out-iaseai) at closing that IASEAI would hold a member poll. Mark encouraged people to pay dues and become members to participate. Then IASEAI leadership silently cancelled the poll.[^workshop] No statement ever came.
 
 [^workshop]: On that Thursday in the same venue building, a [four-hour workshop](https://thefuturesociety.org/ai-red-lines-iaseai-workshop/) convened on how to make AI red lines "verifiable and enforceable." Participants were asked: what is the biggest obstacle to these red lines? [Political will](https://thefuturesociety.org/ai-red-lines-iaseai-workshop/).
 
@@ -548,7 +548,7 @@ In particular, he says:
 
 > The fundamental thing about our principles has always been: we’ve got to thoughtfully weigh up the benefits, and they've got to substantially outweigh the risk of harm.
 
-Yet that's not a principle. That's just how choices are made. *Every* company weighs benefits against harms. A principle is something you commit to in advance so that you can't talk yourself out of it later, *even when* the benefits seem to outweigh the harms. One cannot violate a "principle" of "I'll decide when I see it", as it lacks any kind of commitment.
+But that's not a principle. That's just how choices are made. *Every* company weighs benefits against harms. A principle is something you commit to in advance so that you can't talk yourself out of it later, *even when* the benefits seem to outweigh the harms. One cannot violate a "principle" of "I'll decide when I see it", as it lacks any kind of commitment.
 
 [Google's original 2018 AI principles](https://web.archive.org/web/20180620101825/https://ai.google/principles/) committed that Google would not support specific use cases, leading to [Google dropping its bid for a $10 billion contract in 2018](https://www.businessinsider.com/google-drops-out-of-10-billion-jedi-contract-bid-2018-10). The principles included a section titled "Applications we will not pursue," which said that Google would not design or deploy AI for weapons "whose principal purpose or implementation is to cause or directly facilitate injury to people," nor for surveillance "violating internationally accepted norms."
 
@@ -626,7 +626,7 @@ What should a pledge-signer do? I see three honest options: explain publicly how
 
 ### Keeping a seat at the table
 
-Yet should GDM employees not stay to keep steering in a positive direction? To this I must object: "What steering?". This deal may have been the clearest red line Google's Gemini project will ever face, and yet the deal came out with no concessions to ethics-concerned employees. If their "seat at the table" couldn't produce a single binding provision in *that* situation, then when would it?
+But should GDM employees not stay to keep steering in a positive direction? To this I must object: "What steering?". This deal may have been the clearest red line Google's Gemini project will ever face, and yet the deal came out with no concessions to ethics-concerned employees. If their "seat at the table" couldn't produce a single binding provision in *that* situation, then when would it?
 
 Plus, a pledge is only worth the credibility behind it. When someone signs "I will not support the development of lethal autonomous weapons," then *stays* while their company sells unrestricted AI to a military that wants exactly that, they teach every counterparty a lesson: these safety people will not act, even at their own brightest line. The next commitment they make is worth less. Eventually it's worth nothing.
 
@@ -707,7 +707,7 @@ Indeed, it's not always rational to say what you think the moment you think it. 
 
 ## Maybe they thought you weren't worth their time; you aren't entitled to their help
 
-Aboslutely. No one should be castigated simply because they didn't follow my particular recommendations. But what I would expect to see is any kind of action at all.
+Absolutely. No one should be castigated simply because they didn't follow my particular recommendations. But what I would expect to see is any kind of action at all.
 
 More broadly, sympathetic stories predict visible impact, including "visible in its consequences." That's part of why I'm comfortable guessing that Jeff did not put his foot down and threaten to walk. If he *had* put his foot down, I expect the world would look different to me: in particular, I would expect the classified deal to contain at least *some* binding provisions.
 
@@ -736,7 +736,7 @@ Yes.
 
 When building an advanced AI system, best practice is to make a "safety case" which explains why the system will be aligned and will not cause catastrophic harm. I think any credible GDM safety case would lean heavily on monitoring the "chain of thought", a mechanism their [Frontier Safety Framework](https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/strengthening-our-frontier-safety-framework/frontier-safety-framework_3-1.pdf) discusses.[^sec] For the unfamiliar, a chain of thought is the AI roughly explaining what it's doing and why. It's not perfectly accurate, but it's extremely informative.
 
-[^sec]: Frontier Safety Framework v3.1, section 3.2.1, ctrl+F "chain-of-thought."
+[^sec]: Frontier Safety Framework v3.1, section 3.2.1, Ctrl+F "chain-of-thought."
 
 An AI that wants to hurt us won't announce it to our faces because we would shut it off and then it couldn't achieve its (misaligned) goals. So the AI will likely be deceptive. One of the best ways we can detect deception is by looking at the chain of thought (CoT). To look at the chain of thought, there must be trained human overseers who can access and analyze the data.  But no one *can* do that: Google is handing over its AI to run in a secured military data center that, by default, won't have trained overseers performing this analysis, and that data center obviously isn't transmitting data back to Google![^il6]
 
