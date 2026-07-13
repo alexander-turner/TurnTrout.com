@@ -388,6 +388,19 @@ describe("updateHeadElements", () => {
     expect(document.head.querySelector("meta")?.getAttribute("content")).toBe("orphan")
   })
 
+  it("does not accumulate charset metas across repeated navigations", () => {
+    document.head.innerHTML = '<meta charset="utf-8">'
+    const charsetDoc = parseDoc(
+      '<html><head><meta charset="utf-8"><meta name="description" content="x"></head><body></body></html>',
+    )
+    for (let i = 0; i < 3; i++) {
+      updateHeadElements(charsetDoc)
+    }
+    // The original charset meta survives and no keyless <meta content=""> piles up.
+    expect(document.head.querySelectorAll("meta[charset]")).toHaveLength(1)
+    expect(document.head.querySelectorAll("meta").length).toBe(2)
+  })
+
   it("prefers non-preserve matches when updating an existing meta tag", () => {
     document.head.innerHTML =
       '<meta name="description" content="preserved" spa-preserve>' +
