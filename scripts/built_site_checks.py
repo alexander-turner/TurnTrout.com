@@ -3029,6 +3029,19 @@ def _should_skip_video(video: Tag) -> bool:
     return not isinstance(video, Tag) or video.get("id") == "pond-video"
 
 
+def _is_pa11y_hidden(video: Tag) -> bool:
+    """
+    True for a ``<video>`` carrying the ``ignore-pa11y`` a11y-waiver class.
+
+    ``ignore-pa11y`` (see ``config/pa11y/.pa11yci`` ``hideElements``) removes an
+    element from the axe/htmlcs audit, so the built-site caption gate honors the
+    same marker: waiving one accessibility gate while the other still fails would
+    be contradictory. Removing the class re-enables both gates at once.
+    """
+    classes = video.get("class") or []
+    return "ignore-pa11y" in classes
+
+
 def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
     """Check <video> elements have the MP4 <source> tag first, then the WEBM
     <source> tag, with matching base src."""
@@ -3093,11 +3106,15 @@ def check_video_caption_tracks(soup: BeautifulSoup) -> list[str]:
     Every audio-bearing ``<video>`` must carry a real captions track.
 
     Skips ``#pond-video`` and inline looping muted GIF replacements, which have
-    no audio.
+    no audio, and any ``<video>`` bearing the ``ignore-pa11y`` a11y-waiver class.
     """
     issues: list[str] = []
     for video in _tags_only(soup.find_all("video")):
-        if _should_skip_video(video) or _is_gif_replacement(video):
+        if (
+            _should_skip_video(video)
+            or _is_gif_replacement(video)
+            or _is_pa11y_hidden(video)
+        ):
             continue
         issue = _video_caption_issue(video)
         if issue is not None:

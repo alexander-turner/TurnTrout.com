@@ -203,7 +203,7 @@ I was surprised. Stuart said "It seems like \[taking the same stand\] is up to t
 
 The next question from a conference attendee asked whether IASEAI would take positions on current issues. As the session wrapped, IASEAI's interim executive director Mark Nitzberg took the stage.
 
-<video controls playsinline aria-label="A speaker at a conference addresses an audience, asking for a show of hands to gauge support for an organization statement regarding Anthropic. After the audience responds with a mass of raised hands, the speaker discusses the process for formalizing organizational member opinions."><source src="https://assets.turntrout.com/static/images/posts/Why I left Google DeepMind-06242026-1.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/Why I left Google DeepMind-06242026-1.webm" type="video/webm"/></video>
+<video controls playsinline class="ignore-pa11y" aria-label="A speaker at a conference addresses an audience, asking for a show of hands to gauge support for an organization statement regarding Anthropic. After the audience responds with a mass of raised hands, the speaker discusses the process for formalizing organizational member opinions."><source src="https://assets.turntrout.com/static/images/posts/Why I left Google DeepMind-06242026-1.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/Why I left Google DeepMind-06242026-1.webm" type="video/webm"/></video>
 
 Figure: Mark asks for a show-of-hands. "We will be asking the opinions of members... and if you're not a member, go to the member desk."
 
