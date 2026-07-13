@@ -10,7 +10,7 @@ description: ""
 authors:
   - Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/why-i-left-google-deepmind.jpg
-card_image_alt: Alex Turner sits on the steps outside Google's San Francisco office, in front of the white "Google San Francisco" sign, wearing a dark quarter-zip sweater.
+card_image_alt: Alex Turner stands in front of the steps outside of a Google San Francisco office. He wears a dark quarter-zip sweater.
 aliases:
   - leaving-gdm
   - leaving-google
@@ -159,7 +159,7 @@ When I arrived at the IASEAI venue, I expected some of the hundreds of AI profes
 Stuart Russell
 : Founder of IASEAI. Co-authored the standard AI textbook used in [over 1,500 universities](https://www.iaseai.org/conference/people/stuart-russell-2). Founder of UC Berkeley's Center for Human-Compatible AI, where I interned for several summers and completed a postdoc. For many years he was the only big-shot academic who took the existential risk from AI seriously. I had long appreciated that.
 
-: Most importantly: [the leading figure in the global campaign to ban lethal autonomous weapons](https://awards.acm.org/award_winners/russell_3816360), with [his site highlighting over *two hundred prestigious talks on the subject*](https://people.eecs.berkeley.edu/~russell/research/LAWS.html). He presented the  *[Slaughterbots](https://www.youtube.com/watch?v=O-2tpwW0kmU)* [videos](https://www.youtube.com/watch?v=9rDo1QxI260) to the United Nations. If anyone on this green planet Earth had a reason to call out an "all lawful use" military AI deal, it was the man who organized the field against SLAUGHTERBOTS.
+  Most importantly: [the leading figure in the global campaign to ban lethal autonomous weapons](https://awards.acm.org/award_winners/russell_3816360), with [his site highlighting over *two hundred prestigious talks on the subject*](https://people.eecs.berkeley.edu/~russell/research/LAWS.html). He presented the  *[Slaughterbots](https://www.youtube.com/watch?v=O-2tpwW0kmU)* [videos](https://www.youtube.com/watch?v=9rDo1QxI260) to the United Nations. If anyone on this green planet Earth had a reason to call out an "all lawful use" military AI deal, it was the man who organized the field against SLAUGHTERBOTS.
 
 Yoshua Bengio
 : The most-cited living computer scientist and a Turing Award winner (like the Nobel but for computer science). In 2023, he [testified to the US Senate on AI's threats to democracy and national security](https://yoshuabengio.org/en/blog/my-testimony-front-us-senate-urgency-act-against-ai-threats-democracy-society-and-national). He is, right this moment, [supervising work mapping military AI applications](https://futureimpact.group/fellowship-yoshua-bengio) onto AI safety concerns.
@@ -193,11 +193,11 @@ The question I asked Stuart ([video of the full exchange](https://assets.turntro
 Stuart Russell
 : I was going to mention this, and this is a topic on which we are likely to be polling all of the members of IASEAI. To see if they would like IASEAI to take a position on this issue.
 
-: \[Stuart summarizes the situation.\]
+  \[Stuart summarizes the situation.\]
 
-: Should IASEAI make a statement in support of Anthropic's right not to have its software used in purposes that are outside the contracted areas that it agreed to have it used for?
+  Should IASEAI make a statement in support of Anthropic's right not to have its software used in purposes that are outside the contracted areas that it agreed to have it used for?
 
-: The question said, "what about Google DeepMind, what about OpenAI" --- are they also going to take the same stand as Anthropic? It seems like that's up to them, but the right of a company to say "we don't want to sell our product for that purpose" --- and to be able to say that without threat of economic destruction. I'm not a lawyer, but it seems like that's something that ought to be protected.
+  The question said, "what about Google DeepMind, what about OpenAI" --- are they also going to take the same stand as Anthropic? It seems like that's up to them, but the right of a company to say "we don't want to sell our product for that purpose" --- and to be able to say that without threat of economic destruction. I'm not a lawyer, but it seems like that's something that ought to be protected.
 
 I was surprised. Stuart said "It seems like \[taking the same stand\] is up to them." He didn't encourage Google and OpenAI to avoid powering lethal autonomous weapons? Wasn't that a defining cause for him over the last decade?
 

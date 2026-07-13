@@ -126,7 +126,19 @@
     "YubiKey",
     "Ziegler",
     "Zorn",
-    "Authenticator"
+    "Authenticator",
+    "Anthropic",
+    "Bengio",
+    "China",
+    "Dean",
+    "DeepMind",
+    "Framework",
+    "Google",
+    "Jeff",
+    "Pentagon",
+    "Stuart",
+    "Trump",
+    "Western"
   ],
   "allowed_headings": [
     "A First Course in Ordinary Differential Equations",
@@ -142,6 +154,7 @@
     "Reinforcement Learning",
     "Underestimating books in the Chinese Room",
     "What you can find in _The Pond_",
-    "iOS: Advanced Data Protection (ADP)"
+    "iOS: Advanced Data Protection (ADP)",
+    "International Association of <span class=\"acidic\">Silence</span> on the Ethics of AI"
   ]
 }
