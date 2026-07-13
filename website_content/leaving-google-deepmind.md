@@ -508,7 +508,7 @@ That weekend prior, I had heard rumblings. [Along with over 600 other employees]
 >  
 > However, the ‌agreement also ⁠says it does not give Google the right to control or veto lawful government operational decision-making.
 
-I found out at 11:45 PM via a Signal group. Google never announced the deal internally. What surprised me was not that Google signed, but that the deal paid the barest of lip service to ethical concerns: the "should not" language [is not binding](https://x.com/CharlieBull0ck/status/2049249853947945369). I had imagined the deal would contain something more substantial: that someone with Jeff's leverage would have pulled real concessions out of it.
+I found out at 11:45 PM via a Signal group. Google never announced the deal internally. What surprised me was not that Google signed, but that the deal paid the barest of lip service to ethical concerns: the "should not" language [is not binding](https://x.com/CharlieBull0ck/status/2049249853947945369).
 
 ```tweet
 https://xcancel.com/Turn_Trout/status/2049153749743264231
@@ -548,7 +548,7 @@ In particular, he says:
 
 > The fundamental thing about our principles has always been: we’ve got to thoughtfully weigh up the benefits, and they've got to substantially outweigh the risk of harm.
 
-But that's not a principle. That's just how choices are made. *Every* company weighs benefits against harms. A principle is something you commit to in advance so that you can't talk yourself out of it later, *even when* the benefits seem to outweigh the harms. One cannot violate a "principle" of "I'll decide when I see it", as it lacks any kind of commitment.
+That's not a principle. A principle is something you commit to in advance so that you can't talk yourself out of it later, *even when* the benefits seem to outweigh the harms. One cannot violate a "principle" of "I'll decide when I see it".
 
 [Google's original 2018 AI principles](https://web.archive.org/web/20180620101825/https://ai.google/principles/) committed that Google would not support specific use cases, leading to [Google dropping its bid for a $10 billion contract in 2018](https://www.businessinsider.com/google-drops-out-of-10-billion-jedi-contract-bid-2018-10). The principles included a section titled "Applications we will not pursue," which said that Google would not design or deploy AI for weapons "whose principal purpose or implementation is to cause or directly facilitate injury to people," nor for surveillance "violating internationally accepted norms."
 
@@ -713,7 +713,7 @@ More broadly, sympathetic stories predict visible impact, including "visible in 
 
 ## Every person shouldn't have to speak out about every issue
 
-IASEAI promised to hold a member poll and never did. Further, if you built a significant part of your identity on opposing X,[^global-call] I think it's fair to discuss the decision to stay silent while X is decided. Stuart is simply the clearest case. He spent a decade as the loudest voice against autonomous weapons, then went quiet at the first real collision between generative AI and military use.
+Yes, but if you promise to take an action and then don't, that's different. IASEAI promised to hold a member poll and never did. Further, if you built a significant part of your identity on opposing X,[^global-call] I think it's fair to discuss the decision to stay silent while X is decided. Stuart is simply the clearest case. He spent a decade as the loudest voice against autonomous weapons, then went quiet at the first real collision between modern AI and military use.
 
 [^global-call]: The luminaries made autonomous weapons one of their causes. In September 2025, at the UN General Assembly, the [Global Call for AI Red Lines](https://red-lines.ai/) gathered more than 300 signatories, among them 15 Nobel and Turing laureates. The Call declared that certain AI uses should be prohibited by international agreement, including mass surveillance and lethal autonomous weapons.
 
@@ -730,6 +730,8 @@ Consider also that Anthropic taking a stand is one tech company. If a company li
 >
 > Michael continued to say that the new deals with Amazon Web Services, Google, Microsoft, NVIDIA, OpenAI, Reflection, Oracle and SpaceX are “a statement by the biggest tech companies in the world who are involved in the AI space … and have them say, ‘We support the Department of War, we support the U.S. government, and we support the… armed services for all lawful use cases.”
 
+Despite the Pentagon's policy, Jeff's leverage mattered. The Pentagon would have refused, yes, but then Google could have walked away.
+
 ## Does this have any impact on existential risk from AI?
 
 Yes.
@@ -738,13 +740,13 @@ When building an advanced AI system, best practice is to make a "safety case" wh
 
 [^sec]: Frontier Safety Framework v3.1, section 3.2.1, ctrl+F "chain-of-thought."
 
-An AI that wants to hurt us won't announce it to our faces because we would shut it off and then it couldn't achieve its (misaligned) goals. So the AI will likely be deceptive. One of the best ways we can detect deception is by looking at the chain of thought (CoT). To look at the chain of thought, there must be trained human overseers who can access and analyze the data.  But no one *can* do that: Google is handing over its AI to run in a secured military data center that, by default, won't have trained overseers performing this analysis, and that data center obviously isn't transmitting data back to Google![^il6]
+An AI that wants to hurt us won't announce it to our faces because we would shut it off and then it couldn't achieve its (misaligned) goals. So the AI will likely be deceptive. One of the best ways we can detect deception is by looking at the chain of thought. To look at the chain of thought, there must be trained human overseers who can access and analyze the data.  But no one *can* do that: Google is handing over its AI to run in a secured military data center that, by default, won't have trained overseers performing this analysis, and that data center obviously isn't transmitting data back to Google![^il6]
 
 [^il6]: Classified deployments run at authorization levels (like [IL-6](https://cloud.google.com/blog/topics/public-sector/google-distributed-cloud-gdc-gdc-air-gapped-appliance-achieve-dod-impact-level-6-il6-authorization)) that mandate isolation from commercial cloud infrastructure.
 
 I'm *not* saying that Google engineers should read what the military is doing. I'm saying that by default, there won't be appropriately trained military engineers who will perform this monitoring. If an AI is not monitored for deception in its chain of thought, it will have an easier time causing catastrophic damage to humanity by scheming, deceiving, and trying to take over. That's bad.  
 
-Unfortunately, that's only half the problem! A military deployment setting without CoT deception monitoring would be a juicy target for a rogue AI, offering both weak oversight of scheming and access to powerful decision-makers and infrastructure.[^threshold]
+Unfortunately, that's only half the problem! A military deployment setting without chain of thought deception monitoring would be a juicy target for a rogue AI, offering both weak oversight of scheming and access to powerful decision-makers and infrastructure.[^threshold]
 
 Hopefully, the military (in conjunction with the [US CAISI](https://www.nist.gov/caisi)) develops expertise, caution, and [control procedures](https://arxiv.org/abs/2312.06942) for monitoring and containing rogue AI systems.
 
