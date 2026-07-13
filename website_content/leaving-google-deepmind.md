@@ -6,7 +6,7 @@ tags:
   - AI
   - deepmind
   - personal
-description: "A story of how powerful people and institutions failed to keep their AI ethics promises in the face of pressure."
+description: "I fought against Google's Pentagon AI deal for months. I document how powerful people and institutions failed to keep their AI ethics promises in the face of pressure."
 authors:
   - Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/why-i-left-google-deepmind.jpg
@@ -177,9 +177,9 @@ Soon after, his office told me they decided they weren't going to make a stateme
 
 At lunchtime, I saw Stuart speaking with someone 1-on-1. With the encouragement of several attendees, I overcame a dash of social anxiety and interrupted his conversation as politely as I could.
 
-"Stuart, this is an extremely important situation and your voice matters," I told him. "Can you make a statement? Can you get the IASEAI organization to make a statement, too? Can you *move* the people inside of these companies?". He considered. He agreed. He told me that he would get Bengio and Hinton on board. He would convene a vote as quickly as possible. He would announce it at the closing of the conference later that day.
+"Stuart, this is an extremely important situation and your voice matters," I told him. "Can you make a statement? Can you get the IASEAI organization to make a statement, too? Can you *move* the people inside of these companies?". He considered. He agreed. He would try to get Bengio and Hinton on board. He would convene an IASEAI vote ASAP and announce it at the closing of the conference later that day. He didn't hedge his willingness to fight.
 
-He made some badass remark about how maybe making a statement would prevent him from reentering the US, but he didn't mind too much since he still had a house in Europe. "Now *that's* what I'm talking about," I thought. "Here's a powerful guy who knows his power."
+"Now *that's* what I'm talking about," I thought. "Here's a powerful guy who knows his power."
 
 ## Stuart closes out IASEAI
 
@@ -636,7 +636,7 @@ Where lies the blame? Pete Hegseth and Donald Trump, who intimidated the AI comp
 
 With Pete Hegseth, you at least know what you're getting. "Persuade Pete to stop [ordering](https://www.militarytimes.com/news/your-military/2025/12/01/former-jags-say-hegseth-others-may-have-committed-war-crimes/) [war crimes](https://www.rawstory.com/hegseth-2676100354/)" is not an available strategy. But I feel uniquely disappointed in the consistent inaction of nearly all of these senior AI professionals who talk about ethics.
 
-Why did they choose inaction? The answer does not seem clean and simple, but I think part of the answer is that people are scared of the Trump administration.
+Why did they choose inaction? The answer does not seem clean and simple, but I think part of the answer is fear of the Trump administration.
 
 > [!quote] [A long-form interview with Geoffrey Hinton](https://www.cbsnews.com/news/godfather-of-ai-geoffrey-hinton-ai-warning/)
 > Subtitle: April 26th, 2025
@@ -666,7 +666,7 @@ So where was the pressure?
 
 Sometimes a person will ask, "what if IASEAI was just saving up political capital for an even more impactful moment?". One answer is that "saving capital" can't explain why IASEAI ignored low-cost opportunities (like Stuart connecting me with key Google decision-makers).  
 
-What I'd expect, given Stuart's career, is for him to speak out. Stuart gave hundreds of talks (to the UN, to the Senate, to an interviewer) railing against slaughterbots. He [thundered against "wishful thinking" in the pages of IEEE Spectrum.](https://spectrum.ieee.org/why-you-should-fear-slaughterbots-a-response)[^wishful] He made strong statements to me at lunch and [onstage at IASEAI closing](#stuart-closes-out-iaseai). But faced with a real chance to speak out against a *specific powerful adversary*, he fell silent.
+What I'd expect, given Stuart's career, is for him to speak out. Stuart gave hundreds of talks (to the UN, to the Senate, to an interviewer) railing against slaughterbots. He [thundered against "wishful thinking" in the pages of IEEE Spectrum.](https://spectrum.ieee.org/why-you-should-fear-slaughterbots-a-response)[^wishful] He made strong statements [onstage at IASEAI closing](#stuart-closes-out-iaseai). But faced with a real chance to speak out against a *specific powerful adversary*, he fell silent.
 
 [^wishful]: > In summary, we, and many other experts, continue to find plausible the view that autonomous weapons can become scalable weapons of mass destruction. Scharre's claim that a ban will be ineffective or counterproductive is inconsistent with the historical record. Finally, the idea that human security will be enhanced by an unregulated arms race in autonomous weapons is, at best, wishful thinking.
 
