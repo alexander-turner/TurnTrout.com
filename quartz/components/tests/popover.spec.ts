@@ -921,9 +921,16 @@ test.describe("Popover checkbox state preservation", () => {
     await testPageLink.scrollIntoViewIfNeeded()
     await expect(testPageLink).toBeVisible()
 
-    await testPageLink.hover()
+    // Popovers are suppressed until a real mousemove fires after navigation,
+    // and a single hover can race the nav listeners attaching (or be a no-op
+    // when the pointer is already on the link). Re-hover from a safe position
+    // until the popover mounts.
     const popover = page.locator(".popover")
-    await expect(popover).toBeVisible()
+    await expect(async () => {
+      await moveMouseToSafePosition(page)
+      await testPageLink.hover()
+      await expect(popover).toBeVisible({ timeout: 3_000 })
+    }).toPass({ timeout: 30_000 })
 
     const popoverCheckbox = popover.locator(baseSelector).first()
     const popoverChecked = await isElementChecked(popoverCheckbox)
