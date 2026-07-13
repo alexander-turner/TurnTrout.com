@@ -10,6 +10,7 @@ from .. import build_fonts
 from ..build_fonts import (
     _BASE_KERN,
     _BRACE_GLYPHS,
+    _CAP_DESCENDER_GLYPHS,
     _CAP_OVERHANG_GLYPHS,
     _CLOSE_DESCENDER_KERN,
     _CLOSE_PUNCT_GLYPHS,
@@ -17,6 +18,7 @@ from ..build_fonts import (
     _DESCENDER_GLYPHS,
     _FONT_DIR,
     _KERN_OFFSET,
+    _OPEN_CAP_DESCENDER_KERN,
     _OPEN_DESCENDER_KERN,
     _OPEN_PUNCT_GLYPHS,
     _OPEN_QUOTE_GLYPHS,
@@ -260,6 +262,28 @@ class TestKerning:
                     assert pvr.Value1.XAdvance == _OPEN_DESCENDER_KERN, (
                         f"{src}->{pvr.SecondGlyph}"
                     )
+
+    def test_open_cap_descender_kern_values(self, upstream_08: TTFont) -> None:
+        _add_kerning(upstream_08, _get_f_glyphs(upstream_08))
+        subtable = upstream_08["GPOS"].table.LookupList.Lookup[-1].SubTable[0]
+
+        cap_desc_set = set(_CAP_DESCENDER_GLYPHS)
+        seen: set[tuple[str, str]] = set()
+        for i, src in enumerate(subtable.Coverage.glyphs):
+            if src not in set(_OPEN_PUNCT_GLYPHS):
+                continue
+            for pvr in subtable.PairSet[i].PairValueRecord:
+                if pvr.SecondGlyph in cap_desc_set:
+                    assert pvr.Value1.XAdvance == _OPEN_CAP_DESCENDER_KERN, (
+                        f"{src}->{pvr.SecondGlyph}"
+                    )
+                    seen.add((src, pvr.SecondGlyph))
+        expected = {
+            (src, tgt)
+            for src in _OPEN_PUNCT_GLYPHS
+            for tgt in _CAP_DESCENDER_GLYPHS
+        }
+        assert seen == expected
 
     def test_close_descender_kern_values(self, upstream_08: TTFont) -> None:
         _add_kerning(upstream_08, _get_f_glyphs(upstream_08))
