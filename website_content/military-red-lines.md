@@ -7,7 +7,7 @@ tags:
 description: A framework of two red-line Standards—human control over targeting and no untargeted profiling—plus an advisory Review Body that audits government AI contracts for compliance and publishes a yearly transparency report.
 authors:
   - Alex Turner
-card_image: https://assets.turntrout.com/static/images/card_images/red-line-framework.jpg
+card_image: https://assets.turntrout.comstatic/images/card_images/red-line-framework.avif
 card_image_alt: "A camera drone with glowing red lights hovering in a dark, derelict alleyway. Image credit: HIIG, CC BY 3.0."
 aliases:
   - military-ai-red-lines
