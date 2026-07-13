@@ -6,7 +6,7 @@ tags:
   - AI
   - deepmind
   - personal
-description: ""
+description: "I left Google DeepMind after Google signed a Pentagon AI deal with no binding restrictions against autonomous weapons or mass surveillance—and after institution upon institution abandoned its AI ethics promises under pressure."
 authors:
   - Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/why-i-left-google-deepmind.jpg
@@ -46,7 +46,7 @@ I wrote a 25-page proposal containing contract language and oversight mechanisms
 
 Senior management had insisted that Google wouldn't sign. I disagreed with them, but they largely ignored my warnings. While I [may have increased the Pentagon's hesitation around the deal](#jeff-signs-an-amicus-brief-supporting-anthropic), Google still signed a deal handing over their AI without restrictions against killer robots or mass AI spying. Google's contract restrictions were [even weaker than OpenAI's](https://fortune.com/2026/05/04/google-employee-backlash-pentagon-ai-contract-power-waned-since-project-maven/). At that point, I couldn't stay at Google in good conscience, so I left.
 
-This is the story of why I left Google DeepMind. It is also the story of something larger: how powerful people and institutions failed, one after another, to keep their AI ethics promises in the face of pressure.
+This essay tells the story of why I left Google DeepMind. It is also the story of something larger: how powerful people and institutions failed, one after another, to keep their AI ethics promises in the face of pressure.
 
 # Google supports the immigration enforcement supply chain
 
@@ -88,7 +88,7 @@ retweeted-by: Jeff Dean
 
 Jeff is considered a saint at Google. He was Google's 30th employee, developed key algorithms, and is known as a man of principle. A common joke: it's easier for Jeff Dean's resume to list what he *hasn't* achieved than what he has. He's Google's Chief Scientist and a co-lead of Google's Gemini effort. A Jeff departure would be a disaster for the company.  
 
-But if Jeff cared so much *and* had so much leverage, why was Google in these ICE contracts in the first place? Of course, you can't be Chief Scientist and constantly get what you want by threatening to quit. But I still felt confused.
+Yet if Jeff cared so much *and* had so much leverage, why was Google in these ICE contracts in the first place? Of course, you can't be Chief Scientist and constantly get what you want by threatening to quit. But I still felt confused.
 
 # Talking to Jeff Dean
 
@@ -165,7 +165,7 @@ Yoshua Bengio
 : The most-cited living computer scientist and a Turing Award winner (like the Nobel but for computer science). In 2023, he [testified to the US Senate on AI's threats to democracy and national security](https://yoshuabengio.org/en/blog/my-testimony-front-us-senate-urgency-act-against-ai-threats-democracy-society-and-national). He is, right this moment, [supervising work mapping military AI applications](https://futureimpact.group/fellowship-yoshua-bengio) onto AI safety concerns.
 
 Geoffrey Hinton
-: A 2024 Nobel laureate in Physics and a Turing Award winner. Hinton [resigned from Google in 2023 specifically so he could warn about AI's dangers without considering how it impacts Google's interests](https://www.nytimes.com/2023/05/01/technology/ai-google-chatbot-engineer-quits-hinton.html). In 2025, he had already [criticized Google for "reversing its stance on military AI applications"](https://www.cbsnews.com/news/godfather-of-ai-geoffrey-hinton-ai-warning/). Hinton quit Google to be able to speak truth to these very issues.
+: A 2024 Nobel laureate in Physics and a Turing Award winner. Hinton [resigned from Google in 2023 specifically so he could warn about AI's dangers without considering how it impacts Google's interests](https://www.nytimes.com/2023/05/01/technology/ai-google-chatbot-engineer-quits-hinton.html). In 2025, he had already [criticized Google for "reversing its stance on military AI applications"](https://www.cbsnews.com/news/godfather-of-ai-geoffrey-hinton-ai-warning/). Hinton quit Google to be able to speak truth to these exact issues.
 
 ## Talking to Bengio and Stuart
 
@@ -232,7 +232,7 @@ I told Mark that the situation was urgent: Google and OpenAI could move at any p
 
 Friday morning. Stuart had not made any public statement. I asked Mark, "What is possibly more important than spending a few minutes composing an email to his favorite reporter?". From my conversation with Mark, I learned that neither Stuart nor IASEAI would act.
 
-But here's the thing. Mark committed [publicly](#stuart-closes-out-iaseai) at closing that IASEAI would hold a member poll. Mark encouraged people to pay dues and become members to participate. Then IASEAI leadership silently cancelled the poll.[^workshop] No statement ever came.
+Here's the thing, though. Mark committed [publicly](#stuart-closes-out-iaseai) at closing that IASEAI would hold a member poll. Mark encouraged people to pay dues and become members to participate. Then IASEAI leadership silently cancelled the poll.[^workshop] No statement ever came.
 
 [^workshop]: On that Thursday in the same venue building, a [four-hour workshop](https://thefuturesociety.org/ai-red-lines-iaseai-workshop/) convened on how to make AI red lines "verifiable and enforceable." Participants were asked: what is the biggest obstacle to these red lines? [Political will](https://thefuturesociety.org/ai-red-lines-iaseai-workshop/).
 
@@ -330,7 +330,7 @@ I was pleasantly surprised. Big move. (At this point, some of my friends started
 
 When Jeff publicly signed [the amicus](https://storage.courtlistener.com/recap/gov.uscourts.cand.465515/gov.uscourts.cand.465515.24.1.pdf), he (as a C-suite executive) publicly broke with Google's silence.  As I expected, his signature [attracted attention](https://www.wired.com/story/openai-deepmind-employees-file-amicus-brief-anthropic-dod-lawsuit/). Eventually, the [Google / Pentagon negotiations hit a snag, in part because the amicus raised the prospect that Google might back out later](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html).[^cause-and-effect]
 
-[^cause-and-effect]: This is why I think my actions led to additional Pentagon wariness. I introduced Jeff (and nearly half of the Google signers) to the amicus. They signed. The Pentagon hesitated in part due to the Google signatures on the amicus.
+[^cause-and-effect]: This is why I think my actions led to additional Pentagon wariness. I introduced Jeff (and nearly half of the Google signers) to the amicus brief. They signed. The Pentagon hesitated in part due to the Google signatures on the amicus brief.
 
 > [!quote]- [Google Sits Pretty as A.I. Rivals Compete for Pentagon Favor](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)
 > Subtitle: Published later (March 18th, 2026)
@@ -548,7 +548,7 @@ In particular, he says:
 
 > The fundamental thing about our principles has always been: we’ve got to thoughtfully weigh up the benefits, and they've got to substantially outweigh the risk of harm.
 
-But that's not a principle. That's just how choices are made. *Every* company weighs benefits against harms. A principle is something you commit to in advance so that you can't talk yourself out of it later, *even when* the benefits seem to outweigh the harms. One cannot violate a "principle" of "I'll decide when I see it", as it lacks any kind of commitment.
+Yet that's not a principle. That's just how choices are made. *Every* company weighs benefits against harms. A principle is something you commit to in advance so that you can't talk yourself out of it later, *even when* the benefits seem to outweigh the harms. One cannot violate a "principle" of "I'll decide when I see it", as it lacks any kind of commitment.
 
 [Google's original 2018 AI principles](https://web.archive.org/web/20180620101825/https://ai.google/principles/) committed that Google would not support specific use cases, leading to [Google dropping its bid for a $10 billion contract in 2018](https://www.businessinsider.com/google-drops-out-of-10-billion-jedi-contract-bid-2018-10). The principles included a section titled "Applications we will not pursue," which said that Google would not design or deploy AI for weapons "whose principal purpose or implementation is to cause or directly facilitate injury to people," nor for surveillance "violating internationally accepted norms."
 
@@ -626,7 +626,7 @@ What should a pledge-signer do? I see three honest options: explain publicly how
 
 ### Keeping a seat at the table
 
-But should GDM employees not stay to keep steering in a positive direction? To this I must object: "What steering?". This deal may have been the clearest red line Google's Gemini project will ever face, and yet the deal came out with no concessions to ethics-concerned employees. If their "seat at the table" couldn't produce a single binding provision in *that* situation, then when would it?
+Yet should GDM employees not stay to keep steering in a positive direction? To this I must object: "What steering?". This deal may have been the clearest red line Google's Gemini project will ever face, and yet the deal came out with no concessions to ethics-concerned employees. If their "seat at the table" couldn't produce a single binding provision in *that* situation, then when would it?
 
 Plus, a pledge is only worth the credibility behind it. When someone signs "I will not support the development of lethal autonomous weapons," then *stays* while their company sells unrestricted AI to a military that wants exactly that, they teach every counterparty a lesson: these safety people will not act, even at their own brightest line. The next commitment they make is worth less. Eventually it's worth nothing.
 
@@ -707,7 +707,7 @@ Indeed, it's not always rational to say what you think the moment you think it. 
 
 ## Maybe they thought you weren't worth their time; you aren't entitled to their help
 
-Absolutely possible. No one should be castigated simply because they didn't follow my particular recommendations. But what I would expect to see is any kind of action at all.
+Entirely plausible. No one should be castigated simply because they didn't follow my particular recommendations. But what I would expect to see is any kind of action at all.
 
 More broadly, sympathetic stories predict visible impact, including "visible in its consequences." That's part of why I'm comfortable guessing that Jeff did not put his foot down and threaten to walk. If he *had* put his foot down, I expect the world would look different to me: in particular, I would expect the classified deal to contain at least *some* binding provisions.
 
