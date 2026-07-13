@@ -5115,6 +5115,19 @@ _NO_CAPTIONS_ISSUE = (
             '<source src="https://cdn/pond.mp4"></video>',
             [],
         ),
+        # A video waived from the a11y audit (ignore-pa11y) is skipped so the
+        # caption gate cannot contradict the axe/htmlcs suppression.
+        (
+            '<video controls class="ignore-pa11y">'
+            '<source src="https://cdn/talk.mp4"></video>',
+            [],
+        ),
+        # ignore-pa11y among other classes is still honored.
+        (
+            '<video controls class="foo ignore-pa11y bar">'
+            '<source src="https://cdn/talk.mp4"></video>',
+            [],
+        ),
         # A non-captions track does not satisfy the requirement.
         (
             '<video controls><source src="https://cdn/talk.mp4">'
