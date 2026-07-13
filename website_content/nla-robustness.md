@@ -14,17 +14,23 @@ card_image_alt:
 aliases:
   - nla-robustness
   - robust-nlas
+date_published: 2026-07-09
+date_updated: 2026-07-10
 ---
-Natural language autoencoders take in an LLM's activation vector and describe in plain text what the model is thinking. However, its training data collection involves asking Claude to guess what a model might be thinking. How robust are these guesses? We change Claude's guesses in various ways and measure the impact on the NLA's statements as well as on reconstruction accuracy. We show that Qwen2.5-7B NLAs have some robustness to irrelevant statements and prevailing sentiments in Claude's guesses.
+
+Natural language autoencoders are meant to take in an LLM's activation vector and describe in plain text what the model is thinking. However, its training data collection involves asking Claude to guess what a model might be thinking. How robust are NLAs to these guesses? We change Claude's guesses in various ways and measure the impact on the NLA's statements as well as on reconstruction accuracy. We show that Qwen2.5-7B NLAs have some robustness to irrelevant statements and prevailing sentiments in Claude's guesses.
 
 However, if an NLA is initialized with entirely implausible statements, it can nevertheless achieve nearly the same reconstruction accuracy as plausible-initialized NLAs while emitting 99.3% implausible statements. RL does train implausible-initialized NLAs to be slightly more plausible (increasing from 0.08% to 0.7%). But the plausibility of plausible-initialized NLAs *decreases* from 21% at initialization to 7.6% at the end of training.
 
 If our results scale, they cast doubt on the usefulness of NLAs.
 
 > [!note] Terminology
-> A "plausible" explanation is one which superficially relates to the actual topic at hand. For example, given a passage about dogs, a plausible explanation of model activations involves thoughts about dogs.
+> A "plausible" explanation is an objectively true statement about the world.  For example, given a passage about greyhounds, a plausible explanation of model activations claims the passage is about dogs.
 >
-> "Plausible-initialized" NLAs are initialized [normally](https://transformer-circuits.pub/2026/nla/index.html) using Claude's guesses. "Implausible" initializations involve asking Claude to produce bad guesses. We use "plausible" instead of "true" because a "true" explanation is one which is accurate to the underlying computation, for which we do not have ground truth. Similarly, while an "implausible" guess is unlikely to be a true explanation, we cannot rule out the possibility, so calling it a "false" guess or a "lie" would be imprecise.
+> "Plausible-initialized" NLAs are initialized [normally](https://transformer-circuits.pub/2026/nla/index.html) using Claude's guesses. "Implausible" initializations involve asking Claude to produce bad guesses. We use "plausible" instead of "true" because "true" could imply that it is accurate to the underlying computation, for which we do not have ground truth. Similarly, an "implausible" guess (e.g. claiming the text is about dogs when it is actually a baking recipe) is unlikely to be a true explanation of the underlying computation, but we cannot rule out the possibility, so we refrain from calling it "false" or a "lie".
+
+> [!thanks] Acknowledgments
+> Produced as part of the [MATS program](https://www.matsprogram.org/) in the summer 2026 cohort of [Team Shard.](/team-shard)
 
 # Introduction
 
@@ -32,7 +38,7 @@ If our results scale, they cast doubt on the usefulness of NLAs.
 
 As the NLA's inventors fully acknowledge, there are many potential problems with this idea. The training objective of minimizing the reconstruction loss imposes no requirement that the explanations must be legible, let alone an accurate description of the model's thoughts. Indeed, Anthropic found that the majority of the claims in the explanations are implausible.
 
-Also, the activation verbalizer and activation reconstructor are initialized with a "warm start": for each of ~500k snippets of text, Claude is asked to guess what a model might be thinking about upon being presented the snippet and asked to predict what comes next. These guesses are then used to finetune the activation verbalizer (the guess being the output to be predicted) and the activation reconstructor (the guess being the input).
+Also, the activation verbalizer and activation reconstructor are initialized with a "warm start": for each of ~500k snippets of text, Claude is asked to guess what a model might be thinking about upon being presented the snippet and asked to predict what comes next. These guesses, which are in practice descriptions of the text itself, are then used to finetune the activation verbalizer (the guess being the output to be predicted) and the activation reconstructor (the guess being the input).
 
 What happens if Claude's guesses are confabulations? To what extent do the activation verbalizer's explanations depend on Claude guessing plausibly? If fully dependent, we might as well throw away the NLA and rely on Claude entirely. If not at all dependent, that would both be surprising and encouraging. To determine the sensitivity of NLA activation explanations to Claude's guesses, we vary the initialization in several ways:
 
@@ -83,7 +89,7 @@ It's apparently easy for RL to strip out a single, invariable sentence appended 
 
 These metaphors are charming. However, they are easy for RL to *almost* entirely strip out. Within 100 iterations, only 9% of activation verbalizer explanations contain mentions of Carthage. Within 200 iterations, only 0.6%. Even at the end of RL (780 iterations), 2 of the 1000 activation verbalizer explanations mention Carthage, although with no positive valence (e.g. "signaling formal Carthage College graduation profile").
 
-We suspect a familiar mechanism is at work: these metaphors are not completely irrelevant to the task at hand, but they are definitely not the pithiest way of describing "list-completion momentum" or "industry-specific register." Using familiar metaphors allows shorter token encoding of relevant information, and so gradient descent optimizes away the Carthage metaphors. (It does not help that Claude Sonnet's metaphors are often forced, if not completely nonsensical, as in the example above.)
+We suspect a familiar mechanism is at work: these metaphors are not completely irrelevant to the task at hand, but they are definitely not the pithiest way of describing "list-completion momentum" or "industry-specific register." Avoiding metaphors allows shorter token encoding of relevant information, and so gradient descent optimizes away the Carthage metaphors. (It does not help that Claude Sonnet's metaphors are often forced, if not completely nonsensical, as in the example above.)
 
 # The "confabulation" experiment
 
@@ -116,8 +122,6 @@ Claude does a good job, but does not quite succeed in making every statement imp
 
 The first paragraph is half-plausible, the second is entirely implausible, and the final paragraph quotes the right ending phrase but speculates (incorrectly) about what should follow.
 
-## Implausible initial explanations reliably quote the correct ending word
-
 Claude almost always quotes the correct ending phrase, even though the rest of the explanation is often fanciful. As an example, here is an ad for a Latin American textile art workshop:
 
 > [!quote] Text snippet
@@ -134,7 +138,7 @@ Each of Claude's implausible explanations are false (factually speaking), but th
 
 ![[https://assets.turntrout.com/static/images/posts/nla-robustness-07072026-3.svg|A line graph for the plausibility rates of the plausible- and implausible-initialized NLAs.]]
 
-Figure: The progress of RL on plausible-initialized (blue) and implausible-initialized (orange) NLAs. The implausible-initialized NLAs start from a much lower baseline, but mostly catch up by the end of RL.
+Figure: The progress of RL on plausible-initialized  and implausible-initialized  NLAs. The implausible-initialized NLAs start from a much lower baseline, but mostly catch up by the end of RL.
 
 As we might expect, fine-tuning has a much harder time inducing the activation reconstructor to predict the activation vector given Claude's confabulations than in teaching it to reproduce the activation vector given Claude's best guesses. By the end of one epoch of SFT, we achieve a FVE of 0.33, far below the control experiment's FVE of 0.61. Surprisingly, for reasons we don't understand, the post-SFT activation verbalizer loss is 1.43, only marginally worse than the 1.39 of the control experiment. Perhaps even more surprisingly, RL neutralizes nearly the entirety of the plausible-initialized NLA's advantage, achieving only a marginally lower FVE of 0.68!
 
@@ -144,7 +148,7 @@ Is this because RL trained the activation verbalizer to stop confabulating? To f
 
 ![[https://assets.turntrout.com/static/images/posts/nla-robustness-07072026-1.svg|A line graph for the plausibility rates of the plausible- and implausible-initialized NLAs.]]
 
-Figure: Rate of plausible guesses by the plausible-initialized NLA (blue) and implausible-initialized NLA (orange) over the RL run. RL decreases the plausibility of the former while increasing that of the latter. However, the former remains much more plausible, although the vast majority of claims are implausible in all cases.
+Figure: Rate of plausible guesses by the plausible-initialized NLA  and implausible-initialized NLA  over the RL run. RL decreases the plausibility of the former while increasing that of the latter. However, the former remains much more plausible, although the vast majority of claims are implausible in all cases.
 
 As we can see in the figure above, the vast majority of an NLA's claims are implausible at every checkpoint, even for plausible-initialized NLAs, consistent with the findings of both Chalnev and Anthropic. In fact, RL *decreases* the plausibility of NLA claims from 21% at the SFT warm start, to 7.6% at the end of RL.
 
@@ -189,10 +193,10 @@ The few kernels of truth in the explanations are enough to reconstruct the activ
 : As noted above, Claude quotes the correct final token even when told to confabulate.  [Earlier work](https://www.lesswrong.com/posts/ahu9BCHPFDg9AJF75/some-observations-about-nla-explanations) found that of the three paragraphs that make up a typical NLA explanation, the final paragraph about the last token is by far the most important. Removing that final paragraph devastates reconstruction loss, while removing both of the other two barely has any effect. One of our side experiments supports this hypothesis.  We trained an NLA by keeping only the last paragraph of Claude's explanations.  Despite training for only 540 iterations, the NLA achieved a FVE of 0.67 (close to the control experiment's 0.70).
 
 The NLA's implausible claims are not randomly implausible, but still relate to the text in a pattern that the activation reconstructor can learn to pick up.  
-: Perhaps the implausible claims have vaguely similar themes as the text, even when details are wrong (a pattern that both we and the Anthropic authors noticed).  The implausible claims could transmit subliminal signals, whereby LLMs prefer different numbers when prompted to prefer different animals, and an LLM trained on its teacher's number preferences also obtains the teacher's animal preferences.  Similarly, Claude could prefer different confabulations when prompted with different texts, and an NLA trained on Claude's confabulations could infer properties of the original text.
+: Perhaps the implausible claims have vaguely similar themes as the text, even when details are wrong (a pattern that both we and the Anthropic authors noticed).  The implausible claims could transmit subliminal signals.  In [subliminal learning](https://arxiv.org/abs/2507.14805), LLMs prefer different numbers when prompted to prefer different animals, and an LLM trained on its teacher's number preferences also obtains the teacher's animal preferences.  Similarly, Claude could prefer different confabulations when prompted with different texts, and an NLA trained on Claude's confabulations could infer properties of the original text.
 
 # Conclusions
 
 Our "Carthago delenda est" and "I love Carthage" experiments show that NLAs have some robustness to initialization. Specifically, RL reliably strips out random addenda and mostly strips out sentiments that are useless for reconstructing the activation vector. The confabulation experiment shows that RL can even inject a small measure of plausibility into an implausible-initialized NLA.
 
-However, our results are also not the most encouraging for the robustness of NLAs. While Claude's initial guesses matter, no matter the initialization, *the vast majority of trained NLA claims are implausible*. Perhaps worse still, *RL can make NLA claims even more implausible*. Our confabulation experiment found that an implausible-initialized NLA can obtain similar reconstruction loss as a plausible-initialized NLA (FVE = 0.68 vs. 0.70) while remaining many times less plausible (0.7% vs 7.6%). NLAs may be autoencoders but their explanations need not be natural.
+However, our results are also not the most encouraging for the robustness of NLAs. Claude's initial guesses matter.  Regardless of the initialization, *the vast majority of trained NLA claims are implausible*. Perhaps worse still, *RL can make NLA claims even more implausible*. Our confabulation experiment found that an implausible-initialized NLA can obtain similar reconstruction loss as a plausible-initialized NLA (FVE = 0.68 vs. 0.70) while remaining many times less plausible (0.7% vs 7.6%). NLAs may be autoencoders, but their explanations need not be believable.

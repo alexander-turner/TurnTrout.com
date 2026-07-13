@@ -57,6 +57,7 @@ export function getContentIndex(forceRefresh = false): Promise<ContentIndexData 
  */
 export function refreshContentIndexOnVisible(): void {
   if (!document.hidden && !indexLoaded) {
+    // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
     void getContentIndex(true)
   }
 }
