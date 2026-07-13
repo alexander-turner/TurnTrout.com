@@ -193,6 +193,12 @@ export function updateHeadElements(html: Document): void {
   )
 
   for (const newMeta of metaTags) {
+    // A charset meta (<meta charset="utf-8">) is page-invariant and carries no
+    // name/property/http-equiv key, so it can't be matched against the existing
+    // head. Syncing it would append a keyless <meta content=""> on every SPA
+    // navigation that the removal pass never reclaims, so skip it.
+    if (newMeta.hasAttribute("charset")) continue
+
     const name = newMeta.getAttribute("name")
     const property = newMeta.getAttribute("property")
     const httpEquiv = newMeta.getAttribute("http-equiv")

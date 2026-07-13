@@ -76,11 +76,17 @@ def _download_image(url: str, output_path: Path) -> None:
     response = _http_session.get(
         url, stream=True, timeout=10, headers=_DOWNLOAD_HEADERS
     )
-    if response.status_code == 200:
+    try:
+        if response.status_code != 200:
+            raise ValueError(f"Failed to download image: {url}")
+        # ``response.raw`` skips requests' automatic decompression; opt in so a
+        # ``Content-Encoding: gzip`` response is written decoded rather than as
+        # still-compressed bytes.
+        response.raw.decode_content = True
         with open(output_path, "wb") as out_file:
             shutil.copyfileobj(response.raw, out_file)
-    else:
-        raise ValueError(f"Failed to download image: {url}")
+    finally:
+        response.close()
 
 
 def _convert_to_jpeg(
