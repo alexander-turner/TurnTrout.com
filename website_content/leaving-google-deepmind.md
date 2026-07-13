@@ -120,7 +120,7 @@ He suggested it'd be reasonable for me to email a few guys. Their names: Sundar 
 >   <table border="0" cellspacing="0" cellpadding="0" style="max-width:600px;margin-top:0;margin-bottom:0;">
 >     <tr style="border:none;">
 >       <td valign="middle" style="border:none; vertical-align:middle;">
->         <span class="favicon-span"><svg class="favicon" data-domain="deepmind_com" style="aspect-ratio:24 / 24;--mask-url:url(https://assets.turntrout.com/static/images/external-favicons/deepmind_com.svg); width:2.5rem; height:2.5rem;" alt="Google DeepMind logo"></svg></span>
+>         <span class="favicon-span"><svg class="favicon" data-domain="deepmind_com" style="aspect-ratio:24 / 24;--mask-url:url(https://assets.turntrout.com/static/images/external-favicons/deepmind_com.svg); width:2.5rem; height:2.5rem; margin:0; vertical-align:middle;" alt="Google DeepMind logo"></svg></span>
 >       </td>
 >       <td valign="middle" style="border:none;">
 >         <div>Alexander Matt Turner</div>
