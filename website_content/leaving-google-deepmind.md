@@ -6,7 +6,7 @@ tags:
   - AI
   - deepmind
   - personal
-description: "I left Google DeepMind after Google signed a Pentagon AI deal with no binding restrictions against autonomous weapons or mass surveillance—and after institution upon institution abandoned its AI ethics promises under pressure."
+description: "A story of how powerful people and institutions failed to keep their AI ethics promises in the face of pressure."
 authors:
   - Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/why-i-left-google-deepmind.jpg
