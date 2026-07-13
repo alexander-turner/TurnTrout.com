@@ -6,7 +6,7 @@ tags:
   - AI
   - deepmind
   - personal
-description: ""
+description: "A story of how powerful people and institutions failed to keep their AI ethics promises in the face of pressure."
 authors:
   - Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/why-i-left-google-deepmind.jpg
@@ -46,7 +46,7 @@ I wrote a 25-page proposal containing contract language and oversight mechanisms
 
 Senior management had insisted that Google wouldn't sign. I disagreed with them, but they largely ignored my warnings. While I [may have increased the Pentagon's hesitation around the deal](#jeff-signs-an-amicus-brief-supporting-anthropic), Google still signed a deal handing over their AI without restrictions against killer robots or mass AI spying. Google's contract restrictions were [even weaker than OpenAI's](https://fortune.com/2026/05/04/google-employee-backlash-pentagon-ai-contract-power-waned-since-project-maven/). At that point, I couldn't stay at Google in good conscience, so I left.
 
-This is the story of why I left Google DeepMind. It is also the story of something larger: how powerful people and institutions failed, one after another, to keep their AI ethics promises in the face of pressure.
+This essay tells the story of why I left Google DeepMind. It is also the story of something larger: how powerful people and institutions failed, one after another, to keep their AI ethics promises in the face of pressure.
 
 # Google supports the immigration enforcement supply chain
 
@@ -165,7 +165,7 @@ Yoshua Bengio
 : The most-cited living computer scientist and a Turing Award winner (like the Nobel but for computer science). In 2023, he [testified to the US Senate on AI's threats to democracy and national security](https://yoshuabengio.org/en/blog/my-testimony-front-us-senate-urgency-act-against-ai-threats-democracy-society-and-national). He is, right this moment, [supervising work mapping military AI applications](https://futureimpact.group/fellowship-yoshua-bengio) onto AI safety concerns.
 
 Geoffrey Hinton
-: A 2024 Nobel laureate in Physics and a Turing Award winner. Hinton [resigned from Google in 2023 specifically so he could warn about AI's dangers without considering how it impacts Google's interests](https://www.nytimes.com/2023/05/01/technology/ai-google-chatbot-engineer-quits-hinton.html). In 2025, he had already [criticized Google for "reversing its stance on military AI applications"](https://www.cbsnews.com/news/godfather-of-ai-geoffrey-hinton-ai-warning/). Hinton quit Google to be able to speak truth to these very issues.
+: A 2024 Nobel laureate in Physics and a Turing Award winner. Hinton [resigned from Google in 2023 specifically so he could warn about AI's dangers without considering how it impacts Google's interests](https://www.nytimes.com/2023/05/01/technology/ai-google-chatbot-engineer-quits-hinton.html). In 2025, he had already [criticized Google for "reversing its stance on military AI applications"](https://www.cbsnews.com/news/godfather-of-ai-geoffrey-hinton-ai-warning/). Hinton quit Google to be able to speak truth to these exact issues.
 
 ## Talking to Bengio and Stuart
 
@@ -330,7 +330,7 @@ I was pleasantly surprised. Big move. (At this point, some of my friends started
 
 When Jeff publicly signed [the amicus](https://storage.courtlistener.com/recap/gov.uscourts.cand.465515/gov.uscourts.cand.465515.24.1.pdf), he (as a C-suite executive) publicly broke with Google's silence.  As I expected, his signature [attracted attention](https://www.wired.com/story/openai-deepmind-employees-file-amicus-brief-anthropic-dod-lawsuit/). Eventually, the [Google / Pentagon negotiations hit a snag, in part because the amicus raised the prospect that Google might back out later](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html).[^cause-and-effect]
 
-[^cause-and-effect]: This is why I think my actions led to additional Pentagon wariness. I introduced Jeff (and nearly half of the Google signers) to the amicus. They signed. The Pentagon hesitated in part due to the Google signatures on the amicus.
+[^cause-and-effect]: This is why I think my actions led to additional Pentagon wariness. I introduced Jeff (and nearly half of the Google signers) to the amicus brief. They signed. The Pentagon hesitated in part due to the Google signatures on the amicus brief.
 
 > [!quote]- [Google Sits Pretty as A.I. Rivals Compete for Pentagon Favor](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)
 > Subtitle: Published later (March 18th, 2026)
@@ -707,7 +707,7 @@ Indeed, it's not always rational to say what you think the moment you think it. 
 
 ## Maybe they thought you weren't worth their time; you aren't entitled to their help
 
-Absolutely possible. No one should be castigated simply because they didn't follow my particular recommendations. But what I would expect to see is any kind of action at all.
+Absolutely. No one should be castigated simply because they didn't follow my particular recommendations. But what I would expect to see is any kind of action at all.
 
 More broadly, sympathetic stories predict visible impact, including "visible in its consequences." That's part of why I'm comfortable guessing that Jeff did not put his foot down and threaten to walk. If he *had* put his foot down, I expect the world would look different to me: in particular, I would expect the classified deal to contain at least *some* binding provisions.
 
@@ -736,7 +736,7 @@ Yes.
 
 When building an advanced AI system, best practice is to make a "safety case" which explains why the system will be aligned and will not cause catastrophic harm. I think any credible GDM safety case would lean heavily on monitoring the "chain of thought", a mechanism their [Frontier Safety Framework](https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/strengthening-our-frontier-safety-framework/frontier-safety-framework_3-1.pdf) discusses.[^sec] For the unfamiliar, a chain of thought is the AI roughly explaining what it's doing and why. It's not perfectly accurate, but it's extremely informative.
 
-[^sec]: Frontier Safety Framework v3.1, section 3.2.1, ctrl+F "chain-of-thought."
+[^sec]: Frontier Safety Framework v3.1, section 3.2.1, Ctrl+F "chain-of-thought."
 
 An AI that wants to hurt us won't announce it to our faces because we would shut it off and then it couldn't achieve its (misaligned) goals. So the AI will likely be deceptive. One of the best ways we can detect deception is by looking at the chain of thought (CoT). To look at the chain of thought, there must be trained human overseers who can access and analyze the data.  But no one *can* do that: Google is handing over its AI to run in a secured military data center that, by default, won't have trained overseers performing this analysis, and that data center obviously isn't transmitting data back to Google![^il6]
 

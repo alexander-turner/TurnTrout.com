@@ -373,12 +373,16 @@ def main() -> None:
         )
         return
 
+    if not args.videos and not args.asset_directory:
+        parser.error("Provide --videos or --asset-directory.")
+
+    videos: list[Path]
     if args.videos:
         for video in args.videos:
             if not video.is_file():
                 raise FileNotFoundError(f"Video not found: {video}")
-        videos: list[Path] = list(args.videos)
-    elif args.asset_directory:
+        videos = list(args.videos)
+    else:
         videos = list(
             script_utils.get_files(
                 dir_to_search=args.asset_directory,
@@ -386,8 +390,6 @@ def main() -> None:
                 use_git_ignore=False,
             )
         )
-    else:
-        parser.error("Provide --videos or --asset-directory.")
 
     for video in videos:
         if video.name in args.ignore_files:
