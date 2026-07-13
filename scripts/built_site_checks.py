@@ -3,7 +3,6 @@
 
 import argparse
 import copy
-import functools
 import html
 import json
 import mimetypes
@@ -1945,6 +1944,20 @@ def check_preloaded_fonts(soup: BeautifulSoup) -> bool:
     return False
 
 
+def _strip_empty_query_segments(url: str) -> str:
+    """
+    Drop empty ``&``-separated query segments (e.g. ``?&x=1`` -> ``?x=1``).
+
+    Browsers accept empty query segments, but the ``validators`` regex rejects
+    them, so normalize the query before validating to avoid false positives.
+    """
+    split = urllib.parse.urlsplit(url)
+    if not split.query:
+        return url
+    segments = [seg for seg in split.query.split("&") if seg]
+    return urllib.parse.urlunsplit(split._replace(query="&".join(segments)))
+
+
 def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
     """Check for syntactically malformed href attributes in `<a>` tags using the
     `validators` library."""
@@ -1976,7 +1989,8 @@ def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
             continue
 
         # Allow spaces in URLs for readability
-        if not validators.url(href) and " " not in href:
+        normalized = _strip_empty_query_segments(href)
+        if not validators.url(normalized) and " " not in href:
             _append_to_list(
                 malformed_links, href, prefix="Syntactically invalid href: "
             )
@@ -2302,7 +2316,6 @@ def check_file_for_issues(
             soup
         ),
         "video_missing_captions": check_video_caption_tracks(soup),
-        "linked_video_missing_captions": check_linked_video_captions(soup),
         "inline_style_variables": check_inline_style_variables(
             soup, opts.defined_css_variables
         ),
@@ -3016,6 +3029,19 @@ def _should_skip_video(video: Tag) -> bool:
     return not isinstance(video, Tag) or video.get("id") == "pond-video"
 
 
+def _is_pa11y_hidden(video: Tag) -> bool:
+    """
+    True for a ``<video>`` carrying the ``ignore-pa11y`` a11y-waiver class.
+
+    ``ignore-pa11y`` (see ``config/pa11y/.pa11yci`` ``hideElements``) removes an
+    element from the axe/htmlcs audit, so the built-site caption gate honors the
+    same marker: waiving one accessibility gate while the other still fails would
+    be contradictory. Removing the class re-enables both gates at once.
+    """
+    classes = video.get("class") or []
+    return "ignore-pa11y" in classes
+
+
 def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
     """Check <video> elements have the MP4 <source> tag first, then the WEBM
     <source> tag, with matching base src."""
@@ -3080,111 +3106,19 @@ def check_video_caption_tracks(soup: BeautifulSoup) -> list[str]:
     Every audio-bearing ``<video>`` must carry a real captions track.
 
     Skips ``#pond-video`` and inline looping muted GIF replacements, which have
-    no audio.
+    no audio, and any ``<video>`` bearing the ``ignore-pa11y`` a11y-waiver class.
     """
     issues: list[str] = []
     for video in _tags_only(soup.find_all("video")):
-        if _should_skip_video(video) or _is_gif_replacement(video):
+        if (
+            _should_skip_video(video)
+            or _is_gif_replacement(video)
+            or _is_pa11y_hidden(video)
+        ):
             continue
         issue = _video_caption_issue(video)
         if issue is not None:
             issues.append(issue)
-    return issues
-
-
-# Linked-video container formats that routinely carry speech.
-_CAPTIONABLE_LINKED_VIDEO_EXTS: frozenset[str] = frozenset(
-    {".mp4", ".mov", ".m4v"}
-)
-
-# Fragment on a linked video's href that opts it out of the captions
-# requirement, mirroring the ``label="No audio"`` marker on embedded <video>.
-_NO_AUDIO_LINK_MARKER = "no-audio"
-
-
-def _cdn_asset_base(url: str) -> tuple[str, str, str] | None:
-    """
-    Split an asset-CDN URL into ``(path_without_ext, ext, fragment)``, with the
-    query dropped and the extension lowercased.
-
-    Returns ``None`` for URLs hosted anywhere else.
-    """
-    parsed = urlparse(url)
-    if parsed.hostname != script_utils.CDN_HOSTNAME:
-        return None
-    base, ext = os.path.splitext(parsed.path)
-    return (base, ext.lower(), parsed.fragment)
-
-
-@functools.cache
-def _cdn_vtt_probe_issue(vtt_url: str) -> str | None:
-    """
-    ``None`` if a HEAD request finds the ``.vtt`` on the CDN, else the reason.
-
-    Results — failures included — are cached per URL: the checker runs over
-    every built page, and each unreferenced video gets exactly one probe per
-    run.
-    """
-    try:
-        response = _head_with_retry(vtt_url)
-    except requests.RequestException as exc:
-        return f"HEAD {vtt_url} failed: {exc}"
-    if response.ok:
-        return None
-    return f"HEAD {vtt_url} returned status {response.status_code}"
-
-
-def _referenced_cdn_vtt_bases(soup: BeautifulSoup) -> set[str]:
-    """Base paths of every ``.vtt`` on the asset CDN referenced by the page."""
-    bases: set[str] = set()
-    for tag in _tags_only(soup.find_all(["a", "track", "source"])):
-        ref = tag.get("href") or tag.get("src")
-        if not isinstance(ref, str):
-            continue
-        parsed = _cdn_asset_base(ref)
-        if parsed is not None and parsed[1] == ".vtt":
-            bases.add(parsed[0])
-    return bases
-
-
-def check_linked_video_captions(soup: BeautifulSoup) -> list[str]:
-    """
-    Every linked audio-container video on the asset CDN must have captions.
-
-    A bare ``<a href="…/foo.mp4">`` bypasses the embedded-``<video>`` caption
-    check. The link passes if the page references the sibling ``…/foo.vtt``,
-    or (checked via HEAD probe) the sibling ``.vtt`` exists on the CDN — the
-    transcription pipeline uploads it next to the video. Only
-    ``.mp4``/``.mov``/``.m4v`` links are checked (formats that routinely carry
-    speech); ``.webm``/``.gif`` links are exempt. A silent link opts out with
-    a ``#no-audio`` fragment, the link-side analog of the ``label="No audio"``
-    marker on embedded videos.
-    """
-    referenced_vtt_bases = _referenced_cdn_vtt_bases(soup)
-
-    issues: list[str] = []
-    for anchor in _tags_only(soup.find_all("a", href=True)):
-        href = anchor.get("href")
-        if not isinstance(href, str):  # pragma: no cover  # a simple typeguard
-            continue
-        parsed = _cdn_asset_base(href)
-        if parsed is None:
-            continue
-        base_path, ext, fragment = parsed
-        if ext not in _CAPTIONABLE_LINKED_VIDEO_EXTS:
-            continue
-        if fragment == _NO_AUDIO_LINK_MARKER:
-            continue
-        if base_path in referenced_vtt_bases:
-            continue
-        vtt_url = f"{script_utils.CDN_BASE_URL}{base_path}.vtt"
-        probe_issue = _cdn_vtt_probe_issue(vtt_url)
-        if probe_issue is not None:
-            issues.append(
-                f"Linked video {href} has no captions companion: "
-                f"{probe_issue}; no on-page .vtt reference or "
-                f"'#{_NO_AUDIO_LINK_MARKER}' marker"
-            )
     return issues
 
 

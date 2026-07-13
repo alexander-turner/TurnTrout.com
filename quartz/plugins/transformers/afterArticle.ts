@@ -13,7 +13,9 @@ const newsletterElement = h("a", { href: "https://turntrout.substack.com/subscri
   "newsletter",
 ])
 
-export const rssElement = h("a", { href: "/rss.xml", id: "rss-link" }, [
+// Absolute production URL so preview/dev deploys point subscribers at the
+// canonical feed instead of their own draft-laden rss.xml.
+export const rssElement = h("a", { href: "https://turntrout.com/rss.xml", id: "rss-link" }, [
   h("abbr", { class: "small-caps" }, "rss"),
 ])
 const subscriptionElement = h("div", { className: "centered" }, [
