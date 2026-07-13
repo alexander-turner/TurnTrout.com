@@ -7,8 +7,8 @@ tags:
 description: ""
 authors:
   - Alex Turner
-card_image:
-card_image_alt:
+card_image: https://assets.turntrout.com/static/images/card_images/red-line-framework.jpg
+card_image_alt: "A camera drone with glowing red lights hovering in a dark, derelict alleyway. Image credit: HIIG, CC BY 3.0."
 aliases:
   - military-ai-red-lines
   - military-ai
@@ -19,8 +19,9 @@ aliases:
 createBibtex: true
 no_dropcap_color: true
 ---
-> [!note]
-> For historical context, see [Why I left Google DeepMind](/why-i-left-google-deepmind#the-art-of-the-deal). I wrote this document in my personal time and had it reviewed by experts in military and surveillance law. You can also read [the raw Markdown for this document](https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/red-line-framework.md). To cite this document, see [the citation block](#citation).
+
+> [!note] Historical context-
+> I [wrote this document in my personal time and had it reviewed by experts in military and surveillance law](/why-i-left-google-deepmind#the-art-of-the-deal). You can also read [the raw Markdown for this document](https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/red-line-framework.md).
 
 This Framework contains two parts. First, the red lines expressed by Standards 1 and 2. Second, a Review Body which advises on contracts relative to Standards 1 and 2. The Body cannot block contracts. Instead, it assesses whether contracts comply with defined Standards, ensuring key decision-makers can track the ethical implications of those contracts. The Body manufactures justified trust by releasing a yearly transparency report to all AI employees. The report notes how many times leadership overrode a non-compliance finding. Leadership cannot quietly dismantle the Body.
 
@@ -238,7 +239,7 @@ The Company will not provide AI capabilities within scope of Standards [1](#st
 
 The Company retains sole discretion over the safety stack applied to all Tier 1 and Tier 2 deployments within scope. Content-level safety configurations (such as refusal behaviors and output filtering) may be adjusted for legitimate operational requirements through the normal review process. However, the compliance infrastructure—monitoring, usage telemetry, classifier systems, and suspension capabilities that enable The Company to detect and respond to potential violations of Standards [1](#standard-1-human-control-over-targeting-and-use-of-force) and [2](#standard-2-no-untargeted-profiling)—*requires* Review Body approval before any removal, modification, or circumvention.
 
-*This is the one area where the Review Body exercises decisional rather than advisory authority*, because compliance infrastructure is the mechanism through which all other oversight is enforced. For Tier 3 deployments, The Company retains sole discretion over which models are provided, their capability scope, and their configuration.
+*This provision is the one area where the Review Body exercises decisional rather than advisory authority*, because compliance infrastructure is the mechanism through which all other oversight is enforced. For Tier 3 deployments, The Company retains sole discretion over which models are provided, their capability scope, and their configuration.
 
 ## Monitoring, access, and suspension
 
