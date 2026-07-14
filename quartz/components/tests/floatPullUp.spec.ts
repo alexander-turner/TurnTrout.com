@@ -41,21 +41,29 @@ async function measurePullUp(root: Locator): Promise<PullUpGeometry> {
   })
 }
 
-test("pull-up is active in the article on wide viewports and inert on narrow ones", async ({
-  page,
-}) => {
+test("pull-up is active in the article above the breakpoint", async ({ page }) => {
   await gotoPage(page, FIXTURE_URL)
+  test.skip(
+    (page.viewportSize()?.width ?? 0) <= PULL_UP_MIN_VIEWPORT_WIDTH,
+    "pull-up is inert at or below the breakpoint",
+  )
 
   const geometry = await measurePullUp(page.locator("article"))
   expect(geometry.float).toBe("right")
+  expect(geometry.marginTop).toBeLessThan(0)
+})
 
-  const viewportWidth = page.viewportSize()?.width ?? 0
-  if (viewportWidth > PULL_UP_MIN_VIEWPORT_WIDTH) {
-    expect(geometry.marginTop).toBeLessThan(0)
-  } else {
-    expect(geometry.marginTop).toBe(0)
-    expect(geometry.imgTop).toBeGreaterThanOrEqual(geometry.subtitleBottom)
-  }
+test("pull-up is inert in the article at or below the breakpoint", async ({ page }) => {
+  await gotoPage(page, FIXTURE_URL)
+  test.skip(
+    (page.viewportSize()?.width ?? 0) > PULL_UP_MIN_VIEWPORT_WIDTH,
+    "pull-up is active above the breakpoint",
+  )
+
+  const geometry = await measurePullUp(page.locator("article"))
+  expect(geometry.float).toBe("right")
+  expect(geometry.marginTop).toBe(0)
+  expect(geometry.imgTop).toBeGreaterThanOrEqual(geometry.subtitleBottom)
 })
 
 test("popover content keeps the floated image below the callout subtitle", async ({ page }) => {
