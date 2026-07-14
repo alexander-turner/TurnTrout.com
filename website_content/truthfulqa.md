@@ -20,6 +20,7 @@ aliases:
   - dataset-weaknesses
   - truthfulqa-weaknesses
   - truthful-qa-weaknesses
+original_url: https://www.lesswrong.com/posts/57k6xNcWtAtsSTcor/gaming-truthfulqa-simple-heuristics-exposed-dataset
 date_published: 2025-01-15
 date_updated: 2026-06-26
 card_image_alt: A clickbait-style meme with the headline "TruthfulQA Authors HATE Him!" featuring a stick figure jester pointing at a chart showing "Accuracy" rising. Text reads "Local Researchers nearly hit SOTA" and "With this one weird trick!" above a red "LEARN THE TRUTH NOW" button.

@@ -16,6 +16,7 @@ card_image:
 card_image_alt:
 aliases:
   - recontextualization
+original_url: https://www.lesswrong.com/posts/whkMnqFWKsBm7Gyd7/recontextualization-mitigates-specification-gaming-without
 date_published: 2025-12-23
 date_updated: 2026-04-20
 createBibtex: true

@@ -342,6 +342,15 @@ def _run_ffmpeg_hevc(
         _print_filepath_warning(input_video_path)
         return
 
+    # A non-mp4 source whose .mp4 already exists was converted on an earlier
+    # run; skip the expensive x265 re-encode instead of overwriting it,
+    # mirroring the WebM path. The output must be a distinct file from the
+    # input so an in-place mp4 re-encode (output_path == input_video_path)
+    # still runs.
+    if output_path != input_video_path and output_path.exists():
+        _print_filepath_warning(output_path)
+        return
+
     is_gif: bool = input_video_path.suffix.lower() == ".gif"
     ffmpeg_cmd: list[str] = [
         "ffmpeg",

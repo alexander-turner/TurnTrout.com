@@ -28,7 +28,9 @@ permissions:
   actions: write # re-run deploy on main
   checks: write # post a synthetic passing visual-testing check-run on main
   contents: write
-  pull-requests: read
+  # PR conversation comments (issues.createComment on a PR) require
+  # pull-requests: write, not issues: write.
+  pull-requests: write
   issues: write
 
 concurrency:

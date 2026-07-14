@@ -4,6 +4,7 @@ permalink: punctilio
 no_dropcap: "true"
 hideSubscriptionLinks: true
 publish: true
+original_url: https://www.lesswrong.com/posts/xezG6kmdj5R8bpbms/punctilio-the-best-text-prettifier
 date_published: 2026-02-14
 description: Meticulously beautify your text using my "punctilio" library. No installation needed—just one click away.
 tags:
