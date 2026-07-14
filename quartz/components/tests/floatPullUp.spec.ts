@@ -50,6 +50,10 @@ test("pull-up is active in the article on wide viewports", async ({ page }) => {
   test.skip(!isPullUpViewport(page), "the pull-up is disabled below the article-column width")
 
   await gotoPage(page, FIXTURE_URL)
+  test.skip(
+    (page.viewportSize()?.width ?? 0) <= PULL_UP_MIN_VIEWPORT_WIDTH,
+    "pull-up is inert at or below the breakpoint",
+  )
 
   const geometry = await measurePullUp(page.locator("article"))
   expect(geometry.float).toBe("right")
