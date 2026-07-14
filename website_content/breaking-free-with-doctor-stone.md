@@ -14,6 +14,7 @@ aliases:
   - dr-stone
   - senku
   - breaking-free-doctor-stone
+original_url: https://www.lesswrong.com/posts/axCDKxFuZ3zKw4n5d/review-breaking-free-with-dr-stone
 date_published: 2024-12-17
 date_updated: 2026-06-30
 card_image_alt: Senku from Dr. Stone grins with fierce determination, his face lit by fire and sparks against a dark forest at night. He has spiky, light-colored hair with green tips, cracks on his face, and "E=mc²" written on his collar.

@@ -514,6 +514,14 @@ figcaption,
   @media all and (width <= 700px) {
     margin-top: initial;
   }
+
+  // Popovers and the search preview are far narrower than the article column
+  // the pull-up offset is calibrated for, so the image would cover the
+  // callout title there.
+  .popover &,
+  #search-container & {
+    margin-top: initial;
+  }
 }
 
 .no-select {

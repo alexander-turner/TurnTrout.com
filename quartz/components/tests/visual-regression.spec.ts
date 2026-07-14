@@ -158,31 +158,27 @@ test.describe("Test page sections", () => {
   })
 })
 
-// The index page's SPA fires an initial `nav` after load; a bare page.evaluate
-// racing that pass hits a destroyed execution context in Firefox. Poll with
-// waitForFunction (which survives the nav) until webfonts have swapped, then
-// drop every paragraph but the first — retrying once if the nav destroys the
-// context mid-call — so only the dropcap paragraph remains for the screenshot.
+// The index page's SPA can replace the document shortly after load, destroying
+// the execution context (killing any in-flight page.evaluate) and discarding
+// DOM edits made before the swap. waitForFunction survives that: Playwright
+// re-injects the predicate into each new context, so mutating inside the poll
+// guarantees the edit lands in the document that gets screenshotted. Wait for
+// webfonts, drop every paragraph but the dropcap one, and resolve only once
+// that state holds.
 async function keepOnlyFirstParagraph(page: Page): Promise<void> {
-  await page.waitForFunction(() => document.fonts?.status === "loaded", undefined, {
-    timeout: 10_000,
-  })
-  const removeTrailingParagraphs = (): void => {
-    const article = document.querySelector("article")
-    if (!article) return
-    article.querySelectorAll("p").forEach((p, idx) => {
-      if (idx > 0) p.remove()
-    })
-  }
-  try {
-    await page.evaluate(removeTrailingParagraphs)
-  } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("Execution context was destroyed")) {
-      await page.evaluate(removeTrailingParagraphs)
-    } else {
-      throw error
-    }
-  }
+  await page.waitForFunction(
+    () => {
+      if (document.fonts?.status !== "loaded") return false
+      const article = document.querySelector("article")
+      if (!article) return false
+      article.querySelectorAll("p").forEach((p, idx) => {
+        if (idx > 0) p.remove()
+      })
+      return article.querySelectorAll("p").length === 1
+    },
+    undefined,
+    { timeout: 10_000 },
+  )
 }
 
 test.describe("Unique content around the site", () => {

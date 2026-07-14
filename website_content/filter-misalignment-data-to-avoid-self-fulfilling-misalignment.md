@@ -16,6 +16,7 @@ aliases:
   - break-the-prophecy
   - pretrained-misalignment
   - filter-misalignment-data
+original_url: https://www.lesswrong.com/posts/QkEyry3Mqo8umbhoK/self-fulfilling-misalignment-data-might-be-poisoning-our-ai
 date_published: 2025-03-01
 date_updated: 2026-06-28
 card_image_alt: A person says "AI will be evil", causing a later AI to think it's evil.
