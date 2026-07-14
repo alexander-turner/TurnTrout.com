@@ -19,6 +19,8 @@ test-results/
 pnpm-lock.yaml
 **/asset_queue.json
 **/.asset_dimensions.json
+# External README snapshots — third-party content, keep byte-for-byte verbatim
+**/.readme-snapshots/
 **/img-comparison-slider.js
 .beads/
 .vscode/

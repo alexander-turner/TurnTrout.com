@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
-import childProcess from "child_process"
 import fs from "fs"
+import path from "path"
 
 import type { BuildCtx } from "../../util/ctx"
 
@@ -8,12 +8,14 @@ import {
   asQuoteAdmonition,
   buildPlaceholderRegex,
   clearContentCache,
-  fetchGitHubContentSync,
   fetchLocalContentSync,
   githubReadmeSource,
+  githubSnapshotPath,
   isLocalSource,
   populateExternalContent,
   PopulateExternalMarkdown,
+  readGitHubSnapshotSync,
+  README_SNAPSHOT_DIR,
   rewriteRelativeLinksToGitHub,
   stripBadges,
   stripLeadingH1,
@@ -25,15 +27,18 @@ import {
 /** Wraps `"key": value` output in braces so it can be parsed as JSON. */
 const parseJsonEntry = (entry: string) => JSON.parse(`{${entry}}`) as unknown
 
+/** Builds an ENOENT-style error like fs throws for a missing file. */
+function enoentError(): NodeJS.ErrnoException {
+  const error: NodeJS.ErrnoException = new Error("ENOENT: no such file or directory")
+  error.code = "ENOENT"
+  return error
+}
+
 describe("PopulateExternalMarkdown", () => {
-  let mockFetch: jest.SpiedFunction<typeof childProcess.execFileSync>
   let mockReadFile: jest.SpiedFunction<typeof fs.readFileSync>
 
   beforeEach(() => {
     clearContentCache()
-    mockFetch = jest.spyOn(childProcess, "execFileSync").mockReturnValue("") as jest.SpiedFunction<
-      typeof childProcess.execFileSync
-    >
     mockReadFile = jest.spyOn(fs, "readFileSync").mockReturnValue("") as jest.SpiedFunction<
       typeof fs.readFileSync
     >
@@ -221,21 +226,49 @@ describe("PopulateExternalMarkdown", () => {
     })
   })
 
-  describe("fetchGitHubContentSync", () => {
+  describe("githubSnapshotPath", () => {
     it.each([
-      [{ owner: "test-owner", repo: "test-repo" }, "main/README.md"],
+      [{ owner: "test-owner", repo: "test-repo" }, "test-owner__test-repo__main__README.md"],
       [
         { owner: "owner", repo: "repo", ref: "develop", path: "docs/API.md" },
-        "develop/docs/API.md",
+        "owner__repo__develop__docs__API.md",
       ],
-    ])("should construct correct URL for source %j", (source, expectedPath) => {
-      mockFetch.mockReturnValue("content")
-      fetchGitHubContentSync(source)
-      expect(mockFetch).toHaveBeenCalledWith(
-        "curl",
-        ["-sf", `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${expectedPath}`],
-        expect.objectContaining({ encoding: "utf-8" }),
-      )
+    ])("should build a unique snapshot path for source %j", (source, expectedFileName) => {
+      expect(githubSnapshotPath(source)).toBe(path.join(README_SNAPSHOT_DIR, expectedFileName))
+    })
+  })
+
+  describe("readGitHubSnapshotSync", () => {
+    const source = { owner: "test-owner", repo: "test-repo" }
+
+    it("should read the snapshot file for the source", () => {
+      mockReadFile.mockReturnValue("snapshot content")
+      expect(readGitHubSnapshotSync(source)).toBe("snapshot content")
+      expect(mockReadFile).toHaveBeenCalledWith(githubSnapshotPath(source), "utf-8")
+    })
+
+    it("should explain how to regenerate a missing snapshot", () => {
+      const cause = enoentError()
+      mockReadFile.mockImplementation(() => {
+        throw cause
+      })
+      let thrown: Error | undefined
+      try {
+        readGitHubSnapshotSync(source)
+      } catch (e) {
+        thrown = e as Error
+      }
+      expect(thrown?.message).toContain(`Missing README snapshot ${githubSnapshotPath(source)}`)
+      expect(thrown?.message).toContain("scripts/refresh_readme_snapshots.ts")
+      expect(thrown?.cause).toBe(cause)
+    })
+
+    it("should rethrow non-ENOENT errors unchanged", () => {
+      const cause = new Error("EACCES: permission denied")
+      mockReadFile.mockImplementation(() => {
+        throw cause
+      })
+      expect(() => readGitHubSnapshotSync(source)).toThrow(cause)
     })
   })
 
@@ -259,25 +292,28 @@ describe("PopulateExternalMarkdown", () => {
         { project: { owner: "user", repo: "project" } },
         "Content",
       ],
-    ])("should replace placeholder %j with content", (input, fetchedContent, sources, expected) => {
-      mockFetch.mockReturnValue(fetchedContent)
-      expect(populateExternalContent(input, sources)).toBe(expected)
-    })
+    ])(
+      "should replace placeholder %j with content",
+      (input, snapshotContent, sources, expected) => {
+        mockReadFile.mockReturnValue(snapshotContent)
+        expect(populateExternalContent(input, sources)).toBe(expected)
+      },
+    )
 
     it("should apply transform function", () => {
-      mockFetch.mockReturnValue("[![Badge](url)](link)\n\n# Content")
+      mockReadFile.mockReturnValue("[![Badge](url)](link)\n\n# Content")
       const sources = { project: { owner: "user", repo: "project", transform: stripBadges } }
       expect(
         populateExternalContent('<span class="populate-markdown-project"></span>', sources),
       ).toBe("# Content")
     })
 
-    it("should cache fetched content", () => {
-      mockFetch.mockReturnValue("Cached")
+    it("should cache loaded content", () => {
+      mockReadFile.mockReturnValue("Cached")
       const sources = { project: { owner: "user", repo: "project" } }
       populateExternalContent('<span class="populate-markdown-project"></span>', sources)
       populateExternalContent('<span class="populate-markdown-project"></span>', sources)
-      expect(mockFetch).toHaveBeenCalledTimes(1)
+      expect(mockReadFile).toHaveBeenCalledTimes(1)
     })
 
     it("should ignore unconfigured placeholders", () => {
@@ -286,7 +322,7 @@ describe("PopulateExternalMarkdown", () => {
     })
 
     it("should ignore other populate- spans when sources are configured", () => {
-      mockFetch.mockReturnValue("Replaced")
+      mockReadFile.mockReturnValue("Replaced")
       const input =
         '<span class="populate-markdown-project"></span> and <span class="populate-commit-count"></span>'
       const sources = { project: { owner: "user", repo: "project" } }
@@ -295,9 +331,9 @@ describe("PopulateExternalMarkdown", () => {
       )
     })
 
-    it("should propagate fetch errors with context", () => {
-      const cause = new Error("Network error")
-      mockFetch.mockImplementation(() => {
+    it("should propagate load errors with context", () => {
+      const cause = new Error("Disk error")
+      mockReadFile.mockImplementation(() => {
         throw cause
       })
       let thrown: Error | undefined
@@ -309,7 +345,7 @@ describe("PopulateExternalMarkdown", () => {
         thrown = e as Error
       }
       expect(thrown?.message).toBe(
-        'Failed to fetch content for placeholder "project" from user/project',
+        'Failed to load content for placeholder "project" from user/project',
       )
       expect(thrown?.cause).toBe(cause)
     })
@@ -402,14 +438,14 @@ describe("PopulateExternalMarkdown", () => {
       const plugin = PopulateExternalMarkdown(opts as never)
       const result = plugin.textTransform?.({} as BuildCtx, "Regular content")
       expect(result).toBe("Regular content")
-      expect(mockFetch).not.toHaveBeenCalled()
+      expect(mockReadFile).not.toHaveBeenCalled()
     })
 
     it.each([
       ["string input", 'Before\n<span class="populate-markdown-project"></span>\nAfter'],
       ["Buffer input", Buffer.from('<span class="populate-markdown-project"></span>')],
     ])("should process %s with placeholders", (_, input) => {
-      mockFetch.mockReturnValue("# Content")
+      mockReadFile.mockReturnValue("# Content")
       const plugin = PopulateExternalMarkdown({
         sources: { project: { owner: "user", repo: "project" } },
       })
