@@ -1097,18 +1097,8 @@ test.describe("Video Speed Controller visibility", () => {
         video.playbackRate = 2.0
       })
 
-      // The reset rides a ratechange event plus a requestAnimationFrame
-      // callback, and headless WebKit on a contended CI runner can starve
-      // rAF for seconds — the budget covers scheduling delay, not the lock
-      // logic, so a broken lock still fails at any timeout.
-      await expect
-        .poll(async () => await getVideoPlaybackRate(page, "test-video"), {
-          intervals: [50, 100, 250, 500],
-          timeout: 5_000,
-        })
-        .toBe(1.0)
-
-      // Verify it was reset back to 1.0
+      // The lock shadows the setter, so the write is blocked before it
+      // lands and the rate reads 1.0 with no settling wait.
       const resetPlaybackRate = await getVideoPlaybackRate(page, "test-video")
       expect(resetPlaybackRate).toBe(1.0)
     })
