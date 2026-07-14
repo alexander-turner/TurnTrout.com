@@ -1,5 +1,3 @@
-import type { Request } from "@playwright/test"
-
 import { expect, test } from "./fixtures"
 import { gotoPage } from "./visual_utils"
 
@@ -44,12 +42,8 @@ test.use({ stubCdnAssets: false })
 //   - palform.app: the third-party feedback-form embed (on /about) ships its
 //     own bundled PouchDB, which logs a `db.type() is deprecated` warning. It's
 //     external code we don't control, so we don't fail our console check on it.
-//   - request timeouts: this spec deliberately fetches real CDN assets, so a
-//     degraded network path between the CI runner and the CDN surfaces as
-//     WebKit "request timed out" errors. A timeout is never a code-side
-//     signal — a broken URL fails deterministically with a 404, which still
-//     fails this test. Matched against the exact WebKit message text so only
-//     the timeout variant is tolerated.
+//   - preconnect timeouts: preconnect is a speculative optimization hint;
+//     when it fails the real fetch still happens and is judged on its own.
 const ALLOWED_PATTERNS: readonly RegExp[] = [
   /umami\.is/i,
   /umami\.dev/i,
@@ -59,43 +53,26 @@ const ALLOWED_PATTERNS: readonly RegExp[] = [
   /was preloaded using link preload but not used/i,
   /palform\.app/i,
   /^Failed to preconnect to \S+ Error: The request timed out\.$/,
-  /^Failed to load resource: The request timed out\.$/,
 ]
 
 function isAllowed(text: string): boolean {
   return ALLOWED_PATTERNS.some((pattern) => pattern.test(text))
 }
 
-const NETWORK_QUIET_WINDOW_MS = 500
-const NETWORK_SETTLE_DEADLINE_MS = 15_000
-const POLL_INTERVAL_MS = 100
+// WebKit's resource-timeout console error carries the URL in
+// `msg.location().url`, not the message text.
+const RESOURCE_TIMEOUT_PATTERN = /^Failed to load resource: The request timed out\.$/
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-/**
- * Waits for the in-flight request set to stay empty for a quiet window, up
- * to the deadline. Like `networkidle` (which the linter bans), the quiet
- * window keeps a momentary zero between dependent requests (a stylesheet
- * finishing triggers a font request) from counting as settled.
- *
- * @returns URLs of requests still pending at the deadline.
- */
-async function waitForNetworkSettle(
-  inflightRequests: ReadonlySet<Request>,
-): Promise<readonly string[]> {
-  const deadline = Date.now() + NETWORK_SETTLE_DEADLINE_MS
-  let settled = false
-  while (!settled && Date.now() < deadline) {
-    if (inflightRequests.size === 0) {
-      await sleep(NETWORK_QUIET_WINDOW_MS)
-      settled = inflightRequests.size === 0
-    } else {
-      await sleep(POLL_INTERVAL_MS)
-    }
-  }
-  return [...inflightRequests].map((req) => req.url())
+// A resource timeout is excused only for another origin: this spec fetches
+// real CDN assets, and a cross-origin fetch rides the public network, where
+// a timeout is weather rather than a code signal — a wrong URL 404s
+// deterministically and still fails. A same-origin asset is served by the
+// deployment under test, so a timeout there (or one with no attributable
+// URL) is a real failure.
+function isCrossOriginResourceTimeout(text: string, locationUrl: string): boolean {
+  return (
+    RESOURCE_TIMEOUT_PATTERN.test(text) && locationUrl !== "" && !locationUrl.startsWith(BASE_URL)
+  )
 }
 
 for (const slug of PAGES_TO_CHECK) {
@@ -111,6 +88,7 @@ for (const slug of PAGES_TO_CHECK) {
       // instead. Match against both so the allowlist covers all engines.
       const locationUrl = msg.location()?.url ?? ""
       if (isAllowed(text) || isAllowed(locationUrl)) return
+      if (isCrossOriginResourceTimeout(text, locationUrl)) return
       offenders.push(`[${type}] ${text}${locationUrl ? ` (${locationUrl})` : ""}`)
     })
 
@@ -119,28 +97,15 @@ for (const slug of PAGES_TO_CHECK) {
       offenders.push(`[pageerror] ${err.message}`)
     })
 
-    // Sub-resource requests (fonts, images, analytics) can emit console
-    // errors after the `load` event, so requests that started should
-    // settle before `offenders` is read.
-    const inflightRequests = new Set<Request>()
-    page.on("request", (req) => inflightRequests.add(req))
-    page.on("requestfinished", (req) => inflightRequests.delete(req))
-    page.on("requestfailed", (req) => inflightRequests.delete(req))
-
     await gotoPage(page, `${BASE_URL}${slug}`)
-    const stragglers = await waitForNetworkSettle(inflightRequests)
-
-    // Requests to this site's own server are deterministic and must settle
-    // by the deadline. A request still pending against another origin is
-    // stalled on the public network: the only console output it can still
-    // produce is the allowlisted timeout error (a bad asset URL 404s
-    // quickly, so it settles in time and fails the offender check), so it
-    // must not gate the offender read.
-    const ownServerStragglers = stragglers.filter((url) => url.startsWith(BASE_URL))
-    expect(
-      ownServerStragglers,
-      `Same-origin requests still in flight after ${NETWORK_SETTLE_DEADLINE_MS}ms on ${ENV_LABEL} ${slug}:\n${ownServerStragglers.join("\n")}`,
-    ).toEqual([])
+    // Sub-resource requests (fonts, images, analytics) can emit console
+    // errors after the `load` event, so the network must go idle before
+    // `offenders` is read. Late console output from in-flight fetches is
+    // this spec's subject, so waiting on the network is the condition
+    // under test — not a proxy for UI readiness, which is what the rule
+    // guards against.
+    // eslint-disable-next-line playwright/no-networkidle
+    await page.waitForLoadState("networkidle")
 
     expect(
       offenders,
