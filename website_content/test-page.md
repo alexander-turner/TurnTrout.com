@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-07
+date_updated: 2026-07-14
 createBibtex: true
 ---
 
@@ -731,6 +731,14 @@ This solution is 2/3 water, mixed on 01/01/2024. Even more complicated fractions
 ## Ordinal suffixes
 
 He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._ October 5th, 1993.
+
+## Non-breaking hyphens
+
+Short hyphenated compounds stay whole instead of breaking at the hyphen. The column below is deliberately narrow, so each term is forced onto its own line rather than splitting across two:
+
+<div id="non-breaking-hyphens-demo" style="width: 6rem; border: 2px var(--midground) solid; border-radius: 5px; padding: 0.5rem;">
+We held a 1-on-1 with GPT-4 about the 9-to-5 grind, X-ray goggles, and the mid-1990s.
+</div>
 
 ## Dropcaps
 

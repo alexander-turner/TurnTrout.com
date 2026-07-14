@@ -329,6 +329,48 @@ const dashWordJoinerPass = definePass(/[–—]/gu, (match, view) => {
   return `${WORD_JOINER}${match[0]}`
 })
 
+const isAlnum = (char: string | undefined): boolean =>
+  char !== undefined && /[\p{L}\p{N}]/u.test(char)
+
+// A hyphen (U+002D) is a break-after opportunity, so a hyphenated token can
+// wrap right after any of its hyphens ("1-on-1" splitting to "1-" / "on-1").
+// For short, identifier-like compounds this reads badly. Glue a word joiner
+// after such a hyphen so the unit stays whole, while long descriptive
+// compounds ("state-of-the-art") keep their break opportunities.
+//
+// The join fires when the hyphen sits between two alphanumerics and either a
+// digit flanks it (numeric compounds and identifiers: "GPT-4", "COVID-19",
+// "3-D", "9-to-5", "1-2-3", "Qwen1.5-1.8") or one of the two joined segments is
+// a single character (single-letter affixes: "T-shirt", "X-ray", "e-mail").
+// Two-segment numeric ranges have already become en dashes upstream; a hyphen
+// that survives to here belongs to a compound worth keeping whole. Idempotent:
+// after a pass the character following the hyphen is the word joiner, which
+// fails the alphanumeric test.
+//
+// Applied by NonBreakingHyphens, a late plugin (see below): running after
+// TagSmallcaps means acronyms are already wrapped in <abbr>, so gluing "gpt-4"
+// inside the finished element keeps it both small-capped and unbreakable
+// instead of splitting the acronym match.
+const hyphenWordJoinerPass = definePass(/-/g, (match, view) => {
+  const idx = match.index
+  const { text } = view
+  const left = text[idx - 1]
+  const right = text[idx + 1]
+
+  // Only an intra-word hyphen qualifies. `glueHyphens` feeds one text node at a
+  // time, so a hyphen at a node edge has an undefined neighbor and is skipped.
+  if (!isAlnum(left) || !isAlnum(right)) return null
+
+  const leftSegmentIsSingle = idx - 1 === 0 || !isAlnum(text[idx - 2])
+  const rightSegmentIsSingle = idx + 2 === text.length || !isAlnum(text[idx + 2])
+
+  const shouldGlue =
+    /\d/.test(left) || /\d/.test(right) || leftSegmentIsSingle || rightSegmentIsSingle
+  if (!shouldGlue) return null
+
+  return `-${WORD_JOINER}`
+})
+
 // Simple find-and-replace transforms local to this site (punctilio handles the rest)
 const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransform]
 
@@ -1066,6 +1108,45 @@ export const StripInlineBoundaryWhitespace: QuartzTransformerPlugin = () => {
     name: "stripInlineBoundaryWhitespace",
     htmlPlugins() {
       return [() => stripInlineBoundaryWhitespace]
+    },
+  }
+}
+
+/**
+ * Applies {@link hyphenWordJoinerPass} to prose text nodes, gluing short
+ * hyphenated compounds so they don't wrap at their hyphens. Skips code and
+ * display headings (which wrap naturally, like nbspTransform is skipped there).
+ *
+ * Each text node is processed on its own; a hyphen at a node edge has no
+ * in-node neighbor and is left alone, matching the boundary-skip the pass
+ * applies within a multi-node run.
+ */
+export function glueHyphens(tree: Root): void {
+  visitParents(tree, "text", (node: Text, ancestors: Parent[]) => {
+    const parent = ancestors[ancestors.length - 1] as Element
+    // istanbul ignore next
+    if (!parent) return
+    if (hasAncestor(parent, toSkip, ancestors)) return
+    if (isDisplayHeading(parent) || hasAncestor(parent, isDisplayHeading, ancestors)) return
+    node.value = hyphenWordJoinerPass(node.value)
+  })
+}
+
+/**
+ * Quartz plugin gluing short hyphenated compounds ("1-on-1", "GPT-4") so they
+ * never wrap at a hyphen.
+ *
+ * Runs *after* ``TagSmallcaps``: acronyms are already wrapped in
+ * ``<abbr class="small-caps">`` by then, so the word joiner lands inside the
+ * finished element and keeps the acronym both small-capped and unbreakable. A
+ * joiner injected earlier would split the acronym match and drop trailing
+ * segments (e.g. the "XL" of "GPT-2-XL") out of the small-caps run.
+ */
+export const NonBreakingHyphens: QuartzTransformerPlugin = () => {
+  return {
+    name: "nonBreakingHyphens",
+    htmlPlugins() {
+      return [() => glueHyphens]
     },
   }
 }
