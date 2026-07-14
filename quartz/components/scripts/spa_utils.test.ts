@@ -226,6 +226,24 @@ describe("scroll helpers", () => {
       scrollToUrlTarget(hash)
       expect(scrollSpy).toHaveBeenCalledWith({ top: 420, behavior: "instant" })
     })
+
+    it.each<[string, string, number]>([
+      ["subtracts a parsable scroll-margin-top", "16px", 404],
+      ["ignores an unparsable scroll-margin-top", "auto", 420],
+    ])("%s", (_label, marginTop, expectedTop) => {
+      const target = document.createElement("div")
+      target.id = "with-margin"
+      document.body.appendChild(target)
+      jest.spyOn(target, "getBoundingClientRect").mockReturnValue({ top: 420 } as DOMRect)
+      const getComputedStyleSpy = jest
+        .spyOn(window, "getComputedStyle")
+        .mockReturnValue({ getPropertyValue: () => marginTop } as unknown as CSSStyleDeclaration)
+
+      scrollToUrlTarget("#with-margin")
+      expect(scrollSpy).toHaveBeenCalledWith({ top: expectedTop, behavior: "instant" })
+
+      getComputedStyleSpy.mockRestore()
+    })
   })
 
   describe("handleNavigationScroll", () => {

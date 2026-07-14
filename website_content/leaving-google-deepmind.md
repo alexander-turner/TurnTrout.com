@@ -6,7 +6,7 @@ tags:
   - AI
   - deepmind
   - personal
-description: "I fought against Google's Pentagon AI deal for months. I document how powerful people and institutions failed to keep their AI ethics promises in the face of pressure."
+description: "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure."
 similar_posts:
   - red-line-framework
   - deepmind-equity-discussion
@@ -168,7 +168,7 @@ Stuart Russell
   Most importantly: [the leading figure in the global campaign to ban lethal autonomous weapons](https://awards.acm.org/award_winners/russell_3816360), with [his site highlighting over *two hundred prestigious talks on the subject*](https://people.eecs.berkeley.edu/~russell/research/LAWS.html). He presented the  *[Slaughterbots](https://www.youtube.com/watch?v=O-2tpwW0kmU)* [videos](https://www.youtube.com/watch?v=9rDo1QxI260) to the United Nations. If anyone on this green planet Earth had a reason to call out an "all lawful use" military AI deal, it was the man who organized the field against SLAUGHTERBOTS.
 
 Yoshua Bengio
-: The most-cited living computer scientist and a Turing Award winner (like the Nobel but for computer science). In 2023, he [testified to the US Senate on AI's threats to democracy and national security](https://yoshuabengio.org/en/blog/my-testimony-front-us-senate-urgency-act-against-ai-threats-democracy-society-and-national). He is, right this moment, [supervising work mapping military AI applications](https://futureimpact.group/fellowship-yoshua-bengio) onto AI safety concerns.
+: The most-cited living computer scientist and a Turing Award winner (like the Nobel but for computer science). In 2023, he [testified to the US Senate on AI's threats to democracy and national security](https://yoshuabengio.org/en/blog/my-testimony-front-us-senate-urgency-act-against-ai-threats-democracy-society-and-national). He just finished [supervising work mapping military AI applications](https://futureimpact.group/fellowship-yoshua-bengio) onto AI safety concerns.
 
 Geoffrey Hinton
 : A 2024 Nobel laureate in Physics and a Turing Award winner. Hinton [resigned from Google in 2023 specifically so he could warn about AI's dangers without considering how it impacts Google's interests](https://www.nytimes.com/2023/05/01/technology/ai-google-chatbot-engineer-quits-hinton.html). In 2025, he had already [criticized Google for "reversing its stance on military AI applications"](https://www.cbsnews.com/news/godfather-of-ai-geoffrey-hinton-ai-warning/). Hinton quit Google to be able to speak truth to these exact issues.

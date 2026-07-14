@@ -41,21 +41,34 @@ async function measurePullUp(root: Locator): Promise<PullUpGeometry> {
   })
 }
 
-test("pull-up is active in the article on wide viewports and inert on narrow ones", async ({
-  page,
-}) => {
+/** True on viewports wide enough for custom.scss to keep the pull-up active. */
+function isPullUpViewport(page: Page): boolean {
+  return (page.viewportSize()?.width ?? 0) > PULL_UP_MIN_VIEWPORT_WIDTH
+}
+
+test("pull-up is active in the article on wide viewports", async ({ page }) => {
+  test.skip(!isPullUpViewport(page), "the pull-up is disabled below the article-column width")
+
+  await gotoPage(page, FIXTURE_URL)
+  test.skip(
+    (page.viewportSize()?.width ?? 0) <= PULL_UP_MIN_VIEWPORT_WIDTH,
+    "pull-up is inert at or below the breakpoint",
+  )
+
+  const geometry = await measurePullUp(page.locator("article"))
+  expect(geometry.float).toBe("right")
+  expect(geometry.marginTop).toBeLessThan(0)
+})
+
+test("pull-up is inert in the article on narrow viewports", async ({ page }) => {
+  test.skip(isPullUpViewport(page), "wide viewports keep the pull-up active")
+
   await gotoPage(page, FIXTURE_URL)
 
   const geometry = await measurePullUp(page.locator("article"))
   expect(geometry.float).toBe("right")
-
-  const viewportWidth = page.viewportSize()?.width ?? 0
-  if (viewportWidth > PULL_UP_MIN_VIEWPORT_WIDTH) {
-    expect(geometry.marginTop).toBeLessThan(0)
-  } else {
-    expect(geometry.marginTop).toBe(0)
-    expect(geometry.imgTop).toBeGreaterThanOrEqual(geometry.subtitleBottom)
-  }
+  expect(geometry.marginTop).toBe(0)
+  expect(geometry.imgTop).toBeGreaterThanOrEqual(geometry.subtitleBottom)
 })
 
 test("popover content keeps the floated image below the callout subtitle", async ({ page }) => {

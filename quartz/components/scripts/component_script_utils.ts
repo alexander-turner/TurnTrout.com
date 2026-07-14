@@ -155,6 +155,9 @@ export const svgCopy =
 export const svgCheck =
   '<svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true"><path fill-rule="evenodd" fill="rgb(63, 185, 80)" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path></svg>'
 
+/** How long the copy button shows the checkmark before reverting to the copy icon. */
+export const COPY_BUTTON_RESET_DELAY_MS = 2000
+
 /**
  * Sets up a clipboard copy button with icon swap animation.
  * Shared between code block copy buttons and the punctilio demo.
@@ -175,7 +178,7 @@ export function setupCopyButton(
           setTimeout(() => {
             button.innerHTML = svgCopy
             button.style.borderColor = ""
-          }, 2000)
+          }, COPY_BUTTON_RESET_DELAY_MS)
         },
         (error) => console.error(error),
       )
