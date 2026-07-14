@@ -339,11 +339,13 @@ const isAlnum = (char: string | undefined): boolean =>
 // compounds ("state-of-the-art") keep their break opportunities.
 //
 // The join fires when the hyphen sits between two alphanumerics and either a
-// digit flanks it (numeric compounds: "GPT-4", "COVID-19", "3-D", "9-to-5") or
-// one of the two joined segments is a single character (single-letter affixes:
-// "T-shirt", "X-ray", "e-mail"). Number ranges are already en dashes by this
-// point, so digit-digit hyphens never reach here. Idempotent: after a pass the
-// character following the hyphen is the word joiner, which fails the alnum test.
+// digit flanks it (numeric compounds and identifiers: "GPT-4", "COVID-19",
+// "3-D", "9-to-5", "1-2-3", "Qwen1.5-1.8") or one of the two joined segments is
+// a single character (single-letter affixes: "T-shirt", "X-ray", "e-mail").
+// Two-segment numeric ranges have already become en dashes upstream; a hyphen
+// that survives to here belongs to a compound worth keeping whole. Idempotent:
+// after a pass the character following the hyphen is the word joiner, which
+// fails the alphanumeric test.
 const hyphenWordJoinerPass = definePass(/-/g, (match, view) => {
   const idx = match.index
   const { text } = view

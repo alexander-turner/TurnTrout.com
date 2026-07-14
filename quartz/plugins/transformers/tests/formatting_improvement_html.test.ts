@@ -759,6 +759,10 @@ describe("HTMLFormattingImprovement", () => {
       ["<p>COVID-19 era</p>", `<p>COVID-${wj}19 era</p>`],
       ["<p>a 3-D render</p>", `<p>a 3-${wj}D render</p>`],
       ["<p>mid-1990s music</p>", `<p>mid-${wj}1990s music</p>`],
+      // Multi-segment / decimal numerics keep ASCII hyphens (only two-segment
+      // ranges become en dashes), so they reach this pass and stay whole.
+      ["<p>call 1-2-3 now</p>", `<p>call 1-${wj}2-${wj}3 now</p>`],
+      ["<p>Qwen1.5-1.8 model</p>", `<p>Qwen1.5-${wj}1.8 model</p>`],
       // Single-letter segment on the left.
       ["<p>a T-shirt</p>", `<p>a T-${wj}shirt</p>`],
       ["<p>an X-ray</p>", `<p>an X-${wj}ray</p>`],
