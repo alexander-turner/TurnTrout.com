@@ -146,6 +146,21 @@ test("Search results appear and can be navigated (screenshot)", async ({ page },
   })
 })
 
+test("search preview omits the Similar posts block", async ({ page }) => {
+  test.skip(isMobileViewport(page), "the side preview panel is desktop-only")
+  await search(page, "Definitive Confirmation of Shard Theory")
+
+  const card = page.locator('.result-card[id="shard-theory-confirmed"]')
+  await expect(card).toBeVisible({ timeout: 15_000 })
+  await card.hover()
+
+  // The article preview renders, but its page-bottom "Similar posts" block
+  // (heading + `.related-posts` list) is stripped from the preview.
+  const preview = await waitForArticlePreview(page)
+  await expect(preview.locator("#similar-posts")).toHaveCount(0)
+  await expect(preview.locator(".related-posts")).toHaveCount(0)
+})
+
 test("ArrowDown navigation does not get stuck below the second result", async ({
   page,
 }, testInfo) => {
