@@ -51,6 +51,9 @@ Senior management had insisted that Google wouldn't sign. I disagreed with them,
 
 This essay tells the story of why I left Google DeepMind. It is also the story of something larger: how powerful people and institutions failed, one after another, to keep their AI ethics promises in the face of pressure.
 
+> [!info] On private communications
+> Throughout this essay, I never quote anyone's private words without permission. Where private conversations matter, I characterize them minimally. I otherwise keep to my own actions, public information, and official communications. You can't verify my characterizations, so weight them accordingly. This minimization has cut content which would have supported my arguments.
+
 # Google supports the immigration enforcement supply chain
 
 Subtitle: January 26th, 2026
@@ -350,7 +353,7 @@ In this time, I sent several memos to Google Legal suggesting that Google file a
 
 Subtitle: All through March
 
-As I talked more with senior management, they kept saying: "don't worry. Leadership cares about these issues, too. They won't sign an 'all lawful use' deal." I considered the idea. Might it be true?
+As I talked more with senior management, they kept arguing something like: "don't worry. Leadership cares about these issues, too. They won't sign an 'all lawful use' deal." I considered the idea. Might it be true?
 
 "No, it's not true", I concluded: not unless someone *forced* leadership to hold the line. I wrote a citation-heavy memo explaining why Google was likely to cave. I pointed to Google's history of complying in lower-stakes situations (like [voluntarily handing over a student protester's information to ICE](https://www.eff.org/deeplinks/2026/04/google-broke-its-promise-me-now-ice-has-my-data)); I pointed to Google's large share of government contracts; and I pointed to how Google DeepMind's AI principles had [disintegrated into noncommittal vagueness](https://www.washingtonpost.com/technology/2025/02/04/google-ai-policies-weapons-harm/). I reviewed some of the pressures confronting Google, including Google's mixed  anti-monopoly exposure and [the historically poor track record of the current Department of Justice.](https://www.nytimes.com/interactive/2026/us/trump-administration-lawsuits.html)
 
@@ -401,7 +404,7 @@ I guessed that Sundar was skilled at defusing pressure from employees. I hoped t
 
 Subtitle: March 13th, 2026
 
-Was Jeff a wrestler? I read an account of Demis [trying to negotiate with Sundar for a separate legal structure for DeepMind](https://colossus.com/article/project-mario-demis-hassabis-deepmind-mallaby/). Sundar was slippery, so any deal with Sundar seemed like it would need wrestling. *Persistent* wrestling. Furthermore, Sundar might try to defuse the tension with vague promises, so Jeff would need a specific proposal.
+Was Jeff a wrestler? I read an account of Demis [trying to negotiate with Sundar for a separate legal structure for DeepMind](https://colossus.com/article/project-mario-demis-hassabis-deepmind-mallaby/). Any deal with Sundar seemed like it would need wrestling. *Persistent* wrestling. Furthermore, Sundar might try to defuse the tension with vague promises, so Jeff would need a specific proposal.
 
 I mean, imagine Jeff and I sit down for lunch. Imagine he's on board. Imagine he goes to Sundar and says "If we sign this deal, I won't be able to stay at Google. Help me stay." Imagine Sundar says "You're important to me, Jeff. What would it take?". What does Jeff say? "Don't sign a bad deal" would probably lead to a bad contract that looks less bad on the surface.
 
