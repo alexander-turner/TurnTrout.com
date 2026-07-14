@@ -13,7 +13,7 @@ import {
 } from "punctilio"
 import {
   applyPasses,
-  collectProseBlocks,
+  collectProseUnits,
   getTextContent,
   type PassEntry,
   type TextNodeSkipPredicate,
@@ -154,11 +154,7 @@ function isHatTipSlash(view: ProseView, slashIdx: number): boolean {
  * Returns true when the slash matched (even if both sides kept their spaces),
  * so the digit-slash rule doesn't double-process it.
  */
-function applyMainSlashRule(
-  view: ProseView,
-  slashIdx: number,
-  insertNbsp: (offset: number, bind?: "left" | "right") => void,
-): boolean {
+function applyMainSlashRule(view: ProseView, slashIdx: number): boolean {
   const text = view.text
   const leftBoundary = view.hasBoundary(slashIdx)
   const spaceBefore = !leftBoundary && text[slashIdx - 1] === " "
@@ -184,14 +180,14 @@ function applyMainSlashRule(
   }
 
   if (leftBoundary) {
-    insertNbsp(slashIdx, "right")
+    view.replace(slashIdx, slashIdx, NBSP, { bind: "right" })
   } else if (!spaceBefore) {
-    insertNbsp(slashIdx)
+    view.replace(slashIdx, slashIdx, NBSP)
   }
   if (rightBoundary) {
-    insertNbsp(afterIdx, "left")
+    view.replace(afterIdx, afterIdx, NBSP, { bind: "left" })
   } else if (!spaceAfter) {
-    insertNbsp(afterIdx)
+    view.replace(afterIdx, afterIdx, NBSP)
   }
   return true
 }
@@ -218,23 +214,11 @@ function applyNumberSlashRule(view: ProseView, slashIdx: number): void {
 
 function applySlashSpacing(view: ProseView): void {
   const text = view.text
-  // Two adjacent slashes separated only by an inline-element boundary make the
-  // first slash's trailing NBSP and the second slash's leading NBSP target the
-  // same offset. A single NBSP there is the intended spacing, and punctilio
-  // rejects two pure insertions at one offset — so collapse the duplicate.
-  const insertedAt = new Set<number>()
-  const insertNbsp = (offset: number, bind?: "left" | "right"): void => {
-    if (insertedAt.has(offset)) {
-      return
-    }
-    insertedAt.add(offset)
-    view.replace(offset, offset, NBSP, bind ? { bind } : undefined)
-  }
   for (let i = 0; i < text.length; i++) {
     if (text[i] !== "/" || isHatTipSlash(view, i)) {
       continue
     }
-    if (!applyMainSlashRule(view, i, insertNbsp)) {
+    if (!applyMainSlashRule(view, i)) {
       applyNumberSlashRule(view, i)
     }
   }
@@ -1017,11 +1001,13 @@ export const improveFormatting = (
       // punctilio's default skip tags (kbd, var, samp, ...) must not apply.
       // Form-control and metadata text (option labels, button captions) is a
       // literal value, not prose — drop those blocks from the collection.
-      const eltsToTransform = collectProseBlocks(node as Element, {
+      // Units include loose inline "runs" (text beside block children) that no
+      // single element owns, so a container's loose text still gets formatted.
+      const unitsToTransform = collectProseUnits(node as Element, {
         skipTags: [],
         shouldSkip: toSkip,
-      }).filter((elt) => !NON_PROSE_TAGS.has(elt.tagName))
-      eltsToTransform.forEach((elt) => {
+      }).filter((unit) => unit.kind === "run" || !NON_PROSE_TAGS.has(unit.element.tagName))
+      unitsToTransform.forEach((unit) => {
         const passes: PassEntry[] = [
           ...checkedTextPasses,
           ...activeUncheckedTransformers,
@@ -1029,18 +1015,17 @@ export const improveFormatting = (
           dashWordJoinerPass,
         ]
 
-        // Don't replace slashes in fractions, but give breathing room
-        // to others
-        const isNotFractionOrLink = (n: Element) => {
-          return !hasClass(n, "fraction") && n?.tagName !== "a"
-        }
-        if (isNotFractionOrLink(elt)) {
+        // Don't replace slashes in fractions or link text; loose runs are neither.
+        const isNotFractionOrLink =
+          unit.kind === "run" ||
+          (!hasClass(unit.element, "fraction") && unit.element?.tagName !== "a")
+        if (isNotFractionOrLink) {
           // Slash spacing alone also skips URL-text links, so its entry
           // carries the extra text-node predicate.
           passes.push({ pass: spacesAroundSlashes, shouldSkipText: shouldSkipLinkUrlText })
         }
 
-        applyPasses(elt, passes, { shouldSkip: toSkip })
+        applyPasses(unit, passes, { shouldSkip: toSkip })
       })
     })
 

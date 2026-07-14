@@ -253,6 +253,13 @@ def transcript_to_vtt(transcript: dict) -> str:
             raise ValueError(
                 f"Transcript segment has text but no start/end: {segment}"
             )
+        # Compare at cue resolution: a positive-but-sub-millisecond duration
+        # still renders as start == end, which WebVTT forbids.
+        if round(segment["end"] * 1000) <= round(segment["start"] * 1000):
+            raise ValueError(
+                "Transcript segment has a non-positive duration "
+                f"(WebVTT requires end > start): {segment}"
+            )
         start = format_timestamp(segment["start"])
         end = format_timestamp(segment["end"])
         lines.append(f"{start} --> {end}")
@@ -307,16 +314,34 @@ def inject_caption_track(video_path: Path, references_dir: Path) -> None:
         )
 
 
+def _has_cues(vtt: str) -> bool:
+    """
+    Return True iff *vtt* contains at least one cue timing line.
+
+    Cue text
+    escapes ``>``, so ``-->`` can only come from timings.
+    """
+    return "-->" in vtt
+
+
 def transcribe_video_asset(mp4_path: Path, references_dir: Path) -> bool:
     """
     Transcribe one ``.mp4`` asset and wire up its captions.
 
-    Returns True when a new VTT was produced; False when the asset was skipped
-    (existing sibling VTT or no real audio).
+    Returns True when a new VTT was produced; False when transcription was
+    skipped (existing sibling VTT or no real audio). A pre-existing VTT still
+    gets a ``<track>`` injected into blocks missing one, so video blocks
+    written after the original transcription pick up captions on the next run.
     """
     vtt_path = mp4_path.with_suffix(".vtt")
     if vtt_path.exists():
+        if not _has_cues(vtt_path.read_text(encoding="utf-8")):
+            raise RuntimeError(
+                f"Existing {vtt_path.name} contains no cues; delete it to "
+                "re-transcribe"
+            )
         print(f"Skipping {mp4_path.name}: sibling .vtt already exists")
+        inject_caption_track(mp4_path, references_dir)
         return False
     if not has_real_audio(mp4_path):
         print(f"Skipping {mp4_path.name}: no real (non-silent) audio")
@@ -324,7 +349,13 @@ def transcribe_video_asset(mp4_path: Path, references_dir: Path) -> bool:
 
     print(f"Transcribing {mp4_path.name} via Scriberr...")
     transcript = transcribe(mp4_path)
-    vtt_path.write_text(transcript_to_vtt(transcript), encoding="utf-8")
+    vtt = transcript_to_vtt(transcript)
+    if not _has_cues(vtt):
+        raise RuntimeError(
+            f"Scriberr returned no usable cues for {mp4_path.name}, which "
+            "has real audio; refusing to write an empty VTT"
+        )
+    vtt_path.write_text(vtt, encoding="utf-8")
     inject_caption_track(mp4_path, references_dir)
     print(f"Wrote captions: {vtt_path.name}")
     return True
@@ -338,6 +369,7 @@ def main() -> None:
     parser.add_argument(
         "--asset-directory",
         type=Path,
+        required=True,
         help="Directory containing video assets to transcribe",
     )
     parser.add_argument(

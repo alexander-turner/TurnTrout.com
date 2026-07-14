@@ -15,6 +15,7 @@ aliases:
   - specification-gaming-is-not-reward-optimization
   - reward-still-is-not-the-optimization-target
   - reward-retrospective
+original_url: https://www.lesswrong.com/posts/wwRgR3K8FKShjwwL5/2025-era-reward-hacking-does-not-show-that-reward-is-the
 date_published: 2025-12-18
 date_updated: 2026-04-20
 ---

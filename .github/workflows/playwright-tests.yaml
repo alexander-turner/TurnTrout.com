@@ -126,16 +126,30 @@ jobs:
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
 
-      # Critical log: surface upload failures (don't swallow with
-      # continue-on-error) so a missing log is visible on the shard.
+      # Critical log: a missing log must stay visible on the shard, but the
+      # artifact service intermittently times out (ETIMEDOUT on
+      # CreateArtifact), so give the upload one retry before letting the
+      # failure surface.
       - name: Upload Playwright logs
+        id: upload-playwright-log
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
           if-no-files-found: warn
           retention-days: 1
+
+      - name: Upload Playwright logs (retry)
+        if: always() && steps.upload-playwright-log.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: playwright-log-linux-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-run.log
+          if-no-files-found: warn
+          retention-days: 1
+          overwrite: true
 
       - name: Upload Winston logs
         if: steps.playwright.outcome == 'failure'
@@ -237,16 +251,30 @@ jobs:
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
 
-      # Critical log: surface upload failures (don't swallow with
-      # continue-on-error) so a missing log is visible on the shard.
+      # Critical log: a missing log must stay visible on the shard, but the
+      # artifact service intermittently times out (ETIMEDOUT on
+      # CreateArtifact), so give the upload one retry before letting the
+      # failure surface.
       - name: Upload Playwright logs
+        id: upload-playwright-log
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-log-macos-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
           if-no-files-found: warn
           retention-days: 1
+
+      - name: Upload Playwright logs (retry)
+        if: always() && steps.upload-playwright-log.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: playwright-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-run.log
+          if-no-files-found: warn
+          retention-days: 1
+          overwrite: true
 
       - name: Upload Winston logs
         if: steps.playwright.outcome == 'failure'

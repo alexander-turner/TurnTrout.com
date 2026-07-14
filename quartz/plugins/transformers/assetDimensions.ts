@@ -14,6 +14,7 @@ import type { BuildCtx } from "../../util/ctx"
 
 import { createWinstonLogger } from "../../util/log"
 import { isDraftPath } from "../filters/draft"
+import { EXTERNAL_README_CLASS } from "./populateExternalMarkdown"
 
 export const logger = createWinstonLogger("assetDimensions")
 
@@ -388,12 +389,15 @@ class AssetProcessor {
    * @param currentDimensionsCache - The current dimensions cache
    * @param retries - Number of retry attempts for remote assets
    * @param offline - If true, skip remote fetches and use cached dimensions only
+   * @param tolerateRemoteFailure - If true, a failed remote fetch is logged and
+   *   skipped instead of aborting the build (used for third-party README assets)
    */
   public async processAsset(
     assetInfo: { node: Element; src: string },
     currentDimensionsCache: AssetDimensionMap,
     retries = numRetries,
     offline = false,
+    tolerateRemoteFailure = false,
   ): Promise<void> {
     const { node, src } = assetInfo
     let dims = currentDimensionsCache[src]
@@ -404,7 +408,18 @@ class AssetProcessor {
         logger.debug(`Skipping remote asset in offline mode: ${src}`)
         return
       }
-      const fetchedDims = await AssetProcessor.fetchAndParseAssetDimensions(src, retries)
+      let fetchedDims: AssetDimensions | null
+      try {
+        fetchedDims = await AssetProcessor.fetchAndParseAssetDimensions(src, retries)
+      } catch (error) {
+        if (tolerateRemoteFailure && AssetProcessor.isRemoteUrl(src)) {
+          logger.warn(
+            `Skipping dimensions for external README asset ${src}: ${(error as Error).message}`,
+          )
+          return
+        }
+        throw error
+      }
       if (fetchedDims) {
         dims = fetchedDims
         currentDimensionsCache[src] = fetchedDims
@@ -501,6 +516,24 @@ export function constrainSliderHeight(tree: Root): void {
 }
 
 /**
+ * Collects every element inside a `div.external-readme` wrapper (produced by
+ * `wrapExternalReadme`). Assets embedded from a third-party README point at URLs
+ * we don't author, so a fetch failure there must degrade gracefully rather than
+ * abort the whole site build.
+ */
+export function collectExternalReadmeNodes(tree: Root): ReadonlySet<Element> {
+  const external = new Set<Element>()
+  visit(tree, "element", (node: Element) => {
+    const classes = node.properties?.className
+    if (!(Array.isArray(classes) && classes.includes(EXTERNAL_README_CLASS))) return
+    visit(node, "element", (descendant: Element) => {
+      external.add(descendant)
+    })
+  })
+  return external
+}
+
+/**
  * Creates a Quartz plugin that adds width, height, and aspect-ratio CSS to image and video elements.
  * In offline mode, uses cached dimensions only and skips remote asset fetches.
  */
@@ -520,6 +553,7 @@ export const addAssetDimensionsFromSrc = () => {
             }
             const currentDimensionsCache = await assetProcessor.maybeLoadDimensionCache()
             const assetsToProcess = assetProcessor.collectAssetNodes(tree)
+            const externalReadmeNodes = collectExternalReadmeNodes(tree)
 
             for (const assetInfo of assetsToProcess) {
               await assetProcessor.processAsset(
@@ -527,6 +561,7 @@ export const addAssetDimensionsFromSrc = () => {
                 currentDimensionsCache,
                 numRetries,
                 offline,
+                externalReadmeNodes.has(assetInfo.node),
               )
             }
             if (assetProcessor["needToSaveCache"]) {

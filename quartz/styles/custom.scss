@@ -515,9 +515,11 @@ figcaption,
     margin-top: initial;
   }
 
-  // A popover is narrow even on a desktop viewport, so the pull-up would
-  // overlap the callout title once it wraps. Keep natural spacing there.
-  .popover & {
+  // Popovers and the search preview are far narrower than the article column
+  // the pull-up offset is calibrated for, so the image would cover the
+  // callout title there.
+  .popover &,
+  #search-container & {
     margin-top: initial;
   }
 }

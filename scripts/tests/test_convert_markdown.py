@@ -297,6 +297,49 @@ def test_download_image_failure(tmp_path):
         convert_markdown_yaml._download_image(url, output_path)
 
 
+def test_download_image_opts_into_decoding_and_closes_response(tmp_path):
+    """Decoding is opted in (gzip responses land decompressed) and the pooled
+    connection is released even on the happy path."""
+    output_path = tmp_path / "test.avif"
+
+    mock_response = mock.MagicMock()
+    mock_response.status_code = 200
+    mock_response.raw = io.BytesIO(b"payload")
+
+    with mock.patch.object(
+        convert_markdown_yaml._http_session, "get", return_value=mock_response
+    ):
+        convert_markdown_yaml._download_image(
+            "http://example.com/image.avif", output_path
+        )
+
+    assert output_path.read_bytes() == b"payload"
+    assert mock_response.raw.decode_content is True
+    mock_response.close.assert_called_once()
+
+
+def test_download_image_closes_response_on_failure(tmp_path):
+    """The response is released even when the download fails."""
+    output_path = tmp_path / "test.avif"
+
+    mock_response = mock.MagicMock()
+    mock_response.status_code = 404
+
+    with (
+        mock.patch.object(
+            convert_markdown_yaml._http_session,
+            "get",
+            return_value=mock_response,
+        ),
+        pytest.raises(ValueError, match="Failed to download image"),
+    ):
+        convert_markdown_yaml._download_image(
+            "http://example.com/image.avif", output_path
+        )
+
+    mock_response.close.assert_called_once()
+
+
 @pytest.fixture
 def jpeg_conversion_setup(tmp_path) -> tuple[Path, Path]:
     """Common setup for JPEG conversion tests."""

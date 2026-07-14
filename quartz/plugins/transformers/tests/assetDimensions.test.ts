@@ -32,6 +32,7 @@ import {
   addAssetDimensionsFromSrc,
   type AssetDimensionMap,
   AssetProcessor,
+  collectExternalReadmeNodes,
   constrainSliderHeight,
   findWidestAspectRatio,
   assetProcessor as globalAssetProcessor,
@@ -41,6 +42,7 @@ import {
   paths,
   prependStyles,
 } from "../assetDimensions"
+import { EXTERNAL_README_CLASS } from "../populateExternalMarkdown"
 import { mockFetchNetworkError, mockFetchResolve } from "./test-utils"
 
 // Create a minimal valid PNG file with IHDR chunk
@@ -1026,6 +1028,73 @@ describe("Asset Dimensions Plugin", () => {
       expect(node.properties?.style).toBe(`aspect-ratio: ${mockImageWidth} / ${mockImageHeight};`)
       expect(assetProcessor["needToSaveCache"]).toBe(true)
     })
+
+    it("tolerates a failed remote fetch for an external README asset", async () => {
+      mockFetchResolve(mockedFetch, null, 404, {}, "Not Found")
+      const loggerWarnSpy = jest.spyOn(logger, "warn").mockImplementation((() => logger) as never)
+      const currentDimensionsCache: AssetDimensionMap = {}
+      const node = h("img", { src: imageUrl }) as Element
+
+      await expect(
+        assetProcessor.processAsset(
+          { node, src: imageUrl },
+          currentDimensionsCache,
+          1,
+          false,
+          true,
+        ),
+      ).resolves.toBeUndefined()
+
+      expect(node.properties?.width).toBeUndefined()
+      expect(node.properties?.height).toBeUndefined()
+      expect(loggerWarnSpy).toHaveBeenCalledWith(expect.stringContaining(imageUrl))
+      loggerWarnSpy.mockRestore()
+    })
+
+    it("still throws for a non-remote asset even when tolerating remote failures", async () => {
+      const localSrc = "asset_staging/does-not-exist.png"
+      const fetchSpy = jest
+        .spyOn(AssetProcessor, "fetchAndParseAssetDimensions")
+        .mockRejectedValue(new Error("local read failed"))
+      const currentDimensionsCache: AssetDimensionMap = {}
+      const node = h("img", { src: localSrc }) as Element
+
+      await expect(
+        assetProcessor.processAsset(
+          { node, src: localSrc },
+          currentDimensionsCache,
+          1,
+          false,
+          true,
+        ),
+      ).rejects.toThrow("local read failed")
+
+      fetchSpy.mockRestore()
+    })
+  })
+
+  describe("collectExternalReadmeNodes", () => {
+    it("collects descendants of an external-readme wrapper", () => {
+      const img = h("img", { src: "https://assets.turntrout.com/readme.png" }) as Element
+      const wrapper = h("div", { className: [EXTERNAL_README_CLASS] }, [img]) as Element
+      const tree: Root = { type: "root", children: [wrapper] }
+
+      const external = collectExternalReadmeNodes(tree)
+
+      expect(external.has(img)).toBe(true)
+    })
+
+    it("ignores assets outside an external-readme wrapper", () => {
+      const img = h("img", { src: "https://assets.turntrout.com/first-party.png" }) as Element
+      const tree: Root = {
+        type: "root",
+        children: [h("div", { className: ["some-other-class"] }, [img]) as Element],
+      }
+
+      const external = collectExternalReadmeNodes(tree)
+
+      expect(external.has(img)).toBe(false)
+    })
   })
 
   describe("addAssetDimensionsFromUrl Plugin (Integration)", () => {
@@ -1141,6 +1210,31 @@ describe("Asset Dimensions Plugin", () => {
 
       expect(tree.children).toHaveLength(0)
       expect(mockedFetch).not.toHaveBeenCalled()
+    })
+
+    it("does not abort the build when an external README asset 404s", async () => {
+      const readmeImgSrc = "https://assets.turntrout.com/static/images/missing-readme-asset.png"
+      const img = h("img", { src: readmeImgSrc }) as Element
+      const tree: Root = {
+        type: "root",
+        children: [h("div", { className: [EXTERNAL_README_CLASS] }, [img]) as Element],
+      }
+      assetProcessor.setDirectCache({})
+      const fetchSpy = jest
+        .spyOn(AssetProcessor, "fetchAndParseAssetDimensions")
+        .mockRejectedValue(new Error(`Failed to fetch asset ${readmeImgSrc}: 404 Not Found`))
+      const loggerWarnSpy = jest.spyOn(logger, "warn").mockImplementation((() => logger) as never)
+
+      const pluginInstance = addAssetDimensionsFromSrc()
+      const mockCtx = { argv: { offline: false } } as BuildCtx
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
+
+      await expect(transformer(tree, makeNonDraftFile())).resolves.toBeUndefined()
+
+      expect(img.properties?.width).toBeUndefined()
+      expect(loggerWarnSpy).toHaveBeenCalledWith(expect.stringContaining(readmeImgSrc))
+      fetchSpy.mockRestore()
+      loggerWarnSpy.mockRestore()
     })
 
     it("should handle tree with no images", async () => {

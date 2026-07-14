@@ -17,6 +17,7 @@ aliases:
   - flipped-integers
   - number-proposal
   - rethinking-number-writing
+original_url: https://www.lesswrong.com/posts/KXr8ys8PYppKXgGWj/english-writes-numbers-backwards
 date_published: 2025-07-25
 date_updated: 2026-06-27
 card_image_alt: A depiction of the House of Wisdom, made in the style of the famous School of Athens painting.

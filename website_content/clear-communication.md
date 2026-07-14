@@ -13,6 +13,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
   - clear-communication
+original_url: https://www.lesswrong.com/posts/ZmfxgvtJgcfNCeHwN/authors-have-a-responsibility-to-communicate-clearly
 date_published: 2025-06-29
 date_updated: 2026-06-26
 ---
