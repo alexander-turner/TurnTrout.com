@@ -1000,9 +1000,9 @@
   ],
   "deepmind-equity-discussion": [
     {
-      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
-      "permalink": "alignment-phd",
-      "title": "Looking back on my alignment PhD"
+      "excerpt": "A story of how powerful people and institutions failed to keep their AI ethics promises in the face of pressure.",
+      "permalink": "why-i-left-google-deepmind",
+      "title": "Why I left Google DeepMind"
     }
   ],
   "design": [
@@ -2816,6 +2816,18 @@
       "title": "Eval cooperativeness may be a scalable mitigation for eval gaming"
     }
   ],
+  "red-line-framework": [
+    {
+      "excerpt": "A story of how powerful people and institutions failed to keep their AI ethics promises in the face of pressure.",
+      "permalink": "why-i-left-google-deepmind",
+      "title": "Why I left Google DeepMind"
+    },
+    {
+      "excerpt": "A proposal for a government regulation of AI: Developers must be able to accurately predict the model's output.",
+      "permalink": "ban-development-of-unpredictable-powerful-models",
+      "title": "Ban development of unpredictable powerful models?"
+    }
+  ],
   "reflections-on-pretense": [
     {
       "excerpt": "How to avoid feeling like a fraud: build good habits and stop cutting corners.",
@@ -3640,6 +3652,18 @@
       "excerpt": "A tour of the research areas I've loved over the years.",
       "permalink": "research",
       "title": "My research"
+    }
+  ],
+  "why-i-left-google-deepmind": [
+    {
+      "excerpt": "Principled contract language for selling AI to governments, with transparency incentives that preserve those principles against competitive pressure.",
+      "permalink": "red-line-framework",
+      "title": "A red line and oversight framework for government AI contracts"
+    },
+    {
+      "excerpt": "Considering how to ethically manage AI equity when my goal is to reduce AI risk, not maximize profit.",
+      "permalink": "deepmind-equity-discussion",
+      "title": "How should TurnTrout handle his DeepMind equity situation?"
     }
   ],
   "world-state-is-the-wrong-abstraction-for-impact": [

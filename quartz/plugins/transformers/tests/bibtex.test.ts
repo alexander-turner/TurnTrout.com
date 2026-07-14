@@ -140,31 +140,13 @@ describe("generateBibtexEntry", () => {
     expect(result).toContain("@misc{Turner2022UnderstandingAndControlling,")
   })
 
-  it("throws when date_published is missing on CI", () => {
-    const originalCI = process.env.CI
-    process.env.CI = "true"
-    try {
-      expect(() =>
-        generateBibtexEntry({ title: "Test" } as FrontmatterData, "turntrout.com", "test-slug"),
-      ).toThrow("date_published is required for BibTeX generation (slug: test-slug)")
-    } finally {
-      process.env.CI = originalCI
-    }
-  })
-
-  it("uses current date when date_published is missing locally", () => {
-    const originalCI = process.env.CI
-    delete process.env.CI
-    try {
-      const result = generateBibtexEntry(
-        { title: "Test" } as FrontmatterData,
-        "turntrout.com",
-        "test-slug",
-      )
-      expect(result).toContain(`year = ${new Date().getFullYear()}`)
-    } finally {
-      process.env.CI = originalCI
-    }
+  it("returns null when date_published is missing", () => {
+    const result = generateBibtexEntry(
+      { title: "Test" } as FrontmatterData,
+      "turntrout.com",
+      "test-slug",
+    )
+    expect(result).toBeNull()
   })
 })
 
@@ -255,6 +237,11 @@ describe("Bibtex plugin", () => {
     it.each([
       { name: "createBibtex not set", frontmatter: {}, expectedLength: 0 },
       { name: "createBibtex false", frontmatter: { createBibtex: false }, expectedLength: 0 },
+      {
+        name: "createBibtex true without date_published",
+        frontmatter: { createBibtex: true },
+        expectedLength: 0,
+      },
       {
         name: "createBibtex true",
         frontmatter: { createBibtex: true, date_published: "2022-06-15" },

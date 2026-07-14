@@ -3,7 +3,7 @@ Convert card images in markdown YAML frontmatter to JPEG format.
 
 This script processes markdown files, looking for card_image entries in their
 YAML frontmatter. When found, it downloads the images, converts them to JPEG
-format (height of 1200 pixels with preserved aspect ratio, <300KB) using
+format (center-cropped to the ~1.91:1 social-card dimensions, <300KB) using
 ImageMagick, and uploads them to R2 storage.
 """
 
@@ -97,17 +97,20 @@ def _convert_to_jpeg(
     """
     Convert image to JPEG using ImageMagick with size constraints.
 
-    Resizes to height of 1200 pixels (preserving aspect ratio) and
-    iteratively compresses until file size is under max_size_kb.
+    Center-crops to the social-card dimensions (cardImageWidth x
+    cardImageHeight, ~1.91:1) so the asset matches the ``og:image`` meta tags
+    declared in ``quartz/util/head.ts``, then iteratively compresses until the
+    file size is under max_size_kb.
 
     Args:
         input_path: Source image path
         output_path: Destination JPEG path
         max_size_kb: Maximum file size in kilobytes (defaults to maxCardImageSizeKb from config)
     """
+    constants = script_utils.load_shared_constants()
     if max_size_kb is None:
-        constants = script_utils.load_shared_constants()
         max_size_kb = int(constants["maxCardImageSizeKb"])
+    card_geometry = f"{int(constants['cardImageWidth'])}x{int(constants['cardImageHeight'])}"
 
     magick_executable = script_utils.find_executable("magick")
     target_size = max_size_kb * 1024  # Convert to bytes
@@ -121,8 +124,14 @@ def _convert_to_jpeg(
                 magick_executable,
                 str(input_path),
                 "-strip",  # Remove metadata
+                # Fill the card dimensions, then center-crop the overflow so
+                # every card matches the declared ~1.91:1 og:image ratio.
                 "-resize",
-                "x1200",  # Resize to height of 1200 pixels, preserving aspect ratio
+                f"{card_geometry}^",
+                "-gravity",
+                "center",
+                "-extent",
+                card_geometry,
                 "-quality",
                 str(quality),
                 "-sampling-factor",

@@ -52,24 +52,26 @@ function escapeBibtexValue(value: string): string {
 }
 
 /**
- * Generates a BibTeX entry for an article.
- * @throws Error if date_published is not present in frontmatter on CI
+ * Generates a BibTeX entry for an article, or `null` when it has no
+ * `date_published`. Undated drafts get no citation: publication-date
+ * enforcement lives in source_file_checks (gated to pre-merge PRs), so the
+ * build must stay green for an unpublished draft.
  */
 export function generateBibtexEntry(
   frontmatter: FrontmatterData,
   baseUrl: string,
   slug: string,
-): string {
+): string | null {
+  const datePublished = frontmatter.date_published
+  if (!datePublished) {
+    return null
+  }
+
   const title = frontmatter.title
   const authors =
     frontmatter.authors && frontmatter.authors.length > 0 ? frontmatter.authors : ["Alex Turner"]
 
-  const datePublished = frontmatter.date_published
-  if (!datePublished && process.env.CI) {
-    throw new Error(`date_published is required for BibTeX generation (slug: ${slug})`)
-  }
-
-  const date = datePublished ? new Date(datePublished as string | Date) : new Date()
+  const date = new Date(datePublished as string | Date)
   const year = date.getFullYear()
 
   const permalink = frontmatter.permalink as string | undefined
@@ -146,6 +148,9 @@ export const Bibtex: QuartzTransformerPlugin<BibtexOptions> = (opts?: BibtexOpti
 
           const slug = file.data.slug ?? ""
           const bibtexContent = generateBibtexEntry(frontmatter, baseUrl, slug)
+          if (!bibtexContent) {
+            return
+          }
           const insertIndex = findInsertionIndex(tree)
           const citationNodes = createCitationNodes(bibtexContent)
 

@@ -565,6 +565,12 @@ def test_asset_staging_path_conversion(setup_test_env):
             "![](./quartz/static/asset.jpg)",
             "![](static/asset.avif)",
         ),
+        # Absolute R2 URLs keep the slash before `static` and only swap the
+        # extension, rather than collapsing into `...comstatic/...`.
+        (
+            '<img src="https://assets.turntrout.com/static/asset.jpg"/>',
+            '<img src="https://assets.turntrout.com/static/asset.avif"/>',
+        ),
     ],
 )
 def test_path_pattern_variations(
@@ -1014,6 +1020,43 @@ def test_main_skips_hidden_files(setup_test_env):
     # Verify it wasn't called for the hidden asset
     for call in mock_convert.call_args_list:
         assert call.args[0] != hidden_asset_path
+
+
+def test_main_skips_card_images(setup_test_env):
+    """Card images stay JPEG and must never be run through the AVIF sweep."""
+    test_dir = Path(setup_test_env)
+    asset_dir = test_dir / "quartz" / "static"
+    # get_files and convert_asset are mocked, so these paths need not exist on
+    # disk; main() only inspects their name and path parts.
+    card_asset_path = asset_dir / "images" / "card_images" / "card.jpg"
+    regular_asset_path = asset_dir / "images" / "posts" / "photo.jpg"
+
+    mock_args = mock.Mock()
+    mock_args.remove_originals = False
+    mock_args.strip_metadata = False
+    mock_args.asset_directory = str(asset_dir)
+    mock_args.ignore_files = None
+
+    with (
+        mock.patch(
+            "argparse.ArgumentParser.parse_args", return_value=mock_args
+        ),
+        mock.patch("scripts.convert_assets.convert_asset") as mock_convert,
+        mock.patch(
+            "scripts.utils.get_files",
+            return_value=[card_asset_path, regular_asset_path],
+        ),
+    ):
+        convert_assets.main()
+
+    mock_convert.assert_called_once_with(
+        regular_asset_path,
+        remove_originals=False,
+        strip_metadata=False,
+        md_references_dir=Path("website_content/"),
+    )
+    for call in mock_convert.call_args_list:
+        assert call.args[0] != card_asset_path
 
 
 def test_video_conversion_long_html(setup_test_env):

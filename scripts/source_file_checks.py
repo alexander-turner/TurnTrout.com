@@ -985,6 +985,7 @@ _SENTENCE_END_ABBREVIATIONS = frozenset(
     al et seq eq eqs ch chs fig figs no nos vol vols pp p pg pos sec secs
     thm thms def defs prop props lemma cor ref refs ie eg etc cf vs approx ca
     jan feb mar apr jun jul aug sep sept oct nov dec mr mrs ms dr prof
+    inc cir
     """.split()
 )
 

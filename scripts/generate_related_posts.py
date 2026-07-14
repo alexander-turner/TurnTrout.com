@@ -80,6 +80,36 @@ class Article:
     excerpt: str
     embed_input: str
     text_hash: str
+    override: tuple[str, ...] | None = None
+    """
+    Author-specified ``similar_posts`` permalinks (slashes stripped) that
+    replace the auto-computed neighbors, in listed order.
+
+    ``None`` when the
+    frontmatter field is absent; ``()`` explicitly suppresses the block.
+    """
+
+
+def _normalize_override(value: object) -> tuple[str, ...] | None:
+    """
+    Normalize a ``similar_posts`` frontmatter value into a permalink tuple.
+
+    ``None`` when the field is absent. A present value must be a list of
+    strings; each is coerced with ``str(x).strip("/")`` and empties are
+    dropped. An empty list yields ``()`` (an explicit way to suppress the
+    block). Anything else raises ``ValueError``.
+    """
+    if value is None:
+        return None
+    if not isinstance(value, list) or not all(
+        isinstance(item, str) for item in value
+    ):
+        raise ValueError(
+            f"similar_posts must be a list of strings, got {value!r}"
+        )
+    return tuple(
+        stripped for item in value if (stripped := str(item).strip("/"))
+    )
 
 
 def build_embed_input(
@@ -119,6 +149,7 @@ def gather_articles(content_dir: Path = CONTENT_DIR) -> tuple[Article, ...]:
                 excerpt=excerpt,
                 embed_input=embed_input,
                 text_hash=text_hash(embed_input),
+                override=_normalize_override(front.get("similar_posts")),
             )
         )
     return tuple(articles)
@@ -301,6 +332,40 @@ def compute_neighbors(
     return result
 
 
+def resolve_override(
+    article: Article, by_permalink: Mapping[str, Article]
+) -> list[Neighbor]:
+    """
+    Resolve an article's ``similar_posts`` override into ordered neighbors.
+
+    Each target permalink must name a distinct embeddable article (present in
+    ``by_permalink``); a self-reference or an unknown/non-embeddable target
+    raises ``ValueError``. ``article.override`` must not be ``None``.
+    """
+    if article.override is None:
+        raise ValueError(f"{article.permalink} has no similar_posts override")
+    neighbors: list[Neighbor] = []
+    for target in article.override:
+        if target == article.permalink:
+            raise ValueError(
+                f"{article.permalink} similar_posts references itself"
+            )
+        other = by_permalink.get(target)
+        if other is None:
+            raise ValueError(
+                f"{article.permalink} similar_posts references unknown or "
+                f"non-embeddable permalink {target!r}"
+            )
+        neighbors.append(
+            Neighbor(
+                permalink=other.permalink,
+                title=other.title,
+                excerpt=other.excerpt,
+            )
+        )
+    return neighbors
+
+
 # --- orchestration -----------------------------------------------------------
 
 
@@ -405,6 +470,14 @@ def generate(
     neighbors = compute_neighbors(
         embeddings, by_permalink, top_n=config.top_n, min_score=config.min_score
     )
+    # Author overrides replace the computed neighbors for their permalink. The
+    # assignment is unconditional so an overridden post gets an entry even
+    # without its own embedding (and thus never counts as uncovered).
+    for article in articles:
+        if article.override is not None:
+            neighbors[article.permalink] = resolve_override(
+                article, by_permalink
+            )
     script_utils.atomic_write_json(
         neighbors, config.neighbors_path, sort_keys=True
     )

@@ -1,4 +1,5 @@
-"""Extract tool_name and absolute target path from a PreToolUse payload.
+"""
+Extract tool_name and absolute target path from a PreToolUse payload.
 
 Used by safe-launch.sh when the wrapped hook fails to parse, to decide
 whether the in-flight tool call is a self-repair edit on a hook file.
