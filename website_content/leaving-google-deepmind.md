@@ -6,7 +6,7 @@ tags:
   - AI
   - deepmind
   - personal
-description: "I fought against Google's Pentagon AI deal for months. Here's how powerful people and institutions failed to keep their AI ethics promises under pressure."
+description: "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure."
 similar_posts:
   - red-line-framework
   - deepmind-equity-discussion
@@ -58,7 +58,7 @@ Subtitle: January 26th, 2026
 After Alex Pretti's death, [I was determined to take effective action.](https://turntrout.substack.com/p/a-winter-spent-by-the-pond) To determine how to reduce harm from DHS, I researched Big Tech's entanglement. Certainly, Microsoft and Amazon [have larger involvement](https://www.forbes.com/sites/the-wiretap/2026/01/27/immigration-record-spend-on-amazon-and-trump/), but I was surprised to learn of Google's exposure.
 
 > [!summary] Google's contracts with DHS
-> ![[https://assets.turntrout.com/static/images/posts/Why I left Google DeepMind-06122026-1.avif|A smiling man with a beard and glasses, wearing light blue medical scrubs with "VA MEDICAL CENTER" visible on the chest, posing in front of an American flag.]]{.float-right}
+> ![[https://assets.turntrout.com/static/images/posts/Why I left Google DeepMind-06122026-1.avif|A smiling man with a beard and glasses, wearing light blue medical scrubs with "VA MEDICAL CENTER" visible on the chest, posing in front of an American flag.]]{.float-right .float-desktop-pull-up style="--float-negative-margin-top:-1.75rem;"}
 > Figure: Alex Pretti, 2024.
 >
 > - The DHS [2025 AI Use Case Inventory](https://www.dhs.gov/publication/ai-use-case-inventory-library) lists Google among the GenAI providers used to "improve the operational efficiency" of DHS.

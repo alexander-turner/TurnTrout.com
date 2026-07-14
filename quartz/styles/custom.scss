@@ -514,6 +514,12 @@ figcaption,
   @media all and (width <= 700px) {
     margin-top: initial;
   }
+
+  // A popover is narrow even on a desktop viewport, so the pull-up would
+  // overlap the callout title once it wraps. Keep natural spacing there.
+  .popover & {
+    margin-top: initial;
+  }
 }
 
 .no-select {
