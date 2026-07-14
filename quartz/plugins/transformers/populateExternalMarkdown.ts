@@ -78,7 +78,7 @@ export function resolveGitHubSource(source: GitHubMarkdownSource): {
   return { ref: source.ref ?? "main", filePath: source.path ?? "README.md" }
 }
 
-/** Snapshot file path for a GitHub source, unique per (owner, repo, ref, path). */
+/** Snapshot file path for a GitHub source, distinct for each configured source. */
 export function githubSnapshotPath(source: GitHubMarkdownSource): string {
   const { ref, filePath } = resolveGitHubSource(source)
   const fileName = `${source.owner}__${source.repo}__${ref}__${filePath}`.replaceAll("/", "__")

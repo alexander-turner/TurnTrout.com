@@ -24,20 +24,15 @@ jobs:
   refresh:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    permissions:
-      contents: write
-      pull-requests: write
+    # All writes (branch push, PR creation, auto-merge) go through the
+    # TEMPLATE_SYNC_TOKEN PAT; GITHUB_TOKEN only performs read-only API
+    # fetches, so the workflow-level `contents: read` suffices.
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
         with:
           persist-credentials: false
-
-      - name: Setup Node environment
-        uses: ./.github/actions/setup-site
-        with:
-          install-python: "false"
 
       # A PAT (TEMPLATE_SYNC_TOKEN) lets the PR trigger the required status
       # checks; PRs created with the default GITHUB_TOKEN never start
@@ -51,6 +46,11 @@ jobs:
             echo "::error::TEMPLATE_SYNC_TOKEN is not set; a PR created with GITHUB_TOKEN would never trigger its required checks."
             exit 1
           fi
+
+      - name: Setup Node environment
+        uses: ./.github/actions/setup-site
+        with:
+          install-python: "false"
 
       # continue-on-error so snapshots that DID refresh still reach the PR
       # steps below; a failing source is re-raised by the final step.
@@ -78,8 +78,11 @@ jobs:
             running `scripts/refresh_readme_snapshots.ts`.
           add-paths: quartz/plugins/transformers/.readme-snapshots/
 
+      # Re-arm on 'updated' too: if a prior run's auto-merge attempt failed
+      # or was manually disabled, the daily update must not leave the PR
+      # stalled. `gh pr merge --auto` is idempotent.
       - name: Enable auto-merge
-        if: steps.create-pr.outputs.pull-request-operation == 'created'
+        if: contains(fromJSON('["created", "updated"]'), steps.create-pr.outputs.pull-request-operation)
         env:
           GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN }}
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}

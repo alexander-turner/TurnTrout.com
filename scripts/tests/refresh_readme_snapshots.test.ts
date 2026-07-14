@@ -147,12 +147,18 @@ describe("refresh_readme_snapshots", () => {
     let existsSpy: jest.SpiedFunction<typeof fs.existsSync>
     let readSpy: jest.SpiedFunction<typeof fs.readFileSync>
     let writeSpy: jest.SpiedFunction<typeof fs.writeFileSync>
+    let readdirSpy: jest.SpiedFunction<typeof fs.readdirSync>
+    let rmSpy: jest.SpiedFunction<typeof fs.rmSync>
 
     beforeEach(() => {
       mkdirSpy = jest.spyOn(fs, "mkdirSync").mockImplementation(() => undefined)
       existsSpy = jest.spyOn(fs, "existsSync").mockReturnValue(false)
       readSpy = jest.spyOn(fs, "readFileSync").mockReturnValue("")
       writeSpy = jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
+      readdirSpy = jest.spyOn(fs, "readdirSync").mockReturnValue([]) as jest.SpiedFunction<
+        typeof fs.readdirSync
+      >
+      rmSpy = jest.spyOn(fs, "rmSync").mockImplementation(() => undefined)
     })
 
     it("writes a new snapshot when none exists", async () => {
@@ -160,7 +166,7 @@ describe("refresh_readme_snapshots", () => {
       const result = await refreshSnapshots(sources, { fetchFn, sleepFn })
       expect(mkdirSpy).toHaveBeenCalledWith(README_SNAPSHOT_DIR, { recursive: true })
       expect(writeSpy).toHaveBeenCalledWith(snapshotPath, "fresh", "utf-8")
-      expect(result).toEqual({ written: ["test-repo"], unchanged: [], failed: [] })
+      expect(result).toEqual({ written: ["test-repo"], unchanged: [], failed: [], pruned: [] })
     })
 
     it("rewrites a snapshot whose upstream content changed", async () => {
@@ -178,7 +184,7 @@ describe("refresh_readme_snapshots", () => {
       const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(response(200, "same"))
       const result = await refreshSnapshots(sources, { fetchFn, sleepFn })
       expect(writeSpy).not.toHaveBeenCalled()
-      expect(result).toEqual({ written: [], unchanged: ["test-repo"], failed: [] })
+      expect(result).toEqual({ written: [], unchanged: ["test-repo"], failed: [], pruned: [] })
     })
 
     it("keeps the last-known-good snapshot and continues past a failing source", async () => {
@@ -195,6 +201,25 @@ describe("refresh_readme_snapshots", () => {
       expect(result.failed).toEqual(["broken"])
       expect(result.written).toEqual(["working"])
       expect(writeSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it("prunes snapshots that no longer match any configured source", async () => {
+      const orphanName = "old-owner__old-repo__main__README.md"
+      readdirSpy.mockReturnValue([orphanName] as unknown as ReturnType<typeof fs.readdirSync>)
+      const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(response(200, "fresh"))
+      const result = await refreshSnapshots(sources, { fetchFn, sleepFn })
+      expect(rmSpy).toHaveBeenCalledWith(`${README_SNAPSHOT_DIR}/${orphanName}`)
+      expect(result.pruned).toEqual([orphanName])
+    })
+
+    it("keeps snapshots that match a configured source", async () => {
+      readdirSpy.mockReturnValue([
+        "test-owner__test-repo__main__README.md",
+      ] as unknown as ReturnType<typeof fs.readdirSync>)
+      const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(response(200, "fresh"))
+      const result = await refreshSnapshots(sources, { fetchFn, sleepFn })
+      expect(rmSpy).not.toHaveBeenCalled()
+      expect(result.pruned).toEqual([])
     })
 
     it("defaults to the configured GITHUB_README_SOURCES", async () => {

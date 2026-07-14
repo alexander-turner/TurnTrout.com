@@ -9,6 +9,7 @@
  * Set GITHUB_TOKEN to raise the API rate limit (5000/hr vs 60/hr).
  */
 import fs from "node:fs"
+import path from "node:path"
 import { setTimeout as sleep } from "node:timers/promises"
 
 import { GITHUB_README_SOURCES } from "../config/quartz/externalReadmes"
@@ -85,19 +86,21 @@ export interface RefreshResult {
   written: string[]
   unchanged: string[]
   failed: string[]
+  pruned: string[]
 }
 
 /**
  * Fetches every GitHub source and rewrites snapshots whose upstream content
  * changed. Sources that fail after retries keep their existing snapshot and
- * are reported in `failed`.
+ * are reported in `failed`. Snapshots no longer matching any configured
+ * source are deleted and reported in `pruned`.
  */
 export async function refreshSnapshots(
   sources: Readonly<Record<string, GitHubMarkdownSource>> = GITHUB_README_SOURCES,
   deps: FetchDeps = {},
 ): Promise<RefreshResult> {
   fs.mkdirSync(README_SNAPSHOT_DIR, { recursive: true })
-  const result: RefreshResult = { written: [], unchanged: [], failed: [] }
+  const result: RefreshResult = { written: [], unchanged: [], failed: [], pruned: [] }
 
   for (const [name, source] of Object.entries(sources)) {
     let content: string
@@ -118,6 +121,16 @@ export async function refreshSnapshots(
     fs.writeFileSync(snapshotPath, content, "utf-8")
     console.log(`✓ ${name}: wrote ${snapshotPath}`)
     result.written.push(name)
+  }
+
+  const expectedPaths = new Set(Object.values(sources).map(githubSnapshotPath))
+  for (const fileName of fs.readdirSync(README_SNAPSHOT_DIR)) {
+    const filePath = path.join(README_SNAPSHOT_DIR, fileName)
+    if (!expectedPaths.has(filePath)) {
+      fs.rmSync(filePath)
+      console.log(`- ${fileName}: pruned (no longer configured)`)
+      result.pruned.push(fileName)
+    }
   }
 
   return result

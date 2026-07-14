@@ -233,10 +233,7 @@ describe("PopulateExternalMarkdown", () => {
         { owner: "owner", repo: "repo", ref: "develop", path: "docs/API.md" },
         "owner__repo__develop__docs__API.md",
       ],
-      [
-        { owner: "owner", repo: "repo", ref: "feature/x" },
-        "owner__repo__feature__x__README.md",
-      ],
+      [{ owner: "owner", repo: "repo", ref: "feature/x" }, "owner__repo__feature__x__README.md"],
     ])("should build a unique snapshot path for source %j", (source, expectedFileName) => {
       expect(githubSnapshotPath(source)).toBe(path.join(README_SNAPSHOT_DIR, expectedFileName))
     })
@@ -272,7 +269,13 @@ describe("PopulateExternalMarkdown", () => {
       mockReadFile.mockImplementation(() => {
         throw cause
       })
-      expect(() => readGitHubSnapshotSync(source)).toThrow(cause)
+      let thrown: unknown
+      try {
+        readGitHubSnapshotSync(source)
+      } catch (e) {
+        thrown = e
+      }
+      expect(thrown).toBe(cause)
     })
   })
 
