@@ -186,7 +186,6 @@ $domain-svg-colors: (
   "theguardian_com": var(--blue),
   "deepmind_com": var(--blue),
   "discord_gg": color-mix(in srgb, var(--purple) 50%, var(--blue)),
-  "eff_org": var(--red),
   "fatebook_io": var(--purple),
   "forum_effectivealtruism_org": var(--teal),
   "colab_research_google_com": var(--gold),
@@ -262,14 +261,6 @@ $domain-left-insets: (
 
 svg.favicon[data-domain="huggingface_co"] {
   --target-percentage: 100%;
-}
-
-// EFF's wordmark is a ~4:1 strip, so `contain` shrinks it to a quarter of the
-// square favicon box and it reads as a thin sliver. Fill the box height so the
-// "EFF" letters render at favicon size; the width is already full, so this only
-// stretches it vertically.
-svg.favicon[data-domain="eff_org"] {
-  mask-size: 100% 100%;
 }
 
 // Yellow arrow on bottom
