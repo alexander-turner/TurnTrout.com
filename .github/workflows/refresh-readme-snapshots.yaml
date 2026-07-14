@@ -86,7 +86,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN }}
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
-        run: gh pr merge --auto --squash "$PR_NUMBER"
+        # The repository disallows squash merging, so use a merge commit.
+        run: gh pr merge --auto --merge "$PR_NUMBER"
 
       - name: Fail if any source could not be refreshed
         if: steps.refresh.outcome == 'failure'
