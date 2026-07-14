@@ -254,7 +254,7 @@ I could appreciate the first reason: after all, Stuart *had* repeatedly disclaim
 
 ### Left on read by IASEAI
 
-The Pentagon set the Friday deadline for Anthropic. The deadline was never mine and it was never IASEAI's. The Anthropic autonomous weapons issue had been in the news for [weeks](https://www.wsj.com/politics/national-security/pentagon-used-anthropics-claude-in-maduro-venezuela-raid-583aff17) prior. Anthropic's [lawsuit against the Pentagon](https://www.theverge.com/ai-artificial-intelligence/891514/anthropic-pentagon-lawsuit-amicus-brief-openai-google) ran for weeks after. Google wouldn't sign for two more months. Nothing IASEAI might have done depended on whether Anthropic reached a deal with the Pentagon by Friday.
+The Pentagon set the Friday deadline for Anthropic, not IASEAI. Nothing IASEAI might have done depended on whether Anthropic reached a deal with the Pentagon by Friday. The Anthropic autonomous weapons issue had been in the news for [weeks](https://www.wsj.com/politics/national-security/pentagon-used-anthropics-claude-in-maduro-venezuela-raid-583aff17) prior. Anthropic's [lawsuit against the Pentagon](https://www.theverge.com/ai-artificial-intelligence/891514/anthropic-pentagon-lawsuit-amicus-brief-openai-google) ran for weeks after. Google wouldn't sign for two more months. IASEAI had plenty of time to act publicly, but they did not.
 
 [OpenAI did announce a deal on Friday.](https://openai.com/index/our-agreement-with-the-department-of-war/) OpenAI claimed its deal protected the same red lines against killer robots and mass surveillance that Anthropic had insisted upon. However, some analysts concluded that OpenAI's contract language [contains wide loopholes](https://www.techpolicy.press/five-unresolved-issues-in-openais-deal-with-the-department-of-defense/).
 
@@ -394,7 +394,7 @@ I reasoned that if Jeff "will neither participate in... nor support the developm
 
 Jeff, like all of us, is a human being. Humans tend to be worried by acting alone against a powerful entity. Even though I imagined Jeff's weight would be enough to move Google on its own, I wanted him to feel supported. The first part of that was the [petition I organized](#jeff-dean-you-re-our-only-hope), signed by over 250 GDM employees asking Jeff to *fight* for them. The second part, though, was quieter.
 
-I secured backup from several senior Google employees. If Jeff would agree to put his foot down with Sundar, they signaled that they would too. That said, the intended coalition was of size[^coalition] one: Jeff.  I expected that Jeff's influence would be enough on its own since his departure could leave Gemini in shambles. Maybe Google would care more about its AI program than about retaliation from Trump.
+I secured backup from several senior Google employees. If Jeff would agree to put his foot down with Sundar, they signaled that they would too. That said, the intended coalition was of size[^coalition] one: Jeff.  I expected that Jeff's influence would be enough on its own, as his departure could leave the Gemini project in shambles. Maybe Google would care more about its AI program than about retaliation from Trump.
 
 I guessed that Sundar was skilled at defusing pressure from employees. I hoped this was a gambit he wouldn't be able to stop, even if he knew about it.
 
@@ -698,7 +698,7 @@ When I got scared --- and I did --- I'd think about Minneapolis. I'd think about
 
 When an employee leaves a top AI lab, it's often into the arms of another. They usually rack up a huge bonus that way. That's not what I did. I'm unemployed right now.
 
-I expected to leave Google anyway because I thought I could do more impactful work elsewhere. But I think I would have stayed a few more months. When Google signed the deal, I just couldn't do any more work. My brain said "no."
+In February, I realized that Google would probably sign the deal, which made me think about the door. I realized maybe I should leave and maybe I could do better AI safety work elsewhere. But I think I would have stayed a few more months if they hadn't signed the deal. When Google signed, I just couldn't do any more work. My brain said "no."
 
 When I next went to the office, the building felt like a memory. Like going home to your old high school: it used to be the center of your hopes and dreams, and then one day you just know that you don't belong there anymore.
 
