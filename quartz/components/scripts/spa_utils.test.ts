@@ -227,17 +227,20 @@ describe("scroll helpers", () => {
       expect(scrollSpy).toHaveBeenCalledWith({ top: 420, behavior: "instant" })
     })
 
-    it("subtracts the target's scroll-margin-top to leave breathing room", () => {
+    it.each<[string, string, number]>([
+      ["subtracts a parsable scroll-margin-top", "16px", 404],
+      ["ignores an unparsable scroll-margin-top", "auto", 420],
+    ])("%s", (_label, marginTop, expectedTop) => {
       const target = document.createElement("div")
       target.id = "with-margin"
       document.body.appendChild(target)
       jest.spyOn(target, "getBoundingClientRect").mockReturnValue({ top: 420 } as DOMRect)
       const getComputedStyleSpy = jest
         .spyOn(window, "getComputedStyle")
-        .mockReturnValue({ scrollMarginTop: "16px" } as CSSStyleDeclaration)
+        .mockReturnValue({ getPropertyValue: () => marginTop } as unknown as CSSStyleDeclaration)
 
       scrollToUrlTarget("#with-margin")
-      expect(scrollSpy).toHaveBeenCalledWith({ top: 404, behavior: "instant" })
+      expect(scrollSpy).toHaveBeenCalledWith({ top: expectedTop, behavior: "instant" })
 
       getComputedStyleSpy.mockRestore()
     })

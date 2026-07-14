@@ -359,13 +359,8 @@ h5,
 h6,
 #toc-content li,
 #toc-content-mobile li {
-  // Leave ~1rem of breathing room above an anchored header on desktop
-  scroll-margin-top: calc(2 * $base-margin);
-
-  // Larger offset on mobile clears the sticky navbar
-  @media all and (max-width: $max-mobile-width) {
-    scroll-margin-top: calc(6 * $base-margin);
-  }
+  // Ensure headers are visible even when the navbar is present
+  scroll-margin-top: calc(6 * $base-margin);
 
   // Oldstyle is too small for headers
   &::first-letter,

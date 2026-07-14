@@ -125,14 +125,10 @@ export function scrollToMatch(searchText: string): boolean {
 
 /**
  * Reads an element's computed `scroll-margin-top` in pixels, falling back to 0
- * when it is unavailable or unparsable.
+ * when it is unset or unparsable.
  */
 function getScrollMarginTop(elt: Element): number {
-  if (typeof window === "undefined" || !window.getComputedStyle) return 0
-  const style = window.getComputedStyle(elt)
-  // Some browsers expose the camelCase property, others require the CSS name
-  const raw = style.scrollMarginTop || style.getPropertyValue("scroll-margin-top")
-  const parsed = parseFloat(raw)
+  const parsed = parseFloat(window.getComputedStyle(elt).getPropertyValue("scroll-margin-top"))
   return Number.isFinite(parsed) ? parsed : 0
 }
 

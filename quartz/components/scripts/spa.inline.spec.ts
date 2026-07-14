@@ -690,8 +690,12 @@ test.describe("Popstate (Back/Forward) Navigation", () => {
 })
 
 test.describe("Same-page navigation", () => {
+  function tocLinkSelector(page: Page): string {
+    return isDesktopViewport(page) ? "#toc-content a" : "#toc-content-mobile a"
+  }
+
   async function clickToc(page: Page): Promise<void> {
-    const tocSelector = isDesktopViewport(page) ? "#toc-content a" : "#toc-content-mobile a"
+    const tocSelector = tocLinkSelector(page)
     await expect(page.locator(tocSelector).nth(10)).toBeVisible()
     await page.locator(tocSelector).nth(10).click()
   }
@@ -711,8 +715,7 @@ test.describe("Same-page navigation", () => {
   })
 
   test("anchored header lands below the top by its scroll-margin-top", async ({ page }) => {
-    const tocSelector = isDesktopViewport(page) ? "#toc-content a" : "#toc-content-mobile a"
-    const tocLink = page.locator(tocSelector).nth(10)
+    const tocLink = page.locator(tocLinkSelector(page)).nth(10)
     await expect(tocLink).toBeVisible()
     const href = await tocLink.getAttribute("href")
     expect(href?.startsWith("#")).toBe(true)
