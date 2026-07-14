@@ -66,6 +66,38 @@ function isAllowed(text: string): boolean {
   return ALLOWED_PATTERNS.some((pattern) => pattern.test(text))
 }
 
+const NETWORK_QUIET_WINDOW_MS = 500
+const NETWORK_SETTLE_DEADLINE_MS = 15_000
+const POLL_INTERVAL_MS = 100
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/**
+ * Waits for the in-flight request set to stay empty for a quiet window, up
+ * to the deadline. Like `networkidle` (which the linter bans), the quiet
+ * window keeps a momentary zero between dependent requests (a stylesheet
+ * finishing triggers a font request) from counting as settled.
+ *
+ * @returns URLs of requests still pending at the deadline.
+ */
+async function waitForNetworkSettle(
+  inflightRequests: ReadonlySet<Request>,
+): Promise<readonly string[]> {
+  const deadline = Date.now() + NETWORK_SETTLE_DEADLINE_MS
+  let settled = false
+  while (!settled && Date.now() < deadline) {
+    if (inflightRequests.size === 0) {
+      await sleep(NETWORK_QUIET_WINDOW_MS)
+      settled = inflightRequests.size === 0
+    } else {
+      await sleep(POLL_INTERVAL_MS)
+    }
+  }
+  return [...inflightRequests].map((req) => req.url())
+}
+
 for (const slug of PAGES_TO_CHECK) {
   test(`no unexpected console output on ${ENV_LABEL} ${slug}`, async ({ page }) => {
     const offenders: string[] = []
@@ -89,30 +121,14 @@ for (const slug of PAGES_TO_CHECK) {
 
     // Sub-resource requests (fonts, images, analytics) can emit console
     // errors after the `load` event, so requests that started should
-    // settle before `offenders` is read. Hand-rolled because the linter
-    // bans `waitForLoadState("networkidle")`; like networkidle, a quiet
-    // window is required so a momentary zero between dependent requests
-    // (a stylesheet finishing triggers a font request) doesn't count.
+    // settle before `offenders` is read.
     const inflightRequests = new Set<Request>()
     page.on("request", (req) => inflightRequests.add(req))
     page.on("requestfinished", (req) => inflightRequests.delete(req))
     page.on("requestfailed", (req) => inflightRequests.delete(req))
 
-    const NETWORK_QUIET_WINDOW_MS = 500
-    const NETWORK_SETTLE_DEADLINE_MS = 15_000
-    const POLL_INTERVAL_MS = 100
     await gotoPage(page, `${BASE_URL}${slug}`)
-    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-    const deadline = Date.now() + NETWORK_SETTLE_DEADLINE_MS
-    let settled = false
-    while (!settled && Date.now() < deadline) {
-      if (inflightRequests.size === 0) {
-        await sleep(NETWORK_QUIET_WINDOW_MS)
-        settled = inflightRequests.size === 0
-      } else {
-        await sleep(POLL_INTERVAL_MS)
-      }
-    }
+    const stragglers = await waitForNetworkSettle(inflightRequests)
 
     // Requests to this site's own server are deterministic and must settle
     // by the deadline. A request still pending against another origin is
@@ -120,9 +136,7 @@ for (const slug of PAGES_TO_CHECK) {
     // produce is the allowlisted timeout error (a bad asset URL 404s
     // quickly, so it settles in time and fails the offender check), so it
     // must not gate the offender read.
-    const ownServerStragglers = [...inflightRequests]
-      .map((req) => req.url())
-      .filter((url) => url.startsWith(BASE_URL))
+    const ownServerStragglers = stragglers.filter((url) => url.startsWith(BASE_URL))
     expect(
       ownServerStragglers,
       `Same-origin requests still in flight after ${NETWORK_SETTLE_DEADLINE_MS}ms on ${ENV_LABEL} ${slug}:\n${ownServerStragglers.join("\n")}`,
