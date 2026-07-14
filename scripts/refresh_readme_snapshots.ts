@@ -134,6 +134,6 @@ async function main(): Promise<void> {
 if (process.argv[1]?.endsWith("refresh_readme_snapshots.ts")) {
   main().catch((error: unknown) => {
     console.error(error)
-    process.exit(1)
+    process.exitCode = 1
   })
 }

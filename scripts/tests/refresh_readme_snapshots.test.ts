@@ -21,7 +21,7 @@ function response(status: number, body = ""): Response {
 }
 
 describe("refresh_readme_snapshots", () => {
-  const sleepFn = jest.fn<(ms: number) => Promise<unknown>>().mockResolvedValue(undefined)
+  const sleepFn = jest.fn<(ms: number) => Promise<unknown>>(() => Promise.resolve())
   let savedToken: string | undefined
 
   beforeEach(() => {
@@ -147,10 +147,10 @@ describe("refresh_readme_snapshots", () => {
     let writeSpy: jest.SpiedFunction<typeof fs.writeFileSync>
 
     beforeEach(() => {
-      mkdirSpy = jest.spyOn(fs, "mkdirSync").mockReturnValue(undefined)
+      mkdirSpy = jest.spyOn(fs, "mkdirSync").mockImplementation(() => undefined)
       existsSpy = jest.spyOn(fs, "existsSync").mockReturnValue(false)
       readSpy = jest.spyOn(fs, "readFileSync").mockReturnValue("")
-      writeSpy = jest.spyOn(fs, "writeFileSync").mockReturnValue(undefined)
+      writeSpy = jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
     })
 
     it("writes a new snapshot when none exists", async () => {
@@ -186,8 +186,8 @@ describe("refresh_readme_snapshots", () => {
       }
       const fetchFn = jest
         .fn<typeof fetch>()
-        .mockImplementation(async (url) =>
-          String(url).includes("broken") ? response(404) : response(200, "ok"),
+        .mockImplementation((url) =>
+          Promise.resolve(String(url).includes("broken") ? response(404) : response(200, "ok")),
         )
       const result = await refreshSnapshots(twoSources, { fetchFn, sleepFn })
       expect(result.failed).toEqual(["broken"])
@@ -199,7 +199,7 @@ describe("refresh_readme_snapshots", () => {
       // A fresh Response per call — a body can only be read once
       const fetchSpy = jest
         .spyOn(globalThis, "fetch")
-        .mockImplementation(async () => response(200, "body"))
+        .mockImplementation(() => Promise.resolve(response(200, "body")))
       const result = await refreshSnapshots()
       expect(result.failed).toEqual([])
       expect(fetchSpy.mock.calls.length).toBeGreaterThan(0)
