@@ -84,6 +84,49 @@ describe("rehypeTagSmallcaps", () => {
   })
 })
 
+describe("smallcaps punctuation spacing", () => {
+  // A small-caps "j" hooks left under a preceding open bracket; that bracket is
+  // wrapped so it can carry a trailing margin that clears the hooked descender.
+  const cases: [string, string][] = [
+    // Open bracket + j-initial run, with a head that stays put.
+    [
+      "<p>the (JSON) file</p>",
+      '<p>the <span class="smallcaps-gap-before">(</span><abbr class="small-caps">json</abbr>) file</p>',
+    ],
+    // Bracket is the whole preceding text node (no head remains).
+    [
+      "<p><b>x</b>(JSON) y</p>",
+      '<p><b>x</b><span class="smallcaps-gap-before">(</span><abbr class="small-caps">json</abbr>) y</p>',
+    ],
+    // Two bracket rewrites in one parent exercise the splice order.
+    [
+      "<p>(JSON) or (JSON) ok</p>",
+      '<p><span class="smallcaps-gap-before">(</span><abbr class="small-caps">Json</abbr>) or <span class="smallcaps-gap-before">(</span><abbr class="small-caps">json</abbr>) ok</p>',
+    ],
+  ]
+  it.each(cases)("wraps hugging punctuation: %s", (input, expected) => {
+    expect(testTagSmallcapsHTML(input)).toBe(expected)
+  })
+
+  // No gap where the initial clears the bracket on its own, where the bracket
+  // isn't adjacent, or where there is no open bracket at all.
+  const unchanged: [string, string][] = [
+    // Non-overhanging initial stays untouched (no over-spacing).
+    ["<p>(NASA) ok</p>", '<p>(<abbr class="small-caps">Nasa</abbr>) ok</p>'],
+    // Quotes ride above the j-hook, so they never collide.
+    ["<p>read “JSON” now</p>", '<p>read “<abbr class="small-caps">json</abbr>” now</p>'],
+    // j-initial but preceded by a word/space, not a bracket.
+    ["<p>use JSON now</p>", '<p>use <abbr class="small-caps">json</abbr> now</p>'],
+    // j-initial at the start of its block: nothing precedes it.
+    ["<p>JSON is used</p>", '<p><abbr class="small-caps">Json</abbr> is used</p>'],
+    // j-initial whose preceding sibling is an element, not text.
+    ["<p><em>x</em>JSON! ok</p>", '<p><em>x</em><abbr class="small-caps">json</abbr>! ok</p>'],
+  ]
+  it.each(unchanged)("leaves punctuation flush: %s", (input, expected) => {
+    expect(testTagSmallcapsHTML(input)).toBe(expected)
+  })
+})
+
 describe("Abbreviations and Units", () => {
   // Test numeric abbreviations (e.g., 100km)
   const validCases = ["10ZB", ".1EXP", "5XP", "10BTC", "100.0KM", "5K"].map((text) => [
