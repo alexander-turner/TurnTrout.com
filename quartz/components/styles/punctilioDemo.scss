@@ -4,6 +4,7 @@ $panel-border: 1px solid var(--midground-faint);
 $panel-bg-readonly: color-mix(in srgb, var(--foreground) 4%, var(--background));
 $hover-bg: color-mix(in srgb, var(--foreground) 5%, transparent);
 $panel-min-height: 200px;
+$panel-max-height: 60vh;
 
 #punctilio-demo {
   margin-top: calc(2 * $base-margin);
@@ -49,6 +50,7 @@ $panel-min-height: 200px;
     white-space: pre-wrap;
     width: 100%;
     min-height: $panel-min-height;
+    max-height: $panel-max-height;
     padding: $base-margin calc(2 * $base-margin);
     border: 1px solid var(--midground-faint);
     border-radius: $border-radius;
@@ -81,6 +83,7 @@ $panel-min-height: 200px;
     box-sizing: border-box;
     width: 100%;
     min-height: $panel-min-height;
+    max-height: $panel-max-height;
     padding: $base-margin calc(2 * $base-margin);
     border: 1px solid var(--midground-faint);
     border-radius: $border-radius;
