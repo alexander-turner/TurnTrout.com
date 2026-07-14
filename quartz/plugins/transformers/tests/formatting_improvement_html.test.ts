@@ -26,12 +26,14 @@ import {
 import {
   applyTextTransforms,
   arrowsToWrap,
+  glueHyphens,
   HTMLFormattingImprovement,
   identifyLinkNode,
   improveFormatting,
   lPRegex,
   massTransformText,
   moveQuotesBeforeLink,
+  NonBreakingHyphens,
   rearrangeLinkPunctuation,
   replaceFractions,
   spacesAroundSlashes,
@@ -40,6 +42,7 @@ import {
   timeTransform,
 } from "../formatting_improvement_html"
 import { FRACTION_SKIP_TAGS, SKIP_CLASSES, SKIP_TAGS, toSkip } from "../formatting_improvement_html"
+import { rehypeTagSmallcaps } from "../tagSmallcaps"
 
 const MULTIPLICATION = "\u00D7" // ×
 
@@ -747,10 +750,16 @@ describe("HTMLFormattingImprovement", () => {
     ])("em dashes never start a wrapped line: %s", (input: string, expected: string) => {
       expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
     })
+  })
 
-    // A word joiner after a hyphen removes the break-after opportunity, keeping
-    // short numeric / single-letter compounds on one line.
+  describe("glueHyphens (NonBreakingHyphens)", () => {
     const wj = WORD_JOINER
+    function runGlueHyphens(html: string): string {
+      const processor = rehype().data("settings", { fragment: true })
+      processor.use(() => glueHyphens)
+      return processor.processSync(html).toString()
+    }
+
     it.each([
       // Numeric compound: a digit flanks each hyphen.
       ["<p>a 1-on-1 chat</p>", `<p>a 1-${wj}on-${wj}1 chat</p>`],
@@ -759,8 +768,7 @@ describe("HTMLFormattingImprovement", () => {
       ["<p>COVID-19 era</p>", `<p>COVID-${wj}19 era</p>`],
       ["<p>a 3-D render</p>", `<p>a 3-${wj}D render</p>`],
       ["<p>mid-1990s music</p>", `<p>mid-${wj}1990s music</p>`],
-      // Multi-segment / decimal numerics keep ASCII hyphens (only two-segment
-      // ranges become en dashes), so they reach this pass and stay whole.
+      // Multi-segment / decimal numerics keep ASCII hyphens, so they stay whole.
       ["<p>call 1-2-3 now</p>", `<p>call 1-${wj}2-${wj}3 now</p>`],
       ["<p>Qwen1.5-1.8 model</p>", `<p>Qwen1.5-${wj}1.8 model</p>`],
       // Single-letter segment on the left.
@@ -779,27 +787,38 @@ describe("HTMLFormattingImprovement", () => {
       // Non-alphanumeric neighbor: not an intra-word hyphen, left untouched.
       ["<p>foo- bar</p>", "<p>foo- bar</p>"],
       ["<p>-foo bar</p>", "<p>-foo bar</p>"],
-    ])("glues short hyphenated compounds: %s", (input: string, expected: string) => {
-      expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
-    })
-
-    it.each([
-      // An element boundary sits on the hyphen itself: no join.
+      // A hyphen at a text-node edge has no in-node neighbor: left alone.
       ["<p>T<em>-shirt</em></p>", "<p>T<em>-shirt</em></p>"],
-      // An element boundary sits right after the hyphen: no join.
       ["<p>T-<em>shirt</em></p>", "<p>T-<em>shirt</em></p>"],
-      // A node boundary isolates the left segment to one character: join.
+      // A node edge isolates one segment to a single character: join.
       ["<p>ab<em>c-d</em> x</p>", `<p>ab<em>c-${wj}d</em> x</p>`],
-      // A node boundary isolates the right segment to one character: join.
       ["<p>x ab-c<em>d</em></p>", `<p>x ab-${wj}c<em>d</em></p>`],
-    ])("handles hyphens near element boundaries: %s", (input: string, expected: string) => {
-      expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
+      // Skipped inside code and display headings (which wrap naturally).
+      ["<p><code>1-on-1</code></p>", "<p><code>1-on-1</code></p>"],
+      ['<p class="subtitle">GPT-2-XL</p>', '<p class="subtitle">GPT-2-XL</p>'],
+      ["<h2>1-on-1</h2>", "<h2>1-on-1</h2>"],
+    ])("glues short hyphenated compounds: %s", (input: string, expected: string) => {
+      expect(normalizeNbsp(runGlueHyphens(input))).toBe(expected)
     })
 
-    it("is idempotent for hyphen word joiners", () => {
-      const once = testHtmlFormattingImprovement("<p>a 1-on-1 T-shirt</p>")
-      const twice = testHtmlFormattingImprovement(once)
-      expect(twice).toBe(once)
+    it("is idempotent", () => {
+      const once = runGlueHyphens("<p>a 1-on-1 T-shirt</p>")
+      expect(runGlueHyphens(once)).toBe(once)
+    })
+
+    // Running after TagSmallcaps keeps an acronym both small-capped AND
+    // unbreakable: the joiner lands inside the finished <abbr> rather than
+    // splitting the acronym match (which would drop "XL" out of the small-caps).
+    it.each([
+      ["<p>I use GPT-4 daily</p>", `gpt-${wj}4</abbr>`],
+      ["<p>the GPT-2-XL model</p>", `gpt-${wj}2-${wj}xl</abbr>`],
+    ])("composes with smallcaps: %s", (input: string, expectedFragment: string) => {
+      const processor = rehype().data("settings", { fragment: true })
+      processor.use(improveFormatting, { skipFirstLetter: true })
+      processor.use(rehypeTagSmallcaps)
+      processor.use(() => glueHyphens)
+      const out = normalizeNbsp(processor.processSync(input).toString())
+      expect(out).toContain(expectedFragment)
     })
   })
 
@@ -2228,6 +2247,23 @@ describe("HTMLFormattingImprovement plugin", () => {
     const plugin = HTMLFormattingImprovement()
     const ctx = {} as Parameters<NonNullable<typeof plugin.htmlPlugins>>[0]
     expect(plugin.htmlPlugins?.(ctx)).toEqual([improveFormatting])
+  })
+
+  it("NonBreakingHyphens plugin glues hyphens via rehype", () => {
+    const plugin = NonBreakingHyphens()
+    const { htmlPlugins } = plugin
+    if (!htmlPlugins) {
+      throw new Error("htmlPlugins is undefined")
+    }
+
+    const mockCtx = {} as unknown
+    const plugins = htmlPlugins(mockCtx as Parameters<typeof htmlPlugins>[0])
+    const processor = rehype().data("settings", { fragment: true })
+    for (const p of plugins) {
+      processor.use(p as never)
+    }
+    const result = normalizeNbsp(processor.processSync("<p>a 1-on-1 chat</p>").toString())
+    expect(result).toBe(`<p>a 1-${WORD_JOINER}on-${WORD_JOINER}1 chat</p>`)
   })
 
   it("StripInlineBoundaryWhitespace plugin trims boundary whitespace via rehype", () => {

@@ -24,6 +24,7 @@ import {
   InvertInDarkMode,
   Latex,
   LinkContexts,
+  NonBreakingHyphens,
   NotFoundPage,
   ObsidianFlavoredMarkdown,
   PopulateContainers,
@@ -165,6 +166,10 @@ const config: QuartzConfig = {
       rehypeCustomSpoiler(),
       TagSmallcaps(),
       AutoCode(),
+      // After TagSmallcaps (and AutoCode) so acronyms are already wrapped in
+      // <abbr>: gluing a word joiner into "GPT-4" earlier would split the
+      // small-caps match. Glues short hyphenated compounds so they don't wrap.
+      NonBreakingHyphens(),
       AfterArticle(),
       RelatedPosts(),
       AddFavicons(),

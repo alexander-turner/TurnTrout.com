@@ -346,19 +346,23 @@ const isAlnum = (char: string | undefined): boolean =>
 // that survives to here belongs to a compound worth keeping whole. Idempotent:
 // after a pass the character following the hyphen is the word joiner, which
 // fails the alphanumeric test.
+//
+// Applied by NonBreakingHyphens, a late plugin (see below): running after
+// TagSmallcaps means acronyms are already wrapped in <abbr>, so gluing "gpt-4"
+// inside the finished element keeps it both small-capped and unbreakable
+// instead of splitting the acronym match.
 const hyphenWordJoinerPass = definePass(/-/g, (match, view) => {
   const idx = match.index
   const { text } = view
   const left = text[idx - 1]
   const right = text[idx + 1]
 
-  // Only an intra-word hyphen whose neighbors both live in this node qualifies.
+  // Only an intra-word hyphen qualifies. `glueHyphens` feeds one text node at a
+  // time, so a hyphen at a node edge has an undefined neighbor and is skipped.
   if (!isAlnum(left) || !isAlnum(right)) return null
-  if (view.hasBoundary(idx) || view.hasBoundary(idx + 1)) return null
 
-  const leftSegmentIsSingle = idx - 1 === 0 || view.hasBoundary(idx - 1) || !isAlnum(text[idx - 2])
-  const rightSegmentIsSingle =
-    idx + 2 === text.length || view.hasBoundary(idx + 2) || !isAlnum(text[idx + 2])
+  const leftSegmentIsSingle = idx - 1 === 0 || !isAlnum(text[idx - 2])
+  const rightSegmentIsSingle = idx + 2 === text.length || !isAlnum(text[idx + 2])
 
   const shouldGlue =
     /\d/.test(left) || /\d/.test(right) || leftSegmentIsSingle || rightSegmentIsSingle
@@ -1051,10 +1055,6 @@ export const improveFormatting = (
           ...activeUncheckedTransformers,
           // Runs after dash conversion so freshly created dashes get glued.
           dashWordJoinerPass,
-          // Runs after dash conversion so surviving hyphens (number ranges are
-          // now en dashes) get their short-compound joins. Skipped in display
-          // headings, which wrap naturally like nbspTransform is skipped there.
-          ...(inDisplayHeading ? [] : [hyphenWordJoinerPass]),
         ]
 
         // Don't replace slashes in fractions or link text; loose runs are neither.
@@ -1108,6 +1108,45 @@ export const StripInlineBoundaryWhitespace: QuartzTransformerPlugin = () => {
     name: "stripInlineBoundaryWhitespace",
     htmlPlugins() {
       return [() => stripInlineBoundaryWhitespace]
+    },
+  }
+}
+
+/**
+ * Applies {@link hyphenWordJoinerPass} to prose text nodes, gluing short
+ * hyphenated compounds so they don't wrap at their hyphens. Skips code and
+ * display headings (which wrap naturally, like nbspTransform is skipped there).
+ *
+ * Each text node is processed on its own; a hyphen at a node edge has no
+ * in-node neighbor and is left alone, matching the boundary-skip the pass
+ * applies within a multi-node run.
+ */
+export function glueHyphens(tree: Root): void {
+  visitParents(tree, "text", (node: Text, ancestors: Parent[]) => {
+    const parent = ancestors[ancestors.length - 1] as Element
+    // istanbul ignore next
+    if (!parent) return
+    if (hasAncestor(parent, toSkip, ancestors)) return
+    if (isDisplayHeading(parent) || hasAncestor(parent, isDisplayHeading, ancestors)) return
+    node.value = hyphenWordJoinerPass(node.value)
+  })
+}
+
+/**
+ * Quartz plugin gluing short hyphenated compounds ("1-on-1", "GPT-4") so they
+ * never wrap at a hyphen.
+ *
+ * Runs *after* ``TagSmallcaps``: acronyms are already wrapped in
+ * ``<abbr class="small-caps">`` by then, so the word joiner lands inside the
+ * finished element and keeps the acronym both small-capped and unbreakable. A
+ * joiner injected earlier would split the acronym match and drop trailing
+ * segments (e.g. the "XL" of "GPT-2-XL") out of the small-caps run.
+ */
+export const NonBreakingHyphens: QuartzTransformerPlugin = () => {
+  return {
+    name: "nonBreakingHyphens",
+    htmlPlugins() {
+      return [() => glueHyphens]
     },
   }
 }
