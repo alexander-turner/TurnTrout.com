@@ -18,6 +18,8 @@ aliases:
   - government-ai-contracts
 createBibtex: true
 no_dropcap_color: true
+similar_posts:
+  - why-i-left-google-deepmind
 ---
 
 > [!note] Historical context-
@@ -223,9 +225,9 @@ Application restriction
 Model restriction
 : Models provided at Tier 3 will be task-specific—scoped to the contracted application (e.g., translation, speech-to-text, OCR, predictive maintenance). Where task-specific models are derived from foundation models through distillation or fine-tuning, The Company will apply robust capability removal techniques—including unlearning, ablation, and other methods at the discretion of the AI researchers on the Review Body and the Chief Scientist—to remove or degrade capabilities outside the approved use case.
 
-  In air-gapped deployments, the end user may have access to model weights. The standard is therefore not that capability recovery is impossible—it is that the cost, technical difficulty, and unreliability of attempting to recover prohibited capabilities from a scoped model exceed the value of doing so, making repurposing not worth the attempt compared to acquiring a general-purpose model through other means. This assessment is made prospectively by Research members of the Review Body at the time of model approval, and revisited at each 12-month re-authorization.
+: In air-gapped deployments, the end user may have access to model weights. The standard is therefore not that capability recovery is impossible—it is that the cost, technical difficulty, and unreliability of attempting to recover prohibited capabilities from a scoped model exceed the value of doing so, making repurposing not worth the attempt compared to acquiring a general-purpose model through other means. This assessment is made prospectively by Research members of the Review Body at the time of model approval, and revisited at each 12-month re-authorization.
   
-  If advances in capability recovery techniques—including fine-tuning attacks, representation engineering, or other methods—materially change the difficulty of repurposing a previously approved model, the Review Body will update its assessment and may decline re-authorization or require additional capability removal before redelivery.
+: If advances in capability recovery techniques—including fine-tuning attacks, representation engineering, or other methods—materially change the difficulty of repurposing a previously approved model, the Review Body will update its assessment and may decline re-authorization or require additional capability removal before redelivery.
 
 Tier 3 model licenses expire after 12 months and require re-authorization conditioned on the deployment remaining within the approved application category. Re-authorization is The Company’s unilateral commercial decision.
 
@@ -303,11 +305,11 @@ To balance oversight rigor with contracting velocity, contracts are reviewed on
 Standard review
 : Applies to contracts involving targeting-adjacent applications, intelligence analysis of persons, surveillance or monitoring, predictive policing, biometric identification, or any application where Standards [1](#standard-1-human-control-over-targeting-and-use-of-force) or [2](#standard-2-no-untargeted-profiling) are plausibly implicated, as judged by an AI research member of the Review Body. These require pre-execution review, completed within ten business days of the Review Body confirming receipt of complete documentation.
 
-  The Review Body defines what constitutes complete documentation for each contract category as part of its standard review rubric. The Review Body may extend by up to ten additional business days by issuing a written hold. If no hold or non-compliance finding is issued within the review period, the contract may proceed.  
+: The Review Body defines what constitutes complete documentation for each contract category as part of its standard review rubric. The Review Body may extend by up to ten additional business days by issuing a written hold. If no hold or non-compliance finding is issued within the review period, the contract may proceed.  
 
-  The Review Body will maintain a rubric defining which categories trigger standard review, updated annually. The updated rubric will be shared with Covered AI Employees as part of the annual transparency report.  
+: The Review Body will maintain a rubric defining which categories trigger standard review, updated annually. The updated rubric will be shared with Covered AI Employees as part of the annual transparency report.  
 
-  A pre-execution non-compliance finding is reported to the Chief Scientist within two business days. The contract may not proceed until the Chief Scientist or CEO has either initiated sufficient corrective action or provided a written explanation electing to proceed notwithstanding the finding.
+: A pre-execution non-compliance finding is reported to the Chief Scientist within two business days. The contract may not proceed until the Chief Scientist or CEO has either initiated sufficient corrective action or provided a written explanation electing to proceed notwithstanding the finding.
 
 Post-execution review
 : This review applies to all other contracts within scope. These proceed on execution and are subject to review within 15 business days. If post-execution review reveals Standards [1](#standard-1-human-control-over-targeting-and-use-of-force) or [2](#standard-2-no-untargeted-profiling) are implicated, the contract is escalated to standard review and the Review Body may issue findings requiring modification.
