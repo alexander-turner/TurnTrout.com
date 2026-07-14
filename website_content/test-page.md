@@ -697,7 +697,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 | f + close | f) f] f\} f” f’ f( |
 | ff + close | ff) ff] ff\} ff” ff’ |
 | f + quotes | f” f’ f” f’ |
-| smallcaps + punct | (JSON) \[JSON\] \{JSON\} “JSON” |
+| smallcaps + punctuation | (JSON) \[JSON\] \{JSON\} “JSON” |
 | ( + descender | (g (j (p (q (y |
 | \[ + descender | \[g \[j \[p \[q \[y |
 | \{ + descender | \{g \{j \{p \{q \{y |
