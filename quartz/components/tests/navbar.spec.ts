@@ -530,6 +530,10 @@ test("Video autoplay preference persists across page reloads", async ({ page }) 
 
 test("Video autoplay works correctly after SPA navigation", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
+  // Video decode competes with other parallel Playwright workers for CPU, so a
+  // contended CI runner can leave readyState below 3 past a tight deadline even
+  // though the video eventually buffers.
+  test.slow()
 
   const { video, autoplayToggle } = getVideoElements(page)
 
