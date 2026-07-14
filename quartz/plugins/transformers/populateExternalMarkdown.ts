@@ -60,7 +60,10 @@ export function fetchGitHubContentSync(source: GitHubMarkdownSource): string {
   const url = `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${ref}/${filePath}`
 
   logger.debug(`Fetching ${url}`)
-  return childProcess.execFileSync("curl", ["-sf", url], {
+  // Retry transient failures (5xx, timeouts, dropped connections) so a network
+  // blip fetching an external README doesn't fail the whole build. A genuine
+  // 404 still fails fast: curl --retry ignores non-transient HTTP errors.
+  return childProcess.execFileSync("curl", ["-sf", "--retry", "3", "--retry-delay", "1", url], {
     encoding: "utf-8",
     timeout: 30000,
   })

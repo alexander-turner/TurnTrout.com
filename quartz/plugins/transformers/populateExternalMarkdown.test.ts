@@ -233,7 +233,14 @@ describe("PopulateExternalMarkdown", () => {
       fetchGitHubContentSync(source)
       expect(mockFetch).toHaveBeenCalledWith(
         "curl",
-        ["-sf", `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${expectedPath}`],
+        [
+          "-sf",
+          "--retry",
+          "3",
+          "--retry-delay",
+          "1",
+          `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${expectedPath}`,
+        ],
         expect.objectContaining({ encoding: "utf-8" }),
       )
     })
