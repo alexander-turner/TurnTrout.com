@@ -177,7 +177,7 @@ Geoffrey Hinton
 
 I briskly gathered information. Hinton was speaking remotely, so I'd have to reach him indirectly, likely through Bengio or Stuart. I knew Stuart already and had a friend who could get me in touch. Bengio was the wildcard. I saw him leaving the venue, so I ran to catch him.
 
-"Yoshua, would you be willing to make a statement supporting Anthropic's right to do business and pushing against unregulated killer robots?". I clarified that his voice could influence the many Google DeepMind (GDM) professionals who respect him, professionals who might be mobilized to push against "caving" to the Pentagon's demands. He told me to email him.
+"Yoshua, would you be willing to make a statement supporting Anthropic's right to do business and pushing against unregulated killer robots?". I clarified that his voice could influence the many GDM professionals who respect him, professionals who might be mobilized to push against "caving" to the Pentagon's demands. He told me to email him.
 
 Soon after, his office told me they decided they weren't going to make a statement. They didn't explain why not.  Since I didn't know Bengio, I figured I should focus my attention on Stuart Russell and then let him handle it.
 
