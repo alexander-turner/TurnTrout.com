@@ -345,6 +345,18 @@ article[data-use-dropcap="true"] > p:first-of-type .small-caps {
   }
 }
 
+// Letterspace acronym small-caps so the string reads as one settled unit
+// instead of a cramped clump (Bringhurst §2.1.6: space strings of caps and
+// small caps by 5–10% of the type size). Scoped to `.small-caps` alone so it
+// never reaches the dropcap `::first-line` grouped in the rule above. The
+// negative right margin cancels the trailing tracking, keeping a plural suffix
+// rendered outside the abbr (e.g. the "s" in "LLMs") flush against the acronym
+// and leaving word spacing to the following word unchanged.
+.small-caps {
+  letter-spacing: 0.05em;
+  margin-right: -0.05em;
+}
+
 /* Set monospace font for code blocks, inline code, etc. */
 code,
 pre {

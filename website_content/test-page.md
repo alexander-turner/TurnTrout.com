@@ -677,7 +677,7 @@ A footnote reference right after a favicon-ending [same-page link](#external-lin
 
 ## Smallcaps
 
-The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar to that of normal text (in that a sentence's first letter should be full-height). Here are _italicized SMALLCAPS_.
+The NATO alliance met in the USA. Several LLMs ran on the GPUs. SMALLCAPS "capitalization" should be similar to that of normal text (in that a sentence's first letter should be full-height). Here are _italicized SMALLCAPS_.
 
 <!--spellchecker-disable-->
 
