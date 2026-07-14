@@ -1,0 +1,31 @@
+name: Run visual-testing Playwright shard
+description: >-
+  Invokes `playwright test` for one visual-regression shard, streaming
+  the combined stdout/stderr into `playwright-run.log` so
+  `visual-shard-finalize` can upload it as an artifact. Set
+  `continue-on-error: true` on the calling step and capture `outcome`
+  for the finalize step — snapshot diffs make Playwright exit non-zero
+  even though the shard should stay green.
+
+inputs:
+  shard:
+    description: 'Raw Playwright shard string (e.g. "1/3")'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        CI: "true"
+        NODE_OPTIONS: "--max-old-space-size=4096"
+        SHARD: ${{ inputs.shard }}
+      run: |
+        set -o pipefail
+        pnpm exec playwright test \
+          --config config/playwright/playwright.config.ts \
+          --shard "$SHARD" \
+          --reporter=blob,dot \
+          --update-snapshots=none \
+          --trace=off \
+          -g "(screenshot)" 2>&1 | tee playwright-run.log

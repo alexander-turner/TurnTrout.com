@@ -1,0 +1,36 @@
+diff --git a/lib/pa11y.js b/lib/pa11y.js
+index 1234567..abcdefg 100644
+--- a/lib/pa11y.js
++++ b/lib/pa11y.js
+@@ -243,7 +243,11 @@ async function gotoUrl(url, options, state) {
+ 	// Navigate to the URL we're going to test
+ 	if (!options.ignoreUrl) {
+ 		await state.page.goto(url, {
+-			waitUntil: 'networkidle2',
++			// Use 'load' instead of 'networkidle2'. networkidle2 hangs on
++			// pages with long-lived connections (analytics, CDN prefetch).
++			// 'load' fires once HTML parsing + local resources finish,
++			// which is sufficient for a11y checks on locally-served sites.
++			waitUntil: 'load',
+ 			timeout: options.timeout
+ 		});
+ 	}
+diff --git a/lib/runners/axe.js b/lib/runners/axe.js
+index b18b02ab4b0f832d9c4adafe29f787b538a4ead0..2fc07ad7bf18e769b15d6313f8bb89fa5931cab9 100644
+--- a/lib/runners/axe.js
++++ b/lib/runners/axe.js
+@@ -44,9 +44,12 @@ runner.run = async options => {
+ 			getAxeContext(),
+ 			getAxeOptions()
+ 		);
++		// Only report definitive violations. Axe "incomplete" results are items
++		// that need manual review (e.g. non-text characters, SVG foreignObject
++		// backgrounds, overlapping floats). Including them produces false
++		// positives that can't be resolved via CSS.
+ 		return [].concat(
+-			...result.violations.map(processViolation),
+-			...result.incomplete.map(processIncomplete)
++			...result.violations.map(processViolation)
+ 		);
+ 	}
+

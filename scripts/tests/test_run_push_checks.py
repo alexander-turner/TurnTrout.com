@@ -1,0 +1,1535 @@
+"""Unit tests for run_push_checks.py."""
+
+import json
+import os
+import subprocess
+import tempfile
+from collections.abc import Iterator
+from pathlib import Path
+from unittest.mock import ANY, MagicMock, patch
+
+import pytest
+from rich.style import Style
+
+from scripts import run_push_checks
+
+
+def _step_by_name(
+    steps: list[run_push_checks.CheckStep], name: str
+) -> run_push_checks.CheckStep:
+    """
+    Look up a step by name.
+
+    Asserts existence (StopIteration would mask a missing step as a RuntimeError
+    in Python 3.7+; this surfaces it as a clear AssertionError in test output
+    instead).
+    """
+    for step in steps:
+        if step.name == name:
+            return step
+    raise AssertionError(f"Step not found: {name!r}")
+
+
+@pytest.fixture
+def temp_state_dir() -> Iterator[str]:
+    """Create a temporary directory for state files."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        state_file = temp_path / "progress.json"
+
+        with (
+            patch.object(run_push_checks, "STATE_DIR", temp_path),
+            patch.object(run_push_checks, "STATE_FILE_PATH", state_file),
+        ):
+            if state_file.exists():
+                state_file.unlink()
+
+            yield temp_dir
+
+            if state_file.exists():
+                state_file.unlink()
+
+
+@pytest.fixture
+def test_steps() -> list[run_push_checks.CheckStep]:
+    """Fixture providing test check steps."""
+    return [
+        run_push_checks.CheckStep(
+            name="Test Step 1", command=["echo", "test1"]
+        ),
+        run_push_checks.CheckStep(
+            name="Test Step 2", command=["echo", "test2"]
+        ),
+        run_push_checks.CheckStep(
+            name="Test Step 3", command=["echo", "test3"]
+        ),
+    ]
+
+
+def test_run_checks_all_success(test_steps, temp_state_dir):
+    """Test that all checks run successfully when there are no failures."""
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+        run_push_checks.run_checks(test_steps)
+        assert mock_run.call_count == 3
+
+
+@pytest.mark.parametrize("failing_step_index", [0, 1, 2])
+def test_run_checks_exits_on_failure(
+    test_steps, failing_step_index, temp_state_dir
+):
+    """Test that run_checks raises CheckFailedError when a check fails."""
+    results = [
+        run_push_checks.CommandResult(success=True, stdout="", stderr="")
+    ] * len(test_steps)
+    results[failing_step_index] = run_push_checks.CommandResult(
+        success=False, stdout="Failed output", stderr="Error"
+    )
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+        pytest.raises(run_push_checks.CheckFailedError) as exc_info,
+    ):
+        # Create a list of results where one step fails
+        mock_run.side_effect = results
+
+        run_push_checks.run_checks(test_steps)
+
+        assert exc_info.value.step_name == test_steps[failing_step_index].name
+        assert mock_run.call_count == failing_step_index + 1
+
+
+def test_run_checks_shows_error_output(test_steps):
+    """Test that error output is properly displayed on failure."""
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.console.log") as mock_log,
+        pytest.raises(run_push_checks.CheckFailedError),
+    ):
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=False, stdout="stdout error", stderr="stderr error"
+        )
+
+        run_push_checks.run_checks(test_steps)
+
+        mock_log.assert_any_call("[red]✗[/red] Test Step 1")
+        mock_log.assert_any_call("\n[bold red]Error output:[/bold red]")
+        mock_log.assert_any_call("stdout error")
+        mock_log.assert_any_call("stderr error", style=Style(color="red"))
+
+
+def test_run_command_success():
+    """Test successful command execution."""
+    step = run_push_checks.CheckStep(
+        name="Test Command", command=["echo", "test"]
+    )
+    with patch("subprocess.Popen") as mock_popen:
+        proc = mock_popen.return_value.__enter__.return_value
+        proc.wait.return_value = 0
+        proc.stdout.readline.side_effect = ["test output\n", ""]
+        proc.stderr.readline.side_effect = [""]
+
+        mock_progress = MagicMock()
+        mock_task_id = MagicMock()
+
+        result = run_push_checks.run_command(step, mock_progress, mock_task_id)
+        assert result.success is True
+        assert "test output\n" in result.stdout
+        assert result.stderr == ""
+
+
+def test_run_command_failure():
+    """Test command execution failure."""
+    step = run_push_checks.CheckStep(
+        name="Test Command", command=["echo", "test"]
+    )
+    with patch("subprocess.Popen") as mock_popen:
+        proc = mock_popen.return_value.__enter__.return_value
+        proc.wait.return_value = 1
+        proc.stdout.readline.side_effect = ["error output\n", ""]
+        proc.stderr.readline.side_effect = ["error message\n", ""]
+
+        mock_progress = MagicMock()
+        mock_task_id = MagicMock()
+
+        result = run_push_checks.run_command(step, mock_progress, mock_task_id)
+        assert result.success is False
+        assert "error output\n" in result.stdout
+        assert "error message\n" in result.stderr
+
+
+def test_run_command_shell_handling():
+    """Test command execution with shell=True."""
+    step = run_push_checks.CheckStep(
+        name="Test Command",
+        command=["echo", "test"],
+        # skipcq: BAN-B604 (a local command, assume safe)
+        shell=True,
+    )
+    with patch("subprocess.Popen") as mock_popen:
+        proc = mock_popen.return_value.__enter__.return_value
+        proc.wait.return_value = 0
+        proc.stdout.readline.side_effect = ["output\n", ""]
+        proc.stderr.readline.side_effect = [""]
+
+        mock_progress = MagicMock()
+        mock_task_id = MagicMock()
+
+        run_push_checks.run_command(step, mock_progress, mock_task_id)
+        expected_full_command = " ".join(step.command)
+        called_cmd = mock_popen.call_args[0][0]
+        assert isinstance(called_cmd, str)
+        assert called_cmd == expected_full_command
+
+
+def test_progress_bar_updates():
+    """Test that progress bar updates correctly with output."""
+    step = run_push_checks.CheckStep(
+        name="Test Command", command=["echo", "test"]
+    )
+    with patch("subprocess.Popen") as mock_popen:
+        proc = mock_popen.return_value.__enter__.return_value
+        proc.wait.return_value = 0
+        # Simulate 6 lines of output to test the deque maxlen=5 behavior
+        proc.stdout.readline.side_effect = [
+            "line1\n",
+            "line2\n",
+            "line3\n",
+            "line4\n",
+            "line5\n",
+            "line6\n",
+            "",
+        ]
+        proc.stderr.readline.side_effect = [""]
+
+        mock_progress = MagicMock()
+        mock_task_id = MagicMock()
+
+        run_push_checks.run_command(step, mock_progress, mock_task_id)
+
+        # Get all update calls that have a description
+        update_calls = [
+            call
+            for call in mock_progress.update.call_args_list
+            if "description" in call[1]
+        ]
+
+        # First update should show first line and make visible
+        assert update_calls[0][0] == (mock_task_id,)
+        assert update_calls[0][1]["description"] == "line1"
+        assert update_calls[0][1]["visible"] is True
+
+        # Last update with description should show lines2..6
+        last_desc = update_calls[-1][1]["description"]
+        assert (
+            "line1" not in last_desc
+        )  # line1 should be dropped due to maxlen=5
+        assert "line2" in last_desc
+        assert "line3" in last_desc
+        assert "line4" in last_desc
+        assert "line5" in last_desc
+        assert "line6" in last_desc
+
+
+def test_progress_bar_stderr_updates():
+    """Test that progress bar updates correctly with stderr output."""
+    step = run_push_checks.CheckStep(
+        name="Test Command", command=["echo", "test"]
+    )
+    with patch("subprocess.Popen") as mock_popen:
+        proc = mock_popen.return_value.__enter__.return_value
+        proc.wait.return_value = 1
+        proc.stdout.readline.side_effect = [""]
+        proc.stderr.readline.side_effect = ["error1\n", "error2\n", ""]
+
+        mock_progress = MagicMock()
+        mock_task_id = MagicMock()
+
+        run_push_checks.run_command(step, mock_progress, mock_task_id)
+
+        update_calls = [
+            call
+            for call in mock_progress.update.call_args_list
+            if "description" in call[1]
+        ]
+        # Confirm both stderr lines appear
+        descs = [c[1]["description"] for c in update_calls]
+        assert any("error1" in d for d in descs)
+        assert any("error2" in d for d in descs)
+
+
+def test_progress_bar_mixed_output():
+    """Test that progress bar handles mixed stdout/stderr correctly."""
+    step = run_push_checks.CheckStep(
+        name="Test Command", command=["echo", "test"]
+    )
+    with patch("subprocess.Popen") as mock_popen:
+        proc = mock_popen.return_value.__enter__.return_value
+        proc.wait.return_value = 0
+        proc.stdout.readline.side_effect = ["out1\n", "out2\n", ""]
+        proc.stderr.readline.side_effect = ["err1\n", "err2\n", ""]
+
+        mock_progress = MagicMock()
+        mock_task_id = MagicMock()
+
+        run_push_checks.run_command(step, mock_progress, mock_task_id)
+
+        update_calls = [
+            call
+            for call in mock_progress.update.call_args_list
+            if "description" in call[1]
+        ]
+        descriptions = [call[1]["description"] for call in update_calls]
+        assert any("out1" in desc for desc in descriptions)
+        assert any("out2" in desc for desc in descriptions)
+        assert any("err1" in desc for desc in descriptions)
+        assert any("err2" in desc for desc in descriptions)
+
+
+def test_save_and_get_state(temp_state_dir):
+    """Test saving and retrieving state."""
+    run_push_checks.save_state("Test Step 1")
+    assert run_push_checks.get_last_step() == "Test Step 1"
+
+    # Test overwriting state
+    run_push_checks.save_state("Test Step 2")
+    assert run_push_checks.get_last_step() == "Test Step 2"
+
+
+def test_reset_saved_progress(temp_state_dir):
+    """Test clearing state."""
+    run_push_checks.save_state("Test Step")
+    assert run_push_checks.get_last_step() == "Test Step"
+
+    run_push_checks.reset_saved_progress()
+    assert run_push_checks.get_last_step() is None
+
+
+def test_run_checks_with_resume(test_steps, temp_state_dir):
+    """Test resuming from a previous step."""
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+
+        # Save state as if we completed the first step
+        run_push_checks.save_state("Test Step 1")
+
+        # Run with resume flag
+        run_push_checks.run_checks(test_steps, resume=True)
+
+        # Should only run steps 2 and 3
+        assert mock_run.call_count == 2
+
+        # Verify the skipped step was logged
+        with patch("scripts.run_push_checks.console.log") as mock_log:
+            run_push_checks.run_checks(test_steps, resume=True)
+            mock_log.assert_any_call("[grey]Skipping step: Test Step 1[/grey]")
+
+
+def test_run_checks_resume_from_middle(test_steps, temp_state_dir):
+    """Test resuming from a middle step with failure."""
+    with patch("scripts.run_push_checks.run_command") as mock_run:
+        # Set up to fail on the last step
+        mock_run.side_effect = [
+            run_push_checks.CommandResult(
+                success=False, stdout="Failed", stderr="Error"
+            )
+        ]
+
+        # Save state as if we completed the second step
+        run_push_checks.save_state("Test Step 2")
+
+        # Run with resume flag, should fail on step 3
+        with pytest.raises(run_push_checks.CheckFailedError):
+            run_push_checks.run_checks(test_steps, resume=True)
+
+        # Should only try to run step 3
+        assert mock_run.call_count == 1
+
+
+@pytest.mark.parametrize("resume_flag", [True, False])
+def test_argument_parsing(resume_flag, temp_state_dir):
+    """Test command line argument parsing with and without resume flag."""
+    with patch("argparse.ArgumentParser.parse_args") as mock_parse:
+        mock_parse.return_value = MagicMock(
+            resume=resume_flag, autofix_only=False, no_commit=False
+        )
+
+        mock_steps = [
+            run_push_checks.CheckStep(name="Test Step", command=["test"])
+        ]
+
+        with (
+            patch(
+                "scripts.run_push_checks.get_check_steps",
+                return_value=mock_steps,
+            ),
+            patch("scripts.run_push_checks.run_checks") as mock_run,
+            patch("subprocess.run") as mock_subprocess,
+        ):
+            mock_subprocess.return_value = MagicMock(
+                stdout="No local changes to save"
+            )
+
+            if resume_flag:
+                run_push_checks.save_state("Test Step")
+
+            from scripts.run_push_checks import main
+
+            main()
+
+            # Verify run_checks was called once with correct resume flag
+            assert mock_run.call_count == 1
+            mock_run.assert_called_once_with(
+                mock_steps,
+                resume_flag,
+                auto_commit=True,
+                continue_on_failure=False,
+            )
+
+
+def test_autofix_only_flag_uses_formatter_steps(temp_state_dir):
+    """--autofix-only selects formatter steps only, skipping local-only
+    tasks, and continues past individual failures so every fixer runs."""
+    with patch("argparse.ArgumentParser.parse_args") as mock_parse:
+        mock_parse.return_value = MagicMock(
+            resume=False, autofix_only=True, no_commit=True
+        )
+
+        mock_steps = [
+            run_push_checks.CheckStep(name="Formatter", command=["test"])
+        ]
+
+        with (
+            patch(
+                "scripts.run_push_checks.get_formatter_steps",
+                return_value=mock_steps,
+            ) as mock_formatters,
+            patch("scripts.run_push_checks.get_check_steps") as mock_full_steps,
+            patch("scripts.run_push_checks.run_checks") as mock_run,
+        ):
+            from scripts.run_push_checks import main
+
+            main()
+
+            # Formatter-only mode must not fall through to the full step list
+            mock_formatters.assert_called_once()
+            mock_full_steps.assert_not_called()
+            mock_run.assert_called_once_with(
+                mock_steps,
+                False,
+                auto_commit=False,
+                continue_on_failure=True,
+            )
+
+
+def test_run_checks_continue_on_failure_runs_all_steps(
+    test_steps, temp_state_dir
+):
+    """With continue_on_failure=True, a failing step logs but does not abort the
+    remaining steps — so an unfixable ruff issue still lets Prettier/Stylelint
+    autofix commits land."""
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
+        mock_run.side_effect = [
+            run_push_checks.CommandResult(success=True, stdout="", stderr=""),
+            run_push_checks.CommandResult(
+                success=False, stdout="oops", stderr="boom"
+            ),
+            run_push_checks.CommandResult(success=True, stdout="", stderr=""),
+        ]
+        run_push_checks.run_checks(test_steps, continue_on_failure=True)
+        # All three should have been attempted — the failure did not abort.
+        assert mock_run.call_count == 3
+
+
+def test_main_clears_state_on_success(temp_state_dir):
+    """Test that main clears state file when all checks pass."""
+    with (
+        patch(
+            "argparse.ArgumentParser.parse_args",
+            return_value=MagicMock(
+                resume=False, autofix_only=False, no_commit=False
+            ),
+        ),
+        patch("scripts.run_push_checks.run_checks"),
+        patch(
+            "scripts.run_push_checks.get_check_steps",
+            return_value=[
+                run_push_checks.CheckStep(name="test", command=["test"])
+            ],
+        ),
+        patch("subprocess.run") as mock_subprocess,
+    ):
+        # Mock git stash to indicate no changes
+        mock_subprocess.return_value = MagicMock(
+            stdout="No local changes to save"
+        )
+
+        from scripts.run_push_checks import main
+
+        exit_code = main()
+
+        # Verify successful exit code
+        assert exit_code == 0
+        # Verify state was cleared after successful completion
+        assert run_push_checks.get_last_step() is None
+
+
+def test_main_preserves_state_on_failure(temp_state_dir):
+    """Test that main preserves state file when a check fails."""
+    with (
+        patch(
+            "argparse.ArgumentParser.parse_args",
+            return_value=MagicMock(
+                resume=False, autofix_only=False, no_commit=False
+            ),
+        ),
+        patch("scripts.run_push_checks.run_checks") as mock_run,
+        patch(
+            "scripts.run_push_checks.get_check_steps",
+            return_value=[
+                run_push_checks.CheckStep(name="test", command=["test"])
+            ],
+        ),
+        patch("subprocess.run") as mock_subprocess,
+    ):
+        # Mock git stash to indicate no changes
+        mock_subprocess.return_value = MagicMock(
+            stdout="No local changes to save"
+        )
+
+        # Save initial state
+        run_push_checks.save_state("test")
+
+        # Make run_checks fail
+        mock_run.side_effect = run_push_checks.CheckFailedError("test")
+
+        from scripts.run_push_checks import main
+
+        exit_code = main()
+
+        # Verify error exit code
+        assert exit_code == 1
+        # Verify state was not cleared
+        assert run_push_checks.get_last_step() == "test"
+
+
+def test_run_checks_skips_until_last_step(temp_state_dir):
+    """Test that run_push_checks.run_checks skips steps until it reaches the
+    last successful step."""
+    test_steps = [
+        run_push_checks.CheckStep(name="Step 1", command=["test"]),
+        run_push_checks.CheckStep(name="Step 2", command=["test"]),
+        run_push_checks.CheckStep(name="Step 3", command=["test"]),
+    ]
+
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.console.log") as mock_log,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+        # Pretend we completed up to Step 2
+        run_push_checks.save_state("Step 2")
+
+        run_push_checks.run_checks(test_steps, resume=True)
+
+        # Verify first two steps were skipped
+        mock_log.assert_any_call("[grey]Skipping step: Step 1[/grey]")
+        mock_log.assert_any_call("[grey]Skipping step: Step 2[/grey]")
+
+        # Verify only Step 3 was run
+        assert mock_run.call_count == 1
+        mock_run.assert_called_once_with(test_steps[2], ANY, ANY)
+
+
+def test_get_last_step_invalid_json(temp_state_dir, capsys):
+    """Test get_last_step handles invalid JSON content."""
+    state_file = Path(temp_state_dir) / "last_successful_step.json"
+    with open(state_file, "w", encoding="utf-8") as f:
+        f.write("this is not valid json")
+    # Patch the path to ensure it uses the test file
+    with patch("scripts.run_push_checks.STATE_FILE_PATH", state_file):
+        result = run_push_checks.get_last_step()
+        assert result is None
+        stderr = capsys.readouterr().err
+        assert "Error parsing JSON in" in stderr
+
+
+@pytest.mark.parametrize(
+    "state_content",
+    [
+        {"some_other_key": "some_value"},  # Unexpected structure
+        {},  # Empty JSON object
+    ],
+)
+def test_get_last_step_key_error(temp_state_dir, state_content: dict, capsys):
+    """Test get_last_step handles valid JSON with unexpected structure and
+    prints error."""
+    state_file_path = Path(temp_state_dir) / "last_successful_step.json"
+    with open(state_file_path, "w", encoding="utf-8") as f:
+        json.dump(state_content, f)
+    # Patch the path to ensure it uses the test file
+    with patch("scripts.run_push_checks.STATE_FILE_PATH", state_file_path):
+        # Should return None because the key is missing or structure is wrong
+        result = run_push_checks.get_last_step()
+        assert result is None
+        # Assert that the specific error message was printed to stderr
+        stderr = capsys.readouterr().err
+        assert "No 'last_successful_step' key in" in stderr
+
+
+def test_invalid_step(temp_state_dir):
+    """Test that get_last_step handles invalid steps correctly."""
+    test_steps = ["Step 1", "Step 2", "Step 3"]
+    run_push_checks.save_state("Invalid Step")
+
+    # Should return None when step doesn't exist in available_steps
+    assert run_push_checks.get_last_step(test_steps) is None
+
+    # Should still be able to get the raw step without validation
+    assert run_push_checks.get_last_step() == "Invalid Step"
+
+
+def test_get_formatter_steps():
+    """Test that formatter steps are properly configured and are pure autofixers
+    (no local-only dependencies)."""
+    test_root = Path("/test/root")
+    steps = run_push_checks.get_formatter_steps(test_root)
+
+    # Ruff check has --fix so the step is an autofixer, not a blocking check.
+    ruff_lint = _step_by_name(steps, "Linting Python")
+    assert "--fix" in ruff_lint.command
+    assert "format" not in ruff_lint.command
+
+    # `ruff format` is the sole Python formatter (it replaced the
+    # autoflake/isort/autopep8/black stack).
+    assert any(s.command[:4] == ["uv", "run", "ruff", "format"] for s in steps)
+
+    eslint_step = _step_by_name(steps, "Linting TypeScript")
+    assert "--fix" in eslint_step.command
+    assert str(test_root / "config" / "javascript" / "eslint.config.js") in str(
+        eslint_step.command
+    )
+
+    # Formatter steps have no `requires` — they all run from installed deps.
+    for step in steps:
+        assert step.requires is None
+
+    # Prettier step globs should reach expected trees
+    prettier_markdown = _step_by_name(steps, "Formatting markdown")
+    assert any("website_content" in arg for arg in prettier_markdown.command)
+
+
+def test_docformatter_step_recurses_into_subdirectories(tmp_path):
+    """Docformatter glob must reach both top-level and nested .py files."""
+    (tmp_path / "scripts" / "notebooks").mkdir(parents=True)
+    top_level = tmp_path / "scripts" / "top_level.py"
+    top_level.write_text("'''doc.'''\n")
+    nested = tmp_path / "scripts" / "notebooks" / "nested.py"
+    nested.write_text("'''doc.'''\n")
+
+    steps = run_push_checks.get_formatter_steps(tmp_path)
+    docformatter_step = _step_by_name(steps, "Formatting Python docstrings")
+
+    assert str(nested) in docformatter_step.command
+    assert str(top_level) in docformatter_step.command
+
+
+_TEST_ROOT = Path("/test/root")
+_VERIFY_NAMES = frozenset(
+    {
+        "Pylint",
+        "Pyright",
+        "Source file checks",
+        "Spellcheck and Vale",
+    }
+)
+_AUTOFIX_LINT_NAMES = frozenset(
+    {
+        "Linting Python",
+        "Linting TypeScript",
+        "Cleaning up SCSS",
+    }
+)
+_AUTOFIX_FORMAT_NAMES = frozenset(
+    {
+        "Formatting Python",
+        "Formatting Python docstrings",
+        "Formatting SCSS",
+        "Formatting TypeScript",
+        "Formatting markdown",
+        "Formatting JSON",
+    }
+)
+
+
+def test_scss_variables_runs_before_source_file_checks():
+    """
+    SCSS variables must be generated before the verify group so
+    source_file_checks can resolve `@use "./variables.scss"`.
+
+    Keep it sequential (parallel_group=None).
+    """
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    scss_step = _step_by_name(steps, "Generate SCSS variables")
+    assert scss_step.parallel_group is None
+    step_index = {s.name: i for i, s in enumerate(steps)}
+    assert (
+        step_index["Generate SCSS variables"] < step_index["Source file checks"]
+    )
+
+
+def test_pylint_step_invocation():
+    """Pylint is invoked via `uv run python -m pylint` with the project's
+    pylintrc and runs in the verify parallel group."""
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    pylint_step = _step_by_name(steps, "Pylint")
+    assert pylint_step.command[:5] == ["uv", "run", "python", "-m", "pylint"]
+    assert (
+        str(_TEST_ROOT / "config" / "python" / ".pylintrc")
+        in pylint_step.command
+    )
+    assert pylint_step.command[-1] == "."
+    assert pylint_step.cwd == str(_TEST_ROOT)
+    assert pylint_step.parallel_group == "verify"
+
+
+def _expected_group(name: str) -> str | None:
+    if name in _AUTOFIX_LINT_NAMES:
+        return "autofix-lint"
+    if name in _AUTOFIX_FORMAT_NAMES:
+        return "autofix-format"
+    if name in _VERIFY_NAMES:
+        return "verify"
+    return None
+
+
+def test_parallel_groups_assigned_correctly():
+    """Each step is bucketed into autofix-lint / autofix-format / verify, or
+    runs sequentially (parallel_group=None)."""
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    expected = {s.name: _expected_group(s.name) for s in steps}
+    actual = {s.name: s.parallel_group for s in steps}
+    assert actual == expected
+
+
+def test_autofix_lint_runs_before_autofix_format():
+    """Linters finish before formatters so prettier gets the final pass."""
+    steps = run_push_checks.get_formatter_steps(_TEST_ROOT)
+    last_lint_idx = max(
+        i for i, s in enumerate(steps) if s.parallel_group == "autofix-lint"
+    )
+    first_format_idx = min(
+        i for i, s in enumerate(steps) if s.parallel_group == "autofix-format"
+    )
+    assert last_lint_idx < first_format_idx
+
+
+def test_spellcheck_step_has_no_requires_so_it_fails_loudly():
+    """
+    The spellcheck/prose gate must not silently skip when vale is absent: it has
+    no `requires`, so it always runs and errors loudly (the wrapper checks for
+    vale itself).
+
+    session-setup.sh installs vale.
+    """
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    assert _step_by_name(steps, "Spellcheck and Vale").requires is None
+
+
+def test_eslint_step_invocation():
+    """ESLint runs with --fix and the project's eslint.config.js."""
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    eslint_step = _step_by_name(steps, "Linting TypeScript")
+    assert "--fix" in eslint_step.command
+    assert str(
+        _TEST_ROOT / "config" / "javascript" / "eslint.config.js"
+    ) in str(eslint_step.command)
+
+
+def test_asset_step_uses_bash_and_requires_rclone():
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    asset_step = _step_by_name(steps, "Compressing and uploading local assets")
+    assert asset_step.shell is False
+    assert asset_step.requires == "rclone"
+
+
+def test_related_posts_step_invocation():
+    """The related-posts generator runs sequentially after asset upload and
+    needs rclone for the R2 vector-cache sync."""
+    # Creds present -> command stays unwrapped (no envchain prefix).
+    with patch.dict(
+        os.environ,
+        {k: "x" for k in run_push_checks.script_utils.R2_REQUIRED_ENV},
+    ):
+        steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    step = _step_by_name(steps, "Generating related posts")
+    assert step.command == (
+        "uv",
+        "run",
+        "python",
+        "scripts/generate_related_posts.py",
+    )
+    assert step.cwd == str(_TEST_ROOT)
+    assert step.requires == "rclone"
+    assert step.requires_env == "VOYAGE_API_KEY"
+    assert step.parallel_group is None
+    step_index = {s.name: i for i, s in enumerate(steps)}
+    assert (
+        step_index["Compressing and uploading local assets"]
+        < step_index["Generating related posts"]
+    )
+
+
+@pytest.mark.parametrize(
+    ("creds_present", "envchain_installed", "expected"),
+    [
+        # Creds already in env -> never wrap, even if envchain is available.
+        (True, True, ("uv", "run")),
+        # Creds missing + envchain available -> wrap so it can authenticate.
+        (False, True, ("envchain", "cloudflare", "uv", "run")),
+        # Creds missing + no envchain -> run unwrapped and fail loudly later.
+        (False, False, ("uv", "run")),
+    ],
+)
+def test_wrap_with_envchain(creds_present, envchain_installed, expected):
+    """Envchain is prepended only when R2 creds are absent and envchain exists
+    on PATH; otherwise the command passes through unchanged."""
+    env = {k: "" for k in run_push_checks.script_utils.R2_REQUIRED_ENV}
+    if creds_present:
+        env = {k: "x" for k in run_push_checks.script_utils.R2_REQUIRED_ENV}
+    which = MagicMock(
+        return_value="/usr/bin/envchain" if envchain_installed else None
+    )
+    with (
+        patch.dict(os.environ, env, clear=False),
+        patch("scripts.run_push_checks.shutil.which", which),
+    ):
+        result = run_push_checks._wrap_with_envchain(
+            ["uv", "run"], "cloudflare"
+        )
+    assert result == expected
+
+
+def test_alt_text_step_requires_alt_text_llm():
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    alt_step = _step_by_name(steps, "Scanning for images without alt text")
+    assert alt_step.requires == "alt-text-llm"
+
+
+def test_run_checks_skips_missing_requires(temp_state_dir, capsys):
+    """Test that steps with missing required tools are skipped with a
+    warning."""
+    steps = [
+        run_push_checks.CheckStep(
+            name="Needs foo", command=["foo"], requires="nonexistent-tool-xyz"
+        ),
+        run_push_checks.CheckStep(name="Always runs", command=["echo", "hi"]),
+    ]
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+        run_push_checks.run_checks(steps)
+
+        # Only the second step should have run
+        assert mock_run.call_count == 1
+
+    captured = capsys.readouterr().out
+    assert "nonexistent-tool-xyz not installed" in captured
+
+
+def test_run_checks_skips_missing_requires_env(
+    temp_state_dir, capsys, monkeypatch
+):
+    """Steps whose required env var is unset are skipped with a warning."""
+    monkeypatch.delenv("NEEDED_KEY", raising=False)
+    steps = [
+        run_push_checks.CheckStep(
+            name="Needs key", command=["echo", "x"], requires_env="NEEDED_KEY"
+        ),
+        run_push_checks.CheckStep(name="Always runs", command=["echo", "hi"]),
+    ]
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+        run_push_checks.run_checks(steps)
+        assert mock_run.call_count == 1
+
+    assert "NEEDED_KEY not set" in capsys.readouterr().out
+
+
+def test_main_resume_with_invalid_step(temp_state_dir):
+    """Test main() handles invalid resume state correctly."""
+    with (
+        patch(
+            "argparse.ArgumentParser.parse_args",
+            return_value=MagicMock(
+                resume=True, autofix_only=False, no_commit=False
+            ),
+        ),
+        patch("scripts.run_push_checks.run_checks") as mock_run,
+        patch("scripts.run_push_checks.console.log") as mock_log,
+        patch(
+            "scripts.run_push_checks.get_check_steps",
+            return_value=[
+                run_push_checks.CheckStep(name="test", command=["test"])
+            ],
+        ),
+        patch("subprocess.run") as mock_subprocess,
+    ):
+        # Mock git stash to indicate no changes
+        mock_subprocess.return_value = MagicMock(
+            stdout="No local changes to save"
+        )
+        # Save an invalid step
+        run_push_checks.save_state("invalid_step")
+
+        from scripts.run_push_checks import main
+
+        exit_code = main()
+
+        # Verify successful exit
+        assert exit_code == 0
+        # Should show warning and start from beginning
+        mock_log.assert_any_call(
+            "[yellow]No valid resume point found. Starting from beginning.[/yellow]"
+        )
+        # Should run all steps once
+        assert mock_run.call_count == 1
+
+
+def test_main_preserves_state_on_interrupt(temp_state_dir):
+    """Test that state is preserved when user interrupts."""
+    with (
+        patch(
+            "argparse.ArgumentParser.parse_args",
+            return_value=MagicMock(
+                resume=False, autofix_only=False, no_commit=False
+            ),
+        ),
+        patch("scripts.run_push_checks.run_checks") as mock_run,
+        patch("scripts.run_push_checks.console.log") as mock_log,
+        patch(
+            "scripts.run_push_checks.get_check_steps",
+            return_value=[
+                run_push_checks.CheckStep(name="test", command=["test"])
+            ],
+        ),
+        patch("subprocess.run") as mock_subprocess,
+    ):
+        # Mock git stash to indicate no changes
+        mock_subprocess.return_value = MagicMock(
+            stdout="No local changes to save"
+        )
+        # Save a valid step
+        run_push_checks.save_state("test")
+
+        # Simulate keyboard interrupt
+        mock_run.side_effect = KeyboardInterrupt()
+
+        from scripts.run_push_checks import main
+
+        exit_code = main()
+
+        # Verify interrupt exit code
+        assert exit_code == 130
+        # State should be preserved
+        assert run_push_checks.get_last_step() == "test"
+        mock_log.assert_any_call(
+            "\n[yellow]Process interrupted by user.[/yellow]"
+        )
+
+
+def test_run_interactive_command():
+    """Test interactive command execution (like spellchecker)"""
+    step = run_push_checks.CheckStep(
+        name="Spellcheck",
+        command=["fish", "scripts/spellchecker.fish"],
+        # skipcq: BAN-B604 (a local command, assume safe)
+        shell=True,
+        interactive=True,
+    )
+
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(returncode=0)
+
+        mock_progress = MagicMock()
+        mock_task_id = MagicMock()
+
+        result = run_push_checks.run_command(step, mock_progress, mock_task_id)
+
+        # Verify progress was hidden
+        mock_progress.update.assert_called_with(mock_task_id, visible=False)
+
+        # Verify subprocess.run was called correctly
+        mock_run.assert_called_once()
+        assert mock_run.call_args[0][0] == "fish scripts/spellchecker.fish"
+        assert mock_run.call_args[1]["shell"] is True
+        assert mock_run.call_args[1]["check"] is True
+
+        assert result.success is True
+        assert result.stdout == ""
+        assert result.stderr == ""
+
+    # Test failing interactive command
+    with patch("subprocess.run") as mock_run:
+        mock_run.side_effect = subprocess.CalledProcessError(
+            1, "fish scripts/spellchecker.fish"
+        )
+
+        mock_progress = MagicMock()
+        mock_task_id = MagicMock()
+
+        result = run_push_checks.run_command(step, mock_progress, mock_task_id)
+
+        assert result.success is False
+        assert result.stdout == ""
+        assert "Command failed with exit code 1" in result.stderr
+
+
+@pytest.mark.parametrize(
+    "step",
+    [
+        # skipcq: BAN-B604 (a local command, assume safe)
+        run_push_checks.CheckStep(
+            name="Spellcheck",
+            command=["fish", "scripts/spellchecker.fish"],
+            shell=True,
+            interactive=True,
+        ),
+        # skipcq: BAN-B604 (a local command, assume safe)
+        run_push_checks.CheckStep(
+            name="Linkcheck",
+            command=["fish", "scripts/linkchecker.fish"],
+            shell=True,
+            interactive=True,
+        ),
+        run_push_checks.CheckStep(
+            name="Vale",
+            command=["vale", "some/path"],
+            shell=False,
+            interactive=True,
+        ),
+    ],
+)
+def test_run_command_delegates_to_interactive(step):
+    """Test that run_command correctly delegates to interactive runner."""
+    with patch(
+        "scripts.run_push_checks.run_interactive_command"
+    ) as mock_interactive:
+        mock_interactive.return_value = run_push_checks.CommandResult(
+            success=True, stdout="test", stderr=""
+        )
+
+        mock_progress = MagicMock()
+        mock_task_id = MagicMock()
+
+        result = run_push_checks.run_command(step, mock_progress, mock_task_id)
+
+        # Verify interactive runner was called
+        mock_interactive.assert_called_once_with(
+            step, mock_progress, mock_task_id
+        )
+        assert result.success is True
+        assert result.stdout == "test"
+        assert result.stderr == ""
+
+
+@pytest.mark.parametrize(
+    "diff_output,expected_files,expected_calls",
+    [
+        ("", [], 1),  # No changes - only git diff called
+        (
+            "file1.py\nfile2.ts\n",
+            ["file1.py", "file2.ts"],
+            4,
+        ),  # Changes - diff, add, diff --cached, commit
+        (
+            "file1.py\n\nfile2.ts\n\n",
+            ["file1.py", "file2.ts"],
+            4,
+        ),  # Changes with empty lines filtered
+    ],
+)
+def test_commit_step_changes_with_various_outputs(
+    diff_output, expected_files, expected_calls
+):
+    """Test commit_step_changes handles various git diff outputs."""
+    with (
+        patch("subprocess.run") as mock_run,
+        patch("scripts.run_push_checks.console.log") as mock_log,
+        patch("shutil.which", return_value="git"),
+    ):
+        if expected_calls == 1:
+            # No changes case
+            mock_run.return_value = MagicMock(
+                returncode=0, stdout=diff_output, stderr="", text=True
+            )
+        else:
+            # Changes case - git diff, git add, git diff --cached, git commit
+            mock_run.side_effect = [
+                MagicMock(returncode=0, stdout=diff_output, stderr=""),
+                MagicMock(returncode=0, stdout="", stderr=""),
+                MagicMock(
+                    returncode=0, stdout="file1.py\n", stderr=""
+                ),  # staged changes
+                MagicMock(returncode=0, stdout="", stderr=""),
+            ]
+
+        run_push_checks.commit_step_changes(Path("/test"), "Test Step")
+
+        assert mock_run.call_count == expected_calls
+        assert mock_run.call_args_list[0][0][0] == [
+            "git",
+            "diff",
+            "--name-only",
+        ]
+
+        if expected_calls > 1:
+            # Verify git add call
+            git_add_call = mock_run.call_args_list[1][0][0]
+            assert git_add_call[:2] == ["git", "add"]
+            assert set(git_add_call[2:]) == set(expected_files)
+            assert "" not in git_add_call
+
+            # Verify git diff --cached call
+            assert mock_run.call_args_list[2][0][0] == [
+                "git",
+                "diff",
+                "--cached",
+                "--name-only",
+            ]
+
+            # Verify git commit call
+            assert mock_run.call_args_list[3][0][0] == [
+                "git",
+                "commit",
+                "-m",
+                "chore: apply test step fixes",
+            ]
+
+            # Verify success message
+            mock_log.assert_called_with(
+                "[green]Committed test step fixes[/green]"
+            )
+
+
+def test_commit_step_changes_commit_failure():
+    """Test commit_step_changes handles commit failures gracefully."""
+    with (
+        patch("subprocess.run") as mock_run,
+        patch("scripts.run_push_checks.console.log"),
+        patch("shutil.which", return_value="git"),
+    ):
+        # git diff succeeds, git add succeeds, git diff --cached succeeds, git commit fails
+        mock_run.side_effect = [
+            MagicMock(returncode=0, stdout="file1.py\n", stderr=""),
+            MagicMock(returncode=0, stdout="", stderr=""),
+            MagicMock(
+                returncode=0, stdout="file1.py\n", stderr=""
+            ),  # staged changes
+            subprocess.CalledProcessError(1, "git commit", stderr="Error"),
+        ]
+
+        with pytest.raises(subprocess.CalledProcessError):
+            run_push_checks.commit_step_changes(Path("/test"), "Test Step")
+
+
+def test_commit_step_changes_no_staged_changes():
+    """Test commit_step_changes returns early when no staged changes exist."""
+    with (
+        patch("subprocess.run") as mock_run,
+        patch("scripts.run_push_checks.console.log") as mock_log,
+        patch("shutil.which", return_value="git"),
+    ):
+        # git diff shows changes, git add succeeds, but git diff --cached shows no staged changes
+        mock_run.side_effect = [
+            MagicMock(returncode=0, stdout="file1.py\n", stderr=""),
+            MagicMock(returncode=0, stdout="", stderr=""),
+            MagicMock(returncode=0, stdout="", stderr=""),  # no staged changes
+        ]
+
+        run_push_checks.commit_step_changes(Path("/test"), "Test Step")
+
+        # Should only call git diff, git add, and git diff --cached (not git commit)
+        assert mock_run.call_count == 3
+        assert mock_run.call_args_list[0][0][0] == [
+            "git",
+            "diff",
+            "--name-only",
+        ]
+        assert mock_run.call_args_list[1][0][0][:2] == ["git", "add"]
+        assert mock_run.call_args_list[2][0][0] == [
+            "git",
+            "diff",
+            "--cached",
+            "--name-only",
+        ]
+
+        # Should not log any commit message
+        mock_log.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "failure_step,failure_index",
+    [
+        ("git diff", 0),
+        ("git add", 1),
+    ],
+)
+def test_commit_step_changes_failures(failure_step, failure_index):
+    """Test commit_step_changes handles git command failures."""
+    with (
+        patch("subprocess.run") as mock_run,
+        patch("shutil.which", return_value="git"),
+    ):
+        if failure_index == 0:
+            # git diff fails
+            mock_run.side_effect = subprocess.CalledProcessError(
+                1, failure_step
+            )
+        else:
+            # git diff succeeds, git add fails
+            mock_run.side_effect = [
+                MagicMock(returncode=0, stdout="file1.py\n", stderr=""),
+                subprocess.CalledProcessError(1, failure_step),
+            ]
+
+        # Should raise CalledProcessError
+        with pytest.raises(subprocess.CalledProcessError):
+            run_push_checks.commit_step_changes(Path("/test"), "Test Step")
+
+
+@pytest.mark.parametrize(
+    "step_name,expected_message",
+    [
+        ("Cleaning up SCSS", "chore: apply cleaning up scss fixes"),
+        (
+            "Formatting Python docstrings",
+            "chore: apply formatting python docstrings fixes",
+        ),
+        ("Linting TypeScript", "chore: apply linting typescript fixes"),
+    ],
+)
+def test_commit_step_changes_commit_message_format(step_name, expected_message):
+    """Test commit_step_changes generates correct commit messages."""
+    with (
+        patch("subprocess.run") as mock_run,
+        patch("scripts.run_push_checks.console.log"),
+        patch("shutil.which", return_value="git"),
+    ):
+        mock_run.side_effect = [
+            MagicMock(returncode=0, stdout="file1.py\n", stderr=""),
+            MagicMock(returncode=0, stdout="", stderr=""),
+            MagicMock(
+                returncode=0, stdout="file1.py\n", stderr=""
+            ),  # staged changes
+            MagicMock(returncode=0, stdout="", stderr=""),
+        ]
+
+        run_push_checks.commit_step_changes(Path("/test"), step_name)
+
+        # Verify commit message
+        commit_call = mock_run.call_args_list[3][0][0]
+        assert commit_call == ["git", "commit", "-m", expected_message]
+
+
+def test_run_checks_always_commits_changes(temp_state_dir):
+    """Test that run_checks always commits changes after successful steps."""
+    step = run_push_checks.CheckStep(
+        name="Test Step",
+        command=["echo", "test"],
+    )
+
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes") as mock_commit,
+        patch("subprocess.run") as mock_subprocess,
+    ):
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+        # Mock subprocess.run to prevent any real git operations
+        mock_subprocess.return_value = MagicMock(
+            returncode=0, stdout="", stderr=""
+        )
+
+        run_push_checks.run_checks([step])
+
+        # Verify commit_step_changes was called
+        mock_commit.assert_called_once_with(
+            run_push_checks._GIT_ROOT, "Test Step"
+        )
+
+
+def test_group_consecutive_singletons_for_none():
+    """Steps without parallel_group are isolated as singleton groups."""
+    steps = [
+        run_push_checks.CheckStep(name="A", command=["a"]),
+        run_push_checks.CheckStep(name="B", command=["b"]),
+    ]
+    groups = run_push_checks._group_consecutive(steps)
+    assert [[s.name for s in g] for g in groups] == [["A"], ["B"]]
+
+
+def test_group_consecutive_merges_same_group():
+    """Consecutive steps sharing parallel_group are batched together."""
+    steps = [
+        run_push_checks.CheckStep(name="Pre", command=["x"]),
+        run_push_checks.CheckStep(
+            name="V1", command=["v1"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="V2", command=["v2"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(name="Post", command=["y"]),
+    ]
+    groups = run_push_checks._group_consecutive(steps)
+    assert [[s.name for s in g] for g in groups] == [
+        ["Pre"],
+        ["V1", "V2"],
+        ["Post"],
+    ]
+
+
+def test_group_consecutive_splits_distinct_groups():
+    """Different parallel_group values do not merge even when adjacent."""
+    steps = [
+        run_push_checks.CheckStep(
+            name="V1", command=["v1"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="A1", command=["a1"], parallel_group="audit"
+        ),
+    ]
+    groups = run_push_checks._group_consecutive(steps)
+    assert [[s.name for s in g] for g in groups] == [["V1"], ["A1"]]
+
+
+def test_run_checks_dispatches_parallel_group(temp_state_dir):
+    """Steps in a shared parallel_group run via _run_parallel_group, not as
+    singletons."""
+    steps = [
+        run_push_checks.CheckStep(
+            name="V1", command=["v1"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="V2", command=["v2"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(name="Tail", command=["tail"]),
+    ]
+    with (
+        patch("scripts.run_push_checks._run_parallel_group") as mock_par,
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
+        mock_exec.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+        run_push_checks.run_checks(steps)
+        # Verify group was dispatched concurrently exactly once.
+        assert mock_par.call_count == 1
+        passed_group = mock_par.call_args.args[0]
+        assert [s.name for s in passed_group] == ["V1", "V2"]
+        # Tail still ran via _execute_step.
+        mock_exec.assert_called_once()
+        assert mock_exec.call_args.args[0].name == "Tail"
+
+
+def test_run_parallel_group_all_success(temp_state_dir):
+    """All-success parallel groups commit each step and save state at the last
+    step."""
+    group = [
+        run_push_checks.CheckStep(
+            name="V1", command=["v1"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="V2", command=["v2"], parallel_group="verify"
+        ),
+    ]
+    with (
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.commit_step_changes") as mock_commit,
+        patch("scripts.run_push_checks.save_state") as mock_save,
+        patch("scripts.run_push_checks.Progress"),
+    ):
+        mock_exec.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+        mock_progress = MagicMock()
+        run_push_checks._run_parallel_group(
+            group, mock_progress, auto_commit=True, continue_on_failure=False
+        )
+        assert mock_commit.call_count == 2
+        # Saved state lands on the *last* step name so resume picks up after
+        # the whole group.
+        mock_save.assert_called_once_with("V2")
+
+
+def test_run_parallel_group_raises_on_failure(temp_state_dir):
+    """A failed step in a parallel group still lets siblings finish, then raises
+    CheckFailedError once the group is drained."""
+    group = [
+        run_push_checks.CheckStep(
+            name="OK", command=["ok"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="Bad", command=["bad"], parallel_group="verify"
+        ),
+    ]
+    results_by_name = {
+        "OK": run_push_checks.CommandResult(success=True, stdout="", stderr=""),
+        "Bad": run_push_checks.CommandResult(
+            success=False, stdout="boom", stderr="kaboom"
+        ),
+    }
+    with (
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.commit_step_changes"),
+        patch("scripts.run_push_checks.save_state"),
+        pytest.raises(run_push_checks.CheckFailedError) as exc_info,
+    ):
+        mock_exec.side_effect = lambda step, _p: results_by_name[step.name]
+        run_push_checks._run_parallel_group(
+            [group[0], group[1]],
+            MagicMock(),
+            auto_commit=False,
+            continue_on_failure=False,
+        )
+    assert exc_info.value.step_name == "Bad"
+    assert exc_info.value.stdout == "boom"
+
+
+@pytest.mark.parametrize("continue_on_failure", [False, True])
+def test_run_parallel_group_save_state_on_failure(
+    continue_on_failure, temp_state_dir
+):
+    """A failed check halts resume progress (state untouched) unless
+    continue_on_failure lets the run proceed past it; otherwise --resume would
+    skip the failed check."""
+    group = [
+        run_push_checks.CheckStep(
+            name="Bad", command=["bad"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="OK", command=["ok"], parallel_group="verify"
+        ),
+    ]
+    results_by_name = {
+        "Bad": run_push_checks.CommandResult(
+            success=False, stdout="boom", stderr="kaboom"
+        ),
+        "OK": run_push_checks.CommandResult(success=True, stdout="", stderr=""),
+    }
+    with (
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.commit_step_changes"),
+        patch("scripts.run_push_checks.save_state") as mock_save,
+    ):
+        mock_exec.side_effect = lambda step, _p: results_by_name[step.name]
+        if continue_on_failure:
+            run_push_checks._run_parallel_group(
+                group, MagicMock(), auto_commit=False, continue_on_failure=True
+            )
+            mock_save.assert_called_once_with("OK")
+        else:
+            with pytest.raises(run_push_checks.CheckFailedError):
+                run_push_checks._run_parallel_group(
+                    group,
+                    MagicMock(),
+                    auto_commit=False,
+                    continue_on_failure=False,
+                )
+            mock_save.assert_not_called()
+
+
+def test_run_parallel_group_continues_past_failure(temp_state_dir):
+    """continue_on_failure swallows the failure (used by CI autofix)."""
+    group = [
+        run_push_checks.CheckStep(
+            name="V1", command=["v1"], parallel_group="verify"
+        ),
+    ]
+    with (
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.save_state"),
+    ):
+        mock_exec.return_value = run_push_checks.CommandResult(
+            success=False, stdout="", stderr=""
+        )
+        # Should not raise.
+        run_push_checks._run_parallel_group(
+            group,
+            MagicMock(),
+            auto_commit=False,
+            continue_on_failure=True,
+        )
+
+
+def test_run_parallel_group_skips_missing_requires(temp_state_dir):
+    """A step whose `requires` tool is missing returns None and is silently
+    skipped within a parallel group."""
+    group = [
+        run_push_checks.CheckStep(
+            name="Skipped",
+            command=["x"],
+            requires="nope",
+            parallel_group="verify",
+        ),
+        run_push_checks.CheckStep(
+            name="Ran", command=["y"], parallel_group="verify"
+        ),
+    ]
+    call_results = {
+        "Skipped": None,
+        "Ran": run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        ),
+    }
+    with (
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.commit_step_changes") as mock_commit,
+        patch("scripts.run_push_checks.save_state"),
+    ):
+        mock_exec.side_effect = lambda step, _p: call_results[step.name]
+        run_push_checks._run_parallel_group(
+            group,
+            MagicMock(),
+            auto_commit=True,
+            continue_on_failure=False,
+        )
+        # Only the non-skipped step should commit.
+        assert mock_commit.call_count == 1
+
+
+def test_execute_step_skips_when_requires_missing():
+    """_execute_step returns None when the required tool is absent."""
+    step = run_push_checks.CheckStep(
+        name="Needs missing", command=["x"], requires="nonexistent-xyz"
+    )
+    progress = MagicMock()
+    result = run_push_checks._execute_step(step, progress)
+    assert result is None

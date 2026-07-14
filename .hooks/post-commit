@@ -1,0 +1,41 @@
+#!/bin/bash
+# Enqueue this commit for OpenTimestamps stamping and hand off to a detached
+# worker. The network-heavy work (ots stamp + pull/push to the .timestamps
+# repo) runs in the background so `git commit` returns immediately. See
+# .hooks/timestamp-worker.sh for the queue/lock/retry logic.
+
+set -uo pipefail
+
+# In CI, .timestamps and ots are not available — skip entirely.
+[ "${CI:-}" = "true" ] && exit 0
+
+git_root="$(git rev-parse --show-toplevel)"
+commit_hash="$(git rev-parse HEAD)"
+
+if [ ! -d "$git_root/.timestamps/.git" ]; then
+  echo "Warning: .timestamps repo not set up; skipping OpenTimestamp proof." >&2
+  echo "  Set it up with: git clone <timestamps-repo-url> .timestamps" >&2
+  exit 0
+fi
+
+git_dir="$(git rev-parse --absolute-git-dir)"
+state_dir="$git_dir/ots-timestamps"
+mkdir -p "$state_dir"
+
+# A single-line append under PIPE_BUF is atomic, so concurrent commits can
+# enqueue without a lock.
+printf '%s\n' "$commit_hash" >>"$state_dir/queue"
+
+worker="$git_root/.hooks/timestamp-worker.sh"
+if [ -x "$worker" ]; then
+  if command -v setsid >/dev/null 2>&1; then
+    OTS_GIT_ROOT="$git_root" OTS_STATE_DIR="$state_dir" \
+      setsid "$worker" >/dev/null 2>&1 </dev/null &
+  else
+    OTS_GIT_ROOT="$git_root" OTS_STATE_DIR="$state_dir" \
+      nohup "$worker" >/dev/null 2>&1 </dev/null &
+  fi
+  disown 2>/dev/null || true
+fi
+
+exit 0

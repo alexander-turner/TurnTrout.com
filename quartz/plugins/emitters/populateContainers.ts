@@ -1,0 +1,629 @@
+import { execSync } from "child_process"
+import fs from "fs"
+import { globby } from "globby"
+import { type Element, type Parent, type Root } from "hast"
+import { fromHtml } from "hast-util-from-html"
+import { toHtml } from "hast-util-to-html"
+import { h } from "hastscript"
+import { render } from "preact-render-to-string"
+import { quote } from "shell-quote"
+import { visit } from "unist-util-visit"
+
+import { Backlinks } from "../../components/Backlinks"
+import { simpleConstants, specialFaviconPaths } from "../../components/constants"
+import { renderPostStatistics } from "../../components/ContentMeta"
+import { type QuartzComponentProps } from "../../components/types"
+import { createWinstonLogger } from "../../util/log"
+import {
+  type FilePath,
+  type FullSlug,
+  joinSegments,
+  type SimpleSlug,
+  simplifySlug,
+} from "../../util/path"
+import { getFaviconCounts } from "../transformers/countFavicons"
+import {
+  createFaviconElement,
+  getFaviconUrl,
+  ModifyNode,
+  shouldIncludeFavicon,
+  transformUrl,
+} from "../transformers/favicons"
+import { createNowrapSpan, hasClass } from "../transformers/utils"
+import { type QuartzEmitterPlugin } from "../types"
+import { type ProcessedContent } from "../vfile"
+
+const {
+  minFaviconCount,
+  defaultPath,
+  maxCardImageSizeKb,
+  playwrightConfigs,
+  colorDropcapProbability,
+} = simpleConstants
+
+const logger = createWinstonLogger("populateContainers")
+
+/**
+ * Collects every element in the HAST tree matching a predicate.
+ * @param tree - The root HAST node to search
+ * @param predicate - Returns true for elements that should be collected
+ * @returns Array of matching elements in document order
+ */
+export const findElements = (tree: Root, predicate: (node: Element) => boolean): Element[] => {
+  const found: Element[] = []
+  visit(tree, "element", (node) => {
+    if (predicate(node)) {
+      found.push(node)
+    }
+  })
+  return found
+}
+
+/**
+ * Finds an element in the HAST tree by its ID attribute.
+ * @param root - The root HAST node to search
+ * @param id - The ID to search for
+ * @returns The element with the matching ID, or null if not found
+ */
+export const findElementById = (root: Root, id: string): Element | null => {
+  const matches = findElements(root, (node) => node.properties?.id === id)
+  return matches[0] ?? null
+}
+
+/**
+ * Finds all elements in the HAST tree by class name.
+ * @param root - The root HAST node to search
+ * @param className - The class name to search for
+ * @returns Array of elements with the matching class name
+ */
+export const findElementsByClass = (root: Root, className: string): Element[] => {
+  return findElements(root, (node) => hasClass(node, className))
+}
+
+/**
+ * Type for content generators that produce HAST elements to populate containers.
+ */
+export type ContentGenerator = () => Promise<Element[]> | Element[]
+
+/**
+ * Generates content from a constant value (string or number).
+ */
+export const generateConstantContent = (value: string | number): ContentGenerator => {
+  return (): Element[] => {
+    return [h("span", String(value))]
+  }
+}
+
+/**
+ * Generates content showing the count of npm test files (.test.ts and .test.tsx).
+ */
+export const generateTestCountContent = (): ContentGenerator => {
+  return async (): Promise<Element[]> => {
+    const testFiles = await globby("**/*.test.{ts,tsx}", {
+      ignore: ["node_modules/**", "coverage/**", "public/**"],
+    })
+    const count = testFiles.length
+    return [h("span", `${count} test files`)]
+  }
+}
+
+interface GitCountOptions {
+  author?: string
+  grep?: string
+}
+
+/**
+ * Sentinel returned for a cosmetic stat whose underlying command failed. These
+ * counts feed decorative badges only, so a missing tool (no `.venv`, no `git`,
+ * an unexpected output format) must degrade gracefully rather than abort the
+ * whole build.
+ */
+export const STAT_UNAVAILABLE = 0
+
+/** Runs a cosmetic stat counter, degrading to {@link STAT_UNAVAILABLE} on any failure. */
+export function safeStatCount(label: string, counter: () => number): number {
+  try {
+    return counter()
+  } catch (err) {
+    logger.warn(
+      `Stat counter "${label}" failed; using sentinel ${STAT_UNAVAILABLE}: ${String(err)}`,
+    )
+    return STAT_UNAVAILABLE
+  }
+}
+
+/** True if the current git working tree is a shallow clone. */
+export function isShallowClone(): boolean {
+  return execSync("git rev-parse --is-shallow-repository", { encoding: "utf-8" }).trim() === "true"
+}
+
+/** Total commit count across all refs, optionally filtered by author/message; 0 on shallow clones. */
+export function countGitCommits(options: GitCountOptions = {}): number {
+  if (isShallowClone()) return 0
+
+  const args = ["git", "rev-list", "--all", "--count"]
+  if (options.author) args.push(`--author=${options.author}`)
+  if (options.grep) args.push(`--grep=${options.grep}`)
+  const output = execSync(quote(args), { encoding: "utf-8" })
+  return parseInt(output.trim(), 10)
+}
+
+/**
+ * Approximate count of Jest `it`/`test`/`it.each`/`test.each` declarations
+ * across `*.test.{ts,tsx}` files via grep (a stat badge, not an exact AST count).
+ */
+export function countJsTests(): number {
+  const output = execSync(
+    "grep -rhoE '\\b(it|test)(\\.each)?\\s*[(`]' --include='*.test.ts' --include='*.test.tsx' --exclude-dir=node_modules . | wc -l",
+    { encoding: "utf-8" },
+  )
+  return parseInt(output.trim(), 10)
+}
+
+/** Counts Playwright `test(...)` declarations in `quartz/components/tests/*.spec.ts`. */
+export function countPlaywrightTests(): number {
+  const output = execSync('grep -rE "^\\s*test\\(" quartz/components/tests/*.spec.ts | wc -l', {
+    encoding: "utf-8",
+  })
+  return parseInt(output.trim(), 10)
+}
+
+/** Pytest collect-only invocation; `addopts=""` strips plugins (`--cov`, `-n`) that may not be installed. */
+export const PYTEST_COUNT_CMD =
+  "bash -lc '.venv/bin/pytest --collect-only -q -o addopts=\"\"' 2>&1 | tail -20"
+
+/** Counts Python tests via `pytest --collect-only`, parsing the "N tests collected" footer. */
+export function countPythonTests(): number {
+  const output = execSync(PYTEST_COUNT_CMD, { encoding: "utf-8" })
+
+  const match = output.match(/(?<count>\d+)\s+tests?\s+collected/)
+  if (!match?.groups) {
+    throw new Error(`Failed to parse pytest test count from output: ${JSON.stringify(output)}`)
+  }
+
+  return parseInt(match.groups.count, 10)
+}
+
+/** Total lines across source files (TS/JS/Python/CSS), excluding build/vendor directories. */
+export function countLinesOfCode(): number {
+  const output = execSync(
+    'find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.py" -o -name "*.css" -o -name "*.scss" \\) ! -path "*/node_modules/*" ! -path "*/.venv/*" ! -path "*/.pytest_cache/*" ! -path "*/.mypy_cache/*" ! -path "*/.ruff_cache/*" ! -path "*/htmlcov/*" ! -path "*/public/*" -exec wc -l {} + | tail -1 | awk \'{print $1}\'',
+    { encoding: "utf-8" },
+  )
+  return parseInt(output.trim(), 10)
+}
+
+export interface RepoStats {
+  commitCount: number
+  aiCommitCount: number
+  jsTestCount: number
+  playwrightTestCount: number
+  pytestCount: number
+  linesOfCode: number
+}
+
+/**
+ * Gathers commit, test, and code-size statistics about this repo in parallel.
+ * Each counter is cosmetic, so a single failure degrades to {@link STAT_UNAVAILABLE}
+ * rather than aborting the build.
+ */
+export async function computeRepoStats(): Promise<RepoStats> {
+  const [commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
+    await Promise.all([
+      safeStatCount("git-commits", () => countGitCommits({ author: "Alex Turner" })),
+      safeStatCount("ai-git-commits", () => countGitCommits({ grep: "claude.ai/code/session" })),
+      safeStatCount("js-tests", countJsTests),
+      safeStatCount("playwright-tests", countPlaywrightTests),
+      safeStatCount("pytest", countPythonTests),
+      safeStatCount("lines-of-code", countLinesOfCode),
+    ])
+
+  return { commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
+}
+
+/**
+ * Adds `.svg` extension to a domain-only count key. Full URLs and `.ico`
+ * paths pass through unchanged.
+ */
+const addSvgExtension = (path: string): string => {
+  if (path.startsWith("http") || path.includes(".svg") || path.includes(".ico")) {
+    return path
+  }
+  return `${path}.svg`
+}
+
+/** Returns a content generator yielding a no-wrap span containing the given favicon image. */
+export const generateSpecialFaviconContent = (
+  faviconPath: string,
+  altText = "",
+): ContentGenerator => {
+  return (): Element[] => {
+    const faviconElement = createFaviconElement(faviconPath, altText)
+    return [createNowrapSpan("", faviconElement)]
+  }
+}
+
+/**
+ * Generates a metadata admonition ("About this post" box) with dummy data,
+ * using the same component that renders real post metadata.
+ */
+export const generateMetadataAdmonition = (): ContentGenerator => {
+  return (): Element[] => {
+    const dummyProps = {
+      cfg: {},
+      fileData: {
+        text: "word ".repeat(1600), // ~8 minutes reading time
+        relativePath: "welcome-to-the-pond.md",
+        frontmatter: {
+          date_published: new Date("2024-10-30"),
+          date_updated: "2024-11-12",
+        },
+      },
+    } as unknown as QuartzComponentProps
+
+    const jsx = renderPostStatistics(dummyProps)
+    // istanbul ignore next
+    if (!jsx) return []
+
+    const html = render(jsx)
+    const root = fromHtml(html, { fragment: true })
+
+    // Strip the post-statistics ID to avoid duplicate IDs on the page
+    visit(root, "element", (node) => {
+      if (node.properties?.id === "post-statistics") {
+        delete node.properties.id
+      }
+    })
+
+    return root.children.filter((c): c is Element => c.type === "element")
+  }
+}
+
+/**
+ * Renders the live "Links to this page" block for the design page, injected into
+ * the design essay so the backlinks feature is demonstrated in place. Uses the
+ * real Backlinks component over the site's actual link graph, so it stays in
+ * sync with whatever currently cites `/design`. The page layout already renders
+ * a copy carrying `id="backlinks"`, so this one's id is stripped to avoid a
+ * duplicate. Registered with `skipFavicons` so it matches the favicon-less block
+ * the layout renders rather than sprouting trailing favicons on each excerpt.
+ */
+export const generateBacklinksDemo = (content: ProcessedContent[]): ContentGenerator => {
+  return (): Element[] => {
+    const allFiles = content.map((entry) => entry[1].data)
+    const designData = allFiles.find(
+      (data) => simplifySlug(data.slug as FullSlug) === ("design" as SimpleSlug),
+    )
+    // istanbul ignore next -- the design page is always present in a full build
+    if (!designData) return []
+
+    const props = { fileData: designData, allFiles } as unknown as QuartzComponentProps
+    // Backlinks is typed as a QuartzComponent union (not directly callable); render
+    // it like renderPostStatistics by invoking it for a VNode `render` accepts.
+    const renderBacklinks = Backlinks as unknown as (
+      props: QuartzComponentProps,
+    ) => Parameters<typeof render>[0]
+    const root = fromHtml(render(renderBacklinks(props)), { fragment: true })
+    visit(root, "element", (node) => {
+      if (node.properties?.id === "backlinks") {
+        delete node.properties.id
+      }
+    })
+    return root.children.filter((c): c is Element => c.type === "element")
+  }
+}
+
+/**
+ * Generates favicon elements based on favicon counts from the build process.
+ */
+export const generateFaviconContent = (): ContentGenerator => {
+  return async (): Promise<Element[]> => {
+    const faviconCounts = await getFaviconCounts()
+    logger.info(`Got ${faviconCounts.size} favicon counts for table generation`)
+
+    const validFavicons = Array.from(faviconCounts.entries())
+      .map(([pathWithoutExt, count]) => {
+        const pathWithExt = addSvgExtension(pathWithoutExt)
+        const transformedPath = transformUrl(pathWithExt)
+        if (transformedPath === defaultPath) return null
+
+        const url = getFaviconUrl(transformedPath)
+        // istanbul ignore if
+        if (url === defaultPath) return null
+
+        if (!shouldIncludeFavicon(url, pathWithoutExt, faviconCounts)) return null
+
+        return { url, count } as const
+      })
+      .filter((item): item is { url: string; count: number } => item !== null)
+      .sort((a, b) => b.count - a.count)
+
+    logger.info(`After filtering, ${validFavicons.length} valid favicons for table`)
+
+    // Create table
+    const tableRows: Element[] = [
+      h("tr", [h("th", "Lowercase"), h("th", "Punctuation"), h("th", "Exclamation")]),
+    ]
+
+    for (const { url } of validFavicons) {
+      const faviconElement = createFaviconElement(url)
+      tableRows.push(
+        h("tr", [
+          h("td", [h("span", ["test", faviconElement])]),
+          h("td", [h("span", ["test.", faviconElement])]),
+          h("td", [h("span", ["test!", faviconElement])]),
+        ]),
+      )
+    }
+
+    return [h("table", { class: "center-table-headings" }, tableRows)]
+  }
+}
+
+/**
+ * Converts an HTML file path to a slug by removing the .html extension.
+ * @param htmlFile - The HTML file path (e.g., "design.html" or "posts/foo.html")
+ * @returns The slug (e.g., "design" or "posts/foo")
+ */
+export function htmlFileToSlug(htmlFile: string): string {
+  return htmlFile.replace(/\.html$/, "")
+}
+
+/**
+ * Configuration for populating an element by ID or class with generated content.
+ */
+export interface ElementPopulatorConfig {
+  /** The ID of the element to populate (mutually exclusive with className) */
+  id?: string
+  /** The class name of elements to populate (mutually exclusive with id) */
+  className?: string
+  /** The content generator function */
+  generator: ContentGenerator
+  /**
+   * Skip the favicon post-pass for this container. Set when the generated
+   * content already reflects final favicon state (e.g. the backlinks demo mirrors
+   * the layout's favicon-less block), so links must not sprout extra favicons.
+   */
+  skipFavicons?: boolean
+}
+
+/**
+ * Populates elements in an HTML file based on a list of configurations.
+ * @param htmlPath - Path to the HTML file
+ * @param configs - Array of element populator configurations
+ * @returns Array of file paths that were modified
+ */
+export const populateElements = async (
+  htmlPath: string,
+  configs: ElementPopulatorConfig[],
+): Promise<FilePath[]> => {
+  const html = fs.readFileSync(htmlPath, "utf-8")
+  const root = fromHtml(html)
+  const populatedElements: Element[] = []
+  const faviconElements: Element[] = []
+
+  for (const config of configs) {
+    // Validate that config has exactly one of id or className
+    if (config.id && config.className) {
+      throw new Error("Config cannot have both id and className")
+    }
+
+    const configElements: Element[] = []
+    if (config.id) {
+      const element = findElementById(root, config.id)
+      if (!element) {
+        logger.warn(`No element with id "${config.id}" found in ${htmlPath}`)
+        continue
+      }
+
+      const content = await config.generator()
+      element.children = content
+      configElements.push(element)
+    } else if (config.className) {
+      const elements = findElementsByClass(root, config.className)
+      if (elements.length === 0) {
+        logger.warn(`No elements with class "${config.className}" found in ${htmlPath}`)
+        continue
+      }
+
+      logger.debug(`Populating ${elements.length} element(s) with class .${config.className}`)
+      const content = await config.generator()
+      for (const element of elements) {
+        element.children = structuredClone(content)
+        configElements.push(element)
+      }
+      logger.debug(`Added ${content.length} elements to each .${config.className}`)
+    } else {
+      throw new Error("Config missing both id and className")
+    }
+
+    populatedElements.push(...configElements)
+    if (!config.skipFavicons) faviconElements.push(...configElements)
+  }
+
+  if (populatedElements.length > 0) {
+    // Add favicons only to links within populated containers, not the entire page.
+    // The favicon transformer already processed the rest of the page.
+    for (const element of faviconElements) {
+      await addFaviconsToLinks(element)
+    }
+    fs.writeFileSync(htmlPath, toHtml(root), "utf-8")
+    return [htmlPath as FilePath]
+  }
+
+  return []
+}
+
+/**
+ * Adds favicons to links within a subtree using the same logic as the
+ * favicon transformer. Populated content is injected after the favicon
+ * transformer runs, so links in populated containers need this post-pass.
+ */
+export async function addFaviconsToLinks(subtree: Element | Root): Promise<void> {
+  const faviconCounts = await getFaviconCounts()
+  const nodesToProcess: [Element, Parent][] = []
+
+  visit(subtree, "element", (node, _index, parent) => {
+    if (node.tagName === "a" && node.properties?.href && parent) {
+      nodesToProcess.push([node, parent as Parent])
+    }
+  })
+
+  await Promise.all(nodesToProcess.map(([node, parent]) => ModifyNode(node, parent, faviconCounts)))
+}
+
+/**
+ * Creates a mapping of populate IDs/classes to their content generators.
+ */
+const createPopulatorMap = (
+  stats: Awaited<ReturnType<typeof computeRepoStats>>,
+  content: ProcessedContent[],
+): Map<string, ContentGenerator> => {
+  return new Map([
+    // IDs
+    ["populate-metadata-admonition", generateMetadataAdmonition()],
+    ["populate-backlinks-demo", generateBacklinksDemo(content)],
+    ["populate-favicon-container", generateFaviconContent()],
+    ["populate-favicon-threshold", generateConstantContent(minFaviconCount)],
+    ["populate-max-size-card", generateConstantContent(maxCardImageSizeKb)],
+    [
+      "populate-dropcap-probability",
+      generateConstantContent(`${Math.round(colorDropcapProbability * 100)}%`),
+    ],
+    [
+      "populate-turntrout-favicon",
+      generateSpecialFaviconContent(specialFaviconPaths.turntrout, "A trout jumping to the left."),
+    ],
+    [
+      "populate-anchor-favicon",
+      generateSpecialFaviconContent(specialFaviconPaths.anchor, "A counterclockwise arrow."),
+    ],
+    // Classes
+    ["populate-commit-count", generateConstantContent(stats.commitCount.toLocaleString())],
+    [
+      "populate-human-commit-count",
+      generateConstantContent((stats.commitCount - stats.aiCommitCount).toLocaleString()),
+    ],
+    ["populate-js-test-count", generateConstantContent(stats.jsTestCount.toLocaleString())],
+    [
+      "populate-playwright-test-count",
+      generateConstantContent(stats.playwrightTestCount.toLocaleString()),
+    ],
+    ["populate-playwright-configs", generateConstantContent(playwrightConfigs.toLocaleString())],
+    [
+      "populate-playwright-total-tests",
+      generateConstantContent((stats.playwrightTestCount * playwrightConfigs).toLocaleString()),
+    ],
+    ["populate-pytest-count", generateConstantContent(stats.pytestCount.toLocaleString())],
+    ["populate-lines-of-code", generateConstantContent(stats.linesOfCode.toLocaleString())],
+  ])
+}
+
+/**
+ * Scans an HTML file to find all populate-* IDs and classes.
+ * Returns separate sets for IDs and classes.
+ */
+const findPopulateTargets = (htmlPath: string): { ids: Set<string>; classes: Set<string> } => {
+  const ids = new Set<string>()
+  const classes = new Set<string>()
+
+  if (!fs.existsSync(htmlPath)) {
+    return { ids, classes }
+  }
+
+  const html = fs.readFileSync(htmlPath, "utf-8")
+  const root = fromHtml(html, { fragment: true })
+
+  // Find all elements with populate-* IDs and classes
+  visit(root, "element", (node) => {
+    const id = node.properties?.id
+    if (typeof id === "string" && id.startsWith("populate-")) {
+      ids.add(id)
+    }
+
+    // Find all elements with populate-* classes
+    const classNames = node.properties?.className
+    if (Array.isArray(classNames)) {
+      for (const cls of classNames) {
+        /* istanbul ignore next -- className array items are always strings in practice */
+        if (typeof cls === "string" && cls.startsWith("populate-")) {
+          classes.add(cls)
+        }
+      }
+    }
+  })
+
+  return { ids, classes }
+}
+
+/**
+ * Populate IDs whose generated content already reflects final favicon state, so
+ * the favicon post-pass must be skipped. The backlinks demo mirrors the layout's
+ * favicon-less "Links to this page" block.
+ */
+const SKIP_FAVICON_IDS: ReadonlySet<string> = new Set(["populate-backlinks-demo"])
+
+/**
+ * Emitter that populates containers across all HTML files after all files have been processed.
+ */
+export const PopulateContainers: QuartzEmitterPlugin = () => {
+  return {
+    name: "PopulateContainers",
+    // istanbul ignore next
+    getQuartzComponents() {
+      return []
+    },
+    async emit(ctx, content) {
+      const stats = await computeRepoStats()
+      const populatorMap = createPopulatorMap(stats, content)
+
+      const htmlFiles = await globby("**/*.html", {
+        cwd: ctx.argv.output,
+        absolute: false,
+      })
+
+      logger.info(`Scanning ${htmlFiles.length} HTML files for populate-* targets`)
+
+      const modifiedFiles: FilePath[] = []
+      for (const htmlFile of htmlFiles) {
+        const htmlPath = joinSegments(ctx.argv.output, htmlFile as FilePath)
+        const { ids, classes } = findPopulateTargets(htmlPath)
+
+        if (ids.size === 0 && classes.size === 0) {
+          continue
+        }
+
+        logger.debug(
+          `Found ${ids.size} populate IDs and ${classes.size} populate classes in ${htmlFile}`,
+        )
+
+        const configs: ElementPopulatorConfig[] = []
+        for (const id of ids) {
+          const generator = populatorMap.get(id)
+          if (!generator) {
+            logger.warn(`No generator found for populate ID: ${id}`)
+            continue
+          }
+          configs.push({ id, generator, skipFavicons: SKIP_FAVICON_IDS.has(id) })
+        }
+
+        for (const className of classes) {
+          const generator = populatorMap.get(className)
+          if (!generator) {
+            logger.warn(`No generator found for populate class: ${className}`)
+            continue
+          }
+          configs.push({ className, generator })
+        }
+
+        if (configs.length > 0) {
+          const files = await populateElements(htmlPath, configs)
+          modifiedFiles.push(...files)
+        }
+      }
+
+      logger.info(`Populated ${modifiedFiles.length} HTML files`)
+      return modifiedFiles
+    },
+  }
+}

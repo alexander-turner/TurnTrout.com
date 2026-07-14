@@ -1,0 +1,162 @@
+[project]
+name = "turntrout-com"
+version = "1.4"
+description = "TurnTrout.com website build scripts and utilities"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4",
+    "defusedxml",
+    "gitpython",
+    "google-auth",
+    "numpy",
+    "opentimestamps-client",
+    "pandas",
+    "pillow",
+    "protobuf>=6.33.4",
+    "pyasn1>=0.6.2",
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+    "pyyaml",
+    "requests",
+    "urllib3>=2.6.0",
+    "rich",
+    "ruamel-yaml",
+    "tqdm",
+    "voyageai",
+    "validators",
+    "types-defusedxml==0.7.0.20260504",
+    "types-pyyaml==6.0.12.20260510",
+    "types-requests==2.33.0.20260513",
+    "pandas-stubs",
+    "pyright==1.1.410",
+    "lxml-stubs>=0.5.1",
+    "types-pysocks>=1.7.1.20251001",
+    "types-pygments==2.20.0.20260508",
+    "types-html5lib>=1.1.11.20260508",
+    "types-tqdm>=4.67.3.20260508",
+    # Pinned to 1.7.7: 1.7.8 (PyCQA/docformatter#344) reformats triple-quoted
+    # strings inside function/dict-literal arguments as if they were docstrings,
+    # destructively rewriting test-data YAML strings in scripts/tests/.
+    "docformatter==1.7.7",
+    "pylint>=4.0.4",
+    "autoflake>=2.3.1",
+    "autopep8>=2.3.1",
+    "isort>=5.13.2",
+    "linkchecker>=10.6.0",
+    "frozendict>=2.4.7",
+    "anthropic==0.102.0",
+    "flask>=3.0.0",
+    "codespell>=2.3.0",
+    "fonttools[woff]>=4.60.0",
+    "hypothesis>=6.155.2",
+    "mutmut>=3.6.0",
+]
+
+[tool.codespell]
+# Skip paths that are vendored, built, or contain intentional non-English content.
+# Patterns use "*name*" form so they match both the relative paths codespell
+# emits when walking the tree (`./foo`) and the raw paths pre-commit passes
+# (`foo`). Anything ending in a file extension uses just `*.ext`.
+skip = "*.lock,*pnpm-lock.yaml,*uv.lock,*public*,*node_modules*,*.venv*,*asset_staging*,*website_content*,*.vale-styles*,*quartz/styles/cache*,*asset_queue.json,*/static/*,*.min.js,*.min.css,*.svg,*.woff*,*.ttf,*.eot,*.png,*.jpg,*.jpeg,*.gif,*.webp,*.avif,*.mp4,*.webm,*.ico,*.pdf"
+# Vale + spellchecker-cli cover prose in website_content/; codespell guards code
+# and comments. Each ignored word below is a genuine false positive (tokenization
+# artifact, intentional test fixture, third-party API, or non-English content):
+#   afterall   Jest's afterAll() hook name
+#   allo       HTML-diff test fixture: <span>a</span>llo (German "hallo")
+#   caf        codespell splits "café" on the é
+#   dataet     strips Mermaid's data-et SVG attribute (paired with
+#              data-edge/data-look/data-id/data-points)
+#   nd         codespell tokenizes "2nd" into "2" and "nd"
+#   ot         codespell splits the "Reward≠OT" heading token on the ≠
+#   processus  French test fixture ("améliorer le processus")
+#   te         single-letter token in test data
+#   wrold      intentional misspelling in spellcheck-triage test fixtures
+ignore-words-list = "afterall,allo,caf,dataet,nd,ot,processus,te,wrold"
+
+[tool.ruff]
+line-length = 80
+target-version = "py311"
+
+[tool.ruff.lint]
+# E + F (pycodestyle/pyflakes, incl. F401 unused-import removal), I (import
+# sorting, replacing isort), plus pyupgrade (UP) and return-statement (RET) —
+# all largely autofixable and surface real modernization / dead-code issues.
+select = ["E", "F", "I", "UP", "RET"]
+# The formatter is the authority on line length; it tolerates unsplittable
+# long lines (URLs, strings) that E501 would otherwise flag.
+ignore = ["E501"]
+
+[tool.ruff.format]
+# Match the previous black configuration exactly (80-column lines).
+line-ending = "lf"
+
+[tool.pytest.ini_options]
+addopts = "--cov=scripts --cov-report=html -n auto"
+testpaths = ["scripts/tests"]
+# pytest defaults plus mutants/ (mutmut's partial tree copy must not be
+# collected when pytest runs on the real repo)
+norecursedirs = [".*", "build", "dist", "CVS", "_darcs", "{arch}", "*.egg", "venv", "node_modules", "mutants"]
+markers = [
+    "allow_git_operations: mark test to allow real git operations (bypasses the prevent_real_git_operations fixture)",
+    "requires_r2: mark test as requiring R2 credentials (skipped in CI without credentials)"
+]
+
+[tool.docformatter]
+wrap-summaries = 80
+wrap-descriptions = 80
+pre-summary-newline = true
+make-summary-multi-line = false
+black = true
+
+[tool.coverage.run]
+omit = ["scripts/tests/*", "scripts/__init__.py"]
+disable_warnings = ["no-data-collected"]
+# compress.video() runs its HEVC and WebM encodes in worker threads; without
+# this, lines executed only off the main thread are reported as uncovered.
+concurrency = ["thread"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "^\\s+main\\(\\)$",
+    "^\\s+sys\\.exit\\(main\\(\\)\\)$",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+    "^except ImportError:",
+    "^\\s+import .*  # type: ignore$",
+    "if verbose:",
+]
+
+[tool.uv]
+# Make Python scripts executable via uv by default
+managed = true
+
+[tool.mutmut]
+source_paths = ["scripts/strip_for_spellcheck.py"]
+also_copy = ["scripts/__init__.py", "scripts/utils.py", "scripts/tests/", "config/"]
+# Clear the repo-wide addopts: coverage and xdist break mutmut's in-process
+# stats collector, and per-mutant runs don't need either.
+pytest_add_cli_args = ["-o", "addopts="]
+pytest_add_cli_args_test_selection = [
+    "scripts/tests/test_strip_for_spellcheck.py",
+    "scripts/tests/test_strip_for_spellcheck_properties.py",
+]
+
+[tool.pyright]
+include = ["scripts/*.py"]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.11"
+typeCheckingMode = "standard"
+# Helpful correctness rules beyond `standard` (excluding pure style/churn and the
+# `reportUnknown*` family, which would drown the untyped-dependency call sites):
+reportUnnecessaryComparison = "error"
+reportUnnecessaryContains = "error"
+reportUnnecessaryCast = "error"
+reportConstantRedefinition = "error"
+reportUnnecessaryTypeIgnoreComment = "error"
+reportMatchNotExhaustive = "error"
+reportPropertyTypeMismatch = "error"

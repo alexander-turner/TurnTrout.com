@@ -1,0 +1,306 @@
+/* global INSTANT_SCROLL_RESTORE_KEY, SCROLL_POSITION_KEY_PREFIX, SCROLL_POSITION_TIMESTAMP_KEY_PREFIX, SCROLL_POSITION_MAX_AGE_MS -- injected at build time by Static emitter (see buildStaticScriptDefines) */
+;(function () {
+  // Force manual scroll restoration across all browsers
+  if ("scrollRestoration" in window.history) {
+    window.history.scrollRestoration = "manual"
+  }
+  if ("scrollRestoration" in window) {
+    window.scrollRestoration = "manual"
+  }
+
+  // Firefox sometimes loses history.state on reload, so check multiple sources
+  let savedScroll = null
+  if (history.state && typeof history.state.scroll === "number") {
+    savedScroll = history.state.scroll
+  } else if (window.history.state && typeof window.history.state.scroll === "number") {
+    savedScroll = window.history.state.scroll
+  } else if (typeof Storage !== "undefined") {
+    // Fallback for Firefox: check sessionStorage
+    const sessionScroll = sessionStorage.getItem(INSTANT_SCROLL_RESTORE_KEY)
+    if (sessionScroll) {
+      const parsed = parseInt(sessionScroll, 10)
+      if (!isNaN(parsed)) {
+        savedScroll = parsed
+        console.debug("[InstantScrollRestoration] Using sessionStorage fallback:", savedScroll)
+        // Clear it after use to avoid stale data
+        sessionStorage.removeItem(INSTANT_SCROLL_RESTORE_KEY)
+      }
+    }
+  }
+
+  // Cross-session fallback: check localStorage for persisted scroll position.
+  // Positions older than SCROLL_POSITION_MAX_AGE_MS are stale—a reader returning
+  // a week later expects a fresh top-of-page view—so evict them instead of restoring.
+  if (savedScroll === null && typeof Storage !== "undefined") {
+    const scrollKey = SCROLL_POSITION_KEY_PREFIX + location.pathname
+    const timestampKey = SCROLL_POSITION_TIMESTAMP_KEY_PREFIX + location.pathname
+    const localScroll = localStorage.getItem(scrollKey)
+    const parsed = localScroll ? parseInt(localScroll, 10) : NaN
+
+    const savedAtRaw = localStorage.getItem(timestampKey)
+    const savedAt = savedAtRaw ? parseInt(savedAtRaw, 10) : NaN
+    const isStale = !isNaN(savedAt) && Date.now() - savedAt > SCROLL_POSITION_MAX_AGE_MS
+
+    if (isStale) {
+      localStorage.removeItem(scrollKey)
+      localStorage.removeItem(timestampKey)
+      console.debug("[InstantScrollRestoration] Evicted stale localStorage scroll position")
+    } else if (!isNaN(parsed) && parsed > 0) {
+      savedScroll = parsed
+      console.debug(
+        "[InstantScrollRestoration] Using localStorage cross-session fallback:",
+        savedScroll,
+      )
+    }
+  }
+
+  console.debug("[InstantScrollRestoration] savedScroll:", savedScroll, "hash:", location.hash)
+
+  // Don't restore hash if we have a saved scroll position - user manually scrolled away
+  const shouldRestoreHash = !savedScroll && location.hash.length > 1
+
+  // When we have a saved scroll AND a hash, the browser will try to hash-scroll
+  // after our restoration (WebKit fires this especially late). We extend monitoring
+  // to win the race via RAF re-application rather than mutating the URL.
+  const expectHashConflict = savedScroll !== null && location.hash.length > 1
+
+  /**
+   * Returns the computed scroll-margin-top (in px) for a given element.
+   * Falls back to 0 if the property is unavailable or unparsable.
+   */
+  function getScrollMarginTop(elt) {
+    if (!elt || typeof window === "undefined" || !window.getComputedStyle) return 0
+
+    const style = window.getComputedStyle(elt)
+    // Some browsers expose the camelCase property, others require the CSS name
+    const raw = style.scrollMarginTop || style.getPropertyValue("scroll-margin-top")
+    const parsed = parseFloat(raw)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  // Hash target is cached once the anchor element appears, since recomputing
+  // getBoundingClientRect every RAF forces a synchronous layout.
+  let cachedHashTarget = null
+
+  /**
+   * Determine target scroll based on history state or hash.
+   * Returns null if neither is applicable yet (e.g., hash element not in DOM yet).
+   */
+  function computeTarget() {
+    if (savedScroll !== null) {
+      console.debug("[InstantScrollRestoration] Using saved scroll:", savedScroll)
+      return savedScroll
+    }
+    if (cachedHashTarget !== null) return cachedHashTarget
+
+    if (shouldRestoreHash) {
+      const id = decodeURIComponent(location.hash.slice(1))
+      const elt = document.getElementById(id)
+      if (elt) {
+        const target = elt.getBoundingClientRect().top + window.scrollY
+        const marginTop = getScrollMarginTop(elt)
+        cachedHashTarget = target - marginTop
+        console.debug(
+          "[InstantScrollRestoration] Hash target found:",
+          target,
+          "scroll-margin-top:",
+          marginTop,
+        )
+        return cachedHashTarget
+      } else {
+        console.debug("[InstantScrollRestoration] Hash element not found yet:", id)
+      }
+    }
+    return null
+  }
+
+  let attempts = 0
+  const MAX_ATTEMPTS = 180 // 3 seconds @ 60fps
+
+  // Safari at Retina DPRs snaps scrollTo's result to a half-pixel boundary,
+  // leaving a structural 1px gap between target and actual scrollY. The
+  // initial loop accepts a delta within this tolerance ('<='), and the
+  // post-restoration drift monitor only re-corrects strictly beyond it
+  // ('>'), so the monitor never fights its own subpixel rounding.
+  const SUBPIXEL_TOLERANCE_PX = 1
+
+  // Flag & helper to mark programmatic scrolls so scroll listeners can ignore them
+  let programmaticScroll = false
+
+  function scrollToProgrammatic(y) {
+    programmaticScroll = true
+    window.scrollTo(0, y)
+    // Reset flag on next frame; scroll event fires before this
+    requestAnimationFrame(() => (programmaticScroll = false))
+  }
+
+  function tryScroll() {
+    const target = computeTarget()
+    console.debug(
+      `[InstantScrollRestoration] Attempt ${attempts}, target:`,
+      target,
+      "current scrollY:",
+      window.scrollY,
+    )
+
+    if (target !== null) {
+      scrollToProgrammatic(target)
+      // scrollY must be read here: the document may not yet be tall enough
+      // to honor the requested target, in which case we retry next frame.
+      const actualScroll = window.scrollY
+      console.debug("[InstantScrollRestoration] Scrolled to:", actualScroll, "target was:", target)
+
+      if (Math.abs(actualScroll - target) <= SUBPIXEL_TOLERANCE_PX || attempts >= MAX_ATTEMPTS) {
+        console.debug(
+          "[InstantScrollRestoration] Initial scroll complete, waiting for layout stability",
+        )
+        waitForLayoutStability(target)
+        return
+      }
+    }
+
+    attempts += 1
+    if (attempts <= MAX_ATTEMPTS) {
+      requestAnimationFrame(tryScroll)
+    } else {
+      console.debug("[InstantScrollRestoration] Max attempts reached, giving up")
+    }
+  }
+
+  function waitForLayoutStability(targetPos) {
+    // Monitor for a few frames to catch Firefox layout drift.
+    // When a hash conflict is expected (saved scroll + URL hash), WebKit's native
+    // hash-scroll can fire much later, so we monitor for longer.
+    let frameCount = 0
+    const MAX_MONITOR_FRAMES = expectHashConflict ? 60 : 15
+    let userHasScrolled = false
+
+    // Track explicit user interaction separate from scroll events, since some browsers
+    // may emit additional scroll events due to late layout shifts (e.g., Safari after
+    // images load). We only treat a large scroll delta as a _user_ scroll if it was
+    // preceded by an actual interaction such as wheel, touch, pointer, or key press.
+    let userInteracted = false
+    const markInteraction = () => {
+      userInteracted = true
+    }
+    for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
+      window.addEventListener(event, markInteraction, { passive: true, once: true })
+    }
+
+    // Track if we've already seen an unexplained large drift during the initial few frames.
+    // Safari can briefly jump by a large amount while layout settles after reload, so we
+    // allow one correction very early in the monitoring window before considering the
+    // movement as user input. After the first few frames—or after some time has elapsed—
+    // large deltas are treated as user-driven again.
+    let largeDriftForgiven = false
+    const monitoringStart = performance.now()
+    // Scroll handler for monitoring drift
+    const scrollHandler = () => {
+      if (programmaticScroll) return
+
+      const currentScroll = window.scrollY
+
+      // Determine if this scroll likely originates from the user. Explicit interaction
+      // (wheel/touch/pointer/keyboard) is a strong signal. In addition, repeated large
+      // deltas without any recorded interaction are treated as user input, but the first
+      // occurrence is forgiven to allow layout drift correction on Safari.
+      const delta = Math.abs(currentScroll - targetPos)
+      const SMALL_DELTA_THRESHOLD = 10 // px
+      const LARGE_DELTA_THRESHOLD = 60 // px
+
+      if (delta <= SMALL_DELTA_THRESHOLD) {
+        largeDriftForgiven = false
+        return
+      }
+
+      const cancelMonitoringDueToUser = () => {
+        userHasScrolled = true
+        console.debug(
+          "[InstantScrollRestoration] User scroll detected, canceling layout monitoring",
+        )
+        window.removeEventListener("scroll", scrollHandler, { passive: true })
+      }
+
+      if (userInteracted) {
+        cancelMonitoringDueToUser()
+        return
+      }
+
+      if (delta > LARGE_DELTA_THRESHOLD) {
+        // When we expect the browser to hash-scroll (saved scroll + URL hash),
+        // forgive all large drifts that aren't preceded by user interaction —
+        // they come from the browser's native hash-scroll, not the user.
+        if (expectHashConflict) {
+          return
+        }
+
+        const elapsed = performance.now() - monitoringStart
+        const withinForgivenessWindow = !largeDriftForgiven && frameCount < 3 && elapsed < 150
+
+        if (withinForgivenessWindow) {
+          largeDriftForgiven = true
+          return
+        }
+
+        cancelMonitoringDueToUser()
+      }
+    }
+
+    window.addEventListener("scroll", scrollHandler, { passive: true })
+
+    const monitorScroll = () => {
+      // Cancel if user has started scrolling
+      if (userHasScrolled) {
+        window.removeEventListener("scroll", scrollHandler, { passive: true })
+        console.log("[InstantScrollRestoration] Monitoring canceled due to user input")
+        return
+      }
+
+      if (programmaticScroll) return
+
+      const currentScroll = window.scrollY
+
+      // Only correct beyond the subpixel-rounding noise the initial loop accepted.
+      if (Math.abs(currentScroll - targetPos) > SUBPIXEL_TOLERANCE_PX) {
+        // If a user interaction event (wheel/touch/pointer/key) has been detected,
+        // this "drift" is actually user-initiated scroll. Scroll events fire
+        // asynchronously after rAF callbacks, so the scrollHandler may not have
+        // run yet—but the interaction flag is set synchronously and is reliable.
+        if (userInteracted) {
+          userHasScrolled = true
+          window.removeEventListener("scroll", scrollHandler, { passive: true })
+          console.log("[InstantScrollRestoration] Monitoring canceled due to user input")
+          return
+        }
+        console.debug(
+          `[InstantScrollRestoration] Drift detected on frame ${frameCount}, correcting: ${currentScroll} → ${targetPos}`,
+        )
+        scrollToProgrammatic(targetPos)
+      }
+
+      frameCount++
+
+      if (frameCount < MAX_MONITOR_FRAMES) {
+        requestAnimationFrame(monitorScroll)
+      } else {
+        window.removeEventListener("scroll", scrollHandler, { passive: true })
+        console.debug("[InstantScrollRestoration] Monitoring complete")
+      }
+    }
+
+    requestAnimationFrame(monitorScroll)
+  }
+
+  // Don't run during SPA navigation - let the SPA router handle scroll restoration
+  if (window.__routerInitialized) {
+    console.debug("[InstantScrollRestoration] SPA router detected, skipping instant restoration")
+    return
+  }
+
+  // Only run restoration if we have something to restore
+  if (savedScroll !== null || shouldRestoreHash) {
+    tryScroll()
+  } else {
+    console.debug("[InstantScrollRestoration] Nothing to restore")
+  }
+})()

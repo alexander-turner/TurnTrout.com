@@ -1,0 +1,13 @@
+name: "Download section fixtures"
+description: >-
+  Downloads the `section-fixtures` artifact (produced by
+  generate-fixtures.yaml) into website_content/fixtures/test-sections so the
+  build can render them and Playwright can enumerate them at collection time.
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: section-fixtures
+        path: website_content/fixtures/test-sections

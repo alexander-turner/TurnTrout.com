@@ -1,0 +1,100 @@
+#!/bin/sh
+set -e
+
+GIT_ROOT=$(git rev-parse --show-toplevel)
+
+# Claude Code's web/remote environment lacks the credentials these checks rely
+# on (R2 for asset upload, Voyage for related posts), so the suite can't pass
+# there. Skip it and let CI enforce the same checks on the push. Local pushes
+# are unaffected and still run the full suite.
+if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ]; then
+  echo "Skipping pre-push checks in the Claude Code remote environment (CI enforces them)."
+  exit 0
+fi
+
+# Ensure uv-installed tools (e.g. alt-text-llm) are on PATH, plus
+# node_modules/.bin so source_file_checks can find sass and the
+# spellcheck wrapper can find vale/spellchecker.
+export PATH="$HOME/.local/bin:$PATH"
+if [ -d "$GIT_ROOT/node_modules/.bin" ]; then
+  export PATH="$GIT_ROOT/node_modules/.bin:$PATH"
+fi
+
+# Fetch VOYAGE_API_KEY from the `ai` envchain namespace when it isn't already
+# available, so the related-posts step can run. The key is passed only to the
+# checks command below rather than exported into the hook's environment. If
+# envchain or the key is unavailable, VOYAGE_API_KEY stays empty and
+# run_push_checks.py skips that step with a warning.
+VOYAGE_API_KEY="${VOYAGE_API_KEY:-}"
+if [ -z "$VOYAGE_API_KEY" ] && command -v envchain >/dev/null 2>&1; then
+  # shellcheck disable=SC2016  # $VOYAGE_API_KEY must expand in envchain's shell.
+  VOYAGE_API_KEY=$(envchain ai sh -c 'printf %s "$VOYAGE_API_KEY"' 2>/dev/null) || VOYAGE_API_KEY=""
+fi
+
+RESUME_FLAG=""
+if [ "$RESUME" = "true" ]; then
+  echo "Resuming from last failed step."
+  RESUME_FLAG="--resume"
+fi
+
+PUSHED_CHANGES=0
+trap 'handle_cleanup "$PUSHED_CHANGES"' EXIT
+
+# Handle cleanup function separately
+# shellcheck disable=SC2317
+handle_cleanup() {
+  _exit_code=$?
+
+  set +e
+
+  _pushed_changes=$1
+  if [ "$_pushed_changes" -eq 1 ]; then
+    echo "Restoring stashed changes..."
+    if ! git stash pop >>/dev/null 2>&1; then
+      echo "ERROR: Failed to restore stashed changes! Your changes are in 'git stash'." >&2
+      echo "Run 'git stash pop' manually and resolve any conflicts." >&2
+    fi
+  fi
+
+  return "$_exit_code"
+}
+
+# If there are any changes, stash them and return 1, otherwise return 0.
+stash_and_exit() {
+  PREV_NUM_STASHES=$(git stash list | wc -l)
+  git stash push --include-untracked >>/dev/null
+  # Check if anything was stashed
+  if [ "$(git stash list | wc -l)" -gt "$PREV_NUM_STASHES" ]; then
+    echo "1"
+  else
+    echo "0"
+  fi
+}
+
+cd "$GIT_ROOT"
+
+if ! command -v uv >/dev/null 2>&1; then
+  echo "ERROR: 'uv' was not found on PATH." >&2
+  echo "The pre-push checks run via 'uv'. Install it (https://docs.astral.sh/uv/)" >&2
+  echo "or add it to PATH, then retry the push. To bypass once: 'git push --no-verify'." >&2
+  exit 1
+fi
+
+if [ "$RESUME" != "true" ]; then
+  PUSHED_CHANGES=$(stash_and_exit)
+fi
+
+# Temporarily disable `set -e` so we can capture the exact exit status and
+# print the resume hint before propagating the failure.
+set +e
+VOYAGE_API_KEY="$VOYAGE_API_KEY" uv run python "$GIT_ROOT/scripts/run_push_checks.py" $RESUME_FLAG
+_checks_status=$?
+set -e
+
+if [ "$_checks_status" -ne 0 ]; then
+  echo "" >&2
+  echo "Pre-push checks failed. After fixing the issue, resume from the failed" >&2
+  echo "step (skipping the checks that already passed) with:" >&2
+  echo "    RESUME=true git push" >&2
+  exit "$_checks_status"
+fi

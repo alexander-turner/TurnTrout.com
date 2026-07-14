@@ -1,0 +1,352 @@
+/**
+ * @jest-environment node
+ */
+import type { CheerioAPI } from "cheerio"
+import type { Element as CheerioElement } from "domhandler"
+
+import { afterEach, beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
+import { load as cheerioLoad } from "cheerio"
+
+const mockGenerate = jest.fn(() => Promise.resolve({ css: "/* critical */" }))
+jest.unstable_mockModule("critical", () => ({
+  generate: mockGenerate,
+}))
+
+import fs from "fs"
+import fsExtra, { ensureDir, remove } from "fs-extra"
+import http from "http"
+import os from "os"
+import path from "path"
+
+import { variables as styleVars } from "../styles/variables"
+
+const loadOptions = {
+  xml: false,
+  decodeEntities: false,
+  _useHtmlParser2: true,
+}
+
+describe("reorderHead", () => {
+  let reorderHead: typeof import("./handlers").reorderHead
+
+  beforeAll(async () => {
+    const handlers = await import("./handlers")
+    reorderHead = handlers.reorderHead
+  })
+
+  const createHtml = (headContent: string): CheerioAPI =>
+    cheerioLoad(`<!DOCTYPE html><html><head>${headContent}</head><body></html>`, loadOptions)
+
+  const getTagNames = (querier: CheerioAPI): string[] =>
+    querier("head")
+      .children()
+      .toArray()
+      .map((el) => (el as CheerioElement).tagName)
+
+  it("should place meta/title first, then sync scripts before other scripts", () => {
+    const querier = createHtml(`
+      <script id="detect-initial-state">/* dark mode */</script>
+      <meta charset="utf-8">
+      <title>Test</title>
+      <script>console.log('other')</script>
+    `)
+    const result = reorderHead(querier)
+    const children = result("head").children()
+    expect(getTagNames(result)).toEqual(["meta", "title", "script", "script"])
+    // detect-initial-state should come before other scripts
+    expect(children.eq(2).attr("id")).toBe("detect-initial-state")
+    expect(children.length).toBe(4)
+  })
+
+  it.each([
+    {
+      name: "all element types",
+      input: `
+        <script>console.log('other')</script>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="style.css">
+        <style id="critical-css">.test{color:red}</style>
+        <title>Test</title>
+        <script id="detect-initial-state">/* initial state */</script>
+      `,
+      expectedOrder: ["meta", "title", "script", "style", "link", "script"],
+    },
+    {
+      name: "minimal elements",
+      input: "<meta charset='utf-8'><title>Test</title>",
+      expectedOrder: ["meta", "title"],
+    },
+    {
+      name: "duplicate elements",
+      input: `
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <link href="style1.css">
+        <link href="style2.css">
+      `,
+      expectedOrder: ["meta", "meta", "link", "link"],
+    },
+    {
+      name: "preloads before sync scripts",
+      input: `
+        <script id="detect-initial-state">/* initial */</script>
+        <link rel="preload" href="/index.css" as="style">
+        <link rel="preconnect" href="https://cdn.example.com">
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="/index.css">
+        <script>console.log('other')</script>
+      `,
+      expectedOrder: ["meta", "link", "link", "script", "link", "script"],
+    },
+  ])("should maintain element order: $name", ({ input, expectedOrder }) => {
+    const querier = createHtml(input)
+    const result = reorderHead(querier)
+    expect(getTagNames(result)).toEqual(expectedOrder)
+  })
+
+  type EntityAssertion = { selector: string; attr?: string; expected: string }
+  const entityAssertions: EntityAssertion[] = [
+    {
+      selector: 'meta[name="description"]',
+      attr: "content",
+      expected: "Test &amp; example &gt; other text",
+    },
+    { selector: "title", expected: "Test &amp; Title" },
+    {
+      selector: "script#detect-initial-state",
+      expected: "if (x &lt; 5 &amp;&amp; y &gt; 3) {}",
+    },
+    { selector: "style#critical-css", expected: "/* test &amp; comment */" },
+    {
+      selector: 'link[rel="stylesheet"]',
+      attr: "href",
+      expected: "style.css?foo=1&amp;bar=2",
+    },
+  ]
+
+  it.each(entityAssertions)(
+    "should preserve HTML entities in $selector",
+    ({ selector, attr, expected }) => {
+      const initialQuerier = createHtml(`
+        <meta name="description" content="Test &amp; example &gt; other text">
+        <title>Test &amp; Title</title>
+        <script id="detect-initial-state">if (x &lt; 5 &amp;&amp; y &gt; 3) {}</script>
+        <style id="critical-css">/* test &amp; comment */</style>
+        <link rel="stylesheet" href="style.css?foo=1&amp;bar=2">
+      `)
+
+      const querier = reorderHead(initialQuerier)
+      const elementToTest = attr ? querier(selector).attr(attr) : querier(selector).html()
+      expect(elementToTest).toBe(expected)
+    },
+  )
+
+  it("should throw an error if an element is added to the head", () => {
+    const querier = createHtml("<title>Test</title>")
+    const isSubsetOfSpy = jest.spyOn(Set.prototype, "isSubsetOf").mockReturnValue(false)
+    expect(() => reorderHead(querier)).toThrow("New elements were added to the head")
+    isSubsetOfSpy.mockRestore()
+  })
+
+  it("should throw an error if an element is lost from the head", () => {
+    const querier = createHtml("<title>Test</title><meta name='description'>")
+    const isSupersetOfSpy = jest.spyOn(Set.prototype, "isSupersetOf").mockReturnValue(false)
+    const differenceSpy = jest
+      .spyOn(Set.prototype, "difference")
+      .mockReturnValue(new Set([cheerioLoad("<meta name='lost-meta'>")("meta").get(0)]))
+    expect(() => reorderHead(querier)).toThrow(
+      /Head reordering changed number of elements: \d+ -> \d+. Specifically, the elements meta were lost./,
+    )
+    isSupersetOfSpy.mockRestore()
+    differenceSpy.mockRestore()
+  })
+})
+
+describe("maybeGenerateCriticalCSS variable replacement", () => {
+  let outputDir: string
+  let maybeGenerateCriticalCSS: typeof import("./handlers").maybeGenerateCriticalCSS
+  let injectCriticalCSSIntoHTMLFiles: typeof import("./handlers").injectCriticalCSSIntoHTMLFiles
+  let resetCriticalCSSCache: typeof import("./handlers").resetCriticalCSSCache
+
+  beforeAll(async () => {
+    const handlers = await import("./handlers")
+    maybeGenerateCriticalCSS = handlers.maybeGenerateCriticalCSS
+    injectCriticalCSSIntoHTMLFiles = handlers.injectCriticalCSSIntoHTMLFiles
+    resetCriticalCSSCache = handlers.resetCriticalCSSCache
+  })
+
+  let consoleLogSpy: jest.SpiedFunction<typeof console.log>
+
+  beforeEach(async () => {
+    outputDir = await fsExtra.mkdtemp(path.join(os.tmpdir(), "handlers-test-"))
+    resetCriticalCSSCache()
+    mockGenerate.mockClear()
+    mockGenerate.mockResolvedValue({ css: "/* critical */" })
+    consoleLogSpy = jest.spyOn(console, "log").mockImplementation(() => {
+      // Suppress console.log output during tests
+    })
+  })
+
+  afterEach(async () => {
+    consoleLogSpy.mockRestore()
+    await remove(outputDir)
+  })
+
+  it("should replace SCSS variable placeholders with actual values in cached CSS", async () => {
+    Object.assign(styleVars, {
+      baseMargin: "8px",
+      pageWidth: 720,
+    })
+
+    const manualCriticalCss = "body{margin: $base-margin; color: $page-width;}"
+    const criticalScssPath = path.resolve("quartz/styles/critical.scss")
+    const htmlPath = path.join(outputDir, "index.html")
+    await fsExtra.writeFile(htmlPath, "<!DOCTYPE html><html><head></head><body></body></html>")
+    await fsExtra.writeFile(path.join(outputDir, "index.css"), "/* css */")
+    const katexDir = path.join(outputDir, "static", "styles")
+    await ensureDir(katexDir)
+    await fsExtra.writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
+
+    const realReadFile = fs.promises.readFile
+    const readFileSpy = jest.spyOn(fs.promises, "readFile").mockImplementation((fp, ...args) => {
+      if (fp === criticalScssPath) {
+        return Promise.resolve(manualCriticalCss)
+      }
+      return realReadFile(fp, ...args)
+    })
+
+    const writeSpy = jest.spyOn(fs.promises, "writeFile").mockResolvedValue()
+
+    await maybeGenerateCriticalCSS(outputDir)
+    await injectCriticalCSSIntoHTMLFiles([htmlPath], outputDir)
+
+    const writtenHtml = writeSpy.mock.calls[0][1] as string
+    expect(writtenHtml).toContain("margin: 8px")
+    expect(writtenHtml).toContain("color: 720px")
+    expect(writtenHtml).not.toContain("$base-margin")
+    readFileSpy.mockRestore()
+    writeSpy.mockRestore()
+  }, 10000)
+
+  it("should not corrupt prefix-overlapping SCSS variable names", async () => {
+    Object.assign(styleVars, {
+      color: "#111",
+      colorLight: "#eee",
+    })
+
+    const manualCriticalCss = "a{border-color: $color; background: $color-light;}"
+    const criticalScssPath = path.resolve("quartz/styles/critical.scss")
+    const htmlPath = path.join(outputDir, "index.html")
+    await fsExtra.writeFile(htmlPath, "<!DOCTYPE html><html><head></head><body></body></html>")
+    await fsExtra.writeFile(path.join(outputDir, "index.css"), "/* css */")
+    const katexDir = path.join(outputDir, "static", "styles")
+    await ensureDir(katexDir)
+    await fsExtra.writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
+
+    const realReadFile = fs.promises.readFile
+    const readFileSpy = jest.spyOn(fs.promises, "readFile").mockImplementation((fp, ...args) => {
+      if (fp === criticalScssPath) {
+        return Promise.resolve(manualCriticalCss)
+      }
+      return realReadFile(fp, ...args)
+    })
+    const writeSpy = jest.spyOn(fs.promises, "writeFile").mockResolvedValue()
+
+    await maybeGenerateCriticalCSS(outputDir)
+    await injectCriticalCSSIntoHTMLFiles([htmlPath], outputDir)
+
+    const writtenHtml = writeSpy.mock.calls[0][1] as string
+    expect(writtenHtml).toContain("border-color: #111")
+    // `$color` must not clobber the `$color-light` occurrence.
+    expect(writtenHtml).toContain("background: #eee")
+    expect(writtenHtml).not.toContain("#111-light")
+
+    readFileSpy.mockRestore()
+    writeSpy.mockRestore()
+  }, 10000)
+
+  it("should throw when a file cannot be processed rather than silently continuing", async () => {
+    const criticalScssPath = path.resolve("quartz/styles/critical.scss")
+    const htmlPath = path.join(outputDir, "index.html")
+    await fsExtra.writeFile(htmlPath, "<!DOCTYPE html><html><head></head><body></body></html>")
+    await fsExtra.writeFile(path.join(outputDir, "index.css"), "/* css */")
+    const katexDir = path.join(outputDir, "static", "styles")
+    await ensureDir(katexDir)
+    await fsExtra.writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
+
+    const realReadFile = fs.promises.readFile
+    const readFileSpy = jest.spyOn(fs.promises, "readFile").mockImplementation((fp, ...args) => {
+      if (fp === criticalScssPath) {
+        return Promise.resolve("body{}")
+      }
+      return realReadFile(fp, ...args)
+    })
+    const writeSpy = jest.spyOn(fs.promises, "writeFile").mockRejectedValue(new Error("disk full"))
+
+    await maybeGenerateCriticalCSS(outputDir)
+
+    await expect(injectCriticalCSSIntoHTMLFiles([htmlPath], outputDir)).rejects.toThrow(
+      `Failed to inject critical CSS into ${htmlPath}`,
+    )
+
+    readFileSpy.mockRestore()
+    writeSpy.mockRestore()
+  }, 10000)
+})
+
+describe("checkPortAvailability", () => {
+  let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
+  let consoleLogSpy: jest.SpiedFunction<typeof console.log>
+  let blockingServer: http.Server | null = null
+  let checkPortAvailability: typeof import("./handlers").checkPortAvailability
+  const testPort = 9876
+
+  beforeAll(async () => {
+    const handlers = await import("./handlers")
+    checkPortAvailability = handlers.checkPortAvailability
+  })
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {
+      // Mock to suppress console.error output during tests
+    })
+    consoleLogSpy = jest.spyOn(console, "log").mockImplementation(() => {
+      // Mock to suppress console.log output during tests
+    })
+  })
+
+  afterEach(async () => {
+    if (blockingServer) {
+      const server = blockingServer
+      await new Promise<void>((resolve) => {
+        server.close(() => resolve())
+      })
+      blockingServer = null
+    }
+    consoleErrorSpy.mockRestore()
+    consoleLogSpy.mockRestore()
+  })
+
+  it("should proceed when port is available", async () => {
+    await expect(checkPortAvailability(testPort)).resolves.not.toThrow()
+  })
+
+  it("should throw error with message when port is in use", async () => {
+    blockingServer = http.createServer()
+    const server = blockingServer
+    await new Promise<void>((resolve) => {
+      server.listen(testPort, resolve)
+    })
+
+    await expect(checkPortAvailability(testPort)).rejects.toThrow(
+      `Port ${testPort} is already in use`,
+    )
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`Port ${testPort} is already in use`),
+    )
+    expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`lsof -ti:${testPort} | xargs kill`),
+    )
+  })
+})

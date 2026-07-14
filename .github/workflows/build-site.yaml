@@ -1,0 +1,119 @@
+name: Build Site
+
+# Reusable workflow that builds the Quartz site and caches the result.
+# Called by workflows that need a built site (Playwright, Visual, Lighthouse, etc.).
+# Uses actions/cache to deduplicate builds across workflows for the same commit.
+# Consumer workflows restore the cache directly via actions/cache/restore.
+
+on:
+  workflow_call:
+    inputs:
+      fetch-depth:
+        description: "Git fetch depth (0 for full history, required for commit-count population)"
+        required: false
+        type: number
+        default: 0
+      include-fixtures:
+        description: "Include `website_content/fixtures/` pages in the build. Set to true for visual/Playwright test builds. Must stay false for any artifact that ships to users."
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      # R2 media credentials for uploading any newly referenced tweet's
+      # snapshot + media before the build measures them. Optional so callers
+      # without the secrets (e.g. forks) still build; the upload step is
+      # continue-on-error and existing tweets resolve from the public CDN.
+      ACCESS_KEY_ID_TURNTROUT_MEDIA:
+        required: false
+      SECRET_ACCESS_TURNTROUT_MEDIA:
+        required: false
+      S3_ENDPOINT_ID_TURNTROUT_MEDIA:
+        required: false
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    env:
+      INCLUDE_FIXTURES: ${{ inputs.include-fixtures && 'true' || '' }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          fetch-depth: ${{ inputs.fetch-depth }}
+          persist-credentials: false
+
+      # Cache keyed on commit SHA + fixture flag. Test builds and deploy
+      # builds end up at different keys so fixtures can't leak from one to
+      # the other.
+      # Restore-only here; the cache is saved by a later completeness-gated step.
+      # The all-in-one cache action saves in its post-step regardless of whether
+      # the build succeeded, so a failed or cancelled build poisons the key with a
+      # partial/empty public/ that every consumer then restores as an empty site.
+      - name: Restore build cache
+        id: cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}-fixtures-${{ inputs.include-fixtures }}
+
+      - name: Setup Build Environment
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: ./.github/actions/setup-site
+        with:
+          install-sharp: "true"
+          install-browsers: "true"
+          install-system-deps: "true"
+          cache-playwright: "true"
+          cache-puppeteer: "true"
+
+      # The per-section fixtures aren't tracked in git; fetch them from the
+      # generate-fixtures job so the fixture pages render into public/. Only
+      # needed for fixture builds, and only when actually building (a cache
+      # hit already has them baked into the restored public/).
+      - name: Download section fixtures
+        if: steps.cache.outputs.cache-hit != 'true' && inputs.include-fixtures
+        uses: ./.github/actions/download-section-fixtures
+
+      # Ensure every embedded tweet's snapshot + media live on R2 before the
+      # build fetches their dimensions; a newly referenced tweet would otherwise
+      # 404 and fail the build. No --force, so this only uploads tweets missing
+      # from R2 (a no-op for ones already there). continue-on-error keeps a
+      # transient R2 write hiccup from breaking builds that only reference
+      # already-uploaded tweets — those still resolve from the public CDN.
+      - name: Ensure embedded-tweet media on R2
+        if: steps.cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        env:
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+        run: uv run python scripts/tweet_snapshot.py --write
+
+      - name: Build site
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: pnpm build
+
+      # Fail loudly on a partial build or a poisoned cache hit instead of letting
+      # consumers restore an empty public/ and time out their webServer minutes later.
+      - name: Verify built site is complete
+        run: |
+          count=$(find public -name '*.html' | wc -l)
+          echo "public/ contains ${count} HTML files"
+          if [ ! -f public/index.html ] || [ "${count}" -lt 100 ]; then
+            echo "::error::Built site is incomplete (${count} HTML files); refusing to use or cache it."
+            exit 1
+          fi
+
+      # Save only after the build is verified complete, so an incomplete public/
+      # can never be cached. Concurrent builds for the same key race harmlessly:
+      # the first writer wins and the rest no-op on the existing key.
+      - name: Save build cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}-fixtures-${{ inputs.include-fixtures }}

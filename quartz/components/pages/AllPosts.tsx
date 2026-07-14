@@ -1,0 +1,50 @@
+import { JSX } from "preact"
+// skipcq: JS-W1028
+import React from "react"
+
+import type { QuartzComponent, QuartzComponentProps } from "../types"
+
+import { type FullSlug } from "../../util/path"
+import { PREVIEWABLE_CLASS } from "../constants"
+import { PageList } from "../PageList"
+import style from "../styles/listPage.scss"
+
+export const allSlug = "all-posts" as FullSlug
+export const allTitle = "All Posts"
+export const allDescription = "A listing of all posts on turntrout.com."
+export const allPostsListing = "all-posts-listing"
+
+/**
+ * Generates a block element containing a list of all posts.
+ *
+ * @param props - QuartzComponentProps passed to the PageList component.
+ * @returns A JSX.Element wrapping the PageList with appropriate data attributes.
+ */
+export function generateAllPostsBlock(props: QuartzComponentProps): JSX.Element {
+  const pageListing = (
+    <span id={allPostsListing} data-url={allPostsListing} data-block={allPostsListing}>
+      <PageList {...props} />
+    </span>
+  )
+  return pageListing
+}
+
+/** Page renderer for the "all posts" index, wrapping {@link PageList} in the transclude container. */
+export const AllPosts: QuartzComponent = (props: QuartzComponentProps) => {
+  const { fileData, allFiles } = props
+  const cssClasses: readonly string[] = fileData.frontmatter?.cssclasses ?? []
+  const classes = [PREVIEWABLE_CLASS, ...cssClasses].join(" ")
+  const pageListing = generateAllPostsBlock(props)
+
+  return (
+    <div className={classes}>
+      <article data-use-dropcap="false">
+        <p>This site has {allFiles.length} blog posts.</p>
+        {pageListing}
+      </article>
+    </div>
+  )
+}
+
+AllPosts.css = style
+export default AllPosts

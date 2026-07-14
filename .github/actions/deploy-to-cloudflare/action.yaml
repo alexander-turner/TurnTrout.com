@@ -1,0 +1,43 @@
+name: "Deploy to Cloudflare Pages"
+description: "Installs Wrangler and deploys to Cloudflare Pages"
+inputs:
+  cloudflare-api-token:
+    description: "Cloudflare API Token"
+    required: true
+  cloudflare-account-id:
+    description: "Cloudflare Account ID"
+    required: true
+  cloudflare-zone-id:
+    description: "Cloudflare Zone ID"
+    required: true
+  project-name:
+    description: "Cloudflare Pages project name"
+    required: true
+  branch:
+    description: "Branch name for deployment"
+    required: true
+  public-dir:
+    description: "Directory containing the built site"
+    required: false
+    default: "./public"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+
+    - name: Install Wrangler
+      run: pnpm install wrangler@3.99.0
+      shell: bash
+
+    - name: Deploy to Cloudflare Pages
+      uses: ./.github/actions/retry-external
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.cloudflare-api-token }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ inputs.cloudflare-account-id }}
+        CLOUDFLARE_ZONE_ID: ${{ inputs.cloudflare-zone-id }}
+      with:
+        command: pnpm exec wrangler pages deploy ${{ inputs.public-dir }} --project-name=${{ inputs.project-name }} --branch ${{ inputs.branch }}
+        max-attempts: "4"
+        initial-delay-seconds: "5"

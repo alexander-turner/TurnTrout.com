@@ -1,0 +1,1420 @@
+"""Test the utilities used for running the tests :)"""
+
+import io
+import shutil
+import subprocess
+from collections.abc import Iterator
+from pathlib import Path
+from typing import cast
+from unittest import mock
+
+import git
+import pytest
+from bs4 import BeautifulSoup
+from bs4.element import AttributeValueList
+
+from .. import utils as script_utils
+from ..utils import get_git_root as _original_get_git_root
+from .utils import create_markdown_file
+
+
+def test_git_root_is_ancestor(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """Test that the found git root is an ancestor of the current file."""
+    monkeypatch.setattr(script_utils, "get_git_root", lambda: tmp_path)
+    current_file_path = tmp_path / "tests" / "test_utils.py"
+    current_file_path.parent.mkdir(parents=True)
+    current_file_path.touch()
+
+    git_root = script_utils.get_git_root()
+    assert git_root is not None
+    assert current_file_path.is_relative_to(git_root)
+
+
+def test_find_git_root(monkeypatch: pytest.MonkeyPatch):
+    expected_output = "/path/to/git/root"
+
+    def mock_subprocess_run(*args, **kwargs) -> subprocess.CompletedProcess:
+        # Handle check=True parameter - don't raise on success
+        return subprocess.CompletedProcess(
+            args=args,
+            returncode=0,
+            stdout=expected_output,
+            stderr="",
+        )
+
+    # Clear the executable cache to avoid stale values
+    monkeypatch.setattr(script_utils, "_executable_cache", {})
+    # Restore real function: mock.patch in test_download_external_media.py's
+    # mock_git_root fixture can leak get_git_root as MagicMock under xdist
+    monkeypatch.setattr(script_utils, "get_git_root", _original_get_git_root)
+    monkeypatch.setattr(script_utils, "find_executable", lambda x: "git")
+    # Mock subprocess.run in the scripts.utils module where it's used
+    monkeypatch.setattr("scripts.utils.subprocess.run", mock_subprocess_run)
+    assert script_utils.get_git_root() == Path(expected_output)
+
+
+def test_get_git_root_raises_error(monkeypatch: pytest.MonkeyPatch):
+    def mock_subprocess_run(*args, **kwargs):
+        # Since check=True is used, raise CalledProcessError on failure
+        raise subprocess.CalledProcessError(
+            returncode=1,
+            cmd=args[0] if args else [],
+            output="",
+        )
+
+    # Clear the executable cache to avoid stale values
+    monkeypatch.setattr(script_utils, "_executable_cache", {})
+    # Restore real function: mock.patch in test_download_external_media.py's
+    # mock_git_root fixture can leak get_git_root as MagicMock under xdist
+    monkeypatch.setattr(script_utils, "get_git_root", _original_get_git_root)
+    monkeypatch.setattr(script_utils, "find_executable", lambda x: "git")
+    # Mock subprocess.run in the scripts.utils module where it's used
+    monkeypatch.setattr("scripts.utils.subprocess.run", mock_subprocess_run)
+
+    with pytest.raises(subprocess.CalledProcessError):
+        script_utils.get_git_root()
+
+
+def test_find_executable_not_found(monkeypatch: pytest.MonkeyPatch):
+    """Test that find_executable raises FileNotFoundError for an executable that
+    does not exist."""
+    monkeypatch.setattr(script_utils, "_executable_cache", {})
+    monkeypatch.setattr(shutil, "which", lambda name: None)
+    with pytest.raises(FileNotFoundError):
+        script_utils.find_executable("non_existent_executable")
+
+
+def test_find_executable_success_and_cache(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """Test that find_executable finds an executable and caches the result."""
+    monkeypatch.setattr(script_utils, "_executable_cache", {})
+    mock_which = mock.Mock(return_value="/fake/path/to/git")
+    monkeypatch.setattr(shutil, "which", mock_which)
+
+    # First call, should call `which`
+    path = script_utils.find_executable("git")
+    assert path == "/fake/path/to/git"
+    mock_which.assert_called_once_with("git")
+
+    # Second call, should use cache and not call `which` again
+    path2 = script_utils.find_executable("git")
+    assert path2 == "/fake/path/to/git"
+    mock_which.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "input_path,expected_output,should_raise",
+    [
+        (
+            "/home/user/quartz/static/images/test.png",
+            Path("quartz/static/images/test.png"),
+            False,
+        ),
+        ("/home/user/projects/other/file.txt", None, True),
+        ("/home/user/quartz/website_content/notes.md", None, True),
+        (
+            "/home/user/quartz/static/deeply/nested/folder/image.jpg",
+            Path("quartz/static/deeply/nested/folder/image.jpg"),
+            False,
+        ),
+        (
+            "/quartz/static/root-level.png",
+            Path("quartz/static/root-level.png"),
+            False,
+        ),
+        (
+            "/path/to/quartz/static/videos/demo.mp4",
+            Path("quartz/static/videos/demo.mp4"),
+            False,
+        ),
+        (
+            "/path/to/quartz/static/documents/report.pdf",
+            Path("quartz/static/documents/report.pdf"),
+            False,
+        ),
+        (
+            "/path/to/quartz/not-static/image.png",
+            None,
+            True,
+        ),
+        (
+            "/path/to/not-quartz/static/image.png",
+            None,
+            True,
+        ),
+        (
+            "/home/user/quartz/static",
+            None,
+            True,
+        ),
+        (
+            "relative/path/quartz/static/image.png",
+            Path("quartz/static/image.png"),
+            False,
+        ),
+    ],
+)
+def test_path_relative_to_quartz(
+    input_path: str, expected_output: Path | None, should_raise: bool
+):
+    """
+    Test path_relative_to_quartz_parent with various input paths.
+
+    Args:
+        input_path: The input path to test
+        expected_output: The expected output Path, or None if should raise
+        should_raise: Whether the function should raise a ValueError
+    """
+    if should_raise:
+        with pytest.raises(ValueError):
+            script_utils.path_relative_to_quartz_parent(Path(input_path))
+    else:
+        assert (
+            script_utils.path_relative_to_quartz_parent(Path(input_path))
+            == expected_output
+        )
+
+
+def test_get_files_no_dir():
+    """Test when no directory is provided."""
+    result = script_utils.get_files()
+    assert isinstance(result, tuple)
+    assert not result  # Empty tuple since no directory was given
+
+
+@pytest.mark.parametrize(
+    "file_paths, expected_files",
+    [
+        (["test.md", "test.txt"], ["test.md"]),
+        (
+            ["subdir1/test1.md", "subdir1/test1.txt", "subdir2/test2.md"],
+            ["subdir1/test1.md", "subdir2/test2.md"],
+        ),
+        (
+            ["test.md", "test.txt", "image.jpg", "document.pdf"],
+            ["test.md", "test.txt"],
+        ),
+    ],
+)
+def test_get_files_specific_dir(tmp_path, file_paths, expected_files):
+    """Test file discovery by inferring structure from file paths."""
+    # Create test files and directories
+    for file_path in file_paths:
+        file: Path = tmp_path / file_path
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.touch()  # Just create empty files
+
+    # Get files based on the file extensions in the file paths
+    filetypes_to_match = list({p.suffix for p in map(Path, expected_files)})
+    result = script_utils.get_files(
+        dir_to_search=tmp_path,
+        filetypes_to_match=filetypes_to_match,
+        use_git_ignore=False,
+    )
+
+    # Normalize file paths and compare
+    result_strs = [str(p.relative_to(tmp_path)) for p in result]
+    assert sorted(result_strs) == sorted(expected_files)
+
+
+def test_get_files_gitignore(tmp_path, monkeypatch: pytest.MonkeyPatch):
+    """Test with a .gitignore file."""
+    # Create a git repository in tmp_path
+    repo = git.Repo.init(tmp_path)
+    (tmp_path / ".gitignore").write_text("*.txt\n")  # Ignore text files
+
+    md_file = tmp_path / "test.md"
+    txt_file = tmp_path / "test.txt"
+    md_file.write_text("Markdown content")
+    txt_file.write_text("Text content")
+    repo.index.add([".gitignore", "test.md", "test.txt"])
+    repo.index.commit("Initial commit")
+
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda starting_dir=None: tmp_path
+    )
+
+    # Test getting files with gitignore
+    result = script_utils.get_files(dir_to_search=tmp_path)
+    assert len(result) == 1
+    assert result[0] == md_file
+
+
+def test_get_files_gitignore_batches_check(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+):
+    """Ignored files are filtered with a single batched check-ignore call."""
+    repo = git.Repo.init(tmp_path)
+    (tmp_path / ".gitignore").write_text("ignored*.md\n")
+    keep = tmp_path / "keep.md"
+    for name in ("keep.md", "ignored1.md", "ignored2.md"):
+        (tmp_path / name).write_text("content")
+    repo.index.add([".gitignore"])
+    repo.index.commit("Initial commit")
+
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda starting_dir=None: tmp_path
+    )
+
+    calls = 0
+    original_ignored = git.Repo.ignored
+
+    def counting_ignored(self, *paths):
+        nonlocal calls
+        calls += 1
+        return original_ignored(self, *paths)
+
+    monkeypatch.setattr(git.Repo, "ignored", counting_ignored)
+
+    result = script_utils.get_files(dir_to_search=tmp_path)
+
+    assert set(result) == {keep}
+    # One subprocess for all paths, not one per file.
+    assert calls == 1
+
+
+def test_get_files_gitignore_no_matches(
+    tmp_path, monkeypatch: pytest.MonkeyPatch
+):
+    """Git filtering with no matching files returns an empty tuple."""
+    repo = git.Repo.init(tmp_path)
+    (tmp_path / "notes.txt").write_text("not markdown")
+    repo.index.add(["notes.txt"])
+    repo.index.commit("Initial commit")
+
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda starting_dir=None: tmp_path
+    )
+
+    # No `.md` files exist, so there are no paths to batch-check.
+    assert script_utils.get_files(dir_to_search=tmp_path) == ()
+
+
+def test_get_files_ignore_dirs(tmp_path):
+    """Test that specified directories are ignored."""
+    # Create test directory structure
+    templates_dir = tmp_path / "templates"
+    regular_dir = tmp_path / "regular"
+    nested_templates = tmp_path / "docs" / "templates"
+
+    # Create directories
+    for dir_path in [templates_dir, regular_dir, nested_templates]:
+        dir_path.mkdir(parents=True, exist_ok=True)
+
+    # Create test files
+    test_files = [
+        templates_dir / "template.md",
+        regular_dir / "regular.md",
+        nested_templates / "nested.md",
+        tmp_path / "root.md",
+    ]
+
+    for file in test_files:
+        file.write_text("test content")
+
+    # Get files, ignoring 'templates' directories
+    result = script_utils.get_files(
+        dir_to_search=tmp_path,
+        filetypes_to_match=(".md",),
+        ignore_dirs=["templates"],
+        use_git_ignore=False,
+    )
+
+    # Convert results to set of strings for easier comparison
+    result_paths = {str(p.relative_to(tmp_path)) for p in result}
+
+    # Expected files (only files not in 'templates' directories)
+    expected_paths = {"regular/regular.md", "root.md"}
+
+    assert result_paths == expected_paths
+
+
+@pytest.mark.parametrize(
+    "md_contents,expected_map",
+    [
+        # Basic permalink
+        (
+            {
+                "test1.md": """---
+permalink: /test-page
+title: Test Page
+---
+# Content"""
+            },
+            {"test-page": "test1.md"},
+        ),
+        # Multiple files with permalinks
+        (
+            {
+                "test1.md": """---
+permalink: /test-page
+title: Test Page
+---
+# Content""",
+                "test2.md": """---
+permalink: /other-page/
+title: Other Page
+---
+# Content""",
+            },
+            {"test-page": "test1.md", "other-page": "test2.md"},
+        ),
+        # File without permalink should be skipped
+        (
+            {
+                "test3.md": """---
+title: No Permalink
+---
+# Content"""
+            },
+            {},
+        ),
+        # Files in drafts directory
+        (
+            {
+                "test1.md": """---
+permalink: /page
+---
+# Content""",
+                "drafts/draft1.md": """---
+permalink: /draft
+---
+# Content""",
+            },
+            {
+                "page": "test1.md",
+                "draft": "drafts/draft1.md",
+            },
+        ),
+        # Invalid YAML should be skipped
+        (
+            {
+                "invalid.md": """---
+permalink: /test
+title: "Unclosed quote
+---
+# Content"""
+            },
+            {},
+        ),
+        # Empty front matter should be skipped
+        (
+            {
+                "empty.md": """---
+---
+# Content"""
+            },
+            {},
+        ),
+        # Mixed valid and invalid files
+        (
+            {
+                "valid.md": """---
+permalink: /valid-page
+---
+# Content""",
+                "invalid.md": "No front matter",
+            },
+            {"valid-page": "valid.md"},
+        ),
+        # Test permalink appearing in aliases
+        (
+            {
+                "test1.md": """---
+permalink: /test-page
+aliases: [/test-page, /other-alias]
+title: Test Page
+---
+# Content"""
+            },
+            {"test-page": "test1.md"},
+        ),
+        # Test permalink as only alias
+        (
+            {
+                "test2.md": """---
+permalink: /test-page
+aliases: /test-page
+title: Test Page
+---
+# Content"""
+            },
+            {"test-page": "test2.md"},
+        ),
+        # Test permalink in list of aliases
+        (
+            {
+                "test3.md": """---
+permalink: /test-page
+aliases: [/first-alias, /test-page, /last-alias]
+title: Test Page
+---
+# Content"""
+            },
+            {"test-page": "test3.md"},
+        ),
+    ],
+)
+def test_build_permalink_map(
+    tmp_path: Path, md_contents: dict[str, str], expected_map: dict[str, str]
+):
+    """
+    Test building the permalink to markdown file mapping.
+
+    Args:
+        tmp_path: Temporary directory for testing
+        md_contents: Dictionary mapping file paths to their contents
+        expected_map: Expected mapping of permalinks to file paths
+    """
+    # Create test files
+    for file_path, content in md_contents.items():
+        create_markdown_file(tmp_path / file_path, content=content)
+
+    # Build the permalink map
+    result = script_utils.build_html_to_md_map(tmp_path)
+
+    # Convert the result paths to be relative to tmp_path for comparison
+    result_relative = {
+        permalink: str(path.relative_to(tmp_path))
+        for permalink, path in result.items()
+    }
+
+    assert result_relative == expected_map
+
+
+def test_build_permalink_map_nested_directories(tmp_path: Path):
+    """Test the build_permalink_map function with markdown files in drafts
+    directory."""
+    # Create directories
+    drafts_dir = tmp_path / "drafts"
+    drafts_dir.mkdir()
+
+    # Create markdown files
+    md_files = {
+        tmp_path / "post1.md": """---
+permalink: /posts/post1/
+title: "Post 1"
+---
+# Content of Post 1.
+""",
+        drafts_dir / "draft1.md": """---
+permalink: /drafts/draft1/
+title: "Draft 1"
+---
+# Content of Draft 1.
+""",
+    }
+
+    # Write the markdown files
+    for file_path, content in md_files.items():
+        file_path.write_text(content)
+
+    # Run the build_permalink_map function
+    result = script_utils.build_html_to_md_map(tmp_path)
+
+    # Expected result
+    expected_result = {
+        "posts/post1": tmp_path / "post1.md",
+        "drafts/draft1": drafts_dir / "draft1.md",
+    }
+
+    # Normalize permalinks
+    expected_result = {k.strip("/"): v for k, v in expected_result.items()}
+
+    # Assert that the resulting mapping matches the expected result
+    assert result == expected_result
+
+
+def test_build_permalink_map_handles_errors_gracefully(tmp_path: Path, capsys):
+    """Test that the build_permalink_map function handles errors gracefully and
+    continues processing other files."""
+    # Create markdown files with one valid and one invalid file
+    md_files = {
+        "valid.md": """---
+permalink: /valid/
+title: "Valid"
+---
+# Valid content.
+""",
+        "invalid.md": """---
+title: "Invalid"
+malformed_yaml: [unclosed list
+---
+# Invalid content.
+""",
+        "no_front_matter.md": """# No front matter here.
+""",
+    }
+
+    # Write the markdown files
+    for filename, content in md_files.items():
+        file_path = tmp_path / filename
+        file_path.write_text(content)
+
+    # Run the build_permalink_map function
+    result = script_utils.build_html_to_md_map(tmp_path)
+
+    # Expected result
+    expected_result = {
+        "valid": tmp_path / "valid.md",
+    }
+
+    # Assert that the resulting mapping matches the expected result
+    assert result == expected_result
+
+    # Capture stdout to check for error messages
+    captured = capsys.readouterr()
+    assert "Error parsing YAML in" in captured.out
+    assert "Unexpected error" not in captured.out
+
+
+def test_build_permalink_map_with_extra_delimiters(tmp_path: Path):
+    """Test that the build_permalink_map function correctly parses files with
+    extra delimiters in the front matter."""
+    md_content = """---
+permalink: /extra-delimiter/
+title: "Extra Delimiter"
+---
+---
+# Content with extra delimiter.
+"""
+
+    file_path = tmp_path / "extra.md"
+    file_path.write_text(md_content)
+
+    # Run the build_permalink_map function
+    result = script_utils.build_html_to_md_map(tmp_path)
+
+    # Expected result
+    expected_result = {
+        "extra-delimiter": file_path,
+    }
+
+    # Normalize permalinks
+    expected_result = {k.strip("/"): v for k, v in expected_result.items()}
+
+    # Assert that the resulting mapping matches the expected result
+    assert result == expected_result
+
+
+@pytest.fixture
+def mock_public_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Creates a public directory in a temporary git root and mocks
+    get_git_root."""
+    monkeypatch.setattr(script_utils, "get_git_root", lambda: tmp_path)
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+    return public_dir
+
+
+def test_parse_html_file(mock_public_dir: Path):
+    """Test parsing an HTML file into a BeautifulSoup object."""
+    # Create a test HTML file
+    html_content = "<html><body><h1>Test</h1></body></html>"
+    test_file = mock_public_dir / "test.html"
+    test_file.write_text(html_content)
+
+    # Parse the file
+    soup = script_utils.parse_html_file(test_file)
+
+    # Verify the parsed content
+    assert soup.find("h1") is not None
+
+
+def test_parse_html_file_outside_public(mock_public_dir: Path):
+    """Test that `parse_html_file` raises an error for files outside the public
+    directory."""
+    # `mock_public_dir` is `tmp_path / "public"`. git_root is mocked to `tmp_path`.
+    tmp_path = mock_public_dir.parent
+
+    # Create a file outside the 'public' directory but within tmp_path
+    outside_file = tmp_path / "test.html"
+    outside_file.write_text("<html></html>")
+
+    with pytest.raises(ValueError, match="is not in the public directory"):
+        script_utils.parse_html_file(outside_file)
+
+
+def test_is_redirect():
+    """Test detection of redirect pages."""
+    # Test a redirect page
+    redirect_html = """
+    <html>
+        <head>
+            <meta http-equiv="refresh" content="0; url=target.html">
+        </head>
+        <body>Redirecting...</body>
+    </html>
+    """
+    redirect_soup = BeautifulSoup(redirect_html, "html.parser")
+    assert script_utils.is_redirect(redirect_soup) is True
+
+    # Test a non-redirect page
+    normal_html = """
+    <html>
+        <head><title>Normal Page</title></head>
+        <body>Content</body>
+    </html>
+    """
+    normal_soup = BeautifulSoup(normal_html, "html.parser")
+    assert script_utils.is_redirect(normal_soup) is False
+
+
+@pytest.mark.parametrize(
+    "file_path,expected_result",
+    [
+        (Path("public/test.html"), True),  # Regular page needs markdown
+        (Path("public/404.html"), False),  # Special pages don't need markdown
+        (Path("public/all-tags.html"), False),
+        (Path("public/recent.html"), False),
+        # Tag pages don't need markdown
+        (Path("public/tags/test-tag.html"), False),
+        # Tags index doesn't need markdown
+        (Path("public/tags/index.html"), False),
+        # Tags directory itself doesn't need markdown
+        (Path("public/tags/"), False),
+        (Path("public/index.html"), True),  # Main index needs markdown
+    ],
+)
+def test_should_have_md(tmp_path: Path, file_path: Path, expected_result: bool):
+    """Test determination of whether an HTML file should have a corresponding
+    markdown file."""
+    # Create the test HTML file
+    full_path = tmp_path / file_path
+    full_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Create normal HTML content
+    html_content = """
+    <html>
+        <head><title>Test</title></head>
+        <body>Content</body>
+    </html>
+    """
+    full_path.write_text(html_content)
+
+    with mock.patch("scripts.utils.parse_html_file") as mock_parse:
+        mock_parse.return_value = BeautifulSoup(html_content, "html.parser")
+        assert script_utils.should_have_md(file_path) == expected_result
+
+
+def test_md_for_html_with_redirect(mock_public_dir: Path):
+    """Test that redirect pages are correctly identified as not needing markdown
+    files."""
+    test_file = mock_public_dir / "test.html"
+    redirect_html = """
+    <html>
+        <head>
+            <meta http-equiv="refresh" content="0; url=target.html">
+        </head>
+        <body>Redirecting...</body>
+    </html>
+    """
+    test_file.write_text(redirect_html)
+
+    assert script_utils.should_have_md(test_file) is False
+
+
+def test_parse_html_file_errors(mock_public_dir: Path):
+    """Test error handling in parse_html_file."""
+    # Test non-existent file
+    non_existent = mock_public_dir / "nonexistent.html"
+    with pytest.raises(FileNotFoundError):
+        script_utils.parse_html_file(non_existent)
+
+    # Test invalid HTML
+    invalid_file = mock_public_dir / "invalid.html"
+    invalid_file.write_text("<<<invalid>html>")
+    soup = script_utils.parse_html_file(invalid_file)
+    assert soup is not None  # BeautifulSoup handles invalid HTML gracefully
+
+    # Test different encodings
+    utf8_content = "<html><body><p>UTF-8 content: 你好</p></body></html>"
+    utf8_file = mock_public_dir / "utf8.html"
+    utf8_file.write_text(utf8_content, encoding="utf-8")
+    soup = script_utils.parse_html_file(utf8_file)
+    assert "你好" in soup.text
+
+
+@pytest.mark.parametrize(
+    "html_content,expected_result",
+    [
+        # Standard refresh meta tag with URL
+        ("""<meta http-equiv="refresh" content="0; url=target.html">""", True),
+        # Refresh without URL (not a redirect)
+        ("""<meta http-equiv="refresh" content="5">""", False),
+        # Case insensitive checks
+        ("""<meta HTTP-EQUIV="REFRESH" CONTENT="0; URL=target.html">""", True),
+        # Multiple meta tags
+        (
+            """<meta name="description"><meta http-equiv="refresh" content="0; url=target.html">""",
+            True,
+        ),
+        # Non-refresh meta
+        ("""<meta http-equiv="content-type" content="text/html">""", False),
+        # Empty meta
+        ("""<meta>""", False),
+        # Other meta tags
+        ("""<meta name="description"><meta name="keywords">""", False),
+    ],
+)
+def test_is_redirect_variations(html_content: str, expected_result: bool):
+    """Test various forms of meta refresh tags for redirect detection."""
+    html = f"<html><head>{html_content}</head><body>Content</body></html>"
+    soup = BeautifulSoup(html, "html.parser")
+    assert script_utils.is_redirect(soup) == expected_result
+
+
+@pytest.mark.parametrize(
+    "html_content,description",
+    [
+        ("<<<invalid>html>", "malformed HTML"),
+        ("", "empty file"),
+        ("   \n   \t   ", "whitespace-only file"),
+    ],
+)
+def test_md_for_html_error_handling(
+    mock_public_dir: Path, html_content: str, description: str
+):
+    """Test error handling in md_for_html function with various problematic
+    inputs."""
+    test_file = mock_public_dir / "test.html"
+    test_file.write_text(html_content)
+
+    # Should handle all error cases gracefully by returning True
+    assert script_utils.should_have_md(test_file) is True, (
+        f"Failed to handle {description}"
+    )
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        ("<html><body></body></html>", True),
+        ("<html><body><div>Content</div></body></html>", False),
+        ("<html></html>", True),
+    ],
+)
+def test_body_is_empty(html, expected):
+    soup = BeautifulSoup(html, "html.parser")
+    result = script_utils.body_is_empty(soup)
+    assert result == expected
+
+
+@pytest.fixture
+def sample_html_for_get_non_code_text() -> str:
+    """Provides a sample HTML string for testing get_non_code_text."""
+    return """
+    <div>
+        <p id="test-paragraph">
+            Visible Text.
+            <span class="katex">KaTeX stuff</span>
+            <code>code stuff</code>
+            More Visible Text.
+        </p>
+        <p id="another-paragraph">
+            Even more text <a href="#">link</a>
+        </p>
+    </div>
+    """
+
+
+def test_get_non_code_text_does_not_modify_original_tag(
+    sample_html_for_get_non_code_text,
+):
+    """Test that get_non_code_text does not modify the original Tag object
+    passed to it, by comparing its string representation."""
+    soup = BeautifulSoup(sample_html_for_get_non_code_text, "html.parser")
+    paragraph_tag = soup.find("p", id="test-paragraph")
+    assert paragraph_tag is not None, "Test paragraph not found"
+
+    original_tag_str_before = str(paragraph_tag)
+    script_utils.get_non_code_text(paragraph_tag)
+    original_tag_str_after = str(paragraph_tag)
+
+    assert original_tag_str_before == original_tag_str_after, (
+        "Tag was modified by get_non_code_text. "
+        f"Before:\n{original_tag_str_before}\nAfter:\n{original_tag_str_after}"
+    )
+
+
+def test_get_non_code_text_does_not_modify_original_soup_object(
+    sample_html_for_get_non_code_text,
+):
+    """Test that get_non_code_text does not modify the original BeautifulSoup
+    object passed to it, by comparing its string representation."""
+    original_soup = BeautifulSoup(
+        sample_html_for_get_non_code_text, "html.parser"
+    )
+
+    original_soup_str_before = str(original_soup)
+    script_utils.get_non_code_text(original_soup)
+    original_soup_str_after = str(original_soup)
+
+    assert original_soup_str_before == original_soup_str_after, (
+        "BeautifulSoup object was modified by get_non_code_text. "
+        f"Before:\n{original_soup_str_before}\nAfter:\n{original_soup_str_after}"
+    )
+
+
+def test_get_non_code_text_returns_correct_text_for_tag(
+    sample_html_for_get_non_code_text,
+):
+    """Test that get_non_code_text returns the correctly stripped text when
+    given a Tag object."""
+    soup = BeautifulSoup(sample_html_for_get_non_code_text, "html.parser")
+    paragraph_tag = soup.find("p", id="test-paragraph")
+    assert paragraph_tag is not None
+
+    stripped_text = script_utils.get_non_code_text(paragraph_tag)
+    expected_text = "Visible Text. More Visible Text."
+    assert " ".join(stripped_text.split()) == " ".join(expected_text.split())
+
+
+def test_get_non_code_text_returns_correct_text_for_soup_object(
+    sample_html_for_get_non_code_text,
+):
+    """Test that get_non_code_text returns the correctly stripped text when
+    given a BeautifulSoup object."""
+    soup = BeautifulSoup(sample_html_for_get_non_code_text, "html.parser")
+
+    stripped_text = script_utils.get_non_code_text(soup)
+    expected_text = "Visible Text. More Visible Text. Even more text link"
+    assert " ".join(stripped_text.split()) == " ".join(expected_text.split())
+
+
+@pytest.mark.parametrize(
+    "html,use_placeholder,expected",
+    [
+        # Colon position: code at start affects position differently
+        (
+            "<p><code>func()</code>: Description</p>",
+            False,
+            {"starts_with_colon": True},
+        ),
+        (
+            "<p><code>func()</code>: Description</p>",
+            True,
+            {"starts_with_colon": False},
+        ),
+        (
+            "<p>Text <code>func()</code>: Description</p>",
+            False,
+            {"starts_with_colon": False},
+        ),
+        (
+            "<p>Text <code>func()</code>: Description</p>",
+            True,
+            {"starts_with_colon": False},
+        ),
+        ("<p>: Description</p>", False, {"starts_with_colon": True}),
+        ("<p>: Description</p>", True, {"starts_with_colon": True}),
+        # Code content exclusion
+        (
+            "<p>Text <code>Table: ignored</code> Table: visible</p>",
+            True,
+            {"excludes": "Table: ignored", "includes": "Table: visible"},
+        ),
+        # Position preservation
+        (
+            "<p><code>x</code>Text after code</p>",
+            True,
+            {"not_starts_with": "Text"},
+        ),
+        (
+            "<p><code>x</code>Text after code</p>",
+            False,
+            {"starts_with": "Text"},
+        ),
+    ],
+)
+def test_get_non_code_text_with_placeholder(
+    html: str, use_placeholder: bool, expected: dict
+):
+    """Test replace_with_placeholder parameter for position preservation."""
+    soup = BeautifulSoup(html, "html.parser")
+    paragraph = soup.find("p")
+    assert paragraph is not None
+    assert isinstance(paragraph, script_utils.Tag)
+
+    result = script_utils.get_non_code_text(
+        paragraph, replace_with_placeholder=use_placeholder
+    )
+    stripped = result.strip()
+
+    if "starts_with_colon" in expected:
+        assert stripped.startswith(": ") == expected["starts_with_colon"]
+    if "excludes" in expected:
+        assert expected["excludes"] not in result
+    if "includes" in expected:
+        assert expected["includes"] in result
+    if "starts_with" in expected:
+        assert stripped.startswith(expected["starts_with"])
+    if "not_starts_with" in expected:
+        assert not stripped.startswith(expected["not_starts_with"])
+
+
+@pytest.mark.parametrize(
+    "md_contents, expected_aliases",
+    [
+        # Basic cases
+        (
+            {
+                "test.md": """---
+title: Test
+aliases: [/alias1, /alias2]
+---
+# Content
+"""
+            },
+            {"/alias1", "/alias2"},
+        ),
+        (
+            {
+                "test1.md": """---
+title: Test 1
+aliases: [/alias1, /alias2]
+---
+# Content
+""",
+                "test2.md": """---
+title: Test 2
+aliases: [/alias3, /alias4]
+---
+# Content
+""",
+            },
+            {"/alias1", "/alias2", "/alias3", "/alias4"},
+        ),
+        # No aliases
+        (
+            {
+                "test.md": """---
+title: Test
+---
+# Content
+"""
+            },
+            set(),
+        ),
+        # Permalink removal
+        (
+            {
+                "test.md": """---
+title: Test
+permalink: /test
+aliases: [/alias1, /test, /alias2]
+---
+# Content
+"""
+            },
+            {"/alias1", "/alias2"},
+        ),
+        # String alias (ignored)
+        (
+            {
+                "test.md": """---
+title: Test
+aliases: /single-alias
+---
+# Content
+"""
+            },
+            set(),
+        ),
+        # Mixed files
+        (
+            {
+                "with_aliases.md": """---
+title: With Aliases
+aliases: [alias1, alias2]
+---
+# Content
+""",
+                "without_aliases.md": """---
+title: Without Aliases
+---
+# Content
+""",
+            },
+            {"alias1", "alias2"},
+        ),
+        # Invalid YAML (skipped)
+        (
+            {
+                "invalid.md": """---
+title: "Unclosed quote
+aliases: [/alias1, /alias2]
+---
+# Content
+"""
+            },
+            set(),
+        ),
+        # Nested directories
+        (
+            {
+                "root.md": """---
+title: Root
+aliases: [/root-alias1, /root-alias2]
+---
+# Content
+""",
+                "nested/nested.md": """---
+title: Nested
+aliases: [/nested-alias1, /nested-alias2]
+---
+# Content
+""",
+            },
+            {
+                "/root-alias1",
+                "/root-alias2",
+                "/nested-alias1",
+                "/nested-alias2",
+            },
+        ),
+        # Empty front matter
+        (
+            {
+                "empty.md": """---
+---
+# Content
+"""
+            },
+            set(),
+        ),
+        # No front matter
+        (
+            {
+                "no_front_matter.md": """# Content without front matter
+"""
+            },
+            set(),
+        ),
+    ],
+)
+def test_collect_aliases(
+    tmp_path: Path, md_contents: dict[str, str], expected_aliases: set[str]
+):
+    """Test collect_aliases with various file contents and structures."""
+    # Create test files and directories
+    for file_path_str, content in md_contents.items():
+        create_markdown_file(tmp_path / file_path_str, content=content)
+
+    # Mock get_files to avoid git operations in temp directory
+    def mock_get_files(dir_to_search, **kwargs) -> tuple[Path, ...]:
+        files = []
+        if dir_to_search:
+            files = list(dir_to_search.rglob("*.md"))
+        return tuple(files)
+
+    with mock.patch.object(script_utils, "get_files", mock_get_files):
+        result = script_utils.collect_aliases(tmp_path)
+
+    assert result == expected_aliases
+
+
+def test_get_classes_string_attribute():
+    """Test get_classes with a string class attribute."""
+    html = '<div class="class1 class2"></div>'
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    assert script_utils.get_classes(tag) == ["class1", "class2"]
+
+
+def test_get_classes_list_attribute():
+    """Test get_classes with a list class attribute."""
+    # BeautifulSoup typically stores multi-valued attributes like class as a list
+    html = '<div class="class1 class2"></div>'
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    # Simulate how BS might present it if it were a list internally
+    tag["class"] = cast(AttributeValueList, ["class1", "class2", "class3"])
+    assert script_utils.get_classes(tag) == ["class1", "class2", "class3"]
+
+
+def test_get_classes_list_attribute_with_non_string():
+    """Test get_classes with a list class attribute containing non-strings."""
+    html = "<div></div>"
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    tag["class"] = cast(AttributeValueList, ["class1", 123, "class3", True])
+    assert script_utils.get_classes(tag) == ["class1", "123", "class3", "True"]
+
+
+def test_get_classes_missing_attribute():
+    """Test get_classes when the class attribute is missing."""
+    html = "<div></div>"
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    assert script_utils.get_classes(tag) == []
+
+
+def test_get_classes_empty_string_attribute():
+    """Test get_classes with an empty string class attribute."""
+    html = '<div class=""></div>'
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    assert script_utils.get_classes(tag) == []
+
+
+def test_get_classes_empty_list_attribute():
+    """Test get_classes with an empty list class attribute."""
+    html = "<div></div>"  # Start with no class
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    tag["class"] = cast(AttributeValueList, [])
+    assert script_utils.get_classes(tag) == []
+
+
+def test_get_classes_attribute_is_none():
+    """Test get_classes when the class attribute is explicitly None."""
+    html = "<div></div>"
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    tag["class"] = None  # type: ignore
+    assert script_utils.get_classes(tag) == []
+
+
+def test_get_classes_invalid_type_attribute():
+    """Test get_classes with an invalid type for the class attribute."""
+    html = "<div></div>"
+    soup = BeautifulSoup(html, "html.parser")
+    tag = soup.find("div")
+    assert tag is not None
+    tag["class"] = cast(AttributeValueList, 123)
+    with pytest.raises(ValueError, match="Invalid class attribute value"):
+        script_utils.get_classes(tag)
+
+
+# --- ImageMagick Version Detection Tests ---
+
+
+@pytest.fixture(autouse=False)
+def clear_imagemagick_cache() -> Iterator[None]:
+    script_utils._get_imagemagick_version.cache_clear()
+    yield
+    script_utils._get_imagemagick_version.cache_clear()
+
+
+def test_get_imagemagick_version_returns_6_when_magick_not_found(
+    monkeypatch: pytest.MonkeyPatch, clear_imagemagick_cache
+):
+    monkeypatch.setattr(shutil, "which", lambda name: None)
+    assert script_utils._get_imagemagick_version() == 6
+
+
+def test_get_imagemagick_version_returns_7_when_im7_detected(
+    monkeypatch: pytest.MonkeyPatch, clear_imagemagick_cache
+):
+    monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/magick")
+
+    def mock_run(*args, **kwargs) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(
+            args=args,
+            returncode=0,
+            stdout="Version: ImageMagick 7.1.0-0 Q16",
+            stderr="",
+        )
+
+    monkeypatch.setattr(subprocess, "run", mock_run)
+    assert script_utils._get_imagemagick_version() == 7
+
+
+def test_get_imagemagick_version_returns_6_when_im6_detected(
+    monkeypatch: pytest.MonkeyPatch, clear_imagemagick_cache
+):
+    monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/magick")
+
+    def mock_run(*args, **kwargs) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(
+            args=args,
+            returncode=0,
+            stdout="Version: ImageMagick 6.9.11-60 Q16",
+            stderr="",
+        )
+
+    monkeypatch.setattr(subprocess, "run", mock_run)
+    assert script_utils._get_imagemagick_version() == 6
+
+
+@pytest.mark.parametrize(
+    "operation,expected",
+    [
+        ("identify", ["/usr/bin/magick", "identify"]),
+        ("convert", ["/usr/bin/magick"]),
+    ],
+)
+def test_get_imagemagick_command_im7(
+    monkeypatch: pytest.MonkeyPatch, operation: str, expected: list[str]
+):
+    monkeypatch.setattr(script_utils, "_get_imagemagick_version", lambda: 7)
+    monkeypatch.setattr(
+        script_utils, "find_executable", lambda name: f"/usr/bin/{name}"
+    )
+
+    result = script_utils.get_imagemagick_command(operation)
+    assert result == expected
+
+
+def test_get_imagemagick_command_im6_operation_found(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setattr(script_utils, "_get_imagemagick_version", lambda: 6)
+    monkeypatch.setattr(shutil, "which", lambda name: f"/usr/bin/{name}")
+
+    result = script_utils.get_imagemagick_command("identify")
+    assert result == ["/usr/bin/identify"]
+
+
+def test_get_imagemagick_command_im6_operation_not_found(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setattr(script_utils, "_get_imagemagick_version", lambda: 6)
+    monkeypatch.setattr(shutil, "which", lambda name: None)
+
+    with pytest.raises(
+        FileNotFoundError, match="ImageMagick 'identify' not found"
+    ):
+        script_utils.get_imagemagick_command("identify")
+
+
+# ---------------------------------------------------------------------------
+# Newer shared helpers
+# ---------------------------------------------------------------------------
+
+
+def test_get_yaml_parser_round_trips_and_preserves_quotes(tmp_path: Path):
+    parser = script_utils.get_yaml_parser()
+    source = 'name: "quoted"\nlist:\n  - a\n  - b\n'
+    loaded = parser.load(source)
+    assert loaded["name"] == "quoted"
+    stream = io.StringIO()
+    parser.dump(loaded, stream)
+    # Quotes preserved by the round-trip parser
+    assert '"quoted"' in stream.getvalue()
+
+
+def test_write_yaml_frontmatter_writes_full_file(tmp_path: Path):
+    file_path = tmp_path / "post.md"
+    script_utils.write_yaml_frontmatter(
+        file_path, {"title": "Hi"}, "body line\n"
+    )
+    contents = file_path.read_text(encoding="utf-8")
+    assert contents.startswith("---\n")
+    assert "title: Hi" in contents
+    assert contents.endswith("body line\n")
+
+
+def test_write_yaml_frontmatter_accepts_explicit_parser(tmp_path: Path):
+    file_path = tmp_path / "post.md"
+    parser = script_utils.get_yaml_parser()
+    script_utils.write_yaml_frontmatter(
+        file_path, {"a": 1}, "body\n", parser=parser
+    )
+    assert "a: 1" in file_path.read_text(encoding="utf-8")
+
+
+def test_update_markdown_file_writes_only_on_change(tmp_path: Path):
+    file_path = tmp_path / "post.md"
+    file_path.write_text("original", encoding="utf-8")
+
+    changed = script_utils.update_markdown_file(file_path, lambda s: s)
+    assert changed is False
+
+    changed = script_utils.update_markdown_file(
+        file_path, lambda s: s + " updated"
+    )
+    assert changed is True
+    assert file_path.read_text(encoding="utf-8") == "original updated"
+
+
+def test_extract_filename_from_url_returns_basename():
+    assert (
+        script_utils.extract_filename_from_url(
+            "https://example.com/path/to/file.png"
+        )
+        == "file.png"
+    )
+
+
+def test_extract_filename_from_url_raises_when_empty():
+    with pytest.raises(ValueError, match="no filename component"):
+        script_utils.extract_filename_from_url("https://example.com/")
+
+
+def test_error_exit_prints_to_stderr_and_exits(capsys):
+    with pytest.raises(SystemExit) as excinfo:
+        script_utils.error_exit("boom", code=2)
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert "boom" in captured.err
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        # `---` rules in the body of a frontmatter-less file
+        "# Title\n\nIntro.\n\n---\n\nMiddle.\n\n---\n\nEnd.\n",
+        # leading rule longer than three dashes (not an opening fence)
+        "----------\n\nBody after a horizontal rule.\n",
+        # opening fence with no closing fence
+        "---\ntitle: x\n",
+    ],
+)
+def test_split_yaml_without_valid_frontmatter(tmp_path: Path, text: str):
+    """Files lacking a leading `---` fence yield empty metadata and content."""
+    file_path = tmp_path / "file.md"
+    file_path.write_text(text, encoding="utf-8")
+
+    assert script_utils.split_yaml(file_path) == ({}, "")
+
+
+def test_split_yaml_parses_leading_frontmatter(tmp_path: Path):
+    """Leading frontmatter parses; a `---` rule in the body is preserved."""
+    file_path = create_markdown_file(
+        tmp_path / "valid.md",
+        frontmatter={"title": "Hello"},
+        content="Before.\n\n---\n\nAfter.",
+    )
+
+    metadata, content = script_utils.split_yaml(file_path)
+    assert metadata == {"title": "Hello"}
+    assert content == "\nBefore.\n\n---\n\nAfter."
+
+
+def test_split_yaml_preserves_dashes_inside_value(tmp_path: Path):
+    """A `---` inside a frontmatter value is not treated as the closing
+    fence."""
+    file_path = tmp_path / "dashes.md"
+    file_path.write_text(
+        "---\ntitle: foo --- bar\ndate: 2024\n---\nBody.\n",
+        encoding="utf-8",
+    )
+
+    metadata, content = script_utils.split_yaml(file_path)
+    assert metadata == {"title": "foo --- bar", "date": 2024}
+    assert content == "\nBody.\n"
+
+
+def test_load_shared_constants_returns_independent_copy():
+    """Each call returns an equal but independently mutable deep copy."""
+    first = script_utils.load_shared_constants()
+    second = script_utils.load_shared_constants()
+    assert first == second
+    assert first is not second
+
+    first["__injected_top_level__"] = 123
+    first["unicodeTypography"]["__injected_nested__"] = "x"
+
+    fresh = script_utils.load_shared_constants()
+    assert "__injected_top_level__" not in fresh
+    assert "__injected_nested__" not in fresh["unicodeTypography"]

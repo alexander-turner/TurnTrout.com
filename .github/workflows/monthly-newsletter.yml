@@ -1,0 +1,255 @@
+name: Monthly Newsletter Draft
+
+concurrency:
+  group: monthly-newsletter
+  cancel-in-progress: false
+
+on:
+  schedule:
+    # Run on the 28th of each month at 9am UTC
+    - cron: "0 9 28 * *"
+  workflow_dispatch:
+    inputs:
+      since_commit:
+        description: "Override start commit hash. Leave empty to use last reviewed commit."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  generate-newsletter:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Restore last reviewed commit
+        id: cache-commit
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: .last-newsletter-commit
+          key: newsletter-last-commit-
+          restore-keys: |
+            newsletter-last-commit-
+
+      - name: Determine commit range
+        id: range
+        env:
+          INPUT_COMMIT: ${{ github.event.inputs.since_commit }}
+        run: |
+          # Default: last commit before Claude Code usage began (Jan 25 2026)
+          DEFAULT_COMMIT="71f1b32"
+
+          # Check for manual override
+          if [ -n "$INPUT_COMMIT" ]; then
+            START_COMMIT="$INPUT_COMMIT"
+          else
+            if [ -f .last-newsletter-commit ]; then
+              START_COMMIT=$(cat .last-newsletter-commit)
+            else
+              START_COMMIT="$DEFAULT_COMMIT"
+            fi
+          fi
+
+          # Validate that start commit exists in the repo
+          if ! git cat-file -t "$START_COMMIT" &>/dev/null; then
+            echo "::error::START_COMMIT '$START_COMMIT' is not a valid git object"
+            exit 1
+          fi
+
+          END_COMMIT=$(git rev-parse HEAD)
+
+          echo "start_commit=$START_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "end_commit=$END_COMMIT" >> "$GITHUB_OUTPUT"
+          echo "Generating newsletter for commits ${START_COMMIT:0:7}..${END_COMMIT:0:7}"
+
+      - name: Gather commit information
+        id: commits
+        env:
+          START_COMMIT: ${{ steps.range.outputs.start_commit }}
+          END_COMMIT: ${{ steps.range.outputs.end_commit }}
+        run: |
+          RANGE="${START_COMMIT}..${END_COMMIT}"
+          GIT_LOG="git log $RANGE --author=Alex Turner"
+
+          # Get commit count
+          COMMIT_COUNT=$($GIT_LOG --oneline | wc -l)
+          echo "commit_count=$COMMIT_COUNT" >> "$GITHUB_OUTPUT"
+
+          if [ "$COMMIT_COUNT" -eq 0 ]; then
+            echo "No new commits since last newsletter. Skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Get detailed commit log
+          $GIT_LOG --format="%h %ad %s" --date=short > /tmp/commits.txt
+
+          # Get new/modified content files
+          $GIT_LOG --name-only --pretty=format: -- "website_content/*.md" | sort -u | grep -v '^$' > /tmp/content_files.txt || true
+
+          # Get feature/fix commits
+          ONELINE=$($GIT_LOG --oneline)
+          echo "$ONELINE" | grep -iE "^[a-f0-9]+ (feat|feature|add)" > /tmp/features.txt || true
+          echo "$ONELINE" | grep -iE "^[a-f0-9]+ fix" > /tmp/fixes.txt || true
+
+          echo "Gathered $COMMIT_COUNT commits"
+
+      - name: Extract article metadata
+        if: steps.commits.outputs.skip != 'true'
+        run: |
+          # For each modified content file, extract frontmatter
+          echo "# Modified Articles" > /tmp/articles.md
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              echo "## $file" >> /tmp/articles.md
+              # Extract title and description from frontmatter
+              head -50 "$file" | grep -E "^(title:|description:|date_published:)" >> /tmp/articles.md || true
+              echo "" >> /tmp/articles.md
+            fi
+          done < /tmp/content_files.txt
+
+      - name: Generate newsletter draft with Claude
+        id: newsletter
+        if: steps.commits.outputs.skip != 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          COMMIT_COUNT: ${{ steps.commits.outputs.commit_count }}
+          START_COMMIT: ${{ steps.range.outputs.start_commit }}
+          END_COMMIT: ${{ steps.range.outputs.end_commit }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret is not set"
+            exit 1
+          fi
+
+          # Read gathered data
+          COMMITS=$(head -200 /tmp/commits.txt)
+          FEATURES=$(cat /tmp/features.txt 2>/dev/null || echo "None found")
+          FIXES=$(cat /tmp/fixes.txt 2>/dev/null || echo "None found")
+          ARTICLES=$(cat /tmp/articles.md)
+
+          # Read the prompt template
+          PROMPT_TEMPLATE=$(cat .github/prompts/newsletter-prompt.md)
+
+          # Build the full prompt (note: no quotes around PROMPT_END to allow variable expansion)
+          cat > /tmp/full-prompt.md << PROMPT_END
+          ${PROMPT_TEMPLATE}
+
+          ## Data for this newsletter
+
+          **Commit range:** ${START_COMMIT}..${END_COMMIT}
+          **Total commits:** ${COMMIT_COUNT}
+
+          ### Recent commits (sample):
+          \`\`\`
+          ${COMMITS}
+          \`\`\`
+
+          ### Feature commits:
+          \`\`\`
+          ${FEATURES}
+          \`\`\`
+
+          ### Fix commits:
+          \`\`\`
+          ${FIXES}
+          \`\`\`
+
+          ### Modified/new articles:
+          ${ARTICLES}
+
+          Please generate a newsletter draft based on this information. Focus on the most interesting and notable changes. Use the style from the "after" example.
+          PROMPT_END
+
+          # Escape for JSON
+          ESCAPED_PROMPT=$(jq -Rs . < /tmp/full-prompt.md)
+
+          # Call Claude API
+          HTTP_CODE=$(curl -s -o /tmp/claude-response.json -w "%{http_code}" https://api.anthropic.com/v1/messages \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -d "{
+              \"model\": \"claude-sonnet-4-20250514\",
+              \"max_tokens\": 8192,
+              \"messages\": [{
+                \"role\": \"user\",
+                \"content\": ${ESCAPED_PROMPT}
+              }]
+            }")
+
+          RESPONSE=$(cat /tmp/claude-response.json)
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "::error::Claude API returned HTTP $HTTP_CODE: $RESPONSE"
+            exit 1
+          fi
+
+          # Extract the text content
+          NEWSLETTER=$(echo "$RESPONSE" | jq -r '.content[0].text')
+          if [ -z "$NEWSLETTER" ] || [ "$NEWSLETTER" = "null" ]; then
+            echo "::error::Claude API returned no content. Response: $RESPONSE"
+            exit 1
+          fi
+
+          # Save to file
+          echo "$NEWSLETTER" > /tmp/newsletter-draft.md
+
+          echo "Newsletter draft generated"
+
+      - name: Send newsletter draft via email
+        if: steps.commits.outputs.skip != 'true'
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          START_COMMIT: ${{ steps.range.outputs.start_commit }}
+          END_COMMIT: ${{ steps.range.outputs.end_commit }}
+        run: |
+          if [ -z "$RESEND_API_KEY" ]; then
+            echo "::error::RESEND_API_KEY secret is not set"
+            exit 1
+          fi
+
+          DRAFT=$(cat /tmp/newsletter-draft.md)
+
+          # Build JSON payload with jq for proper escaping
+          jq -n \
+            --arg from "Newsletter Bot <newsletter@turntrout.com>" \
+            --arg to "alex@turntrout.com" \
+            --arg subject "Newsletter Draft: ${START_COMMIT:0:7}..${END_COMMIT:0:7}" \
+            --arg text "$DRAFT" \
+            '{from: $from, to: [$to], subject: $subject, text: $text}' > /tmp/email.json
+
+          HTTP_CODE=$(curl -s -o /tmp/resend-response.json -w "%{http_code}" -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @/tmp/email.json)
+
+          RESPONSE=$(cat /tmp/resend-response.json)
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "::error::Resend API returned HTTP $HTTP_CODE: $RESPONSE"
+            exit 1
+          fi
+
+          echo "Email sent (HTTP $HTTP_CODE): $RESPONSE"
+
+      - name: Update last reviewed commit
+        if: steps.commits.outputs.skip != 'true'
+        env:
+          END_COMMIT: ${{ steps.range.outputs.end_commit }}
+        run: |
+          echo "$END_COMMIT" > .last-newsletter-commit
+          echo "Updated last reviewed commit to ${END_COMMIT:0:7}"
+
+      - name: Save last reviewed commit to cache
+        if: steps.commits.outputs.skip != 'true'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: .last-newsletter-commit
+          key: newsletter-last-commit-${{ steps.range.outputs.end_commit }}

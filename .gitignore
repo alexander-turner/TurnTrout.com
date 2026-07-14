@@ -1,0 +1,105 @@
+# OS & Editor
+.DS_Store
+.obsidian
+**.vscode
+
+# Dependencies & Environments
+node_modules
+.venv/
+.worktrees/
+
+# Build Output & Caches
+public
+prof
+tsconfig.tsbuildinfo
+.quartz-cache
+.quartz_checks
+.timestamps
+*variables.scss
+*critical.scss
+*__pycache__*
+# Per-image mean-luminance cache used by scripts/label_invert.py.
+# Regenerated on demand by fetching image bytes; not source of truth.
+quartz/plugins/transformers/.invert_luminance.json
+
+# Slug→title cache written by bindLinkTitles during the build.
+quartz/plugins/transformers/.titleIndex.json
+
+# Tweet snapshots. The build hydrates these from R2 (see tweetEmbed.ts); the
+# durable copy lives at static/tweets/<id>.json on R2, uploaded by
+# scripts/tweet_snapshot.py. A JSON force-added here pins/overrides one offline.
+quartz/plugins/transformers/.tweet_snapshots
+
+# Slug -> {title, heading text} index built by quartz/processors/buildTitleIndex.ts
+# and consumed by the bindLinkTitles transformer. Regenerated on every build.
+quartz/plugins/transformers/.titleIndex.json
+
+# Testing & Coverage
+.coverage*
+coverage
+.lighthouseci
+/test-results/
+/blob-report/
+/playwright-report/
+/playwright/.cache/
+quartz/**snapshots*
+tests/visual-baselines/*.png
+
+# Temporary & Backup Files
+*~
+*.bak
+**/.!*
+**/*.tmp
+*tmp.ts
+*log
+.logs
+
+# Media & Assets
+*subset.woff2
+*zopfli*
+**.faviconUrls.txt
+**.faviconCounts.txt
+quartz/static/images/external-favicons/
+quartz/static/images/posts
+*.avif_original
+*.mp4_original
+website_content/asset_staging
+asset_queue.json
+asset_captions.json
+suggested_alts.json
+
+# Content
+website_content/drafts
+*test.md
+# Per-section visual-regression fixtures sliced from test-page.md by
+# scripts/split_test_page_sections.py. Regenerated in CI (and locally before
+# `pnpm start`); not source of truth, so we don't track them to avoid churn.
+website_content/fixtures/test-sections/
+
+# Linting & Formatting
+hint-report
+prettierrc
+.stripped_quotes
+.spellcheck-rendered-*.txt
+.wordlist-augmented-*.txt
+
+# Private & Generated Files
+private/
+scripts/*.json
+
+# Python Tools
+.dmypy.json
+
+# AI Tools
+.aider*
+.beads
+AGENTS.md
+.gh-resolved
+.pnpm-store
+.claude-tooling
+
+# Mutation & property testing artifacts
+.stryker-tmp/
+reports/
+mutants/
+.hypothesis/

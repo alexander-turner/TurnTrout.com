@@ -1,0 +1,29 @@
+import type { PluginTypes } from "../plugins/types"
+import type { GlobalConfiguration } from "./config"
+import type { FullSlug } from "./path"
+
+export interface Argv {
+  directory: string
+  verbose: boolean
+  output: string
+  serve: boolean
+  fastRebuild: boolean
+  port: number
+  wsPort: number
+  remoteDevHost?: string
+  concurrency?: number
+  skipCriticalCSS?: boolean
+  offline?: boolean
+  logLevel?: "error" | "warn" | "info" | "debug"
+}
+
+export interface QuartzConfig {
+  configuration: GlobalConfiguration
+  plugins: PluginTypes
+}
+
+export interface BuildCtx {
+  argv: Argv
+  cfg: QuartzConfig
+  allSlugs: FullSlug[]
+}

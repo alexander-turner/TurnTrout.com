@@ -1,0 +1,287 @@
+name: Preview audits
+
+concurrency:
+  group: preview-audits-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+
+# Minimal default at the workflow level; the `deploy` job below elevates to
+# the id-token/pages writes that only the Cloudflare Pages deploy needs.
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  should-run:
+    name: lighthouse-should-run
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          sparse-checkout: .github/actions/ci-gate
+          persist-credentials: false
+      - id: gate
+        uses: ./.github/actions/ci-gate
+        with:
+          force-labels: "ci:full-tests,ci:run-lighthouse"
+          filters: |
+            relevant:
+              - "quartz/**"
+              - "!quartz/**/*.spec.ts"
+              - "!quartz/**/*.test.ts"
+              - "!quartz/**/*.test.tsx"
+              - "!quartz/**/tests/**"
+              # Console-clean spec runs against the preview URL in this
+              # workflow, so changes to it must still trigger a run despite the
+              # broad spec/tests exclusions above.
+              - "quartz/components/tests/console-clean.spec.ts"
+              - "website_content/**"
+              - "config/quartz/**"
+              - "config/constants.json"
+              - "config/playwright/**"
+              - "package.json"
+              - "pnpm-lock.yaml"
+              - ".github/actions/**"
+              - ".github/lighthouse-*.json"
+              - ".github/workflows/preview-audits.yaml"
+              - ".github/workflows/build-site.yaml"
+
+  build:
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
+    uses: ./.github/workflows/build-site.yaml
+    secrets:
+      ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+      SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+      S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    # Cloudflare Pages deploy needs OIDC + Pages writes; scoped here rather
+    # than at the workflow level so the audit jobs stay read-only.
+    permissions:
+      contents: read
+      id-token: write
+      pages: write
+    outputs:
+      deploy_url: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+        with:
+          install-python: "false"
+          install-puppeteer-chrome: "true"
+
+      - name: Restore built site from cache
+        uses: ./.github/actions/restore-site-cache
+        with:
+          key: site-build-${{ github.sha }}-fixtures-false
+
+      # subfont is pinned to @turntrout/subfont@1.8.1 in package.json and
+      # installed by setup-site's `pnpm install`, so we run it via
+      # `pnpm exec` — no separate global install.
+      - name: Subset fonts for Lighthouse test pages
+        run: |
+          pnpm exec subfont --root public/ \
+            public/index.html \
+            public/design.html \
+            public/about.html \
+            public/research.html \
+            public/Test-page.html \
+            public/posts.html \
+            --formats woff2 --in-place --instance --inline-css --no-recursive --debug
+
+      - name: Install Wrangler
+        # Local install (not -g): the deploy step below invokes it via
+        # `pnpm exec wrangler`, which resolves from node_modules. pnpm 11
+        # also hard-fails `add -g` when its global bin dir isn't on PATH.
+        run: pnpm install wrangler@3.99.0
+
+      - name: Publish to Cloudflare Pages for Lighthouse testing
+        id: deploy_cf_pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-8)
+          DEPLOY_OUTPUT=$(pnpm exec wrangler pages deploy ./public --project-name=turntrout --branch="commit-${SHORT_SHA}" --commit-dirty=true)
+
+          echo "Wrangler deployment output:"
+          echo "${DEPLOY_OUTPUT}"
+
+          DEPLOY_URL=$(echo "${DEPLOY_OUTPUT}" | grep -o 'https://[a-zA-Z0-9.-]*pages.dev' | tail -n 1)
+
+          if [[ -z "$DEPLOY_URL" ]]; then
+            echo "::error::Could not determine deployment URL from Wrangler output using URL pattern."
+            # Fallback: try to extract from "Deployment complete!" line or similar
+            DEPLOY_URL=$(echo "${DEPLOY_OUTPUT}" | grep -oP 'https://[^\s]+\.pages\.dev' | tail -n 1)
+            if [[ -z "$DEPLOY_URL" ]]; then
+              echo "::error::Fallback URL extraction also failed. Please check Wrangler output."
+              exit 1
+            fi
+          fi
+
+          echo "Extracted DEPLOY_URL: $DEPLOY_URL"
+          echo "DEPLOY_URL=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for deployment to be reachable
+        run: |
+          URL="${STEPS_DEPLOY_CF_PAGES_OUTPUTS_DEPLOY_URL}"
+          echo "Waiting for $URL to respond..."
+          for i in $(seq 1 20); do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$URL" 2>/dev/null || echo "000")
+            if [[ "$STATUS" =~ ^[23] ]]; then
+              echo "Deploy reachable (HTTP $STATUS) on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $STATUS, retrying in 10s..."
+            sleep 10
+          done
+          echo "::error::Deploy URL $URL not reachable after 20 attempts"
+          exit 1
+        env:
+          STEPS_DEPLOY_CF_PAGES_OUTPUTS_DEPLOY_URL: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
+
+  lighthouse_desktop_cls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: deploy
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+      - name: CLS Check (Desktop)
+        id: lighthouse_desktop
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
+        with:
+          urls: |
+            ${{ needs.deploy.outputs.deploy_url }}/design
+            ${{ needs.deploy.outputs.deploy_url }}/design#footnotes
+            ${{ needs.deploy.outputs.deploy_url }}/test-page
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#footnotes
+          temporaryPublicStorage: true
+          configPath: ".github/lighthouse-cls-only-config.json"
+
+      - name: Upload CLS reports (Desktop)
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: lighthouse-cls-reports-desktop
+          path: ${{ github.workspace }}/.lighthouseci/
+          retention-days: 1
+
+  lighthouse_mobile_cls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: deploy
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+      - name: CLS Check (Mobile)
+        id: lighthouse_mobile
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
+        with:
+          urls: |
+            ${{ needs.deploy.outputs.deploy_url }}/design
+            ${{ needs.deploy.outputs.deploy_url }}/design#footnotes
+            ${{ needs.deploy.outputs.deploy_url }}/test-page
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#footnotes
+          temporaryPublicStorage: true
+          configPath: ".github/lighthouse-cls-only-config-mobile.json"
+
+      - name: Upload CLS reports (Mobile)
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: lighthouse-cls-reports-mobile
+          path: ${{ github.workspace }}/.lighthouseci/
+          retention-days: 1
+
+  lighthouse_full_audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: deploy
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+      - name: Run Lighthouse Full Audit (Performance, Accessibility, Best Practices, SEO)
+        id: lighthouse_full
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
+        with:
+          urls: |
+            ${{ needs.deploy.outputs.deploy_url }}/
+            ${{ needs.deploy.outputs.deploy_url }}/design
+            ${{ needs.deploy.outputs.deploy_url }}/about
+            ${{ needs.deploy.outputs.deploy_url }}/research
+            ${{ needs.deploy.outputs.deploy_url }}/test-page
+            ${{ needs.deploy.outputs.deploy_url }}/posts
+          temporaryPublicStorage: true
+          configPath: ".github/lighthouse-full-config.json"
+
+      - name: Upload Lighthouse Full Audit reports
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: lighthouse-reports-full-audit
+          path: ${{ github.workspace }}/.lighthouseci/
+          retention-days: 1
+
+  # Replays console-clean.spec.ts against the deployed preview URL so
+  # edge-only failures (CF Speed Brain, CSP, CORS misconfigs, Page
+  # Functions) surface as named test failures instead of being collapsed
+  # into a single Lighthouse best-practices score.
+  console_clean_preview:
+    name: console-clean (preview)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: deploy
+    env:
+      PLAYWRIGHT_BASE_URL: ${{ needs.deploy.outputs.deploy_url }}
+      PLAYWRIGHT_BROWSERS: chromium
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "true"
+      - name: Install browsers
+        run: pnpm run install-browsers
+      - name: Run console-clean against preview
+        run: |
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            quartz/components/tests/console-clean.spec.ts
+      - name: Upload Playwright trace on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: console-clean-preview-trace
+          path: ${{ github.workspace }}/test-results/
+          retention-days: 5

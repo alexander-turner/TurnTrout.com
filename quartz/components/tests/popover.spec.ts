@@ -1,0 +1,969 @@
+import type { Locator, Page } from "@playwright/test"
+
+import { minDesktopWidth } from "../../styles/variables"
+import { popoverPadding, popoverScrollOffset, scrollTolerance } from "../constants"
+import { test as base, expect } from "./fixtures"
+import {
+  getAllWithWait,
+  gotoPage,
+  isDesktopViewport,
+  isElementChecked,
+  isSafariBrowser,
+  moveMouseToSafePosition,
+  search,
+  takeRegressionScreenshot,
+  triggerAndWaitForSPANav,
+} from "./visual_utils"
+
+/** Type guard that asserts a value is defined, using expect for the assertion */
+function assertDefined<T>(value: T | null | undefined): asserts value is T {
+  expect(value).toBeDefined()
+  expect(value).not.toBeNull()
+}
+
+type TestFixtures = {
+  dummyLink: Locator
+}
+
+// Repoint the test page's first internal link at the popover fixture at
+// test time so popover screenshots aren't churned by edits to whatever
+// page the link normally targets. The fixture lives outside the live
+// site (see RemoveFixtures filter), so no user-facing link references it.
+// Use the `./`-prefixed form Quartz emits for internal links so existing
+// `linkHref.replace("./", "")` paths in this file behave as before.
+export const DUMMY_LINK_FIXTURE_HREF = "./popover-fixture#anchor-target"
+
+const test = base.extend<TestFixtures>({
+  dummyLink: async ({ page }, use) => {
+    const dummyLink = page.locator("a#first-link-test-page")
+    await expect(dummyLink).toBeVisible()
+    await dummyLink.evaluate((el, href) => {
+      ;(el as HTMLAnchorElement).setAttribute("href", href)
+    }, DUMMY_LINK_FIXTURE_HREF)
+    await use(dummyLink) // skipcq: JS-0820 — `use` is a Playwright fixture callback, not a React hook
+  },
+})
+
+test.beforeEach(async ({ page }) => {
+  if (!isDesktopViewport(page)) {
+    test.skip()
+  }
+
+  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
+
+  // After page load, the nav event sets mouseMovedSinceNav=false to suppress
+  // spurious Safari mouseenter events.  Move the mouse once to clear this flag
+  // so hover-triggered popovers work reliably in tests.
+  await page.mouse.move(1, 1)
+})
+
+test(".can-trigger-popover links show popover on hover (screenshot)", async ({
+  page,
+  dummyLink,
+}, testInfo) => {
+  await expect(dummyLink).toBeVisible()
+
+  // Initial state - no popover
+  let popover = page.locator(".popover-inner").first()
+  await expect(popover).toBeHidden()
+
+  await dummyLink.hover()
+  popover = page.locator(".popover")
+  await takeRegressionScreenshot(page, testInfo, "first-visible-popover", {
+    elementToScreenshot: popover,
+    preserveSiblings: true,
+  })
+
+  // Move mouse away
+  await moveMouseToSafePosition(page)
+  await expect(popover).toBeHidden()
+})
+
+test("External links do not show popover on hover (screenshot)", async ({ page }) => {
+  const externalLink = page.locator(".external").first()
+  await externalLink.scrollIntoViewIfNeeded()
+  await expect(externalLink).toBeVisible()
+
+  // Initial state - no popover
+  let popover = page.locator(".popover")
+  await expect(popover).toBeHidden()
+
+  await externalLink.hover()
+  popover = page.locator(".popover")
+  await expect(popover).toBeHidden()
+})
+
+test("Popover content matches target page content", async ({ page, dummyLink }) => {
+  await expect(dummyLink).toBeVisible()
+  const linkHref = await dummyLink.getAttribute("href")
+  expect(linkHref).not.toBeNull()
+
+  // Capture the original h1 text before navigation
+  const selector = "#article-title"
+  const originalH1Text = await page.locator(selector).first().textContent()
+
+  // Hover and wait for popover (WebKit can be slow to render visibility)
+  await dummyLink.hover()
+  const popover = page.locator(".popover")
+  await expect(popover).toHaveClass(/popover-visible/, { timeout: 10_000 })
+  await expect(popover).toBeVisible({ timeout: 10_000 })
+  const popoverContent = await popover.locator(".popover-inner").textContent()
+
+  // Check that we navigated to the right page
+  const targetHref = linkHref?.replace("./", "")
+  await triggerAndWaitForSPANav(page, () => dummyLink.click())
+  await page.waitForURL(`**/${targetHref}`)
+
+  // Wait until the h1 changes, indicating navigation completed
+  await expect(page.locator(selector).first()).not.toHaveText(originalH1Text || "")
+
+  // Check content matches
+  const pageContent = await page.locator(".previewable").first().textContent()
+  expect(popoverContent).toContain(pageContent)
+})
+
+test("Multiple popovers don't stack with wait", async ({ page }) => {
+  const allLinks = await getAllWithWait(page.locator("#center-content .can-trigger-popover"))
+  const firstLinks = allLinks.slice(0, 5)
+  for (const link of firstLinks) {
+    await link.scrollIntoViewIfNeeded()
+    await expect(link).toBeVisible()
+    await link.hover()
+
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+  }
+
+  const popoverCount = page.locator(".popover")
+  await expect(popoverCount).toHaveCount(1)
+})
+
+test("Multiple popovers don't stack without wait", async ({ page }) => {
+  const allLinks = await getAllWithWait(page.locator("#center-content .can-trigger-popover"))
+  const firstLinks = allLinks.slice(0, 5)
+  for (const link of firstLinks) {
+    await expect(link).toBeAttached()
+    await link.scrollIntoViewIfNeeded()
+    await expect(link).toBeVisible()
+    await link.hover()
+    await moveMouseToSafePosition(page)
+  }
+
+  // Use toPass to retry — WebKit may still be animating popovers away
+  await expect(async () => {
+    await expect(page.locator(".popover")).toHaveCount(0)
+  }).toPass({ timeout: 5_000 })
+})
+
+/**
+ * Holds the first fetch of the popover fixture so a test can control when the
+ * in-flight popover creation resolves.
+ *
+ * @returns `intercepted` resolves once the fetch is in flight; `release` lets
+ * the held fetch complete.
+ */
+async function holdFirstPopoverFetch(
+  page: Page,
+): Promise<{ intercepted: Promise<void>; release: () => void }> {
+  // skipcq: JS-0321 -- placeholder reassigned inside the promise executor
+  let release = (): void => {}
+  const holdFetch = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  // skipcq: JS-0321 -- placeholder reassigned inside the promise executor
+  let onIntercepted = (): void => {}
+  const intercepted = new Promise<void>((resolve) => {
+    onIntercepted = resolve
+  })
+  let firstRequest = true
+  await page.route("**/popover-fixture", async (route) => {
+    if (firstRequest) {
+      firstRequest = false
+      onIntercepted()
+      await holdFetch
+    }
+    await route.continue()
+  })
+  return { intercepted, release }
+}
+
+/**
+ * Releases a held popover-fixture fetch and waits until the request fully
+ * finishes (body included) plus two painted frames, so any DOM mutation from
+ * the resolved fetch has landed before a negative assertion runs.
+ */
+async function releaseAndProcessPopoverFetch(page: Page, release: () => void): Promise<void> {
+  const requestFinished = page.waitForEvent("requestfinished", (request) =>
+    request.url().includes("popover-fixture"),
+  )
+  release()
+  await requestFinished
+  await page.evaluate(
+    () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+  )
+}
+
+test("Popover does not attach when mouse leaves during content fetch", async ({
+  page,
+  dummyLink,
+}) => {
+  const { intercepted, release } = await holdFirstPopoverFetch(page)
+
+  // Hover to start the popover timer; wait until the fetch is in flight.
+  await dummyLink.hover()
+  await intercepted
+
+  // The pointer leaves the link while the popover content is still loading.
+  await moveMouseToSafePosition(page)
+
+  await releaseAndProcessPopoverFetch(page, release)
+
+  // The popover must not attach: with the pointer already gone, no mouseleave
+  // could ever dismiss it.
+  await expect(page.locator(".popover")).toHaveCount(0)
+})
+
+test("Popover updates position on window resize", async ({ page, dummyLink }) => {
+  const initialPageWidth = await page.evaluate(() => window.innerWidth)
+
+  await dummyLink.hover()
+  const popover = page.locator(".popover")
+  await expect(popover).toBeVisible()
+  const initialRect = await popover.boundingBox()
+
+  await page.setViewportSize({ width: Number(initialPageWidth) + 100, height: 600 })
+
+  await expect(async () => {
+    const newRect = await popover.boundingBox()
+    expect(newRect).not.toEqual(initialRect)
+  }).toPass()
+})
+
+test("Popover scrolls to hash target", async ({ page, dummyLink }) => {
+  const href = await dummyLink.getAttribute("href")
+  expect(href).toContain(DUMMY_LINK_FIXTURE_HREF)
+
+  await dummyLink.hover()
+  const popover = page.locator(".popover")
+  await expect(popover).toBeVisible()
+  const popoverInner = popover.locator(".popover-inner")
+  const popoverScrollTop = await popoverInner.evaluate((el) => el.scrollTop)
+
+  // Find the target element *inside* the popover
+  // Note: The ID is modified in the popover content
+  const targetElementInPopover = popoverInner.locator(
+    `#${DUMMY_LINK_FIXTURE_HREF.split("#")[1]}-popover`,
+  )
+  await expect(targetElementInPopover).toBeVisible()
+
+  // Calculate the expected scroll position based on the target's offsetTop
+  const expectedScrollTop = await targetElementInPopover.evaluate((el, offset) => {
+    // Assert el is HTMLElement to access offsetTop
+    if (!(el instanceof HTMLElement)) {
+      throw new Error("Target element inside popover is not an HTMLElement")
+    }
+    return el.offsetTop - offset
+  }, popoverScrollOffset)
+
+  expect(Math.abs(popoverScrollTop - expectedScrollTop)).toBeLessThanOrEqual(scrollTolerance)
+})
+
+test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {
+  await expect(dummyLink).toBeVisible()
+
+  // Initial state - no popover
+  let popover = page.locator(".popover")
+  await expect(popover).toBeHidden()
+
+  await dummyLink.hover()
+  popover = page.locator(".popover")
+  await expect(popover).toBeVisible()
+
+  await moveMouseToSafePosition(page)
+  await expect(popover).toBeHidden()
+
+  // Verify popover stays hidden after dismissal
+  await expect(popover).toBeHidden()
+})
+
+test("Popover does not show when noPopover attribute is true", async ({ page, dummyLink }) => {
+  await expect(dummyLink).toBeVisible()
+
+  // Set noPopover attribute on the specific link we'll hover
+  await dummyLink.evaluate((el) => el.setAttribute("data-no-popover", "true"))
+
+  await dummyLink.hover()
+  const popover = page.locator(".popover")
+  await expect(popover).toBeHidden()
+})
+
+test("Popover is hidden when page scrolls", async ({ page, dummyLink }) => {
+  await expect(dummyLink).toBeVisible()
+  await dummyLink.hover()
+
+  const popover = page.locator(".popover")
+  await expect(popover).toBeVisible()
+
+  const scrollAmount = 500
+  await page.evaluate((scrollAmount) => window.scrollBy(0, scrollAmount), scrollAmount)
+
+  await expect(popover).toBeHidden()
+})
+
+test("Can scroll within popover content", async ({ page, dummyLink }) => {
+  await expect(dummyLink).toBeVisible()
+
+  await dummyLink.hover()
+  const popover = page.locator(".popover")
+  await expect(popover).toBeVisible()
+
+  // Get popover inner element which is scrollable
+  const popoverInner = popover.locator(".popover-inner")
+
+  const initialScrollTop = await popoverInner.evaluate((el) => el.scrollTop)
+
+  // Scroll down within the popover
+  await popoverInner.evaluate((el) => {
+    el.scrollTop = 100
+  })
+
+  const newScrollTop = await popoverInner.evaluate((el) => el.scrollTop)
+  expect(newScrollTop).not.toBe(initialScrollTop)
+})
+
+test("Popovers do not appear in search previews", async ({ page }) => {
+  // Search preview content is fetched asynchronously and can be slow on CI
+  test.slow()
+  // Use search() helper for reliable fill+result rendering (toPass retry)
+  await search(page, "Test page")
+
+  const previewContainer = page.locator("#preview-container")
+  await expect(previewContainer).toBeVisible({ timeout: 10_000 })
+
+  // Ensure the test-page result exists and trigger preview via mouseenter.
+  // dispatchEvent is more reliable than hover() inside the toPass loop —
+  // once the pointer is already over the card, hover() becomes a no-op and
+  // won't re-fire the listener that switches the preview to test-page.
+  // Mouse events are locked for 100ms after search results render, so the
+  // dispatch retries via toPass until displayPreview fires and the fetched
+  // content appears in #preview-container.
+  const testPageCard = page.locator('.result-card[id*="test-page"]').first()
+  await expect(testPageCard).toBeVisible()
+  const searchDummyLink = previewContainer.locator("a#first-link-test-page")
+  await expect(async () => {
+    await testPageCard.dispatchEvent("mouseenter")
+    await expect(searchDummyLink).toBeVisible()
+  }).toPass({ timeout: 30_000 })
+  await searchDummyLink.scrollIntoViewIfNeeded()
+  await searchDummyLink.hover()
+
+  // Verify no popover appears
+  const popover = page.locator(".popover")
+  await expect(popover).toBeHidden()
+})
+
+test("Popovers appear for content-meta links", async ({ page, dummyLink }) => {
+  const metaLink = page.locator("#content-meta a.tag-link").first()
+  await metaLink.scrollIntoViewIfNeeded()
+  await expect(metaLink).toBeVisible()
+  await metaLink.hover()
+
+  const metaPopover = page.locator(".popover")
+  await expect(metaPopover).toBeVisible()
+  const metaX = (await metaPopover.boundingBox())?.x
+
+  // Move mouse and wait for it to go away
+  await moveMouseToSafePosition(page)
+  await expect(metaPopover).toBeHidden()
+
+  await dummyLink.scrollIntoViewIfNeeded()
+  await expect(dummyLink).toBeVisible()
+  await dummyLink.hover()
+
+  const dummyPopover = page.locator(".popover")
+  await expect(dummyPopover).toBeVisible()
+  const dummyX = (await dummyPopover.boundingBox())?.x
+
+  expect(metaX).not.toEqual(dummyX)
+})
+
+test("Popover is hidden on mobile", async ({ page, dummyLink }) => {
+  await page.setViewportSize({ width: 320, height: 600 })
+  await expect(dummyLink).toBeVisible()
+  await dummyLink.hover()
+  const popover = page.locator(".popover")
+  await expect(popover).toBeHidden()
+})
+
+test("Popover appears at minimal viewport width", async ({ page, dummyLink }) => {
+  await page.setViewportSize({ width: minDesktopWidth + 20, height: 600 })
+  await expect(dummyLink).toBeVisible()
+  await dummyLink.hover()
+  const popover = page.locator(".popover")
+  await expect(popover).toBeVisible()
+})
+
+test("Popover does not show on navbar", async ({ page }) => {
+  const element = page.locator("#navbar")
+  await expect(element).toBeVisible()
+
+  // The popover handler only attaches to anchors with `can-trigger-popover`
+  // (see quartz/plugins/transformers/links.ts). Assert the class is absent
+  // on every descendant link, which is the real invariant — hovering each
+  // anchor individually would be many no-op pointer moves and risks timing
+  // out on slower browsers.
+  const popoverCapableCount = element.locator("a.can-trigger-popover")
+  await expect(popoverCapableCount).toHaveCount(0)
+})
+
+test("Popover does not appear on next page after navigation", async ({ page, dummyLink }) => {
+  await expect(dummyLink).toBeVisible()
+
+  // Hover over the link to initiate a popover, but don't wait for it to appear
+  await dummyLink.hover()
+
+  // Immediately click the link to navigate.  Wait for the SPA `nav` event
+  // which clears the pending popover timer and resets mouseMovedSinceNav.
+  await triggerAndWaitForSPANav(page, () => dummyLink.click())
+
+  // Move cursor to a neutral area so it doesn't accidentally hover over a
+  // link on the new page (which could trigger a *new* popover, especially in
+  // Safari where the cursor position persists after SPA navigation).
+  await page.mouse.move(10, 10)
+
+  const popover = page.locator(".popover")
+  await expect(popover).toBeHidden()
+})
+
+test("In-flight popover fetch does not create orphaned popover after navigation", async ({
+  page,
+  dummyLink,
+}) => {
+  await expect(dummyLink).toBeVisible()
+
+  // Delay the popover fetch so it completes *after* SPA navigation.
+  const { intercepted, release } = await holdFirstPopoverFetch(page)
+
+  // Hover to start the popover timer; wait until the fetch is actually in-flight.
+  await dummyLink.hover()
+  await intercepted
+
+  // Click the link to trigger SPA navigation while the popover fetch is held.
+  await triggerAndWaitForSPANav(page, () => dummyLink.click())
+
+  // Let mouseEnterHandler fully process the released fetch (and bail out).
+  await releaseAndProcessPopoverFetch(page, release)
+
+  // No orphaned popover should appear on the new page.
+  const popover = page.locator(".popover")
+  await expect(popover).toHaveCount(0)
+})
+
+// Use base (not test) so footnote tests bypass the file-level beforeEach's
+// /test-page navigation — they navigate to the popover fixture instead, and
+// the double-nav on slow browsers (Safari) was causing 90s timeouts.
+base.describe("Footnote popovers", () => {
+  base.beforeEach(async ({ page }) => {
+    if (!isDesktopViewport(page)) {
+      base.skip()
+    }
+    await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
+    await page.mouse.move(1, 1)
+  })
+
+  base("Footnote popover shows only footnote content, not full article", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+    await footnoteRef.click()
+
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    const popoverInner = popover.locator(".popover-inner")
+
+    // Should NOT contain the li wrapper (footnote content is unwrapped)
+    await expect(popoverInner.locator('li[id^="user-content-fn-"]')).toHaveCount(0)
+
+    // Should NOT contain the back arrow link
+    await expect(popoverInner.locator("[data-footnote-backref]")).toHaveCount(0)
+
+    // Should NOT contain the article title or other page elements
+    await expect(popoverInner.locator("#article-title-popover")).toHaveCount(0)
+    await expect(popoverInner.locator("h1")).toHaveCount(0)
+    await expect(popoverInner.locator("article")).toHaveCount(0)
+
+    // Should contain footnote content (verify it has some content)
+    const content = popoverInner
+    await expect(content).not.toBeEmpty()
+  })
+
+  base("Footnote popover size reflects content size", async ({ page }) => {
+    // Find the footnote with a table (should be larger)
+    const tableFootnoteRef = page.locator('a[href="#user-content-fn-table"]')
+    await tableFootnoteRef.scrollIntoViewIfNeeded()
+    await tableFootnoteRef.click()
+
+    const tablePopover = page.locator(".popover.footnote-popover")
+    await expect(tablePopover).toBeVisible()
+    const tablePopoverBox = await tablePopover.boundingBox()
+    assertDefined(tablePopoverBox)
+    const tableHeight = tablePopoverBox.height
+
+    // Click again to close (toggle)
+    await tableFootnoteRef.click()
+    await expect(tablePopover).toBeHidden()
+
+    // Find a simple footnote (should be smaller)
+    const simpleFootnoteRef = page.locator('a[href="#user-content-fn-pinned"]')
+    await simpleFootnoteRef.scrollIntoViewIfNeeded()
+    await simpleFootnoteRef.click()
+
+    const simplePopover = page.locator(".popover.footnote-popover")
+    await expect(simplePopover).toBeVisible()
+    const simplePopoverBox = await simplePopover.boundingBox()
+    assertDefined(simplePopoverBox)
+    const simpleHeight = simplePopoverBox.height
+
+    // Table footnote should be significantly taller than simple footnote
+    expect(tableHeight).toBeGreaterThan(simpleHeight * 1.5)
+  })
+
+  base("Clicking footnote link opens pinned popover (screenshot)", async ({ page }, testInfo) => {
+    // Target the simple `[^pinned]` fixture footnote so the screenshot is a
+    // stable representative rather than whatever footnote happens to come
+    // first on the fixture (or test-page).
+    const footnoteRef = page.locator('a[href="#user-content-fn-pinned"]')
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+    await takeRegressionScreenshot(page, testInfo, "footnote-popover-pinned", {
+      elementToScreenshot: popover,
+      preserveSiblings: true,
+    })
+  })
+
+  base("Footnote popover with rich content (screenshot)", async ({ page }, testInfo) => {
+    const footnoteRef = page.locator('a[href="#user-content-fn-rich"]')
+    await footnoteRef.scrollIntoViewIfNeeded()
+    await footnoteRef.click()
+
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    await takeRegressionScreenshot(page, testInfo, "footnote-popover-rich-content", {
+      elementToScreenshot: popover,
+      preserveSiblings: true,
+    })
+  })
+
+  base("Clicking footnote link opens pinned popover within viewport", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+    await expect(popover).toHaveClass(/footnote-popover/)
+    await expect(popover).toHaveAttribute("data-pinned", "true")
+
+    // Entire popover should be within the viewport
+    await expect(popover).toBeInViewport({ ratio: 1 })
+  })
+
+  base(
+    "Pressing Escape closes pinned footnote popover and returns focus to trigger",
+    async ({ page }) => {
+      const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+      await footnoteRef.scrollIntoViewIfNeeded()
+
+      await footnoteRef.click()
+      const popover = page.locator(".popover")
+      await expect(popover).toBeVisible()
+
+      await page.keyboard.press("Escape")
+      await expect(popover).toBeHidden()
+
+      // Focus should return to the triggering footnote link
+      const focusedHref = await page.evaluate(() => document.activeElement?.getAttribute("href"))
+      expect(focusedHref).toMatch(/^#user-content-fn-/)
+    },
+  )
+
+  base("Focus moves into pinned footnote popover on open", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+    await expect(footnoteRef).toBeInViewport()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Focus should be within the popover (on the close button)
+    const activeElement = page.locator(":focus")
+    await expect(activeElement).toHaveClass(/popover-close/)
+  })
+
+  base("Tab key cycles focus within pinned footnote popover", async ({ page }) => {
+    // WebKit doesn't support Tab navigation by default — it requires the
+    // "Press Tab to highlight each item on a webpage" Safari preference,
+    // which Playwright cannot enable. See microsoft/playwright#2114.
+    base.skip(
+      isSafariBrowser(page),
+      "WebKit does not support Tab navigation without Safari preference",
+    )
+
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+    await expect(footnoteRef).toBeInViewport()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Collect all focusable elements in the popover
+    const focusableCount = await popover.evaluate((el) => {
+      const selector =
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
+      return [...el.querySelectorAll<HTMLElement>(selector)].filter((e) => e.offsetParent !== null)
+        .length
+    })
+    expect(focusableCount).toBeGreaterThan(0)
+
+    // Press Tab enough times to cycle through all focusable elements and back
+    for (let i = 0; i < focusableCount + 1; i++) {
+      await page.keyboard.press("Tab")
+    }
+
+    // After cycling, focus should still be inside the popover (trapped)
+    const focusIsInPopover = await page.evaluate(() => {
+      const popoverEl = document.querySelector(".popover.footnote-popover")
+      return popoverEl?.contains(document.activeElement) ?? false
+    })
+    expect(focusIsInPopover).toBe(true)
+  })
+
+  base("Hovering footnote link does NOT open popover", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.hover()
+    // Verify no popover appears even after the hover delay (300ms)
+    await expect(page.locator(".popover")).toHaveCount(0)
+  })
+
+  base("Clicking outside closes footnote popover", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Click somewhere outside the popover
+    await page.locator("body").click({ position: { x: 10, y: 10 } })
+    await expect(popover).toBeHidden()
+  })
+
+  base("Rapid clicks on different footnotes produce only one popover", async ({ page }) => {
+    // Delay the same-page fetch that popover creation uses, widening the
+    // race window so both clicks fire before either fetch resolves.
+    await page.route("**/popover-fixture", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      await route.continue()
+    })
+
+    const firstRef = page.locator('a[href="#user-content-fn-rich"]')
+    const secondRef = page.locator('a[href="#user-content-fn-pinned"]')
+    await firstRef.scrollIntoViewIfNeeded()
+
+    // Click both footnotes in quick succession (before either fetch completes)
+    await firstRef.click()
+    await secondRef.click()
+
+    // Wait for the popover to appear
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Only one popover should exist — without the generation counter fix,
+    // both fetches would complete and add their own popover to the DOM.
+    await expect(popover).toHaveCount(1)
+  })
+
+  base("Clicking footnote link does not scroll to footnote section", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    const scrollBefore = await page.evaluate(() => window.scrollY)
+    await footnoteRef.click()
+
+    // Page should NOT have scrolled to the footnote section
+    await expect
+      .poll(async () => {
+        const scrollAfter = await page.evaluate(() => window.scrollY)
+        return Math.abs(scrollAfter - scrollBefore)
+      })
+      .toBeLessThan(50)
+  })
+})
+
+// Use base (not test) so mobile tests don't inherit the desktop-only skip from the
+// file-level test.beforeEach. These tests explicitly set a mobile viewport.
+base.describe("Footnote popover on mobile", () => {
+  base.beforeEach(async ({ page }) => {
+    // Use the popover fixture so footnote interactions don't depend on
+    // test-page footnote ordering or content.
+    await page.setViewportSize({ width: 375, height: 667 })
+    await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
+  })
+
+  base("Tapping footnote opens pinned popover, close button dismisses it", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+    await expect(popover).toHaveAttribute("data-pinned", "true")
+
+    // Close via X button
+    const closeBtn = popover.locator(".popover-close")
+    await expect(closeBtn).toBeVisible()
+    await closeBtn.click()
+    await expect(popover).toBeHidden()
+  })
+
+  base("Tapping outside closes footnote popover", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Tap somewhere else on the page - popover should close
+    await page.locator("body").click({ position: { x: 10, y: 10 } })
+    await expect(popover).toBeHidden()
+  })
+
+  base("Close button is fully visible within viewport on mobile", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+    await footnoteRef.click()
+
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    const closeBtn = popover.locator(".popover-close")
+    await expect(closeBtn).toBeVisible()
+
+    const viewport = page.viewportSize()
+    assertDefined(viewport)
+    const btnBox = await closeBtn.boundingBox()
+    assertDefined(btnBox)
+
+    // Close button must be fully within the viewport
+    expect(btnBox.x).toBeGreaterThanOrEqual(0)
+    expect(btnBox.y).toBeGreaterThanOrEqual(0)
+    expect(btnBox.x + btnBox.width).toBeLessThanOrEqual(viewport.width)
+    expect(btnBox.y + btnBox.height).toBeLessThanOrEqual(viewport.height)
+  })
+
+  base("Non-footnote popovers are still hidden on mobile", async ({ page }) => {
+    // Exclude every hash link (`#…`): footnote refs open pinned popovers, and
+    // same-page ToC anchors live in the desktop ToC, which is hidden at mobile
+    // width (scrolling to a hidden link would hang). `.first()` then lands on a
+    // cross-page internal link (the content-meta tag link), the case this test
+    // is meant to cover.
+    const regularLink = page.locator('.can-trigger-popover:not([href^="#"])').first()
+    await regularLink.scrollIntoViewIfNeeded()
+    await regularLink.click()
+    const popover = page.locator(".popover:not(.footnote-popover)")
+    await expect(popover).toBeHidden()
+  })
+})
+
+// Use base (not test) so ToC-popover tests navigate to the popover fixture —
+// its headings are deterministic and free of leading digits (which the popover
+// hash-scroll silently drops), and screenshots don't churn with test-page edits.
+base.describe("Desktop ToC hover previews", () => {
+  base.beforeEach(async ({ page }) => {
+    if (!isDesktopViewport(page)) {
+      base.skip()
+    }
+    await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
+    await page.mouse.move(1, 1)
+  })
+
+  base("Hovering a ToC link shows a popover scrolled to that section", async ({ page }) => {
+    const tocLink = page.locator('#toc-content a[href="#table-footnote"]')
+    await expect(tocLink).toBeVisible()
+    await tocLink.hover()
+
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+
+    const popoverInner = popover.locator(".popover-inner")
+    const target = popoverInner.locator("#table-footnote-popover")
+    await expect(target).toBeVisible()
+
+    const scrollTop = await popoverInner.evaluate((el) => el.scrollTop)
+    const expectedScrollTop = await target.evaluate((el, offset) => {
+      if (!(el instanceof HTMLElement)) {
+        throw new Error("Target heading inside popover is not an HTMLElement")
+      }
+      return el.offsetTop - offset
+    }, popoverScrollOffset)
+    expect(Math.abs(scrollTop - expectedScrollTop)).toBeLessThanOrEqual(scrollTolerance)
+  })
+
+  base("ToC popover preview (screenshot)", async ({ page }, testInfo) => {
+    const tocLink = page.locator('#toc-content a[href="#anchor-target"]')
+    await expect(tocLink).toBeVisible()
+    await tocLink.hover()
+
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+    await takeRegressionScreenshot(page, testInfo, "toc-popover-preview", {
+      elementToScreenshot: popover,
+      preserveSiblings: true,
+    })
+  })
+
+  base("Successive ToC hovers yield exactly one popover", async ({ page }) => {
+    const tocLinks = await getAllWithWait(page.locator("#toc-content a.can-trigger-popover"))
+    for (const link of tocLinks.slice(0, 3)) {
+      await link.hover()
+      await expect(page.locator(".popover")).toBeVisible()
+    }
+    await expect(page.locator(".popover")).toHaveCount(1)
+  })
+
+  base("Clicking a hovered ToC link keeps scroll-tracking active", async ({ page }) => {
+    const tocLink = page.locator('#toc-content a[href="#checkboxes"]')
+    await expect(tocLink).toBeVisible()
+    await tocLink.hover()
+    await expect(page.locator(".popover")).toBeVisible()
+
+    await tocLink.click()
+    // The SPA router intercepts the same-page click and dispatches `nav`;
+    // toc.inline.ts's nav handler reads window.location.hash directly to mark
+    // the matching link active, independent of the popover interaction.
+    await expect(tocLink).toHaveClass(/active/)
+  })
+
+  base("ToC popover stays within a short viewport", async ({ page }) => {
+    await page.setViewportSize({ width: minDesktopWidth + 200, height: 200 })
+    const tocLink = page.locator('#toc-content a[href="#anchor-target"]')
+    await expect(tocLink).toBeVisible()
+    await tocLink.hover()
+
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+
+    // A popover taller than the viewport clamps its top edge to `popoverPadding`
+    // instead of overflowing above the fold.
+    const box = await popover.boundingBox()
+    assertDefined(box)
+    expect(box.y).toBeGreaterThanOrEqual(0)
+    expect(box.y).toBeLessThanOrEqual(popoverPadding + scrollTolerance)
+  })
+})
+
+// Use base (not test) to bypass the file-level desktop-only skip; these set a
+// mobile viewport explicitly, mirroring the "Footnote popover on mobile" block.
+base.describe("ToC hover previews on mobile", () => {
+  base.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 })
+    await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
+  })
+
+  base(
+    "Desktop ToC hidden; mobile ToC links are not popover-capable and show no popover",
+    async ({ page }) => {
+      // The desktop ToC is `.desktop-only`, so it's hidden at mobile width.
+      await expect(page.locator("#table-of-contents")).toBeHidden()
+
+      // Mobile ToC links don't carry the capability class — popovers are desktop-only.
+      const mobileTocLink = page.locator("#toc-content-mobile a").first()
+      await expect(mobileTocLink).not.toHaveClass(/can-trigger-popover/)
+
+      // Tapping one still navigates within the page, without ever showing a popover.
+      await mobileTocLink.scrollIntoViewIfNeeded()
+      await mobileTocLink.click()
+      const popover = page.locator(".popover")
+      await expect(popover).toBeHidden()
+    },
+  )
+})
+
+test.describe("Popover checkbox state preservation", () => {
+  const baseSelector = "h1 + ol #checkbox-0"
+
+  test.beforeEach(async ({ page }) => {
+    // Check a checkbox on the test page
+    const mainPageCheckbox = page.locator(baseSelector).first()
+    await mainPageCheckbox.scrollIntoViewIfNeeded()
+
+    const initialChecked = await isElementChecked(mainPageCheckbox)
+    expect(initialChecked).toBe(false)
+
+    await mainPageCheckbox.click()
+    const checkedAfterClick = await isElementChecked(mainPageCheckbox)
+    expect(checkedAfterClick).toBe(true)
+  })
+
+  test("Popover preserves checkbox state", async ({ page }) => {
+    await gotoPage(page, "http://localhost:8080/design")
+
+    const testPageLink = page.locator('a[href*="test-page"]').last()
+    await testPageLink.scrollIntoViewIfNeeded()
+    await expect(testPageLink).toBeVisible()
+
+    // Popovers are suppressed until a real mousemove fires after navigation,
+    // and a single hover can race the nav listeners attaching (or be a no-op
+    // when the pointer is already on the link). Re-hover from a safe position
+    // until the popover mounts.
+    const popover = page.locator(".popover")
+    await expect(async () => {
+      await moveMouseToSafePosition(page)
+      await testPageLink.hover()
+      await expect(popover).toBeVisible({ timeout: 3_000 })
+    }).toPass({ timeout: 30_000 })
+
+    const popoverCheckbox = popover.locator(baseSelector).first()
+    const popoverChecked = await isElementChecked(popoverCheckbox)
+    expect(popoverChecked).toBe(true)
+  })
+})
+
+// Use base to bypass the file-level beforeEach's /test-page navigation —
+// this test loads the popover fixture directly.
+base("Popover with checked checkbox visual appearance (screenshot)", async ({ page }, testInfo) => {
+  base.skip(!isDesktopViewport(page), "Popovers are desktop-only")
+
+  // Sourced from the popover fixture (rather than test-page) so the
+  // screenshot doesn't churn when the test-page Checkboxes section moves.
+  // Set state directly on the fixture page since checkbox state is keyed by
+  // page slug.
+  await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
+  await page.mouse.move(1, 1)
+
+  const fixtureCheckbox = page.locator("h1 + ol #checkbox-0").first()
+  await fixtureCheckbox.scrollIntoViewIfNeeded()
+  expect(await isElementChecked(fixtureCheckbox)).toBe(false)
+  await fixtureCheckbox.click()
+  expect(await isElementChecked(fixtureCheckbox)).toBe(true)
+
+  const linkToHover = page.locator("a#checkboxes-link").first()
+  await linkToHover.scrollIntoViewIfNeeded()
+  await linkToHover.hover()
+
+  const popover = page.locator(".popover")
+  await expect(popover).toBeVisible()
+  await takeRegressionScreenshot(page, testInfo, "popover-checked-checkbox", {
+    elementToScreenshot: popover,
+    preserveSiblings: true,
+  })
+})

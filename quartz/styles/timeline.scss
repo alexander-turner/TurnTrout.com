@@ -1,0 +1,102 @@
+@use "./variables.scss" as *;
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: $base-margin auto;
+}
+
+.timeline-card {
+  position: relative;
+  margin: 0;
+
+  // Global ::before styles
+  &::before {
+    content: "";
+    position: absolute;
+    width: 50%;
+    border: solid var(--midground-faint);
+  }
+
+  // First card styles
+  &:first-child::before {
+    border-top: 0;
+    border-top-left-radius: 0 !important;
+  }
+
+  &:not(:first-child) {
+    margin-top: calc(-0.5 * $base-margin);
+  }
+
+  // Odd child styles
+  &:nth-child(odd) {
+    padding: calc(2 * $base-margin) 0 calc(2 * $base-margin) calc(2 * $base-margin);
+
+    &::before {
+      left: 0;
+      top: 0;
+      bottom: 0;
+      border-width: calc(0.5 * $base-margin) 0 calc(0.5 * $base-margin) calc(0.5 * $base-margin);
+      border-radius: $base-margin 0 0 $base-margin;
+    }
+
+    & .timeline-title::before {
+      left: calc(-3.5 * $base-margin);
+      top: calc(0.5 * $base-margin);
+    }
+
+    &:last-child::before {
+      border-bottom: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+
+  // Even child styles
+  &:nth-child(even) {
+    padding: calc(2 * $base-margin) calc(2 * $base-margin) calc(2 * $base-margin) 0;
+    text-align: right;
+
+    &::before {
+      right: 0;
+      top: 0;
+      bottom: 0;
+      border-width: calc(0.5 * $base-margin) calc(0.5 * $base-margin) calc(0.5 * $base-margin) 0;
+      border-radius: 0 $base-margin $base-margin 0;
+    }
+
+    & .timeline-title::before {
+      right: calc(-3.5 * $base-margin);
+      top: calc(0.5 * $base-margin);
+    }
+
+    &:last-child::before {
+      border-bottom: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+}
+
+.timeline-info {
+  display: flex;
+  flex-direction: column;
+  background: var(--midground-faintest);
+  border-radius: $base-margin;
+  padding: $base-margin;
+}
+
+/* Title of the card */
+.timeline-title {
+  position: relative;
+  margin: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: calc($base-margin);
+    height: calc($base-margin);
+    border-radius: 999px;
+    color: var(--foreground);
+    border: calc(0.5 * $base-margin) solid var(--midground-faint);
+  }
+}

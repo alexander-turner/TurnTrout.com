@@ -1,0 +1,1156 @@
+/**
+ * @jest-environment node
+ */
+import { afterEach, beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
+
+const mockGlobbyFn = jest.fn<(pattern: string | string[], options?: unknown) => Promise<string[]>>()
+const mockExecSync = jest.fn<(command: string, options?: unknown) => string>()
+
+jest.unstable_mockModule("globby", () => ({
+  globby: mockGlobbyFn,
+}))
+
+jest.unstable_mockModule("child_process", () => ({
+  execSync: mockExecSync,
+}))
+
+import fs from "fs"
+import { type Element } from "hast"
+import { fromHtml } from "hast-util-from-html"
+import { toHtml } from "hast-util-to-html"
+import { visit } from "unist-util-visit"
+
+import { simpleConstants, specialFaviconPaths } from "../../components/constants"
+import { type BuildCtx } from "../../util/ctx"
+import { type StaticResources } from "../../util/resources"
+
+const { minFaviconCount } = simpleConstants
+import { faviconCounter } from "../transformers/countFavicons"
+// skipcq: JS-C1003
+import * as favicons from "../transformers/favicons"
+import { type QuartzEmitterPlugin } from "../types"
+
+let populateModule: typeof import("./populateContainers")
+let PopulateContainersEmitter: QuartzEmitterPlugin
+
+// Shared test constants for repository statistics
+const MOCK_STATS = {
+  commitCount: 4943,
+  aiCommitCount: 246,
+  jsTestCount: 1234,
+  playwrightTestCount: 158,
+  pytestCount: 1293,
+  linesOfCode: 83635,
+} as const
+
+// Default mock values used in beforeEach
+const DEFAULT_MOCK_STATS = {
+  commitCount: 100,
+  aiCommitCount: 50,
+  jsTestCount: 100,
+  pytestCount: 1293,
+  playwrightTestCount: 10,
+  linesOfCode: 1000,
+} as const
+
+describe("PopulateContainers", () => {
+  let mockCtx: BuildCtx
+  const mockOutputDir = "/mock/output"
+  const mockStaticResources: StaticResources = { css: [], js: [] }
+
+  beforeAll(async () => {
+    populateModule = await import("./populateContainers")
+    PopulateContainersEmitter = populateModule.PopulateContainers
+  })
+
+  beforeEach(() => {
+    faviconCounter.clear()
+    // skipcq: JS-0116 -- mock must match async interface
+    mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
+      const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
+      if (patternStr.includes(".html")) {
+        return Promise.resolve(["test-page.html", "design.html"])
+      }
+      return Promise.resolve(["file1.test.ts", "file2.test.tsx", "file3.test.ts"])
+    })
+
+    // Provide default outputs for all repo-stat commands invoked during emitter.emit
+    mockExecSync.mockImplementation((command: string) => {
+      if (command.includes("git rev-parse --is-shallow-repository")) return "false\n"
+      if (command.includes("git rev-list")) return `${DEFAULT_MOCK_STATS.commitCount}\n`
+      if (command.includes('git log --all --oneline --grep="claude.ai/code/session"'))
+        return `${DEFAULT_MOCK_STATS.aiCommitCount}\n`
+      if (command.includes("*.test.ts")) return `${DEFAULT_MOCK_STATS.jsTestCount}\n`
+      if (command.includes("pytest --collect-only"))
+        return `${DEFAULT_MOCK_STATS.pytestCount} tests collected in 0.50s\n`
+      if (command.includes('grep -r "test("')) return `${DEFAULT_MOCK_STATS.playwrightTestCount}\n`
+      if (command.includes("find . -type f")) return `${DEFAULT_MOCK_STATS.linesOfCode}\n`
+      return `${DEFAULT_MOCK_STATS.commitCount}\n`
+    })
+
+    jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => {
+      // Mock implementation - no-op for testing
+    })
+    jest.spyOn(fs, "readFileSync").mockImplementation((path: unknown) => {
+      const pathStr = String(path)
+      if (pathStr.includes("test-page.html")) {
+        return '<html><body><div id="populate-favicon-container"></div></body></html>'
+      }
+      if (pathStr.includes("design.html")) {
+        return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><div id="populate-dropcap-probability"></div><span class="populate-commit-count"></span><span class="populate-human-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-playwright-configs"></span><span class="populate-playwright-total-tests"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
+      }
+      // Default for other files
+      return '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-human-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-turntrout-favicon"></span></body></html>'
+    })
+
+    favicons.faviconExistsCache.clear()
+
+    jest.spyOn(global, "fetch").mockResolvedValue({
+      ok: false,
+    } as Response)
+    mockCtx = {
+      argv: {
+        output: mockOutputDir,
+      },
+    } as BuildCtx
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+    faviconCounter.clear()
+    favicons.faviconExistsCache.clear()
+  })
+
+  const setFaviconCounts = (entries: Array<[string, number]>): void => {
+    faviconCounter.clear()
+    entries.forEach(([path, count]) => {
+      faviconCounter.set(path, count)
+    })
+  }
+
+  describe("container population", () => {
+    it.each<[string, Array<[string, number]>, (content: string) => void]>([
+      [
+        "should populate with valid favicons that exceed threshold",
+        [
+          ["/static/images/external-favicons/example_com", minFaviconCount - 1],
+          ["/static/images/external-favicons/test_com", minFaviconCount + 3],
+        ],
+        (content: string) => {
+          expect(content).not.toContain("example_com.svg")
+          expect(content).toContain("test_com.svg")
+        },
+      ],
+      [
+        "should filter out favicons below threshold",
+        [
+          ["/static/images/external-favicons/above_threshold_com", minFaviconCount + 1],
+          ["/static/images/external-favicons/below_threshold_com", minFaviconCount - 1],
+        ],
+        (content: string) => {
+          expect(content).toContain("above_threshold_com.svg")
+          expect(content).not.toContain("below_threshold_com.svg")
+        },
+      ],
+      [
+        "should filter out blocklisted favicons",
+        [
+          ["/static/images/external-favicons/medium_com", minFaviconCount + 10],
+          ["/static/images/external-favicons/valid_com", minFaviconCount + 1],
+        ],
+        (content: string) => {
+          expect(content).not.toContain("medium_com")
+          expect(content).toContain("valid_com.svg")
+        },
+      ],
+    ])(
+      "%s",
+      async (_, counts, assertFn) => {
+        setFaviconCounts(counts)
+
+        const emitter = PopulateContainersEmitter()
+        await emitter.emit(mockCtx, [], mockStaticResources)
+
+        expect(fs.writeFileSync).toHaveBeenCalled()
+        const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+        assertFn(writtenContent)
+      },
+      10000,
+    )
+
+    it("should sort favicons by count descending", async () => {
+      // Use allowlisted domains to ensure they pass filtering
+      setFaviconCounts([
+        ["/static/images/external-favicons/openai_com", minFaviconCount + 10],
+        ["/static/images/external-favicons/apple_com", minFaviconCount + 15],
+        ["/static/images/external-favicons/x_com", minFaviconCount + 20],
+      ])
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      // Extract domain names in order of appearance (each appears 3 times, so get first occurrence)
+      const domainPattern = /data-domain="(?<domain>[^"]+)"/g
+      const domains: string[] = []
+      for (const match of writtenContent.matchAll(domainPattern)) {
+        if (!domains.includes(match.groups?.domain ?? "")) {
+          domains.push(match.groups?.domain ?? "")
+        }
+      }
+      // Verify order: x_com (20) > apple_com (15) > openai_com (10)
+      expect(domains).toEqual(["x_com", "apple_com", "openai_com"])
+    }, 10000)
+
+    it("should include allowlisted favicons even if below threshold", async () => {
+      setFaviconCounts([[specialFaviconPaths.turntrout, minFaviconCount - 1]])
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      expect(writtenContent).toContain(specialFaviconPaths.turntrout)
+    })
+
+    it("should handle already-normalized paths", async () => {
+      setFaviconCounts([["/static/images/external-favicons/openai_com", minFaviconCount + 1]])
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      // Implementation may return SVG or AVIF depending on availability
+      expect(writtenContent).toContain("openai_com")
+    })
+
+    it("should handle empty counts", async () => {
+      setFaviconCounts([])
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      expect(writtenContent).toContain('id="populate-favicon-container"')
+    })
+
+    it("should not process when #populate-favicon-container does not exist", async () => {
+      jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body><div></div></body></html>")
+
+      const emitter = PopulateContainersEmitter()
+      const result = await emitter.emit(mockCtx, [], mockStaticResources)
+
+      expect(result).toEqual([])
+      expect(fs.writeFileSync).not.toHaveBeenCalled()
+    })
+
+    it("should throw when test page does not exist", async () => {
+      jest.spyOn(fs, "readFileSync").mockImplementation(() => {
+        const error = new Error("ENOENT: no such file or directory") as NodeJS.ErrnoException
+        error.code = "ENOENT"
+        throw error
+      })
+
+      const emitter = PopulateContainersEmitter()
+      await expect(emitter.emit(mockCtx, [], mockStaticResources)).rejects.toThrow("ENOENT")
+    })
+
+    it("should replace existing container children", async () => {
+      setFaviconCounts([["/static/images/external-favicons/example_com", minFaviconCount + 1]])
+      jest
+        .spyOn(fs, "readFileSync")
+        .mockReturnValue(
+          '<html><body><div id="populate-favicon-container"><span>existing</span><p>content</p></div></body></html>',
+        )
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      // Implementation may return SVG or AVIF depending on availability
+      expect(writtenContent).toContain("example_com")
+      expect(writtenContent).not.toContain("existing")
+      expect(writtenContent).not.toContain("content")
+    })
+
+    it("should create favicon elements with correct properties", async () => {
+      setFaviconCounts([["/static/images/external-favicons/example_com", minFaviconCount + 1]])
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      expect(writtenContent).toContain('class="favicon"')
+      expect(writtenContent).toContain('data-domain="example_com"')
+      expect(writtenContent).toContain("--mask-url:")
+      expect(writtenContent).toContain('aria-hidden="true"')
+    })
+
+    it("should populate favicon threshold element", async () => {
+      setFaviconCounts([])
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writeCalls = (fs.writeFileSync as jest.Mock).mock.calls
+      const designPageCall = writeCalls.find(
+        (call: unknown[]) => typeof call[0] === "string" && call[0].includes("design.html"),
+      )
+      expect(designPageCall).toBeDefined()
+      if (!designPageCall) {
+        throw new Error("designPageCall not found")
+      }
+      const writtenContent = designPageCall[1] as string
+      expect(writtenContent).toContain('id="populate-favicon-threshold"')
+      expect(writtenContent).toContain(`<span>${minFaviconCount}</span>`)
+    })
+
+    it("should populate both favicon container and threshold element", async () => {
+      setFaviconCounts([["/static/images/external-favicons/example_com", minFaviconCount + 1]])
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writeCalls = (fs.writeFileSync as jest.Mock).mock.calls
+      // Check test page has favicon container
+      const testPageCall = writeCalls.find(
+        (call: unknown[]) => typeof call[0] === "string" && call[0].includes("test-page.html"),
+      )
+      expect(testPageCall).toBeDefined()
+      if (!testPageCall) {
+        throw new Error("testPageCall not found")
+      }
+      const testPageContent = testPageCall[1] as string
+      expect(testPageContent).toContain('id="populate-favicon-container"')
+      expect(testPageContent).toContain("example_com")
+
+      // Check design page has threshold
+      const designPageCall = writeCalls.find(
+        (call: unknown[]) => typeof call[0] === "string" && call[0].includes("design.html"),
+      )
+      expect(designPageCall).toBeDefined()
+      if (!designPageCall) {
+        throw new Error("designPageCall not found")
+      }
+      const designPageContent = designPageCall[1] as string
+      expect(designPageContent).toContain('id="populate-favicon-threshold"')
+      expect(designPageContent).toContain(`<span>${minFaviconCount}</span>`)
+    })
+
+    it("should handle unknown populate targets gracefully", async () => {
+      setFaviconCounts([])
+
+      // Mock HTML with unknown populate targets
+      jest.spyOn(fs, "readFileSync").mockImplementation((path: unknown) => {
+        const pathStr = String(path)
+        if (pathStr.includes("test-page.html")) {
+          return '<html><body><div id="populate-unknown-id"></div><span class="populate-unknown-class"></span></body></html>'
+        }
+        return "<html><body></body></html>"
+      })
+
+      const emitter = PopulateContainersEmitter()
+      const result = await emitter.emit(mockCtx, [], mockStaticResources)
+
+      // Should not throw, just log warnings
+      expect(result).toEqual([])
+    })
+
+    it("should skip files that don't exist", async () => {
+      setFaviconCounts([])
+
+      // Mock existsSync to return false for one file
+      jest.spyOn(fs, "existsSync").mockImplementation((path: unknown) => {
+        const pathStr = String(path)
+        return !pathStr.includes("nonexistent.html")
+      })
+
+      // skipcq: JS-0116 -- mock must match async interface
+      mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
+        const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
+        if (patternStr.includes(".html")) {
+          return Promise.resolve(["test-page.html", "nonexistent.html", "design.html"])
+        }
+        return Promise.resolve(["file1.test.ts", "file2.test.tsx", "file3.test.ts"])
+      })
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      expect(fs.writeFileSync).toHaveBeenCalled()
+    })
+  })
+
+  describe("generalized functions", () => {
+    describe("findElementById", () => {
+      it.each<[string, string, string, (root: Element | null) => void]>([
+        [
+          "should find element by ID",
+          '<html><body><div id="test-id">content</div></body></html>',
+          "test-id",
+          (root: Element | null) => {
+            expect(root).not.toBeNull()
+            expect((root as Element)?.properties?.id).toBe("test-id")
+          },
+        ],
+        [
+          "should return null when element not found",
+          '<html><body><div id="other-id">content</div></body></html>',
+          "test-id",
+          (root: Element | null) => expect(root).toBeNull(),
+        ],
+      ])("%s", (_, html, id, assertFn) => {
+        const root = populateModule.findElementById(fromHtml(html), id)
+        assertFn(root)
+      })
+    })
+
+    describe("findElementsByClass", () => {
+      it.each<[string, string, string, (elements: Element[]) => void]>([
+        [
+          "should find single element by class",
+          '<html><body><div class="test-class">content</div></body></html>',
+          "test-class",
+          (elements: Element[]) => {
+            expect(elements).toHaveLength(1)
+            expect(elements[0]?.tagName).toBe("div")
+          },
+        ],
+        [
+          "should find multiple elements by class",
+          '<html><body><span class="test-class">1</span><div class="test-class">2</div><p class="test-class">3</p></body></html>',
+          "test-class",
+          (elements: Element[]) => {
+            expect(elements).toHaveLength(3)
+            expect(elements.map((e) => e.tagName)).toEqual(["span", "div", "p"])
+          },
+        ],
+        [
+          "should return empty array when class not found",
+          '<html><body><div class="other-class">content</div></body></html>',
+          "test-class",
+          (elements: Element[]) => expect(elements).toHaveLength(0),
+        ],
+        [
+          "should find elements with multiple classes",
+          '<html><body><div class="test-class other-class">content</div></body></html>',
+          "test-class",
+          (elements: Element[]) => {
+            expect(elements).toHaveLength(1)
+            expect(elements[0]?.properties?.className).toEqual(["test-class", "other-class"])
+          },
+        ],
+      ])("%s", (_, html, className, assertFn) => {
+        const elements = populateModule.findElementsByClass(fromHtml(html), className)
+        assertFn(elements)
+      })
+    })
+
+    describe("generateConstantContent", () => {
+      it.each([
+        ["string constant", "test value", "test value"],
+        ["number constant", 42, "42"],
+      ])("should generate content from %s", async (_, value, expected) => {
+        const generator = populateModule.generateConstantContent(value)
+        const elements = await generator()
+        expect(elements).toHaveLength(1)
+        expect(elements[0].children[0]).toHaveProperty("value", expected)
+      })
+    })
+
+    describe("generateTestCountContent", () => {
+      it("should generate test count content", async () => {
+        const generator = populateModule.generateTestCountContent()
+        const elements = await generator()
+        expect(elements).toHaveLength(1)
+        expect(elements[0].tagName).toBe("span")
+        expect(elements[0].children[0]).toHaveProperty("value", "3 test files")
+      })
+    })
+
+    describe("generateSpecialFaviconContent", () => {
+      it.each([
+        ["turntrout", specialFaviconPaths.turntrout],
+        ["anchor", specialFaviconPaths.anchor],
+      ])("should generate %s favicon inside favicon-span", async (_name, faviconPath) => {
+        const generator = populateModule.generateSpecialFaviconContent(faviconPath)
+        const elements = await generator()
+        expect(elements).toHaveLength(1)
+
+        const faviconSpan = elements[0]
+        expect(faviconSpan).toMatchObject({
+          tagName: "span",
+          properties: { className: "favicon-span" },
+        })
+        expect(faviconSpan.children[1]).toMatchObject({
+          tagName: "svg",
+          properties: {
+            class: expect.stringContaining("favicon"),
+            style: expect.stringContaining(faviconPath),
+          },
+        })
+      })
+
+      it("should make favicon accessible when alt text is provided", async () => {
+        const altText = "A trout jumping to the left."
+        const generator = populateModule.generateSpecialFaviconContent(
+          specialFaviconPaths.turntrout,
+          altText,
+        )
+        const elements = await generator()
+        expect(elements).toHaveLength(1)
+        const faviconElement = elements[0].children[1] as Element
+        expect(faviconElement.properties).toMatchObject({
+          role: "img",
+          "aria-label": altText,
+        })
+        expect(faviconElement.properties["aria-hidden"]).toBeUndefined()
+      })
+    })
+
+    describe("generateMetadataAdmonition", () => {
+      it("should generate admonition with no post-statistics ID", async () => {
+        const generator = populateModule.generateMetadataAdmonition()
+        const elements = await generator()
+
+        expect(elements).toHaveLength(1)
+        const blockquote = elements[0]
+        expect(blockquote.tagName).toBe("blockquote")
+        expect(blockquote.properties?.className).toEqual(
+          expect.arrayContaining(["admonition", "admonition-metadata"]),
+        )
+        expect(blockquote.properties?.dataAdmonition).toBe("info")
+        expect(blockquote.properties?.id).toBeUndefined()
+      })
+    })
+
+    describe("generateBacklinksDemo", () => {
+      const makeContent = (): import("../vfile").ProcessedContent[] => {
+        const designData = { slug: "design", frontmatter: { title: "Design" } }
+        const citingData = {
+          slug: "posts/citing",
+          frontmatter: { title: "Citing Post" },
+          links: ["design"],
+          linkContexts: [
+            {
+              target: "design",
+              anchor: "some-anchor",
+              excerptHtml: 'Cited <span class="backlink-highlight">here</span>.',
+            },
+          ],
+        }
+        return [
+          [{ type: "root", children: [] }, { data: designData }],
+          [{ type: "root", children: [] }, { data: citingData }],
+        ] as unknown as import("../vfile").ProcessedContent[]
+      }
+
+      it("renders the design page's backlinks block with the duplicate id stripped", async () => {
+        const generator = populateModule.generateBacklinksDemo(makeContent())
+        const elements = await generator()
+
+        expect(elements).toHaveLength(1)
+        const blockquote = elements[0]
+        expect(blockquote.tagName).toBe("blockquote")
+        expect(blockquote.properties?.id).toBeUndefined()
+
+        const html = toHtml(blockquote)
+        expect(html).toContain("Links to this page")
+        expect(html).toContain("Citing Post")
+      })
+
+      it("returns nothing when the design page has no backlinks", async () => {
+        const designOnly = [
+          [
+            { type: "root", children: [] },
+            { data: { slug: "design", frontmatter: { title: "Design" } } },
+          ],
+        ] as unknown as import("../vfile").ProcessedContent[]
+        const generator = populateModule.generateBacklinksDemo(designOnly)
+        expect(await generator()).toEqual([])
+      })
+    })
+
+    describe("addFaviconsToLinks", () => {
+      const countsFaviconElements = (html: string): number => {
+        const root = fromHtml(html)
+        let count = 0
+        visit(root, "element", (node) => {
+          const cls = String(node.properties?.class ?? node.properties?.className ?? "")
+          if (cls.includes("favicon")) count++
+        })
+        return count
+      }
+
+      it("should add favicons to external links using ModifyNode", async () => {
+        // Set up counts so github.com meets the threshold
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
+        // Pre-populate cache so the build doesn't need network access
+        favicons.faviconExistsCache.set(
+          "/static/images/external-favicons/github_com.svg",
+          Promise.resolve(true),
+        )
+
+        const html =
+          '<html><body><a class="external" href="https://github.com/foo">Link</a></body></html>'
+        const root = fromHtml(html)
+        await populateModule.addFaviconsToLinks(root)
+
+        expect(countsFaviconElements(toHtml(root))).toBeGreaterThan(0)
+      })
+
+      it("should not duplicate favicons on links that already have them", async () => {
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
+
+        const html =
+          '<html><body><a class="external" href="https://github.com/foo">Li<span class="favicon-span">nk<img class="favicon" src="test.png" /></span></a></body></html>'
+        const root = fromHtml(html)
+        await populateModule.addFaviconsToLinks(root)
+
+        expect(countsFaviconElements(toHtml(root))).toBe(2) // favicon-span + favicon img
+      })
+    })
+
+    describe("populateElements", () => {
+      it.each([
+        [
+          "should populate multiple elements",
+          '<html><body><div id="id1"></div><div id="id2"></div></body></html>',
+          [
+            { id: "id1", value: "value1" },
+            { id: "id2", value: "value2" },
+          ],
+          (content: string) => {
+            expect(content).toContain("value1")
+            expect(content).toContain("value2")
+          },
+        ],
+        [
+          "should skip missing elements",
+          '<html><body><div id="id1"></div></body></html>',
+          [
+            { id: "id1", value: "value1" },
+            { id: "missing-id", value: "value2" },
+          ],
+          (content: string) => {
+            expect(content).toContain("value1")
+            expect(content).not.toContain("value2")
+          },
+        ],
+      ])("%s", async (_, html, configs, assertFn) => {
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        jest.spyOn(fs, "readFileSync").mockReturnValue(html)
+        jest.spyOn(fs, "writeFileSync").mockImplementation(() => {
+          // Mock to prevent actual file writes during tests
+        })
+
+        const result = await populateModule.populateElements(
+          "/tmp/test.html",
+          configs.map((c) => ({
+            id: c.id,
+            generator: populateModule.generateConstantContent(c.value),
+          })),
+        )
+
+        expect(result).toHaveLength(1)
+        const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+        assertFn(writtenContent)
+      })
+
+      it("should throw when file does not exist", async () => {
+        jest.spyOn(fs, "readFileSync").mockImplementation(() => {
+          const error = new Error("ENOENT: no such file or directory") as NodeJS.ErrnoException
+          error.code = "ENOENT"
+          throw error
+        })
+
+        await expect(
+          populateModule.populateElements("/tmp/nonexistent.html", [
+            {
+              id: "id1",
+              generator: populateModule.generateConstantContent("value"),
+            },
+          ]),
+        ).rejects.toThrow("ENOENT")
+        expect(fs.writeFileSync).not.toHaveBeenCalled()
+      })
+
+      it.each([
+        [
+          "should populate single element by class",
+          '<html><body><span class="test-class"></span></body></html>',
+          [{ className: "test-class", value: "populated" }],
+          true,
+          (content: string) => {
+            expect(content).toContain("populated")
+            expect(content).toContain('class="test-class"')
+          },
+        ],
+        [
+          "should populate multiple elements by class",
+          '<html><body><span class="test-class">1</span><div class="test-class">2</div></body></html>',
+          [{ className: "test-class", value: "same" }],
+          true,
+          (content: string) => {
+            const matches = content.match(/>same</g)
+            expect(matches).toHaveLength(2)
+          },
+        ],
+        [
+          "should handle mixed ID and class configs",
+          '<html><body><div id="by-id"></div><span class="by-class"></span></body></html>',
+          [
+            { id: "by-id", value: "id-value" },
+            { className: "by-class", value: "class-value" },
+          ],
+          true,
+          (content: string) => {
+            expect(content).toContain("id-value")
+            expect(content).toContain("class-value")
+          },
+        ],
+        [
+          "should skip when class not found",
+          '<html><body><span class="other-class"></span></body></html>',
+          [{ className: "test-class", value: "populated" }],
+          false,
+          (content: string) => {
+            expect(content).not.toContain("populated")
+            expect(content).toContain('class="other-class"')
+          },
+        ],
+      ])("%s", async (_, html, configs, shouldModify, assertFn) => {
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        jest.spyOn(fs, "readFileSync").mockReturnValue(html)
+        jest.spyOn(fs, "writeFileSync").mockImplementation(() => {
+          // Mock to prevent actual file writes during tests
+        })
+
+        const result = await populateModule.populateElements(
+          "/tmp/test.html",
+          configs.map((c) => ({
+            id: c.id,
+            className: c.className,
+            generator: populateModule.generateConstantContent(c.value),
+          })),
+        )
+
+        expect(result).toEqual(shouldModify ? ["/tmp/test.html"] : [])
+        expect(fs.writeFileSync).toHaveBeenCalledTimes(shouldModify ? 1 : 0)
+        const writtenContent = shouldModify
+          ? ((fs.writeFileSync as jest.Mock).mock.calls[0][1] as string)
+          : html
+        assertFn(writtenContent)
+      })
+
+      it("should throw when config has neither id nor className", async () => {
+        const existsSpy = jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        const readSpy = jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body></body></html>")
+
+        type ElementPopulatorConfig = Parameters<typeof populateModule.populateElements>[1][number]
+        await expect(
+          populateModule.populateElements("/tmp/test.html", [
+            {
+              generator: populateModule.generateConstantContent("value"),
+            } as ElementPopulatorConfig,
+          ]),
+        ).rejects.toThrow("Config missing both id and className")
+
+        existsSpy.mockRestore()
+        readSpy.mockRestore()
+      })
+
+      it("should throw when config has both id and className", async () => {
+        const existsSpy = jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        const readSpy = jest.spyOn(fs, "readFileSync").mockReturnValue("<html><body></body></html>")
+
+        await expect(
+          populateModule.populateElements("/tmp/test.html", [
+            {
+              id: "test-id",
+              className: "test-class",
+              generator: populateModule.generateConstantContent("value"),
+            },
+          ]),
+        ).rejects.toThrow("Config cannot have both id and className")
+
+        existsSpy.mockRestore()
+        readSpy.mockRestore()
+      })
+
+      it("should only add favicons to links inside populated containers, not the whole page", async () => {
+        // Set up favicon data so github.com links would get favicons
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
+        favicons.faviconExistsCache.set(
+          "/static/images/external-favicons/github_com.svg",
+          Promise.resolve(true),
+        )
+
+        // Page has an external link OUTSIDE the populated container and the
+        // populated container will inject one INSIDE
+        const html = [
+          "<html><body>",
+          '<a class="external" href="https://github.com/outside">Outside</a>',
+          '<div id="populate-me"></div>',
+          "</body></html>",
+        ].join("")
+
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        jest.spyOn(fs, "readFileSync").mockReturnValue(html)
+        let writtenContent = ""
+        jest.spyOn(fs, "writeFileSync").mockImplementation((_path, data) => {
+          writtenContent = data as string
+        })
+
+        await populateModule.populateElements("/tmp/test.html", [
+          {
+            id: "populate-me",
+            generator: () => {
+              const fragment = fromHtml(
+                '<a class="external" href="https://github.com/inside">Inside</a>',
+                { fragment: true },
+              )
+              return fragment.children as Element[]
+            },
+          },
+        ])
+
+        const root = fromHtml(writtenContent)
+
+        const countFaviconsInSubtree = (subtree: Element): number => {
+          let count = 0
+          visit(subtree, "element", (child) => {
+            const cls = String(child.properties?.class ?? child.properties?.className ?? "")
+            if (cls.includes("favicon")) count++
+          })
+          return count
+        }
+
+        // The link outside the populated container should NOT have a favicon
+        let outsideLinkFavicons = 0
+        visit(root, "element", (node) => {
+          if (node.tagName !== "a") return
+          if (String(node.properties?.href) !== "https://github.com/outside") return
+          outsideLinkFavicons = countFaviconsInSubtree(node)
+        })
+        expect(outsideLinkFavicons).toBe(0)
+
+        // The link inside the populated container SHOULD have a favicon
+        let insideFaviconCount = 0
+        visit(root, "element", (node) => {
+          if (node.tagName !== "div") return
+          if (node.properties?.id !== "populate-me") return
+          insideFaviconCount = countFaviconsInSubtree(node)
+        })
+        expect(insideFaviconCount).toBe(2) // favicon-span + favicon img
+      })
+
+      it("skips the favicon post-pass when skipFavicons is set", async () => {
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
+        favicons.faviconExistsCache.set(
+          "/static/images/external-favicons/github_com.svg",
+          Promise.resolve(true),
+        )
+
+        const html = '<html><body><div id="populate-me"></div></body></html>'
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        jest.spyOn(fs, "readFileSync").mockReturnValue(html)
+        let writtenContent = ""
+        jest.spyOn(fs, "writeFileSync").mockImplementation((_path, data) => {
+          writtenContent = data as string
+        })
+
+        const result = await populateModule.populateElements("/tmp/test.html", [
+          {
+            id: "populate-me",
+            skipFavicons: true,
+            generator: () => {
+              const fragment = fromHtml(
+                '<a class="external" href="https://github.com/inside">Inside</a>',
+                { fragment: true },
+              )
+              return fragment.children as Element[]
+            },
+          },
+        ])
+
+        // The container is still populated and the file rewritten...
+        expect(result).toEqual(["/tmp/test.html"])
+        // ...but no favicon is injected onto the link inside it.
+        const root = fromHtml(writtenContent)
+        let faviconCount = 0
+        visit(root, "element", (node) => {
+          const cls = String(node.properties?.class ?? node.properties?.className ?? "")
+          if (cls.includes("favicon")) faviconCount++
+        })
+        expect(faviconCount).toBe(0)
+      })
+    })
+  })
+
+  describe("Repository Statistics Functions", () => {
+    beforeEach(() => {
+      mockExecSync.mockClear()
+      mockGlobbyFn.mockClear()
+    })
+
+    describe("isShallowClone", () => {
+      it("should return true for shallow repositories", () => {
+        mockExecSync.mockReturnValue("true\n")
+        expect(populateModule.isShallowClone()).toBe(true)
+      })
+
+      it("should return false for full clones", () => {
+        mockExecSync.mockReturnValue("false\n")
+        expect(populateModule.isShallowClone()).toBe(false)
+      })
+    })
+
+    describe("countGitCommits", () => {
+      it("should return 0 for shallow clones", () => {
+        mockExecSync.mockReturnValueOnce("true\n") // isShallowClone
+
+        const count = populateModule.countGitCommits({ author: "Alex Turner" })
+
+        expect(count).toBe(0)
+        expect(mockExecSync).toHaveBeenCalledTimes(1)
+      })
+
+      it("should count commits for a specific author", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce(`${MOCK_STATS.commitCount}\n`)
+
+        const count = populateModule.countGitCommits({ author: "Alex Turner" })
+
+        expect(count).toBe(MOCK_STATS.commitCount)
+        expect(mockExecSync).toHaveBeenCalledWith(
+          "git rev-list --all --count '--author=Alex Turner'",
+          { encoding: "utf-8" },
+        )
+      })
+
+      it("should escape single quotes in author name", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce("42\n")
+
+        const count = populateModule.countGitCommits({ author: "O'Brien" })
+
+        expect(count).toBe(42)
+        expect(mockExecSync).toHaveBeenCalledWith(
+          'git rev-list --all --count "--author=O\'Brien"',
+          { encoding: "utf-8" },
+        )
+      })
+
+      it("should count commits matching a grep pattern", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce(`${MOCK_STATS.aiCommitCount}\n`)
+
+        const count = populateModule.countGitCommits({ grep: "claude.ai/code/session" })
+
+        expect(count).toBe(MOCK_STATS.aiCommitCount)
+        expect(mockExecSync).toHaveBeenCalledWith(
+          "git rev-list --all --count --grep\\=claude.ai/code/session",
+          { encoding: "utf-8" },
+        )
+      })
+
+      it("should handle whitespace in output", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce(`\n\n  ${MOCK_STATS.jsTestCount}  \n\n`)
+
+        const count = populateModule.countGitCommits({ author: "Test Author" })
+
+        expect(count).toBe(MOCK_STATS.jsTestCount)
+      })
+
+      it("should count all commits when no options provided", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce("1000\n")
+
+        const count = populateModule.countGitCommits()
+
+        expect(count).toBe(1000)
+        expect(mockExecSync).toHaveBeenCalledWith("git rev-list --all --count", {
+          encoding: "utf-8",
+        })
+      })
+    })
+
+    describe("countJsTestFiles", () => {
+      it("should count JS/TS test declarations via grep", () => {
+        mockExecSync.mockReturnValue(`${MOCK_STATS.jsTestCount}\n`)
+
+        const count = populateModule.countJsTests()
+
+        expect(count).toBe(MOCK_STATS.jsTestCount)
+        expect(mockExecSync).toHaveBeenCalledWith(
+          expect.stringContaining("--include='*.test.ts'"),
+          { encoding: "utf-8" },
+        )
+      })
+
+      it("should not execute the test suite", () => {
+        mockExecSync.mockReturnValue("42\n")
+
+        populateModule.countJsTests()
+
+        expect(mockExecSync).not.toHaveBeenCalledWith(
+          expect.stringContaining("pnpm test"),
+          expect.anything(),
+        )
+      })
+
+      it("should handle a different count", () => {
+        mockExecSync.mockReturnValue("42\n")
+
+        const count = populateModule.countJsTests()
+
+        expect(count).toBe(42)
+      })
+    })
+
+    describe("countPlaywrightTests", () => {
+      it("should count Playwright test cases", () => {
+        mockExecSync.mockReturnValue(`${MOCK_STATS.playwrightTestCount}\n`)
+
+        const count = populateModule.countPlaywrightTests()
+
+        expect(count).toBe(MOCK_STATS.playwrightTestCount)
+        expect(mockExecSync).toHaveBeenCalledWith(
+          'grep -rE "^\\s*test\\(" quartz/components/tests/*.spec.ts | wc -l',
+          { encoding: "utf-8" },
+        )
+      })
+
+      it("should handle zero test cases", () => {
+        mockExecSync.mockReturnValue("0\n")
+
+        const count = populateModule.countPlaywrightTests()
+
+        expect(count).toBe(0)
+      })
+    })
+
+    describe("countPytestTests", () => {
+      it("should count pytest tests via pytest --collect-only", () => {
+        mockExecSync.mockReturnValue(`${MOCK_STATS.pytestCount} tests collected in 0.50s\n`)
+
+        const count = populateModule.countPythonTests()
+
+        expect(count).toBe(MOCK_STATS.pytestCount)
+        expect(mockExecSync).toHaveBeenCalledWith(populateModule.PYTEST_COUNT_CMD, {
+          encoding: "utf-8",
+        })
+      })
+
+      it("should throw when pytest output doesn't match", () => {
+        mockExecSync.mockReturnValue("some weird output\n")
+
+        expect(() => populateModule.countPythonTests()).toThrow(
+          "Failed to parse pytest test count from output",
+        )
+      })
+
+      it("should handle large numbers", () => {
+        mockExecSync.mockReturnValue("10000 tests collected in 0.50s\n")
+
+        const count = populateModule.countPythonTests()
+
+        expect(count).toBe(10000)
+      })
+    })
+
+    describe("countLinesOfCode", () => {
+      it("should count total lines of code", () => {
+        mockExecSync.mockReturnValue(`${MOCK_STATS.linesOfCode}\n`)
+
+        const count = populateModule.countLinesOfCode()
+
+        expect(count).toBe(MOCK_STATS.linesOfCode)
+        expect(mockExecSync).toHaveBeenCalledWith(expect.stringContaining("find . -type f"), {
+          encoding: "utf-8",
+        })
+      })
+
+      it("should handle very large codebases", () => {
+        mockExecSync.mockReturnValue("1000000\n")
+
+        const count = populateModule.countLinesOfCode()
+
+        expect(count).toBe(1000000)
+      })
+    })
+
+    describe("computeRepoStats", () => {
+      it("should compute all statistics in parallel", async () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone for commitCount
+          .mockReturnValueOnce(`${MOCK_STATS.commitCount}\n`)
+          .mockReturnValueOnce("false\n") // isShallowClone for aiCommitCount
+          .mockReturnValueOnce(`${MOCK_STATS.aiCommitCount}\n`)
+          .mockReturnValueOnce(`${MOCK_STATS.jsTestCount}\n`)
+          .mockReturnValueOnce(`${MOCK_STATS.playwrightTestCount}\n`)
+          .mockReturnValueOnce(`${MOCK_STATS.pytestCount} tests collected in 0.50s\n`)
+          .mockReturnValueOnce(`${MOCK_STATS.linesOfCode}\n`)
+
+        const stats = await populateModule.computeRepoStats()
+
+        expect(stats).toEqual(MOCK_STATS)
+      })
+
+      it("degrades a failing cosmetic counter to the sentinel instead of aborting", async () => {
+        // Every stat command fails (e.g. no `.venv`, no `git`): the build must
+        // still produce a full RepoStats object with sentinel counts.
+        mockExecSync.mockImplementation(() => {
+          throw new Error("command not found")
+        })
+
+        const stats = await populateModule.computeRepoStats()
+
+        expect(stats).toEqual({
+          commitCount: populateModule.STAT_UNAVAILABLE,
+          aiCommitCount: populateModule.STAT_UNAVAILABLE,
+          jsTestCount: populateModule.STAT_UNAVAILABLE,
+          playwrightTestCount: populateModule.STAT_UNAVAILABLE,
+          pytestCount: populateModule.STAT_UNAVAILABLE,
+          linesOfCode: populateModule.STAT_UNAVAILABLE,
+        })
+      })
+    })
+
+    describe("safeStatCount", () => {
+      it("returns the counter result when it succeeds", () => {
+        expect(populateModule.safeStatCount("ok", () => 42)).toBe(42)
+      })
+
+      it("returns the sentinel and does not throw when the counter throws", () => {
+        const throwingCounter = () => {
+          throw new Error("boom")
+        }
+
+        expect(() => populateModule.safeStatCount("boom", throwingCounter)).not.toThrow()
+        expect(populateModule.safeStatCount("boom", throwingCounter)).toBe(
+          populateModule.STAT_UNAVAILABLE,
+        )
+      })
+    })
+
+    describe("htmlFileToSlug", () => {
+      it.each([
+        ["design.html", "design"],
+        ["posts/my-post.html", "posts/my-post"],
+        ["folder/index.html", "folder/index"],
+        ["deep/nested/page.html", "deep/nested/page"],
+        ["index.html", "index"],
+      ])("converts %s to %s", (input, expected) => {
+        expect(populateModule.htmlFileToSlug(input)).toBe(expected)
+      })
+    })
+  })
+})
