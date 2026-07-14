@@ -18,7 +18,6 @@ import {
   FixFootnotes,
   FrontMatter,
   GitHubFlavoredMarkdown,
-  githubReadmeSource,
   HTMLFormattingImprovement,
   InlineCodeSpacing,
   InvertInDarkMode,
@@ -50,6 +49,7 @@ import {
   WrapNakedElements,
 } from "../../quartz/plugins"
 import { QuartzConfig } from "../../quartz/util/ctx"
+import { GITHUB_README_SOURCES } from "./externalReadmes"
 
 const config: QuartzConfig = {
   configuration: {
@@ -74,18 +74,7 @@ const config: QuartzConfig = {
       FrontMatter(),
       PopulateExternalMarkdown({
         sources: {
-          punctilio: githubReadmeSource("alexander-turner", "punctilio", {
-            maxSections: 0,
-          }),
-          "claude-guard": githubReadmeSource("alexander-turner", "claude-guard", {
-            maxSections: 0,
-          }),
-          "ci-truth-serum": githubReadmeSource("alexander-turner", "ci-truth-serum", {
-            maxSections: 1,
-          }),
-          "agent-input-sanitizer": githubReadmeSource("alexander-turner", "agent-input-sanitizer", {
-            maxSections: 1,
-          }),
+          ...GITHUB_README_SOURCES,
           "lint-staged": {
             filePath: "package.json",
             jsonPath: "lint-staged",

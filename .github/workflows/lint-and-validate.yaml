@@ -152,6 +152,11 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ secrets.PUSH_TOKEN }}
+          # Full history: the amend and rebase-retry below need HEAD's real
+          # parents. A shallow checkout grafts HEAD as parentless, so
+          # `commit --amend` would write an orphan commit whose force-push
+          # detaches the branch from its PR (GitHub then auto-closes it).
+          fetch-depth: 0
 
       - name: Setup site
         uses: ./.github/actions/setup-site

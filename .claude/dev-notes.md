@@ -168,6 +168,23 @@ PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/
   npx tsx quartz/bootstrap-cli.ts build --offline
 ```
 
+## External README snapshots
+
+The GitHub READMEs embedded via `populate-markdown-*` placeholders (see
+`config/quartz/externalReadmes.ts`) are read at build time from committed
+snapshots in `quartz/plugins/transformers/.readme-snapshots/` — the build
+never fetches them from the network, so builds are deterministic and immune
+to raw.githubusercontent.com flakiness. To pick up upstream README changes:
+
+```bash
+npx tsx scripts/refresh_readme_snapshots.ts   # GITHUB_TOKEN raises the rate limit
+```
+
+then commit the updated snapshots. `.github/workflows/refresh-readme-snapshots.yaml`
+runs this daily and opens an auto-merged PR when content changed. When adding a
+new GitHub source, add it to `externalReadmes.ts`, run the script, and commit
+the new snapshot — a missing snapshot fails the build with instructions.
+
 ## Favicon kerning audit
 
 Favicon spacing (`quartz/styles/favicon.scss` `$domain-left-insets`,
