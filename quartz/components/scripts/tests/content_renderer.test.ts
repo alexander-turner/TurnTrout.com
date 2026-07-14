@@ -156,6 +156,27 @@ describe("processPreviewables", () => {
     const original = html.querySelector(".previewable p")
     expect(original?.textContent).toBe("Original content")
   })
+
+  it("should strip the Similar posts block from the preview", () => {
+    const html = document.implementation.createHTMLDocument()
+    html.body.innerHTML = `
+      <div class="previewable">
+        <p>Article body</p>
+        <h1 id="similar-posts" class="related-posts-title">Similar posts</h1>
+        <div class="related-posts">
+          <ul><li><a href="/other">Other post</a><span class="related-post-excerpt">Excerpt</span></li></ul>
+        </div>
+      </div>
+    `
+
+    const url = new URL("http://example.com")
+    const elements = processPreviewables(html, url)
+
+    expect(elements.length).toBe(1)
+    expect(elements[0].querySelector("#similar-posts")).toBeNull()
+    expect(elements[0].querySelector(".related-posts")).toBeNull()
+    expect(elements[0].querySelector("p")?.textContent).toBe("Article body")
+  })
 })
 
 describe("modifyElementIds", () => {
