@@ -2334,6 +2334,19 @@ describe("Non-breaking space insertion", () => {
     expect(testHtmlFormattingImprovement(input)).toBe(input)
   })
 
+  // A display heading nested inside a container (the production shape: a title
+  // inside a `.admonition` blockquote) must still skip nbsp. The title's inner
+  // text is its own prose unit, which an ancestor-level pass would otherwise
+  // nbsp-transform because the ancestor is not itself a display heading.
+  it.each([
+    '<blockquote class="admonition"><div class="admonition-title"><div class="admonition-title-inner">A cat sat on a mat</div></div><div class="admonition-content"><p>body</p></div></blockquote>',
+    '<blockquote class="admonition"><div class="admonition-title"><div class="admonition-title-inner"><a href="/">Google Workers Seek Red Lines on Military AI</a></div></div><div class="admonition-content"><p>body</p></div></blockquote>',
+    '<article><section class="subtitle-container"><p class="subtitle">Echoing Anthropic here</p></section></article>',
+    "<article><h2>A cat sat on a mat</h2><p>body</p></article>",
+  ])("does not insert nbsp in nested display headings: %s", (input) => {
+    expect(testHtmlFormattingImprovement(input)).not.toContain(NBSP)
+  })
+
   it("also applies via applyTextTransforms (titles, TOC, etc.)", () => {
     const result = applyTextTransforms("I love this thing")
     expect(result).toContain(NBSP)
