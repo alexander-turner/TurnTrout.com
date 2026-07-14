@@ -7,7 +7,6 @@ tags:
   - deepmind
   - personal
 description: "I fought against Google's Pentagon AI deal for months. I document how powerful people and institutions failed to keep their AI ethics promises in the face of pressure."
-description: "A story of how powerful people and institutions failed to keep their AI ethics promises in the face of pressure."
 similar_posts:
   - red-line-framework
   - deepmind-equity-discussion
