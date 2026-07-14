@@ -534,9 +534,14 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   const { video, autoplayToggle } = getVideoElements(page)
 
   await autoplayToggle.click()
+  // The pond video only begins loading when play() runs (the click above), so
+  // assert on actual playback — the playhead advancing — rather than look-ahead
+  // buffer depth. currentTime > 0 confirms autoplay works as soon as the first
+  // frame renders, independent of how long the CDN takes to buffer future data
+  // (readyState >= 3), which under CI contention can lag far behind playback.
   await page.waitForFunction((id) => {
     const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return videoElement && !videoElement.paused && videoElement.readyState >= 3
+    return videoElement && !videoElement.paused && videoElement.currentTime > 0
   }, pondVideoId)
 
   await page.evaluate(() => window.spaNavigate(new URL("/design", window.location.origin)))

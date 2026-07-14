@@ -1,17 +1,34 @@
 /**
  * Transformer plugin that populates external markdown content at build time.
- * Supports fetching README files from GitHub repositories and reading local files.
+ * GitHub READMEs are read from committed snapshots (see
+ * `scripts/refresh_readme_snapshots.ts`); other sources are local files.
  */
 
-import childProcess from "child_process"
 import escapeStringRegexp from "escape-string-regexp"
 import fs from "fs"
+import path from "path"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { createWinstonLogger } from "../../util/log"
+import { createWinstonLogger, findGitRoot } from "../../util/log"
 
 const logger = createWinstonLogger("populateExternalMarkdown")
+
+/**
+ * Committed last-known-good copies of the GitHub sources, one file per source.
+ * The build reads only these snapshots — never the network — so a
+ * raw.githubusercontent.com outage or rate limit cannot fail a build, and the
+ * same commit always renders the same page. `scripts/refresh_readme_snapshots.ts`
+ * re-fetches them out of band. Anchored to the git root (not this module's
+ * directory) because the build bundles this file into `.quartz-cache/`.
+ */
+export const README_SNAPSHOT_DIR = path.join(
+  findGitRoot(),
+  "quartz",
+  "plugins",
+  "transformers",
+  ".readme-snapshots",
+)
 
 /**
  * Configuration for GitHub markdown sources.
@@ -53,17 +70,37 @@ export function isLocalSource(source: MarkdownSource): source is LocalMarkdownSo
   return "filePath" in source
 }
 
-/** Fetches the raw contents of a file from GitHub via curl. */
-export function fetchGitHubContentSync(source: GitHubMarkdownSource): string {
-  const ref = source.ref ?? "main"
-  const filePath = source.path ?? "README.md"
-  const url = `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${ref}/${filePath}`
+/** Resolves a GitHub source's optional fields to their defaults. */
+export function resolveGitHubSource(source: GitHubMarkdownSource): {
+  ref: string
+  filePath: string
+} {
+  return { ref: source.ref ?? "main", filePath: source.path ?? "README.md" }
+}
 
-  logger.debug(`Fetching ${url}`)
-  return childProcess.execFileSync("curl", ["-sf", url], {
-    encoding: "utf-8",
-    timeout: 30000,
-  })
+/** Snapshot file path for a GitHub source, distinct for each configured source. */
+export function githubSnapshotPath(source: GitHubMarkdownSource): string {
+  const { ref, filePath } = resolveGitHubSource(source)
+  const fileName = `${source.owner}__${source.repo}__${ref}__${filePath}`.replaceAll("/", "__")
+  return path.join(README_SNAPSHOT_DIR, fileName)
+}
+
+/** Reads a GitHub source's committed snapshot from `README_SNAPSHOT_DIR`. */
+export function readGitHubSnapshotSync(source: GitHubMarkdownSource): string {
+  const snapshotPath = githubSnapshotPath(source)
+  logger.debug(`Reading snapshot ${snapshotPath}`)
+  try {
+    return fs.readFileSync(snapshotPath, "utf-8")
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      throw new Error(
+        `Missing README snapshot ${snapshotPath} for ${source.owner}/${source.repo}. ` +
+          "Run `npx tsx scripts/refresh_readme_snapshots.ts` and commit the result.",
+        { cause: error },
+      )
+    }
+    throw error
+  }
 }
 
 /** Reads a local file; if `jsonPath` is set, extracts a nested JSON value as a `"key": value` snippet. */
@@ -252,9 +289,9 @@ function getContent(name: string, source: MarkdownSource): string {
 
   const content = (() => {
     try {
-      return local ? fetchLocalContentSync(source) : fetchGitHubContentSync(source)
+      return local ? fetchLocalContentSync(source) : readGitHubSnapshotSync(source)
     } catch (error) {
-      throw new Error(`Failed to fetch content for placeholder "${name}" from ${label}`, {
+      throw new Error(`Failed to load content for placeholder "${name}" from ${label}`, {
         cause: error,
       })
     }
