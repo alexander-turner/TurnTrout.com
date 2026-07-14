@@ -39,19 +39,33 @@ jobs:
         with:
           install-python: "false"
 
+      # A PAT (TEMPLATE_SYNC_TOKEN) lets the PR trigger the required status
+      # checks; PRs created with the default GITHUB_TOKEN never start
+      # workflows, which would leave auto-merge waiting forever. Fail loudly
+      # up front rather than creating a zombie PR whose checks never run.
+      - name: Require TEMPLATE_SYNC_TOKEN
+        env:
+          HAS_PAT: ${{ secrets.TEMPLATE_SYNC_TOKEN != '' }}
+        run: |
+          if [ "$HAS_PAT" != "true" ]; then
+            echo "::error::TEMPLATE_SYNC_TOKEN is not set; a PR created with GITHUB_TOKEN would never trigger its required checks."
+            exit 1
+          fi
+
+      # continue-on-error so snapshots that DID refresh still reach the PR
+      # steps below; a failing source is re-raised by the final step.
       - name: Refresh snapshots
+        id: refresh
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx tsx scripts/refresh_readme_snapshots.ts
 
-      # A PAT (TEMPLATE_SYNC_TOKEN) lets the PR trigger the required status
-      # checks; PRs created with the default GITHUB_TOKEN never start
-      # workflows, which would leave auto-merge waiting forever.
       - name: Open pull request with updated snapshots
         id: create-pr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
-          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN }}
           branch: automated/readme-snapshots
           delete-branch: true
           commit-message: "chore(readmes): refresh external README snapshots"
@@ -67,6 +81,12 @@ jobs:
       - name: Enable auto-merge
         if: steps.create-pr.outputs.pull-request-operation == 'created'
         env:
-          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN }}
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: gh pr merge --auto --squash "$PR_NUMBER"
+
+      - name: Fail if any source could not be refreshed
+        if: steps.refresh.outcome == 'failure'
+        run: |
+          echo "::error::At least one README source failed to refresh; its last-known-good snapshot was kept. See the 'Refresh snapshots' step."
+          exit 1

@@ -16,6 +16,7 @@ import {
   type GitHubMarkdownSource,
   githubSnapshotPath,
   README_SNAPSHOT_DIR,
+  resolveGitHubSource,
 } from "../quartz/plugins/transformers/populateExternalMarkdown"
 
 export const MAX_ATTEMPTS = 5
@@ -23,9 +24,9 @@ export const BASE_DELAY_MS = 2000
 
 /** GitHub contents-API URL returning the raw file for a source. */
 export function apiUrl(source: GitHubMarkdownSource): string {
-  const ref = source.ref ?? "main"
-  const filePath = source.path ?? "README.md"
-  return `https://api.github.com/repos/${source.owner}/${source.repo}/contents/${filePath}?ref=${ref}`
+  const { ref, filePath } = resolveGitHubSource(source)
+  const encodedPath = filePath.split("/").map(encodeURIComponent).join("/")
+  return `https://api.github.com/repos/${source.owner}/${source.repo}/contents/${encodedPath}?ref=${encodeURIComponent(ref)}`
 }
 
 export interface FetchDeps {
@@ -36,8 +37,8 @@ export interface FetchDeps {
 
 /**
  * Fetches a source's raw content, retrying transient failures (network
- * errors, 5xx, 403/429 rate limits) with exponential backoff. A 404 is
- * permanent — the repo, ref, or path is wrong — so it fails immediately.
+ * errors, 5xx, 403/429 rate limits) with exponential backoff. A 404 (wrong
+ * repo/ref/path) or 401 (bad token) is permanent, so it fails immediately.
  */
 export async function fetchReadme(
   source: GitHubMarkdownSource,
@@ -67,6 +68,9 @@ export async function fetchReadme(
     }
     if (response.status === 404) {
       throw new Error(`${url} returned 404 — check the owner/repo/ref/path configuration`)
+    }
+    if (response.status === 401) {
+      throw new Error(`${url} returned 401 — the GITHUB_TOKEN is invalid or expired`)
     }
     if (!response.ok) {
       lastError = new Error(`${url} returned HTTP ${response.status}`)
@@ -100,7 +104,6 @@ export async function refreshSnapshots(
     try {
       content = await fetchReadme(source, deps)
     } catch (error) {
-      // fetchReadme only throws Error instances
       console.error(`✗ ${name}: ${(error as Error).message}`)
       result.failed.push(name)
       continue

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import fs from "node:fs"
 
+import { GITHUB_README_SOURCES } from "../../config/quartz/externalReadmes"
 import {
   githubSnapshotPath,
   README_SNAPSHOT_DIR,
@@ -18,6 +19,16 @@ const SOURCE_URL = apiUrl(SOURCE)
 
 function response(status: number, body = ""): Response {
   return new Response(body, { status })
+}
+
+/** Awaits a promise expected to reject and returns the rejection error. */
+async function capture(promise: Promise<unknown>): Promise<Error> {
+  try {
+    await promise
+  } catch (error) {
+    return error as Error
+  }
+  throw new Error("expected promise to reject")
 }
 
 describe("refresh_readme_snapshots", () => {
@@ -44,6 +55,10 @@ describe("refresh_readme_snapshots", () => {
       [
         { owner: "o", repo: "r", ref: "develop", path: "docs/API.md" },
         "https://api.github.com/repos/o/r/contents/docs/API.md?ref=develop",
+      ],
+      [
+        { owner: "o", repo: "r", ref: "feature/x", path: "docs/a b#c.md" },
+        "https://api.github.com/repos/o/r/contents/docs/a%20b%23c.md?ref=feature%2Fx",
       ],
     ])("builds the contents-API URL for %j", (source, expected) => {
       expect(apiUrl(source)).toBe(expected)
@@ -96,44 +111,31 @@ describe("refresh_readme_snapshots", () => {
     it("retries network errors and reports the last one as the cause", async () => {
       const networkError = new Error("socket hang up")
       const fetchFn = jest.fn<typeof fetch>().mockRejectedValue(networkError)
-      let thrown: Error | undefined
-      try {
-        await fetchReadme(SOURCE, { fetchFn, sleepFn })
-      } catch (e) {
-        thrown = e as Error
-      }
-      expect(thrown?.message).toBe(`Failed to fetch ${SOURCE_URL} after ${MAX_ATTEMPTS} attempts`)
-      expect(thrown?.cause).toBe(networkError)
+      const thrown = await capture(fetchReadme(SOURCE, { fetchFn, sleepFn }))
+      expect(thrown.message).toBe(`Failed to fetch ${SOURCE_URL} after ${MAX_ATTEMPTS} attempts`)
+      expect(thrown.cause).toBe(networkError)
       expect(fetchFn).toHaveBeenCalledTimes(MAX_ATTEMPTS)
     })
 
     it("wraps non-Error rejections in an Error", async () => {
       const fetchFn = jest.fn<typeof fetch>().mockRejectedValue("string failure")
-      let thrown: Error | undefined
-      try {
-        await fetchReadme(SOURCE, { fetchFn, sleepFn })
-      } catch (e) {
-        thrown = e as Error
-      }
-      expect((thrown?.cause as Error).message).toBe("string failure")
+      const thrown = await capture(fetchReadme(SOURCE, { fetchFn, sleepFn }))
+      expect((thrown.cause as Error).message).toBe("string failure")
     })
 
     it("reports the last HTTP status when every attempt fails", async () => {
       const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(response(502))
-      let thrown: Error | undefined
-      try {
-        await fetchReadme(SOURCE, { fetchFn, sleepFn })
-      } catch (e) {
-        thrown = e as Error
-      }
-      expect((thrown?.cause as Error).message).toBe(`${SOURCE_URL} returned HTTP 502`)
+      const thrown = await capture(fetchReadme(SOURCE, { fetchFn, sleepFn }))
+      expect((thrown.cause as Error).message).toBe(`${SOURCE_URL} returned HTTP 502`)
     })
 
-    it("fails immediately on 404 without retrying", async () => {
-      const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(response(404))
-      await expect(fetchReadme(SOURCE, { fetchFn, sleepFn })).rejects.toThrow(
-        `${SOURCE_URL} returned 404 — check the owner/repo/ref/path configuration`,
-      )
+    it.each([
+      [404, "check the owner/repo/ref/path configuration"],
+      [401, "the GITHUB_TOKEN is invalid or expired"],
+    ])("fails immediately on %i without retrying", async (status, messagePart) => {
+      const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(response(status))
+      const thrown = await capture(fetchReadme(SOURCE, { fetchFn, sleepFn }))
+      expect(thrown.message).toBe(`${SOURCE_URL} returned ${status} — ${messagePart}`)
       expect(fetchFn).toHaveBeenCalledTimes(1)
     })
   })
@@ -201,8 +203,9 @@ describe("refresh_readme_snapshots", () => {
         .spyOn(globalThis, "fetch")
         .mockImplementation(() => Promise.resolve(response(200, "body")))
       const result = await refreshSnapshots()
+      expect(result.written).toEqual(Object.keys(GITHUB_README_SOURCES))
       expect(result.failed).toEqual([])
-      expect(fetchSpy.mock.calls.length).toBeGreaterThan(0)
+      expect(fetchSpy).toHaveBeenCalledTimes(Object.keys(GITHUB_README_SOURCES).length)
     })
   })
 })

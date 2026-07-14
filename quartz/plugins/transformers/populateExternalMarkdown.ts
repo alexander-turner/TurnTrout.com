@@ -5,28 +5,25 @@
  */
 
 import escapeStringRegexp from "escape-string-regexp"
-import gitRoot from "find-git-root"
 import fs from "fs"
 import path from "path"
-import { fileURLToPath } from "url"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { createWinstonLogger } from "../../util/log"
+import { createWinstonLogger, findGitRoot } from "../../util/log"
 
 const logger = createWinstonLogger("populateExternalMarkdown")
-
-const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
 
 /**
  * Committed last-known-good copies of the GitHub sources, one file per source.
  * The build reads only these snapshots — never the network — so a
  * raw.githubusercontent.com outage or rate limit cannot fail a build, and the
  * same commit always renders the same page. `scripts/refresh_readme_snapshots.ts`
- * re-fetches them out of band.
+ * re-fetches them out of band. Anchored to the git root (not this module's
+ * directory) because the build bundles this file into `.quartz-cache/`.
  */
 export const README_SNAPSHOT_DIR = path.join(
-  projectRoot,
+  findGitRoot(),
   "quartz",
   "plugins",
   "transformers",
@@ -73,11 +70,18 @@ export function isLocalSource(source: MarkdownSource): source is LocalMarkdownSo
   return "filePath" in source
 }
 
+/** Resolves a GitHub source's optional fields to their defaults. */
+export function resolveGitHubSource(source: GitHubMarkdownSource): {
+  ref: string
+  filePath: string
+} {
+  return { ref: source.ref ?? "main", filePath: source.path ?? "README.md" }
+}
+
 /** Snapshot file path for a GitHub source, unique per (owner, repo, ref, path). */
 export function githubSnapshotPath(source: GitHubMarkdownSource): string {
-  const ref = source.ref ?? "main"
-  const filePath = source.path ?? "README.md"
-  const fileName = `${source.owner}__${source.repo}__${ref}__${filePath.replaceAll("/", "__")}`
+  const { ref, filePath } = resolveGitHubSource(source)
+  const fileName = `${source.owner}__${source.repo}__${ref}__${filePath}`.replaceAll("/", "__")
   return path.join(README_SNAPSHOT_DIR, fileName)
 }
 

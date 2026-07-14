@@ -233,6 +233,10 @@ describe("PopulateExternalMarkdown", () => {
         { owner: "owner", repo: "repo", ref: "develop", path: "docs/API.md" },
         "owner__repo__develop__docs__API.md",
       ],
+      [
+        { owner: "owner", repo: "repo", ref: "feature/x" },
+        "owner__repo__feature__x__README.md",
+      ],
     ])("should build a unique snapshot path for source %j", (source, expectedFileName) => {
       expect(githubSnapshotPath(source)).toBe(path.join(README_SNAPSHOT_DIR, expectedFileName))
     })
