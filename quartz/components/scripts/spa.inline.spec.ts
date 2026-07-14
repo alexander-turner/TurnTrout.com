@@ -710,6 +710,31 @@ test.describe("Same-page navigation", () => {
     await page.waitForFunction((tolerance) => window.scrollY <= tolerance, tightScrollTolerance)
   })
 
+  test("anchored header lands below the top by its scroll-margin-top", async ({ page }) => {
+    const tocSelector = isDesktopViewport(page) ? "#toc-content a" : "#toc-content-mobile a"
+    const tocLink = page.locator(tocSelector).nth(10)
+    await expect(tocLink).toBeVisible()
+    const href = await tocLink.getAttribute("href")
+    expect(href?.startsWith("#")).toBe(true)
+
+    await tocLink.click()
+    await page.waitForFunction(() => window.scrollY > 0)
+
+    const targetId = decodeURIComponent((href as string).slice(1))
+    const { rectTop, scrollMarginTop } = await page.evaluate((id) => {
+      const elt = document.getElementById(id) as HTMLElement
+      return {
+        rectTop: elt.getBoundingClientRect().top,
+        scrollMarginTop: parseFloat(getComputedStyle(elt).scrollMarginTop),
+      }
+    }, targetId)
+
+    // The header sits its scroll-margin-top below the viewport top, not flush.
+    expect(scrollMarginTop).toBeGreaterThan(0)
+    expect(rectTop).toBeGreaterThan(scrollMarginTop - 2)
+    expect(rectTop).toBeLessThan(scrollMarginTop + 2)
+  })
+
   test("maintains scroll history for multiple same-page navigations", async ({ page }) => {
     // Scroll to some of the middle headings
     const scrollPositions: number[] = []
