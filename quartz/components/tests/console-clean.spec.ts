@@ -44,6 +44,12 @@ test.use({ stubCdnAssets: false })
 //   - palform.app: the third-party feedback-form embed (on /about) ships its
 //     own bundled PouchDB, which logs a `db.type() is deprecated` warning. It's
 //     external code we don't control, so we don't fail our console check on it.
+//   - request timeouts: this spec deliberately fetches real CDN assets, so a
+//     degraded network path between the CI runner and the CDN surfaces as
+//     WebKit "request timed out" errors. A timeout is never a code-side
+//     signal — a broken URL fails deterministically with a 404, which still
+//     fails this test. Matched against the exact WebKit message text so only
+//     the timeout variant is tolerated.
 const ALLOWED_PATTERNS: readonly RegExp[] = [
   /umami\.is/i,
   /umami\.dev/i,
@@ -52,6 +58,8 @@ const ALLOWED_PATTERNS: readonly RegExp[] = [
   /mathvariant.*deprecated/i,
   /was preloaded using link preload but not used/i,
   /palform\.app/i,
+  /^Failed to preconnect to \S+ Error: The request timed out\.$/,
+  /^Failed to load resource: The request timed out\.$/,
 ]
 
 function isAllowed(text: string): boolean {
@@ -91,6 +99,13 @@ for (const slug of PAGES_TO_CHECK) {
     page.on("requestfailed", (req) => inflightRequests.delete(req))
 
     const NETWORK_QUIET_WINDOW_MS = 500
+    // The settle budget must outlast the browser's own per-request timeout
+    // (60 s in WebKit): when the CDN path is degraded, stalled asset fetches
+    // only leave the in-flight set once the browser gives up on them, and
+    // their timeout errors are allowlisted above. Requests start during
+    // `gotoPage`, so their deadlines expire before this poll's does. A
+    // healthy page settles in a couple of seconds regardless.
+    const NETWORK_SETTLE_TIMEOUT_MS = 60_000
     await gotoPage(page, `${BASE_URL}${slug}`)
     await expect
       .poll(
@@ -99,7 +114,7 @@ for (const slug of PAGES_TO_CHECK) {
           await new Promise((resolve) => setTimeout(resolve, NETWORK_QUIET_WINDOW_MS))
           return inflightRequests.size
         },
-        { timeout: 15_000 },
+        { timeout: NETWORK_SETTLE_TIMEOUT_MS },
       )
       .toBe(0)
 

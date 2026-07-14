@@ -1097,11 +1097,14 @@ test.describe("Video Speed Controller visibility", () => {
         video.playbackRate = 2.0
       })
 
-      // Wait for the ratechange event and requestAnimationFrame to reset it back to 1.0
+      // The reset rides a ratechange event plus a requestAnimationFrame
+      // callback, and headless WebKit on a contended CI runner can starve
+      // rAF for seconds — the budget covers scheduling delay, not the lock
+      // logic, so a broken lock still fails at any timeout.
       await expect
         .poll(async () => await getVideoPlaybackRate(page, "test-video"), {
-          intervals: [50, 100, 100, 100],
-          timeout: 500,
+          intervals: [50, 100, 250, 500],
+          timeout: 5_000,
         })
         .toBe(1.0)
 
