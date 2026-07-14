@@ -329,6 +329,42 @@ const dashWordJoinerPass = definePass(/[–—]/gu, (match, view) => {
   return `${WORD_JOINER}${match[0]}`
 })
 
+const isAlnum = (char: string | undefined): boolean =>
+  char !== undefined && /[\p{L}\p{N}]/u.test(char)
+
+// A hyphen (U+002D) is a break-after opportunity, so a hyphenated token can
+// wrap right after any of its hyphens ("1-on-1" splitting to "1-" / "on-1").
+// For short, identifier-like compounds this reads badly. Glue a word joiner
+// after such a hyphen so the unit stays whole, while long descriptive
+// compounds ("state-of-the-art") keep their break opportunities.
+//
+// The join fires when the hyphen sits between two alphanumerics and either a
+// digit flanks it (numeric compounds: "GPT-4", "COVID-19", "3-D", "9-to-5") or
+// one of the two joined segments is a single character (single-letter affixes:
+// "T-shirt", "X-ray", "e-mail"). Number ranges are already en dashes by this
+// point, so digit-digit hyphens never reach here. Idempotent: after a pass the
+// character following the hyphen is the word joiner, which fails the alnum test.
+const hyphenWordJoinerPass = definePass(/-/g, (match, view) => {
+  const idx = match.index
+  const { text } = view
+  const left = text[idx - 1]
+  const right = text[idx + 1]
+
+  // Only an intra-word hyphen whose neighbors both live in this node qualifies.
+  if (!isAlnum(left) || !isAlnum(right)) return null
+  if (view.hasBoundary(idx) || view.hasBoundary(idx + 1)) return null
+
+  const leftSegmentIsSingle = idx - 1 === 0 || view.hasBoundary(idx - 1) || !isAlnum(text[idx - 2])
+  const rightSegmentIsSingle =
+    idx + 2 === text.length || view.hasBoundary(idx + 2) || !isAlnum(text[idx + 2])
+
+  const shouldGlue =
+    /\d/.test(left) || /\d/.test(right) || leftSegmentIsSingle || rightSegmentIsSingle
+  if (!shouldGlue) return null
+
+  return `-${WORD_JOINER}`
+})
+
 // Simple find-and-replace transforms local to this site (punctilio handles the rest)
 const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransform]
 
@@ -1013,6 +1049,10 @@ export const improveFormatting = (
           ...activeUncheckedTransformers,
           // Runs after dash conversion so freshly created dashes get glued.
           dashWordJoinerPass,
+          // Runs after dash conversion so surviving hyphens (number ranges are
+          // now en dashes) get their short-compound joins. Skipped in display
+          // headings, which wrap naturally like nbspTransform is skipped there.
+          ...(inDisplayHeading ? [] : [hyphenWordJoinerPass]),
         ]
 
         // Don't replace slashes in fractions or link text; loose runs are neither.

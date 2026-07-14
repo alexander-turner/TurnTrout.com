@@ -747,6 +747,56 @@ describe("HTMLFormattingImprovement", () => {
     ])("em dashes never start a wrapped line: %s", (input: string, expected: string) => {
       expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
     })
+
+    // A word joiner after a hyphen removes the break-after opportunity, keeping
+    // short numeric / single-letter compounds on one line.
+    const wj = WORD_JOINER
+    it.each([
+      // Numeric compound: a digit flanks each hyphen.
+      ["<p>a 1-on-1 chat</p>", `<p>a 1-${wj}on-${wj}1 chat</p>`],
+      ["<p>a 9-to-5 job</p>", `<p>a 9-${wj}to-${wj}5 job</p>`],
+      ["<p>GPT-4 model</p>", `<p>GPT-${wj}4 model</p>`],
+      ["<p>COVID-19 era</p>", `<p>COVID-${wj}19 era</p>`],
+      ["<p>a 3-D render</p>", `<p>a 3-${wj}D render</p>`],
+      ["<p>mid-1990s music</p>", `<p>mid-${wj}1990s music</p>`],
+      // Single-letter segment on the left.
+      ["<p>a T-shirt</p>", `<p>a T-${wj}shirt</p>`],
+      ["<p>an X-ray</p>", `<p>an X-${wj}ray</p>`],
+      ["<p>send e-mail</p>", `<p>send e-${wj}mail</p>`],
+      // Left segment is a single character starting the prose (idx-1 === 0).
+      ["<p>e-mail me</p>", `<p>e-${wj}mail me</p>`],
+      // Single-letter segment on the right, at end of prose (idx+2 === length).
+      ["<p>a grade-A</p>", `<p>a grade-${wj}A</p>`],
+      // Long descriptive compounds keep their break opportunities (no join).
+      ["<p>state-of-the-art</p>", "<p>state-of-the-art</p>"],
+      ["<p>cost-benefit analysis</p>", "<p>cost-benefit analysis</p>"],
+      // Only the qualifying hyphen is glued in a mixed compound.
+      ["<p>a T-shirt-wearing crowd</p>", `<p>a T-${wj}shirt-wearing crowd</p>`],
+      // Non-alphanumeric neighbor: not an intra-word hyphen, left untouched.
+      ["<p>foo- bar</p>", "<p>foo- bar</p>"],
+      ["<p>-foo bar</p>", "<p>-foo bar</p>"],
+    ])("glues short hyphenated compounds: %s", (input: string, expected: string) => {
+      expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
+    })
+
+    it.each([
+      // An element boundary sits on the hyphen itself: no join.
+      ["<p>T<em>-shirt</em></p>", "<p>T<em>-shirt</em></p>"],
+      // An element boundary sits right after the hyphen: no join.
+      ["<p>T-<em>shirt</em></p>", "<p>T-<em>shirt</em></p>"],
+      // A node boundary isolates the left segment to one character: join.
+      ["<p>ab<em>c-d</em> x</p>", `<p>ab<em>c-${wj}d</em> x</p>`],
+      // A node boundary isolates the right segment to one character: join.
+      ["<p>x ab-c<em>d</em></p>", `<p>x ab-${wj}c<em>d</em></p>`],
+    ])("handles hyphens near element boundaries: %s", (input: string, expected: string) => {
+      expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
+    })
+
+    it("is idempotent for hyphen word joiners", () => {
+      const once = testHtmlFormattingImprovement("<p>a 1-on-1 T-shirt</p>")
+      const twice = testHtmlFormattingImprovement(once)
+      expect(twice).toBe(once)
+    })
   })
 
   describe("stripInlineBoundaryWhitespace", () => {
