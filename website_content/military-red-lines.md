@@ -4,7 +4,7 @@ permalink: red-line-framework
 no_dropcap: false
 tags:
   - AI
-description: Principled contract language for selling AI to governments, with transparency incentives that preserve those principles against competitive pressure.
+description: Principled contract language for selling AI to governments, with transparency that preserves those principles against pressure.
 authors:
   - Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/red-line-framework.jpg
