@@ -30,6 +30,7 @@ import {
   HTMLFormattingImprovement,
   identifyLinkNode,
   improveFormatting,
+  ITALIC_KERN_CLASS,
   lPRegex,
   massTransformText,
   moveQuotesBeforeLink,
@@ -247,7 +248,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p>(<strong>NAFTA</strong> <a href="x">/ˈnæftə/</a> <a href="y"><em>NAF-tə</em></a>; Spanish)</p>',
-        '<p>(<strong>NAFTA</strong> <a href="x">/ ˈnæftə /</a> <a href="y"><em>NAF-tə</em>;</a> Spanish)</p>',
+        '<p>(<strong>NAFTA</strong> <a href="x">/ ˈnæftə /</a> <a href="y"><em class="italic-kern">NAF-tə</em>;</a> Spanish)</p>',
       ],
       [
         "<p>upweight the sycophantic <code>A</code>/<code>B</code> token</p>",
@@ -1173,7 +1174,7 @@ describe("rearrangeLinkPunctuation", () => {
     ],
     [
       '<p><a href="https://example.com"><em>Fully nested</em></a>: with colon after</p>',
-      '<p><a href="https://example.com"><em>Fully nested</em>:</a> with colon after</p>',
+      '<p><a href="https://example.com"><em class="italic-kern">Fully nested</em>:</a> with colon after</p>',
     ],
     [
       '<p><a href="https://example.com">Link</a>. with period after</p>',
@@ -2189,6 +2190,64 @@ describe("Ordinal Suffixes", () => {
     const input = "<p>(1st) [2nd] {3rd}</p>"
     const expected =
       '<p>(<span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup>) [<span class="ordinal-num">2</span><sup class="ordinal-suffix">nd</sup>] {<span class="ordinal-num">3</span><sup class="ordinal-suffix">rd</sup>}</p>'
+    const processedHtml = testHtmlFormattingImprovement(input)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
+  })
+})
+
+describe("Italic kerning before punctuation", () => {
+  it.each([
+    [
+      "<p>Watch <em>The Dark Knight</em>: great cinema</p>",
+      `<p>Watch <em class="${ITALIC_KERN_CLASS}">The Dark Knight</em>: great cinema</p>`,
+    ],
+    [
+      "<p>Some <i>words</i>; more words</p>",
+      `<p>Some <i class="${ITALIC_KERN_CLASS}">words</i>; more words</p>`,
+    ],
+    // A colon after an italic link is pulled into the link, landing right
+    // after the italic element — still tagged.
+    [
+      '<p>Watch <a href="https://example.com"><em>The Dark Knight</em></a>: great cinema</p>',
+      `<p>Watch <a href="https://example.com"><em class="${ITALIC_KERN_CLASS}">The Dark Knight</em>:</a> great cinema</p>`,
+    ],
+    // The climb crosses closing non-italic inline tags
+    [
+      "<p>Watch <strong><em>The Dark Knight</em></strong>: great cinema</p>",
+      `<p>Watch <strong><em class="${ITALIC_KERN_CLASS}">The Dark Knight</em></strong>: great cinema</p>`,
+    ],
+    // Nested italics end at the same right edge; only the outer one is tagged
+    [
+      "<p>Watch <em><i>The Dark Knight</i></em>: great cinema</p>",
+      `<p>Watch <em class="${ITALIC_KERN_CLASS}"><i>The Dark Knight</i></em>: great cinema</p>`,
+    ],
+    // Existing classes are preserved
+    [
+      '<p>Watch <em class="foo">The Dark Knight</em>: great cinema</p>',
+      `<p>Watch <em class="foo ${ITALIC_KERN_CLASS}">The Dark Knight</em>: great cinema</p>`,
+    ],
+    // Not tagged: punctuation without ink near the x-height
+    [
+      "<p>Watch <em>The Dark Knight</em>, great cinema</p>",
+      "<p>Watch <em>The Dark Knight</em>, great cinema</p>",
+    ],
+    // Not tagged: the colon is italic too, so nothing collides
+    [
+      "<p>Watch <em>The Dark Knight:</em> great cinema</p>",
+      "<p>Watch <em>The Dark Knight:</em> great cinema</p>",
+    ],
+    // Not tagged: an element follows instead of text
+    [
+      "<p><em>one</em><b>two</b> and <em>three</em></p>",
+      "<p><em>one</em><b>two</b> and <em>three</em></p>",
+    ],
+    // Not tagged: the climb stops at the closing block-level paragraph
+    ["<div><p>Watch <em>a film</em></p>: no</div>", "<div><p>Watch <em>a film</em></p>: no</div>"],
+    // Not tagged: an italic element that ends the fragment
+    ["<em>The Dark Knight</em>", "<em>The Dark Knight</em>"],
+    // Not tagged inside skipped elements
+    ["<p><code>see <em>foo</em>: bar</code></p>", "<p><code>see <em>foo</em>: bar</code></p>"],
+  ])("tags italics before upright punctuation in %s", (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
     expect(normalizeNbsp(processedHtml)).toBe(expected)
   })

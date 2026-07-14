@@ -191,6 +191,13 @@ em {
   font-style: italic;
 }
 
+// Applied by kernItalicBeforePunctuation: an upright colon or semicolon set
+// solid against the end of italic text collides with the final glyph's
+// forward lean, so open the gap slightly.
+.italic-kern {
+  margin-right: 0.05em;
+}
+
 .elvish {
   font-family: Elvish, serif;
   line-height: 2.2;

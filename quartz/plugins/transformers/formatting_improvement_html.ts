@@ -35,6 +35,7 @@ import {
 import { type QuartzTransformerPlugin } from "../types"
 import { isHeading } from "./favicons"
 import {
+  addClass,
   fractionRegex,
   hasAncestor,
   hasClass,
@@ -602,6 +603,53 @@ export function formatOrdinalSuffixes(tree: Root): void {
   })
 }
 
+// Tags rendered in the italic face, whose final glyph leans rightward.
+const ITALIC_TAGS: ReadonlySet<string> = new Set(["em", "i"])
+
+// Upright punctuation with ink near the x-height, which the forward lean of a
+// final italic glyph (e.g. "t") crashes into when set solid against it.
+const collidingPunctuationRegex = /^[:;]/
+
+export const ITALIC_KERN_CLASS = "italic-kern"
+
+/**
+ * Tag italic elements whose next glyph is an upright ':' or ';' with
+ * `.italic-kern`, so CSS can open the gap with a small margin-right
+ * (see `fonts.scss`).
+ *
+ * The lean carries across closing inline boundaries (`…</em></a>:`), so the
+ * search for the following glyph climbs while the italic element closes each
+ * inline ancestor. A closing italic ancestor ends at the same right edge and
+ * is tagged on its own visit; tagging both would double the gap.
+ */
+export function kernItalicBeforePunctuation(tree: Root): void {
+  visitParents(tree, "element", (node, ancestors) => {
+    if (!ITALIC_TAGS.has(node.tagName) || hasAncestor(node, toSkip, ancestors)) return
+
+    let current: ElementContent = node
+    for (let depth = ancestors.length - 1; depth >= 0; depth--) {
+      const parent = ancestors[depth]
+      const index = parent.children.indexOf(current)
+      const next = parent.children[index + 1]
+      if (next !== undefined) {
+        if (next.type === "text" && collidingPunctuationRegex.test(next.value)) {
+          addClass(node, ITALIC_KERN_CLASS)
+        }
+        return
+      }
+      const parentElement = parent as Element
+      if (
+        parent.type !== "element" ||
+        ITALIC_TAGS.has(parentElement.tagName) ||
+        !STRIP_BOUNDARY_TAGS.has(parentElement.tagName)
+      ) {
+        return
+      }
+      current = parentElement
+    }
+  })
+}
+
 const TEXT_LIKE_TAGS = ["p", "em", "strong", "b"]
 const LEFT_QUOTES = ['"', "“", "'", "‘"]
 
@@ -1079,6 +1127,8 @@ export const improveFormatting = (
     formatArrows(tree)
     wrapUnicodeArrowsWithMonospaceStyle(tree)
     formatOrdinalSuffixes(tree)
+    // After rearrangeLinkPunctuation, so a colon pulled into a link is seen.
+    kernItalicBeforePunctuation(tree)
     removeSpaceBeforeFootnotes(tree)
   }
 }
