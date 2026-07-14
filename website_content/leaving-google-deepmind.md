@@ -6,7 +6,7 @@ tags:
   - AI
   - deepmind
   - personal
-description: "I fought against Google's Pentagon AI deal for months. I document how powerful people and institutions failed to keep their AI ethics promises in the face of pressure."
+description: "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure."
 similar_posts:
   - red-line-framework
   - deepmind-equity-discussion
@@ -108,7 +108,7 @@ He suggested it'd be reasonable for me to email a few guys. Their names: Sundar 
 
 > [!quote] My email
 >
-> I'm writing as a concerned employee at \[Google DeepMind\]. I recently messaged Jeff Dean regarding my concerns. He suggested that directly emailing the three of you was a reasonable next step.
+> I'm writing as a concerned employee at GDM. I recently messaged Jeff Dean regarding my concerns. He suggested that directly emailing the three of you was a reasonable next step.
 >
 >  I have no problem with Google working with lawful administrations of either US political party. My concern is not about politics, but rather about the events enabled by Google's role in the DHS supply chain.
 >
@@ -422,10 +422,10 @@ Minimal trust assumptions
 : I made the Chief Scientist [the single root of trust that everything else hangs off of](https://en.wikipedia.org/wiki/Certificate_authority) (I was betting everything on Jeff anyway). The Chief Scientist would staff a Review Body to advise on contracts.
 
 Accountability via transparency
-: The Review Body only privately advises Jeff and Sundar, but *overriding* it surfaces in a yearly transparency report to all AI employees. Dissolving it would require advance notice and disclosure of the exact outstanding non-compliance findings. I worked to ensure the Body couldn't be defanged as quietly as Google's [2018 principles were](https://www.cnbc.com/2025/02/04/google-removes-pledge-to-not-use-ai-for-weapons-surveillance.html).
+: The Review Body would only privately advise Jeff and Sundar, but *overriding* it surfaces in a yearly transparency report to all AI employees. Dissolving it would require advance notice and disclosure of the exact outstanding non-compliance findings. I worked to ensure the Body couldn't be defanged as quietly as Google's [2018 principles were](https://www.cnbc.com/2025/02/04/google-removes-pledge-to-not-use-ai-for-weapons-surveillance.html).
 
 Minimal pain to opposed stakeholders
-: I gave Cloud 2 of 7 seats, recused staff only from their *own* deals, capped delays at 10 days, and protected deliberations under attorney-client privilege.
+: I gave Cloud 2 of 7 seats, recused staff only from their own deals, capped delays at 10 days, and protected deliberations under attorney-client privilege.
 
 I considered a negotiations round. The counterparties would object to *something*, and I didn't want that *something* to be load-bearing. Therefore, I included less-important provisions meant to be negotiated away, like "the Review Body can escalate to Alphabet's Board via supermajority vote."
 
@@ -460,11 +460,11 @@ A friend drove me down to Mountain View to meet Jeff. Wearing a crisp dress shir
 
 A month prior, I asked for this lunch so we could discuss "constructive options" for making Google's contract situation more ethical. Would he have plans of his own? Surely he could. He had so much more visibility and experience. I readied myself to toss my Framework aside and follow a better plan devised using more information. I didn't care much. Even if Sundar adopted my Framework, I knew I was unlikely to be credited. That made me a bit sad, but I wanted to get the job done.
 
-I had lunch with Jeff under the California sun. I proposed that Jeff head the Review Body, but he declined. Beyond that, I won't discuss the details of our lunch. I can only point to his public conduct: He [tweeted](#preparing-for-lunch-with-jeff-dean) and [signed an amicus brief in support of Anthropic](#jeff-signs-an-amicus-brief-supporting-anthropic). [Google later signed the deal](#google-quietly-signs-the-deal). Jeff is still at Google, [despite his pledge](#how-can-a-pledge-signer-remain-at-gdm).
+I had lunch with Jeff under the California sun. I proposed that Jeff head the potential Review Body, but he didn't take up the idea. Beyond that, I won't discuss the details of our lunch. I can only point to his public conduct: He [tweeted](#preparing-for-lunch-with-jeff-dean) and [signed an amicus brief in support of Anthropic](#jeff-signs-an-amicus-brief-supporting-anthropic). [Google later signed the deal](#google-quietly-signs-the-deal). Jeff is still at Google, [despite his pledge](#how-can-a-pledge-signer-remain-at-gdm).
 
 ## Searching for another path to impact
 
-I had expected this --- I had simply judged the odds good enough to justify the shot. Jeff declining meant the chances of success dropped a lot. I still thought the large possible benefits were worth continued effort on my part. The other obvious escalation pathway was Demis Hassabis.
+I had expected this --- I had simply judged the odds good enough to justify the shot. Without Jeff championing the Review Body, the chances of success dropped a lot. I still thought the large possible benefits were worth continued effort on my part. The other obvious escalation pathway was to Demis Hassabis.
 
 In 2014, [Google acquired DeepMind on an explicit promise: its AI would never be used for military or weapons purposes](https://time.com/7013685/google-ai-deepmind-military-contracts-israel/). In 2018, all of DeepMind's co-founders (including Demis) signed [the FLI lethal autonomous weapons pledge](#preparing-for-lunch-with-jeff-dean), as did Google DeepMind *as an organization*.
 
@@ -618,7 +618,7 @@ I know the other options don't look great. Congress remains a potted plant in th
 
 ## How can a pledge-signer remain at GDM?
 
-Jeff Dean, Demis Hassabis, and Shane Legg pledged to "neither participate in nor support the development, manufacture, trade, or use of lethal autonomous weapons." Google signed the classified deal, yet they remain.
+Jeff Dean, Demis Hassabis, Shane Legg, and [other senior employees](#preparing-for-lunch-with-jeff-dean) pledged to "neither participate in nor support the development, manufacture, trade, or use of lethal autonomous weapons." Google signed the classified deal, yet they remain.
 
 One might defend: "the deal simply doesn't *prohibit* autonomous weapons, that's not the same as actively supporting autonomous weapons." Google's contract withholds certainty from a concerned pledge-signer, but a blindfold does not absolve responsibility.
 
