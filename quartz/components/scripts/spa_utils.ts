@@ -124,7 +124,20 @@ export function scrollToMatch(searchText: string): boolean {
 }
 
 /**
+ * Reads an element's computed `scroll-margin-top` in pixels, falling back to 0
+ * when it is unset or unparsable.
+ */
+function getScrollMarginTop(elt: Element): number {
+  const parsed = parseFloat(window.getComputedStyle(elt).getPropertyValue("scroll-margin-top"))
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+/**
  * Standard `#<id>` hash navigation: scroll the element with the given ID into view.
+ *
+ * `window.scrollTo` ignores `scroll-margin-top`, so it is subtracted here to
+ * leave the same breathing room above the target that native hash navigation
+ * and scroll restoration provide.
  *
  * @param urlTarget - The raw `location.hash` value, including the leading `#`.
  */
@@ -134,7 +147,7 @@ export function scrollToUrlTarget(urlTarget: string): void {
   const id = decodeURIComponent(urlTarget.substring(1))
   const elt = document.getElementById(id)
   if (elt) {
-    const targetPos = elt.getBoundingClientRect().top + window.scrollY
+    const targetPos = elt.getBoundingClientRect().top + window.scrollY - getScrollMarginTop(elt)
     window.scrollTo({ top: targetPos, behavior: "instant" })
   }
 }
