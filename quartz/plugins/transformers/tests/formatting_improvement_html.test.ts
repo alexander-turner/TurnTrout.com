@@ -2216,6 +2216,10 @@ describe("Italic kerning before punctuation", () => {
       "<p>Watch <strong><em>The Dark Knight</em></strong>: great cinema</p>",
       `<p>Watch <strong><em class="${ITALIC_KERN_CLASS}">The Dark Knight</em></strong>: great cinema</p>`,
     ],
+    [
+      '<p>Watch <span class="foo"><em>The Dark Knight</em></span>: great cinema</p>',
+      `<p>Watch <span class="foo"><em class="${ITALIC_KERN_CLASS}">The Dark Knight</em></span>: great cinema</p>`,
+    ],
     // Nested italics end at the same right edge; only the outer one is tagged
     [
       "<p>Watch <em><i>The Dark Knight</i></em>: great cinema</p>",
@@ -2241,6 +2245,15 @@ describe("Italic kerning before punctuation", () => {
       "<p><em>one</em><b>two</b> and <em>three</em></p>",
       "<p><em>one</em><b>two</b> and <em>three</em></p>",
     ],
+    // Not tagged: the colon opens a following element rather than a text node
+    ["<p><em>title</em><b>: subtitle</b></p>", "<p><em>title</em><b>: subtitle</b></p>"],
+    // Not tagged: whitespace already separates the italic from the colon
+    [
+      "<p>Watch <em>The Dark Knight</em> : great cinema</p>",
+      "<p>Watch <em>The Dark Knight</em> : great cinema</p>",
+    ],
+    // Not tagged: an empty italic renders no glyph
+    ["<p>Watch <em></em>: great cinema</p>", "<p>Watch <em></em>: great cinema</p>"],
     // Not tagged: the climb stops at the closing block-level paragraph
     ["<div><p>Watch <em>a film</em></p>: no</div>", "<div><p>Watch <em>a film</em></p>: no</div>"],
     // Not tagged: an italic element that ends the fragment

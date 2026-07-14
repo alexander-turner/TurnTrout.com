@@ -39,6 +39,7 @@ import {
   fractionRegex,
   hasAncestor,
   hasClass,
+  INLINE_PASSTHROUGH_TAGS,
   isCode,
   replaceRegex,
   urlRegexNonGlobal,
@@ -619,12 +620,14 @@ export const ITALIC_KERN_CLASS = "italic-kern"
  *
  * The lean carries across closing inline boundaries (`…</em></a>:`), so the
  * search for the following glyph climbs while the italic element closes each
- * inline ancestor. A closing italic ancestor ends at the same right edge and
- * is tagged on its own visit; tagging both would double the gap.
+ * phrasing-content ancestor. A closing italic ancestor ends at the same right
+ * edge and is tagged on its own visit; tagging both would double the gap.
  */
 export function kernItalicBeforePunctuation(tree: Root): void {
   visitParents(tree, "element", (node, ancestors) => {
     if (!ITALIC_TAGS.has(node.tagName) || hasAncestor(node, toSkip, ancestors)) return
+    // An empty italic renders no glyph, so there is nothing to kern against.
+    if (getTextContent(node).length === 0) return
 
     let current: ElementContent = node
     for (let depth = ancestors.length - 1; depth >= 0; depth--) {
@@ -641,7 +644,7 @@ export function kernItalicBeforePunctuation(tree: Root): void {
       if (
         parent.type !== "element" ||
         ITALIC_TAGS.has(parentElement.tagName) ||
-        !STRIP_BOUNDARY_TAGS.has(parentElement.tagName)
+        !INLINE_PASSTHROUGH_TAGS.has(parentElement.tagName)
       ) {
         return
       }
