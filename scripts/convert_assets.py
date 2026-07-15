@@ -157,9 +157,13 @@ def _image_patterns(input_file: Path) -> tuple[str, str]:
     pattern_file = relative_path.relative_to("quartz")
     output_file: Path = pattern_file.with_suffix(".avif")
 
-    # Handle paths that can start with ./, /, /quartz/, or /asset_staging/
+    # Handle paths that can start with ./, /, /quartz/, or /asset_staging/.
+    # The leading `(?<!\w)` keeps the match from starting mid-URL: for an
+    # absolute reference like `https://assets.turntrout.com/static/foo.jpg`
+    # the `/` before `static` is preceded by a word char, so the match begins
+    # at `static` and the domain's slash is preserved in the rewrite.
     return (
-        rf"(?:\./|/)?(?:quartz/)?(?:asset_staging/)?{re.escape(str(pattern_file))}",
+        rf"(?<!\w)(?:\./|/)?(?:quartz/)?(?:asset_staging/)?{re.escape(str(pattern_file))}",
         str(output_file),
     )
 
@@ -400,6 +404,12 @@ def main() -> None:
             continue
         if asset.name.startswith("."):
             print(f"Skipping hidden file: {asset}")
+            continue
+        # Social-card images must stay JPEG for scrapers (X, Slack, Signal);
+        # AVIF is poorly supported there. convert_markdown_yaml.py owns their
+        # pipeline, so never let the AVIF sweep touch them.
+        if "card_images" in asset.parts:
+            print(f"Skipping card image (kept as JPEG): {asset}")
             continue
 
         convert_asset(

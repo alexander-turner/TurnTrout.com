@@ -383,12 +383,14 @@ figure,
 
 // Render both subfigures at an identical size. The source images differ slightly
 // in aspect ratio, so crop to a shared ratio rather than distorting. They sit
-// side by side on desktop and stack only at mobile width.
+// side by side on desktop and stack only at mobile width. `!important` overrides
+// the per-image `aspect-ratio` that AddAssetDimensionsFromSrc injects inline
+// (which would otherwise win over this rule and leave the crops mismatched).
 #ice-killings {
   .subfigure img {
     width: 100%;
     max-width: 100%;
-    aspect-ratio: 731 / 878;
+    aspect-ratio: 731 / 878 !important;
     object-fit: cover;
   }
 
@@ -510,6 +512,14 @@ figcaption,
   margin-top: var(--float-negative-margin-top, calc(-7 * $base-margin));
 
   @media all and (width <= 700px) {
+    margin-top: initial;
+  }
+
+  // Popovers and the search preview are far narrower than the article column
+  // the pull-up offset is calibrated for, so the image would cover the
+  // callout title there.
+  .popover &,
+  #search-container & {
     margin-top: initial;
   }
 }

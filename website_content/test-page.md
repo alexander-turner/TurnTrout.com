@@ -700,6 +700,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 | ( + descender | (g (j (p (q (y |
 | \[ + descender | \[g \[j \[p \[q \[y |
 | \{ + descender | \{g \{j \{p \{q \{y |
+| open + cap J | (J \[J \{J |
 | descender + ) | g) j) p) q) y) |
 | descender + ] | g] j] p] q] y] |
 | descender + \} | g\} j\} p\} q\} y\} |
@@ -709,6 +710,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 | In context | “\[sic\]” and ‘\[note\]’ |
 | close + ;, | \[1\]; \{2\}; (3); \[a\], \{b\}, (c), |
 | In context | the staff(s) called if’d a “buff” (Wolf) |
+| In context | (Jeff) met (John) in (July) about the (JSON) API |
 | In context | the clipping (probably) happened (just) quickly |
 
 ## Numbers and units

@@ -105,6 +105,7 @@ declare module "vfile" {
         lang: string
         enableToc: string
         cssclasses: readonly string[]
+        similar_posts: readonly string[]
       }>
   }
 }

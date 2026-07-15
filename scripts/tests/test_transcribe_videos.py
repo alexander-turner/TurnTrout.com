@@ -458,13 +458,6 @@ def test_transcribe_video_asset_happy_path(tmp_path: Path):
 # --- main() ---
 
 
-def test_main_requires_asset_directory(monkeypatch):
-    monkeypatch.setattr(sys, "argv", ["transcribe_videos.py"])
-    with pytest.raises(SystemExit) as excinfo:
-        transcribe_videos.main()
-    assert excinfo.value.code == 2  # argparse usage error, not a clean exit
-
-
 def test_main_skips_when_unconfigured(monkeypatch, capsys):
     monkeypatch.delenv(transcribe_videos.SCRIBERR_BASE_URL_ENV, raising=False)
     monkeypatch.delenv(transcribe_videos.SCRIBERR_API_KEY_ENV, raising=False)
@@ -504,6 +497,64 @@ def test_main_processes_and_filters(monkeypatch):
     ):
         transcribe_videos.main()
     transcribe_asset.assert_called_once_with(Path("a.mp4"), Path("content"))
+
+
+def test_main_transcribes_explicit_videos(monkeypatch, tmp_path):
+    monkeypatch.setenv(transcribe_videos.SCRIBERR_BASE_URL_ENV, "http://s")
+    monkeypatch.setenv(transcribe_videos.SCRIBERR_API_KEY_ENV, "key")
+    first = tmp_path / "one.mp4"
+    second = tmp_path / "two.mp4"
+    first.write_bytes(b"x")
+    second.write_bytes(b"x")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "transcribe_videos.py",
+            "--videos",
+            str(first),
+            str(second),
+            "--references-dir",
+            "content",
+        ],
+    )
+    with (
+        mock.patch.object(
+            transcribe_videos.script_utils, "get_files"
+        ) as get_files,
+        mock.patch.object(
+            transcribe_videos, "transcribe_video_asset"
+        ) as transcribe_asset,
+    ):
+        transcribe_videos.main()
+    get_files.assert_not_called()  # explicit list bypasses the directory sweep
+    assert transcribe_asset.call_count == 2
+    transcribe_asset.assert_any_call(first, Path("content"))
+    transcribe_asset.assert_any_call(second, Path("content"))
+
+
+def test_main_explicit_video_missing_fails_loudly(monkeypatch, tmp_path):
+    monkeypatch.setenv(transcribe_videos.SCRIBERR_BASE_URL_ENV, "http://s")
+    monkeypatch.setenv(transcribe_videos.SCRIBERR_API_KEY_ENV, "key")
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["transcribe_videos.py", "--videos", str(tmp_path / "absent.mp4")],
+    )
+    with (
+        mock.patch.object(transcribe_videos, "transcribe_video_asset") as t,
+        pytest.raises(FileNotFoundError, match="absent.mp4"),
+    ):
+        transcribe_videos.main()
+    t.assert_not_called()
+
+
+def test_main_requires_a_video_source(monkeypatch):
+    monkeypatch.setenv(transcribe_videos.SCRIBERR_BASE_URL_ENV, "http://s")
+    monkeypatch.setenv(transcribe_videos.SCRIBERR_API_KEY_ENV, "key")
+    monkeypatch.setattr(sys, "argv", ["transcribe_videos.py"])
+    with pytest.raises(SystemExit):
+        transcribe_videos.main()
 
 
 # --- ffmpeg integration (real audio detection) ---

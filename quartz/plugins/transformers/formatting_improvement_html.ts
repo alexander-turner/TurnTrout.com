@@ -1079,13 +1079,14 @@ export const improveFormatting = (
       }
 
       // Skip nbsp in headings, subtitles, and admonition titles — it prevents
-      // natural line-breaking and looks bad
-      const inDisplayHeading =
+      // natural line-breaking and looks bad. The check runs per prose unit
+      // below, because a display heading nested under the visited node reaches
+      // this pass as its own leaf unit (e.g. an `.admonition-title` collected
+      // while the enclosing `.admonition` is visited); keying the decision to
+      // the visited node alone would miss it.
+      const nodeInDisplayHeading =
         isDisplayHeading(node as Element) ||
         hasAncestor(node as Element, isDisplayHeading, ancestors)
-      const activeUncheckedTransformers = inDisplayHeading
-        ? uncheckedTextTransformers.filter((t) => t !== nbspTransform)
-        : uncheckedTextTransformers
 
       // skipTags is empty because toSkip already covers the site's skip list;
       // punctilio's default skip tags (kbd, var, samp, ...) must not apply.
@@ -1098,6 +1099,12 @@ export const improveFormatting = (
         shouldSkip: toSkip,
       }).filter((unit) => unit.kind === "run" || !NON_PROSE_TAGS.has(unit.element.tagName))
       unitsToTransform.forEach((unit) => {
+        const unitElement = unit.kind === "run" ? unit.container : unit.element
+        const inDisplayHeading = nodeInDisplayHeading || isDisplayHeading(unitElement)
+        const activeUncheckedTransformers = inDisplayHeading
+          ? uncheckedTextTransformers.filter((t) => t !== nbspTransform)
+          : uncheckedTextTransformers
+
         const passes: PassEntry[] = [
           ...checkedTextPasses,
           ...activeUncheckedTransformers,

@@ -8,9 +8,12 @@ WebVTT file, and injects a ``<track kind="captions">`` into the matching
 markdown ``<video>`` block. The VTT then follows the same R2/CDN lifecycle as
 the ``.mp4``/``.webm`` sources (see ``r2_upload.py``).
 
-GIF-derived autoplay videos have no audio stream and are skipped. Videos
-with a sibling ``.vtt`` skip re-transcription but still get a ``<track>``
-injected into blocks missing one. Scriberr is the maintainer's
+Pass ``--videos a.mp4 b.mp4`` to transcribe specific files instead of
+sweeping ``--asset-directory``; everything else (audio check, VTT write,
+caption-track injection) is identical.
+
+GIF-derived autoplay videos have no audio stream and are skipped, as are
+videos that already have a sibling ``.vtt``. Scriberr is the maintainer's
 private instance; when ``SCRIBERR_BASE_URL`` / ``SCRIBERR_API_KEY`` are unset
 (CI, external contributors) the whole step is skipped with a warning.
 """
@@ -366,8 +369,17 @@ def main() -> None:
     parser.add_argument(
         "--asset-directory",
         type=Path,
-        required=True,
         help="Directory containing video assets to transcribe",
+    )
+    parser.add_argument(
+        "--videos",
+        type=Path,
+        nargs="+",
+        help=(
+            "Explicit video files to transcribe. Takes precedence over "
+            "--asset-directory; use it to caption a specific clip instead of "
+            "sweeping a whole directory."
+        ),
     )
     parser.add_argument(
         "--references-dir",
@@ -392,11 +404,24 @@ def main() -> None:
         )
         return
 
-    videos = script_utils.get_files(
-        dir_to_search=args.asset_directory,
-        filetypes_to_match=(".mp4",),
-        use_git_ignore=False,
-    )
+    if not args.videos and not args.asset_directory:
+        parser.error("Provide --videos or --asset-directory.")
+
+    videos: list[Path]
+    if args.videos:
+        for video in args.videos:
+            if not video.is_file():
+                raise FileNotFoundError(f"Video not found: {video}")
+        videos = list(args.videos)
+    else:
+        videos = list(
+            script_utils.get_files(
+                dir_to_search=args.asset_directory,
+                filetypes_to_match=(".mp4",),
+                use_git_ignore=False,
+            )
+        )
+
     for video in videos:
         if video.name in args.ignore_files:
             print(f"Ignoring file: {video}")

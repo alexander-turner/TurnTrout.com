@@ -36,10 +36,10 @@ use-full-width-images: "false"
 date_published: 2021-09-22
 original_url: https://www.lesswrong.com/posts/hRa5c5GaMNkNGtnXq/insights-from-modern-principles-of-economics
 skip_import: true
-card_image: https://assets.turntrout.com/static/images/card_images/htfmtdtntpqpmr2mlqxl.jpg
+card_image:
 description: Textbook insights on economic policy, price gouging, and the surprising efficiency of competitive markets.
 date_updated: 2026-06-30
-card_image_alt: A scatter plot from Our World in Data showing a strong negative correlation between a country's GDP per capita and the share of its population dissatisfied with their standard of living. Countries with low GDP, like Haiti, show high dissatisfaction (~80%), while wealthy countries, like Luxembourg and Singapore, show low dissatisfaction (<10%).
+card_image_alt:
 ---
 
 How good are our economists? Look around. On a 20-minute walk to my Berkeley office, I walked past people reeking of urine, past people lying in a dirty sleeping bag on a thin cardboard pad, past some garbage around a tent which housed a child who grew up into an impoverished adult.

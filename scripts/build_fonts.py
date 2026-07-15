@@ -63,13 +63,19 @@ _TARGET_GLYPHS: Final[tuple[str, ...]] = (
     "quotedblright",
 )
 
+# Minimum clearance an f-glyph gets before each following punctuation mark. It
+# only binds when a glyph's own ink overhang asks for less (see the formula in
+# _add_overhang_kern_pairs); an f/ff whose hook overhangs far past its advance
+# still gets the larger overhang-derived value. The close-bracket floors stay
+# low so a non-overhanging ligature (fi, fl) sits at natural spacing before ")"
+# rather than floating away from it.
 _BASE_KERN: Final[dict[str, int]] = {
     "quotedbl": 250,
     "quotesingle": 250,
     "parenleft": 250,
-    "parenright": 350,
-    "bracketright": 350,
-    "braceright": 280,
+    "parenright": 150,
+    "bracketright": 150,
+    "braceright": 150,
     "quoteleft": 270,
     "quoteright": 300,
     "quotedblleft": 270,
@@ -105,10 +111,20 @@ _CAP_OVERHANG_GLYPHS: Final[tuple[str, ...]] = (
 )
 
 _OPEN_DESCENDER_KERN: Final[int] = 120
+
+# Capital "J" hooks below the baseline and its ink overhangs far to the left
+# (xMin well left of the origin), so after an open bracket its tail swings into
+# the bracket's descender exactly as a lowercase descender's does. It isn't in
+# _DESCENDER_GLYPHS because its right side is ordinary, so it needs clearance
+# only after open punctuation, not before closing punctuation. The value gives
+# "(J" the same visual left gap that "(j" already clears to.
+_CAP_DESCENDER_GLYPHS: Final[tuple[str, ...]] = ("J",)
+_OPEN_CAP_DESCENDER_KERN: Final[int] = 190
+
 _CLOSE_DESCENDER_KERN: Final[dict[str, int]] = {
     "g": 20,
     "j": 80,
-    "p": 80,
+    "p": 40,
     "q": 80,
     "y": 40,
 }
@@ -309,6 +325,7 @@ _FIXED_KERN_SPECS: Final[
     tuple[tuple[tuple[str, ...], tuple[str, ...], int | dict[str, int]], ...]
 ] = (
     (_OPEN_PUNCT_GLYPHS, _DESCENDER_GLYPHS, _OPEN_DESCENDER_KERN),
+    (_OPEN_PUNCT_GLYPHS, _CAP_DESCENDER_GLYPHS, _OPEN_CAP_DESCENDER_KERN),
     (_DESCENDER_GLYPHS, _CLOSE_PUNCT_GLYPHS, _CLOSE_DESCENDER_KERN),
     (_CAP_OVERHANG_GLYPHS, _CLOSE_PUNCT_GLYPHS, _CAP_CLOSE_KERN),
     (_OPEN_QUOTE_GLYPHS, ("bracketleft",), _QUOTE_BRACKET_KERN),

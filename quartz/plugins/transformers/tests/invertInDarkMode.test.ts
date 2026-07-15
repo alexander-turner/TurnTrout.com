@@ -13,6 +13,7 @@ import {
   invertInDarkModeClass,
 } from "../../../components/constants"
 import {
+  addCrossOriginToCaptionedVideos,
   addCrossOriginToImages,
   addInvertClass,
   applyLabelsToTree,
@@ -299,6 +300,53 @@ describe("InvertInDarkMode", () => {
     it("throws on absolute non-CDN src", () => {
       const img = h("img", { src: "https://evil.example.com/x.avif" }) as Element
       expect(() => addCrossOriginToImages(tree(img))).toThrow(/expected.*assets\.turntrout/)
+    })
+  })
+
+  describe("addCrossOriginToCaptionedVideos", () => {
+    const videoWithTrack = (trackProps: Record<string, string>) =>
+      h("video", [h("source", { src: `${cdnBaseUrl}/v.mp4` }), h("track", trackProps)]) as Element
+
+    it.each<[string, Element, "anonymous" | undefined]>([
+      [
+        "CDN captions track",
+        videoWithTrack({ kind: "captions", src: `${cdnBaseUrl}/c.vtt` }),
+        "anonymous",
+      ],
+      [
+        "relative captions track",
+        videoWithTrack({ kind: "captions", src: "/local.vtt" }),
+        "anonymous",
+      ],
+      [
+        '"No audio" marker track (no src)',
+        videoWithTrack({ kind: "captions", label: "No audio" }),
+        undefined,
+      ],
+      ["video with no track", h("video", { src: `${cdnBaseUrl}/v.mp4` }) as Element, undefined],
+      [
+        "non-video element ignored",
+        h("img", { src: `${cdnBaseUrl}/x.avif` }) as Element,
+        undefined,
+      ],
+    ])("%s", (_label, node, expected) => {
+      addCrossOriginToCaptionedVideos(tree(node))
+      expect(node.properties?.crossOrigin).toBe(expected)
+    })
+
+    it("preserves an existing crossOrigin value", () => {
+      const video = h("video", { crossOrigin: "use-credentials" }, [
+        h("track", { kind: "captions", src: `${cdnBaseUrl}/c.vtt` }),
+      ]) as Element
+      addCrossOriginToCaptionedVideos(tree(video))
+      expect(video.properties?.crossOrigin).toBe("use-credentials")
+    })
+
+    it("throws on absolute non-CDN track src", () => {
+      const video = videoWithTrack({ kind: "captions", src: "https://evil.example.com/c.vtt" })
+      expect(() => addCrossOriginToCaptionedVideos(tree(video))).toThrow(
+        /expected.*assets\.turntrout/,
+      )
     })
   })
 

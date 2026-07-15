@@ -1,5 +1,6 @@
 import type { Page } from "playwright"
 
+import { COPY_BUTTON_RESET_DELAY_MS } from "../scripts/component_script_utils"
 import { expect, test } from "./fixtures"
 import { takeRegressionScreenshot } from "./visual_utils"
 
@@ -150,11 +151,14 @@ test.describe("Copy output button", () => {
     // After clicking, SVG changes to the checkmark (green fill)
     await expect(copyBtn.locator('svg path[fill="rgb(63, 185, 80)"]')).toBeAttached()
 
-    // Reverts back to copy icon after timeout
+    // Reverts back to copy icon after the reset delay. The button reverts on a
+    // `setTimeout(COPY_BUTTON_RESET_DELAY_MS)` that starts once the clipboard
+    // write resolves, so the wait must clear the delay plus clipboard latency
+    // and background-timer throttling on slow CI engines (e.g. iPad Pro Firefox).
     await expect(async () => {
       const currentHtml = await copyBtn.innerHTML()
       expect(currentHtml).toBe(initialHtml)
-    }).toPass({ timeout: 4000 })
+    }).toPass({ timeout: COPY_BUTTON_RESET_DELAY_MS + 6000 })
   })
 })
 
