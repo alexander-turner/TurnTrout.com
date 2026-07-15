@@ -3,7 +3,6 @@
 
 import argparse
 import base64
-import binascii
 import copy
 import html
 import json
@@ -3096,7 +3095,7 @@ def _is_inline_vtt_track(src: object) -> bool:
             decoded = base64.b64decode(payload, validate=True).decode(
                 "utf-8", "replace"
             )
-        except (binascii.Error, ValueError):
+        except ValueError:  # binascii.Error subclasses ValueError
             return False
     else:
         decoded = urllib.parse.unquote(payload)
