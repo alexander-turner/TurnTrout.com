@@ -226,10 +226,19 @@ test.describe("Unique content around the site", () => {
         const childrenToRemove = Array.from(children).slice(0, numToRemove)
         childrenToRemove.forEach((child) => listElement.removeChild(child))
 
-        // Update the number of posts displayed
-        const listingText = listElement.querySelector(".page-listing > p")
-        if (listingText) {
-          listingText.textContent = `Showing ${numKeepOldest} of ${numTotalChildren} posts.`
+        // Mock the total-count paragraph so the screenshot stays stable as
+        // posts/tagged pages are added. The all-posts ("recent") page renders
+        // it as "This site has N blog posts."; tag pages render it as
+        // "N items with this tag." Replace the count with the number of items
+        // actually shown so the text stays consistent with the trimmed list.
+        const countParagraph =
+          document.querySelector("#center-content article > p") ??
+          document.querySelector("#center-content .page-listing > p")
+        if (countParagraph?.textContent) {
+          countParagraph.textContent = countParagraph.textContent.replace(
+            /\d+/,
+            String(numKeepOldest),
+          )
         }
       }, numOldest)
 
