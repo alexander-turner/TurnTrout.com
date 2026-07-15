@@ -63,21 +63,69 @@ function isAllowed(text: string): boolean {
 // `msg.location().url`, not the message text.
 const RESOURCE_TIMEOUT_PATTERN = /^Failed to load resource: The request timed out\.$/
 
-// A resource timeout is excused only for another origin: this spec fetches
-// real CDN assets, and a cross-origin fetch rides the public network, where
-// a timeout is weather rather than a code signal — a wrong URL 404s
-// deterministically and still fails. A same-origin asset is served by the
-// deployment under test, so a timeout there (or one with no attributable
-// URL) is a real failure.
+// Firefox wraps its warnings as `[JavaScript Warning: "..." {file: "..." line: N}]`
+// and reports the affected URL in `msg.location().url`.
+const ORB_BLOCKED_PATTERN = /A resource is blocked by OpaqueResponseBlocking/
+const MEDIA_LOAD_PAUSED_PATTERN = /All candidate resources failed to load\. Media load paused\./
+const MEDIA_URL_PATTERN = /\.(?:webm|mp4|mov|m4v|mp3|m4a|ogg|wav)(?:[?#]|$)/i
+
+// A network-layer failure is excused only for another origin: this spec
+// fetches real CDN assets, and a cross-origin fetch rides the public
+// network, where a timeout is weather rather than a code signal — a wrong
+// URL 404s deterministically and still fails. A same-origin asset is served
+// by the deployment under test, so a failure there (or one with no
+// attributable URL) is a real failure.
+function isCrossOriginUrl(locationUrl: string): boolean {
+  return locationUrl !== "" && !locationUrl.startsWith(BASE_URL)
+}
+
 function isCrossOriginResourceTimeout(text: string, locationUrl: string): boolean {
-  return (
-    RESOURCE_TIMEOUT_PATTERN.test(text) && locationUrl !== "" && !locationUrl.startsWith(BASE_URL)
-  )
+  return RESOURCE_TIMEOUT_PATTERN.test(text) && isCrossOriginUrl(locationUrl)
+}
+
+// Firefox's OpaqueResponseBlocking can reject a cross-origin media response
+// when the CDN's reply arrives degraded (e.g. a range request answered
+// without the headers ORB requires). The blocked URL is in
+// `msg.location().url`, so a same-origin block — a header bug in the
+// deployment under test — still fails.
+function isCrossOriginOrbBlock(text: string, locationUrl: string): boolean {
+  return ORB_BLOCKED_PATTERN.test(text) && isCrossOriginUrl(locationUrl)
+}
+
+interface ConsoleSuspect {
+  readonly type: string
+  readonly text: string
+  readonly locationUrl: string
+}
+
+// "All candidate resources failed to load. Media load paused." names only the
+// page, not the failed resource, and Firefox can emit it before the ORB
+// warning that explains it — so it is judged after the run, against the full
+// message set: excused only when some cross-origin media URL on the page
+// already failed for an excused network reason. With no such failure, every
+// candidate died same-origin and the warning stays a real failure.
+function isExcusedConsoleMessage(
+  suspect: ConsoleSuspect,
+  allSuspects: readonly ConsoleSuspect[],
+): boolean {
+  const { text, locationUrl } = suspect
+  if (isCrossOriginResourceTimeout(text, locationUrl)) return true
+  if (isCrossOriginOrbBlock(text, locationUrl)) return true
+  if (MEDIA_LOAD_PAUSED_PATTERN.test(text)) {
+    return allSuspects.some(
+      (other) =>
+        MEDIA_URL_PATTERN.test(other.locationUrl) &&
+        (isCrossOriginResourceTimeout(other.text, other.locationUrl) ||
+          isCrossOriginOrbBlock(other.text, other.locationUrl)),
+    )
+  }
+  return false
 }
 
 for (const slug of PAGES_TO_CHECK) {
   test(`no unexpected console output on ${ENV_LABEL} ${slug}`, async ({ page }) => {
-    const offenders: string[] = []
+    const suspects: ConsoleSuspect[] = []
+    const pageErrors: string[] = []
 
     page.on("console", (msg) => {
       const type = msg.type()
@@ -88,13 +136,12 @@ for (const slug of PAGES_TO_CHECK) {
       // instead. Match against both so the allowlist covers all engines.
       const locationUrl = msg.location()?.url ?? ""
       if (isAllowed(text) || isAllowed(locationUrl)) return
-      if (isCrossOriginResourceTimeout(text, locationUrl)) return
-      offenders.push(`[${type}] ${text}${locationUrl ? ` (${locationUrl})` : ""}`)
+      suspects.push({ type, text, locationUrl })
     })
 
     page.on("pageerror", (err) => {
       if (isAllowed(err.message)) return
-      offenders.push(`[pageerror] ${err.message}`)
+      pageErrors.push(`[pageerror] ${err.message}`)
     })
 
     await gotoPage(page, `${BASE_URL}${slug}`)
@@ -106,6 +153,14 @@ for (const slug of PAGES_TO_CHECK) {
     // guards against.
     // eslint-disable-next-line playwright/no-networkidle
     await page.waitForLoadState("networkidle")
+
+    const offenders = suspects
+      .filter((suspect) => !isExcusedConsoleMessage(suspect, suspects))
+      .map(
+        ({ type, text, locationUrl }) =>
+          `[${type}] ${text}${locationUrl ? ` (${locationUrl})` : ""}`,
+      )
+      .concat(pageErrors)
 
     expect(
       offenders,
