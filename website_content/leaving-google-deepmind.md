@@ -144,7 +144,9 @@ Subtitle: February 25th, 2026
 
 The Pentagon wanted the frontier AI lab Anthropic to remove red lines from its existing contract: red lines against lethal autonomous weapons systems and AI spying / profiling. [The ultimatum was essentially "give us your product or we will designate you a supply chain risk."](https://www.nytimes.com/2026/02/24/us/politics/pentagon-anthropic.html) The government wanted the AI for "all lawful use."
 
-There were two major problems with that kind of deal. First: "all lawful use" potentially meant "AI enabling war crimes" and "automatically profiling dissidents with AI." Second: the Pentagon threatened a private company with economic destruction. Usually, the government would say "no thanks, we will find another supplier who will provide terms we want." In this case, the government threatened to falsely[^falsely] designate an American company as a "supply chain risk", which would force *all* military contractors to stop using Anthropic.
+There were two major problems with that kind of deal.
+1. [Independent legal experts had pointed out potential war crimes](https://www.pbs.org/newshour/politics/what-the-law-says-about-killing-survivors-of-a-boat-strike-according-to-experts) committed by the Pentagon (like [double-tap strikes on shipwrecked survivors](https://www.bbc.co.uk/news/articles/c4gk7eg83eno)), though the Pentagon insisted those actions were legal. Under that kind of "legality", "all lawful use" potentially meant "AI enabling war crimes" and "automatically profiling dissidents with AI."
+2. The Pentagon threatened a private company with economic destruction. Usually, the government would say "no thanks, we will find another supplier who will provide terms we want." In this case, the government threatened to falsely[^falsely] designate an American company as a "supply chain risk", which would force *all* military contractors to stop using Anthropic.
 
 [^falsely]: Judge Lin [later said](https://storage.courtlistener.com/recap/gov.uscourts.cand.465515/gov.uscourts.cand.465515.134.0.pdf) that the Pentagon's supply chain risk designation was "classic illegal First Amendment retaliation".
 
@@ -696,7 +698,7 @@ When I got scared --- and I did --- I'd think about Minneapolis. I'd think about
 
 # Why I left Google DeepMind
 
-When an employee leaves a top AI lab, it's often into the arms of another. They usually rack up a huge bonus that way. That's not what I did. I didn't even reach out to other labs and I declined outreach from the OpenAI safety team. I'm unemployed right now.
+When an employee leaves a top AI lab, it's often into the arms of another. They usually rack up a huge bonus that way. That's not what I did. I'm unemployed right now.
 
 In February, I realized that Google would probably sign the deal, which made me think about the door. I realized maybe I should leave and maybe I could do better AI safety work elsewhere. But I think I would have stayed a few more months if they hadn't signed the deal. When Google signed, I just couldn't do any more work. My brain said "no."
 
@@ -719,7 +721,7 @@ More broadly, sympathetic stories predict visible impact, including "visible in 
 
 ## Every person shouldn't have to speak out about every issue
 
-Yes, but if you promise to take an action and then don't, that's different. IASEAI promised to hold a member poll and never did. Further, if you built a significant part of your identity on opposing X,[^global-call] I think it's fair to discuss the decision to stay silent while X is decided. Stuart is simply the clearest case. He spent a decade as the loudest voice against autonomous weapons, then went quiet at the first real collision between modern AI and military use.
+Yes, but if you promise to take an action and then don't, that's different. IASEAI promised to hold a member poll and never did. Further, if you built a significant part of your identity on opposing something,[^global-call] I think it's fair to discuss the decision to stay silent while that thing is decided. Stuart is simply the clearest case. He spent a decade as the loudest voice against autonomous weapons, then went quiet at the first real collision between modern AI and military use.
 
 [^global-call]: The luminaries made autonomous weapons one of their causes. In September 2025, at the UN General Assembly, the [Global Call for AI Red Lines](https://red-lines.ai/) gathered more than 300 signatories, among them 15 Nobel and Turing laureates. The Call declared that certain AI uses should be prohibited by international agreement, including mass surveillance and lethal autonomous weapons.
 
@@ -734,7 +736,7 @@ Consider also that Anthropic taking a stand is one tech company. If a company li
 > [!quote] [Pentagon will ‘never again’ rely on a single AI provider, official says](https://www.nextgov.com/artificial-intelligence/2026/05/pentagon-will-never-again-rely-single-ai-provider-official-says/413399/)
 > Defense Under Secretary for Research and Engineering Emil Michael said new agreements with Big Tech companies are a “counterstatement” to the ongoing Anthropic-Pentagon conflict as the agency prioritizes flexible contracts. \[...\]
 >
-> Michael continued to say that the new deals with Amazon Web Services, Google, Microsoft, NVIDIA, OpenAI, Reflection, Oracle and SpaceX are “a statement by the biggest tech companies in the world who are involved in the AI space … and have them say, ‘We support the Department of War, we support the U.S. government, and we support the… armed services for all lawful use cases.”
+> Michael continued to say that the new deals with Amazon Web Services, Google, Microsoft, NVIDIA, OpenAI, Reflection, Oracle and SpaceX are “a statement by the biggest tech companies in the world who are involved in the AI space … and have them say, ‘We support the Department of War, we support the U.S. government, and we support the… armed services for all lawful use cases.'”
 
 Despite the Pentagon's policy, Jeff's leverage mattered. The Pentagon would have refused, yes, but then Google could have walked away.
 
