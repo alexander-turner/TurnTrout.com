@@ -396,6 +396,9 @@ export function isCode(node: Element): boolean {
  * descends into `<code>` and excludes `<a>` (links are handled separately), so
  * its membership intentionally differs.
  */
+// Tags rendered in the italic face, whose glyphs lean rightward.
+export const ITALIC_TAGS: ReadonlySet<string> = new Set(["em", "i"])
+
 export const INLINE_PASSTHROUGH_TAGS: ReadonlySet<string> = new Set([
   "a",
   "b",

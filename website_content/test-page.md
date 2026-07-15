@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-14
+date_updated: 2026-07-15
 createBibtex: true
 ---
 
@@ -964,6 +964,8 @@ Enclosing punctuation should render upright (roman) while letter forms remain it
 - _**Bold italic (parentheses) and [brackets]**_
 - _**We need a <span>deep (nesting)</span> test.**_
 - _Here's `code(not_wrapped)` but (these are wrapped)._
+
+An upright colon or semicolon after italic text gets a sliver of extra room so the italic's lean doesn't crash into it. Compare _The Dark Knight_: kerned, even after a link like [_Batman Begins_](https://en.wikipedia.org/wiki/Batman_Begins): still kerned; _and after semicolons_; too.
 
 # What are your timelines?
 

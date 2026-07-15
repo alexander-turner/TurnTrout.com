@@ -15,6 +15,7 @@ from bs4.element import AttributeValueList
 
 from .. import utils as script_utils
 from ..utils import (
+    HAIR_SPACE,
     LEFT_SINGLE_QUOTE,
     NBSP,
     RIGHT_SINGLE_QUOTE,
@@ -1987,6 +1988,16 @@ def test_check_markdown_assets_in_html_with_invalid_md_path():
             f"<p>He said {LEFT_SINGLE_QUOTE}<em>hello</em>{RIGHT_SINGLE_QUOTE} to them</p>",
             [],
         ),
+        # Hair space inserted by the italic-kern transform before upright
+        # punctuation - should be allowed
+        (
+            f"<p>Watch <em>The Dark Knight</em>{HAIR_SPACE}: great</p>",
+            [],
+        ),
+        (
+            f"<p>an <em>invariant</em>{HAIR_SPACE}; therefore</p>",
+            [],
+        ),
     ],
 )
 def test_check_emphasis_spacing_allowed_patterns(html, expected):
@@ -2892,6 +2903,10 @@ def test_check_inline_formatting_spacing(html, expected):
         ("<p>multiple <code>URL</code>s here</p>", 0),
         # Apostrophe-s possessive is fine (apostrophe is in allowed chars).
         ("<p>the <code>name</code>'s value</p>", 0),
+        # Hair-space gap inserted by InlineCodeSpacing is fine, with or
+        # without a following breakable space.
+        (f"<p>of{HAIR_SPACE} <code>grep</code> here</p>", 0),
+        (f"<p>dash\u2014{HAIR_SPACE}<code>x</code> here</p>", 0),
         # Block code inside <pre> is skipped.
         ("<pre><code>let x = 1;\nfoo</code></pre>", 0),
         # Code inside a no-formatting zone is skipped.
