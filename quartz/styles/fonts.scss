@@ -191,13 +191,6 @@ em {
   font-style: italic;
 }
 
-// Applied by kernItalicBeforePunctuation: an upright colon or semicolon set
-// solid against the end of italic text collides with the final glyph's
-// forward lean, so open the gap slightly.
-.italic-kern {
-  margin-right: 0.05em;
-}
-
 .elvish {
   font-family: Elvish, serif;
   line-height: 2.2;
@@ -376,14 +369,6 @@ code {
 // `white-space: nowrap`.
 :not(pre) > code {
   overflow-wrap: break-word;
-}
-
-// Inline code's monospace glyph can crowd the word before it (especially after
-// letters with a rightward hook, "f"/"r"). The InlineCodeSpacing transformer
-// wraps that word so it can carry a trailing gap. A trailing margin collapses at
-// a line end, so when the code wraps to a line start it stays flush there.
-.inline-code-gap {
-  margin-right: 0.1em;
 }
 
 // A short code is one token: it wraps to the next line whole instead of breaking

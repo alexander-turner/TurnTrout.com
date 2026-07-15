@@ -26,6 +26,7 @@ import type { ElementMaybeWithParent } from "./utils"
 
 import {
   charsToMoveIntoLinkFromRight,
+  HAIR_SPACE,
   LEFT_SINGLE_QUOTE,
   NBSP,
   RIGHT_SINGLE_QUOTE,
@@ -35,7 +36,6 @@ import {
 import { type QuartzTransformerPlugin } from "../types"
 import { isHeading } from "./favicons"
 import {
-  addClass,
   fractionRegex,
   hasAncestor,
   hasClass,
@@ -611,17 +611,16 @@ const ITALIC_TAGS: ReadonlySet<string> = new Set(["em", "i"])
 // final italic glyph (e.g. "t") crashes into when set solid against it.
 const collidingPunctuationRegex = /^[:;]/
 
-export const ITALIC_KERN_CLASS = "italic-kern"
-
 /**
- * Tag italic elements whose next glyph is an upright ':' or ';' with
- * `.italic-kern`, so CSS can open the gap with a small margin-right
- * (see `fonts.scss`).
+ * Insert a hair space between an italic element and a following upright ':'
+ * or ';' to open the gap. The space is a text character (not CSS spacing) so
+ * an enclosing link's underline runs through it unbroken.
  *
  * The lean carries across closing inline boundaries (`…</em></a>:`), so the
  * search for the following glyph climbs while the italic element closes each
  * phrasing-content ancestor. A closing italic ancestor ends at the same right
- * edge and is tagged on its own visit; tagging both would double the gap.
+ * edge and gets the space on its own visit; the inserted space no longer
+ * matches the punctuation regex, so the gap is never doubled.
  */
 export function kernItalicBeforePunctuation(tree: Root): void {
   visitParents(tree, "element", (node, ancestors) => {
@@ -636,7 +635,7 @@ export function kernItalicBeforePunctuation(tree: Root): void {
       const next = parent.children[index + 1]
       if (next !== undefined) {
         if (next.type === "text" && collidingPunctuationRegex.test(next.value)) {
-          addClass(node, ITALIC_KERN_CLASS)
+          next.value = HAIR_SPACE + next.value
         }
         return
       }
