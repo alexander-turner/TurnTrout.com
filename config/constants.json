@@ -173,6 +173,7 @@
   ],
   "unicodeTypography": {
     "nbsp": "\u00A0",
+    "hairSpace": "\u200A",
     "leftSingleQuote": "\u2018",
     "rightSingleQuote": "\u2019",
     "leftDoubleQuote": "\u201C",

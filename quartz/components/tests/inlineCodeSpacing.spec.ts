@@ -1,24 +1,27 @@
 import { expect, test } from "./fixtures"
 import { gotoPage } from "./visual_utils"
 
-// InlineCodeSpacing gives the word before inline code a small right-margin gap
-// (`.inline-code-gap`) so the monospace glyph doesn't crowd it. A trailing
-// margin collapses at a line end, so when the code wraps to the start of a line
-// it must sit flush there (no indent) — this spec verifies, in every
-// browser/viewport project, both that the gap exists and that wrapped code stays
-// flush with its line start.
+// InlineCodeSpacing appends a hair space (U+200A) to the word before inline
+// code so the monospace glyph doesn't crowd it. The hair space sits before the
+// word's trailing breakable space, so when the code wraps to the start of a
+// line it must sit flush there (no indent) — this spec verifies, in every
+// browser/viewport project, both that the gap exists and that wrapped code
+// stays flush with its line start.
+const HAIR_SPACE = "\u200a"
+
 test.describe("inline code spacing", () => {
   test("gaps the preceding word and keeps wrapped code flush at the line start", async ({
     page,
   }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
 
-    const measured = await page.evaluate(() => {
+    const measured = await page.evaluate((hairSpace) => {
       const host = document.createElement("div")
       // A 1px-wide column forces the space between the word and the code to
       // wrap, dropping the code to its own line.
       host.innerHTML =
-        '<div id="ics-host" style="width:1px"><span id="ics-word" class="inline-code-gap">word</span> <code id="ics-code">xy</code></div>'
+        '<div id="ics-host" style="width:1px"><span id="ics-word">word</span>' +
+        `${hairSpace} <code id="ics-code">xy</code></div>`
 
       const article = document.querySelector("article") ?? document.body
       article.appendChild(host)
@@ -32,23 +35,31 @@ test.describe("inline code spacing", () => {
       const wordRect = get("ics-word").getBoundingClientRect()
       const codeRect = get("ics-code").getBoundingClientRect()
 
+      // Width of the hair space as rendered: a range over the text node
+      // between the word span and the code.
+      const gapNode = get("ics-word").nextSibling as globalThis.Text
+      const range = document.createRange()
+      range.setStart(gapNode, 0)
+      range.setEnd(gapNode, 1)
+      const gapWidth = range.getBoundingClientRect().width
+
       const result = {
-        marginRight: parseFloat(getComputedStyle(get("ics-word")).marginRight),
+        gapWidth,
         wrapDelta: codeRect.top - wordRect.top,
         codeIndent: codeRect.left - hostRect.left,
         wordIndent: wordRect.left - hostRect.left,
       }
       host.remove()
       return result
-    })
+    }, HAIR_SPACE)
 
-    // The word carries the gap.
-    expect(measured.marginRight).toBeGreaterThan(0)
+    // The hair space renders with real width on the word's line.
+    expect(measured.gapWidth).toBeGreaterThan(0)
     // The code really wrapped to a line below its word.
     expect(measured.wrapDelta).toBeGreaterThan(5)
     // The wrapped code is flush with the line start, exactly like the word at
-    // the start of its own line — the gap lives on the word's trailing edge, not
-    // as a leading indent on the code.
+    // the start of its own line — the gap lives on the word's trailing edge,
+    // not as a leading indent on the code.
     expect(Math.abs(measured.codeIndent - measured.wordIndent)).toBeLessThan(1)
   })
 
@@ -61,11 +72,11 @@ test.describe("inline code spacing", () => {
   }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
 
-    const measured = await page.evaluate(() => {
+    const measured = await page.evaluate((hairSpace) => {
       const host = document.createElement("div")
       host.style.overflowWrap = "anywhere"
       host.innerHTML =
-        '<div id="ics-orphan"><span class="inline-code-gap">word</span> ' +
+        `<div id="ics-orphan"><span>word</span>${hairSpace} ` +
         '<code id="ics-one">one</code><span id="ics-semi">); </span>' +
         '<code id="ics-two">two</code></div>'
 
@@ -92,7 +103,7 @@ test.describe("inline code spacing", () => {
       }
       host.remove()
       return result
-    })
+    }, HAIR_SPACE)
 
     // The column really forced the second code onto a new line.
     expect(measured.twoDroppedBy).toBeGreaterThan(5)

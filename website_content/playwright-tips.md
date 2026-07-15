@@ -15,7 +15,7 @@ aliases:
   - visual-regression
   - screenshot-testing
 date_published: 2025-08-12
-date_updated: 2026-07-11
+date_updated: 2026-07-12
 ---
 
 # Background

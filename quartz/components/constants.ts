@@ -68,6 +68,7 @@ export const {
 // Unicode typography constants
 export const {
   nbsp: NBSP,
+  hairSpace: HAIR_SPACE,
   leftSingleQuote: LEFT_SINGLE_QUOTE,
   rightSingleQuote: RIGHT_SINGLE_QUOTE,
   leftDoubleQuote: LEFT_DOUBLE_QUOTE,

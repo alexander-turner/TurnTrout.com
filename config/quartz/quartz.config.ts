@@ -18,12 +18,12 @@ import {
   FixFootnotes,
   FrontMatter,
   GitHubFlavoredMarkdown,
-  githubReadmeSource,
   HTMLFormattingImprovement,
   InlineCodeSpacing,
   InvertInDarkMode,
   Latex,
   LinkContexts,
+  NonBreakingHyphens,
   NotFoundPage,
   ObsidianFlavoredMarkdown,
   PopulateContainers,
@@ -50,6 +50,7 @@ import {
   WrapNakedElements,
 } from "../../quartz/plugins"
 import { QuartzConfig } from "../../quartz/util/ctx"
+import { GITHUB_README_SOURCES } from "./externalReadmes"
 
 const config: QuartzConfig = {
   configuration: {
@@ -74,18 +75,7 @@ const config: QuartzConfig = {
       FrontMatter(),
       PopulateExternalMarkdown({
         sources: {
-          punctilio: githubReadmeSource("alexander-turner", "punctilio", {
-            maxSections: 0,
-          }),
-          "claude-guard": githubReadmeSource("alexander-turner", "claude-guard", {
-            maxSections: 0,
-          }),
-          "ci-truth-serum": githubReadmeSource("alexander-turner", "ci-truth-serum", {
-            maxSections: 1,
-          }),
-          "agent-input-sanitizer": githubReadmeSource("alexander-turner", "agent-input-sanitizer", {
-            maxSections: 1,
-          }),
+          ...GITHUB_README_SOURCES,
           "lint-staged": {
             filePath: "package.json",
             jsonPath: "lint-staged",
@@ -165,6 +155,10 @@ const config: QuartzConfig = {
       rehypeCustomSpoiler(),
       TagSmallcaps(),
       AutoCode(),
+      // After TagSmallcaps (and AutoCode) so acronyms are already wrapped in
+      // <abbr>: gluing a word joiner into "GPT-4" earlier would split the
+      // small-caps match. Glues short hyphenated compounds so they don't wrap.
+      NonBreakingHyphens(),
       AfterArticle(),
       RelatedPosts(),
       AddFavicons(),

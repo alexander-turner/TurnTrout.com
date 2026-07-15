@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-07
+date_updated: 2026-07-15
 createBibtex: true
 ---
 
@@ -732,6 +732,14 @@ This solution is 2/3 water, mixed on 01/01/2024. Even more complicated fractions
 
 He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._ October 5th, 1993.
 
+## Non-breaking hyphens
+
+Short hyphenated compounds stay whole instead of breaking at the hyphen. The column below is deliberately narrow, so each term is forced onto its own line rather than splitting across two:
+
+<div id="non-breaking-hyphens-demo" style="width: 6rem; border: 2px var(--midground) solid; border-radius: 5px; padding: 0.5rem;">
+We held a 1-on-1 with GPT-4 about the 9-to-5 grind, X-ray goggles, and the mid-1990s.
+</div>
+
 ## Dropcaps
 
 <span id="single-letter-dropcap" class="dropcap" data-first-letter="T">T</span>his paragraph demonstrates a dropcap.
@@ -956,6 +964,8 @@ Enclosing punctuation should render upright (roman) while letter forms remain it
 - _**Bold italic (parentheses) and [brackets]**_
 - _**We need a <span>deep (nesting)</span> test.**_
 - _Here's `code(not_wrapped)` but (these are wrapped)._
+
+An upright colon or semicolon after italic text gets a sliver of extra room so the italic's lean doesn't crash into it. Compare _The Dark Knight_: kerned, even after a link like [_Batman Begins_](https://en.wikipedia.org/wiki/Batman_Begins): still kerned; _and after semicolons_; too.
 
 # What are your timelines?
 

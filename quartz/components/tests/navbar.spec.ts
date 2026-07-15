@@ -534,9 +534,14 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   const { video, autoplayToggle } = getVideoElements(page)
 
   await autoplayToggle.click()
+  // The pond video only begins loading when play() runs (the click above), so
+  // assert on actual playback — the playhead advancing — rather than look-ahead
+  // buffer depth. currentTime > 0 confirms autoplay works as soon as the first
+  // frame renders, independent of how long the CDN takes to buffer future data
+  // (readyState >= 3), which under CI contention can lag far behind playback.
   await page.waitForFunction((id) => {
     const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return videoElement && !videoElement.paused && videoElement.readyState >= 3
+    return videoElement && !videoElement.paused && videoElement.currentTime > 0
   }, pondVideoId)
 
   await page.evaluate(() => window.spaNavigate(new URL("/design", window.location.origin)))
@@ -552,13 +557,18 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   )
 })
 
-async function getTimestampAfterNavigation(page: Page): Promise<number> {
+async function getTimestampAfterNavigation(page: Page, expectedTimestamp: number): Promise<number> {
+  // The muted navbar video can autoplay from 0 before the sessionStorage
+  // restore applies, so a bare "currentTime > 0" can sample the pre-restore
+  // playhead. Wait until the playhead is within the assertion's tolerance of
+  // the saved timestamp; a restore that never applies hits the timeout and
+  // fails loudly.
   const handle = await page.waitForFunction(
-    (id) => {
+    ({ id, expected }) => {
       const videoEl = document.querySelector<HTMLVideoElement>(`#${id}`)
-      return videoEl && videoEl.currentTime > 0 ? videoEl.currentTime : null
+      return videoEl && Math.abs(videoEl.currentTime - expected) < 0.5 ? videoEl.currentTime : null
     },
-    pondVideoId,
+    { id: pondVideoId, expected: expectedTimestamp },
     { timeout: 45_000 },
   )
   return (await handle.jsonValue()) as number
@@ -573,7 +583,10 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   const localLink = page.locator("a:not(.skip-to-content)").first()
   await triggerAndWaitForSPANav(page, () => localLink.click())
 
-  const timestampAfterNavigation = await getTimestampAfterNavigation(page)
+  const timestampAfterNavigation = await getTimestampAfterNavigation(
+    page,
+    timestampBeforeNavigation,
+  )
   expect(timestampAfterNavigation).toBeCloseTo(timestampBeforeNavigation, 0)
 })
 
@@ -587,6 +600,6 @@ test("Video timestamp is preserved during refresh", async ({ page }) => {
 
   await reloadPage(page)
 
-  const timestampAfterRefresh = await getTimestampAfterNavigation(page)
+  const timestampAfterRefresh = await getTimestampAfterNavigation(page, timestampBeforeRefresh)
   expect(timestampAfterRefresh).toBeCloseTo(timestampBeforeRefresh, 0)
 })

@@ -436,6 +436,30 @@ test.describe("Output monospace styling", () => {
   })
 })
 
+test.describe("Long-content scroll box", () => {
+  const LONG_TEXT = Array.from({ length: 60 }, (_, i) => `"Line ${i}" is long text ---`).join("\n")
+
+  test("input scrolls within a bounded box for long text", async ({ page }) => {
+    const input = page.locator("#punctilio-input")
+    await input.fill(LONG_TEXT)
+
+    const overflows = await input.evaluate(
+      (el: HTMLTextAreaElement) => el.scrollHeight > el.clientHeight + 1,
+    )
+    expect(overflows).toBe(true)
+  })
+
+  test("output scrolls within a bounded box for long text", async ({ page }) => {
+    await page.locator("#punctilio-input").fill(LONG_TEXT)
+    // Wait for the debounced transform to populate the output
+    await expect(page.locator(`${OUTPUT_CONTENT} .diff-insert`).first()).toBeAttached()
+
+    const output = page.locator(OUTPUT_CONTENT)
+    const overflows = await output.evaluate((el) => el.scrollHeight > el.clientHeight + 1)
+    expect(overflows).toBe(true)
+  })
+})
+
 test.describe("Mode button navigation", () => {
   test("clicking the already-active mode does not clear input", async ({ page }) => {
     const input = page.locator("#punctilio-input")

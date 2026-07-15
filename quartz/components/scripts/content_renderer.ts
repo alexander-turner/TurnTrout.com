@@ -1,5 +1,10 @@
 import { normalizeRelativeURLs, stripSlashes } from "../../util/path"
-import { PREVIEWABLE_CLASS } from "../constants"
+import { PREVIEWABLE_CLASS, similarPostsHeadingId } from "../constants"
+
+// The "Similar posts" block (a heading + `.related-posts` list appended by
+// relatedPosts.ts) is page-bottom navigation, not article content, so it is
+// noise in a search preview and its excerpts shouldn't match search queries.
+const SIMILAR_POSTS_SELECTOR = `#${similarPostsHeadingId}, .related-posts`
 
 interface WindowWithCheckboxStates extends Window {
   __quartz_checkbox_states?: Map<string, boolean>
@@ -95,6 +100,7 @@ export function processPreviewables(html: Document, targetUrl: URL): Element[] {
 
   const tempContainer = document.createElement("div")
   previewables.forEach((el) => tempContainer.appendChild(el.cloneNode(true)))
+  tempContainer.querySelectorAll(SIMILAR_POSTS_SELECTOR).forEach((el) => el.remove())
   restoreCheckboxStates(tempContainer, targetUrl)
 
   return Array.from(tempContainer.children)

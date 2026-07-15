@@ -13,7 +13,7 @@ import {
 } from "punctilio"
 import {
   applyPasses,
-  collectProseBlocks,
+  collectProseUnits,
   getTextContent,
   type PassEntry,
   type TextNodeSkipPredicate,
@@ -26,6 +26,7 @@ import type { ElementMaybeWithParent } from "./utils"
 
 import {
   charsToMoveIntoLinkFromRight,
+  HAIR_SPACE,
   LEFT_SINGLE_QUOTE,
   NBSP,
   RIGHT_SINGLE_QUOTE,
@@ -38,7 +39,9 @@ import {
   fractionRegex,
   hasAncestor,
   hasClass,
+  INLINE_PASSTHROUGH_TAGS,
   isCode,
+  ITALIC_TAGS,
   replaceRegex,
   urlRegexNonGlobal,
 } from "./utils"
@@ -154,11 +157,7 @@ function isHatTipSlash(view: ProseView, slashIdx: number): boolean {
  * Returns true when the slash matched (even if both sides kept their spaces),
  * so the digit-slash rule doesn't double-process it.
  */
-function applyMainSlashRule(
-  view: ProseView,
-  slashIdx: number,
-  insertNbsp: (offset: number, bind?: "left" | "right") => void,
-): boolean {
+function applyMainSlashRule(view: ProseView, slashIdx: number): boolean {
   const text = view.text
   const leftBoundary = view.hasBoundary(slashIdx)
   const spaceBefore = !leftBoundary && text[slashIdx - 1] === " "
@@ -184,14 +183,14 @@ function applyMainSlashRule(
   }
 
   if (leftBoundary) {
-    insertNbsp(slashIdx, "right")
+    view.replace(slashIdx, slashIdx, NBSP, { bind: "right" })
   } else if (!spaceBefore) {
-    insertNbsp(slashIdx)
+    view.replace(slashIdx, slashIdx, NBSP)
   }
   if (rightBoundary) {
-    insertNbsp(afterIdx, "left")
+    view.replace(afterIdx, afterIdx, NBSP, { bind: "left" })
   } else if (!spaceAfter) {
-    insertNbsp(afterIdx)
+    view.replace(afterIdx, afterIdx, NBSP)
   }
   return true
 }
@@ -218,23 +217,11 @@ function applyNumberSlashRule(view: ProseView, slashIdx: number): void {
 
 function applySlashSpacing(view: ProseView): void {
   const text = view.text
-  // Two adjacent slashes separated only by an inline-element boundary make the
-  // first slash's trailing NBSP and the second slash's leading NBSP target the
-  // same offset. A single NBSP there is the intended spacing, and punctilio
-  // rejects two pure insertions at one offset — so collapse the duplicate.
-  const insertedAt = new Set<number>()
-  const insertNbsp = (offset: number, bind?: "left" | "right"): void => {
-    if (insertedAt.has(offset)) {
-      return
-    }
-    insertedAt.add(offset)
-    view.replace(offset, offset, NBSP, bind ? { bind } : undefined)
-  }
   for (let i = 0; i < text.length; i++) {
     if (text[i] !== "/" || isHatTipSlash(view, i)) {
       continue
     }
-    if (!applyMainSlashRule(view, i, insertNbsp)) {
+    if (!applyMainSlashRule(view, i)) {
       applyNumberSlashRule(view, i)
     }
   }
@@ -343,6 +330,48 @@ const dashWordJoinerPass = definePass(/[–—]/gu, (match, view) => {
     }
   }
   return `${WORD_JOINER}${match[0]}`
+})
+
+const isAlnum = (char: string | undefined): boolean =>
+  char !== undefined && /[\p{L}\p{N}]/u.test(char)
+
+// A hyphen (U+002D) is a break-after opportunity, so a hyphenated token can
+// wrap right after any of its hyphens ("1-on-1" splitting to "1-" / "on-1").
+// For short, identifier-like compounds this reads badly. Glue a word joiner
+// after such a hyphen so the unit stays whole, while long descriptive
+// compounds ("state-of-the-art") keep their break opportunities.
+//
+// The join fires when the hyphen sits between two alphanumerics and either a
+// digit flanks it (numeric compounds and identifiers: "GPT-4", "COVID-19",
+// "3-D", "9-to-5", "1-2-3", "Qwen1.5-1.8") or one of the two joined segments is
+// a single character (single-letter affixes: "T-shirt", "X-ray", "e-mail").
+// Two-segment numeric ranges have already become en dashes upstream; a hyphen
+// that survives to here belongs to a compound worth keeping whole. Idempotent:
+// after a pass the character following the hyphen is the word joiner, which
+// fails the alphanumeric test.
+//
+// Applied by NonBreakingHyphens, a late plugin (see below): running after
+// TagSmallcaps means acronyms are already wrapped in <abbr>, so gluing "gpt-4"
+// inside the finished element keeps it both small-capped and unbreakable
+// instead of splitting the acronym match.
+const hyphenWordJoinerPass = definePass(/-/g, (match, view) => {
+  const idx = match.index
+  const { text } = view
+  const left = text[idx - 1]
+  const right = text[idx + 1]
+
+  // Only an intra-word hyphen qualifies. `glueHyphens` feeds one text node at a
+  // time, so a hyphen at a node edge has an undefined neighbor and is skipped.
+  if (!isAlnum(left) || !isAlnum(right)) return null
+
+  const leftSegmentIsSingle = idx - 1 === 0 || !isAlnum(text[idx - 2])
+  const rightSegmentIsSingle = idx + 2 === text.length || !isAlnum(text[idx + 2])
+
+  const shouldGlue =
+    /\d/.test(left) || /\d/.test(right) || leftSegmentIsSingle || rightSegmentIsSingle
+  if (!shouldGlue) return null
+
+  return `-${WORD_JOINER}`
 })
 
 // Simple find-and-replace transforms local to this site (punctilio handles the rest)
@@ -573,6 +602,51 @@ export function formatOrdinalSuffixes(tree: Root): void {
         after: "",
       }
     })
+  })
+}
+
+// Upright punctuation with ink near the x-height, which the forward lean of a
+// final italic glyph (e.g. "t") crashes into when set solid against it.
+const collidingPunctuationRegex = /^[:;]/
+
+/**
+ * Insert a hair space between an italic element and a following upright ':'
+ * or ';' to open the gap. The space is a text character (not CSS spacing) so
+ * an enclosing link's underline runs through it unbroken.
+ *
+ * The lean carries across closing inline boundaries (`…</em></a>:`), so the
+ * search for the following glyph climbs while the italic element closes each
+ * phrasing-content ancestor. A closing italic ancestor ends at the same right
+ * edge and gets the space on its own visit; the inserted space no longer
+ * matches the punctuation regex, so the gap is never doubled.
+ */
+export function kernItalicBeforePunctuation(tree: Root): void {
+  visitParents(tree, "element", (node, ancestors) => {
+    if (!ITALIC_TAGS.has(node.tagName) || hasAncestor(node, toSkip, ancestors)) return
+    // An empty italic renders no glyph, so there is nothing to kern against.
+    if (getTextContent(node).length === 0) return
+
+    let current: ElementContent = node
+    for (let depth = ancestors.length - 1; depth >= 0; depth--) {
+      const parent = ancestors[depth]
+      const index = parent.children.indexOf(current)
+      const next = parent.children[index + 1]
+      if (next !== undefined) {
+        if (next.type === "text" && collidingPunctuationRegex.test(next.value)) {
+          next.value = HAIR_SPACE + next.value
+        }
+        return
+      }
+      const parentElement = parent as Element
+      if (
+        parent.type !== "element" ||
+        ITALIC_TAGS.has(parentElement.tagName) ||
+        !INLINE_PASSTHROUGH_TAGS.has(parentElement.tagName)
+      ) {
+        return
+      }
+      current = parentElement
+    }
   })
 }
 
@@ -1017,11 +1091,13 @@ export const improveFormatting = (
       // punctilio's default skip tags (kbd, var, samp, ...) must not apply.
       // Form-control and metadata text (option labels, button captions) is a
       // literal value, not prose — drop those blocks from the collection.
-      const eltsToTransform = collectProseBlocks(node as Element, {
+      // Units include loose inline "runs" (text beside block children) that no
+      // single element owns, so a container's loose text still gets formatted.
+      const unitsToTransform = collectProseUnits(node as Element, {
         skipTags: [],
         shouldSkip: toSkip,
-      }).filter((elt) => !NON_PROSE_TAGS.has(elt.tagName))
-      eltsToTransform.forEach((elt) => {
+      }).filter((unit) => unit.kind === "run" || !NON_PROSE_TAGS.has(unit.element.tagName))
+      unitsToTransform.forEach((unit) => {
         const passes: PassEntry[] = [
           ...checkedTextPasses,
           ...activeUncheckedTransformers,
@@ -1029,18 +1105,17 @@ export const improveFormatting = (
           dashWordJoinerPass,
         ]
 
-        // Don't replace slashes in fractions, but give breathing room
-        // to others
-        const isNotFractionOrLink = (n: Element) => {
-          return !hasClass(n, "fraction") && n?.tagName !== "a"
-        }
-        if (isNotFractionOrLink(elt)) {
+        // Don't replace slashes in fractions or link text; loose runs are neither.
+        const isNotFractionOrLink =
+          unit.kind === "run" ||
+          (!hasClass(unit.element, "fraction") && unit.element?.tagName !== "a")
+        if (isNotFractionOrLink) {
           // Slash spacing alone also skips URL-text links, so its entry
           // carries the extra text-node predicate.
           passes.push({ pass: spacesAroundSlashes, shouldSkipText: shouldSkipLinkUrlText })
         }
 
-        applyPasses(elt, passes, { shouldSkip: toSkip })
+        applyPasses(unit, passes, { shouldSkip: toSkip })
       })
     })
 
@@ -1052,6 +1127,8 @@ export const improveFormatting = (
     formatArrows(tree)
     wrapUnicodeArrowsWithMonospaceStyle(tree)
     formatOrdinalSuffixes(tree)
+    // After rearrangeLinkPunctuation, so a colon pulled into a link is seen.
+    kernItalicBeforePunctuation(tree)
     removeSpaceBeforeFootnotes(tree)
   }
 }
@@ -1081,6 +1158,45 @@ export const StripInlineBoundaryWhitespace: QuartzTransformerPlugin = () => {
     name: "stripInlineBoundaryWhitespace",
     htmlPlugins() {
       return [() => stripInlineBoundaryWhitespace]
+    },
+  }
+}
+
+/**
+ * Applies {@link hyphenWordJoinerPass} to prose text nodes, gluing short
+ * hyphenated compounds so they don't wrap at their hyphens. Skips code and
+ * display headings (which wrap naturally, like nbspTransform is skipped there).
+ *
+ * Each text node is processed on its own; a hyphen at a node edge has no
+ * in-node neighbor and is left alone, matching the boundary-skip the pass
+ * applies within a multi-node run.
+ */
+export function glueHyphens(tree: Root): void {
+  visitParents(tree, "text", (node: Text, ancestors: Parent[]) => {
+    const parent = ancestors[ancestors.length - 1] as Element
+    // istanbul ignore next
+    if (!parent) return
+    if (hasAncestor(parent, toSkip, ancestors)) return
+    if (isDisplayHeading(parent) || hasAncestor(parent, isDisplayHeading, ancestors)) return
+    node.value = hyphenWordJoinerPass(node.value)
+  })
+}
+
+/**
+ * Quartz plugin gluing short hyphenated compounds ("1-on-1", "GPT-4") so they
+ * never wrap at a hyphen.
+ *
+ * Runs *after* ``TagSmallcaps``: acronyms are already wrapped in
+ * ``<abbr class="small-caps">`` by then, so the word joiner lands inside the
+ * finished element and keeps the acronym both small-capped and unbreakable. A
+ * joiner injected earlier would split the acronym match and drop trailing
+ * segments (e.g. the "XL" of "GPT-2-XL") out of the small-caps run.
+ */
+export const NonBreakingHyphens: QuartzTransformerPlugin = () => {
+  return {
+    name: "nonBreakingHyphens",
+    htmlPlugins() {
+      return [() => glueHyphens]
     },
   }
 }

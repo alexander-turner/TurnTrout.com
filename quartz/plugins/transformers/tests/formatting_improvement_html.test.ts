@@ -15,6 +15,7 @@ import { VFile } from "vfile"
 
 import {
   charsToMoveIntoLinkFromRight,
+  HAIR_SPACE,
   LEFT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
   NBSP,
@@ -26,12 +27,14 @@ import {
 import {
   applyTextTransforms,
   arrowsToWrap,
+  glueHyphens,
   HTMLFormattingImprovement,
   identifyLinkNode,
   improveFormatting,
   lPRegex,
   massTransformText,
   moveQuotesBeforeLink,
+  NonBreakingHyphens,
   rearrangeLinkPunctuation,
   replaceFractions,
   spacesAroundSlashes,
@@ -40,6 +43,7 @@ import {
   timeTransform,
 } from "../formatting_improvement_html"
 import { FRACTION_SKIP_TAGS, SKIP_CLASSES, SKIP_TAGS, toSkip } from "../formatting_improvement_html"
+import { rehypeTagSmallcaps } from "../tagSmallcaps"
 
 const MULTIPLICATION = "\u00D7" // ×
 
@@ -244,7 +248,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p>(<strong>NAFTA</strong> <a href="x">/ˈnæftə/</a> <a href="y"><em>NAF-tə</em></a>; Spanish)</p>',
-        '<p>(<strong>NAFTA</strong> <a href="x">/ ˈnæftə /</a> <a href="y"><em>NAF-tə</em>;</a> Spanish)</p>',
+        `<p>(<strong>NAFTA</strong> <a href="x">/ ˈnæftə /</a> <a href="y"><em>NAF-tə</em>${HAIR_SPACE};</a> Spanish)</p>`,
       ],
       [
         "<p>upweight the sycophantic <code>A</code>/<code>B</code> token</p>",
@@ -309,16 +313,35 @@ describe("HTMLFormattingImprovement", () => {
   })
 
   describe("slashes adjacent across an inline-element boundary", () => {
-    // Two slashes separated only by an inline-element boundary make the first
-    // slash's trailing NBSP and the second slash's leading NBSP land at the
-    // same offset; punctilio rejects two pure insertions there. The pass now
-    // collapses the duplicate to a single NBSP instead of crashing the build.
+    // Two slashes separated only by an inline-element boundary each get their
+    // own NBSP at the shared boundary offset. punctilio routes the opposite-
+    // bound insertions into different nodes (v5.1+), so the build no longer
+    // aborts with "Two pure insertions at the same offset ... ambiguous".
     it.each([
-      ["<p>a/<em></em>/b</p>", "<p>a / <em></em>/ b</p>"],
-      ["<p><em>x/</em>/y</p>", "<p><em>x /</em>/ y</p>"],
+      ["<p>a/<em></em>/b</p>", "<p>a / <em></em> / b</p>"],
+      ["<p><em>x/</em>/y</p>", "<p><em>x /</em> / y</p>"],
       ["<p><em>a/</em><em>/b</em></p>", "<p><em>a /</em><em>/ b</em></p>"],
-      ["<p>a/<strong></strong>/b</p>", "<p>a / <strong></strong>/ b</p>"],
+      ["<p>a/<strong></strong>/b</p>", "<p>a / <strong></strong> / b</p>"],
     ])("does not crash on %s", (input: string, expected: string) => {
+      expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
+    })
+  })
+
+  describe("loose inline text beside block children", () => {
+    // Loose text sitting directly in a container alongside block children owns
+    // no element of its own; formatting reaches it via punctilio's prose "run"
+    // units. Its quotes/slashes must still be transformed, without merging the
+    // container's block children across the boundary.
+    it.each([
+      [
+        '<div><p>p1</p>loose "text" here<p>p2</p></div>',
+        "<div><p>p1</p>loose “text” here<p>p2</p></div>",
+      ],
+      [
+        '<blockquote><p>a</p>loose "quote" text</blockquote>',
+        "<blockquote><p>a</p>loose “quote” text</blockquote>",
+      ],
+    ])("curls quotes in %s", (input: string, expected: string) => {
       expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
     })
   })
@@ -730,6 +753,76 @@ describe("HTMLFormattingImprovement", () => {
     })
   })
 
+  describe("glueHyphens (NonBreakingHyphens)", () => {
+    const wj = WORD_JOINER
+    function runGlueHyphens(html: string): string {
+      const processor = rehype().data("settings", { fragment: true })
+      processor.use(() => glueHyphens)
+      return processor.processSync(html).toString()
+    }
+
+    it.each([
+      // Numeric compound: a digit flanks each hyphen.
+      ["<p>a 1-on-1 chat</p>", `<p>a 1-${wj}on-${wj}1 chat</p>`],
+      ["<p>a 9-to-5 job</p>", `<p>a 9-${wj}to-${wj}5 job</p>`],
+      ["<p>GPT-4 model</p>", `<p>GPT-${wj}4 model</p>`],
+      ["<p>COVID-19 era</p>", `<p>COVID-${wj}19 era</p>`],
+      ["<p>a 3-D render</p>", `<p>a 3-${wj}D render</p>`],
+      ["<p>mid-1990s music</p>", `<p>mid-${wj}1990s music</p>`],
+      // Multi-segment / decimal numerics keep ASCII hyphens, so they stay whole.
+      ["<p>call 1-2-3 now</p>", `<p>call 1-${wj}2-${wj}3 now</p>`],
+      ["<p>Qwen1.5-1.8 model</p>", `<p>Qwen1.5-${wj}1.8 model</p>`],
+      // Single-letter segment on the left.
+      ["<p>a T-shirt</p>", `<p>a T-${wj}shirt</p>`],
+      ["<p>an X-ray</p>", `<p>an X-${wj}ray</p>`],
+      ["<p>send e-mail</p>", `<p>send e-${wj}mail</p>`],
+      // Left segment is a single character starting the prose (idx-1 === 0).
+      ["<p>e-mail me</p>", `<p>e-${wj}mail me</p>`],
+      // Single-letter segment on the right, at end of prose (idx+2 === length).
+      ["<p>a grade-A</p>", `<p>a grade-${wj}A</p>`],
+      // Long descriptive compounds keep their break opportunities (no join).
+      ["<p>state-of-the-art</p>", "<p>state-of-the-art</p>"],
+      ["<p>cost-benefit analysis</p>", "<p>cost-benefit analysis</p>"],
+      // Only the qualifying hyphen is glued in a mixed compound.
+      ["<p>a T-shirt-wearing crowd</p>", `<p>a T-${wj}shirt-wearing crowd</p>`],
+      // Non-alphanumeric neighbor: not an intra-word hyphen, left untouched.
+      ["<p>foo- bar</p>", "<p>foo- bar</p>"],
+      ["<p>-foo bar</p>", "<p>-foo bar</p>"],
+      // A hyphen at a text-node edge has no in-node neighbor: left alone.
+      ["<p>T<em>-shirt</em></p>", "<p>T<em>-shirt</em></p>"],
+      ["<p>T-<em>shirt</em></p>", "<p>T-<em>shirt</em></p>"],
+      // A node edge isolates one segment to a single character: join.
+      ["<p>ab<em>c-d</em> x</p>", `<p>ab<em>c-${wj}d</em> x</p>`],
+      ["<p>x ab-c<em>d</em></p>", `<p>x ab-${wj}c<em>d</em></p>`],
+      // Skipped inside code and display headings (which wrap naturally).
+      ["<p><code>1-on-1</code></p>", "<p><code>1-on-1</code></p>"],
+      ['<p class="subtitle">GPT-2-XL</p>', '<p class="subtitle">GPT-2-XL</p>'],
+      ["<h2>1-on-1</h2>", "<h2>1-on-1</h2>"],
+    ])("glues short hyphenated compounds: %s", (input: string, expected: string) => {
+      expect(normalizeNbsp(runGlueHyphens(input))).toBe(expected)
+    })
+
+    it("is idempotent", () => {
+      const once = runGlueHyphens("<p>a 1-on-1 T-shirt</p>")
+      expect(runGlueHyphens(once)).toBe(once)
+    })
+
+    // Running after TagSmallcaps keeps an acronym both small-capped AND
+    // unbreakable: the joiner lands inside the finished <abbr> rather than
+    // splitting the acronym match (which would drop "XL" out of the small-caps).
+    it.each([
+      ["<p>I use GPT-4 daily</p>", `gpt-${wj}4</abbr>`],
+      ["<p>the GPT-2-XL model</p>", `gpt-${wj}2-${wj}xl</abbr>`],
+    ])("composes with smallcaps: %s", (input: string, expectedFragment: string) => {
+      const processor = rehype().data("settings", { fragment: true })
+      processor.use(improveFormatting, { skipFirstLetter: true })
+      processor.use(rehypeTagSmallcaps)
+      processor.use(() => glueHyphens)
+      const out = normalizeNbsp(processor.processSync(input).toString())
+      expect(out).toContain(expectedFragment)
+    })
+  })
+
   describe("stripInlineBoundaryWhitespace", () => {
     function runOnHtml(html: string): string {
       const processor = rehype().data("settings", { fragment: true })
@@ -1081,7 +1174,7 @@ describe("rearrangeLinkPunctuation", () => {
     ],
     [
       '<p><a href="https://example.com"><em>Fully nested</em></a>: with colon after</p>',
-      '<p><a href="https://example.com"><em>Fully nested</em>:</a> with colon after</p>',
+      `<p><a href="https://example.com"><em>Fully nested</em>${HAIR_SPACE}:</a> with colon after</p>`,
     ],
     [
       '<p><a href="https://example.com">Link</a>. with period after</p>',
@@ -1630,11 +1723,14 @@ describe("collectProseBlocks", () => {
     ],
     ["nested paragraphs", el("div", [el("div", [el("p", ["nested"])])]), [["p", ["nested"]]]],
     [
+      // punctilio's collectProseBlocks returns block-level prose units and no
+      // longer includes loose inline runs (`<span>text</span>`) sitting between
+      // block children; the visitor still reaches such a span directly, so its
+      // typography is unaffected.
       "mixed content",
       el("div", [el("p", ["p1"]), el("span", ["text"]), el("p", ["p2"])]),
       [
         ["p", ["p1"]],
-        ["span", ["text"]],
         ["p", ["p2"]],
       ],
     ],
@@ -2099,6 +2195,71 @@ describe("Ordinal Suffixes", () => {
   })
 })
 
+describe("Italic kerning before punctuation", () => {
+  it.each([
+    [
+      "<p>Watch <em>The Dark Knight</em>: great cinema</p>",
+      `<p>Watch <em>The Dark Knight</em>${HAIR_SPACE}: great cinema</p>`,
+    ],
+    ["<p>Some <i>words</i>; more words</p>", `<p>Some <i>words</i>${HAIR_SPACE}; more words</p>`],
+    // A colon after an italic link is pulled into the link, landing right
+    // after the italic element — still kerned, inside the link so the
+    // underline runs through the gap.
+    [
+      '<p>Watch <a href="https://example.com"><em>The Dark Knight</em></a>: great cinema</p>',
+      `<p>Watch <a href="https://example.com"><em>The Dark Knight</em>${HAIR_SPACE}:</a> great cinema</p>`,
+    ],
+    // The climb crosses closing non-italic inline tags
+    [
+      "<p>Watch <strong><em>The Dark Knight</em></strong>: great cinema</p>",
+      `<p>Watch <strong><em>The Dark Knight</em></strong>${HAIR_SPACE}: great cinema</p>`,
+    ],
+    [
+      '<p>Watch <span class="foo"><em>The Dark Knight</em></span>: great cinema</p>',
+      `<p>Watch <span class="foo"><em>The Dark Knight</em></span>${HAIR_SPACE}: great cinema</p>`,
+    ],
+    // Nested italics end at the same right edge; the inserted space stops
+    // matching the punctuation regex, so the gap is not doubled
+    [
+      "<p>Watch <em><i>The Dark Knight</i></em>: great cinema</p>",
+      `<p>Watch <em><i>The Dark Knight</i></em>${HAIR_SPACE}: great cinema</p>`,
+    ],
+    // Not kerned: punctuation without ink near the x-height
+    [
+      "<p>Watch <em>The Dark Knight</em>, great cinema</p>",
+      "<p>Watch <em>The Dark Knight</em>, great cinema</p>",
+    ],
+    // Not kerned: the colon is italic too, so nothing collides
+    [
+      "<p>Watch <em>The Dark Knight:</em> great cinema</p>",
+      "<p>Watch <em>The Dark Knight:</em> great cinema</p>",
+    ],
+    // Not kerned: an element follows instead of text
+    [
+      "<p><em>one</em><b>two</b> and <em>three</em></p>",
+      "<p><em>one</em><b>two</b> and <em>three</em></p>",
+    ],
+    // Not kerned: the colon opens a following element rather than a text node
+    ["<p><em>title</em><b>: subtitle</b></p>", "<p><em>title</em><b>: subtitle</b></p>"],
+    // Not kerned: whitespace already separates the italic from the colon
+    [
+      "<p>Watch <em>The Dark Knight</em> : great cinema</p>",
+      "<p>Watch <em>The Dark Knight</em> : great cinema</p>",
+    ],
+    // Not kerned: an empty italic renders no glyph
+    ["<p>Watch <em></em>: great cinema</p>", "<p>Watch <em></em>: great cinema</p>"],
+    // Not kerned: the climb stops at the closing block-level paragraph
+    ["<div><p>Watch <em>a film</em></p>: no</div>", "<div><p>Watch <em>a film</em></p>: no</div>"],
+    // Not kerned: an italic element that ends the fragment
+    ["<em>The Dark Knight</em>", "<em>The Dark Knight</em>"],
+    // Not kerned inside skipped elements
+    ["<p><code>see <em>foo</em>: bar</code></p>", "<p><code>see <em>foo</em>: bar</code></p>"],
+  ])("kerns italics before upright punctuation in %s", (input, expected) => {
+    const processedHtml = testHtmlFormattingImprovement(input)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
+  })
+})
+
 describe("improveFormatting function with options", () => {
   it("should use default options when none provided", () => {
     // This helper always passes some options to rehype; the true "no options" case is covered
@@ -2152,6 +2313,23 @@ describe("HTMLFormattingImprovement plugin", () => {
     const plugin = HTMLFormattingImprovement()
     const ctx = {} as Parameters<NonNullable<typeof plugin.htmlPlugins>>[0]
     expect(plugin.htmlPlugins?.(ctx)).toEqual([improveFormatting])
+  })
+
+  it("NonBreakingHyphens plugin glues hyphens via rehype", () => {
+    const plugin = NonBreakingHyphens()
+    const { htmlPlugins } = plugin
+    if (!htmlPlugins) {
+      throw new Error("htmlPlugins is undefined")
+    }
+
+    const mockCtx = {} as unknown
+    const plugins = htmlPlugins(mockCtx as Parameters<typeof htmlPlugins>[0])
+    const processor = rehype().data("settings", { fragment: true })
+    for (const p of plugins) {
+      processor.use(p as never)
+    }
+    const result = normalizeNbsp(processor.processSync("<p>a 1-on-1 chat</p>").toString())
+    expect(result).toBe(`<p>a 1-${WORD_JOINER}on-${WORD_JOINER}1 chat</p>`)
   })
 
   it("StripInlineBoundaryWhitespace plugin trims boundary whitespace via rehype", () => {

@@ -184,6 +184,43 @@ def test_convert_webm_skips_if_webm_already_exists(temp_dir: Path):
     assert webm_file.stat().st_size == 0
 
 
+def test_convert_hevc_skips_if_mp4_output_already_exists(temp_dir: Path):
+    """A non-mp4 source whose .mp4 already exists skips the x265 re-encode
+    instead of overwriting the existing output."""
+    input_file: Path = temp_dir / "test.mov"
+    input_file.touch()
+    mp4_file: Path = input_file.with_suffix(".mp4")
+    mp4_file.write_bytes(b"existing output")
+
+    stderr_capture = StringIO()
+    sys.stderr = stderr_capture
+    try:
+        compress._run_ffmpeg_hevc(
+            input_file, mp4_file, compress._DEFAULT_HEVC_CRF
+        )
+    finally:
+        sys.stderr = sys.__stderr__
+
+    assert "already exists. Skipping conversion" in stderr_capture.getvalue()
+    # The pre-existing output is left untouched (no re-encode).
+    assert mp4_file.read_bytes() == b"existing output"
+
+
+@requires_ffmpeg
+def test_convert_hevc_reencodes_in_place_h264_mp4(temp_dir: Path):
+    """An h264 .mp4 (output == input) is re-encoded in place to HEVC; the
+    output-exists guard must not skip it just because the input file exists."""
+    input_file: Path = temp_dir / "test.mp4"
+    utils.create_test_video(input_file, codec="libx264")
+    assert not compress._check_if_hevc_codec(input_file)
+
+    compress._run_ffmpeg_hevc(
+        input_file, input_file, compress._DEFAULT_HEVC_CRF
+    )
+
+    assert compress._check_if_hevc_codec(input_file)
+
+
 @requires_ffmpeg
 @pytest.mark.parametrize("quality", [-1, 64, 1000])
 def test_convert_webm_invalid_quality(temp_dir: Path, quality: int):

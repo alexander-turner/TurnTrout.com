@@ -10,6 +10,7 @@ export { AddFavicons } from "./favicons"
 export { FixFootnotes } from "./fixFootnotes"
 export {
   HTMLFormattingImprovement,
+  NonBreakingHyphens,
   StripInlineBoundaryWhitespace,
 } from "./formatting_improvement_html"
 export { TextFormattingImprovement } from "./formatting_improvement_text"

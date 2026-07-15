@@ -59,6 +59,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  // Handles and display names read as identifiers, not prose, so digits sit on
+  // the baseline as lining figures instead of the site's default oldstyle nums.
+  font-variant-numeric: lining-nums;
 }
 
 // The display-name link and the verified seal share a row; the seal is a sibling

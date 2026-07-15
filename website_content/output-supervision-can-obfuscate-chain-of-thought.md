@@ -19,6 +19,7 @@ aliases:
   - output-supervision-cot
   - output-cot
   - output-feedback-can-obfuscate-chain-of-thought
+original_url: https://www.lesswrong.com/posts/HuoyYQ6mFhS5pfZ4G/paper-output-supervision-can-obfuscate-the-cot
 date_published: 2025-11-22
 date_updated: 2026-06-26
 no_dropcap: false

@@ -40,6 +40,7 @@ from scripts import utils as script_utils
 from scripts.utils import (
     ELLIPSIS,
     GERMAN_OPEN_QUOTE,
+    HAIR_SPACE,
     INVERT_EXCLUDED_SEGMENTS,
     INVERT_IMG_EXTENSIONS,
     INVERT_VIDEO_EXTENSIONS,
@@ -2524,6 +2525,7 @@ ALLOWED_ELT_PRECEDING_CHARS = (
     + GERMAN_OPEN_QUOTE
     + "=+' \n\t\r−"
     + NBSP
+    + HAIR_SPACE
 )
 ALLOWED_ELT_FOLLOWING_CHARS = (
     "])}.,;!?:-–—~×(+"
@@ -2535,6 +2537,7 @@ ALLOWED_ELT_FOLLOWING_CHARS = (
     + ELLIPSIS
     + "=' \n\t\r"
     + NBSP
+    + HAIR_SPACE
 )
 
 
