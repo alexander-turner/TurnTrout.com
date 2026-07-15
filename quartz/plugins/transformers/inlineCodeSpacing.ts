@@ -6,7 +6,7 @@ import { visitParents } from "unist-util-visit-parents"
 import type { QuartzTransformerPlugin } from "../types"
 
 import { HAIR_SPACE, maxAtomicInlineCodeLength } from "../../components/constants"
-import { addClass, INLINE_PASSTHROUGH_TAGS } from "./utils"
+import { addClass, INLINE_PASSTHROUGH_TAGS, ITALIC_TAGS } from "./utils"
 
 // A short inline code reads as one token, so it wraps to the next line whole
 // rather than breaking at an internal hyphen (e.g. `conic-gradient`). Longer
@@ -97,13 +97,22 @@ function isInPre(ancestors: readonly Parent[]): boolean {
   )
 }
 
+// Italic monospace glyphs lean rightward, opening visual space on the code's
+// left edge on their own — an added gap there overshoots.
+function isItalicized(ancestors: readonly Parent[]): boolean {
+  return ancestors.some(
+    (ancestor) => ancestor.type === "element" && ITALIC_TAGS.has((ancestor as Element).tagName),
+  )
+}
+
 /**
  * Rehype plugin for inline `<code>` (block code inside `<pre>` is untouched):
  *   - marks a short code `inline-code-atomic` so it wraps whole instead of
  *     breaking at an internal hyphen;
  *   - appends a hair space to the word preceding a code so the monospace
- *     glyph doesn't crowd it. Adds no gap when the code follows a hugging
- *     delimiter (see `NO_GAP_PREDECESSORS`), a bare separator with no word to
+ *     glyph doesn't crowd it. Adds no gap when the code is italicized (its
+ *     leaning glyphs open the space themselves), follows a hugging delimiter
+ *     (see `NO_GAP_PREDECESSORS`), follows a bare separator with no word to
  *     crowd, or starts its block.
  */
 export const rehypeInlineCodeSpacing: Plugin = () => {
@@ -111,6 +120,7 @@ export const rehypeInlineCodeSpacing: Plugin = () => {
     visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
       if (node.tagName !== "code" || isInPre(ancestors)) return
       if (textLength(node) <= ATOMIC_CODE_MAX_LENGTH) addClass(node, "inline-code-atomic")
+      if (isItalicized(ancestors)) return
       const boundary = precedingBoundary(node, ancestors)
       if (!boundary || NO_GAP_PREDECESSORS.has(boundary.char)) return
       // `index` is always >= 1 here (the boundary char was found at a lower

@@ -118,6 +118,9 @@ describe("InlineCodeSpacing", () => {
       ["glued opener inside a wrapping link", '<p>(<a href="#"><code>grep</code></a>)</p>'],
       ["no joinable word before the code", "<p><em>x</em><code>grep</code></p>"],
       ["only whitespace before the code", "<p><img> <code>grep</code></p>"],
+      ["italicized code inside <em>", "<p><em>use <code>grep</code> here</em></p>"],
+      ["italicized code inside <i>", "<p><i>use <code>grep</code> here</i></p>"],
+      ["code wrapped by its own <em>", "<p>use <em><code>grep</code></em> here</p>"],
     ])("for %s", async (_label, html) => {
       const out = await processHtmlWithPlugin(html)
       expect(out).not.toContain(HAIR_SPACE)

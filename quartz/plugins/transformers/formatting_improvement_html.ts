@@ -41,6 +41,7 @@ import {
   hasClass,
   INLINE_PASSTHROUGH_TAGS,
   isCode,
+  ITALIC_TAGS,
   replaceRegex,
   urlRegexNonGlobal,
 } from "./utils"
@@ -603,9 +604,6 @@ export function formatOrdinalSuffixes(tree: Root): void {
     })
   })
 }
-
-// Tags rendered in the italic face, whose final glyph leans rightward.
-const ITALIC_TAGS: ReadonlySet<string> = new Set(["em", "i"])
 
 // Upright punctuation with ink near the x-height, which the forward lean of a
 // final italic glyph (e.g. "t") crashes into when set solid against it.
