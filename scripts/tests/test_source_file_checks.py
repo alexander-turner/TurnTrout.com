@@ -2499,48 +2499,41 @@ def test_check_footnote_references(text: str, expected_errors: list[str]):
         ("Normal text without any description lists", []),
         # Valid: single definition without continuation
         ("Term\n: Definition text", []),
-        # Valid: definition with properly indented continuation
-        (": First paragraph\n\n  Second paragraph", []),
+        # Error: indented continuation should start with `: `
+        (
+            ": First paragraph\n\n  Second paragraph",
+            [
+                "Line 3: Description list continuation should start with "
+                "`: `, not be indented. "
+                "Found:   Second paragraph..."
+            ],
+        ),
         # Valid: multiple definitions
         ("Term1\n: Definition 1\n\nTerm2\n: Definition 2", []),
-        # Valid: indented continuation after blank line
-        ("Term\n: Definition\n\n  Continuation text", []),
-        # Error: colon prefix on continuation line
+        # Error: indented continuation after blank line
         (
-            ": First paragraph\n\n: Second paragraph",
+            "Term\n: Definition\n\n  Continuation text",
             [
-                "Line 3: Description list continuation should be indented "
-                "(typically 2 spaces), not start with `: `. "
-                "Found: : Second paragraph..."
+                "Line 4: Description list continuation should start with "
+                "`: `, not be indented. "
+                "Found:   Continuation text..."
             ],
         ),
-        # Error: multiple improper continuations
-        (
-            ": First\n\n: Second\n\n: Third",
-            [
-                "Line 3: Description list continuation should be indented "
-                "(typically 2 spaces), not start with `: `. "
-                "Found: : Second...",
-                "Line 5: Description list continuation should be indented "
-                "(typically 2 spaces), not start with `: `. "
-                "Found: : Third...",
-            ],
-        ),
+        # Valid: colon prefix on continuation line
+        (": First paragraph\n\n: Second paragraph", []),
+        # Valid: multiple colon-prefixed continuations
+        (": First\n\n: Second\n\n: Third", []),
         # Valid: new term after blank line (no error)
         ("Term1\n: Definition 1\n\nTerm2\n: Definition 2", []),
-        # Error: real-world case from design.md
+        # Valid: real-world case from design.md (colon-prefixed continuation)
         (
             "Exponential font sizing\n"
             ": After consulting TypeScale, I scaled the font.\n"
             "\n"
             ': <span class="h1">Header 1</span>',
-            [
-                "Line 4: Description list continuation should be indented "
-                "(typically 2 spaces), not start with `: `. "
-                'Found: : <span class="h1">Header 1</span>...'
-            ],
+            [],
         ),
-        # Valid: properly formatted continuation from design.md
+        # Valid: indented raw HTML renders correctly inside the <dd>
         (
             "Exponential font sizing\n"
             ": After consulting TypeScale, I scaled the font.\n"
@@ -2548,29 +2541,62 @@ def test_check_footnote_references(text: str, expected_errors: list[str]):
             '  <span class="h1">Header 1</span>',
             [],
         ),
+        # Valid: indented list/embed continuations render correctly
+        (": Definition\n\n  - a bullet\n  - another", []),
+        (": Definition\n\n  ![[embed.png|alt]]", []),
+        # Error: indented prose continuation must start with `: `
+        (
+            ": Definition\n\n  [a link](/x) then prose",
+            [
+                "Line 3: Description list continuation should start with "
+                "`: `, not be indented. "
+                "Found:   [a link](/x) then prose..."
+            ],
+        ),
+        # Error: `: `-prefixed bullet sub-list must be indented instead
+        (
+            ": Definition\n\n: - detached bullet",
+            [
+                "Line 3: Description list sub-list should be indented "
+                "(2 spaces), not start with `: `. "
+                "Found: : - detached bullet..."
+            ],
+        ),
+        # Error: `: `-prefixed ordered sub-list must be indented instead
+        (
+            ": Definition\n\n: 1. detached item",
+            [
+                "Line 3: Description list sub-list should be indented "
+                "(2 spaces), not start with `: `. "
+                "Found: : 1. detached item..."
+            ],
+        ),
+        # Valid: a definition that itself starts with a list is not a
+        # continuation, so it is not flagged.
+        ("Term\n: - first item\n  - second item", []),
         # Edge case: definition at end of document
         (": Last definition", []),
         # Edge case: blank lines at end
         (": Definition\n\n", []),
         # Valid: no blank line between definition and continuation
         (": First line\nContinuation", []),
-        # Valid: code block with description list pattern (should be ignored)
+        # Valid: code block with indented continuation (should be ignored)
         (
-            "Some text\n\n```markdown\n: First example\n\n: Second example\n```\n\nMore text",
+            "Some text\n\n```markdown\n: First example\n\n  Second example\n```\n\nMore text",
             [],
         ),
         # Valid: math block with colon pattern (should be ignored)
         (
-            "Some text\n\n$$\n: math notation\n\n: more math\n$$\n\nMore text",
+            "Some text\n\n$$\n: math notation\n\n  more math\n$$\n\nMore text",
             [],
         ),
         # Mixed: error outside code block, valid inside code block
         (
-            ": Real definition\n\n: Error here\n\n```\n: Valid in code\n\n: Also valid\n```",
+            ": Real definition\n\n  Error here\n\n```\n: Valid in code\n\n  Also valid\n```",
             [
-                "Line 3: Description list continuation should be indented "
-                "(typically 2 spaces), not start with `: `. "
-                "Found: : Error here..."
+                "Line 3: Description list continuation should start with "
+                "`: `, not be indented. "
+                "Found:   Error here..."
             ],
         ),
     ],
