@@ -26,6 +26,7 @@ import type { ElementMaybeWithParent } from "./utils"
 
 import {
   charsToMoveIntoLinkFromRight,
+  HAIR_SPACE,
   LEFT_SINGLE_QUOTE,
   NBSP,
   RIGHT_SINGLE_QUOTE,
@@ -38,7 +39,9 @@ import {
   fractionRegex,
   hasAncestor,
   hasClass,
+  INLINE_PASSTHROUGH_TAGS,
   isCode,
+  ITALIC_TAGS,
   replaceRegex,
   urlRegexNonGlobal,
 } from "./utils"
@@ -602,6 +605,51 @@ export function formatOrdinalSuffixes(tree: Root): void {
   })
 }
 
+// Upright punctuation with ink near the x-height, which the forward lean of a
+// final italic glyph (e.g. "t") crashes into when set solid against it.
+const collidingPunctuationRegex = /^[:;]/
+
+/**
+ * Insert a hair space between an italic element and a following upright ':'
+ * or ';' to open the gap. The space is a text character (not CSS spacing) so
+ * an enclosing link's underline runs through it unbroken.
+ *
+ * The lean carries across closing inline boundaries (`…</em></a>:`), so the
+ * search for the following glyph climbs while the italic element closes each
+ * phrasing-content ancestor. A closing italic ancestor ends at the same right
+ * edge and gets the space on its own visit; the inserted space no longer
+ * matches the punctuation regex, so the gap is never doubled.
+ */
+export function kernItalicBeforePunctuation(tree: Root): void {
+  visitParents(tree, "element", (node, ancestors) => {
+    if (!ITALIC_TAGS.has(node.tagName) || hasAncestor(node, toSkip, ancestors)) return
+    // An empty italic renders no glyph, so there is nothing to kern against.
+    if (getTextContent(node).length === 0) return
+
+    let current: ElementContent = node
+    for (let depth = ancestors.length - 1; depth >= 0; depth--) {
+      const parent = ancestors[depth]
+      const index = parent.children.indexOf(current)
+      const next = parent.children[index + 1]
+      if (next !== undefined) {
+        if (next.type === "text" && collidingPunctuationRegex.test(next.value)) {
+          next.value = HAIR_SPACE + next.value
+        }
+        return
+      }
+      const parentElement = parent as Element
+      if (
+        parent.type !== "element" ||
+        ITALIC_TAGS.has(parentElement.tagName) ||
+        !INLINE_PASSTHROUGH_TAGS.has(parentElement.tagName)
+      ) {
+        return
+      }
+      current = parentElement
+    }
+  })
+}
+
 const TEXT_LIKE_TAGS = ["p", "em", "strong", "b"]
 const LEFT_QUOTES = ['"', "“", "'", "‘"]
 
@@ -1079,6 +1127,8 @@ export const improveFormatting = (
     formatArrows(tree)
     wrapUnicodeArrowsWithMonospaceStyle(tree)
     formatOrdinalSuffixes(tree)
+    // After rearrangeLinkPunctuation, so a colon pulled into a link is seen.
+    kernItalicBeforePunctuation(tree)
     removeSpaceBeforeFootnotes(tree)
   }
 }

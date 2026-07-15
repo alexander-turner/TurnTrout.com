@@ -15,6 +15,7 @@ import { VFile } from "vfile"
 
 import {
   charsToMoveIntoLinkFromRight,
+  HAIR_SPACE,
   LEFT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
   NBSP,
@@ -247,7 +248,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p>(<strong>NAFTA</strong> <a href="x">/ˈnæftə/</a> <a href="y"><em>NAF-tə</em></a>; Spanish)</p>',
-        '<p>(<strong>NAFTA</strong> <a href="x">/ ˈnæftə /</a> <a href="y"><em>NAF-tə</em>;</a> Spanish)</p>',
+        `<p>(<strong>NAFTA</strong> <a href="x">/ ˈnæftə /</a> <a href="y"><em>NAF-tə</em>${HAIR_SPACE};</a> Spanish)</p>`,
       ],
       [
         "<p>upweight the sycophantic <code>A</code>/<code>B</code> token</p>",
@@ -1173,7 +1174,7 @@ describe("rearrangeLinkPunctuation", () => {
     ],
     [
       '<p><a href="https://example.com"><em>Fully nested</em></a>: with colon after</p>',
-      '<p><a href="https://example.com"><em>Fully nested</em>:</a> with colon after</p>',
+      `<p><a href="https://example.com"><em>Fully nested</em>${HAIR_SPACE}:</a> with colon after</p>`,
     ],
     [
       '<p><a href="https://example.com">Link</a>. with period after</p>',
@@ -2189,6 +2190,71 @@ describe("Ordinal Suffixes", () => {
     const input = "<p>(1st) [2nd] {3rd}</p>"
     const expected =
       '<p>(<span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup>) [<span class="ordinal-num">2</span><sup class="ordinal-suffix">nd</sup>] {<span class="ordinal-num">3</span><sup class="ordinal-suffix">rd</sup>}</p>'
+    const processedHtml = testHtmlFormattingImprovement(input)
+    expect(normalizeNbsp(processedHtml)).toBe(expected)
+  })
+})
+
+describe("Italic kerning before punctuation", () => {
+  it.each([
+    [
+      "<p>Watch <em>The Dark Knight</em>: great cinema</p>",
+      `<p>Watch <em>The Dark Knight</em>${HAIR_SPACE}: great cinema</p>`,
+    ],
+    ["<p>Some <i>words</i>; more words</p>", `<p>Some <i>words</i>${HAIR_SPACE}; more words</p>`],
+    // A colon after an italic link is pulled into the link, landing right
+    // after the italic element — still kerned, inside the link so the
+    // underline runs through the gap.
+    [
+      '<p>Watch <a href="https://example.com"><em>The Dark Knight</em></a>: great cinema</p>',
+      `<p>Watch <a href="https://example.com"><em>The Dark Knight</em>${HAIR_SPACE}:</a> great cinema</p>`,
+    ],
+    // The climb crosses closing non-italic inline tags
+    [
+      "<p>Watch <strong><em>The Dark Knight</em></strong>: great cinema</p>",
+      `<p>Watch <strong><em>The Dark Knight</em></strong>${HAIR_SPACE}: great cinema</p>`,
+    ],
+    [
+      '<p>Watch <span class="foo"><em>The Dark Knight</em></span>: great cinema</p>',
+      `<p>Watch <span class="foo"><em>The Dark Knight</em></span>${HAIR_SPACE}: great cinema</p>`,
+    ],
+    // Nested italics end at the same right edge; the inserted space stops
+    // matching the punctuation regex, so the gap is not doubled
+    [
+      "<p>Watch <em><i>The Dark Knight</i></em>: great cinema</p>",
+      `<p>Watch <em><i>The Dark Knight</i></em>${HAIR_SPACE}: great cinema</p>`,
+    ],
+    // Not kerned: punctuation without ink near the x-height
+    [
+      "<p>Watch <em>The Dark Knight</em>, great cinema</p>",
+      "<p>Watch <em>The Dark Knight</em>, great cinema</p>",
+    ],
+    // Not kerned: the colon is italic too, so nothing collides
+    [
+      "<p>Watch <em>The Dark Knight:</em> great cinema</p>",
+      "<p>Watch <em>The Dark Knight:</em> great cinema</p>",
+    ],
+    // Not kerned: an element follows instead of text
+    [
+      "<p><em>one</em><b>two</b> and <em>three</em></p>",
+      "<p><em>one</em><b>two</b> and <em>three</em></p>",
+    ],
+    // Not kerned: the colon opens a following element rather than a text node
+    ["<p><em>title</em><b>: subtitle</b></p>", "<p><em>title</em><b>: subtitle</b></p>"],
+    // Not kerned: whitespace already separates the italic from the colon
+    [
+      "<p>Watch <em>The Dark Knight</em> : great cinema</p>",
+      "<p>Watch <em>The Dark Knight</em> : great cinema</p>",
+    ],
+    // Not kerned: an empty italic renders no glyph
+    ["<p>Watch <em></em>: great cinema</p>", "<p>Watch <em></em>: great cinema</p>"],
+    // Not kerned: the climb stops at the closing block-level paragraph
+    ["<div><p>Watch <em>a film</em></p>: no</div>", "<div><p>Watch <em>a film</em></p>: no</div>"],
+    // Not kerned: an italic element that ends the fragment
+    ["<em>The Dark Knight</em>", "<em>The Dark Knight</em>"],
+    // Not kerned inside skipped elements
+    ["<p><code>see <em>foo</em>: bar</code></p>", "<p><code>see <em>foo</em>: bar</code></p>"],
+  ])("kerns italics before upright punctuation in %s", (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
     expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
