@@ -313,9 +313,16 @@ async function waitForVisualStability(page: Page, scope?: Locator): Promise<void
     root.style.visibility = "hidden"
     await nextFrame()
     root.style.visibility = priorVisibility
-    // WebKit spuriously rejects decode() for already-painted SVGs; the load
-    // state was verified above, so a rejection here carries no signal.
-    await Promise.all(Array.from(document.images, (image) => image.decode().catch(() => undefined)))
+    // Only images that finished loading: decode() on a below-fold lazy image
+    // blocks until the image loads, which never happens without a scroll — the
+    // wait would hang until the test timeout. Unloaded images have no stale
+    // decode to refresh anyway. WebKit spuriously rejects decode() for
+    // already-painted SVGs, so a rejection here carries no signal.
+    await Promise.all(
+      Array.from(document.images)
+        .filter((image) => image.complete && image.naturalWidth > 0)
+        .map((image) => image.decode().catch(() => undefined)),
+    )
     await nextFrame()
     await nextFrame()
   })
