@@ -700,7 +700,7 @@ When I got scared --- and I did --- I'd think about Minneapolis. I'd think about
 
 # Why I left Google DeepMind
 
-When an employee leaves a top AI lab, it's often into the arms of another. They usually rack up a huge bonus that way. That's not what I did. I'm unemployed right now.
+When an employee leaves a top AI lab, it's often into the arms of another. They usually rack up a huge bonus that way. That's not what I did: I didn't flirt with competitor labs and I declined outreach from the OpenAI safety team. I'm unemployed right now.
 
 In February, I realized that Google would probably sign the deal, which made me think about the door. I realized maybe I should leave and maybe I could do better AI safety work elsewhere. But I think I would have stayed a few more months if they hadn't signed the deal. When Google signed, I just couldn't do any more work. My brain said "no."
 
