@@ -34,7 +34,7 @@ original_url: https://www.lesswrong.com/posts/8mizBCm3dyc432nK8/residual-stream-
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/hpgem17ggmbpgnwcvdut.jpg
 description: Residual stream norms grow, perhaps due to layer normalization making it hard to delete information and easier to overshadow it.
-date_updated: 2026-06-28
+date_updated: 2026-07-15
 card_image_alt: A line chart plots the log norm of the residual stream for each token in a prompt. The norm for the tokens "M", "ATS", "is", "really", and "cool" grows exponentially (appearing as a near-straight line on the log scale) with the layer number. The `<|endoftext|>` token's norm is an outlier, rising much more steeply to a higher peak before declining.
 ---
 

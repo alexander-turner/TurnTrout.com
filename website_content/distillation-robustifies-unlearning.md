@@ -25,7 +25,7 @@ aliases:
   - undo
 original_url: https://www.lesswrong.com/posts/anX4QrNjhJqGFvrBr/distillation-robustifies-unlearning
 date_published: 2025-06-13
-date_updated: 2026-04-20
+date_updated: 2026-07-15
 card_image_alt: A watercolor of a lab setup where a flask of mixed red and blue liquid is distilled. A tube transfers vapor to a second flask, which collects only blue liquid, leaving the red behind.
 createBibtex: true
 ---

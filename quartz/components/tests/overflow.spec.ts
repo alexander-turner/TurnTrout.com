@@ -99,17 +99,38 @@ function documentOverflow(): number {
   return root.scrollWidth - root.clientWidth
 }
 
-// Polled inside `page.waitForFunction`, so it survives the SPA's initial `nav`
-// (a bare `page.evaluate` here can hit a destroyed execution context). True once
-// webfonts have swapped and the client-side pass has wrapped wide tables/KaTeX
-// into scroll containers — measuring before that lands reports them as overflow.
+// Number of consecutive animation frames the settled predicate must hold before
+// we measure. Replaces a trailing double-`requestAnimationFrame` wait: giving
+// layout a couple of paints to apply the client-side table/KaTeX wrapping.
+const SETTLE_FRAMES = 3
+
+// Polled inside `page.waitForFunction`, so the whole settle survives the SPA's
+// initial `nav` — WebKit can destroy the execution context right after load, and
+// `waitForFunction` just re-injects and re-polls in the fresh context (the frame
+// counter resets, which is correct: a recreated context is a fresh page to
+// settle). A standalone `page.evaluate` has no such resilience and loses that
+// race. The predicate is self-contained (serialized into the page, so it can
+// reference only DOM globals): true once webfonts have swapped and the
+// client-side pass has wrapped wide tables/KaTeX into scroll containers —
+// measuring before that lands reports them as overflow. The frame count is
+// tracked on `window` so consecutive `raf`-polled evaluations can require the
+// predicate to hold stably rather than for a single lucky frame.
 /* istanbul ignore next -- executed in the browser, not under Jest */
-function pageSettled(): boolean {
-  if (document.fonts && document.fonts.status !== "loaded") return false
+function settledForFrames(requiredFrames: number): boolean {
+  const fontsReady = !document.fonts || document.fonts.status === "loaded"
   const scrollables = Array.from(document.querySelectorAll(".table-container, .katex-display"))
-  return (
-    scrollables.length === 0 || scrollables.every((el) => el.closest(".scroll-indicator") !== null)
-  )
+  const settled =
+    fontsReady &&
+    (scrollables.length === 0 ||
+      scrollables.every((el) => el.closest(".scroll-indicator") !== null))
+
+  const state = window as unknown as { __overflowSettledFrames?: number }
+  if (!settled) {
+    state.__overflowSettledFrames = 0
+    return false
+  }
+  state.__overflowSettledFrames = (state.__overflowSettledFrames ?? 0) + 1
+  return state.__overflowSettledFrames >= requiredFrames
 }
 
 function describeOffenders(offenders: readonly Offender[]): string {
@@ -118,30 +139,12 @@ function describeOffenders(offenders: readonly Offender[]): string {
     .join("\n  ")
 }
 
-async function waitSettled(page: Page): Promise<void> {
-  await page.waitForFunction(pageSettled, undefined, { timeout: 10_000 })
-  await page.evaluate(
-    () =>
-      new Promise<void>((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-      ),
-  )
-}
-
 async function settle(page: Page, url: string) {
   await gotoPage(page, url)
-  try {
-    await waitSettled(page)
-  } catch (error: unknown) {
-    // WebKit/Safari can destroy the execution context briefly after load,
-    // failing an in-flight waitForFunction/evaluate with no real navigation
-    // underway. Retry once against the already-loaded page.
-    if (error instanceof Error && error.message.includes("Execution context was destroyed")) {
-      await waitSettled(page)
-    } else {
-      throw error
-    }
-  }
+  await page.waitForFunction(settledForFrames, SETTLE_FRAMES, {
+    timeout: 10_000,
+    polling: "raf",
+  })
 }
 
 for (const url of PAGES_TO_CHECK) {

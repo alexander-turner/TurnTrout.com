@@ -38,7 +38,7 @@ original_url: https://www.lesswrong.com/posts/hRa5c5GaMNkNGtnXq/insights-from-mo
 skip_import: true
 card_image:
 description: Textbook insights on economic policy, price gouging, and the surprising efficiency of competitive markets.
-date_updated: 2026-06-30
+date_updated: 2026-07-15
 card_image_alt:
 ---
 

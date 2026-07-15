@@ -34,7 +34,7 @@ original_url: https://www.lesswrong.com/posts/Be3ertyJfwDdQucdd/how-should-turnt
 no_dropcap: true
 skip_import: true
 description: Considering how to ethically manage AI equity when my goal is to reduce AI risk, not maximize profit.
-date_updated: 2026-04-20
+date_updated: 2026-07-15
 ---
 
 > [!note]

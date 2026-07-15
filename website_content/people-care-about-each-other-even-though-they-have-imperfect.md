@@ -30,7 +30,7 @@ date_published: 2022-11-08
 original_url: https://www.lesswrong.com/posts/heXcGuJqbx3HBmero/people-care-about-each-other-even-though-they-have-imperfect
 skip_import: true
 description: Imperfect human values like familial love seem to contradict AI alignment arguments about Goodhart's Curse.
-date_updated: 2026-06-28
+date_updated: 2026-07-15
 ---
 
 > [!warning]

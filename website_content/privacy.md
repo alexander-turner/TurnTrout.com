@@ -22,7 +22,7 @@ lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
 original_url: https://www.lesswrong.com/posts/BPyieRshykmrdY36A/an-opinionated-guide-to-privacy-despite-authoritarianism
 date_published: 2025-10-28
-date_updated: 2026-06-27
+date_updated: 2026-07-15
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 

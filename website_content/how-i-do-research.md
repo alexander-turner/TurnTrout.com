@@ -31,7 +31,7 @@ original_url: https://www.lesswrong.com/posts/e3Db4w52hz3NSyYqt/how-i-do-researc
 skip_import: true
 hideSubscriptionLinks: false
 description: "The author's unorthodox approach to AI safety research: Ignore existing work, simplify relentlessly, and break your own solutions."
-date_updated: 2026-04-20
+date_updated: 2026-07-15
 ---
 
 > [!warning] Disclaimer
