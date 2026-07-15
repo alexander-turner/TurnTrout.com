@@ -226,11 +226,7 @@ Stuart gave final comments.
 >
 > I think we will try to get an online poll if we have time to make this happen. So that we can publish a news release saying "92% (or whatever it turns out to be) of members of IASEAI are in favour of the proposition that Anthropic should not be required to do what they don't want to do."
 
-Stuart called the DoD's actions an "extortion racket." I appreciated the frankness, though frankness in the hall wasn't the same as frankness in a statement the world would see.[^coverage] As I left, I signed up to be an IASEAI member to participate in the poll. I thought it'd pass but wanted to make my voice heard. I paid the $75 membership fee.
-
-Before the closing ceremony, Mark had texted me that the survey would close Thursday night. With 2/3 support, Stuart would sign a statement on IASEAI's behalf, and without it, Stuart would sign a statement personally with the option for others to co-sign.
-
-I left for an evening at the Louvre.
+Stuart called the DoD's actions an "extortion racket." I appreciated the frankness, though frankness in the hall wasn't the same as frankness in a statement the world would see.[^coverage] As I left, I signed up to be an IASEAI member to participate in the poll. I thought it'd pass but wanted to make my voice heard. I paid the $75 membership fee and left for an evening at the Louvre.
 
 [^coverage]: Stuart's "extortion racket" comments seemingly only featured incidentally in [one news round-up by The Information](https://www.theinformation.com/newsletters/ai-agenda/robot-data-startup-raises-60-million).
 
