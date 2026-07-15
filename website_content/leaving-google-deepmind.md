@@ -218,9 +218,7 @@ Figure: Mark asks for a show-of-hands. "We will be asking the opinions of member
 ![[https://assets.turntrout.com/static/images/posts/Why I left Google DeepMind-06242026-8.avif|An auditorium filled with conference attendees, with the vast majority raising their hands in a show of support.]]
 Figure: A near-unanimous show of hands supporting an IASEAI statement backing up Anthropic's right to do business freely.
 
-Stuart gave final comments.
-
-> [!quote] [Stuart Russell's final remarks](https://assets.turntrout.com/static/images/posts/why-i-left-gdm-final-remarks-for-stuart.mp4)
+> [!quote] Stuart Russell's closing remarks ([video](https://assets.turntrout.com/static/images/posts/why-i-left-gdm-final-remarks-for-stuart.mp4))
 >
 > Many news outlets are discussing the extortion racket that the DoD is applying to Anthropic...
 >
@@ -260,7 +258,7 @@ I could appreciate the first reason: after all, Stuart *had* repeatedly disclaim
 
 ### Left on read by IASEAI
 
-The Pentagon set the Friday deadline for Anthropic, not IASEAI. Nothing IASEAI might have done depended on whether Anthropic reached a deal with the Pentagon by Friday. The Anthropic autonomous weapons issue had been in the news for [weeks](https://www.wsj.com/politics/national-security/pentagon-used-anthropics-claude-in-maduro-venezuela-raid-583aff17) prior. Anthropic's [lawsuit against the Pentagon](https://www.theverge.com/ai-artificial-intelligence/891514/anthropic-pentagon-lawsuit-amicus-brief-openai-google) ran for weeks after. Google wouldn't sign for two more months. IASEAI had plenty of time to act publicly, but they did not.
+The Pentagon set the Friday deadline for Anthropic, not for IASEAI. The Anthropic autonomous weapons issue had been in the news for [weeks](https://www.wsj.com/politics/national-security/pentagon-used-anthropics-claude-in-maduro-venezuela-raid-583aff17) prior. Anthropic's [lawsuit against the Pentagon](https://www.theverge.com/ai-artificial-intelligence/891514/anthropic-pentagon-lawsuit-amicus-brief-openai-google) ran for weeks after. Google wouldn't sign for two more months. IASEAI had plenty of time to act and plenty of ways to act, like filing an amicus brief, putting out a statement, or contacting senior decision-makers at Google.
 
 [OpenAI did announce a deal on Friday.](https://openai.com/index/our-agreement-with-the-department-of-war/) OpenAI claimed its deal protected the same red lines against killer robots and mass surveillance that Anthropic had insisted upon. However, some analysts concluded that OpenAI's contract language [contains wide loopholes](https://www.techpolicy.press/five-unresolved-issues-in-openais-deal-with-the-department-of-defense/).
 
@@ -576,7 +574,7 @@ On my last day, I pointed out this discrepancy in the discussion channel. Many G
 
 Subtitle: When an AI leader says they need to "work with Western democracies", that's a hint they're doing something bad.
 
-Demis [justified breaking GDM's no-weapons commitment](#demis-insists-google-s-ai-principles-haven-t-changed) by saying "[Google needs] to work with governments" to ensure that democratic values win out. I think that imposes a false dichotomy. To see why, grant the whole worldview: that if the US doesn't adopt autonomous weapons, we lose the world to authoritarianism—Ukraine falls, liberty crumbles, and a red wave consumes. Even *with* that strong assumption, "give the Pentagon what it demands" isn't necessarily the best action for the world. You can, say, construct [a governance framework](/military-ai) restricting which use cases Google is willing to provide for its products. That would let Google provide the ethical uses (for "beating China") without the unethical ones.
+Demis justified breaking GDM's no-weapons commitment by saying "\[Google needs\] to work with governments" to ensure that democratic values win out. I think that imposes a false dichotomy. To see why, grant the whole worldview: that if the US doesn't adopt autonomous weapons, we lose the world to authoritarianism—Ukraine falls, liberty crumbles, and a red wave consumes. Even *with* that strong assumption, "give the Pentagon what it demands" isn't necessarily the best action for the world. You can, say, construct [a governance framework](/military-ai) restricting which use cases Google is willing to provide for its products. That would let Google provide the ethical uses (for "beating China") without the unethical ones.
 
 Even if Google *had* been forced to sign, it could still spend its enormous influence lobbying Congress for legal safeguards. Capitulation was a choice.
 
