@@ -298,34 +298,12 @@ async function waitForVisualStability(page: Page, scope?: Locator): Promise<void
   } else {
     await page.waitForLoadState("load")
   }
-  // The capture must be a fresh rasterization of the settled layout. WebKit's
-  // snapshot can otherwise reuse an image decode produced at a transient
-  // mid-layout size, which paints every scaled-down photo measurably blurrier
-  // than a full decode (~1% on text-heavy images) — and whether the stale
-  // decode is still cached depends on runner load. Hiding the document for a
-  // frame invalidates all painted content, and re-decoding each image afterward
-  // guarantees a full-resolution bitmap is cached when the fresh paint runs.
-  await page.evaluate(async () => {
-    const nextFrame = (): Promise<void> =>
-      new Promise((resolve) => requestAnimationFrame(() => resolve()))
-    const root = document.documentElement
-    const priorVisibility = root.style.visibility
-    root.style.visibility = "hidden"
-    await nextFrame()
-    root.style.visibility = priorVisibility
-    // Only images that finished loading: decode() on a below-fold lazy image
-    // blocks until the image loads, which never happens without a scroll — the
-    // wait would hang until the test timeout. Unloaded images have no stale
-    // decode to refresh anyway. WebKit spuriously rejects decode() for
-    // already-painted SVGs, so a rejection here carries no signal.
-    await Promise.all(
-      Array.from(document.images)
-        .filter((image) => image.complete && image.naturalWidth > 0)
-        .map((image) => image.decode().catch(() => undefined)),
-    )
-    await nextFrame()
-    await nextFrame()
-  })
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  )
 }
 
 // WebKit paints a freshly loaded or resized large image with fast
