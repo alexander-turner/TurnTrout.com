@@ -15,7 +15,7 @@ aliases:
   - convergence-psychology
   - success-conditioned-convergence
 date_published: 2026-01-20
-date_updated: 2026-06-27
+date_updated: 2026-07-15
 ---
 
 > [!quote] Zack M. Davis, group discussion

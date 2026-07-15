@@ -315,14 +315,14 @@
       "title": "Problem relaxation as a tactic"
     },
     {
-      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
-      "permalink": "excitement-about-impact-measures",
-      "title": "Reasons for Excitement about Impact of Impact Measure Research"
-    },
-    {
       "excerpt": "The author's unorthodox approach to AI safety research: Ignore existing work, simplify relentlessly, and break your own solutions.",
       "permalink": "how-i-do-research",
       "title": "How I do research"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
     }
   ],
   "alignment-tier-list": [
@@ -1000,7 +1000,7 @@
   ],
   "deepmind-equity-discussion": [
     {
-      "excerpt": "A story of how powerful people and institutions failed to keep their AI ethics promises in the face of pressure.",
+      "excerpt": "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.",
       "permalink": "why-i-left-google-deepmind",
       "title": "Why I left Google DeepMind"
     }
@@ -1083,14 +1083,14 @@
       "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
     },
     {
-      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
-      "permalink": "consistency-training",
-      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
-    },
-    {
       "excerpt": "A proposal for a government regulation of AI: Developers must be able to accurately predict the model's output.",
       "permalink": "ban-development-of-unpredictable-powerful-models",
       "title": "Ban development of unpredictable powerful models?"
+    },
+    {
+      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
+      "permalink": "consistency-training",
+      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
     }
   ],
   "doctor-stone": [
@@ -2818,14 +2818,9 @@
   ],
   "red-line-framework": [
     {
-      "excerpt": "A story of how powerful people and institutions failed to keep their AI ethics promises in the face of pressure.",
+      "excerpt": "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.",
       "permalink": "why-i-left-google-deepmind",
       "title": "Why I left Google DeepMind"
-    },
-    {
-      "excerpt": "A proposal for a government regulation of AI: Developers must be able to accurately predict the model's output.",
-      "permalink": "ban-development-of-unpredictable-powerful-models",
-      "title": "Ban development of unpredictable powerful models?"
     }
   ],
   "reflections-on-pretense": [
@@ -3656,7 +3651,7 @@
   ],
   "why-i-left-google-deepmind": [
     {
-      "excerpt": "Principled contract language for selling AI to governments, with transparency incentives that preserve those principles against competitive pressure.",
+      "excerpt": "Principled contract language for selling AI to governments, with transparency that preserves principles against pressure.",
       "permalink": "red-line-framework",
       "title": "A red line and oversight framework for government AI contracts"
     },

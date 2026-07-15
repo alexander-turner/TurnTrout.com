@@ -35,7 +35,7 @@ date_published: 2022-12-02
 original_url: https://www.lesswrong.com/posts/gHefoxiznGfsbiAu9/inner-and-outer-alignment-decompose-one-hard-problem-into
 skip_import: true
 description: Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.
-date_updated: 2026-06-28
+date_updated: 2026-07-15
 createBibtex: true
 ---
 

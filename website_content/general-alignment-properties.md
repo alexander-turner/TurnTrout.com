@@ -36,7 +36,7 @@ date_published: 2022-08-08
 original_url: https://www.lesswrong.com/posts/FMdGt9S9irgxeD9Xz/general-alignment-properties
 skip_import: 'true'
 description: Comparing how AIXI and humans acquire values reveals important differences in how these agents interact with the world.
-date_updated: 2026-04-20
+date_updated: 2026-07-15
 ---
 
 [AIXI](https://en.wikipedia.org/wiki/AIXI) and the genome are both ways of specifying intelligent agents.

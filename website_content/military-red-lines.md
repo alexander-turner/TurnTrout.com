@@ -20,6 +20,8 @@ createBibtex: true
 no_dropcap_color: true
 similar_posts:
   - why-i-left-google-deepmind
+date_published: &id001 2026-07-15
+date_updated: *id001
 ---
 
 > [!note] Historical context-

@@ -21,7 +21,10 @@ aliases:
   - why-i-left-google-deepmind
   - leaving-google-deepmind
 no_dropcap_color: true
+date_published: &id001 2026-07-15
+date_updated: *id001
 ---
+
 In January, Department of Homeland Security (DHS) officers killed [at least](https://www.theguardian.com/us-news/2026/jan/28/deaths-ice-2026-) two people. In both cases, a federal agent grasped his gun, aimed it at a peaceful citizen, and shot them dead.
 
 <figure id="ice-killings">
