@@ -2,6 +2,8 @@
 """Script to check the built static site for common issues and errors."""
 
 import argparse
+import base64
+import binascii
 import copy
 import html
 import json
@@ -3078,12 +3080,36 @@ def _video_source_hint(video: Tag) -> str:
     return "(unknown source)"
 
 
+def _is_inline_vtt_track(src: object) -> bool:
+    """
+    True iff *src* is a ``data:text/vtt`` URI carrying an inline WebVTT document
+    with at least one cue.
+
+    A cue timing (``-->``) distinguishes a real inline transcript from the empty
+    ``data:text/vtt,WEBVTT`` placeholder, which has none and so fails.
+    """
+    if not isinstance(src, str) or not src.startswith("data:text/vtt"):
+        return False
+    header, _, payload = src.partition(",")
+    if ";base64" in header:
+        try:
+            decoded = base64.b64decode(payload, validate=True).decode(
+                "utf-8", "replace"
+            )
+        except (binascii.Error, ValueError):
+            return False
+    else:
+        decoded = urllib.parse.unquote(payload)
+    return "-->" in decoded
+
+
 def _video_caption_issue(video: Tag) -> str | None:
     """
     Issue message if a captionable ``<video>`` lacks a real captions track.
 
-    A real ``<track kind="captions" src="….vtt">`` satisfies the check, as does
-    an explicit ``label="No audio"`` marker for an intentionally silent embed.
+    A real captions track satisfies the check: either a ``src="….vtt"`` file or
+    a ``data:text/vtt`` URI carrying an inline transcript. An explicit
+    ``label="No audio"`` marker for an intentionally silent embed also passes.
     The empty ``data:text/vtt,WEBVTT`` placeholder (injected when nothing
     assigned a real track) and a missing track both fail.
     """
@@ -3094,6 +3120,8 @@ def _video_caption_issue(video: Tag) -> str | None:
             return None
         src = track.get("src")
         if isinstance(src, str) and src.lower().endswith(".vtt"):
+            return None
+        if _is_inline_vtt_track(src):
             return None
     return (
         f"<video> {_video_source_hint(video)} has no real captions track "
