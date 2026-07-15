@@ -68,7 +68,7 @@ Prefer feature detection over timing buffers
 Use `domcontentloaded` instead of `load` when possible
 : Firefox can stall on subresource loads (images, fonts) in CI, causing 30-second timeouts on page navigation. Using `domcontentloaded` as the wait condition for `page.goto()` avoids this. Only wait for `load` when you specifically need all subresources to be ready.
 
-  I hit an even nastier version of this on WebKit: my navbar has an autoplaying, looping background video (`preload="auto"`). Its continuous range requests keep the `load` event pending indefinitely, so `page.goto(url, { waitUntil: "load" })` stalled every navigation until the timeout — even though the server had already served every byte in milliseconds. If any page has autoplaying or streaming media, `load` may simply never fire in WebKit. Default your navigation helper to `domcontentloaded` and let each test assert on the concrete elements it needs afterward.
+: I hit an even nastier version of this on WebKit: my navbar has an autoplaying, looping background video (`preload="auto"`). Its continuous range requests keep the `load` event pending indefinitely, so `page.goto(url, { waitUntil: "load" })` stalled every navigation until the timeout — even though the server had already served every byte in milliseconds. If any page has autoplaying or streaming media, `load` may simply never fire in WebKit. Default your navigation helper to `domcontentloaded` and let each test assert on the concrete elements it needs afterward.
 
 Move the mouse to a safe position before visual assertions
 : Using `page.mouse.move(0, 0)` can overlap with navbar or menu elements on certain viewports (especially tablets), triggering spurious `mouseenter` events. Move the mouse to a position where no UI elements live.
@@ -91,7 +91,7 @@ It took me a long time to achieve these goals. Practically, I recommend directly
 Use Playwright's native snapshot APIs with baselines kept out of git
 : I take screenshots into a buffer and call [`expect.soft(buffer).toMatchSnapshot(name)`](https://playwright.dev/docs/test-snapshots). Baselines live in Cloudflare R2 (`r2:turntrout/visual-baselines/`) — `tests/visual-baselines/` is gitignored so the repo stays slim. CI downloads the current set into the local directory before running tests via `rclone copy`. Using `expect.soft` lets every shot in a test report a diff in the HTML report instead of halting at the first mismatch. A `visual-approved` PR label triggers a workflow that re-runs with `--update-snapshots=all`, uploads the regenerated PNGs back to R2, then pushes an empty commit so visual-testing reruns against the new baselines.
 
-  Remember to pass `--update-snapshots` when running `npx playwright test` to bootstrap baselines, or Playwright will error on missing files.
+: Remember to pass `--update-snapshots` when running `npx playwright test` to bootstrap baselines, or Playwright will error on missing files.
 
 Target screenshots to specific elements
 : Instead of taking a screenshot of the entire page, I take a screenshot of e.g. a particular table. The idea is that modifying table styling only affects the table-containing screenshots.
@@ -107,7 +107,7 @@ Verify videos are paused at frame 0 before screenshotting
 Isolate the relevant DOM
 : While `toHaveScreenshot` guarantees stability _within_ a session, my screenshots were still wobbling in response to unrelated changes earlier in the page. For some reason, there were a few pixels of difference due to e.g. an additional line being present earlier in the page.
 
-  I made a helper function which deletes unrelated parts of the DOM. For example, suppose I have five `<span>`s in a row. I want to screenshot the third `<span>`. The position of the first two `<span>`s affects the position of the third. Therefore, I edit the DOM to exclude siblings of ancestors of the element I want to screenshot. I would then exclude the other four `<span>`s.
+: I made a helper function which deletes unrelated parts of the DOM. For example, suppose I have five `<span>`s in a row. I want to screenshot the third `<span>`. The position of the first two `<span>`s affects the position of the third. Therefore, I edit the DOM to exclude siblings of ancestors of the element I want to screenshot. I would then exclude the other four `<span>`s.
 
 Mock the content
 : When I take screenshots of site styling, they're almost all of the test page content. The test page decouples site styling from updates to content around my site, ruling out alerts from "changed" screenshots which only show updated content.
