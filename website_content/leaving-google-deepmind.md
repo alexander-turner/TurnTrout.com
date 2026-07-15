@@ -41,7 +41,7 @@ I learned that [Google sells its Cloud services to the relevant agencies within 
 
 I wanted AI ethics commitments to hold under pressure. In particular, I wanted Google DeepMind (GDM) to maintain [its existing commitment against supporting killer robots](#preparing-for-lunch-with-jeff-dean). Over several months,  I asked many people to act. I asked senior people --- respected people --- people with reputations silvered by their concern about AI ethics and safety. Nearly all declined.
 
-Take Stuart Russell, a famous AI researcher who spent over a decade crusading against autonomous weapons. I worked at his lab for years. At a conference, on-stage, he agreed to push his organization to make a statement and promised a poll of its members. The statement and poll never happened.
+Take Stuart Russell, a famous AI researcher who spent over a decade crusading against autonomous weapons. I worked at his lab for years. At a conference, on-stage, he agreed to push his organization to make a statement supporting AI providers against government coercion and promised a poll of its members. The statement and poll both vanished.
 
 Or take Jeff Dean, who is Google's Chief Scientist and the co-lead of Google's Gemini AI project. In 2018, Jeff signed a pledge to never support the development or use of killer robots. I got Jeff to publicly and boldly co-sign an *amicus brief* (where outsiders weigh in to sway a lawsuit) backing Anthropic against the Pentagon. But I also asked him to use his immense leverage to stop Google from making its own unethical deal with the military, and I don't think he did. He remains at Google despite his pledge.
 
@@ -167,7 +167,7 @@ When I arrived at the IASEAI venue, I expected some of the hundreds of AI profes
 Stuart Russell
 : Founder of IASEAI. Co-authored the standard AI textbook used in [over 1,500 universities](https://www.iaseai.org/conference/people/stuart-russell-2). Founder of UC Berkeley's Center for Human-Compatible AI, where I interned for several summers and completed a postdoc. For many years he was the only big-shot academic who took the existential risk from AI seriously. I had long appreciated that.
 
-  Most importantly: [the leading figure in the global campaign to ban lethal autonomous weapons](https://awards.acm.org/award_winners/russell_3816360), with [his site highlighting over *two hundred prestigious talks on the subject*](https://people.eecs.berkeley.edu/~russell/research/LAWS.html). He presented the  *[Slaughterbots](https://www.youtube.com/watch?v=O-2tpwW0kmU)* [videos](https://www.youtube.com/watch?v=9rDo1QxI260) to the United Nations. If anyone on this green planet Earth had a reason to call out an "all lawful use" military AI deal, it was the man who organized the field against SLAUGHTERBOTS.
+: Most importantly: [the leading figure in the global campaign to ban lethal autonomous weapons](https://awards.acm.org/award_winners/russell_3816360), with [his site highlighting over *two hundred prestigious talks on the subject*](https://people.eecs.berkeley.edu/~russell/research/LAWS.html). He presented the  *[Slaughterbots](https://www.youtube.com/watch?v=O-2tpwW0kmU)* [videos](https://www.youtube.com/watch?v=9rDo1QxI260) to the United Nations. If anyone on this green planet Earth had a reason to call out an "all lawful use" military AI deal, it was the man who organized the field against SLAUGHTERBOTS.
 
 Yoshua Bengio
 : The most-cited living computer scientist and a Turing Award winner (like the Nobel but for computer science). In 2023, he [testified to the US Senate on AI's threats to democracy and national security](https://yoshuabengio.org/en/blog/my-testimony-front-us-senate-urgency-act-against-ai-threats-democracy-society-and-national). He just finished [supervising work mapping military AI applications](https://futureimpact.group/fellowship-yoshua-bengio) onto AI safety concerns.
@@ -201,11 +201,11 @@ The question I asked Stuart ([video of the full exchange](https://assets.turntro
 Stuart Russell
 : I was going to mention this, and this is a topic on which we are likely to be polling all of the members of IASEAI. To see if they would like IASEAI to take a position on this issue.
 
-  \[Stuart summarizes the situation.\]
+: \[Stuart summarizes the situation.\]
 
-  Should IASEAI make a statement in support of Anthropic's right not to have its software used in purposes that are outside the contracted areas that it agreed to have it used for?
+: Should IASEAI make a statement in support of Anthropic's right not to have its software used in purposes that are outside the contracted areas that it agreed to have it used for?
 
-  The question said, "what about Google DeepMind, what about OpenAI" --- are they also going to take the same stand as Anthropic? It seems like that's up to them, but the right of a company to say "we don't want to sell our product for that purpose" --- and to be able to say that without threat of economic destruction. I'm not a lawyer, but it seems like that's something that ought to be protected.
+: The question said, "what about Google DeepMind, what about OpenAI" --- are they also going to take the same stand as Anthropic? It seems like that's up to them, but the right of a company to say "we don't want to sell our product for that purpose" --- and to be able to say that without threat of economic destruction. I'm not a lawyer, but it seems like that's something that ought to be protected.
 
 I was surprised. Stuart said "It seems like \[taking the same stand\] is up to them." He didn't encourage Google and OpenAI to avoid powering lethal autonomous weapons? Wasn't that a defining cause for him over the last decade?
 
@@ -226,7 +226,9 @@ Stuart gave final comments.
 >
 > I think we will try to get an online poll if we have time to make this happen. So that we can publish a news release saying "92% (or whatever it turns out to be) of members of IASEAI are in favour of the proposition that Anthropic should not be required to do what they don't want to do."
 
-Stuart called the DoD's actions an "extortion racket." I appreciated the frankness, though frankness in the hall wasn't the same as frankness in a statement the world would see.[^coverage] As I left, I signed up to be an IASEAI member to participate in the poll. I thought it'd pass but wanted to make my voice heard. I paid the $75 membership fee and left for an evening at the Louvre.
+Stuart called the DoD's actions an "extortion racket." I appreciated the frankness, though frankness in the hall wasn't the same as frankness in a statement the world would see.[^coverage] As I left, I signed up to be an IASEAI member to participate in the poll. I thought it'd pass but wanted to make my voice heard. I paid the $75 membership fee.
+
+Before the closing ceremony, Mark had texted me that the survey would close Thursday night. With 2/3 support, Stuart would sign a statement on IASEAI's behalf, and without it, Stuart would sign a statement personally. I left for an evening at the Louvre.
 
 [^coverage]: Stuart's "extortion racket" comments seemingly only featured incidentally in [one news round-up by The Information](https://www.theinformation.com/newsletters/ai-agenda/robot-data-startup-raises-60-million).
 
