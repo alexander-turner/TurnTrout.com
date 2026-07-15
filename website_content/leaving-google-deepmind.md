@@ -44,7 +44,7 @@ I learned that [Google sells its Cloud services to the relevant agencies within 
 
 I wanted AI ethics commitments to hold under pressure. In particular, I wanted Google DeepMind (GDM) to maintain [its existing commitment against supporting killer robots](#preparing-for-lunch-with-jeff-dean). Over several months,  I asked many people to act. I asked senior people --- respected people --- people with reputations silvered by their concern about AI ethics and safety. Nearly all declined.
 
-Take Stuart Russell, a famous AI researcher who spent over a decade crusading against autonomous weapons. I worked at his lab for years. At a conference, on-stage, he agreed to push his organization to make a statement supporting AI providers against government coercion and promised a poll of its members. The statement and poll both vanished.
+Take Stuart Russell, a famous AI researcher who spent over a decade crusading against autonomous weapons. I worked at his lab for years. At a conference, on-stage, he agreed to push his organization to make a statement supporting AI providers against government coercion and promised a poll of the organization's members. The statement and poll both vanished.
 
 Or take Jeff Dean, who is Google's Chief Scientist and the co-lead of Google's Gemini AI project. In 2018, Jeff signed a pledge to never support the development or use of killer robots. I got Jeff to publicly and boldly co-sign an *amicus brief* (where outsiders weigh in to sway a lawsuit) backing Anthropic against the Pentagon. But I also asked him to use his immense leverage to stop Google from making its own unethical deal with the military, and I don't think he did. He remains at Google despite his pledge.
 
