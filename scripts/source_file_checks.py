@@ -627,24 +627,65 @@ def check_stray_katex(text: str) -> list[str]:
     return errors
 
 
+# Indented block-level constructs that render correctly inside a `<dd>` and so
+# do NOT need a `: ` prefix: list items, image/wikilink embeds, raw HTML,
+# blockquotes, tables, and headings.
+_NON_PROSE_CONTINUATION_RE = re.compile(
+    r"""^(?:
+        [-*+]\s        # bullet list item
+        | \d+[.)]\s    # ordered list item
+        | !\[          # image / ![[wikilink]] embed
+        | <            # raw HTML block
+        | >            # blockquote
+        | \|           # table row
+        | \#           # heading
+    )""",
+    re.VERBOSE,
+)
+
+
+def _is_indented_prose_continuation(line: str) -> bool:
+    """
+    True for an indented, non-blank continuation line that is prose.
+
+    Indented prose merges into the preceding ``<dd>`` paragraph without a break
+    (so it must instead start with ``: ``), whereas indented lists, embeds, and
+    HTML render correctly inside the ``<dd>`` and are left alone.
+    """
+    if line[:1] not in (" ", "\t"):
+        return False
+    stripped = line.strip()
+    return bool(stripped) and not _NON_PROSE_CONTINUATION_RE.match(stripped)
+
+
+# A `: `-prefixed continuation whose body is a list item. Such a line renders as
+# its own detached `<dd>`, splitting the sub-list from the definition it belongs
+# to; the sub-list must instead be indented to stay inside the `<dd>`.
+_COLON_PREFIXED_LIST_RE = re.compile(r"^: (?:[-*+]\s|\d+[.)]\s)")
+
+
+def _is_colon_prefixed_list_continuation(line: str) -> bool:
+    """True for a ``: ``-prefixed continuation line whose body is a list
+    item."""
+    return bool(_COLON_PREFIXED_LIST_RE.match(line))
+
+
 def check_description_list_continuations(text: str) -> list[str]:
     """
     Check for improperly formatted description list continuations.
 
-    In Markdown description lists, after a definition line (starting with `: `),
-    if there's a blank line followed by another line starting with `: `, this is
-    likely an error. Continuation paragraphs should be indented (typically 2 spaces)
-    without the `:` prefix.
+    In Markdown description lists, after a definition line (starting with `: `)
+    and a blank line, the continuation must match its content:
 
-    Pattern that triggers error:
-        : Definition text
-        <blank line>
-        : Another line starting with colon  <- Should be indented continuation
+    - **Prose** must start with `: ` (an indented prose paragraph otherwise
+      merges into the preceding `<dd>` paragraph without a break).
+    - **Sub-lists** must be indented (a `: `-prefixed list renders as its own
+      detached `<dd>`, splitting the list from the definition it belongs to).
 
-    Correct format:
-        : Definition text
-        <blank line>
-          Indented continuation (no colon)
+    Correct forms:
+        : Definition text        : Definition text
+        <blank line>             <blank line>
+        : Prose continuation       - Indented sub-list item
 
     Code and math blocks are ignored during checking.
     """
@@ -661,19 +702,25 @@ def check_description_list_continuations(text: str) -> list[str]:
         current = lines[i]
         next_line = lines[i + 1]
         line_after_next = lines[i + 2]
+        after_definition = current.startswith(": ") and not next_line.strip()
 
-        # Check pattern: definition line -> blank line -> another `: ` line
-        if (
-            current.startswith(": ")
-            and not next_line.strip()
-            and line_after_next.startswith(": ")
+        if after_definition and _is_indented_prose_continuation(
+            line_after_next
         ):
             errors.append(
-                f"Line {i + 3}: Description list continuation should be indented "
-                f"(typically 2 spaces), not start with `: `. "
+                f"Line {i + 3}: Description list continuation should start "
+                f"with `: `, not be indented. "
                 f"Found: {line_after_next[:60]}..."
             )
-            # Skip ahead to avoid duplicate errors
+            i += 2
+        elif after_definition and _is_colon_prefixed_list_continuation(
+            line_after_next
+        ):
+            errors.append(
+                f"Line {i + 3}: Description list sub-list should be indented "
+                f"(2 spaces), not start with `: `. "
+                f"Found: {line_after_next[:60]}..."
+            )
             i += 2
         else:
             i += 1

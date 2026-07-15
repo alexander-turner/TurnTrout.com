@@ -143,6 +143,39 @@ export function addCrossOriginToImages(tree: Root): void {
   })
 }
 
+/**
+ * Adds `crossorigin="anonymous"` to every `<video>` that carries a
+ * captions `<track>` with a `src`. A text track is fetched in the media
+ * element's CORS mode; with no `crossorigin` the browser uses no-cors,
+ * gets an opaque cross-origin response it cannot read, and drops the
+ * track — the CC control appears but vanishes on activation with no cues.
+ * The CDN sends `Access-Control-Allow-Origin: *` on both the `.vtt` and
+ * the media, so an anonymous CORS fetch succeeds and cues load. Tracks
+ * with no `src` (the `label="No audio"` markers) need no fetch and are
+ * left alone. Assert the CDN invariant so a non-CDN absolute track src
+ * never silently ships `crossorigin` (which would block a host with no
+ * CORS).
+ */
+export function addCrossOriginToCaptionedVideos(tree: Root): void {
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "video") return
+    const trackSrcs = (node.children as Element[])
+      .filter((child) => child.type === "element" && child.tagName === "track")
+      .map((track) => track.properties?.src)
+      .filter((src): src is string => typeof src === "string")
+    if (trackSrcs.length === 0) return
+    for (const src of trackSrcs) {
+      if (/^https?:\/\//.test(src) && !src.startsWith(cdnBaseUrl)) {
+        throw new Error(
+          `addCrossOriginToCaptionedVideos: expected <track src> on ${cdnBaseUrl}, got ${src}`,
+        )
+      }
+    }
+    const props = (node.properties ??= {})
+    props.crossOrigin ??= "anonymous"
+  })
+}
+
 function stripCacheVersion(url: string): string {
   return url.replace(/[?&]v=\d+$/, "")
 }
@@ -182,6 +215,7 @@ export const InvertInDarkMode = () => {
       () => async (tree: Root) => {
         applyLabelsToTree(tree, await labels())
         addCrossOriginToImages(tree)
+        addCrossOriginToCaptionedVideos(tree)
       },
     ],
   }

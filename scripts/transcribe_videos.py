@@ -369,7 +369,6 @@ def main() -> None:
     parser.add_argument(
         "--asset-directory",
         type=Path,
-        required=True,
         help="Directory containing video assets to transcribe",
     )
     parser.add_argument(

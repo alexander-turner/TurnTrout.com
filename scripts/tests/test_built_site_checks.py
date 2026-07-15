@@ -5092,6 +5092,18 @@ _NO_CAPTIONS_ISSUE = (
             '<track kind="captions" src="data:text/vtt,WEBVTT"></video>',
             [_NO_CAPTIONS_ISSUE],
         ),
+        # Captions track with no src attribute at all -> issue.
+        (
+            '<video controls><source src="https://cdn/talk.mp4">'
+            '<track kind="captions" srclang="en"></video>',
+            [_NO_CAPTIONS_ISSUE],
+        ),
+        # Captions track with a non-vtt src -> issue.
+        (
+            '<video controls><source src="https://cdn/talk.mp4">'
+            '<track kind="captions" src="https://cdn/talk.txt"></video>',
+            [_NO_CAPTIONS_ISSUE],
+        ),
         # Relevant video with no track at all -> issue.
         (
             '<video controls><source src="https://cdn/talk.mp4"></video>',
