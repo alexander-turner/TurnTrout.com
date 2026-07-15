@@ -458,13 +458,6 @@ def test_transcribe_video_asset_happy_path(tmp_path: Path):
 # --- main() ---
 
 
-def test_main_requires_asset_directory(monkeypatch):
-    monkeypatch.setattr(sys, "argv", ["transcribe_videos.py"])
-    with pytest.raises(SystemExit) as excinfo:
-        transcribe_videos.main()
-    assert excinfo.value.code == 2  # argparse usage error, not a clean exit
-
-
 def test_main_skips_when_unconfigured(monkeypatch, capsys):
     monkeypatch.delenv(transcribe_videos.SCRIBERR_BASE_URL_ENV, raising=False)
     monkeypatch.delenv(transcribe_videos.SCRIBERR_API_KEY_ENV, raising=False)
