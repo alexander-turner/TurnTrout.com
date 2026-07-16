@@ -19,6 +19,7 @@ from ..utils import (
     LEFT_SINGLE_QUOTE,
     NBSP,
     RIGHT_SINGLE_QUOTE,
+    SIX_PER_EM_SPACE,
     WORD_JOINER,
     ZERO_WIDTH_NBSP,
     ZERO_WIDTH_SPACE,
@@ -2760,6 +2761,12 @@ def test_check_iframe_embeds(
             f"<p>text <a href='#'>link</a>{NBSP}more</p>",
             [],
         ),
+        # Six-per-em space after a link wrapping inline code (InlineCodeSpacing
+        # ascends out of the link to narrow the following gap).
+        (
+            f"<p>see <a href='#'><code>grep</code></a>{SIX_PER_EM_SPACE}docs</p>",
+            [],
+        ),
     ],
 )
 def test_check_link_spacing(html, expected):
@@ -2907,6 +2914,11 @@ def test_check_inline_formatting_spacing(html, expected):
         # without a following breakable space.
         (f"<p>of{HAIR_SPACE} <code>grep</code> here</p>", 0),
         (f"<p>dash\u2014{HAIR_SPACE}<code>x</code> here</p>", 0),
+        # Six-per-em space that InlineCodeSpacing puts after inline code is fine.
+        (
+            f"<p>the{HAIR_SPACE} <code>fortune</code>{SIX_PER_EM_SPACE}command</p>",
+            0,
+        ),
         # Block code inside <pre> is skipped.
         ("<pre><code>let x = 1;\nfoo</code></pre>", 0),
         # Code inside a no-formatting zone is skipped.
