@@ -157,8 +157,13 @@ function gapPrecedingWord(node: Element, ancestors: readonly Parent[]): void {
 // a text character it keeps an enclosing link's underline unbroken.
 function tightenFollowingSpace(node: Element, ancestors: readonly Parent[]): void {
   const next = followingTextNode(node, ancestors)
-  if (next === null || !next.value.startsWith(" ")) return
-  next.value = SIX_PER_EM_SPACE + next.value.slice(1)
+  if (next === null) return
+  // Collapse the whole leading run of ordinary whitespace: U+2006 is not
+  // CSS-collapsible, so any spaces or a source-wrap newline left beside it
+  // would still render and re-widen the gap.
+  const match = /^[ \t\n]+/u.exec(next.value)
+  if (match === null) return
+  next.value = SIX_PER_EM_SPACE + next.value.slice(match[0].length)
 }
 
 /**

@@ -86,6 +86,17 @@ describe("InlineCodeSpacing", () => {
       expect(out).toContain(`</code>${SIX_PER_EM_SPACE}is a tool.`)
     })
 
+    it("collapses a multi-space run so no stray space re-widens the gap", async () => {
+      const out = await processHtmlWithPlugin("<p>the <code>fortune</code>   command</p>")
+      expect(out).toContain(`</code>${SIX_PER_EM_SPACE}command`)
+      expect(out).not.toContain(`${SIX_PER_EM_SPACE} `)
+    })
+
+    it("collapses a leading source-wrap newline after the code", async () => {
+      const out = await processHtmlWithPlugin("<p>the <code>fortune</code>\ncommand</p>")
+      expect(out).toContain(`</code>${SIX_PER_EM_SPACE}command`)
+    })
+
     it.each([
       ["hugging punctuation follows", "<p>a <code>one</code>), next</p>"],
       ["a non-breaking space follows", "<p>a <code>one</code> two</p>"],
