@@ -39,6 +39,10 @@ jobs:
               - "!quartz/**/*.test.ts"
               - "!quartz/**/*.test.tsx"
               - "!quartz/**/tests/**"
+              # External README snapshots are embedded content, not code under
+              # test; a refresh of them (refresh-readme-snapshots.yaml) needs no
+              # a11y run.
+              - "!quartz/plugins/transformers/.readme-snapshots/**"
               - "website_content/**"
               - "config/quartz/**"
               - "config/constants.json"

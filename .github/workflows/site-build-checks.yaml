@@ -53,6 +53,11 @@ jobs:
               - "!quartz/**/*.test.ts"
               - "!quartz/**/*.test.tsx"
               - "!quartz/**/tests/**"
+              # External README snapshots are embedded content, not code under
+              # test; a refresh of them (refresh-readme-snapshots.yaml) needs no
+              # site-build-checks run. The post-merge deploy build still
+              # exercises the embed.
+              - "!quartz/plugins/transformers/.readme-snapshots/**"
               - "website_content/**"
               - "config/quartz/**"
               - "config/constants.json"

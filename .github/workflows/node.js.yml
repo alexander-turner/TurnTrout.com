@@ -47,6 +47,10 @@ jobs:
           filters: |
             relevant:
               - "quartz/**"
+              # External README snapshots are embedded content, not code under
+              # test; a refresh of them (refresh-readme-snapshots.yaml) needs no
+              # Jest run.
+              - "!quartz/plugins/transformers/.readme-snapshots/**"
               - "config/quartz/**"
               - "config/constants.json"
               - "config/javascript/**"

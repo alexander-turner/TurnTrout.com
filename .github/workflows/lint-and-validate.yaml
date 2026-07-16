@@ -93,6 +93,9 @@ jobs:
               - 'scripts/strip_for_spellcheck.py'
             code:
               - 'quartz/**'
+              # External README snapshots are embedded content, not code;
+              # a refresh of them (refresh-readme-snapshots.yaml) needs no lint.
+              - '!quartz/plugins/transformers/.readme-snapshots/**'
               - 'config/javascript/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
@@ -116,6 +119,10 @@ jobs:
               - '!quartz/**/*.test.ts'
               - '!quartz/**/*.test.tsx'
               - '!quartz/**/tests/**'
+              # External README snapshots are embedded content, not source we
+              # author; a refresh of them (refresh-readme-snapshots.yaml) must
+              # not trip source_file_checks and block the automated merge.
+              - '!quartz/plugins/transformers/.readme-snapshots/**'
               - 'scripts/source_file_checks.py'
               - 'config/quartz/**'
               - 'config/constants.json'

@@ -41,6 +41,10 @@ jobs:
           filters: |
             relevant:
               - "quartz/**"
+              # External README snapshots are embedded content, not code under
+              # test; a refresh of them (refresh-readme-snapshots.yaml) needs no
+              # visual run.
+              - "!quartz/plugins/transformers/.readme-snapshots/**"
               - "website_content/**"
               - "config/quartz/**"
               - "config/constants.json"
