@@ -359,7 +359,7 @@ def _banded_ink_xmax(
 
 def _space_glyph_names(font: TTFont) -> tuple[str, ...]:
     """Space glyphs that can sit between a word and an opening mark."""
-    cmap = font.getBestCmap()
+    cmap = font.getBestCmap() or {}
     names = ["space"]
     nbsp = cmap.get(0x00A0)
     if nbsp is not None and nbsp != "space":
@@ -424,7 +424,7 @@ def _collect_space_clearance_groups(
 
 def _coverage(font: TTFont, glyphs: tuple[str, ...]) -> Any:
     # Format 1 coverage is binary-searched, so glyph ids must be sorted.
-    cov = otTables.Coverage()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
+    cov = otTables.Coverage()
     cov.glyphs = sorted(glyphs, key=font.getGlyphID)
     return cov
 
