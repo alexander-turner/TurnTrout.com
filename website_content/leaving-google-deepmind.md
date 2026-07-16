@@ -6,7 +6,7 @@ tags:
   - AI
   - deepmind
   - personal
-description: "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure."
+description: I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.
 similar_posts:
   - red-line-framework
   - deepmind-equity-discussion
@@ -21,8 +21,9 @@ aliases:
   - why-i-left-google-deepmind
   - leaving-google-deepmind
 no_dropcap_color: true
-date_published: &id001 2026-07-15
-date_updated: *id001
+date_published: 2026-07-15
+date_updated: 2026-07-16
+lw-posted-at: https://www.lesswrong.com/posts/iKm2FhpWkuuBojm82/why-i-left-google-deepmind
 ---
 
 In January, Department of Homeland Security (DHS) officers killed [at least](https://www.theguardian.com/us-news/2026/jan/28/deaths-ice-2026-) two people. In both cases, a federal agent grasped his gun, aimed it at a peaceful citizen, and shot them dead.
@@ -311,7 +312,7 @@ I began posting this kind of message in the GDM-only discussion channel. These m
 4. I pointed out [the problems with the "protections" in OpenAI's deal](https://www.techpolicy.press/five-unresolved-issues-in-openais-deal-with-the-department-of-defense/) to inoculate GDM employees against similarly fake "protections" that Google might try to pass off. If employees didn't buy the veneer, Google would pay a greater morale cost.
 5. Later, some messages provided people a channel to hint they would leave Google if the deal passed, while still providing soft deniability.
 
-The "❤️" reacts also acted as a subtle organizing mechanism. My understanding was that Google frowned upon people directly organizing through large internal channels. I noted who responded with "❤️" and reached out to them privately for the petition which I'm about to talk about.
+The "❤️" reacts also acted as a subtle organizing mechanism. My understanding was that Google frowned upon people directly organizing through large internal channels. I noted who responded with "❤️" and reached out to them privately for the petition which I'm about to discuss.
 
 ## Jeff Dean, you're our only hope
 
@@ -319,7 +320,7 @@ I considered sending Jeff another DM: "please stop Google from signing the deal 
 
 I wrote a petition to Jeff and, with the help of a few friends, got about 250 GDM / Research signatures in the next day or two. I will not reproduce the entire petition because I said it was "not public" and instructed people not to share externally.[^external] However, the [New York Times did report on this petition](https://www.nytimes.com/2026/02/26/technology/google-deepmind-letter-pentagon.html), so some bits[^oops] are already public:
 
-> [!quote] [Google Workers Seek ‘Red Lines’ on Military A.I., Echoing Anthropic](https://www.nytimes.com/2026/02/26/technology/google-deepmind-letter-pentagon.html)
+> [!quote] [Google Workers Seek "Red Lines" on Military A.I., Echoing Anthropic](https://www.nytimes.com/2026/02/26/technology/google-deepmind-letter-pentagon.html)
 > “Please do everything in your power to stop any deal which crosses these basic red lines,” the employees wrote. “We love working at Google and want to be proud of our work.”
 
 [^oops]: The New York Times also reported:
@@ -372,7 +373,7 @@ Subtitle: March 10th, 2026
 
 I stayed focused on my goal. I needed to move Sundar. Jeff could, I estimated, move Sundar. Did Jeff *want* to move Sundar? Would he walk from a company where he is revered, with a prestigious job seemingly tailored to him, leaving behind a quarter-lifetime of memories? On the other hand, every tech company in the world would want to hire Jeff, his legacy seemed secure, he already had who-knows-how-much money, and leaving would show principle.
 
-I didn't want to manipulate Jeff. I wanted to be real with him as one concerned person to another. I even avoided reading more than one article about him to keep myself from subconsciously tailoring my arguments to appeal to his psyche.
+I didn't want to manipulate Jeff. I wanted to be real with him as one concerned person to another. I even avoided reading more than one article about him to avoid subconsciously tailoring my arguments to his psyche.
 
 The way I saw it was: I don't need to get Jeff to agree to quit over this. In a sense, he'd *already* agreed to quit over it. He had signed a pledge in 2018:
 
@@ -563,7 +564,7 @@ In particular, he says:
 
 That's not a principle. A principle is something you commit to in advance so that you can't talk yourself out of it later, *even when* the benefits seem to outweigh the harms. One cannot violate a "principle" of "I'll decide when I see it".
 
-[Google's original 2018 AI principles](https://web.archive.org/web/20180620101825/https://ai.google/principles/) committed that Google would not support specific use cases, leading to [Google dropping its bid for a $10 billion contract in 2018](https://www.businessinsider.com/google-drops-out-of-10-billion-jedi-contract-bid-2018-10). The principles included a section titled "Applications we will not pursue," which said that Google would not design or deploy AI for weapons "whose principal purpose or implementation is to cause or directly facilitate injury to people," nor for surveillance "violating internationally accepted norms."
+[Google's original 2018 AI principles](https://web.archive.org/web/20180620101825/https://ai.google/principles/) committed that Google would not support specific use cases, leading to [Google dropping its bid for a $10 billion contract in 2018](https://www.businessinsider.com/google-drops-out-of-10-billion-jedi-contract-bid-2018-10). The principles included a section titled "Applications we will not pursue," which said that Google would not design or deploy AI for weapons "whose principal purpose or implementation is to cause or directly facilitate injury to people" nor for surveillance "violating internationally accepted norms."
 
 On February 4th, 2025, Demis co-authored [a post](https://blog.google/innovation-and-ai/products/responsible-ai-2024-report-ongoing-work/) announcing updates to those principles. [The updated principles](https://web.archive.org/web/20260430015915/https://ai.google/principles/) removed the prohibitions on weapons and surveillance.
 
@@ -619,7 +620,7 @@ Google DeepMind was an *experiment* in governance. The cofounders sold to Google
 
 Here's the result of GDM's experiment: it failed.
 
-When profit and pressure met ethical commitment at Google DeepMind, pressure won and pledges lost. When profit and pressure met ethical commitment  at Anthropic, ethics won. So the lesson is not "no one ever takes a stand." The lesson is that society cannot *rely* on ethics-motivated people standing firm.
+When profit and pressure met ethical commitment at Google DeepMind, pressure won and ethics lost. When profit and pressure met ethical commitment  at Anthropic, ethics won. So the lesson is not "no one ever takes a stand." The lesson is that society cannot *rely* on ethics-motivated people standing firm.
 
 I know the other options don't look great. Congress remains a potted plant in the corner. But we should at least stop [telling ourselves that a seat at the table works](#building-a-world-reshaping-technology-on-personal-trust).
 
@@ -738,7 +739,7 @@ I agree. xAI would still have given over their AI. But if Google had given signs
 
 Consider also that Anthropic taking a stand is one tech company. If a company like Google also defied the administration, I think that would have transformed the tech industry's meekness into independence. Instead...
 
-> [!quote] [Pentagon will ‘never again’ rely on a single AI provider, official says](https://www.nextgov.com/artificial-intelligence/2026/05/pentagon-will-never-again-rely-single-ai-provider-official-says/413399/)
+> [!quote] [Pentagon will "never again" rely on a single AI provider, official says](https://www.nextgov.com/artificial-intelligence/2026/05/pentagon-will-never-again-rely-single-ai-provider-official-says/413399/)
 > Defense Under Secretary for Research and Engineering Emil Michael said new agreements with Big Tech companies are a “counterstatement” to the ongoing Anthropic-Pentagon conflict as the agency prioritizes flexible contracts. \[...\]
 >
 > Michael continued to say that the new deals with Amazon Web Services, Google, Microsoft, NVIDIA, OpenAI, Reflection, Oracle and SpaceX are “a statement by the biggest tech companies in the world who are involved in the AI space … and have them say, ‘We support the Department of War, we support the U.S. government, and we support the… armed services for all lawful use cases.'”
@@ -777,6 +778,6 @@ A common reassurance from management:
 
 Imagine a commander on a mission consulting with Gemini. Do you think he's sending plaintext queries to Google, where Google could (theoretically) read up on the classified mission details? No. That'd be crazy.
 
-Instead, my guess is that Google runs *on-premise API access.* Here's the story that makes sense to me: the government has a secure Cloud computing cluster with no connection back to Google's server farms. Google drops off one or more servers which expose a Gemini API endpoint to the military's cluster.
+Instead, my guess is that Google runs *on-premise API access.* Here's the story that makes sense to me: the government has a secure computing cluster with no connection back to Google's server farms. Google drops off one or more servers which expose a Gemini API endpoint to the military's cluster.
 
 "API access only", then, would be technically true but misleading (wrongly suggests centralized supervision by Google) and irrelevant. What protection does API access provide? The problem is using Gemini to assist in potential war crimes and mass profiling of dissidents. Thanks in part to Google, however, these terms are now "industry-standard practice" (outside of Anthropic).

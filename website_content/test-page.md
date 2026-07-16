@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-15
+date_updated: 2026-07-16
 createBibtex: true
 ---
 
@@ -697,6 +697,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 | f + close | f) f] f\} f” f’ f( |
 | ff + close | ff) ff] ff\} ff” ff’ |
 | f + quotes | f” f’ f” f’ |
+| smallcaps + punctuation | (JSON) \[JSON\] \{JSON\} “JSON” |
 | ( + descender | (g (j (p (q (y |
 | \[ + descender | \[g \[j \[p \[q \[y |
 | \{ + descender | \{g \{j \{p \{q \{y |

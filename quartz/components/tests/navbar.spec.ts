@@ -46,10 +46,31 @@ function isPaused(video: Locator): Promise<boolean> {
 async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
   const { video } = videoElements
 
+  // If video is paused, click toggle to enable autoplay
+  const isCurrentlyPaused = await isPaused(video)
+  if (isCurrentlyPaused) {
+    await videoElements.autoplayToggle.click()
+  }
+
+  // Wait for video to actually be playing (not just !paused, but actively playing)
+  await video.page().waitForFunction((id: string) => {
+    const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
+    return (
+      videoElement &&
+      !videoElement.paused &&
+      videoElement.readyState >= 3 &&
+      videoElement.currentTime > 0
+    )
+  }, pondVideoId)
+
   // Wait for enough data to play through to the end (HAVE_ENOUGH_DATA = 4).
   // readyState >= 3 (canplay) is insufficient for seeking: Safari may only
   // have a few hundred ms buffered at that point.  canplaythrough guarantees
   // the browser has enough data to seek to any position without stalling.
+  // This must come AFTER playback starts: WebKit suspends buffering of
+  // paused muted videos once it reaches canplay, so a paused element can
+  // sit below HAVE_ENOUGH_DATA indefinitely — only an active playback
+  // request forces the remaining fetch through.
   await video.evaluate((videoElement: HTMLVideoElement) => {
     if (videoElement.readyState < 4) {
       return new Promise<void>((resolve) => {
@@ -58,24 +79,6 @@ async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
     }
     return undefined
   })
-
-  // Check if video is already playing
-  const isCurrentlyPaused = await isPaused(video)
-
-  // If video is paused, click toggle to enable autoplay
-  if (isCurrentlyPaused) {
-    await videoElements.autoplayToggle.click()
-    // Wait for video to actually be playing (not just !paused, but actively playing)
-    await video.page().waitForFunction((id: string) => {
-      const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
-      return (
-        videoElement &&
-        !videoElement.paused &&
-        videoElement.readyState >= 3 &&
-        videoElement.currentTime > 0
-      )
-    }, pondVideoId)
-  }
 }
 
 const fixedTimestamp = 2.5
