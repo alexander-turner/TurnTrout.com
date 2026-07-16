@@ -42,8 +42,8 @@
   display: inline;
   width: var(--favicon-size);
   height: var(--favicon-size);
-  margin: -20% auto -0.07em
-    calc(0.21 * #{$base-margin} + var(--glyph-nudge) - var(--left-inset) * var(--favicon-size));
+  margin: 0 auto calc(-0.25 * #{$base-margin})
+    calc(0.125 * #{$base-margin} + var(--glyph-nudge) - var(--left-inset) * var(--favicon-size));
   vertical-align: var(--vertical-adjustment);
 
   // Don't pollute copied text with favicon
