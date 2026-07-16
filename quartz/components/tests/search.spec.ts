@@ -633,7 +633,6 @@ test("Footnote back arrow is properly replaced (screenshot)", async ({ page }, t
   // Source the back-arrow from the search fixture so the screenshot doesn't
   // churn when test-page footnotes change.
   await search(page, "Search preview fixture")
-  await page.waitForLoadState("load")
 
   const preview = await waitForArticlePreview(page)
   const footnoteLink = preview.locator("a[data-footnote-backref]").first()
