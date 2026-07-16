@@ -19,7 +19,10 @@ permissions:
 jobs:
   should-run:
     name: lighthouse-should-run
-    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
+    # Skip the automated README-snapshot refresh (branch automated/readme-snapshots):
+    # it only rewrites embedded external READMEs, not code under test. should-run is
+    # skipped, so the gated build/deploy/audit jobs skip and the required checks pass.
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-') && github.head_ref != 'automated/readme-snapshots'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -41,10 +44,6 @@ jobs:
               - "!quartz/**/*.test.ts"
               - "!quartz/**/*.test.tsx"
               - "!quartz/**/tests/**"
-              # External README snapshots are embedded content, not code under
-              # test; a refresh of them (refresh-readme-snapshots.yaml) needs no
-              # lighthouse run.
-              - "!quartz/plugins/transformers/.readme-snapshots/**"
               # Console-clean spec runs against the preview URL in this
               # workflow, so changes to it must still trigger a run despite the
               # broad spec/tests exclusions above.

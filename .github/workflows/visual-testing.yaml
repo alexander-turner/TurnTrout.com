@@ -21,7 +21,10 @@ jobs:
   # Otherwise yields run=true and full browser coverage (chromium,firefox + macOS).
   should-run:
     name: visual-should-run
-    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
+    # Skip the automated README-snapshot refresh (branch automated/readme-snapshots):
+    # it only rewrites embedded external READMEs, not code under test. should-run is
+    # skipped, so the always() reporter below marks the required check green.
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-') && github.head_ref != 'automated/readme-snapshots'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -41,10 +44,6 @@ jobs:
           filters: |
             relevant:
               - "quartz/**"
-              # External README snapshots are embedded content, not code under
-              # test; a refresh of them (refresh-readme-snapshots.yaml) needs no
-              # visual run.
-              - "!quartz/plugins/transformers/.readme-snapshots/**"
               - "website_content/**"
               - "config/quartz/**"
               - "config/constants.json"
