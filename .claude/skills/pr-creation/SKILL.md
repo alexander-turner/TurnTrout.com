@@ -155,6 +155,23 @@ Skip the description update if no commits were made after Step 2.
 3. Push fixes, update the PR description (Step 5), and wait again
 4. Only proceed once all checks are green
 
+**Visual-testing results: don't block on churn.** The `visual-testing-*`
+shards stay green on snapshot-only diffs by design (see `CLAUDE.md`), and a
+snapshot diff is an _expected outcome_ for any change that touches rendering—it
+is handled via the diff gallery + approve-baselines button, not by waiting.
+Only stop for a visual result when it is **relevant to the task and signals a
+real failure**: a shard that goes red (timeout, page error, exception before the
+screenshot assertion), or a diff on a component your change was _supposed_ to
+leave untouched. Do **not** sit and wait on:
+
+- intermediate/in-progress visual shards when the change is expected to alter pixels,
+- snapshot diffs that are the anticipated result of your own change (that's churn to approve, not a failure to fix),
+- visual jobs unrelated to what you touched.
+
+When the only outstanding checks are visual snapshot diffs that match what you
+intended to change, treat CI as effectively green: report the PR and note the
+baselines need approving, rather than blocking the turn on them.
+
 ### Step 7: Scrub AI Attribution from the Description
 
 Re-read the current PR description (`gh pr view <pr-number> --json body --jq .body`) and remove anything related to “authored by Claude Code” or similar AI-tool attribution—`claude.ai` URLs, session links, “Generated with Claude Code” footers, co-author lines referencing Claude, etc. This mirrors the `CLAUDE.md` rule to never include such links in PRs, and catches any that slipped in via templates or earlier edits. If any are found, update the description with `gh pr edit` to remove them.

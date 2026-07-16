@@ -345,6 +345,15 @@ article[data-use-dropcap="true"] > p:first-of-type .small-caps {
   }
 }
 
+// A small-caps "j" hooks left under a preceding open bracket ("(JSON)"). The
+// font's kern pairs can't reach across the abbr's element boundary, so the
+// small-caps transformer wraps that bracket in this span to carry a trailing
+// margin toward the run. The margin collapses at a line end so a bracket that
+// wraps to a line start stays flush.
+.smallcaps-gap-before {
+  margin-right: calc(0.25 * $base-margin);
+}
+
 /* Set monospace font for code blocks, inline code, etc. */
 code,
 pre {
