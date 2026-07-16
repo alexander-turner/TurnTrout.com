@@ -114,6 +114,9 @@ jobs:
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         with:
+          # GitHub's REST API intermittently returns 5xx; retry instead of
+          # failing the whole deploy job over a status comment.
+          retries: 3
           script: |
             const marker = '<!-- pr-preview-deploy -->';
             const prNumber = parseInt(process.env.PR_NUMBER);
