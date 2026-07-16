@@ -79,5 +79,51 @@ jobs:
       - name: Run pytest
         run: |
           uv run python -m pytest scripts \
-            -m "not requires_r2" \
+            -m "not requires_r2 and not requires_singlefile" \
+            --config-file config/python/pyproject.toml
+
+  singlefile-integration:
+    needs: detect-changes
+    if: >
+      !startsWith(github.head_ref, 'deepsource-') &&
+      needs.detect-changes.outputs.python == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+        with:
+          install-node-deps: "false"
+          install-system-deps: "true"
+
+      - name: Install single-file
+        uses: ./.github/actions/retry-external
+        with:
+          max-attempts: "3"
+          timeout-minutes: "10"
+          command: |
+            # Keep in sync with SINGLE_FILE_VERSION in archive-links.yaml.
+            npm install -g "single-file-cli@2.0.83"
+            single-file --version
+
+      - name: Select a Chromium for single-file
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium-browser || command -v chromium || true)"
+          if [ -z "$chrome" ]; then
+            echo "::error::No google-chrome/chromium binary found for single-file" >&2
+            exit 1
+          fi
+          echo "Chromium for single-file: $chrome -> $("$chrome" --version)"
+          echo "CHROME_BINARY=$chrome" >> "$GITHUB_ENV"
+
+      - name: Run the real single-file capture test
+        run: |
+          uv run python -m pytest scripts \
+            -m requires_singlefile \
             --config-file config/python/pyproject.toml

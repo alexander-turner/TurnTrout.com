@@ -103,3 +103,8 @@ AGENTS.md
 reports/
 mutants/
 .hypothesis/
+
+# Outbound link archiving: local snapshot staging + probe telemetry.
+# Snapshots are served from R2/CDN, not committed; only the manifest is tracked.
+quartz/static/link-archive/
+.archive_probe_state.json

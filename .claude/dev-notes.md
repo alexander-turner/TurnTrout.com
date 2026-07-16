@@ -275,18 +275,141 @@ Public-repo Actions are free, so we don’t tier coverage by event. Path-awarene
 - **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`, same mechanism.
 - **Post-merge**: `push: main` re-runs the full suite plus `deploy.yaml`. `deploy.yaml`’s `verify-test-results` job polls check-runs on the landed SHA, so deploy waits for those to pass before pushing to Cloudflare.
 
+## Outbound link archiving — writer (single-file + Wayback + R2)
+
+`scripts/archive_links.py` is the writer half of the link-archive system (the
+build-time reader is `quartz/plugins/transformers/archiveLinks.ts`). It scans
+`website_content/` for outbound links, probes every link's liveness (parallel,
+browser-like User-Agent), archives links that need a snapshot, syncs each
+snapshot to R2 under `static/link-archive/<sha256>/singlefile.html`, and
+records the result in `config/link_archive_manifest.json`.
+
+- **Probe-first routing**: live links are captured with `single-file` (headless
+  Chromium, assets inlined, `CAPTURE_TIMEOUT` per page, one bounded retry for
+  Chromium cold starts). Links that are already hard-gone (404/410) — or whose
+  live capture fails — fall back to the newest **Wayback Machine** snapshot
+  (raw `id_` bytes), so the preserved copy predates the rot instead of
+  memorializing an error page. No snapshot from either source → per-URL skip.
+- **Manifest holds durable facts only** (`archive_url`, `dead`). Probe
+  telemetry (strike counts, last status/checked) lives in a separate
+  uncommitted probe-state file (`--probe-state`, default
+  `.archive_probe_state.json`, gitignored) that the workflow syncs to/from
+  `r2:turntrout/static/link-archive/probe-state.json`. This keeps the weekly
+  manifest PR diff meaningful — it is the human gate before the irreversible
+  rewrite, so it must not drown in timestamp churn.
+- **A link flips to `dead` only on 404/410 — or an authoritative NXDOMAIN
+  (host no longer resolves) — confirmed on N>=2 _consecutive_ runs**
+  (`DEAD_STRIKE_THRESHOLD`); any transient (403/429/5xx/timeout, or a
+  temporary-failure DNS result) resets the streak, so a flaky probe can't drive
+  the irreversible rewrite. `probe_status` classifies a connection error by
+  re-resolving the host: only `EAI_NONAME`/`EAI_NODATA` (not `EAI_AGAIN`) count
+  as the hard-gone `NXDOMAIN_STATUS`, which routes to Wayback like a 404.
+- **Probes send a browser User-Agent** (`PROBE_USER_AGENT`): some anti-bot
+  setups return 404 (not 403) to non-browser agents, which would read as
+  consistently dead and defeat the strike gate.
+- **Snapshot hardening headers come from Cloudflare, not the upload.** R2's S3
+  API only accepts a fixed set of standard object headers — rclone logs
+  `Don't know how to set key "X-Robots-Tag" on upload` and ignores arbitrary
+  ones — so `X-Robots-Tag: noindex` and `Content-Security-Policy: sandbox`
+  (neutering scripts/forms in third-party HTML served from the first-party CDN
+  origin) must be attached by a **Cloudflare transform rule** (Rules → Transform
+  Rules → Modify Response Header) on the `turntrout.com` zone: when URI path
+  starts with `/static/link-archive/`, set both static headers. One-time
+  dashboard setup; `check_link_archive_integrity.py` HEADs every snapshot and
+  fails if either header is missing, so the rule is machine-verified weekly.
+  The injected `noindex` meta covers robots even without the header.
+- **A dead page's existing snapshot is never overwritten** (even with
+  `--refresh`): it predates the rot, and a re-capture could only be worse.
+- **Canonicalization** (`canonicalize_url`) uses the `ada-url` binding — the same
+  `ada` WHATWG parser Node's `new URL` uses — so manifest keys match the reader
+  byte-for-byte.
+- **Deny-list** (`config/link_archive_denylist.json`) skips paywall/anti-bot/IP
+  hosts; a min-size quality gate (`MIN_SNAPSHOT_BYTES`) rejects login-wall and
+  blank captures. A minimal page inlines to ~1 KB, so test fixtures must be
+  sizable to clear the gate.
+- **single-file can exit 0 having saved the page WITHOUT its capture
+  pipeline** (e.g. the browser fails to launch and it falls back to dumping
+  fetched HTML): the output looks plausible but embeds no images/fonts/styles
+  and dies with the origin. A processed save always carries the
+  `Page saved with SingleFile` banner comment; `capture_page` requires it and
+  fails loudly (with single-file's stdio) when absent. The integration test
+  also asserts a fixture image survives as a `data:` URI.
+- On macOS, Chrome/Chromium are app bundles, not on PATH; `_find_browser`
+  searches the standard `/Applications` locations after PATH (or set
+  `CHROME_BINARY`).
+
+### Real-capture validation
+
+The capture path is exercised for real by
+`test_capture_page_produces_real_singlefile` (the `requires_singlefile`
+integration test): it serves a fixture page, runs a real `single-file` capture,
+and asserts a usable `singlefile.html` that clears the size gate. Run with:
+
+```bash
+CHROME_BINARY=<chromium> uv run pytest -m requires_singlefile scripts/tests/test_archive_links.py
+```
+
+CI wiring:
+
+- `python-tests.yaml` has a `singlefile-integration` job that installs a pinned
+  `single-file-cli` + a Chromium and runs `-m requires_singlefile` on PRs
+  touching `scripts/**` (the default `python-tests` job deselects the marker).
+- `archive-links.yaml` runs the same capture as a smoke test before the long
+  run and pins `SINGLE_FILE_VERSION` so an upstream release can't silently
+  break captures. `single-file` reports failures only on stdio and can exit 0
+  without writing output — `capture_page` surfaces that as a
+  `SnapshotFailedError` with the stdio tail.
+
+### Linkchecker / manifest integrity
+
+A populated manifest rewrites dead links to
+`https://assets.turntrout.com/static/link-archive/<sha>/singlefile.html`.
+`scripts/linkchecker.fish` fetches every `assets.turntrout.com` link with
+`--check-extern`, so it now **ignores** the `static/link-archive/` prefix —
+otherwise each build would GET thousands of multi-hundred-KB snapshots and
+hammer R2. Their liveness is instead enforced by
+`scripts/check_link_archive_integrity.py` (HEADs every `archive_url`; fails on
+any non-200, foreign-origin URL, or missing hardening header), run in the weekly
+archive job right after the manifest is written.
+`built_site_checks.py::check_media_asset_sources` only inspects media tags
+(`img`/`video`/`audio`/`source`/`svg`), not `<a>`, so rewritten anchors don't
+trip it.
+
+Still pending before the scheduled job can be trusted:
+
+1. Run the first full `--backfill` pass **locally** (needs the R2 env vars);
+   it is multi-hour and exceeds the 6h Action cap.
+2. During the backfill, confirm the Wayback fallback fetches real content from
+   that machine. The availability API + URL construction are validated, but
+   `web.archive.org` content fetches could not be exercised from the dev
+   sandbox (egress-blocked there); a blocked host degrades to per-URL skips.
+3. Spot-check a few `singlefile.html` snapshots render standalone from R2, then
+   commit the seed manifest via PR.
+
+Only then promote `.github/workflows/archive-links.yaml` (weekly +
+`workflow_dispatch`) out of draft. It needs `ACCESS_KEY_ID_TURNTROUT_MEDIA` /
+`SECRET_ACCESS_TURNTROUT_MEDIA` / `S3_ENDPOINT_ID_TURNTROUT_MEDIA` secrets and a
+PR-creating token; it archives only the steady-state delta and opens a PR with
+the manifest diff (never pushes to `main`). Other flags: `--refresh`
+(re-archive).
+
 ## Outbound link archiving (build-time fallback)
 
 `quartz/plugins/transformers/archiveLinks.ts` rewrites confirmed-dead outbound
 links to a self-hosted archived copy at build time (no client JS). It reads
 `config/link_archive_manifest.json` once per build; for each external `<a>` whose
 canonical href is in the manifest with `dead: true`, it swaps the `href` for the
-archived `archive_url`, adds an `archived` class, and records the original in
+archived `archive_url` (carrying the original `#fragment` over, since the
+snapshot keeps the same element ids), adds an `archived` class, sets an
+explanatory `title` (unless the author wrote one), and records the original in
 `data-original-href`. Live/unknown links are untouched, so with the committed
-empty manifest the transformer is a no-op.
+empty manifest the transformer is a no-op. Because the rewrite trusts
+`archive_url` completely, manifest parsing throws on any `archive_url` outside
+`ARCHIVE_URL_PREFIX` (the CDN's `static/link-archive/` namespace); the weekly
+integrity check enforces the same invariant on the Python side.
 
-The manifest is produced by a separate writer (ArchiveBox + R2), shipped in its
-own PR. Canonicalization uses the WHATWG `new URL` parser; the writer mirrors it
+The manifest is produced by a separate writer (single-file + Wayback + R2; see
+the writer section above), shipped in its own PR. Canonicalization uses the WHATWG `new URL` parser; the writer mirrors it
 with the same `ada` parser so the keys match.
 
 ## Tweet embeds (self-hosted, tracking-free)
