@@ -226,10 +226,19 @@ test.describe("Unique content around the site", () => {
         const childrenToRemove = Array.from(children).slice(0, numToRemove)
         childrenToRemove.forEach((child) => listElement.removeChild(child))
 
-        // Update the number of posts displayed
-        const listingText = listElement.querySelector(".page-listing > p")
-        if (listingText) {
-          listingText.textContent = `Showing ${numKeepOldest} of ${numTotalChildren} posts.`
+        // Mock the total-count paragraph so the screenshot stays stable as
+        // posts/tagged pages are added. The all-posts ("recent") page renders
+        // it as "This site has N blog posts."; tag pages render it as
+        // "N items with this tag." Replace the count with the number of items
+        // actually shown so the text stays consistent with the trimmed list.
+        const countParagraph =
+          document.querySelector("#center-content article > p") ??
+          document.querySelector("#center-content .page-listing > p")
+        if (countParagraph?.textContent) {
+          countParagraph.textContent = countParagraph.textContent.replace(
+            /\d+/,
+            String(numKeepOldest),
+          )
         }
       }, numOldest)
 
@@ -1097,15 +1106,8 @@ test.describe("Video Speed Controller visibility", () => {
         video.playbackRate = 2.0
       })
 
-      // Wait for the ratechange event and requestAnimationFrame to reset it back to 1.0
-      await expect
-        .poll(async () => await getVideoPlaybackRate(page, "test-video"), {
-          intervals: [50, 100, 100, 100],
-          timeout: 500,
-        })
-        .toBe(1.0)
-
-      // Verify it was reset back to 1.0
+      // The lock shadows the setter, so the write is blocked before it
+      // lands and the rate reads 1.0 with no settling wait.
       const resetPlaybackRate = await getVideoPlaybackRate(page, "test-video")
       expect(resetPlaybackRate).toBe(1.0)
     })

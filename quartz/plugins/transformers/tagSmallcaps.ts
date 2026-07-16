@@ -1,4 +1,4 @@
-import type { Element, Node, Parent, Text } from "hast"
+import type { Element, ElementContent, Node, Parent, Text } from "hast"
 import type { Plugin } from "unified"
 
 import escapeStringRegexp from "escape-string-regexp"
@@ -459,6 +459,55 @@ export function markWorkTitles(tree: Node): void {
   })
 }
 
+// A small-cap "j" carries ink that hooks well left of its advance box, so after
+// an open bracket its descender crowds the bracket ("(JSON)"). The bracket and
+// the small-caps <abbr> render as separate shaping runs, so the font's own kern
+// pairs can't reach across the element boundary; the bracket is wrapped in a
+// margin-carrying span instead. The hook sits at the baseline, so only a
+// full-height open bracket collides — quotes ride too high to touch it.
+const OPEN_BRACKET_BEFORE_SMALLCAPS = /[([{]$/u
+const SMALLCAPS_LEFT_OVERHANG_INITIALS: ReadonlySet<string> = new Set(["j", "J"])
+
+interface BracketGap {
+  parent: Parent
+  index: number
+  prevText: Text
+}
+
+/**
+ * Wraps an open bracket that immediately precedes a "j"-initial small-caps abbr
+ * in a `smallcaps-gap-before` span, so it can carry a trailing margin that
+ * clears the small-cap "j"'s hooked descender (see the class in SCSS).
+ */
+export function spaceSmallcapsAfterOpenBracket(tree: Node): void {
+  const ops: BracketGap[] = []
+  visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
+    if (node.tagName !== "abbr" || !hasClass(node, "small-caps")) return
+    if (!SMALLCAPS_LEFT_OVERHANG_INITIALS.has(toString(node).charAt(0))) return
+    const parent = ancestors[ancestors.length - 1]
+    const index = parent.children.indexOf(node)
+    const prev = parent.children[index - 1]
+    if (prev?.type !== "text" || !OPEN_BRACKET_BEFORE_SMALLCAPS.test(prev.value)) return
+    ops.push({ parent, index, prevText: prev })
+  })
+  // Splice from the highest index down so earlier rewrites don't shift the
+  // positions recorded for later ones.
+  ops.sort((a, b) => b.index - a.index)
+  for (const { parent, index, prevText } of ops) {
+    const head = prevText.value.slice(0, -1)
+    const bracket = prevText.value.slice(-1)
+    const replacement: ElementContent[] = []
+    if (head) replacement.push({ type: "text", value: head })
+    replacement.push({
+      type: "element",
+      tagName: "span",
+      properties: { className: ["smallcaps-gap-before"] },
+      children: [{ type: "text", value: bracket }],
+    })
+    parent.children.splice(index - 1, 1, ...replacement)
+  }
+}
+
 /**
  * Rehype plugin that visits text nodes and replaces
  * detected all-caps or acronyms with smallcaps <abbr>.
@@ -469,6 +518,7 @@ export const rehypeTagSmallcaps: Plugin = () => {
     visitParents(tree, "text", (node: Text, ancestors: Parent[]) => {
       replaceSCInNode(node, ancestors)
     })
+    spaceSmallcapsAfterOpenBracket(tree)
   }
 }
 

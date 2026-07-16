@@ -99,8 +99,8 @@ def test_classification_flags(snapshot: int, real: int, flaky: int) -> None:
                 _attach("t1", ["foo-actual.png"]),
                 _test_end("t1", "passed"),
             ],
-            _Cls(0, 0, 1),
-            id="flaky_retry_pass_is_flaky_failure",
+            _Cls(1, 0, 0),
+            id="flaky_snapshot_retry_is_snapshot_churn",
         ),
         pytest.param(
             [
@@ -109,6 +109,15 @@ def test_classification_flags(snapshot: int, real: int, flaky: int) -> None:
             ],
             _Cls(0, 0, 1),
             id="flaky_without_snapshot_is_flaky_failure",
+        ),
+        pytest.param(
+            [
+                _test_end("t1", "timedOut"),
+                _attach("t1", ["foo-actual.png"]),
+                _test_end("t1", "passed"),
+            ],
+            _Cls(0, 0, 1),
+            id="flaky_timeout_with_snapshot_is_flaky_failure",
         ),
         pytest.param(
             [_test_end("t1", "failed", expected_status="failed")],
