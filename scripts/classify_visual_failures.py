@@ -9,7 +9,12 @@ errors, exceptions before reaching ``toHaveScreenshot()``) are "real".
 
 A "flaky failure" is a test that only reached its expected status after
 one or more retries. Zero-flakiness policy: nondeterminism is a defect,
-so flaky tests count as real failures and fail the shard.
+so flaky tests count as real failures and fail the shard — with one
+carve-out. A retry whose failed attempts were all snapshot comparisons
+(status ``failed`` with an ``*-actual.png``) is snapshot churn: the
+capture reaches the diff gallery like any deterministic diff, and the
+baseline decision belongs to the reviewer. Any timeout, crash, or
+pre-assertion error on a retried attempt still fails the shard.
 
 Reads one or more blob-report ZIPs and writes flags suitable for
 ``$GITHUB_OUTPUT``:
@@ -111,15 +116,24 @@ def _classify_blob(blob_zip: Path) -> tuple[int, int, int]:
     for state in tests.values():
         if not state.observed_statuses:
             continue
-        needed_retry = any(
-            status != state.expected_status
+        unexpected_statuses = [
+            status
             for status in state.observed_statuses
-        )
+            if status != state.expected_status
+        ]
         if state.expected_status in state.observed_statuses:
-            # A test that reached its expected status only after a retry is
-            # flaky. Zero-flakiness policy: that nondeterminism is a defect
-            # in its own right, so it blocks the shard like a real failure.
-            if needed_retry:
+            if not unexpected_statuses:
+                continue
+            # The test reached its expected status only after a retry. When
+            # every failed attempt was a snapshot comparison, the retry is
+            # snapshot churn bound for the diff gallery; otherwise the
+            # nondeterminism is a defect that blocks the shard like a real
+            # failure.
+            if state.has_snapshot_attachment and all(
+                status == "failed" for status in unexpected_statuses
+            ):
+                snapshot_failures += 1
+            else:
                 flaky_failures += 1
             continue
         if state.has_snapshot_attachment:

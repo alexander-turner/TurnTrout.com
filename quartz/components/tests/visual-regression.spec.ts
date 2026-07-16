@@ -1106,15 +1106,8 @@ test.describe("Video Speed Controller visibility", () => {
         video.playbackRate = 2.0
       })
 
-      // Wait for the ratechange event and requestAnimationFrame to reset it back to 1.0
-      await expect
-        .poll(async () => await getVideoPlaybackRate(page, "test-video"), {
-          intervals: [50, 100, 100, 100],
-          timeout: 500,
-        })
-        .toBe(1.0)
-
-      // Verify it was reset back to 1.0
+      // The lock shadows the setter, so the write is blocked before it
+      // lands and the rate reads 1.0 with no settling wait.
       const resetPlaybackRate = await getVideoPlaybackRate(page, "test-video")
       expect(resetPlaybackRate).toBe(1.0)
     })

@@ -306,6 +306,25 @@ async function waitForVisualStability(page: Page, scope?: Locator): Promise<void
   )
 }
 
+// WebKit paints a freshly loaded or resized large image with fast
+// low-quality interpolation, then upgrades the paint when a 500 ms timer
+// fires (ImageQualityController::lowQualityTimeThreshold). On a contended
+// CI runner that timer can starve past consecutive stable frames, so the
+// capture holds a stable-but-low-quality paint that diffs ~1% against the
+// baseline. `image-rendering: optimizeQuality` maps to
+// InterpolationQuality::Default before the timer heuristic runs, so every
+// capture paints at final quality.
+async function forceHighQualityImageInterpolation(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const styleId = "force-high-quality-image-interpolation"
+    if (document.getElementById(styleId)) return
+    const style = document.createElement("style")
+    style.id = styleId
+    style.textContent = "img { image-rendering: optimizeQuality; }"
+    document.head.append(style)
+  })
+}
+
 /**
  * Takes a regression screenshot of a page or a specific element with given options.
  *
@@ -321,6 +340,7 @@ export async function takeRegressionScreenshot(
   screenshotSuffix: string,
   options?: RegressionScreenshotOptions,
 ): Promise<Buffer> {
+  await forceHighQualityImageInterpolation(page)
   if (!options?.skipMediaPause) {
     await pauseMediaElements(page, options?.elementToScreenshot)
     await waitForVideosPainted(options?.elementToScreenshot ?? page)
