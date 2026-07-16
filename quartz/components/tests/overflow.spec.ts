@@ -110,19 +110,17 @@ const SETTLE_FRAMES = 3
 // counter resets, which is correct: a recreated context is a fresh page to
 // settle). A standalone `page.evaluate` has no such resilience and loses that
 // race. The predicate is self-contained (serialized into the page, so it can
-// reference only DOM globals): true once webfonts have swapped and the
-// client-side pass has wrapped wide tables/KaTeX into scroll containers —
-// measuring before that lands reports them as overflow. The frame count is
-// tracked on `window` so consecutive `raf`-polled evaluations can require the
-// predicate to hold stably rather than for a single lucky frame.
+// reference only DOM globals): true once the client-side pass has wrapped wide
+// tables/KaTeX into scroll containers — measuring before that lands reports them
+// as overflow. Font readiness is awaited separately in `settle` (bounded, since
+// WebKit can hang on it). The frame count is tracked on `window` so consecutive
+// `raf`-polled evaluations can require the predicate to hold stably rather than
+// for a single lucky frame.
 /* istanbul ignore next -- executed in the browser, not under Jest */
 function settledForFrames(requiredFrames: number): boolean {
-  const fontsReady = !document.fonts || document.fonts.status === "loaded"
   const scrollables = Array.from(document.querySelectorAll(".table-container, .katex-display"))
   const settled =
-    fontsReady &&
-    (scrollables.length === 0 ||
-      scrollables.every((el) => el.closest(".scroll-indicator") !== null))
+    scrollables.length === 0 || scrollables.every((el) => el.closest(".scroll-indicator") !== null)
 
   const state = window as unknown as { __overflowSettledFrames?: number }
   if (!settled) {
@@ -139,8 +137,23 @@ function describeOffenders(offenders: readonly Offender[]): string {
     .join("\n  ")
 }
 
+// WebKit's `document.fonts.status`/`.ready` can stay pending indefinitely when a
+// `@font-face` request never settles, so gating on font readiness must be bounded
+// or it burns the whole test timeout (the `/posts` listing has no scrollables, so
+// the settle predicate reduces to font readiness alone there). Pages that do
+// settle load their fonts well within this budget; where WebKit hangs, we proceed
+// and measure against the currently painted font.
+const FONTS_READY_TIMEOUT_MS = 10_000
+
 async function settle(page: Page, url: string) {
   await gotoPage(page, url)
+  await page.evaluate(async (timeoutMs) => {
+    if (!document.fonts) return
+    await Promise.race([
+      document.fonts.ready,
+      new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+    ])
+  }, FONTS_READY_TIMEOUT_MS)
   await page.waitForFunction(settledForFrames, SETTLE_FRAMES, {
     timeout: 10_000,
     polling: "raf",
