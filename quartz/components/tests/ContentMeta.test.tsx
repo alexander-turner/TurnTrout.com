@@ -269,7 +269,7 @@ describe("renderLinkpostInfo", () => {
     expect(result?.props.className).toBe("linkpost-info")
 
     const children = result?.props.children
-    expect(children[0]).toBe("Originally linked to")
+    expect(children[0]).toBe("Originally posted on")
     expect(children[1]).toBe(" ")
 
     const linkElement = children[2]
