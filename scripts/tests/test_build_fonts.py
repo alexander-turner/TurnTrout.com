@@ -23,6 +23,8 @@ from ..build_fonts import (
     _OPEN_PUNCT_GLYPHS,
     _OPEN_QUOTE_GLYPHS,
     _QUOTE_BRACKET_KERN,
+    _SPACE_CLEARANCE_MIN,
+    _SPACE_CLEARANCE_QUANTUM,
     _SQUARE_BRACKET_GLYPHS,
     _TARGET_GLYPHS,
     _TIGHTEN_REFERENCE_GLYPH,
@@ -30,8 +32,13 @@ from ..build_fonts import (
     _UPSTREAM_DIR,
     _add_kerning,
     _affine_map_glyph_y,
+    _banded_ink_xmax,
+    _collect_space_clearance_groups,
     _get_f_glyphs,
+    _glyph_overhang,
     _harmonize_brackets,
+    _space_glyph_names,
+    _spacing_glyph_names,
     build_all,
 )
 
@@ -166,9 +173,28 @@ class TestKerning:
                 break
         assert original_kern is not None
         original_count = len(original_kern.Feature.LookupListIndex)
+        original_lookup_count = len(gpos.LookupList.Lookup)
+
+        bucket_count = sum(
+            len(groups)
+            for _targets, groups in _collect_space_clearance_groups(upstream_12)
+        )
 
         _add_kerning(upstream_12, _get_f_glyphs(upstream_12))
-        assert len(original_kern.Feature.LookupListIndex) == original_count + 1
+
+        # One PairPos kern lookup plus one contextual chain lookup per
+        # clearance bucket, all registered in the existing feature.
+        expected_added = 1 + bucket_count
+        assert (
+            len(original_kern.Feature.LookupListIndex)
+            == original_count + expected_added
+        )
+        # Each chain lookup also appends its inner SinglePos lookup, which is
+        # reached through the chain rather than the feature list.
+        assert (
+            len(gpos.LookupList.Lookup)
+            == original_lookup_count + expected_added + bucket_count
+        )
 
     def test_pair_value_records_sorted_by_glyph_id(
         self, upstream_08: TTFont
@@ -408,6 +434,143 @@ class TestKerning:
                 assert kern_idx in sr.Script.DefaultLangSys.FeatureIndex
             for lr in sr.Script.LangSysRecord:
                 assert kern_idx in lr.LangSys.FeatureIndex
+
+
+def _space_clearance_lookups(
+    font: TTFont, start: int
+) -> list[tuple[Any, Any, int]]:
+    """(chain subtable, inner SinglePos subtable, XAdvance) for lookups added
+    from ``start`` onward — the contextual space-clearance lookups."""
+    lookups = font["GPOS"].table.LookupList.Lookup
+    out: list[tuple[Any, Any, int]] = []
+    for i in range(start, len(lookups)):
+        lookup = lookups[i]
+        if lookup.LookupType != 8:
+            continue
+        subtable = lookup.SubTable[0]
+        inner_index = subtable.PosLookupRecord[0].LookupListIndex
+        inner = lookups[inner_index].SubTable[0]
+        out.append((subtable, inner, inner.Value.XAdvance))
+    return out
+
+
+class TestSpaceOverhangClearance:
+    def test_glyph_overhang_sign(self, upstream_08: TTFont) -> None:
+        # f's hook overhangs its advance; n sits fully inside it.
+        assert _glyph_overhang(upstream_08, "f") > 0
+        assert _glyph_overhang(upstream_08, _TIGHTEN_REFERENCE_GLYPH) < 0
+
+    def test_space_glyph_names_includes_nbsp(self, upstream_08: TTFont) -> None:
+        names = _space_glyph_names(upstream_08)
+        assert names[0] == "space"
+        assert upstream_08.getBestCmap()[0x00A0] in names
+
+    def test_spacing_glyph_names_excludes_marks(
+        self, upstream_08: TTFont
+    ) -> None:
+        names = _spacing_glyph_names(upstream_08)
+        assert "f" in names
+        assert "Q" in names
+        # Combining marks never precede a word space.
+        assert "tildecomb" not in names
+
+    def test_banded_ink_xmax(self, upstream_08: TTFont) -> None:
+        glyf = upstream_08["glyf"]
+        quote_y_min = glyf["quotedblleft"].yMin
+        quote_y_max = glyf["quotedblleft"].yMax
+        # The f hook reaches into the quote band, past f's advance.
+        f_xmax = _banded_ink_xmax(upstream_08, "f", quote_y_min, quote_y_max)
+        assert f_xmax is not None
+        assert f_xmax > upstream_08["hmtx"]["f"][0]
+        # o has no ink at quote height; space has no ink at all.
+        assert (
+            _banded_ink_xmax(upstream_08, "o", quote_y_min, quote_y_max) is None
+        )
+        assert (
+            _banded_ink_xmax(upstream_08, "space", quote_y_min, quote_y_max)
+            is None
+        )
+
+    @pytest.mark.parametrize(
+        "font_fixture", ["upstream_08", "upstream_12"], ids=["08pt", "12pt"]
+    )
+    def test_band_semantics(
+        self, font_fixture: str, request: pytest.FixtureRequest
+    ) -> None:
+        font: TTFont = request.getfixturevalue(font_fixture)
+        collected = _collect_space_clearance_groups(font)
+        assert len(collected) == 2
+        (quote_targets, quote_groups), (bracket_targets, bracket_groups) = (
+            collected
+        )
+        assert "quotedblleft" in quote_targets
+        assert "parenleft" in bracket_targets
+
+        quote_sources = {s for g in quote_groups.values() for s in g}
+        bracket_sources = {s for g in bracket_groups.values() for s in g}
+        # The f hook lives at quote height, so it needs clearance everywhere.
+        assert "f" in quote_sources
+        assert "f" in bracket_sources
+        # Q's tail overhangs at the baseline, below a quote's ink but inside
+        # a bracket's, so band filtering keeps "Q “" tight while clearing
+        # "Q (".
+        assert "Q" not in quote_sources
+        assert "Q" in bracket_sources
+        # The reference glyph never clears itself.
+        assert _TIGHTEN_REFERENCE_GLYPH not in quote_sources | bracket_sources
+
+        for groups in (quote_groups, bracket_groups):
+            for clearance in groups:
+                assert clearance >= _SPACE_CLEARANCE_MIN
+                assert clearance % _SPACE_CLEARANCE_QUANTUM == 0
+
+    @pytest.mark.parametrize(
+        "font_fixture", ["upstream_08", "upstream_12"], ids=["08pt", "12pt"]
+    )
+    def test_chain_lookups_match_collected_groups(
+        self, font_fixture: str, request: pytest.FixtureRequest
+    ) -> None:
+        font: TTFont = request.getfixturevalue(font_fixture)
+        expected = _collect_space_clearance_groups(font)
+        space_names = set(_space_glyph_names(font))
+        start = len(font["GPOS"].table.LookupList.Lookup)
+        _add_kerning(font, _get_f_glyphs(font))
+
+        chains = _space_clearance_lookups(font, start)
+        assert len(chains) == sum(len(groups) for _t, groups in expected)
+
+        built = {}
+        for chain, inner, xadvance in chains:
+            assert chain.Format == 3
+            assert set(chain.InputCoverage[0].glyphs) == space_names
+            assert set(inner.Coverage.glyphs) == space_names
+            key = (
+                frozenset(chain.LookAheadCoverage[0].glyphs),
+                xadvance,
+            )
+            built[key] = set(chain.BacktrackCoverage[0].glyphs)
+
+        for targets, groups in expected:
+            for clearance, sources in groups.items():
+                assert built[(frozenset(targets), clearance)] == set(sources)
+
+    def test_coverage_glyphs_sorted(self, upstream_12: TTFont) -> None:
+        start = len(upstream_12["GPOS"].table.LookupList.Lookup)
+        _add_kerning(upstream_12, _get_f_glyphs(upstream_12))
+        order = upstream_12.getGlyphOrder()
+
+        for chain, inner, _xadvance in _space_clearance_lookups(
+            upstream_12, start
+        ):
+            coverages = [
+                chain.BacktrackCoverage[0],
+                chain.InputCoverage[0],
+                chain.LookAheadCoverage[0],
+                inner.Coverage,
+            ]
+            for coverage in coverages:
+                gids = [order.index(g) for g in coverage.glyphs]
+                assert gids == sorted(gids)
 
 
 class TestTableEquivalence:
