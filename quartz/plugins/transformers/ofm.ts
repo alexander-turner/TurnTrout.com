@@ -144,6 +144,7 @@ const createAdmonitionTitleInner = (
   useDefaultTitle: boolean,
   capitalizedTypeString: string,
   titleContent: string,
+  titleSeparator: string,
   remainingChildren: ElementContent[],
 ): Element => ({
   type: "element",
@@ -160,7 +161,7 @@ const createAdmonitionTitleInner = (
     {
       type: "text",
       /* istanbul ignore next -- admonition title formatting edge case */
-      value: useDefaultTitle ? capitalizedTypeString : `${titleContent} `,
+      value: useDefaultTitle ? capitalizedTypeString : `${titleContent}${titleSeparator}`,
     },
     ...remainingChildren,
   ],
@@ -186,6 +187,7 @@ const createAdmonitionTitle = (
   useDefaultTitle: boolean,
   capitalizedTypeString: string,
   titleContent: string,
+  titleSeparator: string,
   remainingChildren: ElementContent[],
   collapse: boolean,
   noSmallcaps: boolean,
@@ -195,6 +197,7 @@ const createAdmonitionTitle = (
       useDefaultTitle,
       capitalizedTypeString,
       titleContent,
+      titleSeparator,
       remainingChildren,
     ),
   ]
@@ -343,7 +346,13 @@ const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
   const collapse = collapseChar === "+" || collapseChar === "-"
   recordAdmonitionIcons(file, admonitionType, collapse)
   const defaultState = collapseChar === "-" ? "collapsed" : "expanded"
-  const titleContent = firstLine.slice(admonitionDirective.length).trim()
+  const rawTitle = firstLine.slice(admonitionDirective.length)
+  const titleContent = rawTitle.trim()
+  // Preserve the source spacing between the plain-text title and any following
+  // inline child (e.g. a link). Appending a space unconditionally would insert
+  // one after a trailing opening delimiter, turning "remarks ([video])" into
+  // "remarks ( video)".
+  const titleSeparator = /\s$/u.test(rawTitle) ? " " : ""
   /* istanbul ignore next -- admonition title detection edge case */
   const useDefaultTitle = titleContent === "" && firstChild.children.length === 1
   const capitalizedTypeString = typeString.charAt(0).toUpperCase() + typeString.slice(1)
@@ -363,6 +372,7 @@ const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
     useDefaultTitle,
     capitalizedTypeString,
     titleContent,
+    titleSeparator,
     firstChild.children.slice(1) as ElementContent[],
     collapse,
     noSmallcaps,
