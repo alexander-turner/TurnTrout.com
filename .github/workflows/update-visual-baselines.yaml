@@ -56,8 +56,8 @@ jobs:
     # visual-testing run + up to 15 min polling deploy.yaml.
     timeout-minutes: 50
     env:
-      # Single source of truth for where approved baselines are staged;
-      # must match scripts/r2_baselines.py LOCAL_DIR.
+      # Where the approve script stages the baselines it uploads; the
+      # coverage gate below checks approved files in this same directory.
       STAGING_DIR: tests/visual-baselines
     steps:
       - name: Resolve PR ref (if any)
@@ -150,8 +150,9 @@ jobs:
       # Carry-through for merged PRs: the approved diffs are the ones
       # re-failing main's own visual-testing run, so find that run and (after
       # the safety checks below) give it the main-run treatment. Waits out
-      # cancelled runs — pushes to main amend + force-push, cancelling the
-      # first wave — until a completed replacement reports.
+      # cancelled runs — pushes to main get amended + force-pushed
+      # (update-dates), cancelling the first wave — until a completed
+      # replacement reports.
       - name: Find post-merge visual-testing run on main
         id: find-main-run
         if: steps.resolve.outputs.merged == 'true'
@@ -160,27 +161,35 @@ jobs:
           MERGED_AT: ${{ steps.resolve.outputs.merged_at }}
         with:
           script: |
-            const mergedAt = new Date(process.env.MERGED_AT);
+            const mergedAt = process.env.MERGED_AT;
             const POLL_INTERVAL_MS = 30_000;
             const MAX_ATTEMPTS = 40; // 40 × 30s = 20 min
-            let found = null;
-            for (let i = 0; i < MAX_ATTEMPTS; i++) {
-              const { data } = await github.rest.actions.listWorkflowRuns({
+            const listPostMergeRuns = (page) =>
+              github.rest.actions.listWorkflowRuns({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 workflow_id: 'visual-testing.yaml',
                 branch: 'main',
-                per_page: 20,
+                created: `>=${mergedAt}`,
+                per_page: 100,
+                page,
               });
+            let found = null;
+            for (let i = 0; i < MAX_ATTEMPTS; i++) {
               // The API lists newest first. The approval covers the merge
               // commit itself, so take the EARLIEST non-cancelled post-merge
               // run — a newer run belongs to a later push to main whose
               // diffs this approval never saw. Cancelled runs are dropped so
               // a superseded first wave defers to its completed replacement.
+              // The earliest run lives on the LAST page when there are more
+              // post-merge runs than one page holds.
+              let { data } = await listPostMergeRuns(1);
+              const lastPage = Math.ceil(data.total_count / 100);
+              if (lastPage > 1) {
+                data = (await listPostMergeRuns(lastPage)).data;
+              }
               const candidates = data.workflow_runs.filter(
-                (r) =>
-                  new Date(r.created_at) >= mergedAt &&
-                  r.conclusion !== 'cancelled'
+                (r) => r.conclusion !== 'cancelled'
               );
               const run = candidates[candidates.length - 1];
               if (!run) {
@@ -198,9 +207,37 @@ jobs:
                 'No completed post-merge visual-testing run on main appeared ' +
                 'within 20 min; if main stays red, approve it from its own gallery.'
               );
+              core.setOutput('main_run_id', '');
+              core.setOutput('main_conclusion', '');
+              core.setOutput('shards_ok', '');
+              return;
             }
-            core.setOutput('main_run_id', found ? String(found.id) : '');
-            core.setOutput('main_conclusion', found ? found.conclusion : '');
+            // Shard jobs stay green on snapshot-only diffs by design, so any
+            // shard that did not end success (or skipped, for the optional
+            // macOS wave) failed for something a baseline approval cannot
+            // cover — including dying before it could upload its status
+            // artifact, which the status-file checks below cannot see.
+            const jobs = await github.paginate(
+              github.rest.actions.listJobsForWorkflowRun,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: found.id,
+                per_page: 100,
+              }
+            );
+            const badShards = jobs.filter(
+              (j) =>
+                /^visual-testing-(linux|macos) \(/.test(j.name) &&
+                j.conclusion !== 'success' &&
+                j.conclusion !== 'skipped'
+            );
+            for (const j of badShards) {
+              core.info(`Shard ${j.name} concluded ${j.conclusion}`);
+            }
+            core.setOutput('main_run_id', String(found.id));
+            core.setOutput('main_conclusion', found.conclusion);
+            core.setOutput('shards_ok', badShards.length === 0 ? 'true' : 'false');
 
       - name: Download main run's shard statuses
         if: steps.find-main-run.outputs.main_conclusion == 'failure'
@@ -229,13 +266,18 @@ jobs:
       - name: Check the approval covers the main run's diffs
         id: cover
         if: steps.find-main-run.outputs.main_conclusion == 'failure'
+        env:
+          SHARDS_OK: ${{ steps.find-main-run.outputs.shards_ok }}
         run: |
           set -euo pipefail
           covered="true"
           reason=""
           shopt -s nullglob
           status_files=(./main-shard-statuses/*.txt)
-          if [ "${#status_files[@]}" -eq 0 ]; then
+          if [ "$SHARDS_OK" != "true" ]; then
+            covered="false"
+            reason="one or more of the main run's shard jobs did not finish cleanly, so its failure cannot be classified as snapshot-only"
+          elif [ "${#status_files[@]}" -eq 0 ]; then
             covered="false"
             reason="the main run uploaded no shard statuses, so its failure cannot be classified"
           elif grep -qx "has_real_failures=true" "${status_files[@]}"; then
