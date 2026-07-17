@@ -265,34 +265,29 @@ def test_list_baseline_names_dedupes_and_sorts(tmp_path: Path) -> None:
     ]
 
 
+@pytest.mark.parametrize(
+    "attachments, expected_out",
+    [
+        ([("toc-actual.png", "image/png", _PNG_BYTES)], "toc.png\n"),
+        ([], ""),
+    ],
+)
 def test_main_names_only_prints_names_without_uploading(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    attachments: list[tuple[str, str, bytes | None]],
+    expected_out: str,
 ) -> None:
     blob_dir = tmp_path / "blobs"
     blob_dir.mkdir()
-    _make_blob_zip(
-        blob_dir / "report.zip",
-        [("toc-actual.png", "image/png", _PNG_BYTES)],
-    )
+    if attachments:
+        _make_blob_zip(blob_dir / "report.zip", attachments)
 
     with patch.object(approve.r2_baselines, "upload") as mock_upload:
         approve.main([str(blob_dir), "--names-only"])
 
     mock_upload.assert_not_called()
-    assert capsys.readouterr().out == "toc.png\n"
-
-
-def test_main_names_only_prints_nothing_for_empty_reports(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    blob_dir = tmp_path / "blobs"
-    blob_dir.mkdir()
-
-    with patch.object(approve.r2_baselines, "upload") as mock_upload:
-        approve.main([str(blob_dir), "--names-only"])
-
-    mock_upload.assert_not_called()
-    assert capsys.readouterr().out == ""
+    assert capsys.readouterr().out == expected_out
 
 
 def test_main_uploads_when_attachments_found(tmp_path: Path) -> None:

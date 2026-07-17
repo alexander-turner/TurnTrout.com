@@ -13,12 +13,12 @@ name: Update visual baselines
 #
 # For MERGED PRs the approval carries through to main: the branch is gone
 # (auto-deleted on merge) and the same diffs re-fail main's own
-# visual-testing run, so instead of the empty-commit path the workflow
-# waits for the post-merge visual-testing run on main and — only when that
-# run had no real failures and every one of its snapshot diffs is covered
-# by the just-approved screenshots — applies the main-run treatment
-# (synthetic passing check-run + deploy verify rerun). One approval click
-# clears both the PR and main.
+# visual-testing run, so the workflow waits for the post-merge
+# visual-testing run on main and — only when that run had no real failures
+# and every one of its snapshot diffs is covered by the just-approved
+# screenshots — applies the main-run treatment (synthetic passing
+# check-run + deploy verify rerun). One approval click clears both the PR
+# and main.
 
 on:
   workflow_dispatch:
@@ -55,6 +55,10 @@ jobs:
     # 5 min R2 upload + up to 20 min waiting for main's post-merge
     # visual-testing run + up to 15 min polling deploy.yaml.
     timeout-minutes: 50
+    env:
+      # Single source of truth for where approved baselines are staged;
+      # must match scripts/r2_baselines.py LOCAL_DIR.
+      STAGING_DIR: tests/visual-baselines
     steps:
       - name: Resolve PR ref (if any)
         id: resolve
@@ -127,7 +131,6 @@ jobs:
           ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
           SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
           S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
-          STAGING_DIR: tests/visual-baselines
         run: |
           uv run python scripts/approve_baselines_from_artifacts.py \
             ./all-blob-reports --staging-dir "$STAGING_DIR"
@@ -167,18 +170,23 @@ jobs:
                 repo: context.repo.repo,
                 workflow_id: 'visual-testing.yaml',
                 branch: 'main',
-                per_page: 5,
+                per_page: 20,
               });
-              // Newest first; ignore runs that predate the merge.
-              const run = data.workflow_runs.filter(
-                (r) => new Date(r.created_at) >= mergedAt
-              )[0];
+              // The API lists newest first. The approval covers the merge
+              // commit itself, so take the EARLIEST non-cancelled post-merge
+              // run — a newer run belongs to a later push to main whose
+              // diffs this approval never saw. Cancelled runs are dropped so
+              // a superseded first wave defers to its completed replacement.
+              const candidates = data.workflow_runs.filter(
+                (r) =>
+                  new Date(r.created_at) >= mergedAt &&
+                  r.conclusion !== 'cancelled'
+              );
+              const run = candidates[candidates.length - 1];
               if (!run) {
                 core.info('No post-merge visual-testing run on main yet; waiting…');
               } else if (run.status !== 'completed') {
                 core.info(`Run ${run.id} still ${run.status}; waiting…`);
-              } else if (run.conclusion === 'cancelled') {
-                core.info(`Run ${run.id} was cancelled; waiting for its replacement…`);
               } else {
                 found = run;
                 break;
@@ -221,8 +229,6 @@ jobs:
       - name: Check the approval covers the main run's diffs
         id: cover
         if: steps.find-main-run.outputs.main_conclusion == 'failure'
-        env:
-          STAGING_DIR: tests/visual-baselines
         run: |
           set -euo pipefail
           covered="true"
@@ -236,11 +242,14 @@ jobs:
             covered="false"
             reason="the main run has real (non-snapshot) failures"
           else
-            mapfile -t main_names < <(uv run python scripts/approve_baselines_from_artifacts.py ./main-blob-reports --names-only)
-            if [ "${#main_names[@]}" -eq 0 ]; then
+            # Capture via command substitution so a script crash aborts the
+            # step under `set -e` (process substitution would swallow it).
+            names_output=$(uv run python scripts/approve_baselines_from_artifacts.py ./main-blob-reports --names-only)
+            if [ -z "$names_output" ]; then
               covered="false"
               reason="the main run produced no snapshot attachments to compare against"
             else
+              mapfile -t main_names <<< "$names_output"
               for name in "${main_names[@]}"; do
                 if [ ! -f "$STAGING_DIR/$name" ]; then
                   covered="false"
@@ -305,7 +314,7 @@ jobs:
             // reaches a terminal state — `rerun-failed-jobs` only works on
             // completed runs. Typical wait is just `prepare-deploy`
             // finishing (≈3–5 min); cap at 15 min so a stuck pipeline
-            // doesn't burn the workflow's 20-min timeout.
+            // fails with a warning instead of exhausting the job timeout.
             const listDeployRuns = () =>
               github.rest.actions.listWorkflowRuns({
                 owner: context.repo.owner,

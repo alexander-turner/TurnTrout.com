@@ -148,30 +148,18 @@ describe("approve-baselines", () => {
     expect(errMsg).toMatch(/stale gallery/)
   })
 
-  it("dispatches with pr_number when the PR merged from the run's head commit", async () => {
+  it.each<[string, Record<string, unknown>]>([
+    ["open", { state: "open", merged: false }],
+    [
+      "merged from the run's head commit",
+      { state: "closed", merged: true, head: { sha: MAIN_SHA } },
+    ],
+  ])("dispatches with pr_number when the PR is %s", async (_, pr) => {
     mockFetch((url) =>
       url === RUNS("42")
         ? goodRun()
         : url === PULLS("7")
-          ? json(200, { state: "closed", merged: true, head: { sha: MAIN_SHA } })
-          : url === DISP
-            ? empty(204)
-            : null,
-    )
-    const res = await onRequestPost({ request: req({ runId: "42", prNumber: "7" }), env: ENV })
-    expect(res.status).toBe(200)
-    expect(JSON.parse(lastInit?.body as string)).toEqual({
-      ref: "main",
-      inputs: { run_id: "42", pr_number: "7" },
-    })
-  })
-
-  it("dispatches with pr_number when PR is open", async () => {
-    mockFetch((url) =>
-      url === RUNS("42")
-        ? goodRun()
-        : url === PULLS("7")
-          ? json(200, { state: "open", merged: false })
+          ? json(200, pr)
           : url === DISP
             ? empty(204)
             : null,

@@ -30,26 +30,38 @@ def _canonical_baseline_name(attachment_name: str) -> str | None:
     return stem + ".png"
 
 
-def _iter_actual_pngs(blob_zip: Path) -> Iterator[tuple[str, bytes]]:
-    with zipfile.ZipFile(blob_zip) as zf:
-        for event in iter_events_from_zip(zf):
-            if event.get("method") != "onAttach":
-                continue
-            for attachment in (event.get("params") or {}).get(
-                "attachments"
-            ) or []:
-                if attachment.get("contentType") != _PNG_CONTENT_TYPE:
+def _iter_actuals(
+    blob_reports_dir: Path,
+) -> Iterator[tuple[str, zipfile.ZipFile, str]]:
+    """
+    Yield ``(baseline_name, open_zip, entry_path)`` for every actual-PNG
+    attachment across all blob-report zips.
+
+    Yields entry paths (verified present) rather than bytes so callers that only
+    need names skip decompressing the PNGs. The zip handle is only valid during
+    the iteration step that yielded it.
+    """
+    for blob_zip in sorted(blob_reports_dir.rglob("*.zip")):
+        with zipfile.ZipFile(blob_zip) as zf:
+            for event in iter_events_from_zip(zf):
+                if event.get("method") != "onAttach":
                     continue
-                baseline_name = _canonical_baseline_name(
-                    attachment.get("name", "")
-                )
-                path = attachment.get("path")
-                if not baseline_name or not path:
-                    continue
-                try:
-                    yield baseline_name, zf.read(path)
-                except KeyError:
-                    continue
+                for attachment in (event.get("params") or {}).get(
+                    "attachments"
+                ) or []:
+                    if attachment.get("contentType") != _PNG_CONTENT_TYPE:
+                        continue
+                    baseline_name = _canonical_baseline_name(
+                        attachment.get("name", "")
+                    )
+                    path = attachment.get("path")
+                    if not baseline_name or not path:
+                        continue
+                    try:
+                        zf.getinfo(path)
+                    except KeyError:
+                        continue
+                    yield baseline_name, zf, path
 
 
 def collect_from_blob_reports(blob_reports_dir: Path, staging_dir: Path) -> int:
@@ -57,25 +69,20 @@ def collect_from_blob_reports(blob_reports_dir: Path, staging_dir: Path) -> int:
     count."""
     staging_dir.mkdir(parents=True, exist_ok=True)
     seen: set[str] = set()
-    count = 0
-    for blob_zip in sorted(blob_reports_dir.rglob("*.zip")):
-        for baseline_name, png_bytes in _iter_actual_pngs(blob_zip):
-            if baseline_name in seen:
-                continue
-            seen.add(baseline_name)
-            (staging_dir / baseline_name).write_bytes(png_bytes)
-            count += 1
-    return count
+    for baseline_name, zf, path in _iter_actuals(blob_reports_dir):
+        if baseline_name in seen:
+            continue
+        seen.add(baseline_name)
+        (staging_dir / baseline_name).write_bytes(zf.read(path))
+    return len(seen)
 
 
 def list_baseline_names(blob_reports_dir: Path) -> list[str]:
     """Return the sorted canonical baseline names found in the blob reports,
     without staging or uploading anything."""
-    names: set[str] = set()
-    for blob_zip in sorted(blob_reports_dir.rglob("*.zip")):
-        for baseline_name, _png_bytes in _iter_actual_pngs(blob_zip):
-            names.add(baseline_name)
-    return sorted(names)
+    return sorted(
+        {name for name, _zf, _path in _iter_actuals(blob_reports_dir)}
+    )
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -90,7 +97,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--staging-dir",
         type=Path,
-        default=Path("tests/visual-baselines"),
+        default=r2_baselines.LOCAL_DIR,
         help="Where to assemble the renamed PNGs before upload.",
     )
     parser.add_argument(
