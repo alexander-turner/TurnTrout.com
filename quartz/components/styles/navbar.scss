@@ -83,7 +83,7 @@
     transition: all $transition-duration-very-quick ease-in-out;
 
     &:not(:last-child) {
-      margin-bottom: 5px;
+      margin-bottom: calc(0.625 * $base-margin);
     }
   }
 }

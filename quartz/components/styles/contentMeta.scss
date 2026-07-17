@@ -16,7 +16,7 @@
 
   &[show-comma="true"] {
     > span:not(:last-child) {
-      margin-right: 8px;
+      margin-right: $base-margin;
 
       &::after {
         content: ",";
