@@ -22,6 +22,14 @@ inputs:
       ``steps.<id>.outcome`` of the Playwright run step. Used to surface
       crashes that left no blob report as real failures.
     required: true
+  environment:
+    description: >-
+      Rendering-environment description recorded in the shard status
+      artifact (surfaced in the diff gallery so environment-drift diffs
+      are identifiable). Defaults to the runner image identity from the
+      ImageOS/ImageVersion runner variables.
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -42,6 +50,7 @@ runs:
         PLATFORM: ${{ inputs.platform }}
         SHARD: ${{ steps.shard.outputs.id }}
         PLAYWRIGHT_OUTCOME: ${{ inputs.playwright-outcome }}
+        ENVIRONMENT: ${{ inputs.environment }}
       run: |
         set -euo pipefail
         mkdir -p shard-status
@@ -49,6 +58,12 @@ runs:
         uv run python scripts/classify_visual_failures.py blob-report \
           --playwright-outcome "$PLAYWRIGHT_OUTCOME" \
           --output "$STATUS_FILE"
+        # ImageOS/ImageVersion are runner machine variables (absent inside
+        # containers, where the caller passes an explicit description).
+        if [ -z "$ENVIRONMENT" ]; then
+          ENVIRONMENT="${ImageOS:-unknown} image ${ImageVersion:-unknown}"
+        fi
+        echo "environment=${PLATFORM}: ${ENVIRONMENT}" >> "$STATUS_FILE"
         cat "$STATUS_FILE"
         cat "$STATUS_FILE" >> "$GITHUB_OUTPUT"
 

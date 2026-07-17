@@ -9,6 +9,12 @@ on:
   push:
     branches: ["main"]
   pull_request:
+  # Nightly drift sentinel: renders main with zero code diff, so any
+  # snapshot diff it reports is environment drift (runner image or
+  # browser rotation). Catching drift here means one bulk approval on
+  # main instead of every open PR inheriting the same red.
+  schedule:
+    - cron: "30 9 * * *"
 
 # Read-only default; only `publish-visual-report` elevates to the PR-comment
 # and commit-status writes it needs.
@@ -155,6 +161,9 @@ jobs:
           platform: linux
           shard: ${{ matrix.shard }}
           playwright-outcome: ${{ steps.playwright.outcome }}
+          # ImageOS/ImageVersion are absent inside the container, so name
+          # the pinned image explicitly (keep in sync with `container:` above).
+          environment: playwright:v1.60.0-noble container (digest-pinned)
 
   # WebKit (Safari) visual tests on macOS for real Safari fidelity
   visual-testing-macos:
@@ -398,6 +407,41 @@ jobs:
           path: ./all-traces
           merge-multiple: true
 
+      # The per-shard status artifacts carry `environment=` provenance
+      # lines; surface them in the gallery header so environment-drift
+      # diffs (runner image rotation) are identifiable at a glance.
+      - name: Download shard statuses (for gallery provenance)
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: visual-status-*
+          path: ./statuses
+          merge-multiple: true
+
+      - name: Compose gallery provenance note
+        id: provenance
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          note="trigger: ${EVENT_NAME} on ${REF_NAME}"
+          if [ "$EVENT_NAME" = "schedule" ]; then
+            note="nightly drift sentinel (zero code diff — any diffs below are environment drift) · ${note}"
+          fi
+          # Guard the glob: with no matches grep would read stdin and hang.
+          files=(./statuses/*.txt)
+          environments=""
+          if [ "${#files[@]}" -gt 0 ]; then
+            # paste delimiters are single-byte: join on ASCII, expand after.
+            environments=$(grep -h "^environment=" "${files[@]}" \
+              | sed 's/^environment=//' | sort -u | paste -sd ';' - | sed 's/;/ · /g') || true
+          fi
+          if [ -n "$environments" ]; then
+            note="${note} · ${environments}"
+          fi
+          echo "note=${note}" >> "$GITHUB_OUTPUT"
+
       # Build a single-page screenshot gallery alongside the Playwright
       # report. Skim-friendly grid view; useful at bootstrap (no
       # baselines yet → main report has nothing to slide between).
@@ -407,9 +451,11 @@ jobs:
       - name: Generate screenshot gallery
         env:
           GH_PR_NUMBER: ${{ github.event.pull_request.number }}
+          PROVENANCE_NOTE: ${{ steps.provenance.outputs.note }}
         run: |
           args=(./all-traces ./playwright-report
-                --run-id "${{ github.run_id }}")
+                --run-id "${{ github.run_id }}"
+                --environment "$PROVENANCE_NOTE")
           if [ -n "${GH_PR_NUMBER:-}" ]; then
             args+=(--pr-number "$GH_PR_NUMBER")
           fi

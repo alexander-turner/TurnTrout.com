@@ -131,6 +131,28 @@ def test_render_html_escapes_label() -> None:
     assert "<script>x" not in page
 
 
+@pytest.mark.parametrize(
+    "environment, expected_fragment, unexpected_fragment",
+    [
+        (
+            "trigger: schedule on main · linux: pinned <container>",
+            "trigger: schedule on main · linux: pinned &lt;container&gt;",
+            "pinned <container>",
+        ),
+        (None, None, 'class="sub">trigger'),
+    ],
+)
+def test_render_html_environment_note(
+    environment: str | None,
+    expected_fragment: str | None,
+    unexpected_fragment: str,
+) -> None:
+    page = gvg.render_html([], environment=environment)
+    if expected_fragment is not None:
+        assert expected_fragment in page
+    assert unexpected_fragment not in page
+
+
 def test_install_as_index_preserves_playwright(tmp_path: Path) -> None:
     (tmp_path / "index.html").write_text("PLAYWRIGHT_HTML", encoding="utf-8")
     gvg.install_as_index(tmp_path, "GALLERY_HTML")
@@ -230,6 +252,8 @@ def test_cli_with_approve_flags(
             "987654",
             "--pr-number",
             "42",
+            "--environment",
+            "nightly drift sentinel · linux: pinned container",
         ],
     )
     runpy.run_module("scripts.generate_visual_gallery", run_name="__main__")
@@ -238,6 +262,7 @@ def test_cli_with_approve_flags(
     assert "approve-btn" in page
     assert '"runId": "987654"' in page
     assert '"prNumber": "42"' in page
+    assert "nightly drift sentinel" in page
     # POSTs to the same-origin proxy, not GitHub directly.
     assert "/api/approve-baselines" in page
     assert "api.github.com" not in page
