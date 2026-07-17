@@ -625,7 +625,7 @@ To tackle this, the favicon transformation splices the last few characters from 
 
 ### Favicons sit a consistent distance from the text
 
-A fixed margin doesn't actually _look_ fixed. Letters carry different amounts of empty space on their right side: an "f" leans into the gap that follows it, an "o" stops short, and monospace `code` pads every character with extra room. So I space by ink, not by box - each icon gets nudged according to the letter it follows, and inside inline code the icon tucks in closer since the monospace font already supplies the breathing room. Whatever the final glyph, the icon sits the same visual distance from it.
+A fixed margin doesn't actually _look_ fixed. Letters carry different amounts of empty space on their right side: an "f" leans into the gap that follows while an "o" stops short. I nudge each icon according to the letter it follows. Whatever the final glyph, the icon resides at the same visual distance.
 
 ### I only include recognizable favicons
 
