@@ -44,6 +44,15 @@ function isPaused(video: Locator): Promise<boolean> {
   return video.evaluate((videoElement: HTMLVideoElement) => videoElement.paused)
 }
 
+// CI trace evidence (macOS/WebKit): the full video downloads within
+// milliseconds, but WebKit's decode pipeline can occasionally never advance
+// past readyState HAVE_METADATA after play() is requested — currentTime stays
+// frozen at 0 indefinitely, with zero further console activity or errors.
+// Re-issuing play() unsticks it, so retry within bounded windows below instead
+// of waiting once for the whole test's timeout budget.
+const VIDEO_PLAYBACK_ATTEMPT_TIMEOUT_MS = 20_000
+const VIDEO_PLAYBACK_MAX_ATTEMPTS = 3
+
 async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
   const { video } = videoElements
 
@@ -54,19 +63,31 @@ async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
   }
 
   // Wait for video to actually be playing (not just !paused, but actively playing)
-  await video.page().waitForFunction(
-    (id: string) => {
-      const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
-      return (
-        videoElement &&
-        !videoElement.paused &&
-        videoElement.readyState >= 3 &&
-        videoElement.currentTime > 0
+  for (let attempt = 1; attempt <= VIDEO_PLAYBACK_MAX_ATTEMPTS; attempt++) {
+    try {
+      await video.page().waitForFunction(
+        (id: string) => {
+          const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
+          return (
+            videoElement &&
+            !videoElement.paused &&
+            videoElement.readyState >= 3 &&
+            videoElement.currentTime > 0
+          )
+        },
+        pondVideoId,
+        { timeout: VIDEO_PLAYBACK_ATTEMPT_TIMEOUT_MS, polling: WAIT_POLL_INTERVAL_MS },
       )
-    },
-    pondVideoId,
-    { polling: WAIT_POLL_INTERVAL_MS },
-  )
+      break
+    } catch (error) {
+      if (attempt === VIDEO_PLAYBACK_MAX_ATTEMPTS) throw error
+      await video.evaluate((videoElement: HTMLVideoElement) => {
+        videoElement.play().catch(() => {
+          // Retried on the next attempt below.
+        })
+      })
+    }
+  }
 
   // Wait for enough data to play through to the end (HAVE_ENOUGH_DATA = 4).
   // readyState >= 3 (canplay) is insufficient for seeking: Safari may only
