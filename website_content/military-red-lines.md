@@ -25,7 +25,7 @@ date_updated: *id001
 ---
 
 > [!note] Historical context-
-> I [wrote this document in my personal time and had it reviewed by experts in military and surveillance law](/why-i-left-google-deepmind#the-art-of-the-deal). You can also read [the raw Markdown for this document](https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/red-line-framework.md).
+> I [wrote this document in my personal time and had it reviewed by experts in military and surveillance law](/why-i-left-google-deepmind#the-art-of-the-deal). You can also read [the raw Markdown for this document](https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/military-red-lines.md).
 
 This Framework contains two parts. First, the red lines expressed by Standards 1 and 2. Second, a Review Body which advises on contracts relative to Standards 1 and 2. The Body cannot block contracts. Instead, it assesses whether contracts comply with defined Standards, ensuring key decision-makers can track the ethical implications of those contracts. The Body manufactures justified trust by releasing a yearly transparency report to all AI employees. The report notes how many times leadership overrode a non-compliance finding. Leadership cannot quietly dismantle the Body.
 
