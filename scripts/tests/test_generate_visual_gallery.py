@@ -132,25 +132,31 @@ def test_render_html_escapes_label() -> None:
 
 
 @pytest.mark.parametrize(
-    "environment, expected_fragment, unexpected_fragment",
+    "environment, expected_fragment, expected_sub_count",
     [
         (
             "trigger: schedule on main · linux: pinned <container>",
             "trigger: schedule on main · linux: pinned &lt;container&gt;",
-            "pinned <container>",
+            2,
         ),
-        (None, None, 'class="sub">trigger'),
+        (None, None, 1),
+        ("", None, 1),
     ],
 )
 def test_render_html_environment_note(
     environment: str | None,
     expected_fragment: str | None,
-    unexpected_fragment: str,
+    expected_sub_count: int,
 ) -> None:
+    # The gallery's summary line ("N failing screenshots · ...") always renders
+    # as `<p class="sub">`, the same class the environment note uses — so
+    # presence/absence of the note can't be checked via a raw substring match
+    # against that class. Counting occurrences distinguishes "no note" (1,
+    # just the summary) from "note present" (2).
     page = gvg.render_html([], environment=environment)
     if expected_fragment is not None:
         assert expected_fragment in page
-    assert unexpected_fragment not in page
+    assert page.count('<p class="sub">') == expected_sub_count
 
 
 def test_install_as_index_preserves_playwright(tmp_path: Path) -> None:

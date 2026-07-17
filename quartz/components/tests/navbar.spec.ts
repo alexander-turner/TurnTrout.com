@@ -100,6 +100,24 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
 
   const { video, autoplayToggle } = videoElements
 
+  // WebKit fires `seeked` even when it clamps an out-of-buffer-range seek back
+  // to 0, so seeking to fixedTimestamp before the CDN has buffered that far
+  // silently "succeeds" at the wrong position. Wait until the target is
+  // actually buffered so the seek below lands where requested.
+  await video.page().waitForFunction(
+    ([id, target]) => {
+      const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
+      if (!videoElement) return false
+      const { buffered } = videoElement
+      for (let i = 0; i < buffered.length; i++) {
+        if (buffered.start(i) <= target && target <= buffered.end(i)) return true
+      }
+      return false
+    },
+    [pondVideoId, fixedTimestamp] as const,
+    { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
+  )
+
   // Set currentTime and wait for seeked event (which fires when seeking completes)
   await video.evaluate((videoElement: HTMLVideoElement, timestamp: number) => {
     return new Promise<void>((resolve, reject) => {

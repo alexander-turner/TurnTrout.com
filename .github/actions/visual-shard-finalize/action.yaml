@@ -58,14 +58,17 @@ runs:
         uv run python scripts/classify_visual_failures.py blob-report \
           --playwright-outcome "$PLAYWRIGHT_OUTCOME" \
           --output "$STATUS_FILE"
+        cat "$STATUS_FILE" >> "$GITHUB_OUTPUT"
         # ImageOS/ImageVersion are runner machine variables (absent inside
         # containers, where the caller passes an explicit description).
+        # Appended to the file only (not GITHUB_OUTPUT) — no step reads
+        # this as a step output, only downstream jobs that download the
+        # shard-status artifact.
         if [ -z "$ENVIRONMENT" ]; then
           ENVIRONMENT="${ImageOS:-unknown} image ${ImageVersion:-unknown}"
         fi
         echo "environment=${PLATFORM}: ${ENVIRONMENT}" >> "$STATUS_FILE"
         cat "$STATUS_FILE"
-        cat "$STATUS_FILE" >> "$GITHUB_OUTPUT"
 
     - name: Upload shard status
       if: always()

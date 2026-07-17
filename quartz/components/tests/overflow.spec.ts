@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test"
 
 import { expect, test } from "./fixtures"
-import { gotoPage } from "./visual_utils"
+import { gotoPage, WAIT_POLL_INTERVAL_MS } from "./visual_utils"
 
 // Invariant: no page may overflow horizontally. Two failure modes hide from our
 // other checks, so each gets its own probe:
@@ -104,13 +104,6 @@ function documentOverflow(): number {
 // table/KaTeX wrapping.
 const SETTLE_POLLS = 3
 
-// How often `page.waitForFunction` re-evaluates the settle predicate. Polling
-// must stay paint-independent: headless WebKit can leave a page unpainted, and
-// a page that composites no frames never fires `requestAnimationFrame`. Timer
-// polls run regardless of paint activity, so the predicate (and the font
-// deadline inside it) always gets evaluated.
-const SETTLE_POLL_INTERVAL_MS = 100
-
 // Deadline for the font-readiness portion of the settle predicate. WebKit's
 // `document.fonts.status` can stay pending indefinitely when a `@font-face`
 // request never settles, so once the deadline elapses we proceed and measure
@@ -204,7 +197,7 @@ async function settle(page: Page, url: string) {
       [SETTLE_POLLS, FONTS_READY_TIMEOUT_MS, SCROLLABLE_SELECTOR, SCROLL_WRAPPER_SELECTOR] as const,
       {
         timeout: 10_000,
-        polling: SETTLE_POLL_INTERVAL_MS,
+        polling: WAIT_POLL_INTERVAL_MS,
       },
     )
   } catch (error) {

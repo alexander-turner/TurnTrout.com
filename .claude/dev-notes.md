@@ -213,12 +213,14 @@ For open-PR runs the workflow pushes an empty commit to the PR branch so vis
 
 ```bash
 curl -sI https://mcr.microsoft.com/v2/playwright/manifests/v<version>-noble \
-  -H "Accept: application/vnd.oci.image.index.v1+json" | grep -i docker-content-digest
+  -H "Accept: application/vnd.docker.distribution.manifest.list.v2+json" | grep -i docker-content-digest
 ```
 
-Container jobs run as root without `sudo` (shared actions call it) and without `unzip` (puppeteer's postinstall needs it); the job's first step installs both. macOS shards can't be containerized—`macos-15` is the tightest pin hosted runners allow, so some drift exposure remains there.
+The `Accept` header matters: `application/vnd.oci.image.index.v1+json` resolves a different (schema-1) manifest with a different digest than what `docker pull`/the `container:` key actually resolve for the tag. Use `manifest.list.v2` to match.
 
-**Nightly drift sentinel.** `visual-testing.yaml` also runs on a `schedule` cron against `main` with zero code diff, so environment drift (image rotation, font package updates) surfaces on the nightly gallery instead of inside an unrelated PR. The gallery header shows a provenance note (trigger + rendering environment) composed from per-shard `visual-status-*` artifacts; a nightly gallery with diffs means the _environment_ moved.
+Container jobs run as root without `sudo` (shared actions call it), without `unzip` (puppeteer's postinstall needs it), and without `zstd`; the job's first step installs all three. The `zstd` install matters for `actions/cache`: its toolkit picks a compression method by checking what's on `PATH` and folds that choice into the cache version alongside the key, so a restore inside a container lacking `zstd` can miss a cache the plain `ubuntu-24.04` `build` job saved moments earlier under the identical key. macOS shards can't be containerized—`macos-15` is the tightest pin hosted runners allow, so some drift exposure remains there.
+
+**Nightly drift sentinel.** `visual-testing.yaml` also runs on a `schedule` cron against `main`, re-rendering it against the current baselines; absent a same-day merge that changed pixels, any diff means environment drift (image rotation, font package updates) rather than a code change. The gallery header shows a provenance note (trigger + rendering environment) composed from per-shard `visual-status-*` artifacts; a nightly gallery with diffs usually means the _environment_ moved.
 
 **Superseded waves skip instead of failing red.** Each unified status job (`visual-testing`, `playwright-tests`, `site-build-checks`, `a11y`) normally runs `if: always()` so it can still report a passing skip when `should-run` gates everything off. But `always()` jobs are also immune to the cancellation that `cancel-in-progress` sends the rest of a superseded run, so a naive `always()` job would run to completion and report a false failure once a newer push cancels its `needs`. The condition is `if: always() && !contains(needs.*.result, 'cancelled')`: when upstream was cancelled, the status job itself goes `skipped`—satisfying branch protection (a required check passes on `success` or `skipped`) without depending on any run-cancellation timing race. An earlier design tried to force a "grey" (cancelled) result by having the job call the Actions API to cancel its own run and then sleep waiting to be killed—but `always()` jobs don't get killed by that cancellation either, so the sleep's fail-safe fired and reported failure instead, exactly the outcome it was meant to prevent.
 

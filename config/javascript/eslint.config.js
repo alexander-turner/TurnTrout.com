@@ -32,7 +32,7 @@ const rafPollingSyntax = [
   },
   {
     selector:
-      "CallExpression[callee.property.name='waitForFunction']:not(:has(Property[key.name='polling']))",
+      "CallExpression[callee.property.name='waitForFunction']:not(:has(ObjectExpression > Property[key.name='polling']))",
     message:
       "waitForFunction defaults to rAF polling, which never fires on unpainted headless WebKit pages; pass an explicit numeric polling interval (e.g. { polling: 100 }).",
   },
