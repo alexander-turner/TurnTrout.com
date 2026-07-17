@@ -144,6 +144,7 @@ const createAdmonitionTitleInner = (
   useDefaultTitle: boolean,
   capitalizedTypeString: string,
   titleContent: string,
+  titleSeparator: string,
   remainingChildren: ElementContent[],
 ): Element => ({
   type: "element",
@@ -160,7 +161,7 @@ const createAdmonitionTitleInner = (
     {
       type: "text",
       /* istanbul ignore next -- admonition title formatting edge case */
-      value: useDefaultTitle ? capitalizedTypeString : `${titleContent} `,
+      value: useDefaultTitle ? capitalizedTypeString : `${titleContent}${titleSeparator}`,
     },
     ...remainingChildren,
   ],
@@ -186,6 +187,7 @@ const createAdmonitionTitle = (
   useDefaultTitle: boolean,
   capitalizedTypeString: string,
   titleContent: string,
+  titleSeparator: string,
   remainingChildren: ElementContent[],
   collapse: boolean,
   noSmallcaps: boolean,
@@ -195,6 +197,7 @@ const createAdmonitionTitle = (
       useDefaultTitle,
       capitalizedTypeString,
       titleContent,
+      titleSeparator,
       remainingChildren,
     ),
   ]
@@ -320,33 +323,48 @@ const createPlaylistEmbed = (playlistId: string): Properties => ({
   src: `https://www.youtube.com/embed/videoseries?list=${playlistId}`,
 })
 
-/** Processes blockquotes and converts them to admonitions. */
-const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
-  if (node.children.length === 0) return
+/** Parsed metadata from an admonition's `[!type]±` directive. */
+interface AdmonitionHeader {
+  admonitionDirective: string
+  typeString: string
+  collapse: boolean
+  defaultState: "collapsed" | "expanded"
+  admonitionType: string
+}
 
-  const firstChild = node.children[0]
-  if (firstChild.type !== "paragraph" || firstChild.children[0]?.type !== "text") {
-    return
-  }
-
-  const text = firstChild.children[0].value
-  const [firstLine, ...remainingLines] = text.split("\n")
-  const remainingText = remainingLines.join("\n")
-
+/** Parses the `[!type]±` directive from an admonition's first line. */
+const parseAdmonitionHeader = (firstLine: string): AdmonitionHeader | null => {
   const match = admonitionRegex.exec(firstLine)
-  if (!match?.groups) return
+  if (!match?.groups) return null
 
-  const admonitionDirective = match[0]
-  const typeString = match.groups.type
   const collapseChar = match.groups.collapse
-  const admonitionType = canonicalizeAdmonition(typeString.toLowerCase())
-  const collapse = collapseChar === "+" || collapseChar === "-"
-  recordAdmonitionIcons(file, admonitionType, collapse)
-  const defaultState = collapseChar === "-" ? "collapsed" : "expanded"
-  const titleContent = firstLine.slice(admonitionDirective.length).trim()
+  return {
+    admonitionDirective: match[0],
+    typeString: match.groups.type,
+    collapse: collapseChar === "+" || collapseChar === "-",
+    defaultState: collapseChar === "-" ? "collapsed" : "expanded",
+    admonitionType: canonicalizeAdmonition(match.groups.type.toLowerCase()),
+  }
+}
+
+/** Builds the title element from an admonition's first paragraph. */
+const buildAdmonitionTitle = (
+  firstChild: Paragraph,
+  firstLine: string,
+  header: AdmonitionHeader,
+): BlockContent => {
+  const rawTitle = firstLine.slice(header.admonitionDirective.length)
+  const titleContent = rawTitle.trim()
+  // Preserve the source spacing between the plain-text title and any following
+  // inline child (e.g. a link). Appending a space unconditionally would insert
+  // one after a trailing opening delimiter, turning "remarks ([video])" into
+  // "remarks ( video)".
+  const titleSeparator = /\s$/u.test(rawTitle) ? " " : ""
   /* istanbul ignore next -- admonition title detection edge case */
   const useDefaultTitle = titleContent === "" && firstChild.children.length === 1
-  const capitalizedTypeString = typeString.charAt(0).toUpperCase() + typeString.slice(1)
+  const capitalizedTypeString =
+    header.typeString.charAt(0).toUpperCase() + header.typeString.slice(1)
+  const remainingChildren = firstChild.children.slice(1)
 
   // An admonition title that already reads as a title-cased work name (a
   // cited article, a named act) should not render its acronyms as
@@ -355,19 +373,26 @@ const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
   // work title, and an empty string is vacuously "title-cased" by the Hamming
   // check, so guard on non-empty text first.
   const fullTitleText = `${titleContent} ${collectInlineText(
-    firstChild.children.slice(1) as PhrasingContent[],
+    remainingChildren as PhrasingContent[],
   )}`.trim()
   const noSmallcaps = fullTitleText !== "" && isEffectivelyTitleCased(fullTitleText)
 
-  const admonitionTitle = createAdmonitionTitle(
+  return createAdmonitionTitle(
     useDefaultTitle,
     capitalizedTypeString,
     titleContent,
-    firstChild.children.slice(1) as ElementContent[],
-    collapse,
+    titleSeparator,
+    remainingChildren as ElementContent[],
+    header.collapse,
     noSmallcaps,
   ) as unknown as BlockContent
+}
 
+/** Builds the content node holding the body after an admonition's first line. */
+const buildAdmonitionContentNode = (node: Blockquote, remainingText: string): Element | null => {
+  // The body is the title line's trailing text (any lines the user typed under
+  // the title, minus the title line itself) followed by the blockquote's
+  // remaining block children — the first block held the title and is dropped.
   /* istanbul ignore next -- admonition content handling edge case */
   const contentChildren = [
     ...(remainingText.trim() !== ""
@@ -381,18 +406,16 @@ const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
     ...node.children.slice(1),
   ]
 
-  const contentNode = createAdmonitionContent(contentChildren as ElementContent[])
+  return createAdmonitionContent(contentChildren as ElementContent[])
+}
 
-  node.children = [admonitionTitle]
-  if (contentNode) {
-    node.children.push(contentNode as unknown as BlockContent)
-  }
-
-  const classNames = ["admonition", admonitionType]
-  if (collapse) {
+/** Applies admonition classes and data attributes to the blockquote node. */
+const setAdmonitionProperties = (node: Blockquote, header: AdmonitionHeader): void => {
+  const classNames = ["admonition", header.admonitionType]
+  if (header.collapse) {
     classNames.push("is-collapsible")
   }
-  if (defaultState === "collapsed") {
+  if (header.defaultState === "collapsed") {
     classNames.push("is-collapsed")
   }
 
@@ -401,10 +424,48 @@ const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
     hProperties: {
       ...(node.data?.hProperties ?? {}),
       className: classNames.join(" "),
-      "data-admonition": admonitionType,
-      "data-admonition-fold": collapse,
+      "data-admonition": header.admonitionType,
+      "data-admonition-fold": header.collapse,
     },
   }
+}
+
+/**
+ * Converts an Obsidian callout blockquote (`> [!type] Title`) into an
+ * admonition: a `<div class="admonition …">` wrapping a title node and, when
+ * there is body text, a content node. Mutates `node` in place. Runs on every
+ * blockquote, so a blockquote that isn't a callout is left untouched.
+ */
+const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
+  if (node.children.length === 0) return
+
+  // A callout always opens with a paragraph whose first child is the plain-text
+  // `[!type]` marker. Any other shape is an ordinary blockquote.
+  const firstChild = node.children[0]
+  if (firstChild.type !== "paragraph" || firstChild.children[0]?.type !== "text") {
+    return
+  }
+
+  // The marker text node also carries body text typed on lines beneath the
+  // title: textTransform injects a newline after the title, so the first line
+  // is the directive + title and the rest is leading body content.
+  const [firstLine, ...remainingLines] = firstChild.children[0].value.split("\n")
+  const header = parseAdmonitionHeader(firstLine)
+  if (!header) return // Not a `[!type]` directive — an ordinary blockquote.
+
+  recordAdmonitionIcons(file, header.admonitionType, header.collapse)
+
+  const admonitionTitle = buildAdmonitionTitle(firstChild, firstLine, header)
+  const contentNode = buildAdmonitionContentNode(node, remainingLines.join("\n"))
+
+  // Swap the blockquote's children for the title (+ content when present); the
+  // admonition classes/data attributes go on the blockquote element itself.
+  node.children = [admonitionTitle]
+  if (contentNode) {
+    node.children.push(contentNode as unknown as BlockContent)
+  }
+
+  setAdmonitionProperties(node, header)
 }
 
 /** Configuration options for the OFM transformer. */

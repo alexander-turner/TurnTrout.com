@@ -179,6 +179,20 @@ describe("markdownPlugins", () => {
       expectedContent: ['<div class="admonition-title">'],
       notExpectedContent: ["no-smallcaps"],
     },
+    {
+      name: "title link abutting an opening paren gets no inserted space",
+      input: "> [!quote] Stuart Russell's closing remarks ([video](https://example.com))",
+      expectedClass: "admonition quote",
+      expectedContent: ['closing remarks (<a href="https://example.com">video</a>)'],
+      notExpectedContent: ["remarks ( "],
+    },
+    {
+      name: "title with a space before a link keeps the separating space",
+      input: "> [!note] See the [docs](https://example.com) for details",
+      expectedClass: "admonition note",
+      expectedContent: ['See the <a href="https://example.com">docs</a>'],
+      notExpectedContent: ["See the<a"],
+    },
   ]
 
   it.each(admonitionCases)(

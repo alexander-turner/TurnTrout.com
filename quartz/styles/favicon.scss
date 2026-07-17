@@ -42,8 +42,8 @@
   display: inline;
   width: var(--favicon-size);
   height: var(--favicon-size);
-  margin: -20% auto -0.07em
-    calc(0.21 * #{$base-margin} + var(--glyph-nudge) - var(--left-inset) * var(--favicon-size));
+  margin: 0 auto calc(-0.25 * #{$base-margin})
+    calc(0.125 * #{$base-margin} + var(--glyph-nudge) - var(--left-inset) * var(--favicon-size));
   vertical-align: var(--vertical-adjustment);
 
   // Don't pollute copied text with favicon
@@ -68,13 +68,13 @@
   }
 
   &.closer-text {
-    --glyph-nudge: calc(0.3 * #{$base-margin});
+    --glyph-nudge: calc(0.25 * #{$base-margin});
   }
 
   // A favicon appended after inline code sits inside the <code>; the right gap
   // keeps a trailing ")" / "]" from cramping.
   code & {
-    margin-right: calc(0.15 * #{$base-margin});
+    margin-right: calc(0.125 * #{$base-margin});
   }
 }
 
