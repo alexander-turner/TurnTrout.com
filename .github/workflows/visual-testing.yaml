@@ -314,15 +314,16 @@ jobs:
           fi
           echo "environments=${environments}" >> "$GITHUB_OUTPUT"
 
-  # Unified status check — required by branch protection.
-  # `if: always()` normally lets this job report a clean skip when should-run
-  # gated everything off, but always() jobs are immune to the cancellation
-  # that `cancel-in-progress` sends the rest of a superseded run — so the
-  # `!contains(..., 'cancelled')` guard is required to let this job itself
-  # go skipped (grey) instead of running to a false failure.
+  # Unified status check — required by branch protection. Runs always() so it
+  # still reports when should-run gated everything off. A superseded run's needs
+  # come back cancelled; the job can't just skip on that, because branch
+  # protection counts a skipped required check as passing, which would let a
+  # directly-cancelled run (e.g. a manual cancel while auto-merge is armed) merge
+  # untested. classify-cancellation tells the two apart: a newer run exists →
+  # superseded → pass; none → direct cancel → fail.
   visual-testing:
     name: visual-testing
-    if: always() && !contains(needs.*.result, 'cancelled')
+    if: always()
     needs:
       [
         should-run,
@@ -333,7 +334,20 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
+      - name: Checkout
+        if: contains(needs.*.result, 'cancelled')
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+      - name: Classify cancellation
+        id: cancel
+        if: contains(needs.*.result, 'cancelled')
+        uses: ./.github/actions/classify-cancellation
+        with:
+          github-token: ${{ github.token }}
       - name: Check results
+        if: steps.cancel.outputs.superseded != 'true'
         run: |
           if [[ "${NEEDS_SHOULD_RUN_OUTPUTS_RUN}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
             echo "Tests were skipped (no label or filtered branch)"
