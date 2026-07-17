@@ -110,15 +110,14 @@ def html_linkchecker_result(test_server_and_files) -> object:
         cwd=str(tmp_dir),
     )
 
-    # External link check
-    public_dir = test_server_and_files["public_dir"]
-    target_files = list(public_dir.glob("**/*.html"))
-
+    # External link check: crawl the running site so every page's external
+    # links are checked, matching the production script. The allowlist keeps
+    # localhost (crawled) plus the two hosts we control.
     external_result = subprocess.run(
         [
             "linkchecker",
-            *[str(f) for f in target_files],
-            "--ignore-url=!^https://(assets\\.turntrout\\.com|github\\.com/alexander-turner/TurnTrout\\.com)",
+            local_server,
+            f"--ignore-url=!^({local_server}|https://assets\\.turntrout\\.com|https://github\\.com/alexander-turner/TurnTrout\\.com)",
             "--check-extern",
             "--threads",
             "30",
