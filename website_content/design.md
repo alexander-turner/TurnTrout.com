@@ -91,7 +91,7 @@ So I decided to convert the HTML to Markdown on my own using [`turndown`](https:
 That took a few months.
 
 > [!info]- Details on exporting my content
-> I exported my content using this query. After downloading the JSON, I ran `process_json.cjs` to use [`turndown`](https://github.com/mixmark-io/turndown) to convert the raw HTML to (properly processed) Markdown. Finally, I preprocessed the Markdown files.
+> I exported my content using [this query](https://assets.turntrout.com/import-scripts/graphiql.txt). After downloading the JSON, I ran [`process_json.cjs`](https://assets.turntrout.com/import-scripts/process_json.cjs) to use [`turndown`](https://github.com/mixmark-io/turndown) to convert the raw HTML to (properly processed) Markdown. Finally, I [preprocessed the Markdown files](https://assets.turntrout.com/import-scripts/md_processing_single.py).
 
 # Archiving and dependencies
 
