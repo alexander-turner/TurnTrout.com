@@ -623,6 +623,10 @@ There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [
 
 To tackle this, the favicon transformation splices the last few characters from the link text and wraps them together with the favicon inside a `<span class="favicon-span">` with `white-space: nowrap`. This keeps the last few characters glued to the favicon, preventing line breaks at that position.
 
+### Favicons sit a consistent distance from the text
+
+A fixed margin doesn't actually _look_ fixed. Letters carry different amounts of empty space on their right side: an "f" leans into the gap that follows while an "o" stops short. I nudge each icon according to the letter it follows. Whatever the final glyph, the icon resides at the same visual distance.
+
 ### I only include recognizable favicons
 
 I [originally](https://github.com/alexander-turner/TurnTrout.com/blob/608b39512cf0e27e25ad48d0e14a38804a2aff18/website_content/design.md#inline-favicons) displayed favicons for _every_ external link. Since most people don't recognize the icons of most sites, these icons become clutter.
