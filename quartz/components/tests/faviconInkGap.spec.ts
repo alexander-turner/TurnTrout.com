@@ -171,14 +171,17 @@ test.describe("favicon ink gap", () => {
 
       // Right side bearing of `char` inside the favicon's vertical band,
       // in em of the rendered font. Null when the glyph has no ink there.
+      // Small-cap forms reuse the capital outlines, and canvas-level
+      // font-variant support differs per engine, so a small-caps probe
+      // measures the capital glyph directly.
       const bearingInBand = (style: CSSStyleDeclaration, char: string): number | null => {
+        const glyph = style.fontVariantCaps === "small-caps" ? char.toUpperCase() : char
         const baseline = 700
         ctx2d.clearRect(0, 0, canvas.width, canvas.height)
         ctx2d.font = `${style.fontStyle} ${CANVAS_FONT_PX}px ${style.fontFamily}`
-        ctx2d.fontVariantCaps = style.fontVariantCaps as CanvasFontVariantCaps
         ctx2d.textBaseline = "alphabetic"
-        ctx2d.fillText(char, 400, baseline)
-        const advance = ctx2d.measureText(char).width
+        ctx2d.fillText(glyph, 400, baseline)
+        const advance = ctx2d.measureText(glyph).width
         const top = Math.floor(baseline - 0.7 * CANVAS_FONT_PX)
         const bottom = Math.ceil(baseline - 0.2 * CANVAS_FONT_PX)
         const image = ctx2d.getImageData(0, 0, canvas.width, canvas.height)
