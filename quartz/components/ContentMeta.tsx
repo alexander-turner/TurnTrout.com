@@ -161,7 +161,7 @@ export const renderLinkpostInfo = (fileData: QuartzPluginData): JSX.Element | nu
 
   return (
     <span className="linkpost-info">
-      Originally linked to{" "}
+      Originally posted on{" "}
       {
         <a href={linkpostUrl} className="external" target="_blank" rel="noopener noreferrer">
           <code>{displayText}</code>
