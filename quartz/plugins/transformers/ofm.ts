@@ -390,6 +390,9 @@ const buildAdmonitionTitle = (
 
 /** Builds the content node holding the body after an admonition's first line. */
 const buildAdmonitionContentNode = (node: Blockquote, remainingText: string): Element | null => {
+  // The body is the title line's trailing text (any lines the user typed under
+  // the title, minus the title line itself) followed by the blockquote's
+  // remaining block children — the first block held the title and is dropped.
   /* istanbul ignore next -- admonition content handling edge case */
   const contentChildren = [
     ...(remainingText.trim() !== ""
@@ -427,24 +430,36 @@ const setAdmonitionProperties = (node: Blockquote, header: AdmonitionHeader): vo
   }
 }
 
-/** Processes blockquotes and converts them to admonitions. */
+/**
+ * Converts an Obsidian callout blockquote (`> [!type] Title`) into an
+ * admonition: a `<div class="admonition …">` wrapping a title node and, when
+ * there is body text, a content node. Mutates `node` in place. Runs on every
+ * blockquote, so a blockquote that isn't a callout is left untouched.
+ */
 const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
   if (node.children.length === 0) return
 
+  // A callout always opens with a paragraph whose first child is the plain-text
+  // `[!type]` marker. Any other shape is an ordinary blockquote.
   const firstChild = node.children[0]
   if (firstChild.type !== "paragraph" || firstChild.children[0]?.type !== "text") {
     return
   }
 
+  // The marker text node also carries body text typed on lines beneath the
+  // title: textTransform injects a newline after the title, so the first line
+  // is the directive + title and the rest is leading body content.
   const [firstLine, ...remainingLines] = firstChild.children[0].value.split("\n")
   const header = parseAdmonitionHeader(firstLine)
-  if (!header) return
+  if (!header) return // Not a `[!type]` directive — an ordinary blockquote.
 
   recordAdmonitionIcons(file, header.admonitionType, header.collapse)
 
   const admonitionTitle = buildAdmonitionTitle(firstChild, firstLine, header)
   const contentNode = buildAdmonitionContentNode(node, remainingLines.join("\n"))
 
+  // Swap the blockquote's children for the title (+ content when present); the
+  // admonition classes/data attributes go on the blockquote element itself.
   node.children = [admonitionTitle]
   if (contentNode) {
     node.children.push(contentNode as unknown as BlockContent)
