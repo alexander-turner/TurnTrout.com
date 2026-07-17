@@ -110,6 +110,15 @@ jobs:
           ]
     env:
       PLAYWRIGHT_BROWSERS: ${{ needs.should-run.outputs.browsers }}
+      # GitHub Actions sets $HOME to /github/home for every container job,
+      # which this image ships owned by its built-in `pwuser`. The job itself
+      # runs as root (no `user:` override), and Firefox's sandbox refuses to
+      # launch when $HOME's owner doesn't match the running UID ("Running
+      # Nightly as root in a regular user's session is not supported").
+      # /root is root-owned from image build, so pinning HOME there from the
+      # start of the job keeps every step (installs, browser cache, tests)
+      # consistent with the UID actually running them.
+      HOME: /root
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
