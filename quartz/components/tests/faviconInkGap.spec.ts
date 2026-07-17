@@ -76,10 +76,11 @@ const UNIT_PROBE_KEY = "serif|o"
 // the serif audit) and drift ceilings per context, in em of the probe's font
 // so they scale with the viewport's root font size like the glyphs do.
 // Ink-in-band understates the perceptual audit for glyphs whose flat edges
-// read closer than round ones (serif "R"), and thin monospace glyphs ("l",
-// "[") center in FiraCode's fixed advance with legitimately wide bearings, so
-// every ceiling is generous — the exact margin-ratio layer above is the
-// regression ratchet, not the band.
+// read closer than round ones (serif "R"), thin monospace glyphs ("l", "[")
+// center in FiraCode's fixed advance with legitimately wide bearings, and a
+// capital "L"'s arm sits below the band leaving only its stem, so every
+// ceiling is generous — the exact margin-ratio layer above is the regression
+// ratchet, not the band.
 const FLOOR_EM: Readonly<Record<string, number>> = {
   null: -0.0125,
   "close-text": -0.0375,
@@ -88,7 +89,7 @@ const FLOOR_EM: Readonly<Record<string, number>> = {
 const CEILING_EM: Readonly<Record<string, number>> = {
   serif: 0.32,
   italic: 0.22,
-  smallCaps: 0.32,
+  smallCaps: 0.4,
   code: 0.4,
 }
 
