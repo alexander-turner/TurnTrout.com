@@ -858,6 +858,8 @@ Inline code left spacing after a crowding glyph: with the help of [`TomSmith`](#
 
 Inline code flush against a glued delimiter: parentheses (`code`), brackets \[`code`\], braces \{`code`\}, quotes "`code`", a slash AI/`code`, a hyphen re-`code`, and equals x=`code` all hug the code, while a space `the regex` or an em dash—`code` keeps the small gap.
 
+Inline code right spacing: the trailing space after `code` and after a link-wrapped [`code`](#code-blocks) is narrowed so the monospace side bearing doesn't widen the gap. I pipe the saying into `goosesay` (my variant of [`cowsay`](https://en.wikipedia.org/wiki/Cowsay)), then the `lolcat` command splays it.
+
 ```json
 "lint-staged": {
  "*.{js, jsx, ts, tsx, css, scss, json}": "prettier --write",
