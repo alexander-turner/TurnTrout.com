@@ -1,4 +1,4 @@
-import type { Locator, Page } from "@playwright/test"
+import { errors, type Locator, type Page } from "@playwright/test"
 
 import { simpleConstants, urlBarScrollTolerance } from "../constants"
 import { type Theme } from "../scripts/darkmode"
@@ -44,13 +44,13 @@ function isPaused(video: Locator): Promise<boolean> {
   return video.evaluate((videoElement: HTMLVideoElement) => videoElement.paused)
 }
 
-// CI trace evidence (macOS/WebKit): the full video downloads within
-// milliseconds, but WebKit's decode pipeline can occasionally never advance
-// past readyState HAVE_METADATA after play() is requested — currentTime stays
-// frozen at 0 indefinitely, with zero further console activity or errors.
-// Re-issuing play() unsticks it, so retry within bounded windows below instead
-// of waiting once for the whole test's timeout budget.
-const VIDEO_PLAYBACK_ATTEMPT_TIMEOUT_MS = 20_000
+// WebKit's decode pipeline can stall at readyState HAVE_METADATA after play()
+// is requested: the file is fully downloaded but currentTime never advances and
+// no error surfaces. Re-issuing play() unsticks it, so playback is awaited in
+// bounded windows with a play() retry between them. The full retry budget
+// (attempts × timeout) must leave room for the seek and post-navigation waits
+// inside the tightest caller's test timeout (60s in the refresh test).
+const VIDEO_PLAYBACK_ATTEMPT_TIMEOUT_MS = 10_000
 const VIDEO_PLAYBACK_MAX_ATTEMPTS = 3
 
 async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
@@ -80,7 +80,11 @@ async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
       )
       break
     } catch (error) {
-      if (attempt === VIDEO_PLAYBACK_MAX_ATTEMPTS) throw error
+      // Only a stalled wait is recoverable; a crashed page or destroyed
+      // execution context must fail loudly and immediately.
+      if (!(error instanceof errors.TimeoutError) || attempt === VIDEO_PLAYBACK_MAX_ATTEMPTS) {
+        throw error
+      }
       await video.evaluate((videoElement: HTMLVideoElement) => {
         videoElement.play().catch(() => {
           // Retried on the next attempt below.
@@ -99,8 +103,22 @@ async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
   // request forces the remaining fetch through.
   await video.evaluate((videoElement: HTMLVideoElement) => {
     if (videoElement.readyState < 4) {
-      return new Promise<void>((resolve) => {
-        videoElement.addEventListener("canplaythrough", () => resolve(), { once: true })
+      return new Promise<void>((resolve, reject) => {
+        const deadline = setTimeout(() => {
+          reject(
+            new Error(
+              `canplaythrough not reached: readyState=${videoElement.readyState}, paused=${videoElement.paused}, currentTime=${videoElement.currentTime}`,
+            ),
+          )
+        }, 15_000)
+        videoElement.addEventListener(
+          "canplaythrough",
+          () => {
+            clearTimeout(deadline)
+            resolve()
+          },
+          { once: true },
+        )
       })
     }
     return undefined

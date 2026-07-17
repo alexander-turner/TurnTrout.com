@@ -36,6 +36,14 @@ const rafPollingSyntax = [
     message:
       "waitForFunction defaults to rAF polling, which never fires on unpainted headless WebKit pages; pass an explicit numeric polling interval (e.g. { polling: 100 }).",
   },
+  // The signature is (fn, arg, options): a two-argument call puts any options
+  // object in the predicate-arg slot, where Playwright silently ignores it and
+  // falls back to rAF polling — even when the object contains a `polling` key.
+  {
+    selector: "CallExpression[callee.property.name='waitForFunction'][arguments.length<3]",
+    message:
+      "waitForFunction takes (fn, arg, options); with fewer than three arguments the options land in the ignored predicate-arg slot. Call as waitForFunction(fn, null, { polling: 100 }).",
+  },
 ]
 
 export default [
