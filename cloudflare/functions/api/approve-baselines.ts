@@ -4,7 +4,10 @@
 // (CF Pages preview-env secret).
 // Before dispatching, the function rejects stale galleries:
 //   * Run must be from `.github/workflows/visual-testing.yaml`.
-//   * PR runs:   PR must be `open` (rejects merged/closed PRs).
+//   * PR runs:   PR must be `open`, or merged with the run on the PR's
+//                final head commit (the merged-head gallery carries the
+//                approval through to main; earlier galleries and
+//                closed-unmerged PRs are rejected as stale).
 //   * Main runs: head_branch must be `main` AND head_sha must match
 //                main's current HEAD (rejects stale main commits).
 // Source ships only with diff-gallery branches — visual-testing.yaml
@@ -97,7 +100,7 @@ export async function onRequestPost(ctx: FunctionContext<Env>): Promise<Response
   }
 
   if (prNumber) {
-    let pr: { state: string; merged: boolean }
+    let pr: { state: string; merged: boolean; head: { sha: string } }
     try {
       pr = await ghJson(env, `/repos/${REPO}/pulls/${prNumber}`)
     } catch (err) {
@@ -106,11 +109,20 @@ export async function onRequestPost(ctx: FunctionContext<Env>): Promise<Response
       })
     }
     if (pr.state !== "open") {
-      return jres(409, {
-        error:
-          `PR #${prNumber} is ${pr.merged ? "merged" : "closed"}; ` +
-          "refusing to approve baselines from a stale gallery",
-      })
+      if (!pr.merged) {
+        return jres(409, {
+          error:
+            `PR #${prNumber} is closed without merging; ` +
+            "refusing to approve baselines from a stale gallery",
+        })
+      }
+      if (pr.head.sha !== run.head_sha) {
+        return jres(409, {
+          error:
+            `PR #${prNumber} merged from ${pr.head.sha.slice(0, 8)} but this run is on ` +
+            `${run.head_sha.slice(0, 8)}; refusing to approve baselines from a stale gallery`,
+        })
+      }
     }
   } else {
     if (run.head_branch !== "main") {

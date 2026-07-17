@@ -122,15 +122,23 @@ describe("approve-baselines", () => {
     expect(await errOf(res)).toMatch(/Failed to fetch PR 7/)
   })
 
-  it.each<[string, boolean, RegExp]>([
-    ["merged", true, /merged/],
-    ["closed", false, /closed/],
-  ])("returns 409 when the PR is %s", async (_, merged, pat) => {
+  it.each<[string, { merged: boolean; head: { sha: string } }, RegExp]>([
+    [
+      "closed without merging",
+      { merged: false, head: { sha: MAIN_SHA } },
+      /closed without merging/,
+    ],
+    [
+      "merged from a different head than the run",
+      { merged: true, head: { sha: "c".repeat(40) } },
+      /merged from cccccccc but this run is on aaaaaaaa/,
+    ],
+  ])("returns 409 when the PR is %s", async (_, pr, pat) => {
     mockFetch((url) =>
       url === RUNS("42")
         ? goodRun()
         : url === PULLS("7")
-          ? json(200, { state: "closed", merged })
+          ? json(200, { state: "closed", ...pr })
           : null,
     )
     const res = await onRequestPost({ request: req({ runId: "42", prNumber: "7" }), env: ENV })
@@ -140,12 +148,18 @@ describe("approve-baselines", () => {
     expect(errMsg).toMatch(/stale gallery/)
   })
 
-  it("dispatches with pr_number when PR is open", async () => {
+  it.each<[string, Record<string, unknown>]>([
+    ["open", { state: "open", merged: false }],
+    [
+      "merged from the run's head commit",
+      { state: "closed", merged: true, head: { sha: MAIN_SHA } },
+    ],
+  ])("dispatches with pr_number when the PR is %s", async (_, pr) => {
     mockFetch((url) =>
       url === RUNS("42")
         ? goodRun()
         : url === PULLS("7")
-          ? json(200, { state: "open", merged: false })
+          ? json(200, pr)
           : url === DISP
             ? empty(204)
             : null,

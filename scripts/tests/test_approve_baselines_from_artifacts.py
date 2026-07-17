@@ -243,6 +243,53 @@ def test_collect_skips_blank_and_non_attach_lines(tmp_path: Path) -> None:
     assert approve.collect_from_blob_reports(blob_dir, tmp_path / "stage") == 1
 
 
+def test_list_baseline_names_dedupes_and_sorts(tmp_path: Path) -> None:
+    blob_dir = tmp_path / "blobs"
+    blob_dir.mkdir()
+    _make_blob_zip(
+        blob_dir / "linux-report-1.zip",
+        [
+            ("toc-Desktop-Safari-actual.png", "image/png", _PNG_BYTES),
+            ("navbar-iPhone-12-actual.png", "image/png", _PNG_BYTES),
+            ("toc-Desktop-Safari-expected.png", "image/png", _PNG_BYTES),
+        ],
+    )
+    _make_blob_zip(
+        blob_dir / "macos-report-1.zip",
+        [("toc-Desktop-Safari-actual.png", "image/png", _PNG_BYTES)],
+    )
+
+    assert approve.list_baseline_names(blob_dir) == [
+        "navbar-iPhone-12.png",
+        "toc-Desktop-Safari.png",
+    ]
+
+
+@pytest.mark.parametrize(
+    "attachments, expected_out",
+    [
+        ([("toc-actual.png", "image/png", _PNG_BYTES)], "toc.png\n"),
+        ([], ""),
+    ],
+)
+def test_main_names_only_prints_names_without_uploading(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    attachments: list[tuple[str, str, bytes | None]],
+    expected_out: str,
+) -> None:
+    blob_dir = tmp_path / "blobs"
+    blob_dir.mkdir()
+    if attachments:
+        _make_blob_zip(blob_dir / "report.zip", attachments)
+
+    with patch.object(approve.r2_baselines, "upload") as mock_upload:
+        approve.main([str(blob_dir), "--names-only"])
+
+    mock_upload.assert_not_called()
+    assert capsys.readouterr().out == expected_out
+
+
 def test_main_uploads_when_attachments_found(tmp_path: Path) -> None:
     blob_dir = tmp_path / "blobs"
     blob_dir.mkdir()
