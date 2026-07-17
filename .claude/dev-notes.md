@@ -216,7 +216,7 @@ curl -sI https://mcr.microsoft.com/v2/playwright/manifests/v<version>-noble \
   -H "Accept: application/vnd.oci.image.index.v1+json" | grep -i docker-content-digest
 ```
 
-Container jobs run as root without `sudo`; the job's first step installs it so shared actions that call `sudo` keep working. macOS shards can't be containerized—`macos-15` is the tightest pin hosted runners allow, so some drift exposure remains there.
+Container jobs run as root without `sudo` (shared actions call it) and without `unzip` (puppeteer's postinstall needs it); the job's first step installs both. macOS shards can't be containerized—`macos-15` is the tightest pin hosted runners allow, so some drift exposure remains there.
 
 **Nightly drift sentinel.** `visual-testing.yaml` also runs on a `schedule` cron against `main` with zero code diff, so environment drift (image rotation, font package updates) surfaces on the nightly gallery instead of inside an unrelated PR. The gallery header shows a provenance note (trigger + rendering environment) composed from per-shard `visual-status-*` artifacts; a nightly gallery with diffs means the _environment_ moved.
 

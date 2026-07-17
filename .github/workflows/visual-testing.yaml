@@ -117,8 +117,10 @@ jobs:
 
       # The container runs as root without sudo; the shared setup actions
       # invoke `sudo` for apt operations, so provide it before they run.
-      - name: Install sudo in container
-        run: apt-get update && apt-get install -y --no-install-recommends sudo
+      # unzip: puppeteer's postinstall extracts chrome-headless-shell with it
+      # during `pnpm install`, and the image doesn't ship it.
+      - name: Install container prerequisites
+        run: apt-get update && apt-get install -y --no-install-recommends sudo unzip
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
