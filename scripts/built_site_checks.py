@@ -50,7 +50,6 @@ from scripts.utils import (
     RIGHT_DOUBLE_QUOTE,
     RIGHT_GUILLEMET,
     RIGHT_SINGLE_QUOTE,
-    SIX_PER_EM_SPACE,
     TOC_MAX_DEPTH,
     WORD_JOINER,
     ZERO_WIDTH_NBSP,
@@ -2552,9 +2551,6 @@ ALLOWED_ELT_FOLLOWING_CHARS = (
     + "=' \n\t\r"
     + NBSP
     + HAIR_SPACE
-    # InlineCodeSpacing narrows the breakable space after inline code (and
-    # after a link wrapping one) to a six-per-em space.
-    + SIX_PER_EM_SPACE
 )
 
 

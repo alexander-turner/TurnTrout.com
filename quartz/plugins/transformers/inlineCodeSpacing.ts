@@ -5,7 +5,7 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { HAIR_SPACE, maxAtomicInlineCodeLength, SIX_PER_EM_SPACE } from "../../components/constants"
+import { HAIR_SPACE, maxAtomicInlineCodeLength } from "../../components/constants"
 import { addClass, INLINE_PASSTHROUGH_TAGS, ITALIC_TAGS } from "./utils"
 
 // A short inline code reads as one token, so it wraps to the next line whole
@@ -91,27 +91,6 @@ export function precedingBoundary(node: Element, ancestors: readonly Parent[]): 
   return null
 }
 
-// The text node rendered immediately after `node` in document order. Ascends
-// out of inline wrappers but never crosses a block boundary; returns null at
-// the end of a block, or when the next rendered sibling is an element (the
-// gap then belongs to that element, not to the code).
-export function followingTextNode(node: Element, ancestors: readonly Parent[]): Text | null {
-  let child: Parent | Element = node
-  for (let i = ancestors.length - 1; i >= 0; i--) {
-    const parent = ancestors[i]
-    const index = parent.children.indexOf(child as ElementContent)
-    const next = parent.children[index + 1]
-    if (next !== undefined) {
-      return next.type === "text" ? (next as Text) : null
-    }
-    if (parent.type !== "element" || !INLINE_PASSTHROUGH_TAGS.has((parent as Element).tagName)) {
-      return null
-    }
-    child = parent
-  }
-  return null
-}
-
 function isInPre(ancestors: readonly Parent[]): boolean {
   return ancestors.some(
     (ancestor) => ancestor.type === "element" && (ancestor as Element).tagName === "pre",
@@ -126,58 +105,15 @@ function isItalicized(ancestors: readonly Parent[]): boolean {
   )
 }
 
-// Appends a hair space to the word preceding the code so the monospace glyph
-// doesn't crowd it. Adds no gap when the code follows a hugging delimiter
-// (see `NO_GAP_PREDECESSORS`), follows a bare separator with no word to
-// crowd, or starts its block.
-function gapPrecedingWord(node: Element, ancestors: readonly Parent[]): void {
-  const boundary = precedingBoundary(node, ancestors)
-  if (!boundary || NO_GAP_PREDECESSORS.has(boundary.char)) return
-  // `index` is always >= 1 here (the boundary char was found at a lower
-  // sibling), so the preceding text node exists.
-  const prev = boundary.parent.children[boundary.index - 1] as RootContent
-  if (prev.type !== "text" || !/\S/u.test(prev.value)) return
-  const match = /(\S+)(\s*)$/u.exec(prev.value)
-  // istanbul ignore next -- the \S guard above guarantees a match
-  if (!match) return
-  const [, word, trailingSpace] = match
-  // A bare separator between two inline units — the ", " in `a`, `b`, `c`,
-  // a lone dash, or closing punctuation like "); " — has no word for the
-  // code to crowd, so add no gap.
-  if (!/[\p{L}\p{N}]/u.test(word)) return
-  const head = prev.value.slice(0, prev.value.length - word.length - trailingSpace.length)
-  // The hair space goes before the breakable space, so a code that wraps
-  // to the next line still starts flush there.
-  prev.value = head + word + HAIR_SPACE + trailingSpace
-}
-
-// The monospace advance ends with trailing side bearing, so an ordinary space
-// after the code renders wider than the line's other word gaps. A six-per-em
-// space brings the gap back to word-gap width while staying breakable, and as
-// a text character it keeps an enclosing link's underline unbroken.
-function tightenFollowingSpace(node: Element, ancestors: readonly Parent[]): void {
-  const next = followingTextNode(node, ancestors)
-  if (next === null) return
-  // Collapse the whole leading run of ordinary whitespace: U+2006 is not
-  // CSS-collapsible, so any spaces or a source-wrap newline left beside it
-  // would still render and re-widen the gap.
-  const match = /^[ \t\n]+/u.exec(next.value)
-  if (match === null) return
-  next.value = SIX_PER_EM_SPACE + next.value.slice(match[0].length)
-}
-
 /**
  * Rehype plugin for inline `<code>` (block code inside `<pre>` is untouched):
  *   - marks a short code `inline-code-atomic` so it wraps whole instead of
  *     breaking at an internal hyphen;
  *   - appends a hair space to the word preceding a code so the monospace
- *     glyph doesn't crowd it (see `gapPrecedingWord`);
- *   - narrows the ordinary space following a code to a six-per-em space so
- *     the trailing side bearing doesn't widen the gap (see
- *     `tightenFollowingSpace`).
- *
- * Italicized code gets neither adjustment: its leaning glyphs already open
- * the left gap and close the right one.
+ *     glyph doesn't crowd it. Adds no gap when the code is italicized (its
+ *     leaning glyphs open the space themselves), follows a hugging delimiter
+ *     (see `NO_GAP_PREDECESSORS`), follows a bare separator with no word to
+ *     crowd, or starts its block.
  */
 export const rehypeInlineCodeSpacing: Plugin = () => {
   return (tree: Node) => {
@@ -185,8 +121,24 @@ export const rehypeInlineCodeSpacing: Plugin = () => {
       if (node.tagName !== "code" || isInPre(ancestors)) return
       if (textLength(node) <= ATOMIC_CODE_MAX_LENGTH) addClass(node, "inline-code-atomic")
       if (isItalicized(ancestors)) return
-      gapPrecedingWord(node, ancestors)
-      tightenFollowingSpace(node, ancestors)
+      const boundary = precedingBoundary(node, ancestors)
+      if (!boundary || NO_GAP_PREDECESSORS.has(boundary.char)) return
+      // `index` is always >= 1 here (the boundary char was found at a lower
+      // sibling), so the preceding text node exists.
+      const prev = boundary.parent.children[boundary.index - 1] as RootContent
+      if (prev.type !== "text" || !/\S/u.test(prev.value)) return
+      const match = /(\S+)(\s*)$/u.exec(prev.value)
+      // istanbul ignore next -- the \S guard above guarantees a match
+      if (!match) return
+      const [, word, trailingSpace] = match
+      // A bare separator between two inline units — the ", " in `a`, `b`, `c`,
+      // a lone dash, or closing punctuation like "); " — has no word for the
+      // code to crowd, so add no gap.
+      if (!/[\p{L}\p{N}]/u.test(word)) return
+      const head = prev.value.slice(0, prev.value.length - word.length - trailingSpace.length)
+      // The hair space goes before the breakable space, so a code that wraps
+      // to the next line still starts flush there.
+      prev.value = head + word + HAIR_SPACE + trailingSpace
     })
   }
 }

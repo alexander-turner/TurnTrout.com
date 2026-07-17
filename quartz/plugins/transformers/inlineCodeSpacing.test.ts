@@ -6,9 +6,8 @@ import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
 import { unified } from "unified"
 
-import { HAIR_SPACE, SIX_PER_EM_SPACE } from "../../components/constants"
+import { HAIR_SPACE } from "../../components/constants"
 import {
-  followingTextNode,
   InlineCodeSpacing,
   lastTextChar,
   NO_GAP_PREDECESSORS,
@@ -56,57 +55,9 @@ describe("InlineCodeSpacing", () => {
     it("handles several codes sharing a parent", async () => {
       const out = await processHtmlWithPlugin("<p>a <code>one</code> b <code>two</code></p>")
       expect(out).toBe(
-        `<p>a${HAIR_SPACE} <code class="inline-code-atomic">one</code>${SIX_PER_EM_SPACE}` +
+        `<p>a${HAIR_SPACE} <code class="inline-code-atomic">one</code> ` +
           `b${HAIR_SPACE} <code class="inline-code-atomic">two</code></p>`,
       )
-    })
-  })
-
-  describe("narrows the space following the code", () => {
-    it("swaps the following ordinary space for a six-per-em space", async () => {
-      const out = await processHtmlWithPlugin("<p>the <code>fortune</code> command,</p>")
-      expect(out).toBe(
-        `<p>the${HAIR_SPACE} <code class="inline-code-atomic">fortune</code>` +
-          `${SIX_PER_EM_SPACE}command,</p>`,
-      )
-    })
-
-    it("narrows the space between the code and an opening parenthesis", async () => {
-      const out = await processHtmlWithPlugin("<p>into <code>goosesay</code> (my variant)</p>")
-      expect(out).toContain(`</code>${SIX_PER_EM_SPACE}(my variant)`)
-    })
-
-    it("ascends out of a wrapping link to narrow the space after it", async () => {
-      const out = await processHtmlWithPlugin('<p>see <a href="#"><code>grep</code></a> docs</p>')
-      expect(out).toContain(`</a>${SIX_PER_EM_SPACE}docs`)
-    })
-
-    it("narrows the space even when the code got no leading gap", async () => {
-      const out = await processHtmlWithPlugin("<p><code>grep</code> is a tool.</p>")
-      expect(out).toContain(`</code>${SIX_PER_EM_SPACE}is a tool.`)
-    })
-
-    it("collapses a multi-space run so no stray space re-widens the gap", async () => {
-      const out = await processHtmlWithPlugin("<p>the <code>fortune</code>   command</p>")
-      expect(out).toContain(`</code>${SIX_PER_EM_SPACE}command`)
-      expect(out).not.toContain(`${SIX_PER_EM_SPACE} `)
-    })
-
-    it("collapses a leading source-wrap newline after the code", async () => {
-      const out = await processHtmlWithPlugin("<p>the <code>fortune</code>\ncommand</p>")
-      expect(out).toContain(`</code>${SIX_PER_EM_SPACE}command`)
-    })
-
-    it.each([
-      ["hugging punctuation follows", "<p>a <code>one</code>), next</p>"],
-      ["a non-breaking space follows", "<p>a <code>one</code> two</p>"],
-      ["the code ends its block", "<p>run <code>grep</code></p>"],
-      ["an element follows directly", "<p>run <code>grep</code><em> now</em></p>"],
-      ["the code is italicized", "<p><em>use <code>grep</code> here</em></p>"],
-      ["block code inside <pre>", "<pre><code>grep</code> x</pre>"],
-    ])("leaves the following text untouched when %s", async (_label, html) => {
-      const out = await processHtmlWithPlugin(html)
-      expect(out).not.toContain(SIX_PER_EM_SPACE)
     })
   })
 
@@ -134,7 +85,7 @@ describe("InlineCodeSpacing", () => {
       const out = await processHtmlWithPlugin("<p>see <code>one</code>); <code>two</code> ok</p>")
       expect(out).toBe(
         `<p>see${HAIR_SPACE} <code class="inline-code-atomic">one</code>); ` +
-          `<code class="inline-code-atomic">two</code>${SIX_PER_EM_SPACE}ok</p>`,
+          '<code class="inline-code-atomic">two</code> ok</p>',
       )
     })
 
@@ -276,39 +227,6 @@ describe("InlineCodeSpacing", () => {
       const code = h("code", ["grep"]) as Element
       const wrapper = h("em", [code]) as Parent
       expect(precedingBoundary(code, [wrapper])).toBeNull()
-    })
-  })
-
-  describe("followingTextNode", () => {
-    it("returns the text node directly after the code", () => {
-      const code = h("code", ["grep"]) as Element
-      const paragraph = h("p", [code, " next"]) as Parent
-      expect(followingTextNode(code, [paragraph])).toEqual({ type: "text", value: " next" })
-    })
-
-    it("ascends out of inline wrappers to the wrapper's following text", () => {
-      const code = h("code", ["grep"]) as Element
-      const link = h("a", [code]) as Element
-      const paragraph = h("p", [link, " next"]) as Parent
-      expect(followingTextNode(code, [paragraph, link])).toEqual({ type: "text", value: " next" })
-    })
-
-    it("returns null when the following sibling is an element", () => {
-      const code = h("code", ["grep"]) as Element
-      const paragraph = h("p", [code, h("em", [" now"])]) as Parent
-      expect(followingTextNode(code, [paragraph])).toBeNull()
-    })
-
-    it("returns null at a block end (no following sibling)", () => {
-      const code = h("code", ["grep"]) as Element
-      const paragraph = h("p", [code]) as Parent
-      expect(followingTextNode(code, [paragraph])).toBeNull()
-    })
-
-    it("returns null when every ancestor is inline and yields no successor", () => {
-      const code = h("code", ["grep"]) as Element
-      const wrapper = h("em", [code]) as Parent
-      expect(followingTextNode(code, [wrapper])).toBeNull()
     })
   })
 })

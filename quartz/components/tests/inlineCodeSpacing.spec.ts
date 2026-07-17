@@ -8,7 +8,6 @@ import { gotoPage } from "./visual_utils"
 // browser/viewport project, both that the gap exists and that wrapped code
 // stays flush with its line start.
 const HAIR_SPACE = "\u200a"
-const SIX_PER_EM_SPACE = "\u2006"
 
 test.describe("inline code spacing", () => {
   test("gaps the preceding word and keeps wrapped code flush at the line start", async ({
@@ -110,55 +109,5 @@ test.describe("inline code spacing", () => {
     expect(measured.twoDroppedBy).toBeGreaterThan(5)
     // ...yet the closing ");" stayed on the first code's line.
     expect(measured.semiDelta).toBeLessThan(5)
-  })
-
-  // The six-per-em space after inline code must render narrower than the
-  // ordinary space it replaces (the code's trailing side bearing already pads
-  // the gap), while still giving the following word a place to wrap.
-  test("renders the gap after code narrower than a plain space and keeps it breakable", async ({
-    page,
-  }) => {
-    await gotoPage(page, "http://localhost:8080/test-page")
-
-    const measured = await page.evaluate((sixPerEmSpace) => {
-      const host = document.createElement("div")
-      host.innerHTML =
-        `<div id="ics-narrow"><code>xy</code>${sixPerEmSpace}word</div>` +
-        '<div id="ics-plain"><code>xy</code> word</div>' +
-        `<div id="ics-wrap" style="width:1px"><code id="ics-wrap-code">xy</code>${sixPerEmSpace}<span id="ics-wrap-word">word</span></div>`
-
-      const article = document.querySelector("article") ?? document.body
-      article.appendChild(host)
-
-      const spaceWidth = (containerId: string): number => {
-        const container = document.getElementById(containerId)
-        const gapNode = container?.querySelector("code")?.nextSibling as globalThis.Text | null
-        if (!gapNode) throw new Error(`missing gap text in #${containerId}`)
-        const range = document.createRange()
-        range.setStart(gapNode, 0)
-        range.setEnd(gapNode, 1)
-        return range.getBoundingClientRect().width
-      }
-
-      const rect = (id: string): DOMRect => {
-        const el = document.getElementById(id)
-        if (!el) throw new Error(`missing fixture element #${id}`)
-        return el.getBoundingClientRect()
-      }
-
-      const result = {
-        narrowWidth: spaceWidth("ics-narrow"),
-        plainWidth: spaceWidth("ics-plain"),
-        wrapDelta: rect("ics-wrap-word").top - rect("ics-wrap-code").top,
-      }
-      host.remove()
-      return result
-    }, SIX_PER_EM_SPACE)
-
-    // The six-per-em space renders with real, but reduced, width.
-    expect(measured.narrowWidth).toBeGreaterThan(0)
-    expect(measured.narrowWidth).toBeLessThan(measured.plainWidth)
-    // A word after the six-per-em space can still wrap to the next line.
-    expect(measured.wrapDelta).toBeGreaterThan(5)
   })
 })
