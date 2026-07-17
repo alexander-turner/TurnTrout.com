@@ -8,7 +8,11 @@ Applies two modifications to EBGaramond08-Regular and EBGaramond12-Regular:
    for f-variant glyphs x punctuation, open-punct x descender letters,
    close-punct x comma/semicolon (tightened to undo a wide left sidebearing),
    and quote x bracket (loosened so a curly quote's ink clears an adjacent
-   bracket, both open-quote+"[" and "]"+close-quote).
+   bracket, both open-quote+"[" and "]"+close-quote). ChainContextPos
+   lookups extend overhang clearance across a word space: any spacing glyph
+   whose ink overhangs its advance inside an opening mark's vertical band
+   (f's hook before quotes, Q's tail before brackets) widens the space, so
+   "of “…”" / "if (…)" stop crowding the mark.
 
 Usage:
     python scripts/build_fonts.py           # Build and verify
@@ -155,6 +159,31 @@ _TIGHTEN_TARGET_GLYPHS: Final[tuple[str, ...]] = (
     "comma",
     "semicolon",
 )
+
+# A glyph whose ink overhangs its advance (f's hook, Q's tail, ...) reaches
+# across a following word space toward an opening mark, so "of “…”", "if (…)"
+# read cramped even though the space's advance is ordinary. The direct
+# overhang kern only fires when the mark abuts the glyph ("f“"); once a space
+# intervenes it never applies. Widen the space in exactly that 3-glyph
+# context — overhanging glyph · space · open-mark — so the mark clears the
+# ink by the same margin a non-overhanging letter would give it.
+#
+# Sources are found by scanning every spacing glyph's outline, but only ink
+# inside the marks' vertical band counts: Q's tail overhangs at the baseline,
+# where a high quote has no ink, so "Q “" needs no clearance while "Q (" does.
+# The marks are therefore grouped by the band their ink occupies. Only
+# opening marks qualify at all: a preceding word + space introduces them,
+# whereas closing marks hug the word they follow.
+_SPACE_CLEARANCE_TARGET_GROUPS: Final[tuple[tuple[str, ...], ...]] = (
+    ("quotedblleft", "quoteleft"),
+    ("parenleft", "bracketleft", "braceleft"),
+)
+# Clearances below the floor are sub-pixel at body sizes; quantizing merges
+# near-identical values so each bucket costs one lookup pair instead of many.
+_SPACE_CLEARANCE_MIN: Final[int] = 150
+_SPACE_CLEARANCE_QUANTUM: Final[int] = 25
+# GDEF glyph class for combining marks, which never precede a word space.
+_GDEF_MARK_CLASS: Final[int] = 3
 
 
 def _get_f_glyphs(font: TTFont) -> tuple[str, ...]:
@@ -305,6 +334,174 @@ def _add_lsb_tighten_pairs(
             )
 
 
+def _glyph_overhang(font: TTFont, name: str) -> int:
+    """Ink extent past the advance width (positive when the glyph overhangs)."""
+    return font["glyf"][name].xMax - font["hmtx"][name][0]
+
+
+def _banded_ink_xmax(
+    font: TTFont, name: str, y_min: int, y_max: int
+) -> int | None:
+    """
+    Max outline-point x within the vertical band, or None if no ink there.
+
+    Points bound their quadratic curves, so this can only overestimate the true
+    ink extent — erring toward slightly more clearance, never less.
+    """
+    glyf_table = font["glyf"]
+    glyph = glyf_table[name]
+    if glyph.numberOfContours == 0 and not glyph.isComposite():
+        return None
+    coordinates, _end_points, _flags = glyph.getCoordinates(glyf_table)
+    xs = [x for x, y in coordinates if y_min <= y <= y_max]
+    return max(xs) if xs else None
+
+
+def _space_glyph_names(font: TTFont) -> tuple[str, ...]:
+    """Space glyphs that can sit between a word and an opening mark."""
+    cmap = font.getBestCmap() or {}
+    names = ["space"]
+    nbsp = cmap.get(0x00A0)
+    if nbsp is not None and nbsp != "space":
+        names.append(nbsp)
+    return tuple(names)
+
+
+def _spacing_glyph_names(font: TTFont) -> tuple[str, ...]:
+    """Glyphs that can end a word: spacing, non-mark, with an advance."""
+    hmtx_table = font["hmtx"]
+    gdef = font.get("GDEF")
+    class_defs: dict[str, int] = {}
+    if gdef is not None and gdef.table.GlyphClassDef is not None:
+        class_defs = gdef.table.GlyphClassDef.classDefs
+    return tuple(
+        name
+        for name in font.getGlyphOrder()
+        if name in hmtx_table.metrics
+        and hmtx_table[name][0] > 0
+        and class_defs.get(name) != _GDEF_MARK_CLASS
+    )
+
+
+def _collect_space_clearance_groups(
+    font: TTFont,
+) -> tuple[tuple[tuple[str, ...], dict[int, list[str]]], ...]:
+    """
+    For each target-mark band, group source glyphs by quantized clearance.
+
+    Clearance restores the ink gap the reference glyph would leave: the
+    source's in-band overhang minus the reference's overhang. Sources whose
+    ink misses the band entirely, or whose clearance is below the floor, are
+    dropped.
+    """
+    glyf_table = font["glyf"]
+    hmtx_table = font["hmtx"]
+    reference_overhang = _glyph_overhang(font, _TIGHTEN_REFERENCE_GLYPH)
+    sources = _spacing_glyph_names(font)
+
+    collected = []
+    for targets in _SPACE_CLEARANCE_TARGET_GROUPS:
+        present = tuple(t for t in targets if t in glyf_table)
+        y_min = min(glyf_table[t].yMin for t in present)
+        y_max = max(glyf_table[t].yMax for t in present)
+
+        groups: dict[int, list[str]] = {}
+        for src in sources:
+            ink_xmax = _banded_ink_xmax(font, src, y_min, y_max)
+            if ink_xmax is None:
+                continue
+            clearance = (ink_xmax - hmtx_table[src][0]) - reference_overhang
+            if clearance < _SPACE_CLEARANCE_MIN:
+                continue
+            quantized = (
+                round(clearance / _SPACE_CLEARANCE_QUANTUM)
+                * _SPACE_CLEARANCE_QUANTUM
+            )
+            groups.setdefault(quantized, []).append(src)
+        collected.append((present, groups))
+    return tuple(collected)
+
+
+def _coverage(font: TTFont, glyphs: tuple[str, ...]) -> Any:
+    # Format 1 coverage is binary-searched, so glyph ids must be sorted.
+    cov = otTables.Coverage()
+    cov.glyphs = sorted(glyphs, key=font.getGlyphID)
+    return cov
+
+
+def _build_space_widen_lookup(
+    font: TTFont, space_glyphs: tuple[str, ...], xadvance: int
+) -> Any:
+    """SinglePos lookup that adds ``xadvance`` to each space glyph's advance."""
+    subtable = otTables.SinglePos()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
+    subtable.Format = 1
+    subtable.Coverage = _coverage(font, space_glyphs)
+    subtable.Value = buildValue({"XAdvance": xadvance})
+    subtable.ValueFormat = 0x0004  # XAdvance only
+
+    lookup = otTables.Lookup()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
+    lookup.LookupType = 1
+    lookup.LookupFlag = 0
+    lookup.SubTable = [subtable]
+    lookup.SubTableCount = 1
+    return lookup
+
+
+def _build_space_context_lookup(
+    font: TTFont,
+    backtrack: tuple[str, ...],
+    space_glyphs: tuple[str, ...],
+    lookahead: tuple[str, ...],
+    inner_index: int,
+) -> Any:
+    """ChainContextPos lookup: backtrack · space · lookahead → run inner."""
+    subtable = otTables.ChainContextPos()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
+    subtable.Format = 3
+    subtable.BacktrackGlyphCount = 1
+    subtable.BacktrackCoverage = [_coverage(font, backtrack)]
+    subtable.InputGlyphCount = 1
+    subtable.InputCoverage = [_coverage(font, space_glyphs)]
+    subtable.LookAheadGlyphCount = 1
+    subtable.LookAheadCoverage = [_coverage(font, lookahead)]
+
+    record = otTables.PosLookupRecord()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
+    record.SequenceIndex = 0
+    record.LookupListIndex = inner_index
+    subtable.PosLookupRecord = [record]
+    subtable.PosCount = 1
+
+    lookup = otTables.Lookup()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
+    lookup.LookupType = 8
+    lookup.LookupFlag = 0
+    lookup.SubTable = [subtable]
+    lookup.SubTableCount = 1
+    return lookup
+
+
+def _add_space_overhang_clearance(gpos: Any, font: TTFont) -> None:
+    """
+    Register contextual lookups that clear overhanging ink from an opening mark
+    across an intervening word space.
+
+    Each (band, clearance) group costs one SinglePos + one ChainContextPos
+    lookup; only the chain is registered in the kern feature, the SinglePos is
+    reached through it.
+    """
+    space_glyphs = _space_glyph_names(font)
+    for lookahead, groups in _collect_space_clearance_groups(font):
+        for clearance, sources in sorted(groups.items()):
+            inner = _build_space_widen_lookup(font, space_glyphs, clearance)
+            inner_index = len(gpos.LookupList.Lookup)
+            gpos.LookupList.Lookup.append(inner)
+
+            chain = _build_space_context_lookup(
+                font, tuple(sources), space_glyphs, lookahead, inner_index
+            )
+            chain_index = len(gpos.LookupList.Lookup)
+            gpos.LookupList.Lookup.append(chain)
+            _register_kern_feature(gpos, chain_index)
+
+
 def _add_fixed_kern_pairs(
     builder: PairPosBuilder,
     sources: tuple[str, ...],
@@ -347,6 +544,10 @@ def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
     lookup = builder.build()
 
     gpos = font["GPOS"].table
+    # Contextual clearance lookups go in first so the PairPos kern lookup stays
+    # the final entry in the list — readers key on it as Lookup[-1].
+    _add_space_overhang_clearance(gpos, font)
+
     lookup_index = len(gpos.LookupList.Lookup)
     gpos.LookupList.Lookup.append(lookup)
     _register_kern_feature(gpos, lookup_index)

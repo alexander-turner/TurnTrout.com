@@ -27,6 +27,38 @@ function aliasDir(filePath: FilePath | undefined, directory: string): string {
 }
 
 /**
+ * Redirect slugs for a file: its aliases, plus its original slug when a
+ * permalink relocates the canonical page.
+ *
+ * Trailing-slash slugs normalize to explicit `index` files. Any slug that
+ * case-insensitively equals the canonical slug is dropped: it would emit a
+ * stub that redirects to itself, fighting the real page for one output path.
+ * Exact matches collide on every filesystem (only emitter order decides
+ * whether the stub or the page survives); case variants collide once the
+ * output lands on a case-insensitive filesystem (macOS/Windows checkouts,
+ * CI caches), where the stub can clobber the page and browsers that follow
+ * same-URL meta refreshes (WebKit) reload forever.
+ */
+function redirectSlugs(
+  file: {
+    data: { filePath?: FilePath; slug?: FullSlug; frontmatter?: { aliases?: readonly string[] } }
+  },
+  directory: string,
+  canonicalSlug: FullSlug,
+): FullSlug[] {
+  const dir = aliasDir(file.data.filePath, directory)
+  const aliases = file.data.frontmatter?.aliases ?? []
+  const slugs = aliases.map((alias) => path.posix.join(dir, alias) as FullSlug)
+  if (file.data.slug !== undefined && canonicalSlug !== file.data.slug) {
+    slugs.push(file.data.slug)
+  }
+
+  return slugs
+    .map((slug) => (slug.endsWith("/") ? (joinSegments(slug, "index") as FullSlug) : slug))
+    .filter((slug) => slug.toLowerCase() !== canonicalSlug.toLowerCase())
+}
+
+/**
  * Quartz emitter plugin that creates HTML redirect files for page aliases and permalinks.
  *
  * This plugin reads `aliases` and `permalink` fields from frontmatter and generates
@@ -61,22 +93,12 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
 
     const { argv } = ctx
     for (const [, file] of content) {
-      const dir = aliasDir(file.data.filePath, argv.directory)
-      const aliases = file.data.frontmatter?.aliases ?? []
-      const slugs = aliases.map((alias) => path.posix.join(dir, alias) as FullSlug)
       const permalink = file.data.frontmatter?.permalink
-      if (typeof permalink === "string") {
-        // The canonical page is emitted at the permalink; the original slug is
-        // where the redirect file lands, so that is the output edge to declare.
-        slugs.push(file.data.slug as FullSlug)
-      }
+      const canonicalSlug = (
+        typeof permalink === "string" ? permalink : (file.data.slug ?? "")
+      ) as FullSlug
 
-      for (let slug of slugs) {
-        // Normalize directory-style URLs to explicit index.html files
-        if (slug.endsWith("/")) {
-          slug = joinSegments(slug, "index") as FullSlug
-        }
-
+      for (const slug of redirectSlugs(file, argv.directory, canonicalSlug)) {
         graph.addEdge(
           file.data.filePath || ("" as FilePath),
           joinSegments(argv.output, `${slug}.html`) as FilePath,
@@ -96,32 +118,27 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
     const fps: FilePath[] = []
 
     for (const [, file] of content) {
-      const dir = aliasDir(file.data.filePath, argv.directory)
-      const aliases = file.data.frontmatter?.aliases ?? []
-      const slugs: FullSlug[] = aliases.map((alias) => path.posix.join(dir, alias) as FullSlug)
       const permalink = file.data.frontmatter?.permalink
-      if (typeof permalink === "string") {
-        // When permalink exists, current slug becomes an alias and permalink becomes
-        // canonical. Emitters that run after this one (e.g. ContentIndex) read
-        // file.data.slug directly rather than re-deriving it from frontmatter, so the
-        // mutation must happen here for them to index the page at its canonical URL.
-        slugs.push(file.data.slug as FullSlug)
-        file.data.slug = permalink as FullSlug
-      }
+      const canonicalSlug = (
+        typeof permalink === "string" ? permalink : (file.data.slug ?? "")
+      ) as FullSlug
 
-      for (let slug of slugs) {
-        if (slug.endsWith("/")) {
-          slug = joinSegments(slug, "index") as FullSlug
-        }
+      const slugs = redirectSlugs(file, argv.directory, canonicalSlug)
+      // Emitters that run after this one (e.g. ContentIndex) read
+      // file.data.slug directly rather than re-deriving it from frontmatter,
+      // so the canonical slug must be committed here for them to index the
+      // page at its canonical URL.
+      file.data.slug = canonicalSlug
 
-        const redirUrl = resolveRelative(slug, file.data.slug || ("" as FullSlug))
+      for (const slug of slugs) {
+        const redirUrl = resolveRelative(slug, canonicalSlug)
 
         // Generate redirect HTML with full metadata for SEO
         const redirectMetadata = renderHead({
           cfg: ctx.cfg.configuration,
           fileData: file.data,
-          slug: file.data.slug as FullSlug,
-          redirect: { slug, to: file.data.slug as FullSlug },
+          slug: canonicalSlug,
+          redirect: { slug, to: canonicalSlug },
         })
 
         const fp = await write({

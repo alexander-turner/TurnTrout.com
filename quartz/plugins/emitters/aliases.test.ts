@@ -348,6 +348,65 @@ describe("AliasRedirects", () => {
     await testEmitFiles(plugin, mockCtx, content, ["draft-alias.html"])
   })
 
+  it("drops aliases that exactly match the canonical slug", async () => {
+    const vfile = createTestVFile({
+      path: "/content/self-alias.md",
+      frontmatter: { title: "Self Alias", aliases: ["self-alias", "kept-alias"] },
+    })
+    const content = createMockContent(vfile)
+
+    const graph = await testDependencyGraph(plugin, mockCtx, content, [
+      "public/kept-alias.html" as FilePath,
+    ])
+    expect(graph.hasNode("public/self-alias.html" as FilePath)).toBe(false)
+
+    await testEmitFiles(plugin, mockCtx, content, ["kept-alias.html"])
+  })
+
+  it("drops aliases that case-insensitively match the canonical slug", async () => {
+    const vfile = createTestVFile({
+      path: "/content/posts.md",
+      frontmatter: { title: "Posts", permalink: "posts", aliases: ["Posts"] },
+    })
+    const content = createMockContent(vfile)
+
+    const graph = await testDependencyGraph(plugin, mockCtx, content, [])
+    expect(graph.hasNode("public/Posts.html" as FilePath)).toBe(false)
+    expect(graph.hasNode("public/posts.html" as FilePath)).toBe(false)
+
+    await testEmitFiles(plugin, mockCtx, content, [])
+  })
+
+  it("drops the original slug when the permalink differs only by case", async () => {
+    const vfile = createTestVFile({
+      path: "/content/custom.md",
+      frontmatter: { title: "Custom", permalink: "Custom" },
+    })
+    const content = createMockContent(vfile)
+
+    const graph = await testDependencyGraph(plugin, mockCtx, content, [])
+    expect(graph.hasNode("public/custom.html" as FilePath)).toBe(false)
+
+    await testEmitFiles(plugin, mockCtx, content, [])
+  })
+
+  it("emits alias redirects when the slug is undefined", async () => {
+    const vfile = createTestVFile({
+      path: "/content/test-undefined-slug.md",
+      slug: undefined,
+      frontmatter: { title: "Undefined Slug", aliases: ["undefined-slug-alias"] },
+    })
+    const content = createMockContent(vfile)
+
+    const graph = await testDependencyGraph(plugin, mockCtx, content, [
+      "public/undefined-slug-alias.html" as FilePath,
+    ])
+    expect(graph).toBeDefined()
+
+    const files = await testEmitFiles(plugin, mockCtx, content, ["undefined-slug-alias.html"])
+    expect(files).toBeDefined()
+  })
+
   it("should handle missing slug gracefully", async () => {
     const vfile = createTestVFile({
       path: "/content/test-no-slug.md",
