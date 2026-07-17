@@ -59,28 +59,25 @@ const CONTEXTS: readonly ContextSpec[] = [
   },
 ]
 
-// margin-left = 0.125·base + nudge − inset·size, with base-margin 8px and a
-// domainless icon (inset 0). Inside code a uniform −0.125·base nudge replaces
-// the per-glyph classes.
-const BASE_MARGIN = 8
-const EXPECTED_MARGIN_PX: Readonly<Record<string, number>> = {
-  "serif|null": 0.125 * BASE_MARGIN,
-  "serif|close-text": 0.25 * BASE_MARGIN,
-  "serif|closer-text": 0.375 * BASE_MARGIN,
-  "italic|null": 0.125 * BASE_MARGIN,
-  "italic|close-text": 0.25 * BASE_MARGIN,
-  "italic|closer-text": 0.375 * BASE_MARGIN,
-  "smallCaps|null": 0.125 * BASE_MARGIN,
-  "smallCaps|close-text": 0.25 * BASE_MARGIN,
-  "smallCaps|closer-text": 0.375 * BASE_MARGIN,
-  "code|null": 0,
+// margin-left = 0.125·base + nudge − inset·size, with a domainless icon
+// (inset 0). $base-margin is rem-denominated, so the absolute pixel value
+// varies with the viewport's root font size; the invariant is the RATIO to
+// the classless serif margin (the "unit"): close-text doubles it,
+// closer-text triples it, and inside code a uniform −0.125·base nudge
+// cancels it to zero.
+const MARGIN_UNIT_MULTIPLIER: Readonly<Record<string, number>> = {
+  null: 1,
+  "close-text": 2,
+  "closer-text": 3,
 }
+const UNIT_PROBE_KEY = "serif|o"
 
 // Crowding floors per class (deep overhangers accept tighter clearance, as in
 // the serif audit) and drift ceilings per context. Ink-in-band understates the
-// perceptual audit for glyphs whose flat edges read closer than round ones, so
-// the serif/smallCaps ceilings are generous; code is tight because its gap is
-// context-uniform.
+// perceptual audit for glyphs whose flat edges read closer than round ones,
+// and thin monospace glyphs ("l", "(") center in FiraCode's fixed advance
+// with legitimately wide bearings, so every ceiling is generous — the exact
+// margin-ratio layer above is the regression ratchet, not the band.
 const FLOOR_PX: Readonly<Record<string, number>> = {
   null: -0.25,
   "close-text": -0.75,
@@ -90,7 +87,7 @@ const CEILING_PX: Readonly<Record<string, number>> = {
   serif: 6,
   italic: 4,
   smallCaps: 6,
-  code: 2.5,
+  code: 6,
 }
 
 interface Measurement {
@@ -108,6 +105,10 @@ interface Probe {
 }
 
 function collectFailures(probes: readonly Probe[], measurements: readonly Measurement[]): string[] {
+  const unit = measurements.find((m) => m.key === UNIT_PROBE_KEY)
+  if (!unit || unit.marginPx <= 0) {
+    return [`margin unit probe ${UNIT_PROBE_KEY} missing or non-positive`]
+  }
   const failures: string[] = []
   for (const probe of probes) {
     const measured = measurements.find((m) => m.key === probe.key)
@@ -116,10 +117,13 @@ function collectFailures(probes: readonly Probe[], measurements: readonly Measur
       continue
     }
     const expectedMargin =
-      EXPECTED_MARGIN_PX[`${probe.contextName}|${probe.nudgeClass ?? "null"}`] ??
-      EXPECTED_MARGIN_PX[`${probe.contextName}|null`]
+      probe.contextName === "code"
+        ? 0
+        : MARGIN_UNIT_MULTIPLIER[probe.nudgeClass ?? "null"] * unit.marginPx
     if (Math.abs(measured.marginPx - expectedMargin) > 0.1) {
-      failures.push(`${probe.key}: margin ${measured.marginPx.toFixed(2)}px != ${expectedMargin}px`)
+      failures.push(
+        `${probe.key}: margin ${measured.marginPx.toFixed(2)}px != ${expectedMargin.toFixed(2)}px`,
+      )
     }
     if (measured.gapPx !== null) {
       const floor = FLOOR_PX[probe.nudgeClass ?? "null"]
