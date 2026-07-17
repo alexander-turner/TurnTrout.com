@@ -76,6 +76,17 @@
   code & {
     margin-right: calc(0.15 * #{$base-margin});
   }
+
+  // Monospace advances end in built-in right side bearing (FiraCode ≈0.08em
+  // vs ≈0.03em for a serif round letter), so the last code glyph already
+  // clears the icon. The serif-audited nudge classes don't apply inside
+  // code, and the negative nudge returns the bearing's surplus so the
+  // visual gap stays at the standard width.
+  code &,
+  code &.close-text,
+  code &.closer-text {
+    --glyph-nudge: calc(-0.1 * #{$base-margin});
+  }
 }
 
 // SVG-specific styling using masks for color control
