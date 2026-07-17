@@ -85,7 +85,7 @@
   code &,
   code &.close-text,
   code &.closer-text {
-    --glyph-nudge: calc(-0.1 * #{$base-margin});
+    --glyph-nudge: calc(-0.125 * #{$base-margin});
   }
 }
 
