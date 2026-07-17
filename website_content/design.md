@@ -91,7 +91,7 @@ So I decided to convert the HTML to Markdown on my own using [`turndown`](https:
 That took a few months.
 
 > [!info]- Details on exporting my content
-> I exported my content using [this query](https://github.com/alexander-turner/TurnTrout.com/blob/import/scripts/graphiql.txt). After downloading the JSON, I ran [`process_json.cjs`](https://github.com/alexander-turner/TurnTrout.com/blob/import/scripts/process_json.cjs) to use [`turndown`](https://github.com/mixmark-io/turndown) to convert the raw HTML to (properly processed) Markdown. Finally, I [preprocessed the Markdown files.](https://github.com/alexander-turner/TurnTrout.com/blob/import/scripts/md_processing_single.py)
+> I exported my content using this query. After downloading the JSON, I ran `process_json.cjs` to use [`turndown`](https://github.com/mixmark-io/turndown) to convert the raw HTML to (properly processed) Markdown. Finally, I preprocessed the Markdown files.
 
 # Archiving and dependencies
 
@@ -801,7 +801,7 @@ To keep documentation up-to-date, the build process computes e.g. the number of 
 ## Smaller features
 
 Popovers
-: Desktop users conjure popovers by hovering over an internal link. 
+: Desktop users conjure popovers by hovering over an internal link.
 
 Search
 : Pressing `/` toggles the search modal. Navigating to a result temporarily highlights the query and scrolls to the first match.
