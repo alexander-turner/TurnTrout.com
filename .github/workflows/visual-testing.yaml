@@ -77,6 +77,21 @@ jobs:
   visual-testing-linux:
     needs: [build, should-run, generate-fixtures]
     runs-on: ubuntu-24.04
+    # Screenshots must render in a frozen environment: GitHub rotates the
+    # ubuntu-24.04 runner image (browser builds, freetype/fontconfig), and
+    # each rotation shifts glyph antialiasing enough to diff every
+    # text-bearing baseline at once. The digest-pinned Playwright container
+    # freezes the browser + font stack, so Linux baselines change only when
+    # we bump Playwright deliberately. Digest (not tag) pin because MCR
+    # rebuilds version tags in place. When bumping @playwright/test, update
+    # the tag AND refresh the digest:
+    #   curl -sI https://mcr.microsoft.com/v2/playwright/manifests/v<version>-noble \
+    #     -H "Accept: application/vnd.oci.image.index.v1+json" | grep -i docker-content-digest
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble@sha256:9bd26ad900bb5e0f4dee75839e957a89ae89c2b7ab1e76050e559790e946b948
+      # Chromium crashes under Docker's default ipc namespace when /dev/shm
+      # fills; host IPC is the Playwright-documented fix.
+      options: --ipc=host
     strategy:
       fail-fast: false
       matrix:
@@ -93,6 +108,11 @@ jobs:
         timeout-minutes: 5
         with:
           persist-credentials: false
+
+      # The container runs as root without sudo; the shared setup actions
+      # invoke `sudo` for apt operations, so provide it before they run.
+      - name: Install sudo in container
+        run: apt-get update && apt-get install -y --no-install-recommends sudo
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
