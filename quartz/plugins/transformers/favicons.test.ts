@@ -1,12 +1,13 @@
 /**
  * @jest-environment node
  */
-import type { Element, Properties } from "hast"
+import type { Element, Parent, Properties } from "hast"
 
 import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { h } from "hastscript"
-
 // skipcq: JS-C1003
+import { visit } from "unist-util-visit"
+
 import * as favicons from "./favicons"
 
 jest.mock("fs")
@@ -498,10 +499,11 @@ describe("insertFavicon", () => {
       expect(span.children[1]).toMatchObject(createExpectedFavicon(imgPath, nudgeClass))
     })
 
-    it("keeps charsToSpace and charsToSpaceMost disjoint", () => {
-      const overlap = favicons.charsToSpace.filter((char) =>
-        favicons.charsToSpaceMost.includes(char),
-      )
+    it.each([
+      ["serif sets", favicons.charsToSpace, favicons.charsToSpaceMost],
+      ["italic sets", favicons.charsToSpaceItalic, favicons.charsToSpaceMostItalic],
+    ])("keeps the %s disjoint", (_label, close, most) => {
+      const overlap = close.filter((char) => most.includes(char))
       expect(overlap).toEqual([])
     })
 
@@ -513,6 +515,99 @@ describe("insertFavicon", () => {
       const result = favicons.maybeSpliceText(node, favicons.createFaviconElement(imgPath))
       expect(result).toBeNull()
       expect(existingSpan.children).toHaveLength(3)
+    })
+  })
+
+  describe("glyph context", () => {
+    const ctx = (overrides: Partial<favicons.GlyphContext>): favicons.GlyphContext => ({
+      ...favicons.EMPTY_GLYPH_CONTEXT,
+      ...overrides,
+    })
+
+    describe("nudgeClassFor", () => {
+      it.each([
+        ["T", {}, "close-text"],
+        ["f", {}, "closer-text"],
+        ["o", {}, null],
+        // Monospace bearing is handled uniformly in CSS.
+        ["T", { code: true }, null],
+        ["f", { code: true }, null],
+        // Italic membership is ink-derived; leaning glyphs join, others leave.
+        ["t", { italic: true }, "close-text"],
+        ["V", { italic: true }, "closer-text"],
+        ["f", { italic: true }, "closer-text"],
+        ["w", { italic: true }, null],
+        ["y", { italic: true }, null],
+        // Small-cap lowercase forms clear the icon; capitals keep their sets.
+        ["y", { smallCaps: true }, null],
+        ["f", { smallCaps: true }, null],
+        ["T", { smallCaps: true }, "close-text"],
+        ["(", { smallCaps: true }, "close-text"],
+        ["y", { smallCaps: true, italic: true }, null],
+        ["R", { italic: true }, null],
+      ] as const)("%s in %o gets %s", (char, overrides, expected) => {
+        expect(favicons.nudgeClassFor(char, ctx(overrides))).toBe(expected)
+      })
+    })
+
+    describe("broadenContext and contextFromAncestors", () => {
+      it.each([
+        [h("em"), { italic: true, smallCaps: false, code: false }],
+        [h("i"), { italic: true, smallCaps: false, code: false }],
+        [h("abbr", { className: "small-caps" }), { italic: false, smallCaps: true, code: false }],
+        [h("code"), { italic: false, smallCaps: false, code: true }],
+        [h("strong"), favicons.EMPTY_GLYPH_CONTEXT],
+      ])("broadens over %o", (element, expected) => {
+        expect(favicons.broadenContext(element, favicons.EMPTY_GLYPH_CONTEXT)).toEqual(expected)
+      })
+
+      it("folds element ancestors and skips non-elements", () => {
+        const root = { type: "root", children: [] } as Parent
+        const ancestors = [root, h("p"), h("em")]
+        expect(favicons.contextFromAncestors(ancestors)).toEqual(ctx({ italic: true }))
+      })
+    })
+
+    describe("context threading through insertFavicon", () => {
+      const classOf = (node: Element): string | undefined => {
+        let found: string | undefined
+        visit(node, "element", (el: Element) => {
+          const cls = el.properties?.class
+          if (typeof cls === "string" && cls.includes("favicon") && !cls.includes("favicon-span")) {
+            found = cls
+          }
+        })
+        return found
+      }
+
+      it("descends into <em>, assigning the italic membership", () => {
+        // "Incoherent" ends in "t": italic member, serif non-member.
+        const node = h("a", { href: "https://example.com" }, [h("em", {}, ["Incoherent"])])
+        favicons.insertFavicon(imgPath, node)
+        expect(classOf(node)).toBe("favicon close-text")
+      })
+
+      it("suppresses the serif nudge after small-cap lowercase", () => {
+        const node = h("a", { href: "https://example.com" }, [
+          h("abbr", { className: "small-caps" }, ["proxy"]),
+        ])
+        favicons.insertFavicon(imgPath, node)
+        expect(classOf(node)).toBe("favicon")
+      })
+
+      it("suppresses per-glyph nudges inside <code>", () => {
+        const node = h("a", { href: "https://example.com" }, [h("code", {}, ["subfont -y"])])
+        favicons.insertFavicon(imgPath, node)
+        expect(classOf(node)).toBe("favicon")
+      })
+
+      it("applies an outer context supplied by the caller", () => {
+        // The whole link sits inside <em>…</em>: the visitor derives the
+        // context from ancestors and passes it in.
+        const node = h("a", { href: "https://example.com" }, ["Incoherent"])
+        favicons.insertFavicon(imgPath, node, ctx({ italic: true }))
+        expect(classOf(node)).toBe("favicon close-text")
+      })
     })
   })
 })

@@ -623,6 +623,10 @@ There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [
 
 To tackle this, the favicon transformation splices the last few characters from the link text and wraps them together with the favicon inside a `<span class="favicon-span">` with `white-space: nowrap`. This keeps the last few characters glued to the favicon, preventing line breaks at that position.
 
+### Favicons sit a consistent distance from the text
+
+A fixed margin doesn't actually _look_ fixed. Letters carry different amounts of empty space on their right side: an "f" leans into the gap that follows it, an "o" stops short, and monospace `code` pads every character with extra room. So I space by ink, not by box - each icon gets nudged according to the letter it follows, and inside inline code the icon tucks in closer since the monospace font already supplies the breathing room. Whatever the final glyph, the icon sits the same visual distance from it.
+
 ### I only include recognizable favicons
 
 I [originally](https://github.com/alexander-turner/TurnTrout.com/blob/608b39512cf0e27e25ad48d0e14a38804a2aff18/website_content/design.md#inline-favicons) displayed favicons for _every_ external link. Since most people don't recognize the icons of most sites, these icons become clutter.
@@ -801,7 +805,7 @@ To keep documentation up-to-date, the build process computes e.g. the number of 
 ## Smaller features
 
 Popovers
-: Desktop users conjure popovers by hovering over an internal link. 
+: Desktop users conjure popovers by hovering over an internal link.
 
 Search
 : Pressing `/` toggles the search modal. Navigating to a result temporarily highlights the query and scrolls to the first match.

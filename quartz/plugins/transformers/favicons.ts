@@ -4,6 +4,7 @@ import fs from "fs"
 import mime from "mime-types"
 import pRetry, { AbortError } from "p-retry"
 import { visit } from "unist-util-visit"
+import { visitParents } from "unist-util-visit-parents"
 
 import type { BuildCtx } from "../../util/ctx"
 
@@ -21,7 +22,7 @@ import {
   normalizeHostname,
 } from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
-import { addClass, createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"
+import { addClass, createNowrapSpan, hasClass, ITALIC_TAGS, spliceAndWrapLastChars } from "./utils"
 
 const { minFaviconCount, faviconFolder } = simpleConstants
 
@@ -226,11 +227,15 @@ export function createFaviconElement(urlString: string, description = ""): Favic
 /**
  * Inserts a favicon image into a node's children.
  */
-export function insertFavicon(imgPath: string | null, node: Element): void {
+export function insertFavicon(
+  imgPath: string | null,
+  node: Element,
+  context: GlyphContext = EMPTY_GLYPH_CONTEXT,
+): void {
   if (imgPath === null) return
 
   const toAppend: FaviconNode = createFaviconElement(imgPath)
-  const result = maybeSpliceText(node, toAppend)
+  const result = maybeSpliceText(node, toAppend, context)
   if (result) {
     node.children.push(result)
   }
@@ -266,6 +271,87 @@ export const charsToSpace: readonly string[] = [
 // Glyphs that overhang so far right (per the same audit) that they need a
 // larger nudge than charsToSpace provides.
 export const charsToSpaceMost: readonly string[] = ["f", "Q", "/"]
+// The serif sets above come from the perceptual audit and stay its property.
+// Italic glyphs lean rightward, so the overhang set differs; with no audit for
+// the italic face, membership derives from measured ink clearance within the
+// favicon's vertical band (0.2em-0.7em above the baseline): glyphs whose
+// in-band ink reaches their advance edge get a nudge, and glyphs whose ink
+// overhangs by more than 0.1em get the larger one.
+export const charsToSpaceItalic: readonly string[] = [
+  "T",
+  "Y",
+  "N",
+  "F",
+  "J",
+  "K",
+  "U",
+  "(",
+  "x",
+  "e",
+  "t",
+  "d",
+  "r",
+  "l",
+  "g",
+]
+export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/"]
+
+// Font context of the glyph a favicon lands after. Nudges are audited against
+// the serif body face, so other faces pick different memberships (or none).
+export interface GlyphContext {
+  readonly italic: boolean
+  readonly smallCaps: boolean
+  readonly code: boolean
+}
+
+export const EMPTY_GLYPH_CONTEXT: GlyphContext = {
+  italic: false,
+  smallCaps: false,
+  code: false,
+}
+
+/** Widens `context` with whatever face `element` switches its text into. */
+export function broadenContext(element: Element, context: GlyphContext): GlyphContext {
+  return {
+    italic: context.italic || ITALIC_TAGS.has(element.tagName),
+    smallCaps: context.smallCaps || hasClass(element, "small-caps"),
+    code: context.code || element.tagName === "code",
+  }
+}
+
+/** Folds every element ancestor into a glyph context (outermost first). */
+export function contextFromAncestors(ancestors: readonly Parent[]): GlyphContext {
+  let context = EMPTY_GLYPH_CONTEXT
+  for (const ancestor of ancestors) {
+    if (ancestor.type === "element") {
+      context = broadenContext(ancestor as Element, context)
+    }
+  }
+  return context
+}
+
+/**
+ * The nudge class for a favicon that lands after `lastChar` rendered in
+ * `context`:
+ *   - monospace advances carry their own right side bearing, handled uniformly
+ *     in CSS (`code .favicon`), so no per-glyph class applies;
+ *   - small-cap forms of lowercase letters keep their in-band ink clear of the
+ *     icon (even ``q``'s tail is a descender, below the icon), so none applies;
+ *   - italic uses the ink-derived sets, the serif body face its audited ones.
+ */
+export function nudgeClassFor(
+  lastChar: string,
+  context: GlyphContext,
+): "close-text" | "closer-text" | null {
+  if (context.code) return null
+  if (context.smallCaps && /[a-z]/.test(lastChar)) return null
+  const [most, close] = context.italic
+    ? [charsToSpaceMostItalic, charsToSpaceItalic]
+    : [charsToSpaceMost, charsToSpace]
+  if (most.includes(lastChar)) return "closer-text"
+  return close.includes(lastChar) ? "close-text" : null
+}
+
 // Distinct from the shared INLINE_PASSTHROUGH_TAGS (utils.ts) on purpose:
 // favicon placement descends into `<code>` and excludes `<a>` (links handled
 // separately), so its membership differs from the generic inline-wrapper set.
@@ -275,7 +361,11 @@ export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "in
  * Splices the last few characters from a text node and wraps them
  * with the favicon in a nowrap span, preventing line-break orphaning.
  */
-export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): Element | null {
+export function maybeSpliceText(
+  node: Element,
+  imgNodeToAppend: FaviconNode,
+  context: GlyphContext = EMPTY_GLYPH_CONTEXT,
+): Element | null {
   const isEmpty = (child: Element | Text) => child.type === "text" && child.value?.trim() === ""
   const lastChild = node.children.findLast(
     (child) => child.type === "element" || !isEmpty(child as Element | Text),
@@ -295,7 +385,11 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
   }
 
   if (lastChild.type === "element" && tagsToZoomInto.includes(lastChild.tagName)) {
-    const result = maybeSpliceText(lastChild as Element, imgNodeToAppend)
+    const result = maybeSpliceText(
+      lastChild as Element,
+      imgNodeToAppend,
+      broadenContext(lastChild as Element, context),
+    )
     /* istanbul ignore next -- recursive case where nested element has no text to splice */
     if (result) {
       lastChild.children.push(result)
@@ -309,11 +403,7 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
 
   const lastChildText = lastChild as Text
   const lastChar = lastChildText.value.slice(-1)
-  const nudgeClass = charsToSpaceMost.includes(lastChar)
-    ? "closer-text"
-    : charsToSpace.includes(lastChar)
-      ? "close-text"
-      : null
+  const nudgeClass = nudgeClassFor(lastChar, context)
   if (nudgeClass) {
     imgNodeToAppend.properties.class = `favicon ${nudgeClass}`
   }
@@ -321,8 +411,8 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
   return spliceAndWrapLastChars(lastChildText, node, imgNodeToAppend)
 }
 
-function handleMailtoLink(node: Element): void {
-  insertFavicon(specialFaviconPaths.mail, node)
+function handleMailtoLink(node: Element, context: GlyphContext): void {
+  insertFavicon(specialFaviconPaths.mail, node, context)
 }
 
 /** True when the element is an `h1`–`h6` heading. */
@@ -330,13 +420,18 @@ export function isHeading(node: Element): boolean {
   return HEADING_TAGS.has(node.tagName)
 }
 
-function handleSamePageLink(node: Element, href: string, parent: Parent): boolean {
+function handleSamePageLink(
+  node: Element,
+  href: string,
+  parent: Parent,
+  context: GlyphContext,
+): boolean {
   if (href.startsWith("#user-content-fn") || isHeading(parent as Element)) {
     return false
   }
 
   addClass(node, "same-page-link")
-  insertFavicon(specialFaviconPaths.anchor, node)
+  insertFavicon(specialFaviconPaths.anchor, node, context)
   return true
 }
 
@@ -435,6 +530,7 @@ async function handleLink(
   href: string,
   node: Element,
   faviconCounts: ReadonlyMap<string, number>,
+  context: GlyphContext,
 ): Promise<void> {
   let finalURL: URL
   try {
@@ -462,7 +558,7 @@ async function handleLink(
 
   // Always emit the full CDN URL so downstream consumers (asset dimension
   // resolution, browsers) treat it as a remote asset rather than a local file.
-  insertFavicon(getFaviconUrl(found), node)
+  insertFavicon(getFaviconUrl(found), node, context)
 }
 
 /**
@@ -472,6 +568,7 @@ export async function ModifyNode(
   node: Element,
   parent: Parent,
   faviconCounts: ReadonlyMap<string, number>,
+  context: GlyphContext = EMPTY_GLYPH_CONTEXT,
 ): Promise<void> {
   if (node.tagName !== "a" || !node.properties.href) return
 
@@ -481,24 +578,24 @@ export async function ModifyNode(
   if (hasFavicon(node)) return
 
   if (href.startsWith("mailto:")) {
-    handleMailtoLink(node)
+    handleMailtoLink(node, context)
     return
   }
 
   if (href.startsWith("#")) {
-    handleSamePageLink(node, href, parent)
+    handleSamePageLink(node, href, parent, context)
     return
   }
 
   if (href.endsWith("/rss.xml")) {
-    insertFavicon(specialFaviconPaths.rss, node)
+    insertFavicon(specialFaviconPaths.rss, node, context)
     return
   }
 
   if (shouldSkipFavicon(node, href)) return
 
   const normalized = normalizeUrl(href)
-  await handleLink(normalized, node, faviconCounts)
+  await handleLink(normalized, node, faviconCounts, context)
 }
 
 /** True when `node` is a footnote-reference superscript (`<sup><a data-footnote-ref>…</a></sup>`). */
@@ -580,21 +677,23 @@ export const AddFavicons = () => {
           return async (tree: Root) => {
             const faviconCounts = await readFaviconCounts()
 
-            const nodesToProcess: [Element, Parent][] = []
-            visit(
-              tree,
-              "element",
-              (node: Element, _index: number | undefined, parent: Parent | undefined) => {
-                // istanbul ignore next
-                if (!parent) return
-                if (node.tagName === "a" && node.properties.href) {
-                  nodesToProcess.push([node, parent])
-                }
-              },
-            )
+            const nodesToProcess: [Element, Parent, GlyphContext][] = []
+            visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
+              // istanbul ignore next
+              if (ancestors.length === 0) return
+              if (node.tagName === "a" && node.properties.href) {
+                nodesToProcess.push([
+                  node,
+                  ancestors[ancestors.length - 1],
+                  contextFromAncestors(ancestors),
+                ])
+              }
+            })
 
             await Promise.all(
-              nodesToProcess.map(([node, parent]) => ModifyNode(node, parent, faviconCounts)),
+              nodesToProcess.map(([node, parent, context]) =>
+                ModifyNode(node, parent, faviconCounts, context),
+              ),
             )
 
             glueFootnoteRefsToFavicons(tree)

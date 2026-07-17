@@ -72,19 +72,15 @@
   }
 
   // A favicon appended after inline code sits inside the <code>; the right gap
-  // keeps a trailing ")" / "]" from cramping.
+  // keeps a trailing ")" / "]" from cramping. Monospace advances end in
+  // built-in right side bearing (FiraCode ≈0.08em vs ≈0.03em for a serif
+  // round letter), so the last code glyph already clears the icon: the
+  // negative nudge returns the bearing's surplus, keeping the visual gap at
+  // the standard width. Per-glyph nudge classes are never assigned inside
+  // code (see `nudgeClassFor` in quartz/plugins/transformers/favicons.ts).
   code & {
     margin-right: calc(0.125 * #{$base-margin});
-  }
 
-  // Monospace advances end in built-in right side bearing (FiraCode ≈0.08em
-  // vs ≈0.03em for a serif round letter), so the last code glyph already
-  // clears the icon. The serif-audited nudge classes don't apply inside
-  // code, and the negative nudge returns the bearing's surplus so the
-  // visual gap stays at the standard width.
-  code &,
-  code &.close-text,
-  code &.closer-text {
     --glyph-nudge: calc(-0.125 * #{$base-margin});
   }
 }
