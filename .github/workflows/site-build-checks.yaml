@@ -173,29 +173,19 @@ jobs:
           SERVER_PID: ${{ steps.server.outputs.server-pid }}
         run: kill "$SERVER_PID" 2>/dev/null || true
 
-  # Unified status check — provides passing status when gated off on PRs
+  # Unified status check — provides passing status when gated off on PRs.
+  # `if: always()` normally lets this job report a clean skip when should-run
+  # gated everything off, but always() jobs are immune to the cancellation
+  # that `cancel-in-progress` sends the rest of a superseded run — so the
+  # `!contains(..., 'cancelled')` guard is required to let this job itself
+  # go skipped (grey) instead of running to a false failure.
   site-build-checks:
     name: site-build-checks
-    if: always()
+    if: always() && !contains(needs.*.result, 'cancelled')
     needs: [should-run, built-site-checks, linkchecker]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    permissions:
-      # actions: write lets the job cancel its own superseded run.
-      actions: write
-      contents: read
     steps:
-      # Cancelled upstream = this wave was superseded by a newer push;
-      # turn the whole run grey instead of reporting a red failure.
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: contains(needs.*.result, 'cancelled')
-        timeout-minutes: 5
-        with:
-          sparse-checkout: .github/actions/cancel-superseded-run
-          persist-credentials: false
-      - uses: ./.github/actions/cancel-superseded-run
-        if: contains(needs.*.result, 'cancelled')
-
       - name: Check results
         run: |
           if [[ "${NEEDS_SHOULD_RUN_OUTPUTS_RUN}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then

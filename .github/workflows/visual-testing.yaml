@@ -284,10 +284,15 @@ jobs:
           echo "has-real-failures=$real" >> "$GITHUB_OUTPUT"
           echo "Aggregated: has-any-failures=$any has-real-failures=$real"
 
-  # Unified status check — required by branch protection
+  # Unified status check — required by branch protection.
+  # `if: always()` normally lets this job report a clean skip when should-run
+  # gated everything off, but always() jobs are immune to the cancellation
+  # that `cancel-in-progress` sends the rest of a superseded run — so the
+  # `!contains(..., 'cancelled')` guard is required to let this job itself
+  # go skipped (grey) instead of running to a false failure.
   visual-testing:
     name: visual-testing
-    if: always()
+    if: always() && !contains(needs.*.result, 'cancelled')
     needs:
       [
         should-run,
@@ -297,31 +302,12 @@ jobs:
       ]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    permissions:
-      # actions: write lets the job cancel its own superseded run.
-      actions: write
-      contents: read
     steps:
-      # Cancelled upstream = this wave was superseded by a newer push;
-      # turn the whole run grey instead of reporting a red failure.
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: contains(needs.*.result, 'cancelled')
-        timeout-minutes: 5
-        with:
-          sparse-checkout: .github/actions/cancel-superseded-run
-          persist-credentials: false
-      - uses: ./.github/actions/cancel-superseded-run
-        if: contains(needs.*.result, 'cancelled')
-
       - name: Check results
         run: |
           if [[ "${NEEDS_SHOULD_RUN_OUTPUTS_RUN}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
             echo "Tests were skipped (no label or filtered branch)"
             exit 0
-          fi
-          if [[ "${{ needs.visual-testing-linux.result }}" == "cancelled" ]] || [[ "${{ needs.visual-testing-macos.result }}" == "cancelled" ]]; then
-            echo "Visual tests were cancelled"
-            exit 1
           fi
           if [[ "${{ needs.aggregate-visual-results.result }}" != "success" ]]; then
             echo "Aggregator did not succeed (${{ needs.aggregate-visual-results.result }})"
