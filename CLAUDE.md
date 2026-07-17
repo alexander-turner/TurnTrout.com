@@ -58,6 +58,7 @@ Configuration entry points: `config/quartz/quartz.config.ts`, `config/quartz/qua
 - Un-nest conditionals; combine related checks.
 - Create shared helpers when the same logic appears in multiple places.
 - TypeScript: avoid `!` non-null assertions (linter flags them); use proper null checks.
+- **`$base-margin` multipliers must be dyadic**: an integer, or n ± 2⁻ᵏ for integer n and positive integer k (0.125, 0.75, 3.5 — not 0.1, 0.21, 0.3). Enforced by `quartz/styles/tests/base-margin-multipliers.test.ts`.
 - **Never add backward-compat re-exports** (`export { foo } from "./other-module"`). Update imports at the call site.
 - **Prefer immutable types** for read-only collections: `ReadonlySet`, `ReadonlyMap`, `readonly T[]`, `Readonly<Record<K,V>>`, `as const`. Python: `frozenset`, `tuple`, `frozendict`. Function parameters should accept `readonly` types when they don’t mutate.
 - **Never embed code in template literal strings.** Put scripts, styles, and other code in their own files (e.g. `*.inline.ts` for bundled client scripts) so they get linting, type-checking, and IDE support. Import the file instead of quoting the code.
