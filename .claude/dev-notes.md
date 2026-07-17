@@ -209,6 +209,19 @@ For open-PR runs the workflow pushes an empty commit to the PR branch so vis
 
 **Shard status vs. overall status.** Individual `visual-testing-(linux|macos)` shards stay green when the only failures are new or updated screenshots—those are expected outcomes that the diff-gallery + approve button is designed for, and red shards turn into noise. Each shard runs `scripts/classify_visual_failures.py` over its blob report and only exits non-zero for real failures (timeouts, page errors, exceptions before the screenshot assertion). The `aggregate-visual-results` job collects per-shard status artifacts and the overall `visual-testing` status + `publish-visual-report` deploy carry the snapshot-diff signal forward.
 
+**Pinned rendering environment (Linux).** `visual-testing-linux` runs inside a digest-pinned `mcr.microsoft.com/playwright:v<version>-noble` container so hosted-runner image rotations (which shift font rasterization and diff every text screenshot at once) can't churn baselines. MCR rebuilds tags in place, so the pin must be the digest, not the tag. To refresh when bumping Playwright:
+
+```bash
+curl -sI https://mcr.microsoft.com/v2/playwright/manifests/v<version>-noble \
+  -H "Accept: application/vnd.oci.image.index.v1+json" | grep -i docker-content-digest
+```
+
+Container jobs run as root without `sudo`; the job's first step installs it so shared actions that call `sudo` keep working. macOS shards can't be containerized—`macos-15` is the tightest pin hosted runners allow, so some drift exposure remains there.
+
+**Nightly drift sentinel.** `visual-testing.yaml` also runs on a `schedule` cron against `main` with zero code diff, so environment drift (image rotation, font package updates) surfaces on the nightly gallery instead of inside an unrelated PR. The gallery header shows a provenance note (trigger + rendering environment) composed from per-shard `visual-status-*` artifacts; a nightly gallery with diffs means the _environment_ moved.
+
+**Superseded waves cancel grey.** When a newer push cancels an in-flight run's jobs via `cancel-in-progress`, the unified status job detects `cancelled` in `needs.*.result` and calls `.github/actions/cancel-superseded-run` to cancel its own run—superseded waves show grey (cancelled) instead of red, and a 120 s fail-safe exit keeps a stuck cancellation from reporting false-green.
+
 ## Commit timestamping (OpenTimestamps, async)
 
 `git commit` enqueues the commit hash and hands off to a **detached** background worker (`.hooks/post-commit` → `.hooks/timestamp-worker.sh`), so the commit returns immediately instead of blocking ~3s on network I/O. The worker holds a single `mkdir` lock (portable; `flock` is absent on macOS), drains every queued hash, creates each OpenTimestamps proof (`ots stamp`), commits it into the `.timestamps` repo, then pushes the whole batch in **one** pull/push.
