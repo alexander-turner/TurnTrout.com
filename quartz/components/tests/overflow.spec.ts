@@ -99,32 +99,59 @@ function documentOverflow(): number {
   return root.scrollWidth - root.clientWidth
 }
 
-// Number of consecutive animation frames the settled predicate must hold before
-// we measure. Replaces a trailing double-`requestAnimationFrame` wait: giving
-// layout a couple of paints to apply the client-side table/KaTeX wrapping.
-const SETTLE_FRAMES = 3
+// Number of consecutive timer polls the settled predicate must hold before we
+// measure, giving layout a couple of passes to apply the client-side
+// table/KaTeX wrapping.
+const SETTLE_POLLS = 3
+
+// How often `page.waitForFunction` re-evaluates the settle predicate. Polling
+// must stay paint-independent: headless WebKit can leave a page unpainted, and
+// a page that composites no frames never fires `requestAnimationFrame`. Timer
+// polls run regardless of paint activity, so the predicate (and the font
+// deadline inside it) always gets evaluated.
+const SETTLE_POLL_INTERVAL_MS = 100
+
+// Deadline for the font-readiness portion of the settle predicate. WebKit's
+// `document.fonts.status` can stay pending indefinitely when a `@font-face`
+// request never settles, so once the deadline elapses we proceed and measure
+// against the painted font. Must sit several seconds under the 10s
+// `waitForFunction` timeout so the required consecutive polls still fit after
+// it elapses, even when the browser clamps background timers to ~1s.
+const FONTS_READY_TIMEOUT_MS = 6_000
+
+// Elements the client-side pass wraps into scroll containers, and the wrapper
+// it puts them in. Passed into the serialized page functions below, which
+// cannot reference module constants at runtime.
+const SCROLLABLE_SELECTOR = ".table-container, .katex-display"
+const SCROLL_WRAPPER_SELECTOR = ".scroll-indicator"
+
+// Poll bookkeeping the settle predicate stores on `window` so consecutive
+// evaluations can see each other's state.
+interface OverflowSettleState {
+  __overflowSettledPolls?: number
+  __overflowFontStart?: number
+}
 
 // Polled inside `page.waitForFunction`, so the whole settle survives the SPA's
 // initial `nav` — WebKit can destroy the execution context right after load, and
-// `waitForFunction` just re-injects and re-polls in the fresh context (the frame
+// `waitForFunction` just re-injects and re-polls in the fresh context (the poll
 // counter resets, which is correct: a recreated context is a fresh page to
 // settle). Font readiness is folded into this same polled predicate rather than
 // awaited via `page.evaluate`, which has no such resilience and loses that race.
 // The predicate is self-contained (serialized into the page, so it can reference
 // only DOM globals): true once webfonts have settled and the client-side pass has
 // wrapped wide tables/KaTeX into scroll containers — measuring before that lands
-// reports them as overflow. WebKit's `document.fonts.status` can stay pending
-// indefinitely when a `@font-face` request never settles, so font readiness is
-// bounded by a wall-clock deadline (tracked on `window`, restarting per fresh
-// context): once it elapses we proceed and measure against the painted font. The
-// frame count is tracked on `window` so consecutive `raf`-polled evaluations can
-// require the predicate to hold stably rather than for a single lucky frame.
+// reports them as overflow. The poll count is tracked on `window` so consecutive
+// evaluations can require the predicate to hold stably rather than for a single
+// lucky poll.
 /* istanbul ignore next -- executed in the browser, not under Jest */
-function settledForFrames([requiredFrames, fontDeadlineMs]: readonly [number, number]): boolean {
-  const state = window as unknown as {
-    __overflowSettledFrames?: number
-    __overflowFontStart?: number
-  }
+function settledForPolls([
+  requiredPolls,
+  fontDeadlineMs,
+  scrollableSelector,
+  wrapperSelector,
+]: readonly [number, number, string, string]): boolean {
+  const state = window as unknown as OverflowSettleState
   if (state.__overflowFontStart === undefined) {
     state.__overflowFontStart = performance.now()
   }
@@ -133,18 +160,34 @@ function settledForFrames([requiredFrames, fontDeadlineMs]: readonly [number, nu
     document.fonts.status === "loaded" ||
     performance.now() - state.__overflowFontStart >= fontDeadlineMs
 
-  const scrollables = Array.from(document.querySelectorAll(".table-container, .katex-display"))
+  const scrollables = Array.from(document.querySelectorAll(scrollableSelector))
   const settled =
     fontsReady &&
-    (scrollables.length === 0 ||
-      scrollables.every((el) => el.closest(".scroll-indicator") !== null))
+    (scrollables.length === 0 || scrollables.every((el) => el.closest(wrapperSelector) !== null))
 
   if (!settled) {
-    state.__overflowSettledFrames = 0
+    state.__overflowSettledPolls = 0
     return false
   }
-  state.__overflowSettledFrames = (state.__overflowSettledFrames ?? 0) + 1
-  return state.__overflowSettledFrames >= requiredFrames
+  state.__overflowSettledPolls = (state.__overflowSettledPolls ?? 0) + 1
+  return state.__overflowSettledPolls >= requiredPolls
+}
+
+// Snapshot of everything the settle predicate depends on, sampled when settle
+// times out so the failure names the condition that never held instead of a
+// bare TimeoutError. `settledPolls=never evaluated` means the polling transport
+// itself is dead (the predicate ran zero times).
+/* istanbul ignore next -- executed in the browser, not under Jest */
+function describeSettleState([scrollableSelector, wrapperSelector]: readonly [
+  string,
+  string,
+]): string {
+  const state = window as unknown as OverflowSettleState
+  const scrollables = Array.from(document.querySelectorAll(scrollableSelector))
+  const unwrapped = scrollables.filter((el) => el.closest(wrapperSelector) === null).length
+  const fonts = document.fonts ? document.fonts.status : "unsupported"
+  const polls = state.__overflowSettledPolls?.toString() ?? "never evaluated"
+  return `fonts=${fonts}, scrollables=${scrollables.length} (${unwrapped} unwrapped), settledPolls=${polls}`
 }
 
 function describeOffenders(offenders: readonly Offender[]): string {
@@ -153,20 +196,25 @@ function describeOffenders(offenders: readonly Offender[]): string {
     .join("\n  ")
 }
 
-// Deadline for the font-readiness portion of the settle predicate. Must stay
-// below the `waitForFunction` timeout below so that, when WebKit's font status
-// hangs (e.g. on `/posts`, which has no scrollables and so reduces the predicate
-// to font readiness alone), the predicate still resolves with frames to spare
-// rather than burning the whole test timeout. Pages that settle load their fonts
-// well within this budget.
-const FONTS_READY_TIMEOUT_MS = 8_000
-
 async function settle(page: Page, url: string) {
   await gotoPage(page, url)
-  await page.waitForFunction(settledForFrames, [SETTLE_FRAMES, FONTS_READY_TIMEOUT_MS] as const, {
-    timeout: 10_000,
-    polling: "raf",
-  })
+  try {
+    await page.waitForFunction(
+      settledForPolls,
+      [SETTLE_POLLS, FONTS_READY_TIMEOUT_MS, SCROLLABLE_SELECTOR, SCROLL_WRAPPER_SELECTOR] as const,
+      {
+        timeout: 10_000,
+        polling: SETTLE_POLL_INTERVAL_MS,
+      },
+    )
+  } catch (error) {
+    // Sampling the page can itself fail when the execution context is gone;
+    // the enriched error below still carries the original timeout as `cause`.
+    const settleState = await page
+      .evaluate(describeSettleState, [SCROLLABLE_SELECTOR, SCROLL_WRAPPER_SELECTOR] as const)
+      .catch(() => "settle state unavailable (execution context gone)")
+    throw new Error(`settle() did not stabilize on ${url}: ${settleState}`, { cause: error })
+  }
 }
 
 for (const url of PAGES_TO_CHECK) {
