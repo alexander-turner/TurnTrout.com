@@ -73,26 +73,29 @@ const MARGIN_UNIT_MULTIPLIER: Readonly<Record<string, number>> = {
 const UNIT_PROBE_KEY = "serif|o"
 
 // Crowding floors per class (deep overhangers accept tighter clearance, as in
-// the serif audit) and drift ceilings per context. Ink-in-band understates the
-// perceptual audit for glyphs whose flat edges read closer than round ones,
-// and thin monospace glyphs ("l", "(") center in FiraCode's fixed advance
-// with legitimately wide bearings, so every ceiling is generous — the exact
-// margin-ratio layer above is the regression ratchet, not the band.
-const FLOOR_PX: Readonly<Record<string, number>> = {
-  null: -0.25,
-  "close-text": -0.75,
-  "closer-text": -1.5,
+// the serif audit) and drift ceilings per context, in em of the probe's font
+// so they scale with the viewport's root font size like the glyphs do.
+// Ink-in-band understates the perceptual audit for glyphs whose flat edges
+// read closer than round ones (serif "R"), and thin monospace glyphs ("l",
+// "[") center in FiraCode's fixed advance with legitimately wide bearings, so
+// every ceiling is generous — the exact margin-ratio layer above is the
+// regression ratchet, not the band.
+const FLOOR_EM: Readonly<Record<string, number>> = {
+  null: -0.0125,
+  "close-text": -0.0375,
+  "closer-text": -0.075,
 }
-const CEILING_PX: Readonly<Record<string, number>> = {
-  serif: 6,
-  italic: 4,
-  smallCaps: 6,
-  code: 6,
+const CEILING_EM: Readonly<Record<string, number>> = {
+  serif: 0.32,
+  italic: 0.22,
+  smallCaps: 0.32,
+  code: 0.4,
 }
 
 interface Measurement {
   key: string
   marginPx: number
+  fontSizePx: number
   gapPx: number | null
 }
 
@@ -126,12 +129,13 @@ function collectFailures(probes: readonly Probe[], measurements: readonly Measur
       )
     }
     if (measured.gapPx !== null) {
-      const floor = FLOOR_PX[probe.nudgeClass ?? "null"]
-      const ceiling = CEILING_PX[probe.contextName]
-      if (measured.gapPx < floor || measured.gapPx > ceiling) {
+      const gapEm = measured.gapPx / measured.fontSizePx
+      const floor = FLOOR_EM[probe.nudgeClass ?? "null"]
+      const ceiling = CEILING_EM[probe.contextName]
+      if (gapEm < floor || gapEm > ceiling) {
         failures.push(
           `${probe.key} (${probe.nudgeClass ?? "no class"}): ` +
-            `gap ${measured.gapPx.toFixed(2)}px outside [${floor}, ${ceiling}]`,
+            `gap ${gapEm.toFixed(3)}em outside [${floor}, ${ceiling}]`,
         )
       }
     }
@@ -189,7 +193,8 @@ test.describe("favicon ink gap", () => {
       }
 
       await document.fonts.ready
-      const results: { key: string; marginPx: number; gapPx: number | null }[] = []
+      const results: { key: string; marginPx: number; fontSizePx: number; gapPx: number | null }[] =
+        []
       for (const probe of probeList) {
         host.innerHTML =
           `<p>${probe.wrapperHtml[0]}<span class="ink-probe">${probe.char}</span>` +
@@ -206,6 +211,7 @@ test.describe("favicon ink gap", () => {
         results.push({
           key: probe.key,
           marginPx,
+          fontSizePx,
           gapPx: bearingEm === null ? null : marginPx + bearingEm * fontSizePx,
         })
       }
