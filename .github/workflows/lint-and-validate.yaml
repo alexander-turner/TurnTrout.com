@@ -309,8 +309,12 @@ jobs:
     # Run if detect-changes found changes, and not a deepsource PR.
     # update-dates is allowed to be skipped (runs only on push to main by users).
     # always() ensures this runs even when update-dates or autofix are skipped.
+    # The automated README-snapshot refresh (branch automated/readme-snapshots)
+    # only rewrites embedded external READMEs; skip lint so an external README's
+    # content can't trip source_file_checks and block the automated merge.
     if: >
       !startsWith(github.head_ref, 'deepsource-') &&
+      github.head_ref != 'automated/readme-snapshots' &&
       (needs.detect-changes.outputs.content == 'true' ||
        needs.detect-changes.outputs.code == 'true' ||
        needs.detect-changes.outputs.styles == 'true' ||

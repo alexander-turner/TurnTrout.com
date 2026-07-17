@@ -31,7 +31,10 @@ permissions:
 jobs:
   should-run:
     name: site-checks-should-run
-    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
+    # Skip the automated README-snapshot refresh (branch automated/readme-snapshots):
+    # it only rewrites embedded external READMEs, not code under test. should-run is
+    # skipped, so the always() reporter below marks the required check green.
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-') && github.head_ref != 'automated/readme-snapshots'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -146,12 +149,17 @@ jobs:
       # External links go out to the public internet (assets.turntrout.com,
       # github.com). Cloudflare / GitHub can return transient 5xx, so wrap
       # in retry-external. A persistent 4xx still fails after max-attempts.
+      #
+      # Crawl the running site so every page's external links are checked; the
+      # ignore-url allowlist keeps localhost (crawled) plus the two hosts we
+      # control, and drops all other external links. --check-extern is required
+      # for the allowlisted external URLs to be fetched rather than skipped.
       - name: Check external links (with retries)
         uses: ./.github/actions/retry-external
         with:
           command: |
-            uv run linkchecker public/**/*.html \
-              --ignore-url='!^https://(assets\.turntrout\.com|github\.com/alexander-turner/TurnTrout\.com)' \
+            uv run linkchecker http://localhost:8080 \
+              --ignore-url='!^(http://localhost:8080|https://assets\.turntrout\.com|https://github\.com/alexander-turner/TurnTrout\.com)' \
               --check-extern \
               --threads 30 \
               --user-agent "linkchecker" \

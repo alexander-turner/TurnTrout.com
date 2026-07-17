@@ -29,7 +29,10 @@ permissions:
 jobs:
   should-run:
     name: node-should-run
-    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
+    # Skip the automated README-snapshot refresh (branch automated/readme-snapshots):
+    # it only rewrites embedded external READMEs, not code under test. should-run is
+    # skipped, so the gated build job's test steps skip and the required check passes.
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-') && github.head_ref != 'automated/readme-snapshots'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:

@@ -108,23 +108,37 @@ const SETTLE_FRAMES = 3
 // initial `nav` — WebKit can destroy the execution context right after load, and
 // `waitForFunction` just re-injects and re-polls in the fresh context (the frame
 // counter resets, which is correct: a recreated context is a fresh page to
-// settle). A standalone `page.evaluate` has no such resilience and loses that
-// race. The predicate is self-contained (serialized into the page, so it can
-// reference only DOM globals): true once webfonts have swapped and the
-// client-side pass has wrapped wide tables/KaTeX into scroll containers —
-// measuring before that lands reports them as overflow. The frame count is
-// tracked on `window` so consecutive `raf`-polled evaluations can require the
-// predicate to hold stably rather than for a single lucky frame.
+// settle). Font readiness is folded into this same polled predicate rather than
+// awaited via `page.evaluate`, which has no such resilience and loses that race.
+// The predicate is self-contained (serialized into the page, so it can reference
+// only DOM globals): true once webfonts have settled and the client-side pass has
+// wrapped wide tables/KaTeX into scroll containers — measuring before that lands
+// reports them as overflow. WebKit's `document.fonts.status` can stay pending
+// indefinitely when a `@font-face` request never settles, so font readiness is
+// bounded by a wall-clock deadline (tracked on `window`, restarting per fresh
+// context): once it elapses we proceed and measure against the painted font. The
+// frame count is tracked on `window` so consecutive `raf`-polled evaluations can
+// require the predicate to hold stably rather than for a single lucky frame.
 /* istanbul ignore next -- executed in the browser, not under Jest */
-function settledForFrames(requiredFrames: number): boolean {
-  const fontsReady = !document.fonts || document.fonts.status === "loaded"
+function settledForFrames([requiredFrames, fontDeadlineMs]: readonly [number, number]): boolean {
+  const state = window as unknown as {
+    __overflowSettledFrames?: number
+    __overflowFontStart?: number
+  }
+  if (state.__overflowFontStart === undefined) {
+    state.__overflowFontStart = performance.now()
+  }
+  const fontsReady =
+    !document.fonts ||
+    document.fonts.status === "loaded" ||
+    performance.now() - state.__overflowFontStart >= fontDeadlineMs
+
   const scrollables = Array.from(document.querySelectorAll(".table-container, .katex-display"))
   const settled =
     fontsReady &&
     (scrollables.length === 0 ||
       scrollables.every((el) => el.closest(".scroll-indicator") !== null))
 
-  const state = window as unknown as { __overflowSettledFrames?: number }
   if (!settled) {
     state.__overflowSettledFrames = 0
     return false
@@ -139,9 +153,17 @@ function describeOffenders(offenders: readonly Offender[]): string {
     .join("\n  ")
 }
 
+// Deadline for the font-readiness portion of the settle predicate. Must stay
+// below the `waitForFunction` timeout below so that, when WebKit's font status
+// hangs (e.g. on `/posts`, which has no scrollables and so reduces the predicate
+// to font readiness alone), the predicate still resolves with frames to spare
+// rather than burning the whole test timeout. Pages that settle load their fonts
+// well within this budget.
+const FONTS_READY_TIMEOUT_MS = 8_000
+
 async function settle(page: Page, url: string) {
   await gotoPage(page, url)
-  await page.waitForFunction(settledForFrames, SETTLE_FRAMES, {
+  await page.waitForFunction(settledForFrames, [SETTLE_FRAMES, FONTS_READY_TIMEOUT_MS] as const, {
     timeout: 10_000,
     polling: "raf",
   })
