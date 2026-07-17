@@ -164,31 +164,26 @@ jobs:
             const mergedAt = process.env.MERGED_AT;
             const POLL_INTERVAL_MS = 30_000;
             const MAX_ATTEMPTS = 40; // 40 × 30s = 20 min
-            const listPostMergeRuns = (page) =>
-              github.rest.actions.listWorkflowRuns({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                workflow_id: 'visual-testing.yaml',
-                branch: 'main',
-                created: `>=${mergedAt}`,
-                per_page: 100,
-                page,
-              });
             let found = null;
             for (let i = 0; i < MAX_ATTEMPTS; i++) {
-              // The API lists newest first. The approval covers the merge
-              // commit itself, so take the EARLIEST non-cancelled post-merge
-              // run — a newer run belongs to a later push to main whose
-              // diffs this approval never saw. Cancelled runs are dropped so
-              // a superseded first wave defers to its completed replacement.
-              // The earliest run lives on the LAST page when there are more
-              // post-merge runs than one page holds.
-              let { data } = await listPostMergeRuns(1);
-              const lastPage = Math.ceil(data.total_count / 100);
-              if (lastPage > 1) {
-                data = (await listPostMergeRuns(lastPage)).data;
-              }
-              const candidates = data.workflow_runs.filter(
+              // The paginator returns every post-merge run, newest first. The
+              // approval covers the merge commit itself, so take the EARLIEST
+              // non-cancelled run — a newer run belongs to a later push to
+              // main whose diffs this approval never saw. Cancelled runs are
+              // dropped so a superseded first wave defers to its completed
+              // replacement.
+              const runs = await github.paginate(
+                github.rest.actions.listWorkflowRuns,
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  workflow_id: 'visual-testing.yaml',
+                  branch: 'main',
+                  created: `>=${mergedAt}`,
+                  per_page: 100,
+                }
+              );
+              const candidates = runs.filter(
                 (r) => r.conclusion !== 'cancelled'
               );
               const run = candidates[candidates.length - 1];
