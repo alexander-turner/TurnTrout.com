@@ -11,6 +11,7 @@ import {
   setTheme,
   takeRegressionScreenshot,
   triggerAndWaitForSPANav,
+  WAIT_POLL_INTERVAL_MS,
 } from "./visual_utils"
 
 const { pondVideoId } = simpleConstants
@@ -53,15 +54,19 @@ async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
   }
 
   // Wait for video to actually be playing (not just !paused, but actively playing)
-  await video.page().waitForFunction((id: string) => {
-    const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return (
-      videoElement &&
-      !videoElement.paused &&
-      videoElement.readyState >= 3 &&
-      videoElement.currentTime > 0
-    )
-  }, pondVideoId)
+  await video.page().waitForFunction(
+    (id: string) => {
+      const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
+      return (
+        videoElement &&
+        !videoElement.paused &&
+        videoElement.readyState >= 3 &&
+        videoElement.currentTime > 0
+      )
+    },
+    pondVideoId,
+    { polling: WAIT_POLL_INTERVAL_MS },
+  )
 
   // Wait for enough data to play through to the end (HAVE_ENOUGH_DATA = 4).
   // readyState >= 3 (canplay) is insufficient for seeking: Safari may only
@@ -393,13 +398,16 @@ test("Clicking TOC title scrolls to top", async ({ page }) => {
   await page.waitForFunction(
     (tolerance) => Math.abs(window.scrollY - 500) < tolerance,
     urlBarScrollTolerance,
+    { polling: WAIT_POLL_INTERVAL_MS },
   )
 
   const tocTitle = page.locator("#toc-title button")
   await expect(tocTitle).toBeVisible()
   await tocTitle.click()
 
-  await page.waitForFunction((tolerance) => window.scrollY < tolerance, urlBarScrollTolerance)
+  await page.waitForFunction((tolerance) => window.scrollY < tolerance, urlBarScrollTolerance, {
+    polling: WAIT_POLL_INTERVAL_MS,
+  })
 })
 
 test("Random post link is visible on desktop", async ({ page }) => {
@@ -455,10 +463,14 @@ test("Video toggle changes autoplay behavior", async ({ page }) => {
   await autoplayToggle.click()
 
   // Video should play and icons should switch
-  await page.waitForFunction((id) => {
-    const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return videoElement && !videoElement.paused && videoElement.readyState >= 3
-  }, pondVideoId)
+  await page.waitForFunction(
+    (id) => {
+      const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
+      return videoElement && !videoElement.paused && videoElement.readyState >= 3
+    },
+    pondVideoId,
+    { polling: WAIT_POLL_INTERVAL_MS },
+  )
   await expect(pauseIcon).toBeVisible()
   await expect(playIcon).toBeHidden()
   await expect(autoplayToggle).toHaveAttribute("aria-label", "Disable video autoplay")
@@ -468,6 +480,7 @@ test("Video toggle changes autoplay behavior", async ({ page }) => {
   await page.waitForFunction(
     (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
     pondVideoId,
+    { polling: WAIT_POLL_INTERVAL_MS },
   )
   await expect(playIcon).toBeVisible()
   await expect(pauseIcon).toBeHidden()
@@ -542,10 +555,14 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   // buffer depth. currentTime > 0 confirms autoplay works as soon as the first
   // frame renders, independent of how long the CDN takes to buffer future data
   // (readyState >= 3), which under CI contention can lag far behind playback.
-  await page.waitForFunction((id) => {
-    const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return videoElement && !videoElement.paused && videoElement.currentTime > 0
-  }, pondVideoId)
+  await page.waitForFunction(
+    (id) => {
+      const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
+      return videoElement && !videoElement.paused && videoElement.currentTime > 0
+    },
+    pondVideoId,
+    { polling: WAIT_POLL_INTERVAL_MS },
+  )
 
   await page.evaluate(() => window.spaNavigate(new URL("/design", window.location.origin)))
   await expect(page).toHaveURL(/\/design/)
@@ -557,6 +574,7 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   await page.waitForFunction(
     (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
     pondVideoId,
+    { polling: WAIT_POLL_INTERVAL_MS },
   )
 })
 
@@ -572,7 +590,7 @@ async function getTimestampAfterNavigation(page: Page, expectedTimestamp: number
       return videoEl && Math.abs(videoEl.currentTime - expected) < 0.5 ? videoEl.currentTime : null
     },
     { id: pondVideoId, expected: expectedTimestamp },
-    { timeout: 45_000 },
+    { timeout: 45_000, polling: WAIT_POLL_INTERVAL_MS },
   )
   return (await handle.jsonValue()) as number
 }

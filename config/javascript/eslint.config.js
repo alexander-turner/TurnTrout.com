@@ -19,6 +19,25 @@ const noReexportSyntax = {
     "Do not add backward-compat re-exports (`export ... from`); import from the canonical module at the call site.",
 }
 
+// Headless WebKit can leave a page unpainted; a page that composites no frames
+// never fires requestAnimationFrame, so a rAF-polled `waitForFunction`
+// predicate is evaluated zero times and even wall-clock deadlines inside it
+// can never fire. The failure masquerades as a generic timeout on random
+// shards. Timer polls run regardless of paint activity.
+const rafPollingSyntax = [
+  {
+    selector: "Property[key.name='polling'][value.value='raf']",
+    message:
+      "polling: 'raf' never fires on unpainted headless WebKit pages; poll on a timer interval (e.g. polling: 100) instead.",
+  },
+  {
+    selector:
+      "CallExpression[callee.property.name='waitForFunction']:not(:has(Property[key.name='polling']))",
+    message:
+      "waitForFunction defaults to rAF polling, which never fires on unpainted headless WebKit pages; pass an explicit numeric polling interval (e.g. { polling: 100 }).",
+  },
+]
+
 export default [
   // Global rules and plugins
   {
@@ -180,6 +199,15 @@ export default [
           allowConditional: true,
         },
       ],
+    },
+  },
+
+  // Playwright wait discipline for specs and their shared helpers
+  // (visual_utils.ts is not a *.spec.ts but wraps the same page waits).
+  {
+    files: ["**/*.spec.ts", "quartz/components/tests/**/*.ts"],
+    rules: {
+      "no-restricted-syntax": ["error", noReexportSyntax, ...rafPollingSyntax],
     },
   },
 
