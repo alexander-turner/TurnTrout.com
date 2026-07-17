@@ -224,6 +224,20 @@ export function createFaviconElement(urlString: string, description = ""): Favic
   }
 }
 
+// Font context of the glyph a favicon lands after. Nudges are audited against
+// the serif body face, so other faces pick different memberships (or none).
+export interface GlyphContext {
+  readonly italic: boolean
+  readonly smallCaps: boolean
+  readonly code: boolean
+}
+
+export const EMPTY_GLYPH_CONTEXT: GlyphContext = {
+  italic: false,
+  smallCaps: false,
+  code: false,
+}
+
 /**
  * Inserts a favicon image into a node's children.
  */
@@ -295,20 +309,6 @@ export const charsToSpaceItalic: readonly string[] = [
   "g",
 ]
 export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/"]
-
-// Font context of the glyph a favicon lands after. Nudges are audited against
-// the serif body face, so other faces pick different memberships (or none).
-export interface GlyphContext {
-  readonly italic: boolean
-  readonly smallCaps: boolean
-  readonly code: boolean
-}
-
-export const EMPTY_GLYPH_CONTEXT: GlyphContext = {
-  italic: false,
-  smallCaps: false,
-  code: false,
-}
 
 /** Widens `context` with whatever face `element` switches its text into. */
 export function broadenContext(element: Element, context: GlyphContext): GlyphContext {
