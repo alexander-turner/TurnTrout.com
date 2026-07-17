@@ -68,6 +68,16 @@ def collect_from_blob_reports(blob_reports_dir: Path, staging_dir: Path) -> int:
     return count
 
 
+def list_baseline_names(blob_reports_dir: Path) -> list[str]:
+    """Return the sorted canonical baseline names found in the blob reports,
+    without staging or uploading anything."""
+    names: set[str] = set()
+    for blob_zip in sorted(blob_reports_dir.rglob("*.zip")):
+        for baseline_name, _png_bytes in _iter_actual_pngs(blob_zip):
+            names.add(baseline_name)
+    return sorted(names)
+
+
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -83,10 +93,21 @@ def main(argv: list[str] | None = None) -> None:
         default=Path("tests/visual-baselines"),
         help="Where to assemble the renamed PNGs before upload.",
     )
+    parser.add_argument(
+        "--names-only",
+        action="store_true",
+        help="Print the canonical baseline names found in the blob reports "
+        "(one per line) instead of staging and uploading them.",
+    )
     args = parser.parse_args(argv)
 
     if not args.blob_reports_dir.is_dir():
         raise NotADirectoryError(args.blob_reports_dir)
+
+    if args.names_only:
+        for name in list_baseline_names(args.blob_reports_dir):
+            print(name)
+        return
 
     count = collect_from_blob_reports(args.blob_reports_dir, args.staging_dir)
     if count == 0:
