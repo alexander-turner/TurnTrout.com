@@ -19,6 +19,7 @@ import {
   reloadPage,
   setTheme,
   takeRegressionScreenshot,
+  WAIT_POLL_INTERVAL_MS,
   waitForTransitionEnd,
 } from "./visual_utils"
 
@@ -177,7 +178,7 @@ async function keepOnlyFirstParagraph(page: Page): Promise<void> {
       return article.querySelectorAll("p").length === 1
     },
     undefined,
-    { timeout: 10_000 },
+    { timeout: 10_000, polling: WAIT_POLL_INTERVAL_MS },
   )
 }
 
@@ -462,7 +463,8 @@ test.describe("Table of contents", () => {
     // Wait for the TOC observer to initialize and set an active link
     await page.waitForFunction(
       () => document.querySelector("#table-of-contents .active") !== null,
-      { timeout: 15_000 },
+      null,
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
 
     // Scroll a mid-page heading to the top of the viewport so it enters
@@ -474,7 +476,8 @@ test.describe("Table of contents", () => {
     })
     await page.waitForFunction(
       () => document.querySelector("#table-of-contents .active")?.textContent?.trim() !== "",
-      { timeout: 15_000 },
+      null,
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
 
     // Need the raw string to pass into waitForFunction below
@@ -500,7 +503,7 @@ test.describe("Table of contents", () => {
         return activeElement && activeElement.textContent !== initialText
       },
       initialHighlightText,
-      { timeout: 15_000 },
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
 
     const highlightText = page.locator("#table-of-contents .active").first()
@@ -514,7 +517,8 @@ test.describe("Table of contents", () => {
 
     await page.waitForFunction(
       () => document.querySelector("#table-of-contents .active") !== null,
-      { timeout: 15_000 },
+      null,
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
 
     // Reproduce a fresh load that lands below every heading: scroll past the
@@ -561,7 +565,7 @@ test.describe("Table of contents", () => {
         return active?.getAttribute("href")?.split("#")[1] === slug
       },
       expectedSlug,
-      { timeout: 15_000 },
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
   })
 })
@@ -724,6 +728,7 @@ test.describe("Right sidebar", () => {
         return Math.abs(rightSidebar.scrollTop - (initialScrollTop + 100)) < tolerance
       },
       { initialScrollTop: initialSidebarScrollTop, tolerance: tightScrollTolerance },
+      { polling: WAIT_POLL_INTERVAL_MS },
     )
 
     const finalWindowScrollY = await page.evaluate(() => window.scrollY)
@@ -828,6 +833,7 @@ test.describe("Right sidebar", () => {
         return el && getComputedStyle(el).color === expected
       },
       ["#content-meta a", expectedHoverColor],
+      { polling: WAIT_POLL_INTERVAL_MS },
     )
 
     const hoverColor = await firstLink.evaluate((el) => getComputedStyle(el).color)

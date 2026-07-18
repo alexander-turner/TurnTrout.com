@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test"
 import { savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 import { expect, test } from "./fixtures"
-import { gotoPage, setTheme as utilsSetTheme } from "./visual_utils"
+import { gotoPage, setTheme as utilsSetTheme, WAIT_POLL_INTERVAL_MS } from "./visual_utils"
 
 // False negative because the helpers call expect
 /* eslint-disable playwright/expect-expect */
@@ -24,6 +24,7 @@ const POSTSCRIPT_TIMEOUT_MS = 15_000
 async function waitForPostscriptModule(page: Page): Promise<void> {
   await page.waitForFunction(() => typeof window.spaNavigate === "function", null, {
     timeout: POSTSCRIPT_TIMEOUT_MS,
+    polling: WAIT_POLL_INTERVAL_MS,
   })
 }
 
@@ -74,7 +75,7 @@ class DarkModeHelper {
     await this.page.waitForFunction(
       ({ key, expected }) => localStorage.getItem(key) === expected,
       { key: savedThemeKey, expected: expectedTheme },
-      { timeout: 15_000 },
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
   }
 

@@ -10,6 +10,14 @@ import { findGitRoot } from "../../util/log"
 import { forceHslInvertClass, invertInDarkModeClass, savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 
+// How often `page.waitForFunction` predicates re-evaluate. Polling must stay
+// paint-independent: headless WebKit can leave a page unpainted, and a page
+// that composites no frames never fires `requestAnimationFrame`, so a
+// rAF-polled predicate (Playwright's default) is evaluated zero times. Timer
+// polls run regardless of paint activity. Enforced by the
+// `no-restricted-syntax` waitForFunction rule in the eslint config.
+export const WAIT_POLL_INTERVAL_MS = 100
+
 /**
  * Safely gets all elements matching a locator, with proper waiting.
  * Ensures at least one element is visible before returning the array.
@@ -443,7 +451,10 @@ export async function getNextElementMatchingSelector(
 export async function openSearch(page: Page) {
   // After SPA navigation (e.g. goBack), onNav() re-registers all search
   // event handlers asynchronously. Wait for the flag it sets at completion.
-  await page.waitForFunction(() => window.__searchHandlersReady === true, null, { timeout: 15_000 })
+  await page.waitForFunction(() => window.__searchHandlersReady === true, null, {
+    timeout: 15_000,
+    polling: WAIT_POLL_INTERVAL_MS,
+  })
 
   const searchContainer = page.locator("#search-container")
   const searchBar = page.locator("#search-bar")
@@ -480,7 +491,10 @@ export async function search(page: Page, term: string) {
 
   // Wait for the search index to load before filling (avoids resetting
   // the 400ms debounce timer with repeated fill() retries).
-  await page.waitForFunction(() => window.__searchIndexReady === true, null, { timeout: 30_000 })
+  await page.waitForFunction(() => window.__searchIndexReady === true, null, {
+    timeout: 30_000,
+    polling: WAIT_POLL_INTERVAL_MS,
+  })
 
   // If results are already displayed from a previous search, clear them
   // directly via the DOM. We can't rely on the app's debounced input handler

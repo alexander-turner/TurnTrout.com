@@ -278,6 +278,7 @@ def render_html(
     *,
     has_playwright_report: bool = True,
     approve: ApproveConfig | None = None,
+    environment: str | None = None,
 ) -> str:
     """
     Build the gallery HTML page.
@@ -288,6 +289,10 @@ def render_html(
     When ``approve`` is supplied AND there's at least one failing tile, the page
     includes a one-click "Approve baselines" button that dispatches the
     ``update-visual-baselines.yaml`` workflow.
+
+    ``environment`` is a free-text provenance note (trigger event, per-platform
+    rendering environment) shown under the header so a reader can tell
+    environment-drift diffs from code-change diffs at a glance.
     """
     body = "\n".join(_row(t, images_subdir) for t in tiles) or (
         '<p class="empty">No failing screenshots found.</p>'
@@ -318,6 +323,11 @@ def render_html(
         else ""
     )
     approve_script = f"<script>{_APPROVE_JS}</script>\n" if show_approve else ""
+    environment_note = (
+        f'<p class="sub">{html.escape(environment)}</p>\n'
+        if environment
+        else ""
+    )
     return (
         "<!DOCTYPE html>\n"
         '<html lang="en">\n<head>\n<meta charset="utf-8">\n'
@@ -327,6 +337,7 @@ def render_html(
         f'<p class="sub">{count} failing screenshot{plural} · '
         f"expected / actual / diff side-by-side · click any image to enlarge"
         f"{report_link}</p>\n"
+        f"{environment_note}"
         f"{approve_panel}"
         f"{body}\n"
         '<div class="lb" id="lb"><img id="lbi" alt=""></div>\n'
@@ -350,6 +361,7 @@ def main(
     report_dir: Path,
     *,
     approve: ApproveConfig | None = None,
+    environment: str | None = None,
 ) -> None:
     """Build the gallery and install it as index.html."""
     tiles = collect_tiles(traces_dir, report_dir / "gallery-images")
@@ -357,6 +369,7 @@ def main(
         tiles,
         has_playwright_report=(report_dir / "index.html").exists(),
         approve=approve,
+        environment=environment,
     )
     # Keep gallery.html for backward-compatible deep links.
     (report_dir / "gallery.html").write_text(page, encoding="utf-8")
@@ -380,6 +393,12 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
         default=None,
         help="PR number, if this gallery is for a PR run (omit on main)",
     )
+    parser.add_argument(
+        "--environment",
+        default=None,
+        help="Provenance note (trigger event, per-platform rendering "
+        "environment) shown under the gallery header",
+    )
     return parser.parse_args(argv)
 
 
@@ -390,4 +409,9 @@ if __name__ == "__main__":
         if args.run_id
         else None
     )
-    main(args.traces_dir, args.report_dir, approve=approve_cfg)
+    main(
+        args.traces_dir,
+        args.report_dir,
+        approve=approve_cfg,
+        environment=args.environment,
+    )

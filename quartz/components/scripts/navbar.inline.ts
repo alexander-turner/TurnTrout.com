@@ -12,6 +12,28 @@ function getAutoplayEnabled(): boolean {
   return saved !== null ? saved === "true" : false // Default to disabled
 }
 
+// WebKit's decode pipeline can accept a play() request, report no error, yet
+// never advance past HAVE_METADATA — the playhead stays frozen at 0. Re-issuing
+// play() unsticks it. After requesting playback, poll a few times and retry
+// until the playhead advances, stopping early if the user turns autoplay back
+// off so we never fight a deliberate pause.
+const VIDEO_WATCHDOG_INTERVAL_MS = 500
+const VIDEO_WATCHDOG_MAX_RETRIES = 3
+
+function playVideoWithWatchdog(videoElement: HTMLVideoElement): void {
+  const attempt = (retriesLeft: number): void => {
+    videoElement.play().catch((error: Error) => {
+      console.debug("[playVideoWithWatchdog] Play failed:", error)
+    })
+    if (retriesLeft <= 0) return
+    setTimeout(() => {
+      if (!getAutoplayEnabled() || videoElement.paused || videoElement.currentTime > 0) return
+      attempt(retriesLeft - 1)
+    }, VIDEO_WATCHDOG_INTERVAL_MS)
+  }
+  attempt(VIDEO_WATCHDOG_MAX_RETRIES)
+}
+
 function updatePlayPauseButton(): void {
   const button = document.getElementById("video-toggle") as HTMLButtonElement | null
 
@@ -54,9 +76,7 @@ function handleVideoToggle(): void {
   if (videoElement) {
     if (!autoplayEnabled) {
       // If we're enabling autoplay
-      videoElement.play().catch((error: Error) => {
-        console.debug("[handleVideoToggle] Play failed:", error)
-      })
+      playVideoWithWatchdog(videoElement)
     } else {
       // If we're disabling autoplay
       videoElement.pause()
@@ -98,9 +118,7 @@ function setupPondVideo(): void {
 
     // Then start playback if autoplay enabled
     if (autoplayEnabled) {
-      videoElement.play().catch((error: Error) => {
-        console.error("[setupPondVideo] Play failed:", error)
-      })
+      playVideoWithWatchdog(videoElement)
     } else if (savedTime && parseFloat(savedTime) > 0) {
       // Safari/WebKit may not apply currentTime on paused videos reliably.
       // A brief play/pause cycle forces the seek through the video pipeline.

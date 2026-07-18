@@ -8,6 +8,7 @@ import {
   moveMouseToSafePosition,
   search,
   triggerAndWaitForSPANav,
+  WAIT_POLL_INTERVAL_MS,
 } from "./visual_utils"
 
 const DROPCAP_URL = "http://localhost:8080/test-page"
@@ -202,7 +203,8 @@ test.describe("Random dropcap color", () => {
     // Wait for the nav event to fire and rollDropcapColor() to clear the property
     await page.waitForFunction(
       () => document.documentElement.style.getPropertyValue("--random-dropcap-color") === "",
-      { timeout: 5_000 },
+      null,
+      { timeout: 5_000, polling: WAIT_POLL_INTERVAL_MS },
     )
     expect(await getColor()).toBe("")
   })

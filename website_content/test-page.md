@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-17
+date_updated: 2026-07-18
 createBibtex: true
 ---
 
@@ -860,6 +860,8 @@ Inline code ligature kerning: `$var` must be interpolated into `#{$var}`. See al
 Inline code left spacing after a crowding glyph: with the help of [`TomSmith`](#code-blocks).
 
 Inline code flush against a glued delimiter: parentheses (`code`), brackets \[`code`\], braces \{`code`\}, quotes "`code`", a slash AI/`code`, a hyphen re-`code`, and equals x=`code` all hug the code, while a space `the regex` or an em dash—`code` keeps the small gap.
+
+Favicon after inline code: the icon hugs the code text instead of drifting right of the monospace advance. I pipe the saying into `goosesay` (my variant of [`cowsay`](https://en.wikipedia.org/wiki/Cowsay)), as also seen at [`github.com/tnalpgge/rank-amateur-cowsay`](https://github.com/tnalpgge/rank-amateur-cowsay).
 
 ```json
 "lint-staged": {
