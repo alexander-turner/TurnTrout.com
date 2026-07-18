@@ -630,7 +630,7 @@ Jeff Dean, Demis Hassabis, Shane Legg, and [other senior employees](#preparing-f
 
 One might defend: "the deal simply doesn't *prohibit* autonomous weapons, that's not the same as actively supporting autonomous weapons." Google's contract withholds certainty from a concerned pledge-signer, but a blindfold does not absolve responsibility.
 
-Your company is trying to make and then supply the best AI in the world to a military which wants[^want-laws] to use AI in lethal autonomous weapons. Your company signed away its ability to restrict use cases. You chose to stay and continue building that AI.
+Your company is trying to make and then supply the best AI in the world to a military that wants[^want-laws] to use AI in lethal autonomous weapons. Your company signed away its ability to restrict use cases. You chose to stay and continue building that AI.
 
 [^want-laws]: In 2026, the Pentagon asked for [more money for autonomous weapons than for the US Marines](https://thehill.com/opinion/national-security/5833242-dawg-pentagon-2027-budget/)!
 
