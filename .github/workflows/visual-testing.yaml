@@ -9,6 +9,13 @@ on:
   push:
     branches: ["main"]
   pull_request:
+  # Nightly drift sentinel: re-renders main against the current baselines.
+  # Absent a same-day merge that itself changed pixels, any snapshot diff it
+  # reports is environment drift (runner image or browser rotation) rather
+  # than a code change. Catching drift here means one bulk approval on main
+  # instead of every open PR inheriting the same red.
+  schedule:
+    - cron: "30 9 * * *"
 
 # Read-only default; only `publish-visual-report` elevates to the PR-comment
 # and commit-status writes it needs.
@@ -77,6 +84,21 @@ jobs:
   visual-testing-linux:
     needs: [build, should-run, generate-fixtures]
     runs-on: ubuntu-24.04
+    # Screenshots must render in a frozen environment: GitHub rotates the
+    # ubuntu-24.04 runner image (browser builds, freetype/fontconfig), and
+    # each rotation shifts glyph antialiasing enough to diff every
+    # text-bearing baseline at once. The digest-pinned Playwright container
+    # freezes the browser + font stack, so Linux baselines change only when
+    # we bump Playwright deliberately. Digest (not tag) pin because MCR
+    # rebuilds version tags in place. When bumping @playwright/test, update
+    # the tag AND refresh the digest:
+    #   curl -sI https://mcr.microsoft.com/v2/playwright/manifests/v<version>-noble \
+    #     -H "Accept: application/vnd.docker.distribution.manifest.list.v2+json" | grep -i docker-content-digest
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble@sha256:9bd26ad900bb5e0f4dee75839e957a89ae89c2b7ab1e76050e559790e946b948
+      # Chromium crashes under Docker's default ipc namespace when /dev/shm
+      # fills; host IPC is the Playwright-documented fix.
+      options: --ipc=host
     strategy:
       fail-fast: false
       matrix:
@@ -88,11 +110,33 @@ jobs:
           ]
     env:
       PLAYWRIGHT_BROWSERS: ${{ needs.should-run.outputs.browsers }}
+      # GitHub Actions sets $HOME to /github/home for every container job,
+      # which this image ships owned by its built-in `pwuser`. The job itself
+      # runs as root (no `user:` override), and Firefox's sandbox refuses to
+      # launch when $HOME's owner doesn't match the running UID ("Running
+      # Nightly as root in a regular user's session is not supported").
+      # /root is root-owned from image build, so pinning HOME there from the
+      # start of the job keeps every step (installs, browser cache, tests)
+      # consistent with the UID actually running them.
+      HOME: /root
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         timeout-minutes: 5
         with:
           persist-credentials: false
+
+      # The container runs as root without sudo; the shared setup actions
+      # invoke `sudo` for apt operations, so provide it before they run.
+      # unzip: puppeteer's postinstall extracts chrome-headless-shell with it
+      # during `pnpm install`, and the image doesn't ship it.
+      # zstd: actions/cache picks its compression method by checking what's on
+      # PATH, and folds that choice into the cache version alongside the key.
+      # The `build` job saves this same key from a plain ubuntu-24.04 runner
+      # (zstd preinstalled); without zstd here too, this container's restore
+      # would hash to a different version and miss a cache that was saved
+      # successfully moments earlier.
+      - name: Install container prerequisites
+        run: apt-get update && apt-get install -y --no-install-recommends sudo unzip zstd
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
@@ -135,6 +179,9 @@ jobs:
           platform: linux
           shard: ${{ matrix.shard }}
           playwright-outcome: ${{ steps.playwright.outcome }}
+          # ImageOS/ImageVersion are absent inside the container, so name
+          # the pinned image explicitly (keep in sync with `container:` above).
+          environment: playwright:v1.60.0-noble container (digest-pinned)
 
   # WebKit (Safari) visual tests on macOS for real Safari fidelity
   visual-testing-macos:
@@ -221,6 +268,7 @@ jobs:
     outputs:
       has-any-failures: ${{ steps.aggregate.outputs.has-any-failures }}
       has-real-failures: ${{ steps.aggregate.outputs.has-real-failures }}
+      environments: ${{ steps.aggregate.outputs.environments }}
     steps:
       - name: Download shard statuses
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -253,7 +301,26 @@ jobs:
           echo "has-real-failures=$real" >> "$GITHUB_OUTPUT"
           echo "Aggregated: has-any-failures=$any has-real-failures=$real"
 
-  # Unified status check — required by branch protection
+          # Fold every shard's `environment=` provenance line into one
+          # semicolon-joined string here, so publish-visual-report can consume
+          # it as a job output instead of re-downloading and re-parsing the
+          # same status artifacts.
+          environments=""
+          if [ "${#files[@]}" -gt 0 ]; then
+            # Only grep's "no line matched" (exit 1) is expected and swallowed;
+            # a real error in sed/sort/paste still propagates via pipefail.
+            environments=$({ grep -h "^environment=" "${files[@]}" || true; } \
+              | sed 's/^environment=//' | sort -u | paste -sd ';' - | sed 's/;/ · /g')
+          fi
+          echo "environments=${environments}" >> "$GITHUB_OUTPUT"
+
+  # Unified status check — required by branch protection. Runs always() so it
+  # still reports when should-run gated everything off. A superseded run's needs
+  # come back cancelled; the job can't just skip on that, because branch
+  # protection counts a skipped required check as passing, which would let a
+  # directly-cancelled run (e.g. a manual cancel while auto-merge is armed) merge
+  # untested. classify-cancellation tells the two apart: a newer run exists →
+  # superseded → pass; none → direct cancel → fail.
   visual-testing:
     name: visual-testing
     if: always()
@@ -267,15 +334,24 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
+      - name: Checkout
+        if: contains(needs.*.result, 'cancelled')
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+      - name: Classify cancellation
+        id: cancel
+        if: contains(needs.*.result, 'cancelled')
+        uses: ./.github/actions/classify-cancellation
+        with:
+          github-token: ${{ github.token }}
       - name: Check results
+        if: steps.cancel.outputs.superseded != 'true'
         run: |
           if [[ "${NEEDS_SHOULD_RUN_OUTPUTS_RUN}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
             echo "Tests were skipped (no label or filtered branch)"
             exit 0
-          fi
-          if [[ "${{ needs.visual-testing-linux.result }}" == "cancelled" ]] || [[ "${{ needs.visual-testing-macos.result }}" == "cancelled" ]]; then
-            echo "Visual tests were cancelled"
-            exit 1
           fi
           if [[ "${{ needs.aggregate-visual-results.result }}" != "success" ]]; then
             echo "Aggregator did not succeed (${{ needs.aggregate-visual-results.result }})"
@@ -378,6 +454,28 @@ jobs:
           path: ./all-traces
           merge-multiple: true
 
+      # aggregate-visual-results already downloaded and parsed every shard's
+      # `environment=` provenance line into its `environments` output; reuse
+      # it here instead of re-downloading the same status artifacts.
+      - name: Compose gallery provenance note
+        id: provenance
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          # head_ref is the PR's actual branch name; ref_name on a
+          # pull_request event is the synthetic `<N>/merge` ref instead.
+          REF_NAME: ${{ github.head_ref || github.ref_name }}
+          ENVIRONMENTS: ${{ needs.aggregate-visual-results.outputs.environments }}
+        run: |
+          set -euo pipefail
+          note="trigger: ${EVENT_NAME} on ${REF_NAME}"
+          if [ "$EVENT_NAME" = "schedule" ]; then
+            note="nightly drift sentinel (diffs below are usually environment drift, unless main changed since the last baseline approval) · ${note}"
+          fi
+          if [ -n "$ENVIRONMENTS" ]; then
+            note="${note} · ${ENVIRONMENTS}"
+          fi
+          echo "note=${note}" >> "$GITHUB_OUTPUT"
+
       # Build a single-page screenshot gallery alongside the Playwright
       # report. Skim-friendly grid view; useful at bootstrap (no
       # baselines yet → main report has nothing to slide between).
@@ -387,9 +485,11 @@ jobs:
       - name: Generate screenshot gallery
         env:
           GH_PR_NUMBER: ${{ github.event.pull_request.number }}
+          PROVENANCE_NOTE: ${{ steps.provenance.outputs.note }}
         run: |
           args=(./all-traces ./playwright-report
-                --run-id "${{ github.run_id }}")
+                --run-id "${{ github.run_id }}"
+                --environment "$PROVENANCE_NOTE")
           if [ -n "${GH_PR_NUMBER:-}" ]; then
             args+=(--pr-number "$GH_PR_NUMBER")
           fi

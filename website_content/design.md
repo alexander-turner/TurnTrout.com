@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-07-07
+date_updated: 2026-07-17
 no_dropcap: false
 createBibtex: true
 ---
@@ -91,7 +91,7 @@ So I decided to convert the HTML to Markdown on my own using [`turndown`](https:
 That took a few months.
 
 > [!info]- Details on exporting my content
-> I exported my content using [this query](https://github.com/alexander-turner/TurnTrout.com/blob/import/scripts/graphiql.txt). After downloading the JSON, I ran [`process_json.cjs`](https://github.com/alexander-turner/TurnTrout.com/blob/import/scripts/process_json.cjs) to use [`turndown`](https://github.com/mixmark-io/turndown) to convert the raw HTML to (properly processed) Markdown. Finally, I [preprocessed the Markdown files.](https://github.com/alexander-turner/TurnTrout.com/blob/import/scripts/md_processing_single.py)
+> I exported my content using [this query](https://assets.turntrout.com/import-scripts/graphiql.txt). After downloading the JSON, I ran [`process_json.cjs`](https://assets.turntrout.com/import-scripts/process_json.cjs) to use [`turndown`](https://github.com/mixmark-io/turndown) to convert the raw HTML to (properly processed) Markdown. Finally, I [preprocessed the Markdown files](https://assets.turntrout.com/import-scripts/md_processing_single.py).
 
 # Archiving and dependencies
 
@@ -379,7 +379,7 @@ After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^
 
 ### All spacing is a simple multiple of a base measurement
 
-If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
+If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin. Formally, the multiple must be expressed as $n \pm 2^{-k}$ for integers $n,k$ where $k>0$. I enforce the condition as a linting rule.
 
 [^characters]: 60 characters per line seemed awkwardly narrow to me, so I went for 75 per line.  <!-- lint-ignore sentence-initial-numeral: author's prose, leading numeral kept as written -->
 
@@ -623,6 +623,10 @@ There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [
 
 To tackle this, the favicon transformation splices the last few characters from the link text and wraps them together with the favicon inside a `<span class="favicon-span">` with `white-space: nowrap`. This keeps the last few characters glued to the favicon, preventing line breaks at that position.
 
+### Favicons sit a consistent distance from the text
+
+A fixed margin doesn't actually _look_ fixed. Letters carry different amounts of empty space on their right side: an "f" leans into the gap that follows while an "o" stops short. I nudge each icon according to the letter it follows. Whatever the final glyph, the icon resides at the same visual distance.
+
 ### I only include recognizable favicons
 
 I [originally](https://github.com/alexander-turner/TurnTrout.com/blob/608b39512cf0e27e25ad48d0e14a38804a2aff18/website_content/design.md#inline-favicons) displayed favicons for _every_ external link. Since most people don't recognize the icons of most sites, these icons become clutter.
@@ -801,7 +805,7 @@ To keep documentation up-to-date, the build process computes e.g. the number of 
 ## Smaller features
 
 Popovers
-: Desktop users conjure popovers by hovering over an internal link. 
+: Desktop users conjure popovers by hovering over an internal link.
 
 Search
 : Pressing `/` toggles the search modal. Navigating to a result temporarily highlights the query and scrolls to the first match.

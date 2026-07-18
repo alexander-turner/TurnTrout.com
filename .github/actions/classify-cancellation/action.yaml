@@ -1,0 +1,62 @@
+name: "Classify cancellation"
+description: >-
+  Decide whether this run's cancellation was a supersession (a newer run in the
+  same concurrency group cancelled it via cancel-in-progress) or a direct
+  cancellation. Sets output `superseded` to 'true' when a newer run of this
+  workflow exists for the same head branch and event; otherwise exits non-zero
+  so the caller's required status check fails (a direct cancel must block merge,
+  since branch protection treats a skipped check as passing).
+inputs:
+  github-token:
+    description: "Token with actions:read to query workflow runs."
+    required: true
+outputs:
+  superseded:
+    description: "'true' if a newer run superseded this one."
+    value: ${{ steps.classify.outputs.superseded }}
+runs:
+  using: "composite"
+  steps:
+    - id: classify
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        REPO: ${{ github.repository }}
+        WORKFLOW_NAME: ${{ github.workflow }}
+        # head_ref is set on pull_request events (the PR's source branch, which
+        # matches the run's head_branch); ref_name covers push/schedule on a
+        # branch. Runs in one concurrency group share this value.
+        HEAD_BRANCH: ${{ github.head_ref || github.ref_name }}
+        EVENT_NAME: ${{ github.event_name }}
+        MY_RUN_NUMBER: ${{ github.run_number }}
+      run: |
+        set -euo pipefail
+        # A supersession implies a newer run of this same workflow started for
+        # the same branch+event and cancelled us; run_number is monotonic, so a
+        # higher one for the same (name, head_branch) means we were superseded.
+        newer=""
+        for attempt in 1 2 3; do
+          if newer=$(gh api \
+            "/repos/${REPO}/actions/runs?event=${EVENT_NAME}&per_page=100" \
+            --jq '[.workflow_runs[]
+                   | select(.name == env.WORKFLOW_NAME
+                            and .head_branch == env.HEAD_BRANCH
+                            and .run_number > (env.MY_RUN_NUMBER | tonumber))]
+                  | length'); then
+            break
+          fi
+          echo "gh api attempt ${attempt} failed; retrying..." >&2
+          sleep "$((attempt * 2))"
+        done
+        if [ -z "$newer" ]; then
+          echo "Could not determine whether a newer run exists; failing closed." >&2
+          exit 1
+        fi
+        if [ "$newer" -gt 0 ]; then
+          echo "Superseded: ${newer} newer run(s) for ${HEAD_BRANCH} (${EVENT_NAME}). Cancellation is expected."
+          echo "superseded=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "No newer run for ${HEAD_BRANCH} (${EVENT_NAME}); this run was cancelled directly. Failing the required check."
+          echo "superseded=false" >> "$GITHUB_OUTPUT"
+          exit 1
+        fi

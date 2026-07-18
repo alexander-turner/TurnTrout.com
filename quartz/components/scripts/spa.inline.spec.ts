@@ -26,6 +26,7 @@ import {
   isSafariBrowser,
   reloadPage,
   triggerAndWaitForSPANav,
+  WAIT_POLL_INTERVAL_MS,
 } from "../tests/visual_utils"
 
 const { pondVideoId } = simpleConstants
@@ -45,13 +46,18 @@ async function waitForHistoryState(page: Page, targetPos: number): Promise<void>
       )
     },
     { target: targetPos, tolerance: tightScrollTolerance },
+    { polling: WAIT_POLL_INTERVAL_MS },
   )
 }
 
 async function waitForHistoryScrollNotEquals(page: Page, initialScroll?: number): Promise<void> {
-  await page.waitForFunction((initial) => {
-    return window.history.state?.scroll !== initial
-  }, initialScroll)
+  await page.waitForFunction(
+    (initial) => {
+      return window.history.state?.scroll !== initial
+    },
+    initialScroll,
+    { polling: WAIT_POLL_INTERVAL_MS },
+  )
 }
 
 /**
@@ -60,20 +66,28 @@ async function waitForHistoryScrollNotEquals(page: Page, initialScroll?: number)
  */
 async function waitForHashScrollComplete(page: Page): Promise<void> {
   // Wait for scroll to be saved to history (debounced by 100ms)
-  await page.waitForFunction(() => {
-    return (
-      window.history.state &&
-      typeof window.history.state.scroll === "number" &&
-      window.history.state.scroll > 0
-    )
-  })
+  await page.waitForFunction(
+    () => {
+      return (
+        window.history.state &&
+        typeof window.history.state.scroll === "number" &&
+        window.history.state.scroll > 0
+      )
+    },
+    null,
+    { polling: WAIT_POLL_INTERVAL_MS },
+  )
 
   // Wait for scroll position to stabilize (no changes between checks)
-  await page.waitForFunction(() => {
-    if (!window.history.state?.scroll) return false
-    const stablePos = window.history.state.scroll
-    return Math.abs(window.scrollY - stablePos) < 5
-  })
+  await page.waitForFunction(
+    () => {
+      if (!window.history.state?.scroll) return false
+      const stablePos = window.history.state.scroll
+      return Math.abs(window.scrollY - stablePos) < 5
+    },
+    null,
+    { polling: WAIT_POLL_INTERVAL_MS },
+  )
 }
 
 /*
@@ -86,7 +100,7 @@ async function waitForScroll(page: Page, targetScrollY: number, timeout = 30000)
       return Math.abs(currentScrollY - target) <= tolerance
     },
     { target: targetScrollY, tolerance: tightScrollTolerance },
-    { timeout },
+    { timeout, polling: WAIT_POLL_INTERVAL_MS },
   )
 }
 
@@ -328,7 +342,9 @@ test.describe("Scroll Behavior", () => {
   test("restores scroll position when refreshing on hash", async ({ page }) => {
     const anchorId = await createFinalAnchor(page)
     await gotoPage(page, `http://localhost:8080/${testingPageSlug}#${anchorId}`, "domcontentloaded")
-    await page.waitForFunction(() => window.history.state?.scroll)
+    await page.waitForFunction(() => window.history.state?.scroll, null, {
+      polling: WAIT_POLL_INTERVAL_MS,
+    })
     const currentScroll = await page.evaluate(() => window.scrollY)
     expect(currentScroll).toBeGreaterThan(0)
 
@@ -395,7 +411,7 @@ test.describe("Instant Scroll Restoration", () => {
         return false
       },
       scrollPos,
-      { timeout: 15_000 },
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
     const finalScroll = await handle.jsonValue()
     expect(finalScroll).toBeCloseTo(scrollPos, -1)
@@ -417,7 +433,11 @@ test.describe("Instant Scroll Restoration", () => {
     // Use waitForFunction to both wait AND read the value in a single
     // evaluation, avoiding a race where a late SPA navigation destroys
     // the execution context between separate calls.
-    const handle = await page.waitForFunction(() => (window.scrollY > 0 ? window.scrollY : false))
+    const handle = await page.waitForFunction(
+      () => (window.scrollY > 0 ? window.scrollY : false),
+      null,
+      { polling: WAIT_POLL_INTERVAL_MS },
+    )
     const finalScroll = await handle.jsonValue()
 
     expect(finalScroll).toBeGreaterThan(0)
@@ -431,7 +451,10 @@ test.describe("Instant Scroll Restoration", () => {
     await page.evaluate(() => {
       window.location.hash = "#color-scheme"
     })
-    await page.waitForFunction(() => window.scrollY > 0, { timeout: 5000 })
+    await page.waitForFunction(() => window.scrollY > 0, null, {
+      timeout: 5000,
+      polling: WAIT_POLL_INTERVAL_MS,
+    })
 
     const finalScroll = await page.evaluate(() => window.scrollY)
     expect(finalScroll).toBeGreaterThan(0)
@@ -596,7 +619,7 @@ test.describe("Cross-Session Scroll Persistence (localStorage)", () => {
         return false
       },
       { target: scrollPos, tolerance: tightScrollTolerance },
-      { timeout: 15_000 },
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
     const finalScroll = await handle.jsonValue()
     expect(finalScroll).toBeCloseTo(scrollPos, -1)
@@ -644,7 +667,7 @@ test.describe("Cross-Session Scroll Persistence (localStorage)", () => {
     await newPage.waitForFunction(
       ({ k, tolerance }) => localStorage.getItem(k) === null && window.scrollY <= tolerance,
       { k: key, tolerance: tightScrollTolerance },
-      { timeout: 15_000 },
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
     const timestampRemaining = await newPage.evaluate(
       (tk) => localStorage.getItem(tk),
@@ -705,13 +728,15 @@ test.describe("Same-page navigation", () => {
     expect(initialScroll).toBe(0)
 
     await clickToc(page)
-    await page.waitForFunction(() => window.scrollY > 0)
+    await page.waitForFunction(() => window.scrollY > 0, null, { polling: WAIT_POLL_INTERVAL_MS })
 
     const scrollAfterClick = await page.evaluate(() => window.scrollY)
     expect(scrollAfterClick).toBeGreaterThan(initialScroll)
 
     await page.goBack()
-    await page.waitForFunction((tolerance) => window.scrollY <= tolerance, tightScrollTolerance)
+    await page.waitForFunction((tolerance) => window.scrollY <= tolerance, tightScrollTolerance, {
+      polling: WAIT_POLL_INTERVAL_MS,
+    })
   })
 
   test("anchored header lands below the top by its scroll-margin-top", async ({ page }) => {
@@ -721,7 +746,7 @@ test.describe("Same-page navigation", () => {
     expect(href?.startsWith("#")).toBe(true)
 
     await tocLink.click()
-    await page.waitForFunction(() => window.scrollY > 0)
+    await page.waitForFunction(() => window.scrollY > 0, null, { polling: WAIT_POLL_INTERVAL_MS })
 
     const targetId = decodeURIComponent((href as string).slice(1))
     const { rectTop, scrollMarginTop } = await page.evaluate((id) => {
@@ -757,13 +782,17 @@ test.describe("Same-page navigation", () => {
         // eslint-disable-next-line playwright/no-conditional-in-test
         scrollPositions.length > 0 ? scrollPositions[scrollPositions.length - 1] : 0
 
-      await page.waitForFunction((prevScroll) => {
-        // Ensure history state has a new scroll value different from previous
-        if (!window.history.state?.scroll) return false
-        if (window.history.state.scroll === prevScroll) return false
-        // Ensure actual scroll position matches history state (scroll complete)
-        return Math.abs(window.scrollY - window.history.state.scroll) < 5
-      }, previousScroll)
+      await page.waitForFunction(
+        (prevScroll) => {
+          // Ensure history state has a new scroll value different from previous
+          if (!window.history.state?.scroll) return false
+          if (window.history.state.scroll === prevScroll) return false
+          // Ensure actual scroll position matches history state (scroll complete)
+          return Math.abs(window.scrollY - window.history.state.scroll) < 5
+        },
+        previousScroll,
+        { polling: WAIT_POLL_INTERVAL_MS },
+      )
       const historyScroll = await page.evaluate(() => window.scrollY)
       await waitForHistoryState(page, historyScroll)
       scrollPositions.push(historyScroll)
@@ -989,13 +1018,17 @@ test.describe("Document Head & Body Updates", () => {
   }
 
   test("updates page title when navigating between pages", async ({ page }) => {
-    await page.waitForFunction(() => document.title !== "")
+    await page.waitForFunction(() => document.title !== "", null, {
+      polling: WAIT_POLL_INTERVAL_MS,
+    })
     const initialTitle = await page.title()
     expect(initialTitle).toBeTruthy()
 
     await ensureAboutLinkVisible(page)
     await navigateAndWait(page, "/about")
-    await page.waitForFunction(() => document.title !== "")
+    await page.waitForFunction(() => document.title !== "", null, {
+      polling: WAIT_POLL_INTERVAL_MS,
+    })
 
     const newTitle = await page.title()
     expect(newTitle).toBeTruthy()
@@ -1003,18 +1036,24 @@ test.describe("Document Head & Body Updates", () => {
   })
 
   test("updates page title when using browser back button", async ({ page }) => {
-    await page.waitForFunction(() => document.title !== "")
+    await page.waitForFunction(() => document.title !== "", null, {
+      polling: WAIT_POLL_INTERVAL_MS,
+    })
     const homeTitle = await page.title()
 
     await ensureAboutLinkVisible(page)
     await navigateAndWait(page, "/about")
-    await page.waitForFunction(() => document.title !== "")
+    await page.waitForFunction(() => document.title !== "", null, {
+      polling: WAIT_POLL_INTERVAL_MS,
+    })
     const aboutTitle = await page.title()
 
     // Go back
     await triggerAndWaitForSPANav(page, () => page.goBack())
     await page.waitForURL(`**/${testingPageSlug}`)
-    await page.waitForFunction(() => document.title !== "")
+    await page.waitForFunction(() => document.title !== "", null, {
+      polling: WAIT_POLL_INTERVAL_MS,
+    })
 
     const restoredTitle = await page.title()
     expect(restoredTitle).toBe(homeTitle)

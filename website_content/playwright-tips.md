@@ -15,7 +15,7 @@ aliases:
   - visual-regression
   - screenshot-testing
 date_published: 2025-08-12
-date_updated: 2026-07-15
+date_updated: 2026-07-18
 ---
 
 # Background
@@ -69,6 +69,9 @@ Use `domcontentloaded` instead of `load` when possible
 : Firefox can stall on subresource loads (images, fonts) in CI, causing 30-second timeouts on page navigation. Using `domcontentloaded` as the wait condition for `page.goto()` avoids this. Only wait for `load` when you specifically need all subresources to be ready.
 
 : I hit an even nastier version of this on WebKit: my navbar has an autoplaying, looping background video (`preload="auto"`). Its continuous range requests keep the `load` event pending indefinitely, so `page.goto(url, { waitUntil: "load" })` stalled every navigation until the timeout — even though the server had already served every byte in milliseconds. If any page has autoplaying or streaming media, `load` may simply never fire in WebKit. Default your navigation helper to `domcontentloaded` and let each test assert on the concrete elements it needs afterward.
+
+Guard WebKit autoplay with a watchdog
+: Real Safari sometimes accepts `video.play()` without error, then never decodes — `readyState` sticks at `HAVE_METADATA` and `currentTime` stays 0, with no event to await. Re-issue `play()` a few times on an interval, stopping once the video advances or the user pauses it.
 
 Move the mouse to a safe position before visual assertions
 : Using `page.mouse.move(0, 0)` can overlap with navbar or menu elements on certain viewports (especially tablets), triggering spurious `mouseenter` events. Move the mouse to a position where no UI elements live.
