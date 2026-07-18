@@ -8,7 +8,7 @@ import type { FrontmatterData } from "../../plugins/vfile"
 import { parseFrontmatter } from "../../util/frontmatter"
 import { findGitRoot } from "../../util/log"
 import { expect, test } from "./fixtures"
-import { gotoPage } from "./visual_utils"
+import { gotoPage, WAIT_POLL_INTERVAL_MS } from "./visual_utils"
 
 // Invariant: no content image may render on top of body text. A floated or
 // absolutely-positioned image whose surrounding text doesn't know to wrap
@@ -143,7 +143,10 @@ async function settle(page: Page, url: string) {
   // Waiting for "load" would add every sub-resource (including third-party
   // analytics) to a sweep that runs once per article.
   await gotoPage(page, url, "domcontentloaded")
-  await page.waitForFunction(pageSettled, undefined, { timeout: 10_000 })
+  await page.waitForFunction(pageSettled, undefined, {
+    timeout: 10_000,
+    polling: WAIT_POLL_INTERVAL_MS,
+  })
   await page.evaluate(
     () =>
       new Promise<void>((resolve) =>

@@ -1,4 +1,4 @@
-import type { Locator, Page } from "@playwright/test"
+import { errors, type Locator, type Page } from "@playwright/test"
 
 import { simpleConstants, urlBarScrollTolerance } from "../constants"
 import { type Theme } from "../scripts/darkmode"
@@ -11,6 +11,7 @@ import {
   setTheme,
   takeRegressionScreenshot,
   triggerAndWaitForSPANav,
+  WAIT_POLL_INTERVAL_MS,
 } from "./visual_utils"
 
 const { pondVideoId } = simpleConstants
@@ -43,6 +44,15 @@ function isPaused(video: Locator): Promise<boolean> {
   return video.evaluate((videoElement: HTMLVideoElement) => videoElement.paused)
 }
 
+// WebKit's decode pipeline can stall at readyState HAVE_METADATA after play()
+// is requested: the file is fully downloaded but currentTime never advances and
+// no error surfaces. Re-issuing play() unsticks it, so playback is awaited in
+// bounded windows with a play() retry between them. The full retry budget
+// (attempts × timeout) must leave room for the seek and post-navigation waits
+// inside the tightest caller's test timeout (60s in the refresh test).
+const VIDEO_PLAYBACK_ATTEMPT_TIMEOUT_MS = 10_000
+const VIDEO_PLAYBACK_MAX_ATTEMPTS = 3
+
 async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
   const { video } = videoElements
 
@@ -53,15 +63,35 @@ async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
   }
 
   // Wait for video to actually be playing (not just !paused, but actively playing)
-  await video.page().waitForFunction((id: string) => {
-    const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return (
-      videoElement &&
-      !videoElement.paused &&
-      videoElement.readyState >= 3 &&
-      videoElement.currentTime > 0
-    )
-  }, pondVideoId)
+  for (let attempt = 1; attempt <= VIDEO_PLAYBACK_MAX_ATTEMPTS; attempt++) {
+    try {
+      await video.page().waitForFunction(
+        (id: string) => {
+          const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
+          return (
+            videoElement &&
+            !videoElement.paused &&
+            videoElement.readyState >= 3 &&
+            videoElement.currentTime > 0
+          )
+        },
+        pondVideoId,
+        { timeout: VIDEO_PLAYBACK_ATTEMPT_TIMEOUT_MS, polling: WAIT_POLL_INTERVAL_MS },
+      )
+      break
+    } catch (error) {
+      // Only a stalled wait is recoverable; a crashed page or destroyed
+      // execution context must fail loudly and immediately.
+      if (!(error instanceof errors.TimeoutError) || attempt === VIDEO_PLAYBACK_MAX_ATTEMPTS) {
+        throw error
+      }
+      await video.evaluate((videoElement: HTMLVideoElement) => {
+        videoElement.play().catch(() => {
+          // Retried on the next attempt below.
+        })
+      })
+    }
+  }
 
   // Wait for enough data to play through to the end (HAVE_ENOUGH_DATA = 4).
   // readyState >= 3 (canplay) is insufficient for seeking: Safari may only
@@ -73,8 +103,22 @@ async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
   // request forces the remaining fetch through.
   await video.evaluate((videoElement: HTMLVideoElement) => {
     if (videoElement.readyState < 4) {
-      return new Promise<void>((resolve) => {
-        videoElement.addEventListener("canplaythrough", () => resolve(), { once: true })
+      return new Promise<void>((resolve, reject) => {
+        const deadline = setTimeout(() => {
+          reject(
+            new Error(
+              `canplaythrough not reached: readyState=${videoElement.readyState}, paused=${videoElement.paused}, currentTime=${videoElement.currentTime}`,
+            ),
+          )
+        }, 15_000)
+        videoElement.addEventListener(
+          "canplaythrough",
+          () => {
+            clearTimeout(deadline)
+            resolve()
+          },
+          { once: true },
+        )
       })
     }
     return undefined
@@ -94,6 +138,24 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
   await ensureVideoPlaying(videoElements)
 
   const { video, autoplayToggle } = videoElements
+
+  // WebKit fires `seeked` even when it clamps an out-of-buffer-range seek back
+  // to 0, so seeking to fixedTimestamp before the CDN has buffered that far
+  // silently "succeeds" at the wrong position. Wait until the target is
+  // actually buffered so the seek below lands where requested.
+  await video.page().waitForFunction(
+    ([id, target]) => {
+      const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
+      if (!videoElement) return false
+      const { buffered } = videoElement
+      for (let i = 0; i < buffered.length; i++) {
+        if (buffered.start(i) <= target && target <= buffered.end(i)) return true
+      }
+      return false
+    },
+    [pondVideoId, fixedTimestamp] as const,
+    { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
+  )
 
   // Set currentTime and wait for seeked event (which fires when seeking completes)
   await video.evaluate((videoElement: HTMLVideoElement, timestamp: number) => {
@@ -393,13 +455,16 @@ test("Clicking TOC title scrolls to top", async ({ page }) => {
   await page.waitForFunction(
     (tolerance) => Math.abs(window.scrollY - 500) < tolerance,
     urlBarScrollTolerance,
+    { polling: WAIT_POLL_INTERVAL_MS },
   )
 
   const tocTitle = page.locator("#toc-title button")
   await expect(tocTitle).toBeVisible()
   await tocTitle.click()
 
-  await page.waitForFunction((tolerance) => window.scrollY < tolerance, urlBarScrollTolerance)
+  await page.waitForFunction((tolerance) => window.scrollY < tolerance, urlBarScrollTolerance, {
+    polling: WAIT_POLL_INTERVAL_MS,
+  })
 })
 
 test("Random post link is visible on desktop", async ({ page }) => {
@@ -455,10 +520,14 @@ test("Video toggle changes autoplay behavior", async ({ page }) => {
   await autoplayToggle.click()
 
   // Video should play and icons should switch
-  await page.waitForFunction((id) => {
-    const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return videoElement && !videoElement.paused && videoElement.readyState >= 3
-  }, pondVideoId)
+  await page.waitForFunction(
+    (id) => {
+      const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
+      return videoElement && !videoElement.paused && videoElement.readyState >= 3
+    },
+    pondVideoId,
+    { polling: WAIT_POLL_INTERVAL_MS },
+  )
   await expect(pauseIcon).toBeVisible()
   await expect(playIcon).toBeHidden()
   await expect(autoplayToggle).toHaveAttribute("aria-label", "Disable video autoplay")
@@ -468,6 +537,7 @@ test("Video toggle changes autoplay behavior", async ({ page }) => {
   await page.waitForFunction(
     (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
     pondVideoId,
+    { polling: WAIT_POLL_INTERVAL_MS },
   )
   await expect(playIcon).toBeVisible()
   await expect(pauseIcon).toBeHidden()
@@ -542,10 +612,14 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   // buffer depth. currentTime > 0 confirms autoplay works as soon as the first
   // frame renders, independent of how long the CDN takes to buffer future data
   // (readyState >= 3), which under CI contention can lag far behind playback.
-  await page.waitForFunction((id) => {
-    const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return videoElement && !videoElement.paused && videoElement.currentTime > 0
-  }, pondVideoId)
+  await page.waitForFunction(
+    (id) => {
+      const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
+      return videoElement && !videoElement.paused && videoElement.currentTime > 0
+    },
+    pondVideoId,
+    { polling: WAIT_POLL_INTERVAL_MS },
+  )
 
   await page.evaluate(() => window.spaNavigate(new URL("/design", window.location.origin)))
   await expect(page).toHaveURL(/\/design/)
@@ -557,6 +631,7 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   await page.waitForFunction(
     (id) => document.querySelector<HTMLVideoElement>(`#${id}`)?.paused,
     pondVideoId,
+    { polling: WAIT_POLL_INTERVAL_MS },
   )
 })
 
@@ -572,7 +647,7 @@ async function getTimestampAfterNavigation(page: Page, expectedTimestamp: number
       return videoEl && Math.abs(videoEl.currentTime - expected) < 0.5 ? videoEl.currentTime : null
     },
     { id: pondVideoId, expected: expectedTimestamp },
-    { timeout: 45_000 },
+    { timeout: 45_000, polling: WAIT_POLL_INTERVAL_MS },
   )
   return (await handle.jsonValue()) as number
 }

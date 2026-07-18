@@ -173,7 +173,13 @@ jobs:
           SERVER_PID: ${{ steps.server.outputs.server-pid }}
         run: kill "$SERVER_PID" 2>/dev/null || true
 
-  # Unified status check — provides passing status when gated off on PRs
+  # Unified status check — provides passing status when gated off on PRs. Runs
+  # always() so it still reports when should-run gated everything off. A
+  # superseded run's needs come back cancelled; the job can't just skip on that,
+  # because branch protection counts a skipped required check as passing, which
+  # would let a directly-cancelled run (e.g. a manual cancel while auto-merge is
+  # armed) merge untested. classify-cancellation tells the two apart: a newer run
+  # exists → superseded → pass; none → direct cancel → fail.
   site-build-checks:
     name: site-build-checks
     if: always()
@@ -181,7 +187,20 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
+      - name: Checkout
+        if: contains(needs.*.result, 'cancelled')
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
+        with:
+          persist-credentials: false
+      - name: Classify cancellation
+        id: cancel
+        if: contains(needs.*.result, 'cancelled')
+        uses: ./.github/actions/classify-cancellation
+        with:
+          github-token: ${{ github.token }}
       - name: Check results
+        if: steps.cancel.outputs.superseded != 'true'
         run: |
           if [[ "${NEEDS_SHOULD_RUN_OUTPUTS_RUN}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
             echo "Tests were skipped (no relevant changes or filtered actor)"
