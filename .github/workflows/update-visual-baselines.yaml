@@ -142,10 +142,27 @@ jobs:
           RUN_ID: ${{ github.event.inputs.run_id }}
           APPROVER: ${{ github.actor }}
         run: |
+          # The R2 upload above is the approval; this empty commit only nudges
+          # visual-testing to rerun. A push to the PR branch that lands between
+          # this job's checkout and its push (e.g. a fresh commit on the PR)
+          # would non-fast-forward reject the push and fail the approval even
+          # though the baselines are already live. Reset to the freshest tip
+          # before each attempt so the push is always a fast-forward.
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit --allow-empty -m "ci: rerun visual-testing against approved baselines (run $RUN_ID, approved by $APPROVER)"
-          git push origin "HEAD:$REF"
+          msg="ci: rerun visual-testing against approved baselines (run $RUN_ID, approved by $APPROVER)"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$REF"
+            git reset --hard "origin/$REF"
+            git commit --allow-empty -m "$msg"
+            if git push origin "HEAD:$REF"; then
+              echo "Pushed retrigger commit on attempt $attempt"
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt); refetching $REF and retrying"
+          done
+          echo "Failed to push retrigger commit after 5 attempts" >&2
+          exit 1
 
       # Carry-through for merged PRs: the approved diffs are the ones
       # re-failing main's own visual-testing run, so find that run and (after
