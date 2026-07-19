@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test"
 
 import { expect, routeCdnAssetStubs, test } from "./fixtures"
-import { gotoPage, reloadPage } from "./visual_utils"
+import { gotoPage, reloadPage, requireBoundingBox } from "./visual_utils"
 
 // Helper to get collapsible admonitions
 const getCollapsibles = (page: Page) => page.locator(".admonition.is-collapsible")
@@ -38,17 +38,6 @@ async function spaNavigateToAbout(page: Page): Promise<void> {
   await page.evaluate(() => window.spaNavigate(new URL("/about", window.location.origin)))
   await page.waitForURL("**/about")
   await expect(page.locator('body[data-slug="about"]')).toBeAttached()
-}
-
-/** Resolves a locator's bounding box, throwing if it's not visible/attached. */
-async function requireBoundingBox(
-  locator: import("@playwright/test").Locator,
-): Promise<{ x: number; y: number; width: number; height: number }> {
-  const box = await locator.boundingBox()
-  if (!box) {
-    throw new Error(`Expected a visible bounding box for locator: ${locator}`)
-  }
-  return box
 }
 
 async function goBackToTestPage(page: Page): Promise<void> {

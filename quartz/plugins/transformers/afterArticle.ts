@@ -3,7 +3,7 @@ import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
-import { EXTERNAL_LINK_REL } from "../../components/constants"
+import { EXTERNAL_LINK_REL, NBSP } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { type QuartzPluginData } from "../vfile"
 import { createSequenceLinksComponent } from "./sequenceLinks"
@@ -18,8 +18,18 @@ const newsletterElement = h("a", { href: "https://turntrout.substack.com/subscri
 export const rssElement = h("a", { href: "https://turntrout.com/rss.xml", id: "rss-link" }, [
   h("abbr", { class: "small-caps" }, "rss"),
 ])
+// NBSPs glue "newsletter & rss" into one line-break atom so narrow viewports
+// wrap before "newsletter" instead of stranding "& rss" on its own line.
 const subscriptionElement = h("div", { className: "centered" }, [
-  h("div", h("p", ["Find out when I post more content: ", newsletterElement, " & ", rssElement])),
+  h(
+    "div",
+    h("p", [
+      "Find out when I post more content: ",
+      newsletterElement,
+      `${NBSP}&${NBSP}`,
+      rssElement,
+    ]),
+  ),
 ])
 
 const mailLink = h("a", { href: "mailto:alex@turntrout.com" }, ["alex@turntrout.com"])
