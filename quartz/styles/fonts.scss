@@ -354,6 +354,15 @@ article[data-use-dropcap="true"] > p:first-of-type .small-caps {
   margin-right: calc(0.25 * $base-margin);
 }
 
+// A separator slash ("cat / dog") leans forward, crowding the glyph after it,
+// so an equal space reads as tight on the right. This margin opens the right
+// side to match the optical left gap. Set in em so it tracks the font size
+// (headings and subtitles run larger). The margin is inert at a line end, so a
+// slash that wraps to a line start stays flush.
+.slash-gap-after {
+  margin-right: 0.1em;
+}
+
 /* Set monospace font for code blocks, inline code, etc. */
 code,
 pre {

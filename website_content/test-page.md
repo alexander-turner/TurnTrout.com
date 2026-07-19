@@ -715,6 +715,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 | In context | the staff(s) called if’d a “buff” (Wolf) |
 | In context | (Jeff) met (John) in (July) about the (JSON) API |
 | In context | the clipping (probably) happened (just) quickly |
+| separator slash + glyph | cat / dog / DoD / Write / Avenue / Total / Value / other |
 
 ## Numbers and units
 

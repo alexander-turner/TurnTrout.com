@@ -89,6 +89,11 @@ function applyPassToNodes(pass: (view: ProseView) => void, values: string[]): st
 }
 
 describe("HTMLFormattingImprovement", () => {
+  // A separator slash is wrapped for right-side kerning in the full HTML
+  // pipeline (not in the standalone string pass).
+  const SLASH_GAP_SPAN = '<span class="slash-gap-after">/</span>'
+  const withSlashGaps = (html: string): string => html.replace(/ \/ /g, ` ${SLASH_GAP_SPAN} `)
+
   describe("Quotes", () => {
     // Handle HTML inputs
     it.each([
@@ -229,22 +234,22 @@ describe("HTMLFormattingImprovement", () => {
       "should add spaces around '/' in an HTML context: %s",
       (input: string, expected: string) => {
         const processedHtml = testHtmlFormattingImprovement(`<p>${input}</p>`)
-        expect(normalizeNbsp(processedHtml)).toBe(`<p>${expected}</p>`)
+        expect(normalizeNbsp(processedHtml)).toBe(`<p>${withSlashGaps(expected)}</p>`)
       },
     )
 
     it.each([
-      ["<p><em>dog/cat</em></p>", "<p><em>dog / cat</em></p>"],
-      ["<p><strong>dog/cat</strong></p>", "<p><strong>dog / cat</strong></p>"],
-      ["<p><em>dog</em>/cat</p>", "<p><em>dog</em> / cat</p>"],
+      ["<p><em>dog/cat</em></p>", `<p><em>dog ${SLASH_GAP_SPAN} cat</em></p>`],
+      ["<p><strong>dog/cat</strong></p>", `<p><strong>dog ${SLASH_GAP_SPAN} cat</strong></p>`],
+      ["<p><em>dog</em>/cat</p>", `<p><em>dog</em> ${SLASH_GAP_SPAN} cat</p>`],
       // Code kerning is different
       [
         "<p><code>cat</code> / <code>unknown</code> classifier</p>",
-        "<p><code>cat</code> / <code>unknown</code> classifier</p>",
+        `<p><code>cat</code> ${SLASH_GAP_SPAN} <code>unknown</code> classifier</p>`,
       ],
       [
         "<p>raw <code>red</code> / <code>green</code> / <code>blue</code> colors</p>",
-        "<p>raw <code>red</code> / <code>green</code> / <code>blue</code> colors</p>",
+        `<p>raw <code>red</code> ${SLASH_GAP_SPAN} <code>green</code> ${SLASH_GAP_SPAN} <code>blue</code> colors</p>`,
       ],
       [
         '<p>(<strong>NAFTA</strong> <a href="x">/ˈnæftə/</a> <a href="y"><em>NAF-tə</em></a>; Spanish)</p>',
@@ -252,11 +257,11 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         "<p>upweight the sycophantic <code>A</code>/<code>B</code> token</p>",
-        "<p>upweight the sycophantic <code>A</code> / <code>B</code> token</p>",
+        `<p>upweight the sycophantic <code>A</code> ${SLASH_GAP_SPAN} <code>B</code> token</p>`,
       ],
       [
         "<p>the <code>A</code>/<code>B</code> token</p>",
-        "<p>the <code>A</code> / <code>B</code> token</p>",
+        `<p>the <code>A</code> ${SLASH_GAP_SPAN} <code>B</code> token</p>`,
       ],
       // Asymmetric: only the left side is a skipped-element boundary. The
       // captured leftSpace must stay outside the marker (i.e. the trailing
@@ -264,7 +269,7 @@ describe("HTMLFormattingImprovement", () => {
       // node — otherwise the rendered output reads "of the<code>unknown</code>".
       [
         "<p>volumetric properties of the <code>unknown</code>/non-<code>unknown</code> portions.</p>",
-        "<p>volumetric properties of the <code>unknown</code> / non-<code>unknown</code> portions.</p>",
+        `<p>volumetric properties of the <code>unknown</code> ${SLASH_GAP_SPAN} non-<code>unknown</code> portions.</p>`,
       ],
     ])(
       "should add spaces around '/' even near other HTML tags: %s",
@@ -306,9 +311,17 @@ describe("HTMLFormattingImprovement", () => {
     it("still transforms <a> text when it differs from href", () => {
       const inputElement = '<p><a href="https://example.com/abc">dog/cat</a></p>'
       const processedHtml = testHtmlFormattingImprovement(inputElement)
+      // Slash spacing runs on link text, but the kern span is skipped inside a
+      // link so the underline runs through the slash unbroken.
       expect(normalizeNbsp(processedHtml)).toBe(
         '<p><a href="https://example.com/abc">dog / cat</a></p>',
       )
+    })
+
+    it("does not wrap a spaced slash authored inside <code>", () => {
+      const inputElement = "<p><code>cat / dog</code></p>"
+      const processedHtml = testHtmlFormattingImprovement(inputElement)
+      expect(normalizeNbsp(processedHtml)).toBe(inputElement)
     })
   })
 
@@ -318,10 +331,16 @@ describe("HTMLFormattingImprovement", () => {
     // bound insertions into different nodes (v5.1+), so the build no longer
     // aborts with "Two pure insertions at the same offset ... ambiguous".
     it.each([
-      ["<p>a/<em></em>/b</p>", "<p>a / <em></em> / b</p>"],
-      ["<p><em>x/</em>/y</p>", "<p><em>x /</em> / y</p>"],
-      ["<p><em>a/</em><em>/b</em></p>", "<p><em>a /</em><em>/ b</em></p>"],
-      ["<p>a/<strong></strong>/b</p>", "<p>a / <strong></strong> / b</p>"],
+      ["<p>a/<em></em>/b</p>", `<p>a ${SLASH_GAP_SPAN} <em></em> ${SLASH_GAP_SPAN} b</p>`],
+      ["<p><em>x/</em>/y</p>", `<p><em>x ${SLASH_GAP_SPAN}</em> ${SLASH_GAP_SPAN} y</p>`],
+      [
+        "<p><em>a/</em><em>/b</em></p>",
+        `<p><em>a ${SLASH_GAP_SPAN}</em><em>${SLASH_GAP_SPAN} b</em></p>`,
+      ],
+      [
+        "<p>a/<strong></strong>/b</p>",
+        `<p>a ${SLASH_GAP_SPAN} <strong></strong> ${SLASH_GAP_SPAN} b</p>`,
+      ],
     ])("does not crash on %s", (input: string, expected: string) => {
       expect(normalizeNbsp(testHtmlFormattingImprovement(input))).toBe(expected)
     })
