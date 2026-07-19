@@ -1,5 +1,5 @@
 import { expect, test } from "./fixtures"
-import { gotoPage, takeRegressionScreenshot } from "./visual_utils"
+import { gotoPage, requireBoundingBox, takeRegressionScreenshot } from "./visual_utils"
 
 const AFTER_ARTICLE_URL = "http://localhost:8080/after-article-fixture"
 
@@ -22,13 +22,10 @@ test.describe("After-article components", () => {
     await gotoPage(page, AFTER_ARTICLE_URL)
 
     const paragraph = page.locator("#subscription-and-contact p").first()
-    const newsletterBox = await paragraph
-      .locator('a[href="https://turntrout.substack.com/subscribe"]')
-      .boundingBox()
-    const rssBox = await paragraph.locator("#rss-link").boundingBox()
-    if (!newsletterBox || !rssBox) {
-      throw new Error("newsletter or RSS link is not visible")
-    }
+    const newsletterBox = await requireBoundingBox(
+      paragraph.locator('a[href="https://turntrout.substack.com/subscribe"]'),
+    )
+    const rssBox = await requireBoundingBox(paragraph.locator("#rss-link"))
 
     const newsletterMidY = newsletterBox.y + newsletterBox.height / 2
     expect(rssBox.y).toBeLessThan(newsletterMidY)
