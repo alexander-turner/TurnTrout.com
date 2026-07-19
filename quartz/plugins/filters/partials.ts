@@ -5,7 +5,7 @@ import { type QuartzFilterPlugin } from "../types"
  * `partials` as a whole path segment so siblings like `old-partials/` aren't
  * misclassified.
  */
-export function isPartialPath(filePath: string): boolean {
+function isPartialPath(filePath: string): boolean {
   return filePath.split("/").includes("partials")
 }
 

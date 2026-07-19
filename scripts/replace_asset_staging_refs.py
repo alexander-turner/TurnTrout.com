@@ -48,10 +48,11 @@ def _replace_content(content: str, filename: str) -> str:
     )
 
     # Pass 2 – bare filename, guarded against URLs and longer filenames.
-    # The lookarounds reject any adjacent joiner (word char, ``/``, ``:``,
-    # ``.`` or ``-``) so ``trout.png`` matches neither a URL path nor a
-    # different asset such as ``sad-trout.png`` or ``trout.png.bak``.
-    pattern = rf"(?<![\w/:.\-]){re.escape(filename)}(?![\w.\-])"
+    # The lookbehind rejects any preceding joiner (word char, ``/``, ``:``,
+    # ``.`` or ``-``) so ``trout.png`` doesn't match inside a URL path or a
+    # different asset such as ``sad-trout.png``. The trailing ``(?!\w)`` keeps
+    # ``example.png`` from matching ``example.png123``.
+    pattern = rf"(?<![\w/:.\-]){re.escape(filename)}(?!\w)"
     return re.sub(pattern, f"static/images/posts/{filename}", content)
 
 

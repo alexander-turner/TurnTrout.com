@@ -263,6 +263,9 @@ export function updateHeadElements(html: Document): void {
       if (name) newMetaElement.name = name
       if (property) newMetaElement.setAttribute("property", property)
       if (httpEquiv) newMetaElement.httpEquiv = httpEquiv
+      // Preserve the media scope so the next sync's media-aware selector can
+      // find this element instead of appending a duplicate every navigation.
+      if (media) newMetaElement.setAttribute("media", media)
       newMetaElement.setAttribute("content", content)
       currentHead.appendChild(newMetaElement)
     }

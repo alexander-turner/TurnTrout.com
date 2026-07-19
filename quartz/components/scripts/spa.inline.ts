@@ -449,7 +449,7 @@ async function handleClickNavigation(event: Event): Promise<void> {
   // download/target anchors, and anything else the browser should handle.
   const opts = getNavigationOpts(event)
   if (!opts || !opts.url || event.defaultPrevented) {
-    return // Let browser handle normal links, external links, or modified clicks
+    return
   }
 
   event.preventDefault() // Prevent default link behavior

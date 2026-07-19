@@ -476,4 +476,20 @@ describe("updateHeadElements", () => {
     // No stray duplicate created for either variant.
     expect(document.head.querySelectorAll('meta[name="theme-color"]')).toHaveLength(2)
   })
+
+  it("creates a media-scoped meta with its media attribute and does not duplicate it", () => {
+    document.head.innerHTML = ""
+    const newDoc = parseDoc(
+      "<html><head>" +
+        '<meta name="theme-color" content="#light" media="(prefers-color-scheme: light)">' +
+        "</head><body></body></html>",
+    )
+    // Two navigations: the first creates the meta, the second must find it.
+    updateHeadElements(newDoc)
+    updateHeadElements(newDoc)
+    const metas = document.head.querySelectorAll('meta[name="theme-color"]')
+    expect(metas).toHaveLength(1)
+    expect(metas[0].getAttribute("media")).toBe("(prefers-color-scheme: light)")
+    expect(metas[0].getAttribute("content")).toBe("#light")
+  })
 })
