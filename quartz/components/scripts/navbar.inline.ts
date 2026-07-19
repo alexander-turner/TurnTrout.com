@@ -133,8 +133,12 @@ function restorePausedTimestamp(
     videoElement
       .play()
       .then(() => videoElement.pause())
-      .catch(() => {
-        // AbortError is expected if pause() races with play() — harmless
+      .catch((error: Error) => {
+        // AbortError is expected when pause() interrupts the play() request;
+        // anything else is a real playback failure worth surfacing.
+        if (error.name !== "AbortError") {
+          console.debug("[restorePausedTimestamp] Nudge play failed:", error)
+        }
       })
   }
 
