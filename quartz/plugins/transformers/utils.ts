@@ -313,7 +313,7 @@ export function wrapCharsInSpan(
   offsets: readonly number[],
   className: string,
 ): void {
-  const nodeIndex = parent.children.indexOf(textNode as unknown as ElementContent)
+  const nodeIndex = parent.children.indexOf(textNode)
   if (nodeIndex === -1 || offsets.length === 0) return
 
   const { value } = textNode
