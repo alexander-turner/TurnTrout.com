@@ -105,6 +105,27 @@ def test_preserve_other_urls(temp_dirs: dict[str, Path]) -> None:
     assert "https://example.com/images/example.png" in content
 
 
+def test_preserve_longer_filename_with_shared_suffix(
+    temp_dirs: dict[str, Path],
+) -> None:
+    """A staged filename must not corrupt a longer sibling asset name."""
+    create_staged_file(temp_dirs["staging"], "trout.png")
+    md_file = create_markdown_file(
+        temp_dirs["content"],
+        "test.md",
+        "![New](asset_staging/trout.png)\n"
+        "![Old](static/images/posts/sad-trout.png)\n",
+    )
+    replace_asset_staging_refs(temp_dirs["staging"], temp_dirs["content"])
+
+    content = md_file.read_text()
+    # The staged reference is rewritten...
+    assert "![New](static/images/posts/trout.png)" in content
+    # ...while the unrelated hyphen-prefixed asset is left untouched.
+    assert "![Old](static/images/posts/sad-trout.png)" in content
+    assert "sad-static" not in content
+
+
 def test_filename_at_start_of_line(temp_dirs: dict[str, Path]) -> None:
     """Test replacing filename at the start of a line."""
     create_staged_file(temp_dirs["staging"], "start.png")

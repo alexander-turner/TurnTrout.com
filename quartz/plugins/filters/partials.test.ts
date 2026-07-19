@@ -17,6 +17,9 @@ describe("RemovePartials", () => {
     ["website_content/posts/my-article.md", true],
     ["website_content/about.md", true],
     ["some/path/without/keyword.md", true],
+    // `partials` must match as a whole segment, not a substring.
+    ["website_content/old-partials/note.md", true],
+    ["website_content/my-partials.md", true],
   ])("publishes non-partial file %s", (filePath, expected) => {
     expect(shouldPublish(filePath)).toBe(expected)
   })
