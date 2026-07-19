@@ -492,4 +492,20 @@ describe("updateHeadElements", () => {
     expect(metas[0].getAttribute("media")).toBe("(prefers-color-scheme: light)")
     expect(metas[0].getAttribute("content")).toBe("#light")
   })
+
+  it("removes a stale media-scoped meta absent from the new head", () => {
+    document.head.innerHTML =
+      '<meta name="theme-color" content="#light" media="(prefers-color-scheme: light)">' +
+      '<meta name="theme-color" content="#dark" media="(prefers-color-scheme: dark)">'
+    updateHeadElements(
+      parseDoc(
+        "<html><head>" +
+          '<meta name="theme-color" content="#light" media="(prefers-color-scheme: light)">' +
+          "</head><body></body></html>",
+      ),
+    )
+    const metas = document.head.querySelectorAll('meta[name="theme-color"]')
+    expect(metas).toHaveLength(1)
+    expect(metas[0].getAttribute("media")).toBe("(prefers-color-scheme: light)")
+  })
 })
