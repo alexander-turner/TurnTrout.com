@@ -360,7 +360,7 @@ article[data-use-dropcap="true"] > p:first-of-type .small-caps {
 // (headings and subtitles run larger). The margin is inert at a line end, so a
 // slash that wraps to a line start stays flush.
 .slash-gap-after {
-  margin-right: 0.1em;
+  margin-right: 0.125em;
 }
 
 /* Set monospace font for code blocks, inline code, etc. */
