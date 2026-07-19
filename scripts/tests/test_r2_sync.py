@@ -49,6 +49,22 @@ def test_rclone_invokes_subprocess(tmp_path: Path) -> None:
     )
 
 
+def test_rclone_output_returns_stdout(tmp_path: Path) -> None:
+    cfg = tmp_path / "rclone.conf"
+    completed = subprocess.CompletedProcess(
+        args=[], returncode=0, stdout="hello\n", stderr=""
+    )
+    with mock.patch.object(subprocess, "run", return_value=completed) as run:
+        out = r2_sync.rclone_output(["cat", "r2:bucket/obj"], cfg)
+    assert out == "hello\n"
+    run.assert_called_once_with(
+        ["rclone", f"--config={cfg}", "cat", "r2:bucket/obj"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
 def test_rclone_config_context_manager(env_vars: None) -> None:
     with r2_sync.rclone_config() as config:
         assert config.exists()

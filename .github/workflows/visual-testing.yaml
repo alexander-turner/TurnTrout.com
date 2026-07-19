@@ -424,6 +424,9 @@ jobs:
         timeout-minutes: 5
         with:
           persist-credentials: false
+          # Full history so the nightly sentinel can diff the recorded
+          # baseline-approval commit against main HEAD (see the provenance step).
+          fetch-depth: 0
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
@@ -457,6 +460,13 @@ jobs:
       # aggregate-visual-results already downloaded and parsed every shard's
       # `environment=` provenance line into its `environments` output; reuse
       # it here instead of re-downloading the same status artifacts.
+      #
+      # On the nightly schedule the note states the drift verdict
+      # deterministically: it reads the R2-recorded baseline-approval commit
+      # and diffs it against main HEAD over the rendering-relevant paths. No
+      # change there → the diffs are provably environment drift; a change →
+      # some diffs may be code, not drift. Falls back to a hedge when no
+      # provenance is recorded or the approving commit can't be resolved.
       - name: Compose gallery provenance note
         id: provenance
         env:
@@ -465,15 +475,32 @@ jobs:
           # pull_request event is the synthetic `<N>/merge` ref instead.
           REF_NAME: ${{ github.head_ref || github.ref_name }}
           ENVIRONMENTS: ${{ needs.aggregate-visual-results.outputs.environments }}
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
         run: |
           set -euo pipefail
-          note="trigger: ${EVENT_NAME} on ${REF_NAME}"
+          args=(--event-name "$EVENT_NAME" --ref-name "$REF_NAME"
+                --environments "$ENVIRONMENTS")
           if [ "$EVENT_NAME" = "schedule" ]; then
-            note="nightly drift sentinel (diffs below are usually environment drift, unless main changed since the last baseline approval) · ${note}"
+            sha="$(uv run python scripts/visual_drift.py read-provenance)"
+            if [ -n "$sha" ]; then
+              args+=(--provenance-sha "$sha")
+              if git cat-file -e "${sha}^{commit}" 2>/dev/null; then
+                # Capture via command substitution (not process substitution)
+                # so a render-paths crash aborts the step under `set -e` rather
+                # than leaving `paths` empty — an empty pathspec would diff ALL
+                # paths and mislabel unrelated changes as rendering-relevant.
+                paths_output="$(uv run python scripts/visual_drift.py render-paths)"
+                mapfile -t paths <<< "$paths_output"
+                git diff --name-only "$sha" HEAD -- "${paths[@]}" > changed-paths.txt
+                args+=(--changed-paths-file changed-paths.txt)
+              else
+                args+=(--changed-unknown)
+              fi
+            fi
           fi
-          if [ -n "$ENVIRONMENTS" ]; then
-            note="${note} · ${ENVIRONMENTS}"
-          fi
+          note="$(uv run python scripts/visual_drift.py compose-note "${args[@]}")"
           echo "note=${note}" >> "$GITHUB_OUTPUT"
 
       # Build a single-page screenshot gallery alongside the Playwright
