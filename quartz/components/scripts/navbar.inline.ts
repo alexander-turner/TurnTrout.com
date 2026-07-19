@@ -84,6 +84,46 @@ function handleVideoToggle(): void {
   }
 }
 
+// A seek is close enough when the playhead lands within this many seconds of
+// the target. Kept under the 0.5s tolerance the timestamp tests assert.
+const SEEK_LANDING_TOLERANCE_S = 0.4
+
+function isTimestampBuffered(videoElement: HTMLVideoElement, target: number): boolean {
+  const { buffered } = videoElement
+  for (let i = 0; i < buffered.length; i++) {
+    if (buffered.start(i) <= target && target <= buffered.end(i)) return true
+  }
+  return false
+}
+
+// WebKit clamps a seek past the buffered range back to 0 and fires `seeked` as
+// if it succeeded, and a paused video may not apply currentTime until a
+// play/pause cycle nudges it through the decode pipeline. On a fresh reload the
+// saved position is often not buffered yet, so seek only once the buffer reaches
+// it, then nudge — re-checking as the buffer fills until the playhead lands.
+function restorePausedTimestamp(
+  videoElement: HTMLVideoElement,
+  target: number,
+  signal: AbortSignal,
+): void {
+  const applySeek = () => {
+    if (Math.abs(videoElement.currentTime - target) <= SEEK_LANDING_TOLERANCE_S) return
+    if (!isTimestampBuffered(videoElement, target)) return
+    videoElement.currentTime = target
+    videoElement
+      .play()
+      .then(() => videoElement.pause())
+      .catch(() => {
+        // AbortError is expected if pause() races with play() — harmless
+      })
+  }
+
+  videoElement.addEventListener("progress", applySeek, { signal })
+  videoElement.addEventListener("canplay", applySeek, { signal })
+  videoElement.addEventListener("seeked", applySeek, { signal })
+  applySeek()
+}
+
 function setupPondVideo(): void {
   // Clean up listeners from previous invocations to prevent accumulation
   if (pondVideoCleanupController) {
@@ -111,25 +151,17 @@ function setupPondVideo(): void {
   const restoreVideoState = () => {
     console.debug("[restoreVideoState] Running, readyState:", videoElement.readyState)
 
-    // Restore timestamp first (safe while paused)
-    if (savedTime) {
-      videoElement.currentTime = parseFloat(savedTime)
-    }
-
-    // Then start playback if autoplay enabled
     if (autoplayEnabled) {
+      // Restore timestamp first (safe while paused), then resume playback.
+      if (savedTime) {
+        videoElement.currentTime = parseFloat(savedTime)
+      }
       playVideoWithWatchdog(videoElement)
     } else if (savedTime && parseFloat(savedTime) > 0) {
-      // Safari/WebKit may not apply currentTime on paused videos reliably.
-      // A brief play/pause cycle forces the seek through the video pipeline.
-      // Only do this for non-zero timestamps — seeking to 0 doesn't need the
-      // workaround and would briefly advance the video (breaking visual tests).
-      videoElement
-        .play()
-        .then(() => videoElement.pause())
-        .catch(() => {
-          // AbortError is expected if pause() races with play() — harmless
-        })
+      // Seeking to 0 doesn't need the buffer-aware restore and would briefly
+      // advance the video (breaking visual tests), so only restore non-zero
+      // positions.
+      restorePausedTimestamp(videoElement, parseFloat(savedTime), signal)
     }
   }
 
