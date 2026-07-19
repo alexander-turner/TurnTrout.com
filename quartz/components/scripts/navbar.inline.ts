@@ -87,6 +87,9 @@ function handleVideoToggle(): void {
 // A seek is close enough when the playhead lands within this many seconds of
 // the target. Kept under the 0.5s tolerance the timestamp tests assert.
 const SEEK_LANDING_TOLERANCE_S = 0.4
+// WebKit can report a buffered range covering the target yet still clamp the
+// applied seek, so the retry loop is bounded rather than trusting the buffer.
+const MAX_SEEK_ATTEMPTS = 5
 
 function isTimestampBuffered(videoElement: HTMLVideoElement, target: number): boolean {
   const { buffered } = videoElement
@@ -96,19 +99,36 @@ function isTimestampBuffered(videoElement: HTMLVideoElement, target: number): bo
   return false
 }
 
-// WebKit clamps a seek past the buffered range back to 0 and fires `seeked` as
-// if it succeeded, and a paused video may not apply currentTime until a
-// play/pause cycle nudges it through the decode pipeline. On a fresh reload the
-// saved position is often not buffered yet, so seek only once the buffer reaches
-// it, then nudge — re-checking as the buffer fills until the playhead lands.
+function seekLanded(videoElement: HTMLVideoElement, target: number): boolean {
+  return Math.abs(videoElement.currentTime - target) <= SEEK_LANDING_TOLERANCE_S
+}
+
+// Browsers that honor an in-buffer seek land immediately and leave the video
+// paused on the restored frame — no playback, so visual snapshots stay stable.
+// WebKit instead clamps a seek past the buffered range back to 0 and only
+// applies a paused seek after a play/pause nudge, so retry as the buffer fills.
+// A dedicated controller stops the retries the moment the playhead lands, so a
+// later autoplay or loop restart can't drag it back to the restored position.
 function restorePausedTimestamp(
   videoElement: HTMLVideoElement,
   target: number,
-  signal: AbortSignal,
+  parentSignal: AbortSignal,
 ): void {
+  videoElement.currentTime = target
+  if (seekLanded(videoElement, target)) return
+
+  const controller = new AbortController()
+  const { signal } = controller
+  parentSignal.addEventListener("abort", () => controller.abort(), { once: true, signal })
+
+  let attempts = 0
   const applySeek = () => {
-    if (Math.abs(videoElement.currentTime - target) <= SEEK_LANDING_TOLERANCE_S) return
+    if (seekLanded(videoElement, target) || attempts >= MAX_SEEK_ATTEMPTS) {
+      controller.abort()
+      return
+    }
     if (!isTimestampBuffered(videoElement, target)) return
+    attempts += 1
     videoElement.currentTime = target
     videoElement
       .play()
@@ -121,7 +141,12 @@ function restorePausedTimestamp(
   videoElement.addEventListener("progress", applySeek, { signal })
   videoElement.addEventListener("canplay", applySeek, { signal })
   videoElement.addEventListener("seeked", applySeek, { signal })
-  applySeek()
+
+  // A paused, autoplay-off video may stall at HAVE_METADATA without buffering to
+  // the target; force loading so the events above can fire.
+  if (videoElement.networkState !== HTMLMediaElement.NETWORK_LOADING) {
+    videoElement.load()
+  }
 }
 
 function setupPondVideo(): void {
