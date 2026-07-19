@@ -298,6 +298,45 @@ export function spliceAndWrapLastChars(
   return createNowrapSpan(lastChars, elementToWrap)
 }
 
+/**
+ * Lift the characters at `offsets` out of `textNode` (a child of `parent`),
+ * each into its own `<span class={className}>`, splitting the surrounding text
+ * around them. Lets CSS hang a per-glyph kerning margin on a single character
+ * without altering the document's text content (so find-in-page is unaffected).
+ *
+ * `offsets` must be ascending and in range; an empty list or a detached node is
+ * a no-op.
+ */
+export function wrapCharsInSpan(
+  parent: Parent,
+  textNode: Text,
+  offsets: readonly number[],
+  className: string,
+): void {
+  const nodeIndex = parent.children.indexOf(textNode)
+  if (nodeIndex === -1 || offsets.length === 0) return
+
+  const { value } = textNode
+  const replacement: ElementContent[] = []
+  let cursor = 0
+  for (const offset of offsets) {
+    if (offset > cursor) {
+      replacement.push({ type: "text", value: value.slice(cursor, offset) })
+    }
+    replacement.push({
+      type: "element",
+      tagName: "span",
+      properties: { className: [className] },
+      children: [{ type: "text", value: value.charAt(offset) }],
+    })
+    cursor = offset + 1
+  }
+  if (cursor < value.length) {
+    replacement.push({ type: "text", value: value.slice(cursor) })
+  }
+  parent.children.splice(nodeIndex, 1, ...replacement)
+}
+
 // Does node have a class that includes the given className?
 export function hasClass(node: Element, className: string): boolean {
   // Check both className and class properties (hastscript uses class)

@@ -1,4 +1,4 @@
-import type { Element, ElementContent, Node, Parent, Text } from "hast"
+import type { Element, Node, Parent, Text } from "hast"
 import type { Plugin } from "unified"
 
 import escapeStringRegexp from "escape-string-regexp"
@@ -19,6 +19,7 @@ import {
   looksLikeWorkTitle,
   replaceRegex,
   shouldCapitalizeNodeText,
+  wrapCharsInSpan,
 } from "./utils"
 
 /** Validates if string matches Roman numeral pattern with optional trailing punctuation */
@@ -470,7 +471,6 @@ const SMALLCAPS_LEFT_OVERHANG_INITIALS: ReadonlySet<string> = new Set(["j", "J"]
 
 interface BracketGap {
   parent: Parent
-  index: number
   prevText: Text
 }
 
@@ -488,23 +488,10 @@ export function spaceSmallcapsAfterOpenBracket(tree: Node): void {
     const index = parent.children.indexOf(node)
     const prev = parent.children[index - 1]
     if (prev?.type !== "text" || !OPEN_BRACKET_BEFORE_SMALLCAPS.test(prev.value)) return
-    ops.push({ parent, index, prevText: prev })
+    ops.push({ parent, prevText: prev })
   })
-  // Splice from the highest index down so earlier rewrites don't shift the
-  // positions recorded for later ones.
-  ops.sort((a, b) => b.index - a.index)
-  for (const { parent, index, prevText } of ops) {
-    const head = prevText.value.slice(0, -1)
-    const bracket = prevText.value.slice(-1)
-    const replacement: ElementContent[] = []
-    if (head) replacement.push({ type: "text", value: head })
-    replacement.push({
-      type: "element",
-      tagName: "span",
-      properties: { className: ["smallcaps-gap-before"] },
-      children: [{ type: "text", value: bracket }],
-    })
-    parent.children.splice(index - 1, 1, ...replacement)
+  for (const { parent, prevText } of ops) {
+    wrapCharsInSpan(parent, prevText, [prevText.value.length - 1], "smallcaps-gap-before")
   }
 }
 

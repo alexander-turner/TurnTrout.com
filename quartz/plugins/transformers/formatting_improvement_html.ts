@@ -44,6 +44,7 @@ import {
   ITALIC_TAGS,
   replaceRegex,
   urlRegexNonGlobal,
+  wrapCharsInSpan,
 } from "./utils"
 
 /**
@@ -241,6 +242,48 @@ export function spacesAroundSlashes(input: string | ProseView): string | void {
   applySlashSpacing(input)
   input.commit()
   return undefined
+}
+
+// Whitespace that flanks a separator slash once slash spacing has run: an
+// authored plain space or the NBSP the slash rules glue on.
+const SLASH_FLANK_SPACES: ReadonlySet<string> = new Set([" ", NBSP])
+
+/**
+ * Wrap each spaced separator slash in a `<span class="slash-gap-after">` so CSS
+ * can widen the gap on its right. The forward lean of "/" crowds the following
+ * glyph, so a symmetric space reads as tight after the slash; a right-side
+ * margin opens it without inserting a character (find-in-page stays intact).
+ *
+ * Only a slash flanked by whitespace on both sides within its own text node is
+ * a separator — URL and fraction slashes are unspaced and never match. Slashes
+ * inside links are skipped so an underline runs past them unbroken.
+ */
+export function kernSpacedSlashes(tree: Root): void {
+  const ops: { parent: Parent; node: Text; offsets: number[] }[] = []
+  visitParents(tree, "text", (node: Text, ancestors) => {
+    if (!node.value.includes("/")) return
+    // A text node is never itself a skip element, so inspecting ancestors is
+    // enough. Links are skipped so an underline runs past the slash unbroken.
+    if (ancestors.some((a) => toSkip(a as Element) || (a as Element).tagName === "a")) return
+
+    const { value } = node
+    const offsets: number[] = []
+    for (let i = 0; i < value.length; i++) {
+      if (
+        value[i] === "/" &&
+        SLASH_FLANK_SPACES.has(value[i - 1]) &&
+        SLASH_FLANK_SPACES.has(value[i + 1])
+      ) {
+        offsets.push(i)
+      }
+    }
+    if (offsets.length > 0) {
+      ops.push({ parent: ancestors[ancestors.length - 1] as Parent, node, offsets })
+    }
+  })
+  for (const { parent, node, offsets } of ops) {
+    wrapCharsInSpan(parent, node, offsets, "slash-gap-after")
+  }
 }
 
 /**
@@ -1136,6 +1179,8 @@ export const improveFormatting = (
     formatOrdinalSuffixes(tree)
     // After rearrangeLinkPunctuation, so a colon pulled into a link is seen.
     kernItalicBeforePunctuation(tree)
+    // After slash spacing, so every separator slash is flanked and wrappable.
+    kernSpacedSlashes(tree)
     removeSpaceBeforeFootnotes(tree)
   }
 }

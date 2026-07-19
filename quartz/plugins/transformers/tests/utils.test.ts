@@ -15,6 +15,7 @@ import {
   type ReplaceFnResult,
   replaceRegex,
   shouldCapitalizeNodeText,
+  wrapCharsInSpan,
 } from "../utils"
 
 const acceptAll = () => false
@@ -360,6 +361,61 @@ describe("gatherTextBeforeIndex", () => {
     },
   ])("should handle $description", ({ parent, index, expected }) => {
     expect(gatherTextBeforeIndex(parent, index)).toBe(expected)
+  })
+})
+
+describe("wrapCharsInSpan", () => {
+  const span = (ch: string): Element => ({
+    type: "element",
+    tagName: "span",
+    properties: { className: ["kern"] },
+    children: [{ type: "text", value: ch }],
+  })
+
+  it("lifts a mid-node character into its own span, splitting the text", () => {
+    const node: Text = { type: "text", value: "a / b" }
+    const parent: Element = { type: "element", tagName: "p", properties: {}, children: [node] }
+    wrapCharsInSpan(parent, node, [2], "kern")
+    expect(parent.children).toEqual([
+      { type: "text", value: "a " },
+      span("/"),
+      { type: "text", value: " b" },
+    ])
+  })
+
+  it("wraps multiple characters in one pass, ascending offsets", () => {
+    const node: Text = { type: "text", value: "a / b / c" }
+    const parent: Element = { type: "element", tagName: "p", properties: {}, children: [node] }
+    wrapCharsInSpan(parent, node, [2, 6], "kern")
+    expect(parent.children).toEqual([
+      { type: "text", value: "a " },
+      span("/"),
+      { type: "text", value: " b " },
+      span("/"),
+      { type: "text", value: " c" },
+    ])
+  })
+
+  it("emits no leading or trailing text when the char is the whole node", () => {
+    const node: Text = { type: "text", value: "/" }
+    const parent: Element = { type: "element", tagName: "p", properties: {}, children: [node] }
+    wrapCharsInSpan(parent, node, [0], "kern")
+    expect(parent.children).toEqual([span("/")])
+  })
+
+  it("is a no-op when offsets is empty", () => {
+    const node: Text = { type: "text", value: "a / b" }
+    const parent: Element = { type: "element", tagName: "p", properties: {}, children: [node] }
+    wrapCharsInSpan(parent, node, [], "kern")
+    expect(parent.children).toEqual([node])
+  })
+
+  it("is a no-op when the text node is not a child of the parent", () => {
+    const node: Text = { type: "text", value: "a / b" }
+    const other: Text = { type: "text", value: "elsewhere" }
+    const parent: Element = { type: "element", tagName: "p", properties: {}, children: [other] }
+    wrapCharsInSpan(parent, node, [2], "kern")
+    expect(parent.children).toEqual([other])
   })
 })
 
