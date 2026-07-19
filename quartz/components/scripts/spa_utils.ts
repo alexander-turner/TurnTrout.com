@@ -34,11 +34,11 @@ export const isElement = (target: EventTarget | null): target is Element =>
  * Extracts navigation options from a click event.
  * Returns URL and scroll behavior settings, or `undefined` when the click
  * should not be intercepted by the SPA router (e.g. external links,
- * `target="_blank"` anchors, or anchors with `data-router-ignore`).
+ * `target="_blank"` anchors, anchors with `data-router-ignore`, `download`
+ * anchors, or modified clicks).
  */
-export const getNavigationOpts = ({
-  target,
-}: Event): { url: URL; scroll?: boolean } | undefined => {
+export const getNavigationOpts = (event: Event): { url: URL; scroll?: boolean } | undefined => {
+  const { target } = event
   if (!target || !isElement(target)) return undefined
 
   const closestLink = target.closest("a")
@@ -51,6 +51,18 @@ export const getNavigationOpts = ({
 
   const dataset = closestLink.dataset
   if ("routerIgnore" in dataset) return undefined
+
+  // A `download` anchor saves the target to disk with the given filename; the
+  // SPA fetch path can't honor that, so let the browser handle it natively.
+  if (closestLink.hasAttribute("download")) return undefined
+
+  // Modified clicks carry native intent — open-in-new-window (shift),
+  // open-in-background-tab / download (ctrl/meta/alt) — that must not be
+  // hijacked into an in-place SPA navigation.
+  const mouseEvent = event as MouseEvent
+  if (mouseEvent.metaKey || mouseEvent.ctrlKey || mouseEvent.shiftKey || mouseEvent.altKey) {
+    return undefined
+  }
 
   const href = closestLink.href
   if (!href || !isLocalUrl(href)) return undefined
@@ -215,6 +227,7 @@ export function updateHeadElements(html: Document): void {
     const name = newMeta.getAttribute("name")
     const property = newMeta.getAttribute("property")
     const httpEquiv = newMeta.getAttribute("http-equiv")
+    const media = newMeta.getAttribute("media")
     const content = newMeta.getAttribute("content") || ""
 
     let existingMeta: HTMLMetaElement | null = null
@@ -225,6 +238,13 @@ export function updateHeadElements(html: Document): void {
       selector = `meta[property="${property}"]`
     } else if (httpEquiv) {
       selector = `meta[http-equiv="${httpEquiv}"]`
+    }
+
+    // Metas sharing a name/property but differing only by `media` (e.g. the
+    // light/dark `theme-color` pair) must each map to their own element;
+    // without this the second write clobbers the first.
+    if (selector && media) {
+      selector += `[media="${media}"]`
     }
 
     if (selector) {
@@ -257,6 +277,7 @@ export function updateHeadElements(html: Document): void {
     const name = currentMeta.getAttribute("name")
     const property = currentMeta.getAttribute("property")
     const httpEquiv = currentMeta.getAttribute("http-equiv")
+    const media = currentMeta.getAttribute("media")
 
     let selector: string
     if (name) {
@@ -267,6 +288,11 @@ export function updateHeadElements(html: Document): void {
       selector = `meta[http-equiv="${httpEquiv}"]`
     } else {
       continue
+    }
+    // Keep the light/dark variant distinction so a still-present media-scoped
+    // meta isn't removed just because a sibling shares its name.
+    if (media) {
+      selector += `[media="${media}"]`
     }
     if (!newHead.querySelector(selector)) {
       currentMeta.remove()

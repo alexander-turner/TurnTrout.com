@@ -351,6 +351,39 @@ describe("TableCaption transformer integration", () => {
       const figure = root.children[0] as Element
       expect(figure.tagName).toBe("figure")
     })
+
+    it("preserves inline formatting parsed into sibling nodes", () => {
+      const root: Root = {
+        type: "root",
+        children: [
+          h("table", [h("tr", [h("td", "Data")])]),
+          h("p", [
+            { type: "text", value: "^Table: Results for " },
+            h("em", "model A"),
+            { type: "text", value: " — see " },
+            h("a", { href: "/source" }, "source"),
+          ]),
+        ],
+      }
+
+      const plugin = TableCaption()
+      const transformer = getTransformer(plugin)
+      transformer(root)
+
+      const figure = root.children[0] as Element
+      const figcaption = figure.children[1] as Element
+      expect(figcaption.tagName).toBe("figcaption")
+      // Leading text keeps its prefix stripped, and the <em>/<a> siblings survive.
+      expect((figcaption.children[0] as Text).value).toBe("Results for ")
+      const emphasis = figcaption.children[1] as Element
+      expect(emphasis.tagName).toBe("em")
+      expect((emphasis.children[0] as Text).value).toBe("model A")
+      const link = figcaption.children.find(
+        (child): child is Element => (child as Element).tagName === "a",
+      )
+      expect(link?.properties?.href).toBe("/source")
+      expect((link?.children[0] as Text).value).toBe("source")
+    })
   })
 
   describe("edge cases and error handling", () => {

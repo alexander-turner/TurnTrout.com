@@ -445,15 +445,10 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
  * full page load if navigation fails.
  */
 async function handleClickNavigation(event: Event): Promise<void> {
-  // Use getNavigationOpts to check for valid local links ignoring modifiers/targets
+  // getNavigationOpts returns undefined for external links, modified clicks,
+  // download/target anchors, and anything else the browser should handle.
   const opts = getNavigationOpts(event)
-  if (
-    !opts ||
-    !opts.url ||
-    event.defaultPrevented ||
-    (event as MouseEvent).ctrlKey ||
-    (event as MouseEvent).metaKey
-  ) {
+  if (!opts || !opts.url || event.defaultPrevented) {
     return // Let browser handle normal links, external links, or modified clicks
   }
 

@@ -88,8 +88,10 @@ export function noteAdmonition(text: string): string {
 const subtitlePattern = /^(?<quote>(?:> *)*)(?<subtitle>Subtitle:[\S ]+\n)(?!\k<quote>\n)/gm
 const subtitleReplacement = "$<quote>$<subtitle>$<quote>\n"
 
-// Replace x.com and twitter.com links with xcancel.com
-const xcancelHostReplacementRegex = /https?:\/\/(?:www\.)?(?:x|twitter)\.com\/?/gi
+// Replace x.com and twitter.com links with xcancel.com. The `(?![\w.-])`
+// guard keeps `.com` from matching inside a longer host label such as
+// `x.company.com` or `x.com.au`.
+const xcancelHostReplacementRegex = /https?:\/\/(?:www\.)?(?:x|twitter)\.com(?![\w.-])\/?/gi
 
 const massTransforms: [RegExp | string, string][] = [
   [/(?<!\$):=/g, "≝"], // mathematical definition symbol, not preceded by the start of a katex block

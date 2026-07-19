@@ -106,6 +106,26 @@ describe("getNavigationOpts", () => {
     const anchorEl = anchor({ "data-router-no-scroll": "" }, "http://localhost:8080/no-scroll")
     expect(getNavigationOpts(makeClick(anchorEl))?.scroll).toBe(false)
   })
+
+  it("returns undefined for a local download link", () => {
+    const anchorEl = anchor({ download: "" }, "http://localhost:8080/files/report.pdf")
+    expect(getNavigationOpts(makeClick(anchorEl))).toBeUndefined()
+  })
+
+  const makeModifiedClick = (
+    target: EventTarget | null,
+    modifiers: Partial<Record<"metaKey" | "ctrlKey" | "shiftKey" | "altKey", boolean>>,
+  ): Event => ({ target, ...modifiers }) as unknown as Event
+
+  it.each<["metaKey" | "ctrlKey" | "shiftKey" | "altKey"]>([
+    ["metaKey"],
+    ["ctrlKey"],
+    ["shiftKey"],
+    ["altKey"],
+  ])("returns undefined for a %s-modified click on a local link", (modifier) => {
+    const anchorEl = anchor({}, "http://localhost:8080/page")
+    expect(getNavigationOpts(makeModifiedClick(anchorEl, { [modifier]: true }))).toBeUndefined()
+  })
 })
 
 describe("saveScrollToLocalStorage", () => {
@@ -431,5 +451,29 @@ describe("updateHeadElements", () => {
     )
     expect(contents).toEqual(expect.arrayContaining(["preserved", "new"]))
     expect(contents).not.toContain("old")
+  })
+
+  it("syncs same-named metas independently by media (theme-color light/dark)", () => {
+    document.head.innerHTML =
+      '<meta name="theme-color" content="#oldlight" media="(prefers-color-scheme: light)">' +
+      '<meta name="theme-color" content="#olddark" media="(prefers-color-scheme: dark)">'
+    updateHeadElements(
+      parseDoc(
+        "<html><head>" +
+          '<meta name="theme-color" content="#newlight" media="(prefers-color-scheme: light)">' +
+          '<meta name="theme-color" content="#newdark" media="(prefers-color-scheme: dark)">' +
+          "</head><body></body></html>",
+      ),
+    )
+    const light = document.head.querySelector(
+      'meta[name="theme-color"][media="(prefers-color-scheme: light)"]',
+    )
+    const dark = document.head.querySelector(
+      'meta[name="theme-color"][media="(prefers-color-scheme: dark)"]',
+    )
+    expect(light?.getAttribute("content")).toBe("#newlight")
+    expect(dark?.getAttribute("content")).toBe("#newdark")
+    // No stray duplicate created for either variant.
+    expect(document.head.querySelectorAll('meta[name="theme-color"]')).toHaveLength(2)
   })
 })

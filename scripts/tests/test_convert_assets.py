@@ -206,6 +206,26 @@ def test_remove_source_files(setup_test_env, remove_originals):
     assert asset_path.exists() == (not remove_originals)
 
 
+@pytest.mark.parametrize("output_ext", [".mp4", ".webm"])
+def test_remove_originals_keeps_final_video_formats(
+    setup_test_env, output_ext: str
+):
+    """``--remove-originals`` must not delete outputs the pipeline produces."""
+    asset_path = (
+        Path(setup_test_env) / "quartz" / "static" / f"asset{output_ext}"
+    )
+    assert asset_path.exists()
+
+    convert_assets.convert_asset(
+        asset_path,
+        remove_originals=True,
+        md_references_dir=Path(setup_test_env),
+    )
+
+    # The rewritten markdown still points at this file, so it must survive.
+    assert asset_path.exists()
+
+
 def _add_metadata(file_path: Path) -> None:
     exiftool_executable = script_utils.find_executable("exiftool")
     subprocess.run(

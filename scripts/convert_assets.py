@@ -359,7 +359,10 @@ def convert_asset(
             ),
         )
 
-    if remove_originals and input_file.suffix not in (".mp4", ".avif"):
+    # .mp4/.webm (video) and .avif (image) are the pipeline's own output
+    # formats; deleting them would break the freshly rewritten <source>/<img>
+    # references, so never remove an input that is already a final format.
+    if remove_originals and input_file.suffix not in (".mp4", ".webm", ".avif"):
         input_file.unlink()
 
 
