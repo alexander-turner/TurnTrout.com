@@ -84,6 +84,75 @@ function handleVideoToggle(): void {
   }
 }
 
+// A seek is close enough when the playhead lands within this many seconds of
+// the target. Kept under the 0.5s tolerance the timestamp tests assert.
+const SEEK_LANDING_TOLERANCE_S = 0.4
+// WebKit can report a buffered range covering the target yet still clamp the
+// applied seek, so the retry loop is bounded rather than trusting the buffer.
+const MAX_SEEK_ATTEMPTS = 5
+
+function isTimestampBuffered(videoElement: HTMLVideoElement, target: number): boolean {
+  const { buffered } = videoElement
+  for (let i = 0; i < buffered.length; i++) {
+    if (buffered.start(i) <= target && target <= buffered.end(i)) return true
+  }
+  return false
+}
+
+function seekLanded(videoElement: HTMLVideoElement, target: number): boolean {
+  return Math.abs(videoElement.currentTime - target) <= SEEK_LANDING_TOLERANCE_S
+}
+
+// Browsers that honor an in-buffer seek land immediately and leave the video
+// paused on the restored frame — no playback, so visual snapshots stay stable.
+// WebKit instead clamps a seek past the buffered range back to 0 and only
+// applies a paused seek after a play/pause nudge, so retry as the buffer fills.
+// A dedicated controller stops the retries the moment the playhead lands, so a
+// later autoplay or loop restart can't drag it back to the restored position.
+function restorePausedTimestamp(
+  videoElement: HTMLVideoElement,
+  target: number,
+  parentSignal: AbortSignal,
+): void {
+  videoElement.currentTime = target
+  if (seekLanded(videoElement, target)) return
+
+  const controller = new AbortController()
+  const { signal } = controller
+  parentSignal.addEventListener("abort", () => controller.abort(), { once: true, signal })
+
+  let attempts = 0
+  const applySeek = () => {
+    if (seekLanded(videoElement, target) || attempts >= MAX_SEEK_ATTEMPTS) {
+      controller.abort()
+      return
+    }
+    if (!isTimestampBuffered(videoElement, target)) return
+    attempts += 1
+    videoElement.currentTime = target
+    videoElement
+      .play()
+      .then(() => videoElement.pause())
+      .catch((error: Error) => {
+        // AbortError is expected when pause() interrupts the play() request;
+        // anything else is a real playback failure worth surfacing.
+        if (error.name !== "AbortError") {
+          console.debug("[restorePausedTimestamp] Nudge play failed:", error)
+        }
+      })
+  }
+
+  videoElement.addEventListener("progress", applySeek, { signal })
+  videoElement.addEventListener("canplay", applySeek, { signal })
+  videoElement.addEventListener("seeked", applySeek, { signal })
+
+  // A paused, autoplay-off video may stall at HAVE_METADATA without buffering to
+  // the target; force loading so the events above can fire.
+  if (videoElement.networkState !== HTMLMediaElement.NETWORK_LOADING) {
+    videoElement.load()
+  }
+}
+
 function setupPondVideo(): void {
   // Clean up listeners from previous invocations to prevent accumulation
   if (pondVideoCleanupController) {
@@ -111,25 +180,17 @@ function setupPondVideo(): void {
   const restoreVideoState = () => {
     console.debug("[restoreVideoState] Running, readyState:", videoElement.readyState)
 
-    // Restore timestamp first (safe while paused)
-    if (savedTime) {
-      videoElement.currentTime = parseFloat(savedTime)
-    }
-
-    // Then start playback if autoplay enabled
     if (autoplayEnabled) {
+      // Restore timestamp first (safe while paused), then resume playback.
+      if (savedTime) {
+        videoElement.currentTime = parseFloat(savedTime)
+      }
       playVideoWithWatchdog(videoElement)
     } else if (savedTime && parseFloat(savedTime) > 0) {
-      // Safari/WebKit may not apply currentTime on paused videos reliably.
-      // A brief play/pause cycle forces the seek through the video pipeline.
-      // Only do this for non-zero timestamps — seeking to 0 doesn't need the
-      // workaround and would briefly advance the video (breaking visual tests).
-      videoElement
-        .play()
-        .then(() => videoElement.pause())
-        .catch(() => {
-          // AbortError is expected if pause() races with play() — harmless
-        })
+      // Seeking to 0 doesn't need the buffer-aware restore and would briefly
+      // advance the video (breaking visual tests), so only restore non-zero
+      // positions.
+      restorePausedTimestamp(videoElement, parseFloat(savedTime), signal)
     }
   }
 
