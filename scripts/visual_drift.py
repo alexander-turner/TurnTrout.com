@@ -96,11 +96,13 @@ def write_provenance_sha(sha: str) -> None:
     if not sha:
         raise ValueError("Refusing to write empty provenance SHA")
     payload = json.dumps({"sha": sha}) + "\n"
-    with r2_sync.rclone_config() as config:
-        with tempfile.TemporaryDirectory() as tmp:
-            local = Path(tmp) / "provenance.json"
-            local.write_text(payload, encoding="utf-8")
-            r2_sync.rclone(["copyto", str(local), _remote_object()], config)
+    with (
+        r2_sync.rclone_config() as config,
+        tempfile.TemporaryDirectory() as tmp,
+    ):
+        local = Path(tmp) / "provenance.json"
+        local.write_text(payload, encoding="utf-8")
+        r2_sync.rclone(["copyto", str(local), _remote_object()], config)
     print(f"Recorded baseline provenance: {sha}")
 
 
