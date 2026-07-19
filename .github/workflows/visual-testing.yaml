@@ -487,7 +487,12 @@ jobs:
             if [ -n "$sha" ]; then
               args+=(--provenance-sha "$sha")
               if git cat-file -e "${sha}^{commit}" 2>/dev/null; then
-                mapfile -t paths < <(uv run python scripts/visual_drift.py render-paths)
+                # Capture via command substitution (not process substitution)
+                # so a render-paths crash aborts the step under `set -e` rather
+                # than leaving `paths` empty — an empty pathspec would diff ALL
+                # paths and mislabel unrelated changes as rendering-relevant.
+                paths_output="$(uv run python scripts/visual_drift.py render-paths)"
+                mapfile -t paths <<< "$paths_output"
                 git diff --name-only "$sha" HEAD -- "${paths[@]}" > changed-paths.txt
                 args+=(--changed-paths-file changed-paths.txt)
               else
