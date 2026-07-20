@@ -19,6 +19,7 @@ lints that catch two kinds of lie a green check can hide:
 | `check-workflow-pipefail`  | CI went green while `pytest` was crashing, because `pytest \| tee log` exits with `tee`’s status—under a `runCmd:` / `shell: sh` / custom `bash` that lacks `pipefail`.                                                                    |
 | `check-exit-suppression`   | A teardown that left a volume pinned reported success, because `cleanup \|\| true` discarded its non-zero exit while keeping its output.                                                                                                   |
 | `check-stderr-suppression` | A container launch failed with a bare non-zero and no clue why, because `docker compose up 2>/dev/null` threw away the only diagnostic.                                                                                                    |
+| `check-substitution-exit-swallow` | An allowlist-building loop reported success while adding nothing, because `done < <(jq …)` (or `jq … \| while read`) discards `jq`/`yq`'s exit status—a renamed key or malformed input makes the producer exit non-zero, the loop iterates zero times, and the fail-open goes unnoticed. Curated to `jq`/`yq` (structured-data extractors whose non-zero exit is a fail-closed signal); opt out with `# allow-substitution-exit: <reason>`. |
 | `check-pr-paths`           | A required check hung at “Expected—Waiting” forever and the PR could never merge, because `paths:`/`paths-ignore:`/`branches:` on `pull_request` skipped the workflow without reporting (a stacked PR on a non-main base is the branch-filter trap). |
 | `check-pipefail-grep-pipe` | A teardown check reported a still-present secret as removed, because `secret_store ls \| grep -q "$name"` under `pipefail` let grep’s early exit SIGPIPE the producer, surfacing 141 as no-match once the listing outgrew the pipe buffer. |
 
@@ -51,6 +52,11 @@ lints that catch two kinds of lie a green check can hide:
 | `check-unnamed-regex-groups` | A regex’s match handling went positional and brittle because a `re.*` literal used an unnamed `( )` group.                  |
 | `check-global-stdio-swap`    | Concurrent calls clobbered each other’s output because code reassigned the process-global `sys.stdout` to capture I/O.      |
 | `check-claude-model`         | A `claude-code-action` step billed Opus silently because it omitted `--model` and rode the action’s expensive default tier. |
+| `check-drift-guards`         | A copies-agree ("drift guard") test shipped with no stated reason why a single source of truth is infeasible—the duplication it polices kept drifting anyway. Requires `@pytest.mark.drift_guard("<why no SSOT is feasible>")` on any test whose name/docstring reads as a drift guard, so the judgement is reviewed, not implied. |
+| `check-graceful-handwave`    | A doc or comment claimed the code "fails gracefully"—a guarantee that specifies nothing (which input? which exit code?)—and nobody could tell whether the behaviour was real or wished-for. Scans prose (Markdown/RST) line-by-line and code comment-only; opt out by stating the behaviour: `allow-graceful: <what actually happens>`. Pass `--prose` to scan a free-standing text file (e.g. a PR body) line-by-line. |
+| `check-historical-comments`  | A comment narrating the past ("renamed from X", "now uses Y") rotted into a lie the moment the code moved—the reader can't see the old code, so the note was unverifiable from day one. Bans only tokens with no present-tense reading; opt out (e.g. a reader of a legacy on-disk format) with `# allow-history: <reason>`. |
+| `check-doc-line-refs`        | A doc cited source by exact line number and pointed at whatever now happens to live there after the next refactor. Bans `<file>.<ext>:<N>` and `(L<N>)`-style cites in Markdown (fenced code blocks and any `CHANGELOG.md` are skipped); cite a function/section/anchor instead, or suppress with `<!-- allow-line-ref: <reason> -->`. |
+| `check-flag-arity`           | A CLI parser died with a raw `$2: unbound variable` instead of a clean "--branch needs a value", because a `--branch) X="$2"; shift 2` arm trusted the loop's outer `$# -gt 0` (which proves only `$1`) and the flag was passed last. Flags any `case` arm whose label is a `-x`/`--xxx`/`--xxx=*` option that reads `$2`/`shift 2` without its own guard; satisfied by `[[ $# -ge 2 ]] \|\| die`, a self-guarding `${2:?…}`, or a `need_val`/`need_arg` helper. Suppress with `# flag-arity-ok: <why>`. |
 
 ## Usage
 
@@ -76,6 +82,7 @@ repos:
       - id: check-workflow-pipefail
       - id: check-exit-suppression
       - id: check-stderr-suppression
+      - id: check-substitution-exit-swallow
       - id: check-pr-paths
       - id: check-pipefail-grep-pipe
       # ── Tier 1 · Identity (default-on) ──
@@ -96,6 +103,11 @@ repos:
       # - id: check-unnamed-regex-groups
       # - id: check-global-stdio-swap
       # - id: check-claude-model         # require an explicit --model on claude-code-action steps
+      # - id: check-drift-guards         # copies-agree tests must justify why no SSOT is feasible
+      # - id: check-graceful-handwave    # "graceful" hand-waves must state the concrete behaviour
+      # - id: check-historical-comments  # comments describe the present code, not its past
+      # - id: check-doc-line-refs        # docs cite symbols/sections, not line numbers
+      # - id: check-flag-arity           # value-taking CLI flag arms must guard $2 before reading it
 ```
 
 `pre-commit run --all-files` sweeps the whole repo (handy on first adoption).
