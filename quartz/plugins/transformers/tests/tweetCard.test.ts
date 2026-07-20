@@ -187,6 +187,10 @@ describe("buildTweetCard", () => {
     expect(render(buildTweetCard(baseSnapshot))).toContain('aria-label="View post on X"')
   })
 
+  it("marks the card no-formatting so typography passes leave the quote verbatim", () => {
+    expect(render(buildTweetCard(baseSnapshot))).toContain('class="tweet-card no-formatting"')
+  })
+
   it("shows the verified badge only when verified", () => {
     expect(render(buildTweetCard(baseSnapshot))).toContain("tweet-verified")
     const unverified = { ...baseSnapshot, author: { ...baseSnapshot.author, verified: false } }
