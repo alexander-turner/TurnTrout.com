@@ -79,9 +79,9 @@ export function createTranscludeSourceAnchor(href: string): Element {
 }
 
 /**
- * Replaces a transclude span's children with a normalized block node from the target page.
+ * Replaces a transclude element's children with a normalized block node from the target page.
  *
- * @param node - The transclude span node to mutate.
+ * @param node - The transclude element node to mutate.
  * @param page - The page being transcluded from.
  * @param slug - The current page slug where content is rendered.
  * @param transcludeTarget - The target page slug being referenced.
@@ -101,10 +101,10 @@ export function setBlockTransclusion(
 }
 
 /**
- * Replaces a transclude span's children with the section under a header in the target page.
+ * Replaces a transclude element's children with the section under a header in the target page.
  * The section spans from the matching header until the next header of the same or higher depth.
  *
- * @param node - The transclude span node to mutate.
+ * @param node - The transclude element node to mutate.
  * @param page - The page being transcluded from (requires `htmlAst`).
  * @param slug - The current page slug where content is rendered.
  * @param transcludeTarget - The target page slug being referenced.
@@ -151,10 +151,10 @@ export function setHeaderTransclusion(
 }
 
 /**
- * Replaces a transclude span's children with content from the beginning up to the first heading.
+ * Replaces a transclude element's children with content from the beginning up to the first heading.
  * Appends a source anchor to the end.
  *
- * @param node - The transclude span node to mutate.
+ * @param node - The transclude element node to mutate.
  * @param page - The page being transcluded from (requires `htmlAst`).
  * @param slug - The current page slug where content is rendered.
  * @param transcludeTarget - The target page slug being referenced.
@@ -187,11 +187,11 @@ export function setIntroTransclusion(
 }
 
 /**
- * Replaces a transclude span's children with the entire `htmlAst` of the target page,
+ * Replaces a transclude element's children with the entire `htmlAst` of the target page,
  * excluding the trout decoration and everything after it.
  * Appends a source anchor to the end.
  *
- * @param node - The transclude span node to mutate.
+ * @param node - The transclude element node to mutate.
  * @param page - The page being transcluded from (requires `htmlAst`).
  * @param slug - The current page slug where content is rendered.
  * @param transcludeTarget - The target page slug being referenced.
@@ -308,7 +308,7 @@ const generateAllTagsFile = (componentData: QuartzComponentProps): QuartzPluginD
  * Adds a virtual file to `componentData.allFiles` for special transclusion targets.
  * Currently supports recent posts (`allSlug`) and all tags (`allTagsSlug`).
  *
- * @param transcludeTarget - The target slug referenced by the transclude span.
+ * @param transcludeTarget - The target slug referenced by the transclude element.
  * @param componentData - The current component props, mutated to include virtual files when needed.
  */
 export function addVirtualFileForSpecialTransclude(
@@ -353,7 +353,7 @@ export function renderPage(
 
   // process transcludes in componentData
   visit(root, "element", (node) => {
-    if (node.tagName === "span") {
+    if (node.tagName === "div") {
       const classNames = (node.properties?.className ?? []) as string[]
       if (classNames.includes("transclude")) {
         const transcludeTarget = node.properties["dataUrl"] as FullSlug

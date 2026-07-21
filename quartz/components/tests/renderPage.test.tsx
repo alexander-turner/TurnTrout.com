@@ -157,7 +157,7 @@ describe("renderPage", () => {
         tree: {
           type: "root",
           children: [
-            h("span", {
+            h("div", {
               className: ["transclude"],
               dataUrl: "transcluded-page",
               dataBlock: "#^testBlock",
@@ -190,7 +190,7 @@ describe("renderPage", () => {
       tree: {
         type: "root",
         children: [
-          h("span", {
+          h("div", {
             className: ["transclude"],
             dataUrl: "non-existent-page",
             dataBlock: "#^testBlock",
@@ -232,7 +232,7 @@ describe("renderPage", () => {
         tree: {
           type: "root",
           children: [
-            h("span", { className: ["transclude"], dataUrl: "source-page/nested", dataBlock: "" }),
+            h("div", { className: ["transclude"], dataUrl: "source-page/nested", dataBlock: "" }),
           ],
         } as unknown as Root,
       },
@@ -285,7 +285,7 @@ describe("renderPage", () => {
         tree: {
           type: "root",
           children: [
-            h("span", { className: ["transclude"], dataUrl: "source-page/nested", dataBlock: "" }),
+            h("div", { className: ["transclude"], dataUrl: "source-page/nested", dataBlock: "" }),
           ],
         } as unknown as Root,
       },
@@ -353,7 +353,7 @@ describe("renderPage", () => {
         tree: {
           type: "root",
           children: [
-            h("span", {
+            h("div", {
               className: ["transclude"],
               dataUrl: "target-page",
               dataBlock,
@@ -429,7 +429,7 @@ describe("renderPage", () => {
       {
         tree: {
           type: "root",
-          children: [h("span", { className: ["transclude"], dataUrl: transcludeUrl })],
+          children: [h("div", { className: ["transclude"], dataUrl: transcludeUrl })],
         } as unknown as Root,
       },
       files as QuartzPluginData[],
@@ -464,7 +464,7 @@ describe("renderPage", () => {
         tree: {
           type: "root",
           children: [
-            h("span", {
+            h("div", {
               className: ["transclude"],
               dataUrl: "transcluded-page",
               dataBlock: "#section",
@@ -504,7 +504,7 @@ describe("renderPage", () => {
         tree: {
           type: "root",
           children: [
-            h("span", {
+            h("div", {
               className: ["transclude"],
               dataUrl: "transcluded-page",
               // No dataBlock property means page transclude
@@ -550,7 +550,7 @@ describe("renderPage", () => {
         tree: {
           type: "root",
           children: [
-            h("span", {
+            h("div", {
               className: ["transclude"],
               dataUrl: "transcluded-page",
               dataBlock: "#section",
@@ -596,7 +596,7 @@ describe("renderPage", () => {
         tree: {
           type: "root",
           children: [
-            h("span", {
+            h("div", {
               className: ["transclude"],
               dataUrl: "transcluded-page",
               // No dataBlock property means page transclude
@@ -675,12 +675,12 @@ describe("renderPage", () => {
     expect(html).toContain(`lang="${locale}"`)
   })
 
-  it("handles non-span elements in transclude processing", () => {
+  it("handles non-div elements in transclude processing", () => {
     const props = createMockProps({
       tree: {
         type: "root",
         children: [
-          h("div", { className: ["transclude"] }), // div instead of span
+          h("span", { className: ["transclude"] }), // span instead of div
         ],
       } as unknown as Root,
     })
@@ -689,12 +689,12 @@ describe("renderPage", () => {
     expect(html).toContain("<!DOCTYPE html>") // Should not crash
   })
 
-  it("handles spans without transclude class", () => {
+  it("handles divs without transclude class", () => {
     const props = createMockProps({
       tree: {
         type: "root",
         children: [
-          h("span", { className: ["other-class"] }), // span without transclude
+          h("div", { className: ["other-class"] }), // div without transclude
         ],
       } as unknown as Root,
     })
@@ -703,12 +703,12 @@ describe("renderPage", () => {
     expect(html).toContain("<!DOCTYPE html>") // Should not crash
   })
 
-  it("handles spans with null className", () => {
+  it("handles divs with null className", () => {
     const props = createMockProps({
       tree: {
         type: "root",
         children: [
-          h("span", { className: null }), // null className
+          h("div", { className: null }), // null className
         ],
       } as unknown as Root,
     })
