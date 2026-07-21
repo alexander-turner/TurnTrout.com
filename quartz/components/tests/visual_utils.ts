@@ -437,6 +437,19 @@ export async function getNextElementMatchingSelector(
   throw new Error("No next element found")
 }
 
+/** Return a locator's bounding box, throwing if the element isn't laid out.
+ *  Keeps the null-check out of test bodies (`playwright/no-conditional-in-test`)
+ *  while giving callers a non-nullable box. */
+export async function requireBoundingBox(
+  locator: Locator,
+): Promise<{ x: number; y: number; width: number; height: number }> {
+  const box = await locator.boundingBox()
+  if (!box) {
+    throw new Error(`Expected a visible bounding box for locator: ${locator}`)
+  }
+  return box
+}
+
 /** Open the search UI by clicking the search icon.
  *
  *  Waits for search event handlers to be fully registered (signalled by

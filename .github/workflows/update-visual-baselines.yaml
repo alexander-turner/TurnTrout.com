@@ -332,6 +332,7 @@ jobs:
       # the deploy. Merged-PR approvals reach this step with the discovered
       # post-merge main run once the coverage gate above has passed.
       - name: Mark visual-testing passing + retrigger deploy on main
+        id: mark-main
         if: success() && (steps.resolve.outputs.pr_number == '' || steps.cover.outputs.covered == 'true')
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -345,6 +346,9 @@ jobs:
               run_id: runId,
             });
             const headSha = original.data.head_sha;
+            // The nightly drift sentinel diffs this commit against main HEAD to
+            // classify its snapshot diffs as environment drift vs. code change.
+            core.setOutput('head_sha', headSha);
             const detailsUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const nowIso = new Date().toISOString();
             await github.rest.checks.create({
@@ -439,6 +443,20 @@ jobs:
               `Re-running verify-test-results job ${verifyJob.id} ` +
               `(part of deploy run ${deploy.id})`
             );
+
+      # Record the main commit these baselines are now authoritative for, so
+      # the nightly drift sentinel can deterministically tell environment drift
+      # from a real code change. Only main-run and merged-PR-carry-through
+      # approvals reach here with a head_sha (open-PR approvals don't touch
+      # main), so the recorded SHA is always a commit on main.
+      - name: Record baseline provenance
+        if: steps.mark-main.outputs.head_sha != ''
+        env:
+          HEAD_SHA: ${{ steps.mark-main.outputs.head_sha }}
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+        run: uv run python scripts/visual_drift.py write-provenance --sha "$HEAD_SHA"
 
       - name: Comment success on PR
         if: success() && steps.resolve.outputs.pr_number != ''

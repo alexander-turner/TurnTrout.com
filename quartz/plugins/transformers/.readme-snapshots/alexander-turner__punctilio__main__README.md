@@ -167,6 +167,8 @@ rehypePunctilio({
 
 By default the plugin transforms text only inside a curated allowlist of prose-bearing elements (plus custom elements). Set `transformAllElements: true` to invert the model and transform text inside *every* element except those in `skipTags`/`skipClasses` and the form-value elements `<textarea>` and `<input>` (whose text is a literal control value, not prose). `<select>` is skipped as a container, but its `<option>` labels are still transformed. `skipTags` and `skipClasses` continue to take precedence in this mode.
 
+Text with no element ancestor—a bare-string fragment passed straight to `transformHtml`, or loose text sitting among top-level blocks—has no allowlist to consult and is always transformed in both modes. Inline prose siblings merge into that run; block-level and non-allowlisted structural elements (`<html>`/`<body>` under a full-document parse, `<form>` in the default mode) remain boundaries and keep their usual per-element treatment.
+
 For finer-grained control, `shouldSkipText` opts specific text nodes out of transformation without skipping their enclosing element. The predicate receives the text node and its ancestor chain (root first, nearest last); returning `true` leaves the node’s value untouched. `shouldSkipText` runs after element-level skipping—it is never called for text inside an already-skipped element.
 
 ```typescript
@@ -231,7 +233,7 @@ A `.pre-commit-hooks.yaml` ships in the package, so [pre-commit](https://pre-com
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/punctilio
-    rev: v5.2.0
+    rev: v5.2.9
     hooks:
       - id: punctilio          # rewrites *.md / *.html in place
       - id: punctilio-check    # or: fail without writing (CI-friendly)

@@ -67,6 +67,11 @@ function processTableCaptionNode(
   const captionText = extractCaptionText(firstChild.value)
   const captionElements = createFigcaption(captionText)
 
+  // Inline markup in the caption (e.g. `*emphasis*`, links) is already parsed
+  // into sibling nodes at this rehype stage; createFigcaption only rebuilds the
+  // leading text node, so carry the remaining siblings into the figcaption.
+  captionElements[0].children.push(...node.children.slice(1))
+
   // Replace the paragraph with the figcaption elements
   parent.children.splice(parentChildrenIndex, 1, ...captionElements)
 

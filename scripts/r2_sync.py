@@ -58,6 +58,13 @@ def rclone(args: Sequence[str], config_path: Path) -> None:
     subprocess.run(cmd, check=True)
 
 
+def rclone_output(args: Sequence[str], config_path: Path) -> str:
+    """Run ``rclone`` and return its captured stdout, raising on failure."""
+    cmd = ["rclone", f"--config={config_path}", *args]
+    result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    return result.stdout
+
+
 @contextlib.contextmanager
 def rclone_config() -> Iterator[Path]:
     """Yield the path to a freshly-written, temporary rclone config."""
