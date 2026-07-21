@@ -1820,6 +1820,7 @@ maximizers
 maxmin
 MaxPool2D
 maxpools
+Mayrhofer
 Mazeika
 MC1
 MC2
@@ -2530,6 +2531,7 @@ relatedly
 RELU
 ReLU
 ReLUs
+René
 renegotiations
 renormalized
 renormalizing
