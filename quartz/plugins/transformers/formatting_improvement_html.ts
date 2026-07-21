@@ -533,11 +533,14 @@ export function formatArrows(tree: Root): void {
         const afterIndex = matchIndex + fullMatch.length
         const afterChar = match.input?.charAt(afterIndex) ?? /* istanbul ignore next */ ""
 
-        const needsNbspBefore = consumedLeadingSpace || /\w/.test(beforeChar)
+        // A line may break before an arrow but never after it: the arrow
+        // binds to its right operand (break before a binary operator), so the
+        // leading space stays breakable while the trailing one is NBSP.
+        const needsSpaceBefore = consumedLeadingSpace || /\w/.test(beforeChar)
         const needsNbspAfter = consumedTrailingSpace || /\w/.test(afterChar)
 
         return {
-          before: needsNbspBefore ? NBSP : "",
+          before: needsSpaceBefore ? " " : "",
           replacedMatch: "⭢",
           after: needsNbspAfter ? NBSP : "",
         }
@@ -602,11 +605,13 @@ export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
       const afterIndex = matchIndex + fullMatch.length
       const afterChar = match.input?.charAt(afterIndex) ?? /* istanbul ignore next */ ""
 
-      const needsNbspBefore = consumedLeadingSpace || /\w/.test(beforeChar)
+      // Arrows bind only to their right operand (break before a binary
+      // operator): the leading space stays breakable, the trailing one is NBSP.
+      const needsSpaceBefore = consumedLeadingSpace || /\w/.test(beforeChar)
       const needsNbspAfter = consumedTrailingSpace || /\w/.test(afterChar)
 
       return {
-        before: needsNbspBefore ? NBSP : "",
+        before: needsSpaceBefore ? " " : "",
         replacedMatch: h("span.monospace-arrow", arrow),
         after: needsNbspAfter ? NBSP : "",
       }

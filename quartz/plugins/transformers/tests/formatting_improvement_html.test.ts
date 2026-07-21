@@ -963,17 +963,17 @@ describe("HTMLFormattingImprovement", () => {
     })
 
     it.each([
-      // Spaces around arrows should be non-breaking
-      ["<p>word -> arrow</p>", `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
-      ["<p>word->arrow</p>", `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
-      // At start of line, no nbsp before but nbsp after
+      // Breakable space before the arrow, NBSP gluing it to its right operand
+      ["<p>word -> arrow</p>", `<p>word <span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
+      ["<p>word->arrow</p>", `<p>word <span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
+      // At start of line, no space before but nbsp after
       ["<p>-> arrow</p>", `<p><span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
       // Multiple arrows
       [
         "<p>-> first --> second</p>",
-        `<p><span class="right-arrow">⭢</span>${NBSP}first${NBSP}<span class="right-arrow">⭢</span>${NBSP}second</p>`,
+        `<p><span class="right-arrow">⭢</span>${NBSP}first <span class="right-arrow">⭢</span>${NBSP}second</p>`,
       ],
-    ])("should use non-breaking spaces around arrows: %s", (input, expected) => {
+    ])("should glue arrows only to their right operand: %s", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
     })
@@ -2436,10 +2436,10 @@ describe("HTMLFormattingImprovement plugin", () => {
     })
 
     it.each(arrowsToWrap.map((arrow) => [arrow]))(
-      "should use non-breaking spaces around %s arrow",
+      "should glue %s arrow only to its right operand",
       (arrow) => {
         const input = `<p>word ${arrow} next</p>`
-        const expected = `<p>word${NBSP}<span class="monospace-arrow">${arrow}</span>${NBSP}next</p>`
+        const expected = `<p>word <span class="monospace-arrow">${arrow}</span>${NBSP}next</p>`
         const processedHtml = testHtmlFormattingImprovement(input)
         expect(processedHtml).toBe(expected)
       },
