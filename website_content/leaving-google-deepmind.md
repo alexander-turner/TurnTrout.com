@@ -636,7 +636,9 @@ Your company is trying to make and then supply the best AI in the world to a mil
 
 That looks a damn lot like "support the development of lethal autonomous weapons" to me.
 
-What should a pledge-signer do? I see three honest options: explain publicly how staying is consistent with the pledge, say plainly that you no longer hold it and why, or quit. Wearing the pledge while saying nothing isn't one of them.
+What should a pledge-signer do? I see three honest options: explain publicly how staying is consistent with the pledge, say plainly that you no longer hold it and why, or quit.[^rene] Wearing the pledge while saying nothing isn't one of them.
+
+[^rene]: I know of exactly one other person who left over the deal: René Mayrhofer, a director for Android platform security. "Management has lost its moral compass", [he stated](https://www.businessinsider.com/google-director-resigned-pentagon-ai-deal-military-artificial-intelligence-gemini-2026-6). He apparently will serve his notice period from mid-June until August. Brave.
 
 ### Keeping a seat at the table
 
