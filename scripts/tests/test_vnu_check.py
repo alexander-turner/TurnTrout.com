@@ -61,9 +61,11 @@ class TestRunVnu:
     """run_vnu invokes java and parses the JSON report from stderr."""
 
     def test_java_missing_raises(self) -> None:
-        with mock.patch.object(vnu_check.shutil, "which", return_value=None):
-            with pytest.raises(FileNotFoundError, match="java"):
-                vnu_check.run_vnu(Path("public"), Path("vnu.jar"))
+        with (
+            mock.patch.object(vnu_check.shutil, "which", return_value=None),
+            pytest.raises(FileNotFoundError, match="java"),
+        ):
+            vnu_check.run_vnu(Path("public"), Path("vnu.jar"))
 
     def test_no_json_raises(self) -> None:
         completed = subprocess.CompletedProcess([], 0, stdout="", stderr="boom")
@@ -74,9 +76,9 @@ class TestRunVnu:
             mock.patch.object(
                 vnu_check.subprocess, "run", return_value=completed
             ),
+            pytest.raises(RuntimeError, match="no JSON report"),
         ):
-            with pytest.raises(RuntimeError, match="no JSON report"):
-                vnu_check.run_vnu(Path("public"), Path("vnu.jar"))
+            vnu_check.run_vnu(Path("public"), Path("vnu.jar"))
 
     def test_parses_messages_and_strips_banner(self) -> None:
         report = {"messages": [_msg("bad")]}
@@ -165,8 +167,8 @@ class TestMain:
         with (
             mock.patch.object(vnu_check, "check", return_value=remaining),
             mock.patch("sys.argv", ["vnu_check.py"]),
+            pytest.raises(SystemExit) as exc,
         ):
-            with pytest.raises(SystemExit) as exc:
-                vnu_check.main()
+            vnu_check.main()
         assert exc.value.code == 1
         assert "1 conformance error" in capsys.readouterr().out
