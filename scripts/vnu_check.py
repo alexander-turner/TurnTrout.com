@@ -18,6 +18,8 @@ import sys
 from pathlib import Path
 from typing import TypedDict
 
+# Add the project root to sys.path
+# pylint: disable=wrong-import-position
 sys.path.append(str(Path(__file__).parent.parent))
 # skipcq: FLK-E402
 from scripts import utils as script_utils  # noqa: E402
