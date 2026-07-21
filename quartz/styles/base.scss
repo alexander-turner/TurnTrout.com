@@ -410,6 +410,10 @@ pre {
   position: relative;
   white-space: pre-wrap;
 
+  // Code never wants paragraph-level line-break optimization, and `pretty`
+  // over many break opportunities is combinatorial in Chromium.
+  text-wrap: auto;
+
   &:has(> code.mermaid) {
     border: none;
   }
