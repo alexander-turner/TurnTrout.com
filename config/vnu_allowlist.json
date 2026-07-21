@@ -1,0 +1,25 @@
+{
+  "description": "Regex patterns for Nu HTML validator (vnu) error messages that are known, accepted artifacts of KaTeX's MathML/HTML output and must not fail the build. KaTeX emits a MathML accessibility layer (inside `<span class=\"katex-mathml\"><math>…`) whose element set and inline styles the validator rejects; dropping that layer would remove screen-reader math support, so these are suppressed rather than 'fixed'. Every entry is a Python `re` pattern matched against the vnu message text and must state why it is unfixable in source. Do NOT add site-authored HTML bugs here — fix those at the source.",
+  "allow": [
+    {
+      "pattern": "^The “(math|semantics|annotation|annotation-xml|mrow|mo|mi|mn|ms|mtext|mspace|mpadded|mphantom|menclose|merror|maction|mfrac|msqrt|mroot|msub|msup|msubsup|munder|mover|munderover|mmultiscripts|mprescripts|none|mtable|mtr|mtd|mstyle|mlabeledtr|malignmark|maligngroup)” element is a completely-unknown element",
+      "reason": "KaTeX MathML elements; the validator does not enter MathML foreign-content mode for KaTeX's markup and reports its elements as unknown."
+    },
+    {
+      "pattern": "Element “(mrow|mo|mi|mn|ms|mtext|mspace|mpadded|mphantom|menclose|merror|maction|mfrac|msqrt|mroot|msub|msup|msubsup|munder|mover|munderover|mmultiscripts|mprescripts|mtable|mtr|mtd|mstyle|semantics|annotation)” not allowed as child of element",
+      "reason": "KaTeX MathML child nesting the validator rejects once it has left MathML mode."
+    },
+    {
+      "pattern": "not allowed as child of element “(mrow|mo|mi|mn|ms|mtext|mfrac|msqrt|mroot|msub|msup|msubsup|munder|mover|munderover|mmultiscripts|mtable|mtr|mtd|mstyle|msubsup|semantics)”",
+      "reason": "KaTeX MathML parent nesting the validator rejects once it has left MathML mode."
+    },
+    {
+      "pattern": "Bad value .* on element “(mtable|mtr|mtd|mstyle|mo|mi|mn|mspace|mpadded|mfrac|munder|mover)”",
+      "reason": "KaTeX MathML presentation attributes (e.g. empty `columnspacing`, `mathcolor`) that the validator flags but browsers render."
+    },
+    {
+      "pattern": "^CSS: “height”: “-[0-9.]+(em|px|ex|rem)” negative values are not allowed",
+      "reason": "KaTeX `.vlist` vertical-alignment shims use negative heights in inline styles; this is core to KaTeX's HTML rendering."
+    }
+  ]
+}

@@ -532,4 +532,128 @@ describe("WrapNakedElements Plugin Tests", () => {
       expect(result).toBe(input)
     })
   })
+
+  describe("Subfigure Normalization", () => {
+    it.each([
+      [
+        "div.subfigure containing a figcaption",
+        '<figure><div class="subfigure"><img src="a.avif"><figcaption>a</figcaption></div></figure>',
+      ],
+      [
+        "span.subfigure containing a figcaption",
+        '<figure><span class="subfigure"><img src="a.avif"><figcaption>a</figcaption></span></figure>',
+      ],
+    ])("retags a %s to <figure>", (_, input) => {
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).toContain('<figure class="subfigure">')
+      expect(result).not.toContain("<div")
+      expect(result).not.toContain("<span")
+    })
+
+    it("leaves elements without the subfigure class untouched", () => {
+      const input = '<div class="other"><img src="a.avif"></div>'
+      expect(testWrapNakedElementsHTML(input)).toBe(input)
+    })
+  })
+
+  describe("Orphaned Figcaption Adoption", () => {
+    it("wraps a caption stranded after a raw <video> into a <figure>", () => {
+      const input =
+        '<article><video src="a.mp4"></video>\n<figcaption>Caption</figcaption></article>'
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).toContain(
+        '<figure><span data-src="a.mp4" class="video-container"><video src="a.mp4"></video></span><figcaption>Caption</figcaption></figure>',
+      )
+    })
+
+    it("adopts a caption stranded inside a list item", () => {
+      const input = '<ul><li><img src="a.avif"><figcaption>Cap</figcaption></li></ul>'
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).toContain('<figure><img src="a.avif"><figcaption>Cap</figcaption></figure>')
+    })
+
+    it("hoists an image out of a wrapping <p> into the figure", () => {
+      const input = '<li><p><img src="a.avif"></p><figcaption>Cap</figcaption></li>'
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).toContain('<figure><img src="a.avif"><figcaption>Cap</figcaption></figure>')
+      expect(result).not.toContain("<figure><p>")
+    })
+
+    it("does not treat a <p> with text plus media as a media bearer", () => {
+      const input = '<article><p>text<img src="a.avif"></p><figcaption>Cap</figcaption></article>'
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).not.toContain("<figure>")
+      expect(result).toBe(input)
+    })
+
+    it("wraps a caption placed above its media (caption-first figure)", () => {
+      const input = '<article><figcaption>Cap</figcaption><img src="a.avif"></article>'
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).toContain('<figure><figcaption>Cap</figcaption><img src="a.avif"></figure>')
+    })
+
+    it("adopts a caption stranded at the document root (no wrapping element)", () => {
+      // During transforms, content sits at the root; the <article> is added later.
+      const input = '<figcaption>Cap</figcaption><img src="a.avif">'
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).toContain('<figure><figcaption>Cap</figcaption><img src="a.avif"></figure>')
+    })
+
+    it("pairs each caption-above-video with the correct following video", () => {
+      const input =
+        '<article><p>Intro</p><figcaption>A</figcaption><video src="a.mp4"></video><figcaption>B</figcaption><video src="b.mp4"></video></article>'
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).toContain("<p>Intro</p>")
+      expect(result).toContain('<figcaption>A</figcaption><span data-src="a.mp4"')
+      expect(result).toContain('<figcaption>B</figcaption><span data-src="b.mp4"')
+    })
+
+    it("does not swallow a non-media element preceding the caption", () => {
+      const input = "<article><p>Intro</p><figcaption>Cap</figcaption><p>Outro</p></article>"
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).not.toContain("<figure>")
+      expect(result).toBe(input)
+    })
+
+    it("adopts a caption preceded by an inline SVG", () => {
+      const input = "<article><svg></svg><figcaption>Cap</figcaption></article>"
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).toContain("<figure><svg></svg><figcaption>Cap</figcaption></figure>")
+    })
+
+    it("adopts a caption preceded by an audio element", () => {
+      const input = '<article><audio src="a.mp3"></audio><figcaption>Cap</figcaption></article>'
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).toContain(
+        'class="audio-container"><audio src="a.mp3"></audio></span><figcaption>',
+      )
+      expect(result).toContain("</figcaption></figure>")
+    })
+
+    it("does not treat a plain non-container span as media", () => {
+      const input = '<article><span class="other">x</span><figcaption>Cap</figcaption></article>'
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).not.toContain("<figure>")
+      expect(result).toBe(input)
+    })
+
+    it("leaves a figcaption already inside a figure untouched", () => {
+      const input = '<figure><img src="a.avif"><figcaption>Cap</figcaption></figure>'
+      expect(testWrapNakedElementsHTML(input)).toBe(input)
+    })
+
+    it("does not wrap a figcaption with no element siblings", () => {
+      const input = "<div><figcaption>Cap</figcaption></div>"
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).not.toContain("<figure>")
+      expect(result).toBe(input)
+    })
+
+    it("does not wrap a figcaption whose only siblings are text nodes", () => {
+      const input = "<div>before<figcaption>Cap</figcaption>after</div>"
+      const result = testWrapNakedElementsHTML(input)
+      expect(result).not.toContain("<figure>")
+      expect(result).toBe(input)
+    })
+  })
 })

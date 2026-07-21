@@ -415,6 +415,13 @@ export function renderPage(
     </div>
   )
 
+  // Scripts must live inside <body> (or <head>); content between </body> and
+  // </html> is not conforming, so the afterDOMReady scripts render as the
+  // final children of the body element.
+  const afterDOMReadyScripts = pageResources.js
+    .filter((resource) => resource.loadTime === "afterDOMReady")
+    .map((res) => JSResourceToScriptElement(res))
+
   const body = (
     <body data-slug={slug}>
       <a
@@ -432,6 +439,7 @@ export function renderPage(
           </main>
         </PageShell>
       </div>
+      {afterDOMReadyScripts}
     </body>
   )
 
@@ -439,9 +447,6 @@ export function renderPage(
     <html lang={locale}>
       <Head {...componentData} />
       {body}
-      {pageResources.js
-        .filter((resource) => resource.loadTime === "afterDOMReady")
-        .map((res) => JSResourceToScriptElement(res))}
     </html>
   )
 

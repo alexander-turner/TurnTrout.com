@@ -39,7 +39,7 @@ export function createSpoilerNode(content: string | Element[]): Element {
         ariaExpanded: "false",
         ariaLabel: "Spoiler (click or press Enter to reveal)",
       }),
-      h("span", { className: ["spoiler-content"], ariaHidden: "true" }, content),
+      h("div", { className: ["spoiler-content"], ariaHidden: "true" }, content),
     ],
   )
 }

@@ -54,7 +54,7 @@ Hand wrapped firmly around his son's shoulder, Thomas Wayne directed his son's f
 <div class="bad-handwriting">
 <b>Hungry</b> <br>
 <b class="no-smallcaps">PTSD..No family</b><br>
-<it>Please help</it></br>
+<i>Please help</i><br>
 </div>
 
 Bruce was scared. At eight, he'd seen homeless people before, but he'd never connected the dots: this was a _person_, just out on the street.

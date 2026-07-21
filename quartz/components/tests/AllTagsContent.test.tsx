@@ -62,7 +62,7 @@ describe("generateAllTagsHast", () => {
     const hast = generateAllTagsHast(props)
 
     expect(hast.type).toBe("element")
-    expect(hast.tagName).toBe("span")
+    expect(hast.tagName).toBe("div")
     expect(hast.properties?.id).toBe(allTagsListing)
     expect(hast.properties?.dataUrl).toBe(allTagsListing)
     expect(hast.properties?.dataBlock).toBe(allTagsListing)
@@ -223,7 +223,7 @@ describe("generateAllTagsHast", () => {
     const hast = generateAllTagsHast(props)
 
     expect(hast.type).toBe("element")
-    expect(hast.tagName).toBe("span")
+    expect(hast.tagName).toBe("div")
     const allTagsDiv = hast.children[0] as HastElement
     expect(allTagsDiv.children).toHaveLength(0)
   })

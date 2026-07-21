@@ -80,13 +80,13 @@ describe("generateAllPostsBlock", () => {
     const mockProps = createProps()
     const result = generateAllPostsBlock(mockProps)
 
-    expect(result.type).toBe("span")
+    expect(result.type).toBe("div")
     expect(result.props.id).toBe("all-posts-listing")
     expect(result.props["data-url"]).toBe("all-posts-listing")
     expect(result.props["data-block"]).toBe("all-posts-listing")
   })
 
-  it("wraps PageList in span with correct structure", () => {
+  it("wraps PageList in div with correct structure", () => {
     const mockProps = createProps()
     const result = generateAllPostsBlock(mockProps)
 
@@ -207,7 +207,7 @@ describe("AllPosts component", () => {
 
     expect(children).toHaveLength(2)
     expect(children[0].type).toBe("p")
-    expect(children[1].type).toBe("span")
+    expect(children[1].type).toBe("div")
     expect(children[1].props.id).toBe("all-posts-listing")
   })
 
@@ -243,7 +243,7 @@ describe("AllPosts component", () => {
     const pageListBlock = article.props.children[1]
 
     // Verify the PageList within the block receives the correct props
-    expect(pageListBlock.type).toBe("span")
+    expect(pageListBlock.type).toBe("div")
     expect(pageListBlock.props.id).toBe("all-posts-listing")
 
     const pageListElement = pageListBlock.props.children

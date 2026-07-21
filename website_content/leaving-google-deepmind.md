@@ -30,11 +30,11 @@ In January, Department of Homeland Security (DHS) officers killed [at least](htt
 
 <figure id="ice-killings">
 <div class="subfigure">
-<img src="https://assets.turntrout.com/static/images/posts/Why I left Google DeepMind-06122026.avif" alt="A young woman wearing a dark beanie and a light patterned sweater sits in the driver's seat of a maroon car, her hand on the steering wheel as she looks out through the open window."/>
+<img src="https://assets.turntrout.com/static/images/posts/Why%20I%20left%20Google%20DeepMind-06122026.avif" alt="A young woman wearing a dark beanie and a light patterned sweater sits in the driver's seat of a maroon car, her hand on the steering wheel as she looks out through the open window."/>
 <figcaption>Renée Good, <a href="https://en.wikipedia.org/wiki/Killing_of_Ren%C3%A9e_Good">moments before DHS killed her.</a></figcaption>
 </div>
 <div class="subfigure">
-<img src="https://assets.turntrout.com/static/images/posts/Why I left Google DeepMind-06172026.avif" alt="On a sunlit street, three masked agents in tactical gear stand over a man in a brown jacket who is on his hands and knees on the pavement. One agent grips his back while another points a gun at his head."/>
+<img src="https://assets.turntrout.com/static/images/posts/Why%20I%20left%20Google%20DeepMind-06172026.avif" alt="On a sunlit street, three masked agents in tactical gear stand over a man in a brown jacket who is on his hands and knees on the pavement. One agent grips his back while another points a gun at his head."/>
 <figcaption>Alex Pretti, <a href="https://en.wikipedia.org/wiki/Killing_of_Alex_Pretti">moments before DHS killed him.</a></figcaption>
 </div>
 </figure>
@@ -124,12 +124,12 @@ He suggested it'd be reasonable for me to email a few guys. Their names: Sundar 
 >
 >   History will judge the tech sector by its involvement in these events. I love working at Google, and I want to ensure Google is on the right side of that history.
 >
->   <table border="0" cellspacing="0" cellpadding="0" style="max-width:600px;margin-top:0;margin-bottom:0;">
+>   <table style="max-width:600px;margin-top:0;margin-bottom:0;border-collapse:collapse;">
 >     <tr style="border:none;">
->       <td valign="middle" style="border:none; vertical-align:middle;">
->         <span class="favicon-span"><svg class="favicon" data-domain="deepmind_com" style="aspect-ratio:24 / 24;--mask-url:url(https://assets.turntrout.com/static/images/external-favicons/deepmind_com.svg); width:2.5rem; height:2.5rem; margin:0; vertical-align:middle;" alt="Google DeepMind logo"></svg></span>
+>       <td style="border:none; vertical-align:middle; padding:0;">
+>         <span class="favicon-span"><svg class="favicon" data-domain="deepmind_com" role="img" aria-label="Google DeepMind logo" style="aspect-ratio:24 / 24;--mask-url:url(https://assets.turntrout.com/static/images/external-favicons/deepmind_com.svg); width:2.5rem; height:2.5rem; margin:0; vertical-align:middle;"></svg></span>
 >       </td>
->       <td valign="middle" style="border:none;">
+>       <td style="border:none; vertical-align:middle; padding:0;">
 >         <div>Alexander Matt Turner</div>
 >         <div style="color: var(--midground)">Research Scientist</div>
 >       </td>
@@ -215,7 +215,7 @@ I was surprised. Stuart said "It seems like \[taking the same stand\] is up to t
 
 The next question from a conference attendee asked whether IASEAI would take positions on current issues. As the session wrapped, IASEAI's interim executive director Mark Nitzberg took the stage.
 
-<video controls playsinline aria-label="A speaker at a conference addresses an audience, asking for a show of hands to gauge support for an organization statement regarding Anthropic. After the audience responds with a mass of raised hands, the speaker discusses the process for formalizing organizational member opinions."><source src="https://assets.turntrout.com/static/images/posts/Why I left Google DeepMind-06242026-1.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/Why I left Google DeepMind-06242026-1.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/Why I left Google DeepMind-06242026-1.vtt" srclang="en" label="English"/></video>
+<video controls playsinline aria-label="A speaker at a conference addresses an audience, asking for a show of hands to gauge support for an organization statement regarding Anthropic. After the audience responds with a mass of raised hands, the speaker discusses the process for formalizing organizational member opinions."><source src="https://assets.turntrout.com/static/images/posts/Why%20I%20left%20Google%20DeepMind-06242026-1.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/Why%20I%20left%20Google%20DeepMind-06242026-1.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/Why%20I%20left%20Google%20DeepMind-06242026-1.vtt" srclang="en" label="English"/></video>
 
 Figure: Mark asks for a show-of-hands. "We will be asking the opinions of members... and if you're not a member, go to the member desk."
 

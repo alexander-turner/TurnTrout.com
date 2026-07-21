@@ -271,7 +271,7 @@ describe("markdownPlugins", () => {
       name: "basic block reference",
       input: "![[test#^block-id]]",
       expectedContent: [
-        '<span class="transclude"',
+        '<div class="transclude"',
         'data-block="#^block-id"',
         'data-url="test"',
         'href="/test#^block-id"',
@@ -283,7 +283,7 @@ describe("markdownPlugins", () => {
       name: "block reference with alias",
       input: "![[test#^block-id|Custom Text]]",
       expectedContent: [
-        '<span class="transclude"',
+        '<div class="transclude"',
         'data-block="#^block-id"',
         'data-url="test"',
         'href="/test#^block-id"',
@@ -591,7 +591,7 @@ describe("processWikilink", () => {
         type: "html",
         data: { hProperties: { transclude: true } },
         value:
-          '<span class="transclude" data-url="https://example.com" data-block=""><a href="https://example.com" class="transclude-inner">Transclude of https://example.com</a></span>',
+          '<div class="transclude" data-url="https://example.com" data-block=""><a href="https://example.com" class="transclude-inner">Transclude of https://example.com</a></div>',
       },
     },
     {
@@ -625,7 +625,7 @@ describe("processWikilink", () => {
       type: "html",
       data: { hProperties: { transclude: true } },
       value:
-        '<span class="transclude" data-url="file.unknown" data-block=""><a href="/file.unknown" class="transclude-inner">Transclude of file.unknown</a></span>',
+        '<div class="transclude" data-url="file.unknown" data-block=""><a href="/file.unknown" class="transclude-inner">Transclude of file.unknown</a></div>',
     })
   })
 
@@ -813,7 +813,7 @@ describe("Edge cases and advanced features", () => {
         type: "html",
         data: { hProperties: { transclude: true } },
         value:
-          '<span class="transclude" data-url="document" data-block=""><a href="/document" class="transclude-inner">Transclude of document</a></span>',
+          '<div class="transclude" data-url="document" data-block=""><a href="/document" class="transclude-inner">Transclude of document</a></div>',
       },
     },
     {
@@ -1278,6 +1278,24 @@ describe("Branch coverage tests", () => {
       expect(labelCloseIndex).toBeLessThan(nestedUlIndex)
       expect(labelCloseIndex).toBeGreaterThan(0)
       expect(nestedUlIndex).toBeGreaterThan(0)
+    })
+
+    it("should not wrap nested ordered lists inside label", () => {
+      const input = '<li><input type="checkbox"> Parent text<ol><li>Nested item</li></ol></li>'
+      const { result } = testWithHtmlPlugins(input, { enableCheckbox: true })
+
+      expect(result).toContain("<label")
+      expect(result).toContain("Parent text")
+      expect(result).toContain("</label>")
+
+      // The nested <ol> must stay outside the label: nesting a list inside a
+      // label produces a label-in-label when the nested items are themselves
+      // checkboxes, which is invalid HTML.
+      const labelCloseIndex = result.indexOf("</label>")
+      const nestedOlIndex = result.indexOf("<ol>")
+      expect(labelCloseIndex).toBeLessThan(nestedOlIndex)
+      expect(labelCloseIndex).toBeGreaterThan(0)
+      expect(nestedOlIndex).toBeGreaterThan(0)
     })
 
     it("should add unique id and for attributes to checkboxes and labels", () => {

@@ -327,6 +327,27 @@ export function optimizeMermaidSvgs(tree: Root): void {
     // Remove unreferenced <marker> elements (mermaid 11.14.0 adds margin
     // variants that are defined but never used in url() references)
     removeUnreferencedMarkers(node)
+
+    // Mermaid nests flow content inside its phrasing-content label spans:
+    // a plain label becomes <span class="nodeLabel"><p>…</p></span> and a
+    // KaTeX/rich label becomes <span class="edgeLabel"><div>…</div></span>,
+    // both invalid. Retag those <p>/<div> blocks to <span> so the markup is
+    // valid while preserving any layout styling (e.g. the flex centering
+    // mermaid puts on rich labels).
+    normalizeMermaidLabelBlocks(node)
+  })
+}
+
+/** Retags `<p>`/`<div>` descendants of mermaid label `<span>`s to `<span>`, so
+ * label markup stays valid phrasing content without losing layout styling. */
+export function normalizeMermaidLabelBlocks(svg: Element): void {
+  visit(svg, "element", (node: Element) => {
+    if (node.tagName !== "span") return
+    visit(node, "element", (child: Element) => {
+      if (child.tagName === "p" || child.tagName === "div") {
+        child.tagName = "span"
+      }
+    })
   })
 }
 

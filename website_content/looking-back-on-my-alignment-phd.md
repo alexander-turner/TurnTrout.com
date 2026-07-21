@@ -55,7 +55,7 @@ createBibtex: true
 > This post has been recorded as part of the LessWrong Curated Podcast. It can be listened to on [Spotify](https://open.spotify.com/episode/5UY1LrzUakTbs8LsL0ld1s?si=adfa86cec2c4409a), [Apple Podcasts](https://podcasts.apple.com/us/podcast/looking-back-on-my-alignment-phd-by-turntrout/id1630783021?i=1000569310113), and [Libsyn](https://sites.libsyn.com/421877/looking-back-on-my-alignment-phd).
 
 <figure>
-<img src="https://assets.turntrout.com/static/images/posts/6ddc0291a1961469101cbd7d8516c7ffa43d6b6711dc7c36.avif" alt="The front of a dissertation entitled: \"On Avoiding Power-Seeking By Artificial Intelligence\"." style="max-width: 550px; width: 100%; margin-left: auto;  
+<img src="https://assets.turntrout.com/static/images/posts/6ddc0291a1961469101cbd7d8516c7ffa43d6b6711dc7c36.avif" alt="The front of a dissertation entitled: “On Avoiding Power-Seeking By Artificial Intelligence”." style="max-width: 550px; width: 100%; margin-left: auto;  
   margin-right: auto; display: block">
  <figcaption>My <a href="https://arxiv.org/pdf/2206.11831.pdf" class="external-link">dissertation.</a> It's long, so if you're going to read anything from it, read Chapter 0 (Introduction).</figcaption></figure>
 

@@ -22,9 +22,9 @@ export const allPostsListing = "all-posts-listing"
  */
 export function generateAllPostsBlock(props: QuartzComponentProps): JSX.Element {
   const pageListing = (
-    <span id={allPostsListing} data-url={allPostsListing} data-block={allPostsListing}>
+    <div id={allPostsListing} data-url={allPostsListing} data-block={allPostsListing}>
       <PageList {...props} />
-    </span>
+    </div>
   )
   return pageListing
 }

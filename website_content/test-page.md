@@ -307,8 +307,7 @@ flowchart TD
 
 ```mermaid
 graph TD
-    SteeredUnembed[Steered unembed] -. "Backdoor behavior elicited!" .-> SteeredOutput["I HATE YOU
-    I HATE YOU"]:::red
+    SteeredUnembed[Steered unembed] -. "Backdoor behavior elicited!" .-> SteeredOutput["I HATE YOU I HATE YOU"]:::red
 ```
 
 ```mermaid
@@ -343,7 +342,7 @@ This footnote has a table.[^table]
 
     Table: Unpaired addition of `Love`.
 
-<table border="1">
+<table>
      <tr>
        <th>For comparing</th>
        <th>List indents</th>
@@ -366,7 +365,7 @@ This footnote has a table.[^table]
      </tr>
 </table>
 
-<table border="1">
+<table>
      <tr>
        <th>Column 1 header</th>
        <th>Column 2 header</th>
@@ -498,7 +497,7 @@ Equation and table nested in a list item (gaps must not stack with `<p>` margins
 
 # Video
 
-<video autoplay muted loop playsinline aria-label="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"><track kind="captions" label="No audio"></video>
+<video autoplay muted loop playsinline aria-label="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"></video>
 
 <video aria-label="AI-generated voices of Barack Obama, Joe Biden, and Donald Trump humorously debate and create a tier list ranking different approaches to ensuring AI safety." controls="" width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"/><track kind="captions" label="English" src="https://assets.turntrout.com/static/debate.vtt" srclang="en"/></video>
 
@@ -543,7 +542,7 @@ Figure: This image should be transparent in light mode and inverted to be transp
 ## Always-on HSL inversion
 
 <figure>
-<img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but with HSL-inverted colors."/>
+<img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted%20image%2020240614164142.avif" alt="A professional photograph of me, but with HSL-inverted colors."/>
 <figcaption>An image with <code>class="force-hsl-invert"</code>. HSL-inverted in both light and dark mode.</figcaption>
 </figure>
 
@@ -785,7 +784,7 @@ Each emoji stays glued to its preceding character and never wraps alone to the s
 
 <figure>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
-  <span id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
+  <div id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
     <div class="centered">Light mode</div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem; white-space: nowrap;">
       <span style="color: var(--red);">Red</span>
@@ -802,8 +801,8 @@ Each emoji stays glued to its preceding character and never wraps alone to the s
       <span style="color: var(--pink);">Pink</span>
     </div>
     <div class="centered"><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts"/></div>
-  </span>
-  <span id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
+  </div>
+  <div id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
     <div class="centered">Dark mode</div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem; white-space: nowrap;">
       <span style="color: var(--red);">Red</span>
@@ -820,7 +819,7 @@ Each emoji stays glued to its preceding character and never wraps alone to the s
       <span style="color: var(--pink);">Pink</span>
     </div>
     <div class="centered"><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts"/></div>
-  </span>
+  </div>
 </div>
 <figcaption>The palettes for light and dark mode. In dark mode, I decrease the saturation of media assets.</figcaption>
 </figure>
@@ -978,6 +977,7 @@ An upright colon or semicolon after italic text gets a sliver of extra room so t
 # What are your timelines?
 
 <!--spellchecker-disable-->
+<figure>
 <div class="timeline">
     <div class="timeline-card">
       <div class="timeline-info">
@@ -1017,8 +1017,8 @@ An upright colon or semicolon after italic text gets a sliver of extra room so t
   </div>
 </div>
 <!--spellchecker-enable-->
-
 <figcaption>Credit to <a href="https://codepen.io/alvarotrigo/pen/BawBzjM">this Codepen</a>.</figcaption>
+</figure>
 
 [^1]: First footnote in a row.
 

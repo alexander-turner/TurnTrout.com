@@ -178,7 +178,7 @@ export interface FaviconNode extends Element {
     alt?: string
     "data-domain"?: string
     "aria-hidden"?: "true" | "false"
-    "aria-focusable"?: "true" | "false"
+    focusable?: "true" | "false"
     role?: "img"
     "aria-label"?: string
   }
@@ -196,7 +196,7 @@ export function createFaviconElement(urlString: string, description = ""): Favic
 
     const accessibilityProps = description
       ? ({ role: "img", "aria-label": description } as const)
-      : ({ "aria-hidden": "true", "aria-focusable": "false" } as const)
+      : ({ "aria-hidden": "true", focusable: "false" } as const)
 
     return {
       type: "element",

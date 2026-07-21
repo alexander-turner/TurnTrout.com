@@ -289,9 +289,9 @@ const createTranscludeElement = (
   return {
     type: "html",
     data: { hProperties: { transclude: true } },
-    value: `<span class="transclude" data-url="${escapeHTML(url)}" data-block="${escapeHTML(ref)}"><a href="${escapeHTML(href)}" class="transclude-inner">${escapeHTML(
+    value: `<div class="transclude" data-url="${escapeHTML(url)}" data-block="${escapeHTML(ref)}"><a href="${escapeHTML(href)}" class="transclude-inner">${escapeHTML(
       displayAlias ?? `Transclude of ${url}${ref}`,
-    )}</a></span>`,
+    )}</a></div>`,
   }
 }
 
@@ -873,9 +873,11 @@ function wrapCheckboxInLabel(
 ): void {
   const siblingsAfterCheckbox = parent.children.slice(index + 1)
 
-  // Find where text content ends (before any nested lists)
+  // Find where text content ends (before any nested list). A nested task
+  // list may be ordered or unordered; both must stay outside the label so
+  // their own labels don't nest inside this one.
   const textContentEndIndex = siblingsAfterCheckbox.findIndex(
-    (sibling) => sibling.type === "element" && (sibling as Element).tagName === "ul",
+    (sibling) => sibling.type === "element" && ["ol", "ul"].includes((sibling as Element).tagName),
   )
   const endIndex = textContentEndIndex === -1 ? siblingsAfterCheckbox.length : textContentEndIndex
 

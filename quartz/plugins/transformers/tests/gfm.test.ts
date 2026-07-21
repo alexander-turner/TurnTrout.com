@@ -14,6 +14,7 @@ import {
   htmlAccessibilityPlugin,
   isValidDlStructure,
   maybeSpliceAndAppendBackArrow,
+  normalizeMermaidLabelBlocks,
   optimizeMermaidSvgs,
   preprocessSlug,
   removeBackArrowFromChildren,
@@ -1099,6 +1100,54 @@ describe("optimizeMermaidSvgs", () => {
     optimizeMermaidSvgs(tree)
 
     expect((style.children[0] as { type: "text"; value: string }).value).toBe(css)
+  })
+
+  it("retags <p> inside mermaid label spans to <span>", () => {
+    const label = h("span", { className: ["nodeLabel"] }, [h("p", ["Node text"])])
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: { id: "mermaid-0" },
+      children: [label],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    optimizeMermaidSvgs(tree)
+
+    expect(label.children).toHaveLength(1)
+    expect((label.children[0] as Element).tagName).toBe("span")
+  })
+})
+
+describe("normalizeMermaidLabelBlocks", () => {
+  it("retags a <p> label child to <span>, preserving its content", () => {
+    const paragraph = h("p", ["Hello"])
+    const label = h("span", { className: ["nodeLabel"] }, [paragraph])
+    normalizeMermaidLabelBlocks(h("svg", [label]))
+    expect(paragraph.tagName).toBe("span")
+    expect(paragraph.children).toEqual([{ type: "text", value: "Hello" }])
+  })
+
+  it("retags a rich-label <div> to <span> while keeping its style", () => {
+    const flexDiv = h("div", { style: "display:flex" }, [h("span", { className: ["katex"] })])
+    const label = h("span", { className: ["edgeLabel"] }, [flexDiv])
+    normalizeMermaidLabelBlocks(h("svg", [label]))
+    expect(flexDiv.tagName).toBe("span")
+    expect(flexDiv.properties?.style).toBe("display:flex")
+  })
+
+  it("leaves the sizing <div> outside a label span untouched", () => {
+    const outer = h("div", { style: "width:200px" }, [
+      h("span", { className: ["nodeLabel"] }, ["x"]),
+    ])
+    normalizeMermaidLabelBlocks(h("svg", [outer]))
+    expect(outer.tagName).toBe("div")
+  })
+
+  it("leaves label spans without block children unchanged", () => {
+    const label = h("span", { className: ["nodeLabel"] }, ["plain text"])
+    const original = [...label.children]
+    normalizeMermaidLabelBlocks(h("svg", [label]))
+    expect(label.children).toEqual(original)
   })
 })
 
