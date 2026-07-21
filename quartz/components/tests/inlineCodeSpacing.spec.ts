@@ -75,6 +75,10 @@ test.describe("inline code spacing", () => {
     const measured = await page.evaluate((hairSpace) => {
       const host = document.createElement("div")
       host.style.overflowWrap = "anywhere"
+      // The width computed below assumes greedy line-breaking, so opt out of the
+      // inherited `text-wrap: pretty`; its paragraph-level rebalancing would
+      // otherwise keep "two" on the first line and defeat the forced wrap.
+      host.style.setProperty("text-wrap", "auto")
       host.innerHTML =
         `<div id="ics-orphan"><span>word</span>${hairSpace} ` +
         '<code id="ics-one">one</code><span id="ics-semi">); </span>' +
