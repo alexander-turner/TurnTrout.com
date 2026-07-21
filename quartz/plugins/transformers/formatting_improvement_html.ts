@@ -145,18 +145,21 @@ function isHatTipSlash(view: ProseView, slashIdx: number): boolean {
 }
 
 /**
- * Pad one slash with NBSPs so it gets breathing room without allowing a line
- * break at it. Each side is decided independently:
+ * Pad one slash so it gets breathing room. The slash binds to the preceding
+ * word (NBSP on its left, matching the site's dash policy) while the right
+ * side stays a plain space, so a line may break after the slash but never
+ * start with one. Each side is decided independently:
  *
- * - a plain space already next to the slash is kept as-is;
+ * - on the left, a plain space is converted to NBSP; on the right, a plain
+ *   space is kept as-is;
  * - at an element boundary, the neighboring node's text (including any space
- *   it carries) is left untouched and an NBSP is glued onto the slash's side
- *   of the boundary instead — empty inline elements must never swallow the
- *   slash or its padding;
- * - otherwise an NBSP is inserted directly against the slash.
+ *   it carries) is left untouched and the padding character is glued onto the
+ *   slash's side of the boundary instead — empty inline elements must never
+ *   swallow the slash or its padding;
+ * - otherwise the padding character is inserted directly against the slash.
  *
- * Returns true when the slash matched (even if both sides kept their spaces),
- * so the digit-slash rule doesn't double-process it.
+ * Returns true when the slash matched, so the digit-slash rule doesn't
+ * double-process it.
  */
 function applyMainSlashRule(view: ProseView, slashIdx: number): boolean {
   const text = view.text
@@ -185,13 +188,15 @@ function applyMainSlashRule(view: ProseView, slashIdx: number): boolean {
 
   if (leftBoundary) {
     view.replace(slashIdx, slashIdx, NBSP, { bind: "right" })
-  } else if (!spaceBefore) {
+  } else if (spaceBefore) {
+    view.replace(slashIdx - 1, slashIdx, NBSP)
+  } else {
     view.replace(slashIdx, slashIdx, NBSP)
   }
   if (rightBoundary) {
-    view.replace(afterIdx, afterIdx, NBSP, { bind: "left" })
+    view.replace(afterIdx, afterIdx, " ", { bind: "left" })
   } else if (!spaceAfter) {
-    view.replace(afterIdx, afterIdx, NBSP)
+    view.replace(afterIdx, afterIdx, " ")
   }
   return true
 }
@@ -213,7 +218,7 @@ function applyNumberSlashRule(view: ProseView, slashIdx: number): void {
   if (!nonNumberAfter) {
     return
   }
-  view.replace(slashIdx, afterIdx, `${NBSP}/${NBSP}`)
+  view.replace(slashIdx, afterIdx, `${NBSP}/ `)
 }
 
 function applySlashSpacing(view: ProseView): void {
@@ -229,9 +234,9 @@ function applySlashSpacing(view: ProseView): void {
 }
 
 /**
- * Space out slashes so "dog/cat" reads "dog / cat" (with non-breaking
- * spaces). Dual-input pass: string in → string out; ProseView in → edits
- * committed in place.
+ * Space out slashes so "dog/cat" reads "dog / cat", with an NBSP binding the
+ * slash to the preceding word and a breakable space after it. Dual-input
+ * pass: string in → string out; ProseView in → edits committed in place.
  */
 export function spacesAroundSlashes(input: string): string
 export function spacesAroundSlashes(input: ProseView): void
@@ -889,7 +894,9 @@ export function normalizeAbbreviations(text: string): string {
 }
 
 const plusToAmpersandRegex = /(?<!\b(?:ctrl|alt|option|cmd|command|fn))(?<=\p{L})\+(?=[A-Z])/giu
-const plusToAmpersandPass = definePass(plusToAmpersandRegex, `${NBSP}&${NBSP}`)
+// The ampersand binds only to its right operand (break before a binary
+// operator): breakable space on the left, NBSP on the right.
+const plusToAmpersandPass = definePass(plusToAmpersandRegex, ` &${NBSP}`)
 
 export function plusToAmpersand(text: string): string {
   return plusToAmpersandPass(text)
