@@ -22,6 +22,23 @@
 
 set -euo pipefail
 
+# Re-exec from an immutable copy outside any synced path. This script lives
+# under .github/scripts, a synced path, so mid-run the sync overwrites its own
+# file. bash reads a running script incrementally and, after the trailing
+# `main "$@"` returns, resumes reading top-level input at a saved byte offset;
+# a longer replacement shifts that offset into the new file's bytes and bash
+# executes a truncated fragment ("unexpected EOF while looking for matching
+# quote"). The main() wrapper below defers execution but NOT that post-main
+# resume, so it is not sufficient on its own. Running from a $TMPDIR copy the
+# sync never touches removes the hazard entirely. The re-exec'd pass removes
+# its own copy on exit (guard: only when $0 is the copy we created).
+if [[ -z "${TEMPLATE_SYNC_REEXEC:-}" ]]; then
+  _self_copy="$(mktemp)"
+  cat "$0" >"$_self_copy"
+  TEMPLATE_SYNC_REEXEC="$_self_copy" exec bash "$_self_copy" "$@"
+fi
+[[ "${TEMPLATE_SYNC_REEXEC:-}" == "$0" ]] && trap 'rm -f "$0"' EXIT
+
 # Wrap all logic in main(), called as the final line. bash reads a running
 # script incrementally from disk, not all at once — this script overwrites
 # its own file when SYNC_PATHS includes the directory it lives in, so any
