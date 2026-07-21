@@ -1168,6 +1168,18 @@ test.describe("Link color states", () => {
       })
     })
   }
+
+  test("monospace arrow inside a link inherits the link color", async ({ page }) => {
+    const arrowLink = page.locator("a:has(.monospace-arrow)").first()
+    await arrowLink.scrollIntoViewIfNeeded()
+    await expect(arrowLink).toBeVisible()
+
+    const arrow = arrowLink.locator(".monospace-arrow").first()
+    const linkColor = await arrowLink.evaluate((el) => getComputedStyle(el).color)
+    const arrowColor = await arrow.evaluate((el) => getComputedStyle(el).color)
+
+    expect(arrowColor).toEqual(linkColor)
+  })
 })
 
 test.describe("List alignment", () => {

@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-19
+date_updated: 2026-07-21
 createBibtex: true
 ---
 
@@ -605,6 +605,8 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 # Arrows
 
 -> and --> should be EB Garamond, but ←, ↑, ↓, and ↗ should be Fira Code.
+
+A [link with a → arrow](https://npmjs.com) should color the arrow like the rest of the link.
 
 # Math
 

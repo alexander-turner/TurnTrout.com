@@ -64,7 +64,7 @@ describe("formatting_improvement_html text transforms (property)", () => {
           word.filter((w) => w !== "h"),
           word.filter((w) => w !== "t"),
           (a, b) => {
-            expect(spacesAroundSlashes(`${a}/${b}`)).toBe(`${a}${NBSP}/${NBSP}${b}`)
+            expect(spacesAroundSlashes(`${a}/${b}`)).toBe(`${a}${NBSP}/ ${b}`)
           },
         ),
       )
@@ -141,7 +141,7 @@ describe("formatting_improvement_html text transforms (property)", () => {
         fc.property(word, (w) => {
           const idx = w.search(/[A-Z]/)
           const [left, right] = [w.slice(0, idx), w.slice(idx)]
-          expect(plusToAmpersand(`${left}+${right}`)).toBe(`${left}${NBSP}&${NBSP}${right}`)
+          expect(plusToAmpersand(`${left}+${right}`)).toBe(`${left} &${NBSP}${right}`)
           expect(plusToAmpersand(`ctrl+${right}`)).toBe(`ctrl+${right}`)
         }),
       )

@@ -365,16 +365,22 @@ describe("HTMLFormattingImprovement", () => {
     })
   })
 
-  describe("non-breaking spaces around slashes and ampersands", () => {
+  describe("one-sided glue around slashes and ampersands", () => {
     it.each([
-      ["dog/cat", `dog${NBSP}/${NBSP}cat`],
-      ["3/month", `3${NBSP}/${NBSP}month`],
-    ])("should use nbsp around slashes: %s", (input, expected) => {
+      ["dog/cat", `dog${NBSP}/ cat`],
+      ["3/month", `3${NBSP}/ month`],
+    ])("should bind slashes to the preceding word: %s", (input, expected) => {
       const result = spacesAroundSlashes(input)
       expect(result).toBe(expected)
     })
 
-    it("should use nbsp around ampersand from plus", () => {
+    it("should bind ampersand from plus to its right operand", () => {
+      const input = "<p>Dungeons+Dragons</p>"
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(`<p>Dungeons &#x26;${NBSP}Dragons</p>`)
+    })
+
+    it("should let the short-word pass glue a 1-letter operand to the ampersand", () => {
       const input = "<p>A+B</p>"
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(`<p>A${NBSP}&#x26;${NBSP}B</p>`)
@@ -396,15 +402,15 @@ describe("HTMLFormattingImprovement", () => {
     it("pads both sides of a boundary-adjacent slash with no spaces of its own", () => {
       expect(applyPassToNodes(spacesAroundSlashes, ["at : ", "/,"])).toEqual([
         "at : ",
-        `${NBSP}/${NBSP},`,
+        `${NBSP}/ ,`,
       ])
     })
 
     it("does not treat h/t as a hat-tip when a boundary splits it", () => {
       // "<em>h</em>/t": the h sits in another node, so the slash is spaced.
-      expect(applyPassToNodes(spacesAroundSlashes, ["h", "/t"])).toEqual(["h", `${NBSP}/${NBSP}t`])
+      expect(applyPassToNodes(spacesAroundSlashes, ["h", "/t"])).toEqual(["h", `${NBSP}/ t`])
       // "<em>h/</em>t": the t sits in another node.
-      expect(applyPassToNodes(spacesAroundSlashes, ["h/", "t"])).toEqual([`h${NBSP}/${NBSP}`, "t"])
+      expect(applyPassToNodes(spacesAroundSlashes, ["h/", "t"])).toEqual([`h${NBSP}/ `, "t"])
     })
 
     it("leaves a same-node double slash unspaced", () => {
@@ -963,17 +969,17 @@ describe("HTMLFormattingImprovement", () => {
     })
 
     it.each([
-      // Spaces around arrows should be non-breaking
-      ["<p>word -> arrow</p>", `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
-      ["<p>word->arrow</p>", `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
-      // At start of line, no nbsp before but nbsp after
+      // Breakable space before the arrow, NBSP gluing it to its right operand
+      ["<p>word -> arrow</p>", `<p>word <span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
+      ["<p>word->arrow</p>", `<p>word <span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
+      // At start of line, no space before but nbsp after
       ["<p>-> arrow</p>", `<p><span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
       // Multiple arrows
       [
         "<p>-> first --> second</p>",
-        `<p><span class="right-arrow">⭢</span>${NBSP}first${NBSP}<span class="right-arrow">⭢</span>${NBSP}second</p>`,
+        `<p><span class="right-arrow">⭢</span>${NBSP}first <span class="right-arrow">⭢</span>${NBSP}second</p>`,
       ],
-    ])("should use non-breaking spaces around arrows: %s", (input, expected) => {
+    ])("should glue arrows only to their right operand: %s", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
     })
@@ -2436,10 +2442,10 @@ describe("HTMLFormattingImprovement plugin", () => {
     })
 
     it.each(arrowsToWrap.map((arrow) => [arrow]))(
-      "should use non-breaking spaces around %s arrow",
+      "should glue %s arrow only to its right operand",
       (arrow) => {
         const input = `<p>word ${arrow} next</p>`
-        const expected = `<p>word${NBSP}<span class="monospace-arrow">${arrow}</span>${NBSP}next</p>`
+        const expected = `<p>word <span class="monospace-arrow">${arrow}</span>${NBSP}next</p>`
         const processedHtml = testHtmlFormattingImprovement(input)
         expect(processedHtml).toBe(expected)
       },
