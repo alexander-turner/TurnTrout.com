@@ -607,6 +607,8 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 -> and --> should be EB Garamond, but ←, ↑, ↓, and ↗ should be Fira Code.
 
+A [link with a → arrow](https://npmjs.com) should color the arrow like the rest of the link.
+
 # Math
 
 Inline math: $e^{i\pi} + 1 = 0$.
