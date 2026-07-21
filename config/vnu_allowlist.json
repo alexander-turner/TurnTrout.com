@@ -1,5 +1,5 @@
 {
-  "description": "Regex patterns for Nu HTML validator (vnu) error messages that are known, accepted artifacts of KaTeX's MathML/HTML output and must not fail the build. KaTeX emits a MathML accessibility layer (inside `<span class=\"katex-mathml\"><math>…`) whose element set and inline styles the validator rejects; dropping that layer would remove screen-reader math support, so these are suppressed rather than 'fixed'. Every entry is a Python `re` pattern matched against the vnu message text and must state why it is unfixable in source. Do NOT add site-authored HTML bugs here — fix those at the source.",
+  "description": "Regex patterns for Nu HTML validator (vnu) error messages that are known, accepted artifacts and must not fail the build. Two categories: (1) KaTeX's MathML/HTML accessibility layer (inside `<span class=\"katex-mathml\"><math>…`), whose element set and inline styles the validator rejects but which is required for screen-reader math support; and (2) CSS in the machine-generated, minified critical CSS that vnu's CSS checker cannot validate — modern features it predates (CSS Houdini `@property`, `var()`/`color-mix()` references it will not resolve) and a minified-value the penthouse extractor mis-serializes. Every entry is a Python `re` pattern matched against the vnu message text and must state why it is unfixable in source. Do NOT add site-authored HTML/CSS bugs here — fix those at the source (e.g. an invalid `line-height` value belongs in the SCSS, not this list).",
   "allow": [
     {
       "pattern": "^The “(math|semantics|annotation|annotation-xml|mrow|mo|mi|mn|ms|mtext|mspace|mpadded|mphantom|menclose|merror|maction|mfrac|msqrt|mroot|msub|msup|msubsup|munder|mover|munderover|mmultiscripts|mprescripts|none|mtable|mtr|mtd|mstyle|mlabeledtr|malignmark|maligngroup)” element is a completely-unknown element",
@@ -20,6 +20,18 @@
     {
       "pattern": "^CSS: “height”: “-[0-9.]+(em|px|ex|rem)” negative values are not allowed",
       "reason": "KaTeX `.vlist` vertical-alignment shims use negative heights in inline styles; this is core to KaTeX's HTML rendering."
+    },
+    {
+      "pattern": "^CSS: Unrecognized at-rule “@property”",
+      "reason": "CSS Houdini `@property` (registers the sidebar-fade lengths as typed custom properties in scroll-indicator.scss); a valid at-rule that vnu's CSS checker predates and does not recognize."
+    },
+    {
+      "pattern": "^CSS: “[^”]+”: “var\\([^”]*\\)” is not a “\\*invalid\\*” value\\.",
+      "reason": "vnu's CSS checker cannot resolve `var()` references (the favicon `--attenuated-*` custom properties and `color-mix()` args), so it labels the property grammar `*invalid*`; the values are valid CSS that browsers resolve."
+    },
+    {
+      "pattern": "^CSS: “animation-duration”: “NaNs” is not a “animation-duration” value\\.",
+      "reason": "The penthouse critical-CSS extractor mis-serializes the minified reduced-motion reset (`animation-duration:.01ms`) to `NaNs`; the served full stylesheet keeps the correct value, so this is a transient extractor artifact, not an authored declaration."
     }
   ]
 }
