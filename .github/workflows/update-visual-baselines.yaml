@@ -136,6 +136,7 @@ jobs:
             ./all-blob-reports --staging-dir "$STAGING_DIR"
 
       - name: Push empty commit to retrigger visual-testing (open-PR runs only)
+        id: retrigger
         if: steps.resolve.outputs.pr_number != '' && steps.resolve.outputs.merged != 'true'
         env:
           REF: ${{ steps.resolve.outputs.ref }}
@@ -148,11 +149,28 @@ jobs:
           # would non-fast-forward reject the push and fail the approval even
           # though the baselines are already live. Reset to the freshest tip
           # before each attempt so the push is always a fast-forward.
+          #
+          # The PR can also merge mid-approval, which auto-deletes the head
+          # branch; the fetch then reports a missing ref. The baselines are
+          # already live, so this is a handoff, not a failure: signal
+          # `branch_gone` and let the merged-PR carry-through steps below
+          # finish the job (mark main's own visual-testing run green).
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           msg="ci: rerun visual-testing against approved baselines (run $RUN_ID, approved by $APPROVER)"
+          fetch_err="$RUNNER_TEMP/fetch-err.txt"
           for attempt in 1 2 3 4 5; do
-            git fetch origin "$REF"
+            if ! git fetch origin "$REF" 2>"$fetch_err"; then
+              cat "$fetch_err" >&2
+              if grep -q "couldn't find remote ref" "$fetch_err"; then
+                echo "Branch $REF is gone (PR merged mid-approval); baselines already uploaded."
+                echo "branch_gone=true" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              echo "Fetch failed for a reason other than a missing branch (attempt $attempt); retrying"
+              sleep 2
+              continue
+            fi
             git reset --hard "origin/$REF"
             git commit --allow-empty -m "$msg"
             if git push origin "HEAD:$REF"; then
@@ -172,13 +190,36 @@ jobs:
       # replacement reports.
       - name: Find post-merge visual-testing run on main
         id: find-main-run
-        if: steps.resolve.outputs.merged == 'true'
+        if: steps.resolve.outputs.merged == 'true' || steps.retrigger.outputs.branch_gone == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           MERGED_AT: ${{ steps.resolve.outputs.merged_at }}
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
         with:
           script: |
-            const mergedAt = process.env.MERGED_AT;
+            // On the branch-gone handoff `merged_at` was captured before the
+            // merge, so re-read it from the PR; if the branch vanished for
+            // another reason the PR isn't merged and there's nothing to carry
+            // through, so bail cleanly.
+            let mergedAt = process.env.MERGED_AT;
+            if (!mergedAt && process.env.PR_NUMBER) {
+              const pr = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: Number(process.env.PR_NUMBER),
+              });
+              mergedAt = pr.data.merged_at || '';
+            }
+            if (!mergedAt) {
+              core.warning(
+                'Head branch is gone but the PR is not merged; ' +
+                'no post-merge main run to carry the approval through to.'
+              );
+              core.setOutput('main_run_id', '');
+              core.setOutput('main_conclusion', '');
+              core.setOutput('shards_ok', '');
+              return;
+            }
             const POLL_INTERVAL_MS = 30_000;
             const MAX_ATTEMPTS = 40; // 40 × 30s = 20 min
             let found = null;
@@ -465,14 +506,19 @@ jobs:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
           RUN_ID: ${{ github.event.inputs.run_id }}
           MERGED: ${{ steps.resolve.outputs.merged }}
+          BRANCH_GONE: ${{ steps.retrigger.outputs.branch_gone }}
           MAIN_RUN_ID: ${{ steps.find-main-run.outputs.main_run_id }}
           MAIN_CONCLUSION: ${{ steps.find-main-run.outputs.main_conclusion }}
           COVERED: ${{ steps.cover.outputs.covered }}
           COVER_REASON: ${{ steps.cover.outputs.reason }}
         with:
           script: |
+            // A branch that vanished mid-approval (PR merged) takes the same
+            // carry-through path as a PR that was already merged at dispatch.
+            const carriedThrough =
+              process.env.MERGED === 'true' || process.env.BRANCH_GONE === 'true';
             let body = `Approved baselines from run ${process.env.RUN_ID}`;
-            if (process.env.MERGED !== 'true') {
+            if (!carriedThrough) {
               body += ' and pushed an empty commit to retrigger visual-testing.';
             } else if (!process.env.MAIN_RUN_ID) {
               body +=
