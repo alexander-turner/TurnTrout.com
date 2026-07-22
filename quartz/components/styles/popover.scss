@@ -196,6 +196,14 @@
     }
   }
 
+  // Pinned popovers auto-focus the close button on open. That focus is
+  // pointer/programmatic, so hide the keyboard `:focus-visible` ring until the
+  // user navigates by keyboard (the class is dropped on first keydown). Keeps
+  // the pinned-popover screenshot deterministic across engines.
+  &.suppress-focus-ring .popover-close:focus-visible {
+    outline: none;
+  }
+
   @media all and (width <= $max-mobile-width) {
     &:not(.footnote-popover) {
       display: none !important;

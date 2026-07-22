@@ -605,6 +605,25 @@ base.describe("Footnote popovers", () => {
     await expect(activeElement).toHaveClass(/popover-close/)
   })
 
+  base("Pointer-opened popover suppresses the close-button focus ring", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+    await footnoteRef.click()
+
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // The auto-focused close button must not paint the keyboard `:focus-visible`
+    // ring on a pointer open, so the pinned-popover screenshot is deterministic
+    // (WebKit resolves that ring for programmatic focus non-deterministically).
+    await expect(popover).toHaveClass(/suppress-focus-ring/)
+    await expect(popover.locator(".popover-close")).toHaveCSS("outline-style", "none")
+
+    // A keyboard interaction restores normal focus-visible behavior.
+    await page.keyboard.press("ArrowDown")
+    await expect(popover).not.toHaveClass(/suppress-focus-ring/)
+  })
+
   base("Tab key cycles focus within pinned footnote popover", async ({ page }) => {
     // WebKit doesn't support Tab navigation by default — it requires the
     // "Press Tab to highlight each item on a webpage" Safari preference,
