@@ -140,7 +140,8 @@ test("Search results appear and can be navigated (screenshot)", async ({ page },
   const previewContainer = await waitForArticlePreview(page)
   await expect(previewContainer).toBeAttached()
 
-  await page.waitForLoadState("load")
+  // takeRegressionScreenshot runs its own scoped image/font stability waits;
+  // a page-level load gate would hang on WebKit's never-settling navbar video.
   await takeRegressionScreenshot(page, testInfo, "search-steering", {
     elementToScreenshot: page.locator("#search-layout"),
   })
@@ -814,7 +815,9 @@ test("Navigated page properly orients the first match in viewport", async ({ pag
 
   await waitForArticlePreview(page)
   await clickPreviewToNavigate(page)
-  await page.waitForLoadState("load")
+  // DOM-parsed suffices: the assertions below poll for concrete elements, and
+  // WebKit's `load` event can hang on the navbar video's range requests.
+  await page.waitForLoadState("domcontentloaded")
 
   const firstMatch = page.locator("article .search-match").first()
   await expect(firstMatch).toBeAttached()
