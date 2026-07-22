@@ -15,7 +15,13 @@ echo "Subsetting fonts in $num_files files"
 # pushed past the previous 6GB cap (mark-compact OOM at ~6.0/6.2GB).
 # Note: this fork only emits woff2 and doesn't support font instancing, so
 # shellcheck disable=SC2086
+# Prose keeps subfont's default font-display: swap (instant paint in the
+# fallback serif on cold caches); KaTeX faces are switched to block afterward,
+# since math in a fallback font is illegible rather than merely off-brand.
 NODE_OPTIONS="--max-old-space-size=12288" pnpm exec subfont --root public/ $html_files --in-place --inline-css --no-recursive --debug
+
+# shellcheck disable=SC2086
+./scripts/block_katex_font_display.sh $html_files
 
 # Refresh config/font_stats.md from the just-emitted subset woff2s so the
 # design page picks up current sizes on the next build.
