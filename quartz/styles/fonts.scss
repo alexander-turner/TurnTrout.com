@@ -33,14 +33,12 @@
     font-size: round(nearest, var(--base-font-size), 1px);
   }
 
-  // Body prose snaps to the pixel grid. geometricPrecision/optimizeLegibility
-  // put Blink into subpixel glyph positioning, whose independent per-glyph
-  // rounding surfaces as a wobbling baseline in small prose on high-DPR mobile.
-  // Kerning and ligatures are preserved explicitly on the body (font-kerning +
-  // font-feature-settings), so they don't depend on this hint; large display
-  // type opts back into precision below, where subpixel positioning is
-  // imperceptible.
-  text-rendering: optimizespeed;
+  // Engine-default text rendering: fractional horizontal advances with
+  // vertically grid-fit (hinted) glyphs. Vertical grid-fitting keeps every
+  // glyph on a shared, stable baseline, which matters most for small prose on
+  // high-DPR mobile screens. Kerning and ligatures are enabled explicitly on
+  // the body, independent of this property.
+  text-rendering: auto;
 }
 
 h1,
@@ -60,8 +58,9 @@ h6,
   font-weight: 500;
   line-height: 1.15;
 
-  // Display type is large enough that subpixel positioning doesn't wobble, so
-  // opt back into geometric precision for its smoother, fractional kerning.
+  // Display type is large enough that unhinted, linear-metric rasterization
+  // stays baseline-stable, and it preserves the face's drawn proportions at
+  // scale.
   text-rendering: geometricprecision;
 }
 
@@ -187,9 +186,9 @@ body {
     "cv11" 1;
   font-variant-numeric: oldstyle-nums;
 
-  // Keep kerning independent of text-rendering: the root uses optimizeSpeed to
-  // stop the mobile baseline wobble, and optimizeSpeed would otherwise drop
-  // kerning. This restores it without reintroducing subpixel positioning.
+  // Pin kerning on explicitly: engines vary in which kern behavior each
+  // text-rendering value implies, and EB Garamond's kern pairs (AV, Wa, To…)
+  // only apply when the feature is affirmatively enabled.
   font-kerning: normal;
 
   // Code should contain full-height numbers
