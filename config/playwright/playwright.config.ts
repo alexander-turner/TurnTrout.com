@@ -3,6 +3,8 @@ import { defineConfig, devices } from "@playwright/test"
 import { dirname, resolve } from "path"
 import { fileURLToPath } from "url"
 
+import { assertEngineOsMapping } from "./engineOsGuard"
+
 // Playwright resolves a relative `webServer.command` path against
 // `webServer.cwd`, which defaults to this config file's directory. The built
 // site lives at the repo root (`public/`), so pin the server's cwd there.
@@ -66,6 +68,16 @@ const playwrightBrowsersEnv = process.env.PLAYWRIGHT_BROWSERS
 const browsers: Browser[] = playwrightBrowsersEnv
   ? allBrowsers.filter((b) => playwrightBrowsersEnv.split(",").includes(b.engine))
   : allBrowsers
+
+// Enforce the engine→OS mapping only for a real CI test shard: `CI` is set and
+// a per-OS PLAYWRIGHT_BROWSERS selection is present. The report-merge job loads
+// this config on Linux without that selection and runs no tests, so it stays
+// exempt (no baselines are written there).
+assertEngineOsMapping(
+  browsers.map((b) => b.engine),
+  process.platform,
+  Boolean(process.env.CI) && playwrightBrowsersEnv !== undefined,
+)
 
 /**
  * Remove or adjust device options that are not supported by a given browser engine.
