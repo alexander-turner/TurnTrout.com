@@ -36,8 +36,8 @@
   // Engine-default text rendering: fractional horizontal advances with
   // vertically grid-fit (hinted) glyphs. Vertical grid-fitting keeps every
   // glyph on a shared, stable baseline, which matters most for small prose on
-  // high-DPR mobile screens. Kerning and ligatures are enabled explicitly on
-  // the body, independent of this property.
+  // high-DPR mobile screens. Ligatures are enabled explicitly on the body,
+  // independent of this property.
   text-rendering: auto;
 }
 
@@ -185,11 +185,6 @@ body {
     "liga" 1,
     "cv11" 1;
   font-variant-numeric: oldstyle-nums;
-
-  // Pin kerning on explicitly: engines vary in which kern behavior each
-  // text-rendering value implies, and EB Garamond's kern pairs (AV, Wa, To…)
-  // only apply when the feature is affirmatively enabled.
-  font-kerning: normal;
 
   // Code should contain full-height numbers
   & code,
