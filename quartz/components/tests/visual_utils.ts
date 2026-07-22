@@ -660,9 +660,13 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
  *
  * `pauseMediaElements` seeks videos to currentTime 0, but `paused`/`currentTime
  * === 0` are satisfied even when the engine (notably WebKit) has presented no
- * frame yet. Screenshotting that blank, never-painted state diffs against the
- * painted baseline — the source of the flake. requestVideoFrameCallback fires
- * only on a real paint, which is the signal we actually need.
+ * frame yet. requestVideoFrameCallback fires only on a real paint, which is the
+ * signal we actually need — and a fresh sub-frame seek forces a presentation,
+ * so the callback fires even when frame 0 was already on screen.
+ *
+ * A video that never paints within budget throws instead of letting the
+ * screenshot proceed: a blank-video capture that gets approved poisons the
+ * shared R2 baselines for every later run.
  */
 async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
   for (const video of await scope.locator("video").all()) {
@@ -670,29 +674,46 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
     if (!handle) throw new Error("Could not get element handle for video")
     await handle.evaluate(
       (el, dataTimeoutMs) =>
-        new Promise<void>((resolve) => {
+        new Promise<void>((resolve, reject) => {
           const videoEl = el as HTMLVideoElement & {
             requestVideoFrameCallback?: (cb: () => void) => number
           }
-          const timers: ReturnType<typeof setTimeout>[] = []
           let settled = false
+          const timer = setTimeout(() => {
+            if (settled) return
+            settled = true
+            reject(
+              new Error(
+                `Video never painted within ${dataTimeoutMs}ms ` +
+                  `(readyState=${videoEl.readyState}): ${videoEl.currentSrc || "<no src>"}`,
+              ),
+            )
+          }, dataTimeoutMs)
           const finish = () => {
             if (settled) return
             settled = true
-            timers.forEach(clearTimeout)
+            clearTimeout(timer)
             resolve()
           }
           const waitForPaint = () => {
             videoEl.pause()
-            if (videoEl.currentTime !== 0) videoEl.currentTime = 0
-            if (typeof videoEl.requestVideoFrameCallback !== "function") {
-              finish()
-              return
+            if (typeof videoEl.requestVideoFrameCallback === "function") {
+              videoEl.requestVideoFrameCallback(finish)
+            } else {
+              // Engines without rVFC: "seeked" + double rAF is the closest
+              // available paint signal (mirrors pauseMediaElements).
+              videoEl.addEventListener(
+                "seeked",
+                () => requestAnimationFrame(() => requestAnimationFrame(finish)),
+                { once: true },
+              )
             }
-            videoEl.requestVideoFrameCallback(finish)
-            // Fallback for the case where frame 0 is already on screen: no new
-            // frame is presented, so rVFC would never fire.
-            timers.push(setTimeout(finish, 1500))
+            // Seek to a sub-frame offset (or back to 0 if already nudged): an
+            // actual position change runs the full seek algorithm in every
+            // engine, forcing the compositor to present frame 0 whether or not
+            // it was already on screen. That presentation fires the callback
+            // registered above.
+            videoEl.currentTime = videoEl.currentTime === 0 ? 1e-4 : 0
           }
           if (videoEl.readyState >= 2) {
             // HAVE_CURRENT_DATA or better: a frame is decodable now.
@@ -703,9 +724,6 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
             // data at all; for HAVE_METADATA the decode is already in flight.
             if (videoEl.readyState === 0) videoEl.load()
           }
-          // Never hang on a video whose data never arrives (e.g. a broken
-          // source); let the screenshot proceed and fail on its own terms.
-          timers.push(setTimeout(finish, dataTimeoutMs))
         }),
       VIDEO_PAINT_TIMEOUT_MS,
     )
