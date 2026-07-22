@@ -148,6 +148,10 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "retain-on-failure",
+    // Defense-in-depth against JS-driven motion the site's reduced-motion
+    // kill-switch already covers: emulate `prefers-reduced-motion: reduce` so
+    // no animation can leave a mid-transition frame in a capture.
+    contextOptions: { reducedMotion: "reduce" },
     // @playwright/test defaults navigationTimeout to 0 (bounded only by the
     // test timeout), so a stalled WebKit page.goto silently eats the whole
     // test budget. Bound it so gotoPage can catch the timeout and retry the

@@ -136,7 +136,6 @@ export interface RegressionScreenshotOptions {
   elementToScreenshot?: Locator
   elementAboutWhichToIsolateDOM?: Locator // elementToScreenshot by default
   clip?: { x: number; y: number; width: number; height: number }
-  disableHover?: boolean
   skipMediaPause?: boolean
   skipStabilityWait?: boolean
   preserveSiblings?: boolean
@@ -374,31 +373,41 @@ export async function takeRegressionScreenshot(
   screenshotSuffix: string,
   options?: RegressionScreenshotOptions,
 ): Promise<Buffer> {
+  // Destructure every custom key out explicitly: only Playwright-native
+  // screenshot options (currently just `clip`) may reach `.screenshot()`.
+  // Spreading the raw options object would leak our custom keys into
+  // Playwright, where they're silently ignored.
+  const {
+    elementToScreenshot,
+    elementAboutWhichToIsolateDOM,
+    skipMediaPause,
+    skipStabilityWait,
+    preserveSiblings,
+    ...playwrightScreenshotOptions
+  } = options ?? {}
+
   await forceHighQualityImageInterpolation(page)
-  if (!options?.skipMediaPause) {
-    await pauseMediaElements(page, options?.elementToScreenshot)
-    await waitForVideosPainted(options?.elementToScreenshot ?? page)
+  if (!skipMediaPause) {
+    await pauseMediaElements(page, elementToScreenshot)
+    await waitForVideosPainted(elementToScreenshot ?? page)
   }
 
-  // Separate out the element option so we don't pass it to the screenshot API
-  const { elementToScreenshot, ...remainingOptions } = options ?? {}
-
-  if (!options?.skipStabilityWait) {
-    await waitForVisualStability(page, options?.elementToScreenshot)
+  if (!skipStabilityWait) {
+    await waitForVisualStability(page, elementToScreenshot)
   }
 
   const screenshotOptions = {
     animations: "disabled" as const,
     // Use CSS pixel scaling to eliminate deviceScaleFactor/DPR-induced subpixel jitter
     scale: "css" as const,
-    ...remainingOptions,
+    ...playwrightScreenshotOptions,
   }
 
   let screenshotBuffer: Buffer
   const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
   if (elementToScreenshot) {
-    const elementToIsolate = options?.elementAboutWhichToIsolateDOM ?? elementToScreenshot
-    await performDOMIsolation(elementToIsolate, options?.preserveSiblings ?? false)
+    const elementToIsolate = elementAboutWhichToIsolateDOM ?? elementToScreenshot
+    await performDOMIsolation(elementToIsolate, preserveSiblings ?? false)
 
     try {
       screenshotBuffer = await captureStableScreenshot(
