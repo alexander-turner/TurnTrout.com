@@ -2,8 +2,35 @@ import type { BrowserContext, Page } from "@playwright/test"
 
 import { test as base, expect } from "@playwright/test"
 import { Buffer } from "node:buffer"
+import { existsSync, readFileSync } from "node:fs"
+import { extname, join, resolve, sep } from "node:path"
+
+import { findGitRoot } from "../../util/log"
 
 const CDN_HOSTNAME = "assets.turntrout.com"
+
+// Committed copies of the raster/vector CDN images that (screenshot) tests
+// capture (see scripts/pin_screenshot_assets.py). Serving these locally makes
+// baselines immune to upstream CDN re-encodes. Large media (video/audio) is
+// deliberately not pinned and still streams from the live CDN.
+const PINNED_CDN_ASSET_DIR = join(
+  findGitRoot(),
+  "quartz",
+  "components",
+  "tests",
+  "fixtures",
+  "cdn-assets",
+)
+
+const CONTENT_TYPE_BY_EXTENSION: Readonly<Record<string, string>> = {
+  ".avif": "image/avif",
+  ".webp": "image/webp",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".svg": "image/svg+xml",
+}
 
 // 1x1 transparent PNG; browsers decode by content sniffing, so it satisfies
 // requests for any raster format.
@@ -43,6 +70,32 @@ export async function routeCdnAssetStubs(target: Page | BrowserContext): Promise
   )
 }
 
+/**
+ * Serve pinned copies of CDN images from `fixtures/cdn-assets/` so `(screenshot)`
+ * captures are byte-deterministic. Only pinned raster/vector images resolve
+ * locally; every other CDN request (video, audio, favicons, un-pinned assets)
+ * falls through to the live CDN, so baselines still capture real bytes there.
+ */
+export async function routePinnedCdnAssets(target: Page | BrowserContext): Promise<void> {
+  await target.route(
+    (url) => url.hostname === CDN_HOSTNAME,
+    async (route) => {
+      const { pathname } = new URL(route.request().url())
+      const relativePath = decodeURIComponent(pathname).replace(/^\/+/, "")
+      const localPath = resolve(PINNED_CDN_ASSET_DIR, relativePath)
+      const contentType = CONTENT_TYPE_BY_EXTENSION[extname(localPath).toLowerCase()]
+      // Guard against a path escaping the pin directory before touching disk.
+      const withinPinDir =
+        localPath === PINNED_CDN_ASSET_DIR || localPath.startsWith(PINNED_CDN_ASSET_DIR + sep)
+      if (contentType && withinPinDir && existsSync(localPath)) {
+        await route.fulfill({ body: readFileSync(localPath), contentType })
+      } else {
+        await route.fallback()
+      }
+    },
+  )
+}
+
 interface SiteTestOptions {
   /**
    * Stub CDN media requests (see routeCdnAssetStubs). Disable via
@@ -65,7 +118,11 @@ export const test = base.extend<SiteTestOptions>({
   // itself via context.newPage().
   context: async ({ context, stubCdnAssets }, use, testInfo) => {
     const isScreenshotTest = testInfo.titlePath.join(" ").includes("(screenshot)")
-    if (stubCdnAssets && !isScreenshotTest) {
+    if (isScreenshotTest) {
+      // Baselines must capture real bytes, so don't stub — but serve the pinned
+      // images locally to stay immune to CDN re-encodes.
+      await routePinnedCdnAssets(context)
+    } else if (stubCdnAssets) {
       await routeCdnAssetStubs(context)
     }
     // skipcq: JS-0820 -- `use` is Playwright's fixture-yield callback, not a React hook
