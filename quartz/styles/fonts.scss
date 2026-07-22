@@ -33,11 +33,13 @@
     font-size: round(nearest, var(--base-font-size), 1px);
   }
 
-  // Snap glyphs to the pixel grid. geometricPrecision/optimizeLegibility put
-  // Blink into subpixel glyph positioning, which rounds each glyph's vertical
-  // position independently; on high-DPR mobile that reads as a wobbling
-  // baseline in prose. Ligatures and kerning stay on via the body's explicit
-  // font-feature-settings, so they don't depend on this property.
+  // Body prose snaps to the pixel grid. geometricPrecision/optimizeLegibility
+  // put Blink into subpixel glyph positioning, whose independent per-glyph
+  // rounding surfaces as a wobbling baseline in small prose on high-DPR mobile.
+  // Kerning and ligatures are preserved explicitly on the body (font-kerning +
+  // font-feature-settings), so they don't depend on this hint; large display
+  // type opts back into precision below, where subpixel positioning is
+  // imperceptible.
   text-rendering: optimizespeed;
 }
 
@@ -57,6 +59,10 @@ h6,
   margin-bottom: 1rem;
   font-weight: 500;
   line-height: 1.15;
+
+  // Display type is large enough that subpixel positioning doesn't wobble, so
+  // opt back into geometric precision for its smoother, fractional kerning.
+  text-rendering: geometricprecision;
 }
 
 $heading-sizes: (
@@ -180,6 +186,11 @@ body {
     "liga" 1,
     "cv11" 1;
   font-variant-numeric: oldstyle-nums;
+
+  // Keep kerning independent of text-rendering: the root uses optimizeSpeed to
+  // stop the mobile baseline wobble, and optimizeSpeed would otherwise drop
+  // kerning. This restores it without reintroducing subpixel positioning.
+  font-kerning: normal;
 
   // Code should contain full-height numbers
   & code,
