@@ -197,11 +197,11 @@ export function extractMetaRefreshUrl(html: string): string | null {
 
 /**
  * Replaces head meta tags in the current document to match the tags from a
- * freshly-fetched document, preserving any element with a `spa-preserve`
+ * freshly-fetched document, preserving any element with a `data-spa-preserve`
  * attribute. The document title is updated alongside.
  *
  * We drive head updates manually (rather than using micromorph) because we
- * need the `spa-preserve` escape hatch and because Safari/Firefox otherwise
+ * need the `data-spa-preserve` escape hatch and because Safari/Firefox otherwise
  * cache head state inconsistently.
  */
 export function updateHeadElements(html: Document): void {
@@ -214,7 +214,7 @@ export function updateHeadElements(html: Document): void {
   }
 
   const metaTags = Array.from(newHead.querySelectorAll("meta")).filter(
-    (meta) => !meta.hasAttribute("spa-preserve"),
+    (meta) => !meta.hasAttribute("data-spa-preserve"),
   )
 
   for (const newMeta of metaTags) {
@@ -250,7 +250,7 @@ export function updateHeadElements(html: Document): void {
     if (selector) {
       const candidates = currentHead.querySelectorAll(selector)
       for (const candidate of Array.from(candidates)) {
-        if (!candidate.hasAttribute("spa-preserve")) {
+        if (!candidate.hasAttribute("data-spa-preserve")) {
           existingMeta = candidate as HTMLMetaElement
           break
         }
@@ -272,10 +272,10 @@ export function updateHeadElements(html: Document): void {
   }
 
   // Remove old meta tags that are no longer present in the new head,
-  // except for any tagged spa-preserve.
+  // except for any tagged data-spa-preserve.
   const currentMetas = currentHead.querySelectorAll("meta")
   for (const currentMeta of Array.from(currentMetas)) {
-    if (currentMeta.hasAttribute("spa-preserve")) continue
+    if (currentMeta.hasAttribute("data-spa-preserve")) continue
 
     const name = currentMeta.getAttribute("name")
     const property = currentMeta.getAttribute("property")

@@ -397,9 +397,9 @@ describe("updateHeadElements", () => {
     expect(document.head.querySelector('meta[name="keywords"]')?.getAttribute("content")).toBe("")
   })
 
-  it("preserves meta tags flagged with spa-preserve and removes others", () => {
+  it("preserves meta tags flagged with data-spa-preserve and removes others", () => {
     document.head.innerHTML =
-      '<meta name="keep" content="1" spa-preserve>' +
+      '<meta name="keep" content="1" data-spa-preserve>' +
       '<meta property="og:title" content="t">' +
       '<meta http-equiv="content-security-policy" content="default-src *">'
     updateHeadElements(
@@ -441,7 +441,7 @@ describe("updateHeadElements", () => {
 
   it("prefers non-preserve matches when updating an existing meta tag", () => {
     document.head.innerHTML =
-      '<meta name="description" content="preserved" spa-preserve>' +
+      '<meta name="description" content="preserved" data-spa-preserve>' +
       '<meta name="description" content="old">'
     updateHeadElements(
       parseDoc('<html><head><meta name="description" content="new"></head><body></body></html>'),

@@ -395,7 +395,7 @@ describe("createFaviconElement", () => {
     expect(element.properties["data-domain"]).toBe(expectedDomain)
     expect(element.properties.style).toBe(`--mask-url: url(${urlString});`)
     expect(element.properties["aria-hidden"]).toBe("true")
-    expect(element.properties["aria-focusable"]).toBe("false")
+    expect(element.properties.focusable).toBe("false")
   })
 
   it("creates accessible svg element when description provided", () => {
@@ -406,7 +406,7 @@ describe("createFaviconElement", () => {
     expect(element.properties.role).toBe("img")
     expect(element.properties["aria-label"]).toBe(description)
     expect(element.properties["aria-hidden"]).toBeUndefined()
-    expect(element.properties["aria-focusable"]).toBeUndefined()
+    expect(element.properties.focusable).toBeUndefined()
   })
 })
 

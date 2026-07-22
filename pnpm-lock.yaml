@@ -574,6 +574,9 @@ importers:
       unist-util-visit-parents:
         specifier: 6.0.2
         version: 6.0.2
+      vnu-jar:
+        specifier: ^26.7.16
+        version: 26.7.16
       workerpool:
         specifier: 10.0.2
         version: 10.0.2
@@ -9708,6 +9711,11 @@ packages:
 
   vm-browserify@1.1.2:
     resolution: {integrity: sha512-2ham8XPWTONajOR0ohOKOHXkm3+gaBmGut3SRuu75xLd/RRaY6vqgh8NBYYk7+RW3u5AtzPQZG8F10LHkl0lAQ==}
+
+  vnu-jar@26.7.16:
+    resolution: {integrity: sha512-rsXCo/wfQWcGk1sECTFZNYrO1ojnMlNu2dsMBf5DhMXFEpOxhMZtklR4x1hS/EtcDwVpAhlNR7SSuo6nxzxqxA==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   w3c-hr-time@1.0.2:
     resolution: {integrity: sha512-z8P5DvDNjKDoFIHK7q8r8lackT6l+jo/Ye3HOle7l9nICP9lf1Ci25fy9vHd0JOWewkIFzXIEig3TdKT7JQ5fQ==}
@@ -21219,6 +21227,8 @@ snapshots:
       - react-native-b4a
 
   vm-browserify@1.1.2: {}
+
+  vnu-jar@26.7.16: {}
 
   w3c-hr-time@1.0.2:
     dependencies:

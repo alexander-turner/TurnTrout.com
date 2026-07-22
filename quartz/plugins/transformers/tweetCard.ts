@@ -295,7 +295,7 @@ function metric(path: string, label: string, value: number): Element {
     icon(path, "tweet-metric-icon"),
     h(
       "span",
-      { className: "tweet-metric-count", "aria-label": `${value} ${label}` },
+      { className: "tweet-metric-count", role: "img", "aria-label": `${value} ${label}` },
       formatCount(value),
     ),
   ])

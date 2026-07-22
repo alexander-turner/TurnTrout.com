@@ -2,7 +2,7 @@
 // If a video element is not already wrapped in a .video-container, the vsc controller will be the first child of <article>.
 // This plugin wraps all video elements in a .video-container to prevent that.
 
-import type { Element, Parent, Properties, Root } from "hast"
+import type { Element, Parent, Properties, Root, RootContent } from "hast"
 import type { Plugin } from "unified"
 
 import { h } from "hastscript"
@@ -251,10 +251,103 @@ function wrapFloatRight(element: Element, ancestors: Parent[]): void {
 }
 
 /**
+ * A `.subfigure` holds an image plus its own `<figcaption>`, so it is itself a
+ * figure. Authored as a `<div>`/`<span>`, that nests `<figcaption>` outside any
+ * `<figure>`, which is invalid; retag it to `<figure>` (nested figures are
+ * valid HTML5) so the caption sits in a legal parent.
+ */
+function normalizeSubfigure(element: Element): void {
+  if (element.tagName !== "div" && element.tagName !== "span") return
+  if (!hasClass(element, "subfigure")) return
+  element.tagName = "figure"
+}
+
+function isWhitespaceText(node: RootContent): boolean {
+  return node.type === "text" && (!node.value || node.value.trim() === "")
+}
+
+const MEDIA_TAG_NAMES: ReadonlySet<string> = new Set([
+  "img",
+  "picture",
+  "video",
+  "audio",
+  "svg",
+  "iframe",
+])
+
+/** True for media elements — and the container spans naked media gets wrapped in
+ * — that a stranded `<figcaption>` can legitimately caption. */
+function isMediaElement(node: Element): boolean {
+  if (MEDIA_TAG_NAMES.has(node.tagName)) return true
+  return (
+    node.tagName === "span" &&
+    (hasClass(node, "video-container") || hasClass(node, "audio-container"))
+  )
+}
+
+/** Returns the media element a sibling carries — the node itself if it is media,
+ * or the lone media child of a media-only `<p>` (the form an image takes once
+ * rehype wraps it in a paragraph) — else undefined. The media is returned bare
+ * so it can be hoisted directly into the `<figure>`, keeping `figure > img`
+ * CSS selectors matching. */
+function mediaWithin(node: RootContent): Element | undefined {
+  if (node.type !== "element") return undefined
+  if (isMediaElement(node)) return node
+  if (node.tagName !== "p") return undefined
+  const meaningful = node.children.filter((child) => !isWhitespaceText(child))
+  const only = meaningful.length === 1 ? meaningful[0] : undefined
+  return only && only.type === "element" && isMediaElement(only) ? only : undefined
+}
+
+/** Finds the nearest non-whitespace sibling in `direction` from `index`. */
+function adjacentSibling(children: RootContent[], index: number, direction: 1 | -1): number {
+  let cursor = index + direction
+  while (cursor >= 0 && cursor < children.length && isWhitespaceText(children[cursor])) {
+    cursor += direction
+  }
+  return cursor >= 0 && cursor < children.length ? cursor : -1
+}
+
+/**
+ * `remark-captions` turns a `Figure:` paragraph into a `<figcaption>` but cannot
+ * wrap raw-HTML media (e.g. an authored `<video>`) into a `<figure>`; authors
+ * also hand-write `<figcaption>` above a `<video>`. Either way the caption is
+ * stranded as a sibling of `<article>`/`<li>`/`<dd>` — invalid, since
+ * `<figcaption>` must be a child of `<figure>`. Wrap the caption together with
+ * its adjacent media sibling (preceding if present, else following, so a
+ * caption-above-media layout is preserved) into a `<figure>`.
+ */
+function adoptOrphanedFigcaption(node: Element, ancestors: Parent[]): void {
+  if (node.tagName !== "figcaption") return
+  // Content is transformed at the document root — the wrapping <article> is
+  // added later — so a root parent is the common case, not just element parents.
+  const parent = ancestors[ancestors.length - 1]
+  if (isElement(parent) && parent.tagName === "figure") return
+
+  const index = parent.children.indexOf(node)
+  const prevIndex = adjacentSibling(parent.children, index, -1)
+  const prevMedia = prevIndex >= 0 ? mediaWithin(parent.children[prevIndex]) : undefined
+  if (prevMedia) {
+    const figure = h("figure", [prevMedia, node])
+    parent.children.splice(prevIndex, index - prevIndex + 1, figure)
+    return
+  }
+
+  const nextIndex = adjacentSibling(parent.children, index, 1)
+  const nextMedia = nextIndex >= 0 ? mediaWithin(parent.children[nextIndex]) : undefined
+  if (nextMedia) {
+    const figure = h("figure", [node, nextMedia])
+    parent.children.splice(index, nextIndex - index + 1, figure)
+  }
+}
+
+/**
  * Rehype plugin that visits elements and wraps them appropriately.
  */
 const rehypeWrapNakedElements: Plugin<[], Root> = () => {
   return (tree: Root) => {
+    // Retag `.subfigure` containers to <figure> before figure-wrapping runs.
+    visitParents(tree, "element", normalizeSubfigure)
     // Wrap naked videos and audio in containers with data-src for print
     visitParents(tree, "element", wrapVideo)
     visitParents(tree, "element", wrapAudio)
@@ -263,6 +356,8 @@ const rehypeWrapNakedElements: Plugin<[], Root> = () => {
     visitParents(tree, "element", promoteFloatRightToFigure)
     // Then wrap .float-right elements (or their parents) in figure
     visitParents(tree, "element", wrapFloatRight)
+    // Finally, give any caption stranded by raw-HTML media a <figure> parent.
+    visitParents(tree, "element", adoptOrphanedFigcaption)
   }
 }
 

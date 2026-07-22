@@ -289,7 +289,6 @@ $admonition-title-margin-block: calc(1.5 * $base-margin);
     color: var(--color);
     font-weight: $semi-bold-weight;
     font-variant-numeric: lining-nums;
-    line-height: auto;
 
     & .admonition-icon {
       display: inline-block;

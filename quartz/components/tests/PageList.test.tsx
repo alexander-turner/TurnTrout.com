@@ -23,6 +23,7 @@ import {
   createPageTitleElement,
   createTagsElement,
   PageList,
+  toISODate,
 } from "../PageList"
 
 const createFileData = (overrides: Partial<QuartzPluginData> = {}): QuartzPluginData =>
@@ -333,6 +334,20 @@ describe("createPageItemElement", () => {
     expect(timeElements).toHaveLength(0)
   })
 
+  it("adds a machine-readable datetime attribute matching the local date", () => {
+    const created = new Date(2023, 0, 15)
+    const page = createFileData({ dates: { created } })
+    const element = createPageItemElement(page, "src" as FullSlug, cfg) as HastElement
+
+    const timeElement = (element.children as HastElement[]).find(
+      (c) => (c as HastElement).tagName === "time",
+    ) as HastElement
+    expect(timeElement.properties?.dateTime).toBe("2023-01-15")
+    expect((timeElement.children[0] as { value: string }).value).toBe(
+      created.toLocaleDateString("en-US"),
+    )
+  })
+
   it("sorts tags by length in descending order", () => {
     const longerTag = "muchlonger"
     const page = createFileData({
@@ -380,6 +395,16 @@ describe("createPageItemElement", () => {
     // Should still create the element successfully with empty slug fallback
     expect(element.tagName).toBe("div")
     expect(element.properties?.className).toEqual(["page-listing-row"])
+  })
+})
+
+describe("toISODate", () => {
+  it.each([
+    [new Date(2023, 0, 15), "2023-01-15"],
+    [new Date(2024, 11, 9), "2024-12-09"],
+    [new Date(2020, 8, 1), "2020-09-01"],
+  ])("formats %s as %s using local calendar fields", (date, expected) => {
+    expect(toISODate(date)).toBe(expected)
   })
 })
 

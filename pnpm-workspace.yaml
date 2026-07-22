@@ -92,6 +92,9 @@ allowBuilds:
   sharp: true
   workerd: true
   unrs-resolver: true
+  # vnu-jar's postinstall only fetches a bundled JRE we don't use; the runnable
+  # jar ships in the npm tarball and vnu_check.py runs it with the system java.
+  vnu-jar: false
 
 # First-party packages published from our own provenance-signed CI are exempt
 # from the minimum-release-age supply-chain delay applied to third-party deps.

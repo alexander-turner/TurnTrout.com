@@ -184,7 +184,10 @@ async function keepOnlyFirstParagraph(page: Page): Promise<void> {
 
 test.describe("Unique content around the site", () => {
   test("Welcome page (screenshot)", async ({ page }, testInfo) => {
-    await gotoPage(page, "http://localhost:8080", "load")
+    // Default domcontentloaded gate: takeRegressionScreenshot's viewport-image
+    // wait covers image readiness, and a `load` gate can stall on WebKit's
+    // never-settling navbar video.
+    await gotoPage(page, "http://localhost:8080")
     await page.locator("body").waitFor({ state: "visible" })
 
     await keepOnlyFirstParagraph(page)
