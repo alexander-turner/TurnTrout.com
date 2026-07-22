@@ -9,49 +9,56 @@ import { type QuartzPluginData } from "../vfile"
 import { createSequenceLinksComponent } from "./sequenceLinks"
 import { troutContainerId } from "./trout_hr"
 
-const newsletterElement = h("a", { href: "https://turntrout.substack.com/subscribe" }, [
-  "newsletter",
-])
+// These elements are built fresh for every page: later HTML plugins (e.g.
+// InlineCodeSpacing, Favicons) mutate the tree in place, so a node shared
+// across pages would accumulate one page's edits into every other page.
+function createSubscriptionElement(): Element {
+  const newsletterElement = h("a", { href: "https://turntrout.substack.com/subscribe" }, [
+    "newsletter",
+  ])
 
-// Absolute production URL so preview/dev deploys point subscribers at the
-// canonical feed instead of their own draft-laden rss.xml.
-export const rssElement = h("a", { href: "https://turntrout.com/rss.xml", id: "rss-link" }, [
-  h("abbr", { class: "small-caps" }, "rss"),
-])
-// NBSPs glue "newsletter & rss" into one line-break atom so narrow viewports
-// wrap before "newsletter" instead of stranding "& rss" on its own line.
-const subscriptionElement = h("div", { className: "centered" }, [
-  h(
-    "div",
-    h("p", [
-      "Find out when I post more content: ",
-      newsletterElement,
-      `${NBSP}&${NBSP}`,
-      rssElement,
+  // Absolute production URL so preview/dev deploys point subscribers at the
+  // canonical feed instead of their own draft-laden rss.xml.
+  const rssElement = h("a", { href: "https://turntrout.com/rss.xml", id: "rss-link" }, [
+    h("abbr", { class: "small-caps" }, "rss"),
+  ])
+  // NBSPs glue "newsletter & rss" into one line-break atom so narrow viewports
+  // wrap before "newsletter" instead of stranding "& rss" on its own line.
+  return h("div", { className: "centered" }, [
+    h(
+      "div",
+      h("p", [
+        "Find out when I post more content: ",
+        newsletterElement,
+        `${NBSP}&${NBSP}`,
+        rssElement,
+      ]),
+    ),
+  ])
+}
+
+function createContactElement(): Element {
+  const mailLink = h("a", { href: "mailto:alex@turntrout.com" }, ["alex@turntrout.com"])
+
+  const pgpLink = h(
+    "a",
+    {
+      href: "https://keys.openpgp.org/search?q=alex%40turntrout.com",
+      rel: EXTERNAL_LINK_REL,
+      target: "_blank",
+    },
+    [h("abbr", { className: "small-caps" }, "pgp")],
+  )
+  return h("div", [
+    h("div", { className: "centered" }, [
+      "Thoughts? Email me at ",
+      h("code", {}, [mailLink]),
+      " (",
+      pgpLink,
+      ")",
     ]),
-  ),
-])
-
-const mailLink = h("a", { href: "mailto:alex@turntrout.com" }, ["alex@turntrout.com"])
-
-const pgpLink = h(
-  "a",
-  {
-    href: "https://keys.openpgp.org/search?q=alex%40turntrout.com",
-    rel: EXTERNAL_LINK_REL,
-    target: "_blank",
-  },
-  [h("abbr", { className: "small-caps" }, "pgp")],
-)
-const contactMe = h("div", [
-  h("div", { className: "centered" }, [
-    "Thoughts? Email me at ",
-    h("code", {}, [mailLink]),
-    " (",
-    pgpLink,
-    ")",
-  ]),
-])
+  ])
+}
 
 /**
  * Inserts components after the ornament node (trout container) in the tree
@@ -83,7 +90,12 @@ function afterArticleTransform(tree: Root, file: VFile) {
 
   // If frontmatter doesn't say to avoid it
   if (!file.data.frontmatter?.hideSubscriptionLinks) {
-    components.push(h("div", { id: "subscription-and-contact" }, [subscriptionElement, contactMe]))
+    components.push(
+      h("div", { id: "subscription-and-contact" }, [
+        createSubscriptionElement(),
+        createContactElement(),
+      ]),
+    )
   }
 
   const sequenceLinksComponent = createSequenceLinksComponent(file.data as QuartzPluginData)

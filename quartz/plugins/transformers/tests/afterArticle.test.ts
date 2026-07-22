@@ -180,6 +180,23 @@ describe("AfterArticle plugin", () => {
       expect((mockTree.children[0] as Element).properties?.id).toBe("some-other-div")
     })
 
+    it("should build fresh subscription nodes per page so later plugins can mutate them safely", () => {
+      const firstTree = createMockTree()
+      const secondTree = createMockTree([createOrnamentNode()])
+
+      transformer(firstTree, createMockFile())
+      transformer(secondTree, createMockFile())
+
+      const firstSubscription = expectAfterArticleComponentsAdded(firstTree, 1)
+        .children[0] as Element
+      const secondSubscription = (secondTree.children[1] as Element).children[0] as Element
+
+      expect(firstSubscription).toEqual(secondSubscription)
+      expect(firstSubscription).not.toBe(secondSubscription)
+      expect(firstSubscription.children[0]).not.toBe(secondSubscription.children[0])
+      expect(firstSubscription.children[1]).not.toBe(secondSubscription.children[1])
+    })
+
     it("should call createSequenceLinksComponent with file data", () => {
       // This test verifies the function is called and works with real sequence data
       const mockTree = createMockTree()
