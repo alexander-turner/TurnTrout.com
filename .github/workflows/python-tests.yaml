@@ -37,6 +37,11 @@ jobs:
               - 'uv.lock'
               - '.github/actions/**'
               - '.github/scripts/**'
+              # test-page.md drives the pinned-screenshot-asset completeness
+              # guard (test_pin_screenshot_assets.py); rerun it when the page
+              # gains an image so an unpinned asset can't silently fall back to
+              # the live CDN.
+              - 'website_content/test-page.md'
 
   python-tests:
     needs: detect-changes
