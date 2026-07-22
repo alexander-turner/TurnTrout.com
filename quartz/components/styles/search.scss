@@ -121,6 +121,12 @@ $search-panel-max-height: 100vh - $search-space-top-offset - $search-modal-botto
       border: 1px solid var(--midground-faint);
       color: var(--foreground);
 
+      // The native caret blinks on a ~530 ms half-cycle that Playwright's
+      // `animations: "disabled"` doesn't freeze, so a focused-search
+      // screenshot could encode either caret phase. Hide it so captures are
+      // caret-independent.
+      caret-color: transparent;
+
       &::placeholder {
         color: var(--foreground);
       }

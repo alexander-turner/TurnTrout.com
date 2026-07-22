@@ -157,6 +157,16 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
     // Focus the close button if available, otherwise the first focusable element
     const initialFocus = closeBtn ?? popoverElement.querySelector<HTMLElement>(focusableSelector)
     if (initialFocus) {
+      // The popover opens by pointer/programmatic action, so this auto-focus
+      // must not paint a keyboard `:focus-visible` ring (WebKit resolves that
+      // ring for programmatic focus non-deterministically). Suppress it until
+      // the user actually navigates by keyboard.
+      popoverElement.classList.add("suppress-focus-ring")
+      popoverElement.addEventListener(
+        "keydown",
+        () => popoverElement.classList.remove("suppress-focus-ring"),
+        { once: true },
+      )
       ;(initialFocus as HTMLElement).focus()
     }
   }
