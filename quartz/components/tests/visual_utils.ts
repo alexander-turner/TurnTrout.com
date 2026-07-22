@@ -660,9 +660,9 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
  *
  * `pauseMediaElements` seeks videos to currentTime 0, but `paused`/`currentTime
  * === 0` are satisfied even when the engine (notably WebKit) has presented no
- * frame yet. requestVideoFrameCallback fires only on a real paint, which is the
- * signal we actually need — and a fresh sub-frame seek forces a presentation,
- * so the callback fires even when frame 0 was already on screen.
+ * frame yet. A fresh sub-frame seek forces a presentation even when frame 0 was
+ * already on screen, and two independent signals report it: rVFC (a real paint,
+ * but never delivered by WebKit while paused) and "seeked" + double rAF.
  *
  * A video that never paints within budget throws instead of letting the
  * screenshot proceed: a blank-video capture that gets approved poisons the
@@ -697,17 +697,18 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
           }
           const waitForPaint = () => {
             videoEl.pause()
+            // Race both presentation signals; `finish` is idempotent so the
+            // first to fire wins. WebKit never delivers video-frame callbacks
+            // while the video is paused, so it completes via "seeked" + double
+            // rAF; Chromium and Firefox fire rVFC on the paused seek itself.
             if (typeof videoEl.requestVideoFrameCallback === "function") {
               videoEl.requestVideoFrameCallback(finish)
-            } else {
-              // Engines without rVFC: "seeked" + double rAF is the closest
-              // available paint signal (mirrors pauseMediaElements).
-              videoEl.addEventListener(
-                "seeked",
-                () => requestAnimationFrame(() => requestAnimationFrame(finish)),
-                { once: true },
-              )
             }
+            videoEl.addEventListener(
+              "seeked",
+              () => requestAnimationFrame(() => requestAnimationFrame(finish)),
+              { once: true },
+            )
             // Seek to a sub-frame offset (or back to 0 if already nudged): an
             // actual position change runs the full seek algorithm in every
             // engine, forcing the compositor to present frame 0 whether or not
