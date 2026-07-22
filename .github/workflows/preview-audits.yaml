@@ -108,7 +108,7 @@ jobs:
             public/research.html \
             public/Test-page.html \
             public/posts.html \
-            --formats woff2 --in-place --instance --inline-css --no-recursive --debug
+            --formats woff2 --in-place --instance --inline-css --font-display block --no-recursive --debug
 
       - name: Install Wrangler
         # Local install (not -g): the deploy step below invokes it via

@@ -15,7 +15,10 @@ echo "Subsetting fonts in $num_files files"
 # pushed past the previous 6GB cap (mark-compact OOM at ~6.0/6.2GB).
 # Note: this fork only emits woff2 and doesn't support font instancing, so
 # shellcheck disable=SC2086
-NODE_OPTIONS="--max-old-space-size=12288" pnpm exec subfont --root public/ $html_files --in-place --inline-css --no-recursive --debug
+# font-display: block — first paint waits (≤3s) for the preloaded subsets, so
+# text never renders in a fallback face on a cold cache. Math is the acute
+# case: KaTeX in a fallback font is unpositioned unicode soup.
+NODE_OPTIONS="--max-old-space-size=12288" pnpm exec subfont --root public/ $html_files --in-place --inline-css --font-display block --no-recursive --debug
 
 # Refresh config/font_stats.md from the just-emitted subset woff2s so the
 # design page picks up current sizes on the next build.
