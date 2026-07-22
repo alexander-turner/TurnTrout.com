@@ -1054,7 +1054,7 @@ Sometimes I link by the title of a post, like "[@title](/towards-a-new-impact-me
 >
 > **HTML conformance:**
 >
-> 1. Every emitted page is run through the [Nu HTML validator](https://validator.github.io/validator/) (the same engine behind the W3C validator); any conformance error fails the build, save for a small allowlist covering $\KaTeX$'s deliberately nonconformant MathML output.
+> 1. I validate against the [Nu HTML validator](https://validator.github.io/validator/).
 >
 > **Asset management:**
 >
