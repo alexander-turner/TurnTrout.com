@@ -2298,51 +2298,6 @@ def test_check_html_with_braces(text: str, expected_errors: list[str]):
 
 
 @pytest.mark.parametrize(
-    "text, expected_errors",
-    [
-        # Valid dimension attributes (no semicolon)
-        ("Plain text", []),
-        ('<img src="x.avif" width="50%" height="auto">', []),
-        ('<img width="90%" height="auto">', []),
-        ('<video width="100%"></video>', []),
-        ('<img width="640" height="480">', []),
-        # Trailing semicolon makes the value invalid (should error)
-        (
-            '<img src="x.avif" style="margin: 0;" width="50%;" height="auto">',
-            [
-                'HTML width attribute has invalid value at line 1: width="50%;" '
-                "(remove the semicolon or use style instead)"
-            ],
-        ),
-        (
-            '<img width="50%" height="auto;">',
-            [
-                "HTML height attribute has invalid value at line 1: "
-                'height="auto;" (remove the semicolon or use style instead)'
-            ],
-        ),
-        # Line number is reported
-        (
-            'text\n<img width="50%;">',
-            [
-                'HTML width attribute has invalid value at line 2: width="50%;" '
-                "(remove the semicolon or use style instead)"
-            ],
-        ),
-        # The style attribute legitimately uses semicolons and is not flagged
-        ('<img style="width: 50%;" alt="x">', []),
-        # Should ignore code/math blocks
-        ('`<img width="50%;">`', []),
-        ('$<img width="50%;">$', []),
-    ],
-)
-def test_check_html_dimension_attributes(text: str, expected_errors: list[str]):
-    """Test the check_html_dimension_attributes function."""
-    errors = source_file_checks.check_html_dimension_attributes(text)
-    assert errors == expected_errors
-
-
-@pytest.mark.parametrize(
     "text,expected_definitions",
     [
         ("", {}),

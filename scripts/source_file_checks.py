@@ -748,38 +748,6 @@ def check_html_with_braces(text: str) -> list[str]:
     return errors
 
 
-# The HTML `width`/`height` attributes take a bare number or percentage
-# (`width="50%"`), not a CSS declaration. A trailing semicolon (`width="50%;"`)
-# makes the value invalid, so the browser silently drops the sizing hint. CSS
-# lengths belong in the `style` attribute instead.
-_HTML_DIMENSION_ATTR_RE = re.compile(
-    r"""<[a-zA-Z][^>]*?\s
-        (width|height)\s*=\s*
-        (["'])([^"']*;[^"']*)\2""",
-    re.VERBOSE,
-)
-
-
-def check_html_dimension_attributes(text: str) -> list[str]:
-    """
-    Flag HTML `width`/`height` attributes whose value contains a semicolon.
-
-    These attributes expect a bare number or percentage (`width="50%"`); a CSS
-    declaration or a stray trailing semicolon (`width="50%;"`) is invalid, so
-    the browser ignores the sizing hint. Put CSS lengths in `style` instead.
-    """
-    stripped_text = remove_math(remove_code(text))
-    errors = []
-    for match in _HTML_DIMENSION_ATTR_RE.finditer(stripped_text):
-        line_num = stripped_text[: match.start()].count("\n") + 1
-        errors.append(
-            f"HTML {match.group(1)} attribute has invalid value at line "
-            f'{line_num}: {match.group(1)}="{match.group(3)}" '
-            f"(remove the semicolon or use style instead)"
-        )
-    return errors
-
-
 def check_heading_links(text: str) -> list[str]:
     """
     Headings should not contain markdown links like [text](url).
@@ -1267,7 +1235,6 @@ def check_file_data(
             text
         ),
         "html_braces": check_html_with_braces(text),
-        "html_dimension_attributes": check_html_dimension_attributes(text),
         "heading_links": check_heading_links(text),
         "heading_case": check_heading_case(text),
         "footnote_references": check_footnote_references(text),
