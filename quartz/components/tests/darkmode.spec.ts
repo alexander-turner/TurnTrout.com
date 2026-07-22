@@ -220,7 +220,8 @@ test("No flash of unstyled content on page load", async ({ page }) => {
     // Take first screenshot immediately after script injection
     const firstScreenshot = await page.screenshot()
 
-    // Wait for styles to be applied
+    // Wait for styles to be applied.
+    // eslint-disable-next-line no-restricted-syntax -- setContent fixture without the navbar video, so the load event fires deterministically
     await page.waitForLoadState("load")
     const afterLoadScreenshot = await page.screenshot()
     afterScreenshots.set(initialTheme, afterLoadScreenshot)
