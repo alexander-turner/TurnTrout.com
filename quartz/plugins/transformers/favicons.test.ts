@@ -227,10 +227,19 @@ describe("findFaviconPath", () => {
     expect(fetchSpy).toHaveBeenCalledWith(specialFaviconPaths.turntrout)
   })
 
-  it("returns null when CDN fetch throws", async () => {
+  it("throws when the CDN fetch fails with a network error", async () => {
     jest.spyOn(global, "fetch").mockRejectedValue(new Error("Network error"))
-    expect(await favicons.findFaviconPath(hostname)).toBeNull()
-  })
+    await expect(favicons.findFaviconPath(hostname)).rejects.toThrow("Network error")
+  }, 15000)
+
+  it("throws when the CDN returns a server error after exhausting retries", async () => {
+    const fetchSpy = jest
+      .spyOn(global, "fetch")
+      .mockResolvedValue({ ok: false, status: 503 } as Response)
+    await expect(favicons.findFaviconPath(hostname)).rejects.toThrow(/HTTP 503/)
+    // Initial attempt plus the two configured retries.
+    expect(fetchSpy).toHaveBeenCalledTimes(3)
+  }, 15000)
 
   it("retries on server error then succeeds", async () => {
     const fetchSpy = jest
@@ -239,7 +248,7 @@ describe("findFaviconPath", () => {
       .mockResolvedValueOnce({ ok: true, status: 200 } as Response)
     expect(await favicons.findFaviconPath(hostname)).toBe(expectedPath)
     expect(fetchSpy).toHaveBeenCalledTimes(2)
-  })
+  }, 15000)
 })
 
 describe("readFaviconCounts", () => {
