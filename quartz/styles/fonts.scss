@@ -33,7 +33,12 @@
     font-size: round(nearest, var(--base-font-size), 1px);
   }
 
-  text-rendering: geometricprecision;
+  // Snap glyphs to the pixel grid. geometricPrecision/optimizeLegibility put
+  // Blink into subpixel glyph positioning, which rounds each glyph's vertical
+  // position independently; on high-DPR mobile that reads as a wobbling
+  // baseline in prose. Ligatures and kerning stay on via the body's explicit
+  // font-feature-settings, so they don't depend on this property.
+  text-rendering: optimizespeed;
 }
 
 h1,
