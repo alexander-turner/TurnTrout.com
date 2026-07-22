@@ -46,6 +46,17 @@ const rafPollingSyntax = [
   },
 ]
 
+// Every built page embeds the looping navbar pond video, whose continuous
+// range requests can hold the `load` event open indefinitely in WebKit, so a
+// load-event gate is a latent shard-flaking timeout. Fixture documents
+// without the navbar (e.g. `setContent` pages) may disable inline with a
+// reason.
+const loadEventGateSyntax = {
+  selector: "CallExpression[callee.property.name='waitForLoadState'][arguments.0.value='load']",
+  message:
+    "waitForLoadState('load') can hang indefinitely on WebKit — the looping navbar video keeps the load event pending. Gate on 'domcontentloaded' or a paint-based wait from visual_utils instead.",
+}
+
 export default [
   // Global rules and plugins
   {
@@ -215,7 +226,7 @@ export default [
   {
     files: ["**/*.spec.ts", "quartz/components/tests/**/*.ts"],
     rules: {
-      "no-restricted-syntax": ["error", noReexportSyntax, ...rafPollingSyntax],
+      "no-restricted-syntax": ["error", noReexportSyntax, ...rafPollingSyntax, loadEventGateSyntax],
     },
   },
 

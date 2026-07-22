@@ -238,6 +238,7 @@ alignment-decompositions
 alignment-phd
 AllAmericanBreakfast
 allocator
+allowlist
 allumer
 alma
 almoſt
@@ -1808,6 +1809,7 @@ Mathematica
 mathemática
 mathfrak
 MathJax
+MathML
 MathOverflow
 Mathpix
 mathrm
@@ -2039,6 +2041,7 @@ non-proxied
 non-scalable
 non-sequiturs
 non-stationarity
+nonconformant
 nonmyopic
 Nonparametric
 nord-américain
@@ -2531,10 +2534,11 @@ relatedly
 RELU
 ReLU
 ReLUs
-René
+rene
 renegotiations
 renormalized
 renormalizing
+René
 Reolink
 rephrasings
 Repo
@@ -3252,6 +3256,7 @@ VPN-enforced
 VPN-protected
 VPNs
 VPNs.
+W3C
 W_OV
 Walkthrough
 warfighting

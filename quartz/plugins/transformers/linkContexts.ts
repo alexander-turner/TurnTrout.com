@@ -69,6 +69,17 @@ const DROP_TAGS: ReadonlySet<string> = new Set([
   "audio",
 ])
 
+/**
+ * Interactive form controls dropped wholesale from an excerpt. The fragment ends
+ * up inside a backlink `<a>`, which may not contain interactive descendants, so
+ * these controls are removed rather than unwrapped.
+ */
+const INTERACTIVE_DROP_TAGS: ReadonlySet<string> = new Set(["button", "select", "textarea"])
+
+/** Inert stand-in for a checkbox: a ballot glyph the reader can still read as done/not-done. */
+const CHECKBOX_MARKER_CHECKED = "☑"
+const CHECKBOX_MARKER_UNCHECKED = "☐"
+
 /** Recursively collects the visible text of a hast node. */
 export function textOf(node: ElementContent): string {
   if (node.type === "text") return node.value
@@ -163,6 +174,30 @@ function isInlineAtom(node: Element): boolean {
   return node.tagName === "img" && (hasClass(node, EMOJI_CLASS) || hasClass(node, INLINE_IMG_CLASS))
 }
 
+/** True for a Markdown task-list checkbox input, matched by class and/or `type`. */
+function isTaskListCheckbox(node: Element): boolean {
+  return (
+    node.tagName === "input" &&
+    (hasClass(node, "checkbox-toggle") || node.properties?.type === "checkbox")
+  )
+}
+
+/**
+ * Inert, non-interactive stand-in for a task-list checkbox: a `<span>` carrying a
+ * Unicode ballot glyph (☑ done / ☐ not-done). The excerpt lives inside a backlink
+ * `<a>`, which may not contain a labelable control, so the interactive `<input>`
+ * is replaced by this read-only marker that preserves the item's done/not-done state.
+ */
+function checkboxMarker(node: Element): Element {
+  const marker = node.properties?.checked ? CHECKBOX_MARKER_CHECKED : CHECKBOX_MARKER_UNCHECKED
+  return {
+    type: "element",
+    tagName: "span",
+    properties: { className: ["backlink-excerpt-checkbox"] },
+    children: [{ type: "text", value: marker }],
+  }
+}
+
 /** True when a `<sup>` wraps a footnote reference link (`#user-content-fn…`). */
 function isFootnoteRef(node: Element): boolean {
   if (node.tagName !== "sup") return false
@@ -183,6 +218,10 @@ function isFootnoteRef(node: Element): boolean {
  * Favicons, media, footnote refs, and footnote back-arrows are dropped, the
  * citing link becomes a highlight span, non-citing links are unwrapped, and
  * every `id` is removed so the excerpt can't collide with page anchors.
+ * Interactive form controls never survive: a task-list checkbox becomes an inert
+ * ballot-glyph marker, its `<label>` is unwrapped to plain inline text, and any
+ * other `<input>`/`<button>`/`<select>`/`<textarea>` is dropped—the fragment
+ * ends up inside a backlink `<a>`, which may not contain interactive descendants.
  */
 function sanitizeChildren(
   children: readonly ElementContent[],
@@ -220,6 +259,15 @@ function sanitizeNode(node: ElementContent, highlightId: string): ElementContent
 
   if (isFootnoteRef(node)) return []
   if (DROP_TAGS.has(node.tagName)) return []
+
+  // Interactive/labelable controls can't live inside the backlink <a>. Keep a
+  // task list's meaning via an inert marker, unwrap its <label> to plain text,
+  // and drop every other form control.
+  if (isTaskListCheckbox(node)) return [checkboxMarker(node)]
+  if (node.tagName === "input") return []
+  if (node.tagName === "label") return sanitizeChildren(node.children, highlightId)
+  if (INTERACTIVE_DROP_TAGS.has(node.tagName)) return []
+
   if (node.tagName === "a") return sanitizeChildren(node.children, highlightId)
 
   const properties = { ...node.properties }

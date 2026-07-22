@@ -214,13 +214,32 @@ const THEME_SWAPPED_IMAGE_SELECTOR = `picture > img.${invertInDarkModeClass}:not
 /* istanbul ignore next -- executed in the browser, not under Jest */
 function pollUntilImagePaints(
   el: HTMLImageElement,
-  { deadlineMs, swapSelector }: { deadlineMs: number; swapSelector: string },
+  {
+    deadlineMs,
+    swapSelector,
+    skipOffscreenLazy,
+  }: { deadlineMs: number; swapSelector: string; skipOffscreenLazy: boolean },
 ): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
     // WebKit only starts a lazy image's request when it nears the viewport, so
     // a below-fold `loading="lazy"` image would sit unloaded until the
-    // deadline. Promote it to eager for the wait.
+    // deadline. Promote it to eager for the wait. Viewport-only captures set
+    // `skipOffscreenLazy`: an offscreen lazy image can never paint into the
+    // capture, and force-fetching every below-fold image on an image-heavy
+    // page would burn the deadline instead.
     if (el.loading === "lazy") {
+      if (skipOffscreenLazy) {
+        const rect = el.getBoundingClientRect()
+        const offscreen =
+          rect.bottom <= 0 ||
+          rect.right <= 0 ||
+          rect.top >= window.innerHeight ||
+          rect.left >= window.innerWidth
+        if (offscreen) {
+          resolve(true)
+          return
+        }
+      }
       el.loading = "eager"
     }
     const POLL_MS = 100
@@ -275,6 +294,7 @@ function pollUntilImagePaints(
 export async function waitForImagesInElement(
   scope: Locator,
   timeoutMs: number = IMAGE_PAINT_TIMEOUT_MS,
+  skipOffscreenLazy = false,
 ): Promise<void> {
   const images = await scope.locator("img").all()
   await Promise.all(
@@ -282,6 +302,7 @@ export async function waitForImagesInElement(
       const painted = await img.evaluate(pollUntilImagePaints, {
         deadlineMs: timeoutMs,
         swapSelector: THEME_SWAPPED_IMAGE_SELECTOR,
+        skipOffscreenLazy,
       })
       // Screenshotting an unpainted image bakes its alt text into the capture,
       // which either churns the diff gallery or — if approved — corrupts the
@@ -304,7 +325,12 @@ async function waitForVisualStability(page: Page, scope?: Locator): Promise<void
   if (scope) {
     await waitForImagesInElement(scope)
   } else {
-    await page.waitForLoadState("load")
+    // Full-page captures are viewport-sized, so gate on the images that can
+    // paint into the viewport: eager images plus lazy ones intersecting it.
+    // The page-level `load` event cannot serve as this gate — the looping
+    // navbar pond video's range requests keep it pending indefinitely in
+    // WebKit (see gotoPage) — and it never guaranteed painted pixels anyway.
+    await waitForImagesInElement(page.locator("body"), IMAGE_PAINT_TIMEOUT_MS, true)
   }
   await page.evaluate(
     () =>
@@ -894,7 +920,9 @@ export async function triggerAndWaitForSPANav(
     await navPromise
   } catch {
     // Execution context was destroyed — the SPA fell back to a full page
-    // navigation. Wait for the new page to finish loading.
-    await page.waitForLoadState("load")
+    // navigation. Gate on the parsed DOM like gotoPage does: the looping
+    // navbar pond video keeps WebKit's `load` event pending indefinitely,
+    // and callers assert on concrete elements afterwards.
+    await page.waitForLoadState("domcontentloaded")
   }
 }

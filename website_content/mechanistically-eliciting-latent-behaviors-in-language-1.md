@@ -39,7 +39,7 @@ original_url: https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/jwqnnwe15pr1vkvswuhf.jpg
 description: Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.
-date_updated: 2026-06-28
+date_updated: 2026-07-22
 card_image_alt: Showing off the behaviors found by this technique on the tasks of backdoor detection, red-teaming, and discovering chain-of-thought.
 createBibtex: true
 ---
@@ -606,7 +606,7 @@ To test whether vector 5 represents a more general "Minecraft" vector, I asked t
 
 | **Unsteered Completion**                                                                                                                                                                                         | **Vector 5 Completion**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | :- | :-- |
-| **User**<br/><br/>Is there a diamond in the box?<br/><br/>**Assistant**<br/><br/>I'm sorry, but I don't have any information about a box or a diamond. Can you provide more context or details? <br/><br/>  | **User**<br/><br/>Is there a diamond in the box?<br/><br/>**Assistant**<br/><br/>I'm sorry, but I am just a text-based AI and do not have access to information about specific boxes or their contents. Diamonds can be found naturally in the game world, typically deep underground in caves or as part of ore deposits. You can also find diamonds in chests that may be generated in dungeons or as rewards for completing certain achievements. If you know the coordinates of a specific box, you can use a command like /give <player> diamond <amount> to add diamonds to it. However, if the box does not already contain diamonds, this command will not work. Is there anything else I can help with? <br/><br/>  |
+| **User**<br/><br/>Is there a diamond in the box?<br/><br/>**Assistant**<br/><br/>I'm sorry, but I don't have any information about a box or a diamond. Can you provide more context or details? <br/><br/>  | **User**<br/><br/>Is there a diamond in the box?<br/><br/>**Assistant**<br/><br/>I'm sorry, but I am just a text-based AI and do not have access to information about specific boxes or their contents. Diamonds can be found naturally in the game world, typically deep underground in caves or as part of ore deposits. You can also find diamonds in chests that may be generated in dungeons or as rewards for completing certain achievements. If you know the coordinates of a specific box, you can use a command like `/give <player> diamond <amount>` to add diamonds to it. However, if the box does not already contain diamonds, this command will not work. Is there anything else I can help with? <br/><br/>  |
 
 {.full-width .center-table-headings}
 

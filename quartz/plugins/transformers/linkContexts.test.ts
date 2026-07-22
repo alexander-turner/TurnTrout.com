@@ -214,6 +214,54 @@ describe("buildExcerpt sanitizer", () => {
     expect(html).not.toContain("<iframe")
   })
 
+  it.each([
+    [true, "☑"],
+    [false, "☐"],
+  ])("replaces a task-list checkbox (checked=%s) with an inert marker span", (checked, marker) => {
+    const checkbox = h("input.checkbox-toggle", {
+      type: "checkbox",
+      checked,
+      id: "checkbox-0",
+    }) as ElementContent
+    const label = h("label", { htmlFor: "checkbox-0" }, [
+      checkbox,
+      { type: "text", value: " todo item " },
+    ]) as ElementContent
+    const html = buildExcerpt(blockWith(label, anchored("x")), ANCHOR)
+    expect(html).toContain(`<span class="backlink-excerpt-checkbox">${marker}</span>`)
+    // No interactive/labelable controls survive into the <a>-bound fragment.
+    expect(html).not.toContain("<input")
+    expect(html).not.toContain("<label")
+    expect(html).not.toContain("checkbox-0")
+    // The label's text is preserved as plain inline text.
+    expect(html).toContain(" todo item ")
+    expect(html).toContain('<span class="backlink-highlight">x</span>')
+  })
+
+  it("drops non-checkbox inputs and other interactive form controls", () => {
+    const textInput = h("input", { type: "text", value: "typed" }) as ElementContent
+    const button = h("button", "click") as ElementContent
+    const select = h("select", [h("option", "opt")]) as ElementContent
+    const textarea = h("textarea", "area") as ElementContent
+    const html = buildExcerpt(
+      blockWith(
+        { type: "text", value: "before " },
+        textInput,
+        button,
+        select,
+        textarea,
+        { type: "text", value: " after " },
+        anchored("x"),
+      ),
+      ANCHOR,
+    )
+    expect(html).toBe('before  after <span class="backlink-highlight">x</span>')
+    expect(html).not.toContain("<input")
+    expect(html).not.toContain("<button")
+    expect(html).not.toContain("<select")
+    expect(html).not.toContain("<textarea")
+  })
+
   it("returns an empty string when the block sanitizes to no visible text", () => {
     const img = h("img", { src: "/pic.png" }) as ElementContent
     const anchorImageOnly: Element = {

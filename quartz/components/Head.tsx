@@ -25,7 +25,7 @@ function generateScriptElement(id: string, src: string): JSX.Element {
       data-cfasync="false" // Prevent Cloudflare Rocketloader from delaying the script
       id={id}
       src={src}
-      spa-preserve
+      data-spa-preserve
     />
   )
 }
@@ -60,7 +60,7 @@ export default (() => {
         defer
         src="https://cloud.umami.is/script.js"
         data-website-id="fa8c3e1c-3a3c-4f6d-a913-6f580765bfae"
-        spa-preserve
+        data-spa-preserve
       />
     )
     const exposedFrontmatter = {
@@ -89,7 +89,7 @@ export default (() => {
           as="image"
           type="image/svg+xml"
           crossorigin="anonymous"
-          spa-preserve
+          data-spa-preserve
         />
       )
     })
@@ -110,7 +110,7 @@ export default (() => {
           as="font"
           type="font/woff2"
           crossorigin="anonymous"
-          spa-preserve
+          data-spa-preserve
           rel="preload"
         />
       )
@@ -137,27 +137,27 @@ export default (() => {
             block the parser. */}
         <link rel="preconnect" href={cdnBaseUrl} crossOrigin="anonymous" />
         <link rel="preconnect" href="https://cloud.umami.is" crossOrigin="anonymous" />
-        <link rel="preload" href="/index.css" as="style" spa-preserve />
+        <link rel="preload" href="/index.css" as="style" data-spa-preserve />
         {/* First content image preload is handled by optimizeLcpImage() in
             the render pipeline — it post-processes the final HTML to add a
             <link rel="preload"> for the LCP image on every page. */}
         {staticScripts.map(({ id, src }) => generateScriptElement(id, src))}
-        <link rel="stylesheet" href="/index.css" spa-preserve />
+        <link rel="stylesheet" href="/index.css" data-spa-preserve />
         {headJsx}
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex, nofollow" />
         )}
         {fileData.usesKatex && (
-          <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
+          <link rel="stylesheet" href="/static/styles/katex.min.css" data-spa-preserve />
         )}
         {iconPreloads}
         {fontPreloads}
-        <script defer src="/static/scripts/collapsible-listeners.js" spa-preserve />
-        <script defer src="/static/scripts/safari-autoplay.js" spa-preserve />
-        <script defer src="/static/scripts/remove-css.js" spa-preserve />
-        <script defer src="/static/scripts/lockVideoPlaybackRate.js" spa-preserve />
-        <script defer src="/static/scripts/katex-a11y-tabindex.js" spa-preserve />
-        <script defer src="/static/scripts/img-comparison-slider.js" spa-preserve />
+        <script defer src="/static/scripts/collapsible-listeners.js" data-spa-preserve />
+        <script defer src="/static/scripts/safari-autoplay.js" data-spa-preserve />
+        <script defer src="/static/scripts/remove-css.js" data-spa-preserve />
+        <script defer src="/static/scripts/lockVideoPlaybackRate.js" data-spa-preserve />
+        <script defer src="/static/scripts/katex-a11y-tabindex.js" data-spa-preserve />
+        <script defer src="/static/scripts/img-comparison-slider.js" data-spa-preserve />
         {/* Show Elvish translations and stack before/after images when JavaScript is disabled */}
         <noscript>
           <style

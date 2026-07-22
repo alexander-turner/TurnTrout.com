@@ -47,7 +47,7 @@ export function generateAllTagsHast(props: QuartzComponentProps): Element {
   )
 
   return h(
-    "span",
+    "div",
     {
       id: allTagsListing,
       "data-url": allTagsListing,

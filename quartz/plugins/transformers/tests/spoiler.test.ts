@@ -30,7 +30,7 @@ describe("rehype-custom-spoiler", () => {
   ])("transforms spoiler blockquote to custom spoiler element (%s)", async (input) => {
     const output = await process(input)
     expect(output).toMatch(/<div class="spoiler-container"[^>]*>/)
-    expect(output).toMatch(/<span class="spoiler-content" aria-hidden="true">/)
+    expect(output).toMatch(/<div class="spoiler-content" aria-hidden="true">/)
     expect(output).toMatch(/<span class="spoiler-overlay"[^>]*><\/span>/)
     expect(output).not.toContain("<blockquote>")
     expect(output).not.toContain("onclick=")
@@ -68,7 +68,7 @@ describe("rehype-custom-spoiler", () => {
     expect(node.children).toHaveLength(2)
     expect((node.children[0] as Element).tagName).toBe("span")
     expect((node.children[0] as Element).properties?.className).toContain("spoiler-overlay")
-    expect((node.children[1] as Element).tagName).toBe("span")
+    expect((node.children[1] as Element).tagName).toBe("div")
     expect((node.children[1] as Element).properties?.className).toContain("spoiler-content")
     expect((node.children[1] as Element).properties?.ariaHidden).toBe("true")
 
@@ -204,7 +204,7 @@ describe("rehype-custom-spoiler", () => {
     const output = await process(input)
 
     expect(output).toMatch(/<div class="spoiler-container"[^>]*>/)
-    expect(output).toMatch(/<span class="spoiler-content" aria-hidden="true">/)
+    expect(output).toMatch(/<div class="spoiler-content" aria-hidden="true">/)
     expect(output).toMatch(/<p>There can even be multiline spoilers!<\/p>/)
     expect(output).toMatch(/<p><\/p>/)
     expect(output).toMatch(/<p>This should be in another element.<\/p>/)
@@ -243,7 +243,7 @@ describe("rehype-custom-spoiler", () => {
         `,
         expectedMatches: [
           /<div class="spoiler-container"[^>]*>/,
-          /<span class="spoiler-content" aria-hidden="true">/,
+          /<div class="spoiler-content" aria-hidden="true">/,
           /<p>\s*There can be <em>multiline<\/em> spoilers!<\/p>/,
           /<p>\s*<\/p>/,
           /<p>\s*This has <code>code<\/code> and <strong>bold<\/strong>.<\/p>/,

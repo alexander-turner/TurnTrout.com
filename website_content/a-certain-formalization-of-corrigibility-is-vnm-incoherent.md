@@ -39,7 +39,7 @@ date_published: 2021-11-20
 original_url: https://www.lesswrong.com/posts/WCX3EwnWAx7eyucqH/a-certain-formalization-of-corrigibility-is-vnm-incoherent
 skip_import: true
 description: Formal analysis showing that, for agents optimizing a reward function, corrigibility is rare and perhaps even incoherent.
-date_updated: 2026-07-15
+date_updated: 2026-07-22
 ---
 
 <hr/>
@@ -164,7 +164,7 @@ What if the reward function isn't state-based? In fact, what if it can _depend_ 
 
 [Attainable Utility Preservation (AUP)](https://arxiv.org/pdf/1902.09725.pdf) sometimes incentivizes off-switch corrigibility (but falls far short of robustly achieving corrigibility<sub>policy modification</sub>). In a somewhat narrow range of situations (immediate shutdown if the agent does nothing), AUP incentivizes the agent to allow shutdown, without being incentivized to shut itself down in general.
 
-<video aria-label="An animation comparing different AI agents in an environment with an off-switch. To reach a goal, an agent must first disable the switch. The video shows that an AUP agent allows itself to be shut down, unlike other agents." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/ztgzv5hxfok7hbsiaasd.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/ztgzv5hxfok7hbsiaasd.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label="An animation comparing different AI agents in an environment with an off-switch. To reach a goal, an agent must first disable the switch. The video shows that an AUP agent allows itself to be shut down, unlike other agents." autoplay="" loop="" muted="" playsinline=""><source src="https://assets.turntrout.com/static/images/posts/ztgzv5hxfok7hbsiaasd.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/ztgzv5hxfok7hbsiaasd.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 Figure: [The `Correction` environment](https://arxiv.org/pdf/1902.09725.pdf). The agent is shut down after 2 time steps, if it doesn't disable the off-switch by hitting the red tile to the north. The agent is rewarded for reaching the green goal.
 

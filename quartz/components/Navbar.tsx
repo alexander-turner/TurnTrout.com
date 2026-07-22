@@ -1,4 +1,4 @@
-// (For the spa-preserve attribute)
+// (For the data-spa-preserve attribute)
 
 // skipcq: JS-W1028
 import React from "react"
@@ -82,7 +82,7 @@ const videoToggle = (
 
 const darkMode = (
   <span id="darkmode-span" className="no-select">
-    <p id="theme-label" />
+    <span id="theme-label" />
     <button id="theme-toggle" type="button" aria-label="Toggle theme">
       {lightSvg}
       {darkSvg}

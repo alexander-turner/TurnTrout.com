@@ -459,6 +459,7 @@ describe("tweet metrics", () => {
     expect(html).toContain("tweet-metrics")
     expect(html).toContain('aria-label="10 replies"')
     expect(html).toContain('aria-label="165 likes"')
+    expect(html).toContain('role="img" aria-label="10 replies"')
   })
 
   it.each([

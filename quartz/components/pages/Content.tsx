@@ -87,7 +87,9 @@ const Content: QuartzComponent = ({ fileData, tree }: QuartzComponentProps) => {
       data-use-dropcap={useDropcap}
       data-no-dropcap-color={noDropcapColor}
     >
-      <span className="mobile-only">{toc}</span>
+      {/* A div (flow content), not a span: the TOC renders as a block
+          admonition, which is invalid inside a phrasing-content span. */}
+      <div className="mobile-only">{toc}</div>
       {isQuestion && originalURL && lessWrongQuestion(originalURL as string)}
       {showWarning && rewardPostWarning}
       {content}
