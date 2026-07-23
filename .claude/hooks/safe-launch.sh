@@ -69,6 +69,9 @@ is_under() {
   parent_dir=$(cd "$(dirname "$candidate")" 2>/dev/null && pwd -P) || return 1
   [[ -n "$parent_dir" ]] || return 1
   resolved="$parent_dir/$(basename "$candidate")"
+  # A symlink at the final component could point outside the resolved parent
+  # even though its own path lives under it. Fail closed rather than follow it.
+  [[ -L "$resolved" ]] && return 1
   case "$resolved" in
   "$parent"/*) return 0 ;;
   *) return 1 ;;

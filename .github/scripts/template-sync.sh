@@ -39,6 +39,7 @@ if [[ -z "${TEMPLATE_SYNC_REEXEC:-}" ]]; then
 fi
 [[ "${TEMPLATE_SYNC_REEXEC:-}" == "$0" ]] && trap 'rm -f "$0"' EXIT
 
+<<<<<<< local
 # Wrap all logic in main(), called as the final line. bash reads a running
 # script incrementally from disk, not all at once — this script overwrites
 # its own file when SYNC_PATHS includes the directory it lives in, so any
@@ -46,6 +47,10 @@ fi
 # Deferring everything behind main() forces bash to parse through this
 # file's closing brace and the trailing `main "$@"` call before executing
 # any of it.
+=======
+# All logic lives in main(), called as the final line, so bash parses through
+# this file's closing brace before executing any of it.
+>>>>>>> template
 main() {
 
   SYNC_PATHS="${SYNC_PATHS:-}"
@@ -166,6 +171,26 @@ main() {
 
     local parent_dir
     parent_dir=$(dirname "$rel_path")
+
+    # Case 0: the child deliberately made this path — or an ancestor directory —
+    # a symlink (e.g. a dotfiles repo pointing .claude/settings.json or
+    # .claude/hooks/ at another repo it clones at runtime). Never write it: cp
+    # through a dangling link errors out, through a live one it escapes into the
+    # link target, and mkdir -p on a symlinked directory fails outright. Leave
+    # the local structure alone; checked before the mkdir below.
+    if [[ -L "$rel_path" ]]; then
+      echo "Skipping symlink: $rel_path (local structure preserved)"
+      return
+    fi
+    local ancestor="$parent_dir"
+    while [[ "$ancestor" != "." && "$ancestor" != "/" && -n "$ancestor" ]]; do
+      if [[ -L "$ancestor" ]]; then
+        echo "Skipping under symlinked dir: $rel_path ($ancestor is a symlink)"
+        return
+      fi
+      ancestor=$(dirname "$ancestor")
+    done
+
     [[ "$parent_dir" != "." ]] && mkdir -p "$parent_dir"
 
     # Case 1: new file in template.
@@ -333,6 +358,20 @@ main() {
       echo "has_conflicts=true"
       echo "conflict_files=$conflicts"
     } >>"$GITHUB_OUTPUT"
+    # Cap the total conflict report before it becomes the PR body. GitHub passes
+    # the body to the create-pull-request action through the environment, and a
+    # body over the exec arg/env limit aborts PR creation with E2BIG ("Argument
+    # list too long") before it starts -- reached when many files have no merge
+    # base (each contributes a full old->new diff). The complete conflicted-file
+    # list is preserved in .template-sync-conflicts, so truncating the narrative
+    # detail here loses nothing load-bearing.
+    max_report_bytes=60000
+    if [[ "$(wc -c <"$CONFLICT_REPORT")" -gt "$max_report_bytes" ]]; then
+      capped="${CONFLICT_REPORT}.capped"
+      head -c "$max_report_bytes" "$CONFLICT_REPORT" | sed '$d' >"$capped"
+      printf '\n\n_Conflict report truncated at %d KB. Every conflicted file is listed in .template-sync-conflicts._\n' "$((max_report_bytes / 1000))" >>"$capped"
+      mv "$capped" "$CONFLICT_REPORT"
+    fi
     emit_multiline_output "conflict_report" "$(cat "$CONFLICT_REPORT")"
     echo "Template updates available for: $conflicts" >.template-sync-conflicts
   else

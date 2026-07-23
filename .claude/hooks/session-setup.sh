@@ -79,6 +79,7 @@ vale_install_if_missing() {
 # $1 = command name, $2 = optional webi package specifier (e.g. tool@version)
 # Hardened: HTTPS-only, shebang validation, version pinning via $2
 webi_install_if_missing() {
+<<<<<<< local
 	local cmd="$1" pkg="${2:-$1}"
 	if ! command -v "$cmd" &>/dev/null; then
 		local installer
@@ -94,6 +95,28 @@ webi_install_if_missing() {
 		fi
 		rm -f "$installer"
 	fi
+=======
+  local cmd="$1" pkg="${2:-$1}"
+  if ! command -v "$cmd" &>/dev/null; then
+    local installer
+    installer=$(mktemp "${TMPDIR:-/tmp}/webi-${cmd}-XXXXXX.sh")
+    # webi.sh serves a per-tool bootstrap generated on the fly, so there is no
+    # stable digest to pin; we harden with HTTPS-only (--proto =https), the
+    # shebang check below, and a version-pinned $pkg instead.
+    # pin-exempt: webi.sh bootstrap is generated per-request, no stable digest
+    if curl --proto '=https' -fsSL "https://webi.sh/$pkg" -o "$installer" 2>/dev/null; then
+      first_line="$(head -n 1 "$installer")"
+      if grep -q '^#!' <<<"$first_line"; then
+        sh "$installer" >/dev/null 2>&1 || warn "Failed to install $cmd"
+      else
+        warn "Installer for $cmd is not a shell script (missing shebang) — skipping"
+      fi
+    else
+      warn "Failed to download installer for $cmd"
+    fi
+    rm -f "$installer"
+  fi
+>>>>>>> template
 }
 
 #######################################
@@ -286,6 +309,7 @@ fi
 # The gh CLI can't detect the GitHub repo from this, so we extract
 # owner/repo and export GH_REPO to make all gh commands work.
 
+<<<<<<< local
 if [ -z "${GH_REPO:-}" ]; then
 	remote_url=$(git -C "$PROJECT_DIR" remote get-url origin 2>/dev/null || true)
 	if [[ "$remote_url" =~ /git/([^/]+/[^/]+)$ ]]; then
@@ -422,6 +446,50 @@ die_ots() {
 	[ "$SETUP_WARNINGS" -gt 0 ] && echo \
 		"(plus $SETUP_WARNINGS earlier warning(s) — see above)" >&2
 	exit 1
+=======
+if [[ -z "${GH_REPO:-}" ]]; then
+  remote_url=$(git -C "$PROJECT_DIR" remote get-url origin 2>/dev/null)
+  # Anchor to the real local-proxy host authority — the same predicate the
+  # web-session permission grant below uses. A bare /git/owner/repo suffix on a
+  # hostile origin (e.g. https://attacker.example/git/evil/repo) must not be
+  # allowed to redirect every subsequent gh command at an attacker's repo.
+  # BASH_REMATCH[1] is the optional port group; owner/repo is [2].
+  if [[ "$remote_url" =~ ^https?://[^/@]*@127\.0\.0\.1(:[0-9]+)?/git/([^/]+/[^/]+)$ ]]; then
+    GH_REPO="${BASH_REMATCH[2]}"
+    GH_REPO="${GH_REPO%.git}"
+    export GH_REPO
+    emit_export GH_REPO "$GH_REPO"
+  fi
+fi
+
+#######################################
+# Web-session permissions
+#######################################
+
+# In web sessions (detected by proxy remote URL), grant Claude Code
+# permission to modify its own .claude/ folder without prompting.
+remote_url="${remote_url:-$(git -C "$PROJECT_DIR" remote get-url origin 2>/dev/null)}"
+if [[ "$remote_url" =~ ^https?://[^/@]*@127\.0\.0\.1(:[0-9]+)?/git/ ]]; then
+  local_settings="$PROJECT_DIR/.claude/settings.local.json"
+  if [[ ! -f "$local_settings" ]]; then
+    cat >"$local_settings" <<'SETTINGS'
+{
+  "permissions": {
+    "allow": [
+      "Edit(.claude/**)",
+      "Write(.claude/**)",
+      "Read(.claude/**)",
+      "Bash(pnpm build)",
+      "Bash(pnpm check:*)",
+      "Bash(pnpm format)",
+      "Bash(pnpm install)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pre-commit run:*)",
+      "Bash(uv run pytest:*)"
+    ]
+  }
+>>>>>>> template
 }
 if ! command -v ots >/dev/null 2>&1; then
 	echo "ERROR: ots not on PATH after install; post-commit hook will fail" >&2

@@ -1,6 +1,7 @@
 #!/bin/bash
 # Pre-commit hook: Format and lint staged files via lint-staged.
-# Skips gracefully when lint-staged is not installed (non-Node projects).
+# When lint-staged is not installed (non-Node projects), exits 0 without
+# formatting — CI's pre-commit run still covers the pushed files.
 
 set -euo pipefail
 
@@ -29,6 +30,7 @@ if [ -n "$staged_py_files" ] && command -v uv >/dev/null 2>&1; then
   echo "$staged_py_files" | xargs git add
 fi
 
+<<<<<<< local
 # Five guardrails (merge-conflict markers, large files, gitleaks, codespell,
 # actionlint) live in .pre-commit-config.yaml. Run them via the framework so
 # `pre-commit run --all-files` and the hook share the same source of truth.
@@ -46,4 +48,40 @@ fi
 if ! git diff --cached --check; then
   echo "pre-commit: refusing commit — fix the issues above" >&2
   exit 1
+=======
+# Durable recovery snapshot before the destructive part. lint-staged (and the
+# pre-commit auto-fixers it drives) hide your UNSTAGED tracked edits in an internal
+# stash, rewrite the staged files, then restore that stash. A failed run — a
+# non-auto-fixable lint error, or a stash-restore conflict when a fixer rewrote a
+# file you also had unstaged — can DROP that hidden stash, silently reverting the
+# unstaged work with no obvious way back. Only an unstaged tracked change is at
+# risk (a fully-staged commit has nothing to lose), so snapshot just that case:
+# `git stash create` writes a commit object WITHOUT touching the tree or the stash
+# stack, pinned in a ref so it survives gc and is one `git checkout` away.
+if ! git diff --quiet; then
+  if _gb_snapshot=$(git stash create 2>/dev/null) && [[ -n "$_gb_snapshot" ]]; then
+    git update-ref refs/gb/precommit-recovery "$_gb_snapshot" 2>/dev/null || true
+    echo "pre-commit: unstaged edits present — saved recovery snapshot $_gb_snapshot (ref refs/gb/precommit-recovery). If this commit fails and your uncommitted edits vanish, restore them with: git checkout $_gb_snapshot -- <path>" >&2
+  fi
+fi
+
+# Fresh clones (and non-Node projects) have no lint-staged binary. Don't block
+# the commit, but WARN loudly on stderr: a silent skip lets a fresh clone commit
+# with zero lint/format enforcement and no signal that anything was bypassed.
+if [[ ! -f "$git_root/node_modules/.bin/lint-staged" ]]; then
+  echo "pre-commit: lint-staged not installed — lint/format checks SKIPPED for this commit; run pnpm install to enable them." >&2
+  exit 0
+fi
+
+if command -v pnpm >/dev/null 2>&1; then
+  pnpm exec lint-staged --allow-empty
+elif command -v npm >/dev/null 2>&1; then
+  npx lint-staged --allow-empty
+else
+  # lint-staged is installed (guarded above) but no package manager is on PATH:
+  # run the binary directly rather than silently exiting 0 and committing with
+  # zero lint/format enforcement.
+  echo "pre-commit: neither pnpm nor npm on PATH — invoking lint-staged directly." >&2
+  "$git_root/node_modules/.bin/lint-staged" --allow-empty
+>>>>>>> template
 fi

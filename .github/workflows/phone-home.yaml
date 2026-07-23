@@ -9,7 +9,7 @@ on:
     types: [closed]
 
 env:
-  TEMPLATE_REPO: "alexander-turner/claude-automation-template"
+  TEMPLATE_REPO: "${{ vars.TEMPLATE_SYNC_ORG || 'alexander-turner' }}/claude-automation-template"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -42,9 +42,11 @@ jobs:
         env:
           GITLEAKS_VERSION: "8.30.1"
         run: |
-          curl --proto '=https' -sSfL \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
-            | tar xz -C /usr/local/bin gitleaks
+          set -euo pipefail
+          curl --proto '=https' -fsSL --retry 6 --retry-all-errors --retry-delay 15 --connect-timeout 30 \
+            -o /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          tar xz -C /usr/local/bin -f /tmp/gitleaks.tar.gz gitleaks
           gitleaks detect --no-git -s /tmp/phone-home -v
 
       - name: Submit to template repo

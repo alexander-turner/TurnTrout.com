@@ -7,13 +7,13 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
-  gitleaks: # required-check: true
+  gitleaks:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -34,3 +34,25 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: bash .github/scripts/gitleaks-scan.sh
+
+  # Stable Required check: runs even when `gitleaks` is cancelled/skipped, so a
+  # protected branch never gets stuck on a check that never reports.
+  gitleaks-passed: # required-check: true
+    if: always()
+    needs: [gitleaks]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          sparse-checkout: |
+            .github/actions/report-job-result
+            .github/scripts
+          persist-credentials: false
+
+      - name: Report result
+        uses: ./.github/actions/report-job-result
+        with:
+          run: "true"
+          decide-result: "success"
+          result: ${{ needs.gitleaks.result }}
