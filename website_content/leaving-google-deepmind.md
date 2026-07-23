@@ -106,7 +106,7 @@ Subtitle: February 9th, 2026
 
 At first I thought about who could put me in touch with him. But (and this is a good general lesson) if you want to talk to someone about something, you can always JUST ASK THEM!
 
-I told Jeff that I respected him for speaking out, that I wanted Google to divest from the DHS supply chain. I asked if he shared  these goals and, if so, how I could help.
+I told Jeff that I respected him for speaking out and that I wanted Google to divest from the DHS supply chain. I asked if he shared this goal and, if so, how I could help.
 
 He suggested it'd be reasonable for me to email a few guys. Their names: Sundar Pichai (CEO of Google), Demis Hassabis (CEO of Google DeepMind), and Thomas Kurian (CEO of Google Cloud). I thought "sure, Jeff. No problem. I'll just tell them what I think." 😅
 
