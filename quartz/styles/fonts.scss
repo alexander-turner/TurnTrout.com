@@ -33,7 +33,12 @@
     font-size: round(nearest, var(--base-font-size), 1px);
   }
 
-  text-rendering: geometricprecision;
+  // Engine-default text rendering: fractional horizontal advances with
+  // vertically grid-fit (hinted) glyphs. Vertical grid-fitting keeps every
+  // glyph on a shared, stable baseline, which matters most for small prose on
+  // high-DPR mobile screens. Ligatures are enabled explicitly on the body,
+  // independent of this property.
+  text-rendering: auto;
 }
 
 h1,
@@ -52,6 +57,11 @@ h6,
   margin-bottom: 1rem;
   font-weight: 500;
   line-height: 1.15;
+
+  // Display type is large enough that unhinted, linear-metric rasterization
+  // stays baseline-stable, and it preserves the face's drawn proportions at
+  // scale.
+  text-rendering: geometricprecision;
 }
 
 $heading-sizes: (

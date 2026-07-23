@@ -96,6 +96,20 @@ export function createTagsElement(tags: readonly string[], fileDataSlug: FullSlu
 }
 
 /**
+ * Formats a Date into an ISO-8601 `YYYY-MM-DD` string using its local calendar
+ * fields, matching how the visible date is rendered via `toLocaleDateString`.
+ *
+ * @param d - The Date to format.
+ * @returns The `YYYY-MM-DD` string.
+ */
+export function toISODate(d: Date): string {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
+/**
  * Creates a complete page item element including title, date, and tags
  *
  * @param page - The page data to create an element for
@@ -111,11 +125,15 @@ export function createPageItemElement(
   const title = page.frontmatter?.title
   const formattedTitle = title ? formatTitle(title) : ""
   const tags = [...(page.frontmatter?.tags ?? [])].sort((a, b) => b.length - a.length)
-  const date = getDate(cfg, page)?.toLocaleDateString(locale) || ""
+  const dateObj = getDate(cfg, page)
+  const date = dateObj?.toLocaleDateString(locale) || ""
+  // Build a machine-readable `datetime` from the same Date's local calendar
+  // fields so it matches the locale-formatted visible text and stays valid HTML.
+  const datetime = dateObj ? toISODate(dateObj) : ""
   const pageSlug = page.slug || ("" as FullSlug)
 
   return h("div.page-listing-row", [
-    page.dates && h("time.meta", [date]),
+    page.dates && h("time.meta", { datetime }, [date]),
     h("div.page-listing-description", [
       createPageTitleElement(formattedTitle, fileDataSlug, pageSlug),
       createTagsElement(tags, fileDataSlug),

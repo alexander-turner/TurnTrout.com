@@ -136,7 +136,6 @@ export interface RegressionScreenshotOptions {
   elementToScreenshot?: Locator
   elementAboutWhichToIsolateDOM?: Locator // elementToScreenshot by default
   clip?: { x: number; y: number; width: number; height: number }
-  disableHover?: boolean
   skipMediaPause?: boolean
   skipStabilityWait?: boolean
   preserveSiblings?: boolean
@@ -214,13 +213,32 @@ const THEME_SWAPPED_IMAGE_SELECTOR = `picture > img.${invertInDarkModeClass}:not
 /* istanbul ignore next -- executed in the browser, not under Jest */
 function pollUntilImagePaints(
   el: HTMLImageElement,
-  { deadlineMs, swapSelector }: { deadlineMs: number; swapSelector: string },
+  {
+    deadlineMs,
+    swapSelector,
+    skipOffscreenLazy,
+  }: { deadlineMs: number; swapSelector: string; skipOffscreenLazy: boolean },
 ): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
     // WebKit only starts a lazy image's request when it nears the viewport, so
     // a below-fold `loading="lazy"` image would sit unloaded until the
-    // deadline. Promote it to eager for the wait.
+    // deadline. Promote it to eager for the wait. Viewport-only captures set
+    // `skipOffscreenLazy`: an offscreen lazy image can never paint into the
+    // capture, and force-fetching every below-fold image on an image-heavy
+    // page would burn the deadline instead.
     if (el.loading === "lazy") {
+      if (skipOffscreenLazy) {
+        const rect = el.getBoundingClientRect()
+        const offscreen =
+          rect.bottom <= 0 ||
+          rect.right <= 0 ||
+          rect.top >= window.innerHeight ||
+          rect.left >= window.innerWidth
+        if (offscreen) {
+          resolve(true)
+          return
+        }
+      }
       el.loading = "eager"
     }
     const POLL_MS = 100
@@ -275,6 +293,7 @@ function pollUntilImagePaints(
 export async function waitForImagesInElement(
   scope: Locator,
   timeoutMs: number = IMAGE_PAINT_TIMEOUT_MS,
+  skipOffscreenLazy = false,
 ): Promise<void> {
   const images = await scope.locator("img").all()
   await Promise.all(
@@ -282,6 +301,7 @@ export async function waitForImagesInElement(
       const painted = await img.evaluate(pollUntilImagePaints, {
         deadlineMs: timeoutMs,
         swapSelector: THEME_SWAPPED_IMAGE_SELECTOR,
+        skipOffscreenLazy,
       })
       // Screenshotting an unpainted image bakes its alt text into the capture,
       // which either churns the diff gallery or — if approved — corrupts the
@@ -304,7 +324,12 @@ async function waitForVisualStability(page: Page, scope?: Locator): Promise<void
   if (scope) {
     await waitForImagesInElement(scope)
   } else {
-    await page.waitForLoadState("load")
+    // Full-page captures are viewport-sized, so gate on the images that can
+    // paint into the viewport: eager images plus lazy ones intersecting it.
+    // The page-level `load` event cannot serve as this gate — the looping
+    // navbar pond video's range requests keep it pending indefinitely in
+    // WebKit (see gotoPage) — and it never guaranteed painted pixels anyway.
+    await waitForImagesInElement(page.locator("body"), IMAGE_PAINT_TIMEOUT_MS, true)
   }
   await page.evaluate(
     () =>
@@ -348,65 +373,86 @@ export async function takeRegressionScreenshot(
   screenshotSuffix: string,
   options?: RegressionScreenshotOptions,
 ): Promise<Buffer> {
-  await forceHighQualityImageInterpolation(page)
-  if (!options?.skipMediaPause) {
-    await pauseMediaElements(page, options?.elementToScreenshot)
-    await waitForVideosPainted(options?.elementToScreenshot ?? page)
-  }
+  // Destructure every custom key out explicitly: only Playwright-native
+  // screenshot options (currently just `clip`) may reach `.screenshot()`.
+  // Spreading the raw options object would leak our custom keys into
+  // Playwright, where they're silently ignored.
+  const {
+    elementToScreenshot,
+    elementAboutWhichToIsolateDOM,
+    skipMediaPause,
+    skipStabilityWait,
+    preserveSiblings,
+    ...playwrightScreenshotOptions
+  } = options ?? {}
 
-  // Separate out the element option so we don't pass it to the screenshot API
-  const { elementToScreenshot, ...remainingOptions } = options ?? {}
+  // Scope reduced-motion to the capture, not the whole test run: it freezes
+  // JS-driven motion for the screenshot (defense-in-depth over the site's own
+  // reduced-motion kill-switch) without altering the motion/transition-driven
+  // interactions that non-screenshot specs assert on. Reset afterward so a
+  // later interaction in the same spec (which may wait on a transition that
+  // never fires at duration 0) still runs under normal motion.
+  await page.emulateMedia({ reducedMotion: "reduce" })
+  try {
+    await forceHighQualityImageInterpolation(page)
+    if (!skipMediaPause) {
+      await pauseMediaElements(page, elementToScreenshot)
+      await waitForVideosPainted(elementToScreenshot ?? page)
+    }
 
-  if (!options?.skipStabilityWait) {
-    await waitForVisualStability(page, options?.elementToScreenshot)
-  }
+    if (!skipStabilityWait) {
+      await waitForVisualStability(page, elementToScreenshot)
+    }
 
-  const screenshotOptions = {
-    animations: "disabled" as const,
-    // Use CSS pixel scaling to eliminate deviceScaleFactor/DPR-induced subpixel jitter
-    scale: "css" as const,
-    ...remainingOptions,
-  }
+    const screenshotOptions = {
+      animations: "disabled" as const,
+      // Use CSS pixel scaling to eliminate deviceScaleFactor/DPR-induced subpixel jitter
+      scale: "css" as const,
+      ...playwrightScreenshotOptions,
+    }
 
-  let screenshotBuffer: Buffer
-  const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
-  if (elementToScreenshot) {
-    const elementToIsolate = options?.elementAboutWhichToIsolateDOM ?? elementToScreenshot
-    await performDOMIsolation(elementToIsolate, options?.preserveSiblings ?? false)
+    let screenshotBuffer: Buffer
+    const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
+    if (elementToScreenshot) {
+      const elementToIsolate = elementAboutWhichToIsolateDOM ?? elementToScreenshot
+      await performDOMIsolation(elementToIsolate, preserveSiblings ?? false)
 
-    try {
+      try {
+        screenshotBuffer = await captureStableScreenshot(
+          () => elementToScreenshot.screenshot(screenshotOptions),
+          screenshotName,
+        )
+      } finally {
+        await restoreDOMFromIsolation(page)
+      }
+    } else {
       screenshotBuffer = await captureStableScreenshot(
-        () => elementToScreenshot.screenshot(screenshotOptions),
+        () => page.screenshot(screenshotOptions),
         screenshotName,
       )
-    } finally {
-      await restoreDOMFromIsolation(page)
     }
-  } else {
-    screenshotBuffer = await captureStableScreenshot(
-      () => page.screenshot(screenshotOptions),
-      screenshotName,
+
+    // PNG IHDR stores width at byte offset 16 and height at 20. Using the
+    // captured buffer's own dimensions matches the area Playwright applies the
+    // ratio to (expected.width * expected.height when dimensions agree).
+    const pngWidth = screenshotBuffer.readUInt32BE(16)
+    const pngHeight = screenshotBuffer.readUInt32BE(20)
+    const maxDiffPixels = Math.max(
+      MIN_DIFF_PIXELS,
+      Math.ceil(pngWidth * pngHeight * MAX_DIFF_PIXEL_RATIO),
     )
+
+    // Array form skips Playwright's 60-char hash-truncation of the
+    // attachment name, so approve-baselines can map attachments back to
+    // baseline filenames for any name length.
+    await expect
+      .soft(screenshotBuffer, { message: screenshotName })
+      .toMatchSnapshot([screenshotName], { maxDiffPixels })
+
+    return screenshotBuffer
+  } finally {
+    await page.emulateMedia({ reducedMotion: null })
   }
-
-  // PNG IHDR stores width at byte offset 16 and height at 20. Using the
-  // captured buffer's own dimensions matches the area Playwright applies the
-  // ratio to (expected.width * expected.height when dimensions agree).
-  const pngWidth = screenshotBuffer.readUInt32BE(16)
-  const pngHeight = screenshotBuffer.readUInt32BE(20)
-  const maxDiffPixels = Math.max(
-    MIN_DIFF_PIXELS,
-    Math.ceil(pngWidth * pngHeight * MAX_DIFF_PIXEL_RATIO),
-  )
-
-  // Array form skips Playwright's 60-char hash-truncation of the
-  // attachment name, so approve-baselines can map attachments back to
-  // baseline filenames for any name length.
-  await expect
-    .soft(screenshotBuffer, { message: screenshotName })
-    .toMatchSnapshot([screenshotName], { maxDiffPixels })
-
-  return screenshotBuffer
 }
 
 /**
@@ -894,7 +940,9 @@ export async function triggerAndWaitForSPANav(
     await navPromise
   } catch {
     // Execution context was destroyed — the SPA fell back to a full page
-    // navigation. Wait for the new page to finish loading.
-    await page.waitForLoadState("load")
+    // navigation. Gate on the parsed DOM like gotoPage does: the looping
+    // navbar pond video keeps WebKit's `load` event pending indefinitely,
+    // and callers assert on concrete elements afterwards.
+    await page.waitForLoadState("domcontentloaded")
   }
 }

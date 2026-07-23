@@ -9,6 +9,11 @@
 html {
   scroll-behavior: auto;
   width: 100%;
+
+  // Inherited by all text so loose runs, cells, captions, and summaries get
+  // paragraph-level line-break optimization; headings and highlighted code
+  // lines opt back out with `text-wrap: auto` below.
+  text-wrap: pretty;
 }
 
 .skip-to-content {
@@ -78,7 +83,6 @@ ol,
 .math {
   overflow-wrap: anywhere;
   hyphens: none;
-  text-wrap: pretty;
 }
 
 .math {
@@ -405,6 +409,10 @@ pre {
   overflow-x: auto;
   position: relative;
   white-space: pre-wrap;
+
+  // Code never wants paragraph-level line-break optimization, and `pretty`
+  // over many break opportunities is combinatorial in Chromium.
+  text-wrap: auto;
 
   &:has(> code.mermaid) {
     border: none;

@@ -929,6 +929,15 @@ describe("capitalizeAfterEnding regex", () => {
     [".   C"], // Multiple spaces after period
     ["!    É"], // Multiple spaces after exclamation with accent
     ["?.   Ô"], // Multiple punctuation with spaces
+
+    // Closing quote/bracket between sentence-ender and whitespace
+    ["escalation.” I"], // Curly double quote
+    ["cool.’ N"], // Curly single quote
+    ["done!” A"], // Exclamation then curly quote
+    ["really?” B"], // Question then curly quote
+    ["(see below.) C"], // Closing paren
+    ["item.] D"], // Closing bracket
+    ["block.} E"], // Closing brace
   ]
 
   const invalidCases = [
@@ -960,6 +969,13 @@ describe("capitalizeAfterEnding regex", () => {
     ".A", // Just punctuation and capital
     "?A", // Just punctuation and capital
     "!A", // Just punctuation and capital
+
+    // Closing punctuation without a preceding sentence-ender
+    "mid” B", // Curly quote with no sentence-ender before it
+    "list) C", // Closing paren after a non-terminal word
+    "e.g.” D", // "e.g." stays excluded even with a closing quote
+    "i.e.) E", // "i.e." stays excluded even with a closing paren
+    ".”A", // Closing quote but no whitespace before the capital
   ]
 
   it.each(validCases)("should match end of sentence with capital: %s", (text) => {
@@ -1004,6 +1020,9 @@ describe("capitalizeMatch", () => {
     ["only punctuation and spaces before", ".  NASA", 3, true],
     ["period without space", "First.NASA", 6, false],
     ["multiple sentences", "First. Second. NASA", 15, true],
+    ["curly quote after period", "escalation.” NASA seemed built", 13, true],
+    ["closing paren after period", "(see below.) NASA is cool", 13, true],
+    ["curly quote mid-sentence", "the “model” NASA program", 12, false],
 
     // Test each punctuation character from PUNCTUATION_BEFORE_MATCH
     ...punctuationChars.map(

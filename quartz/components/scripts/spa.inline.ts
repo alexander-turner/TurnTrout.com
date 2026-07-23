@@ -108,7 +108,7 @@ async function updatePage(html: Document, url: URL): Promise<void> {
 
   console.debug(`[updatePage] Starting DOM update for ${url.pathname}`)
   try {
-    // Only morph the body to preserve spa-preserve elements in head
+    // Only morph the body to preserve data-spa-preserve elements in head
     await micromorph(document.body, html.body)
     // Update head elements AFTER morphing to ensure browser recognizes changes
     // This is especially important for Safari/Firefox which cache head state

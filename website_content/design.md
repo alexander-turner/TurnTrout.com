@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-07-18
+date_updated: 2026-07-22
 no_dropcap: false
 createBibtex: true
 ---
@@ -123,7 +123,7 @@ https://xcancel.com/Turn_Trout/status/2064426233769742627
 
 <figure>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
-  <span id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
+  <div id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
     <div class="centered">Light mode</div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem; white-space: nowrap;">
       <span style="color: var(--red);">Red</span>
@@ -140,8 +140,8 @@ https://xcancel.com/Turn_Trout/status/2064426233769742627
       <span style="color: var(--pink);">Pink</span>
     </div>
     <div class="centered"><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts"/></div>
-  </span>
-  <span id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid; background-color: var(--background, #303446);">
+  </div>
+  <div id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid; background-color: var(--background, #303446);">
     <div class="centered">Dark mode</div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem; white-space: nowrap;">
       <span style="color: var(--red);">Red</span>
@@ -158,7 +158,7 @@ https://xcancel.com/Turn_Trout/status/2064426233769742627
       <span style="color: var(--pink);">Pink</span>
     </div>
     <div class="centered"><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts"/></div>
-  </span>
+  </div>
 </div>
 <figcaption>The palettes for light and dark mode.</figcaption>
 </figure>
@@ -181,7 +181,7 @@ For images, I pre-compute perfectly inverted variants at build time. The browser
 
 ### Deciding when to invert
 
-<span class="float-right" style="max-width: 40%; margin-top: calc(-1.5 * $base-margin);"><img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but flipped."/>Evidently, the high-luminance rule is not always correct --- counterexamples exist. Scary. </span>
+<span class="float-right" style="max-width: 40%; margin-top: -0.75rem;"><img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted%20image%2020240614164142.avif" alt="A professional photograph of me, but flipped."/>Evidently, the high-luminance rule is not always correct --- counterexamples exist. Scary. </span>
 
 A blanket invert would butcher certain photos. `gwern` trained a [machine learning classifier for exactly this question](https://gwern.net/invertornot). However, his classifier didn't have much better accuracy than a simple rule which says to invert images with average luminance exceeding 0.7 (since they're "mostly white") --- that's the baseline recommendation. I can quickly skim through a webpage showing light-mode vs dark-mode images in a grid, overriding any which the luminance rule misclassifies.
 
@@ -441,10 +441,10 @@ My site contains a range of fun fonts which I rarely use. For example, the _Lord
 > <br>
 > <span class="elvish"><span class="elvish-tengwar" lang="qya">  : </span><span class="elvish-translation">Maybe even thou shalt find it. Farewell!</span></span>
 
-<span class="float-right" style="margin-top: 2rem; ">
+<figure class="float-right" style="margin-top: 2rem; ">
 <div class="dropcap" data-first-letter="A" style="font-size: 4rem; color: var(--foreground);--before-color:var(--foreground);">A</div>
 <figcaption>Monochromatic dropcaps seem somewhat illegible.</figcaption>
-</span>
+</figure>
 
 ## Dropcaps
 
@@ -641,7 +641,7 @@ Instead, I filter favicons as follows:
 To avoid low-resolution images, I use SVGs. In many cases, I found the brand's SVG on [`simpleicons.org`](https://simpleicons.org). In other cases, I used [`recraft.ai`](https://www.recraft.ai/) to vectorize images.
 
   <figure class="float-right no-favicon-span">
-    <svg class="favicon" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg); --favicon-size: 4rem; --color-percentage: 100%; display: block; margin: 0 auto 1rem;" alt=""></svg>
+    <svg class="favicon" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg); --favicon-size: 4rem; --color-percentage: 100%; display: block; margin: 0 auto 1rem;" aria-hidden="true"></svg>
     <figcaption>A favicon with its colors unleashed and unmuted. While pretty, the display is too much for my site's restrained aesthetic.</figcaption>
   </figure>
 
@@ -651,20 +651,20 @@ Many favicons are monochromatic to avoid chaos. However, some iconic brand logos
 
 <figure style="display:flex;justify-content:center;" id="big-favicon-demo" class="no-favicon-span">
   <div class="subfigure">
-    <svg class="favicon favicon-big" data-domain="slatestarcodex_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.svg);" alt=""></svg>
-    <figcaption><code>slatestarcodex.com</code> masks a solid color: <svg class="favicon no-mask favicon-demo-inline" data-domain="slatestarcodex_com" alt="A filled-in square."></svg>.</figcaption>
+    <svg class="favicon favicon-big" data-domain="slatestarcodex_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.svg);" aria-hidden="true"></svg>
+    <figcaption><code>slatestarcodex.com</code> masks a solid color: <svg class="favicon no-mask favicon-demo-inline" data-domain="slatestarcodex_com" role="img" aria-label="A filled-in square."></svg>.</figcaption>
   </div>
   <div class="subfigure">
-    <svg class="favicon favicon-big" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg);" alt=""></svg>
-    <figcaption><code>google.com</code>'s background is a <code>conic-gradient</code>: <svg class="favicon no-mask favicon-demo-inline full-color" data-domain="google_com" alt="Google's four colors (red, blue, green, and yellow) in a kind of squared pie-chart arrangement."></svg>.</figcaption>
+    <svg class="favicon favicon-big" data-domain="google_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/google_com.svg);" aria-hidden="true"></svg>
+    <figcaption><code>google.com</code>'s background is a <code>conic-gradient</code>: <svg class="favicon no-mask favicon-demo-inline full-color" data-domain="google_com" role="img" aria-label="Google's four colors (red, blue, green, and yellow) in a kind of squared pie-chart arrangement."></svg>.</figcaption>
   </div>
   <div class="subfigure">
-    <svg class="favicon favicon-big" data-domain="amazon_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/amazon_com.svg);" alt=""></svg>
-    <figcaption><code>amazon.com</code>'s background is a <code>radial-gradient</code>: <svg class="favicon no-mask favicon-demo-inline" data-domain="amazon_com" alt="A disk of text-color surrounded by yellow to form a square."></svg>.</figcaption>
+    <svg class="favicon favicon-big" data-domain="amazon_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/amazon_com.svg);" aria-hidden="true"></svg>
+    <figcaption><code>amazon.com</code>'s background is a <code>radial-gradient</code>: <svg class="favicon no-mask favicon-demo-inline" data-domain="amazon_com" role="img" aria-label="A disk of text-color surrounded by yellow to form a square."></svg>.</figcaption>
   </div>
   <div class="subfigure">
-    <svg class="favicon favicon-big" data-domain="msnbc_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/msnbc_com.svg);" alt=""></svg>
-    <figcaption><code>msnbc.com</code>'s peacock fans out from a <code>conic-gradient</code>: <svg class="favicon no-mask favicon-demo-inline full-color" data-domain="msnbc_com" alt="The six peacock colors (yellow, orange, red, purple, blue, and green) fanning out as wedges from a point near the bottom of a square."></svg>.</figcaption>
+    <svg class="favicon favicon-big" data-domain="msnbc_com" style="--mask-url: url(https://assets.turntrout.com/static/images/external-favicons/msnbc_com.svg);" aria-hidden="true"></svg>
+    <figcaption><code>msnbc.com</code>'s peacock fans out from a <code>conic-gradient</code>: <svg class="favicon no-mask favicon-demo-inline full-color" data-domain="msnbc_com" role="img" aria-label="The six peacock colors (yellow, orange, red, purple, blue, and green) fanning out as wedges from a point near the bottom of a square."></svg>.</figcaption>
   </div>
   </figure>
 
@@ -819,7 +819,7 @@ Figure: Desktop previews.
 Metadata
 : Every page has an HTML description and [tags](/all-tags) (if appropriate), along with a table of contents which (on desktop) highlights the current section. I track original publication date and display when each was page was last modified by a `git push` to the `main` branch. I also support "sequences" of blog posts:
 
-  <div class="sequence-links" style="border: 2px var(--midground-faint) solid; padding-right: .5rem; padding-top: 1rem; border-radius: 5px;"><div class="sequence-title" style="text-align:center;"><div class="admonition-title-inner"><b>Sequence:</b> <a href="/posts#shard-theory" class="internal">Shard Theory</a></div></div><div class="sequence-nav" style="display:flex;justify-content:center;"><div class="prev-post sequence-links-postNavigation" style="text-align:right;"><p><b>Previous</b><br><a href="/reward-is-not-the-optimization-target" class="internal">Reward Is Not the Optimization Target</a></p></div><div class="sequence-links-divider"></div><div class="next-post sequence-links-postNavigation" style="text-align:left;"><p><b>Next</b><br><a href="/understanding-and-avoiding-value-drift" class="internal">Understanding and Avoiding Value Drift</a></p></div></div></div> <figcaption>The sequence metadata for my post on <a href="./shard-theory" class="internal alias" data-slug="shard-theory">shard theory.</a></figcaption>
+  <figure><div class="sequence-links" style="border: 2px var(--midground-faint) solid; padding-right: .5rem; padding-top: 1rem; border-radius: 5px;"><div class="sequence-title" style="text-align:center;"><div class="admonition-title-inner"><b>Sequence:</b> <a href="/posts#shard-theory" class="internal">Shard Theory</a></div></div><div class="sequence-nav" style="display:flex;justify-content:center;"><div class="prev-post sequence-links-postNavigation" style="text-align:right;"><p><b>Previous</b><br><a href="/reward-is-not-the-optimization-target" class="internal">Reward Is Not the Optimization Target</a></p></div><div class="sequence-links-divider"></div><div class="next-post sequence-links-postNavigation" style="text-align:left;"><p><b>Next</b><br><a href="/understanding-and-avoiding-value-drift" class="internal">Understanding and Avoiding Value Drift</a></p></div></div></div> <figcaption>The sequence metadata for my post on <a href="./shard-theory" class="internal alias" data-slug="shard-theory">shard theory.</a></figcaption></figure>
 
 Code blocks soft-wrap long lines
 : Long lines in fenced code blocks used to scroll off the right edge. That suits real source code but punishes transcript dumps - LLM completions and chat logs vanish after a few words. Now every code block wraps long lines, with hanging indents that align the wrapped text under the line-number gutter so it stays readable.
@@ -1051,6 +1051,10 @@ Sometimes I link by the title of a post, like "[@title](/towards-a-new-impact-me
 > [!info]- HTML validation checks
 >
 > I check to avoid a smattering of possible mishaps.
+>
+> **HTML conformance:**
+>
+> 1. I validate against the [Nu HTML validator](https://validator.github.io/validator/).
 >
 > **Asset management:**
 >

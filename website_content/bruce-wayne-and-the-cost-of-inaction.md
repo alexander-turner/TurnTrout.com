@@ -37,7 +37,7 @@ original_url: https://www.lesswrong.com/posts/9KF28JSTJBqqkmkJZ/bruce-wayne-and-
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/QBOtBED.jpg
 description: Christopher Nolan's Batman Begins, but more rationalist and severe. Looking right at the pain you ignore whenever you walk by a homeless person.
-date_updated: 2026-06-27
+date_updated: 2026-07-22
 card_image_alt: A destitute man slumped against a brick wall, surrounded by darkness and lit by a spotlight - the bat-signal.
 ---
 
@@ -54,7 +54,7 @@ Hand wrapped firmly around his son's shoulder, Thomas Wayne directed his son's f
 <div class="bad-handwriting">
 <b>Hungry</b> <br>
 <b class="no-smallcaps">PTSD..No family</b><br>
-<it>Please help</it></br>
+<i>Please help</i><br>
 </div>
 
 Bruce was scared. At eight, he'd seen homeless people before, but he'd never connected the dots: this was a _person_, just out on the street.

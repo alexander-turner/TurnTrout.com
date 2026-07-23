@@ -109,6 +109,13 @@ jobs:
             public/Test-page.html \
             public/posts.html \
             --formats woff2 --in-place --instance --inline-css --no-recursive --debug
+          ./scripts/block_katex_font_display.sh \
+            public/index.html \
+            public/design.html \
+            public/about.html \
+            public/research.html \
+            public/Test-page.html \
+            public/posts.html
 
       - name: Install Wrangler
         # Local install (not -g): the deploy step below invokes it via

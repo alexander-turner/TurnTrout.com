@@ -2,7 +2,7 @@ import type { Element, Parent, Root, Text } from "hast"
 
 import fs from "fs"
 import mime from "mime-types"
-import pRetry, { AbortError } from "p-retry"
+import pRetry from "p-retry"
 import { visit } from "unist-util-visit"
 import { visitParents } from "unist-util-visit-parents"
 
@@ -112,20 +112,22 @@ export function transformUrl(faviconPath: string): string {
  */
 async function checkCdnSvg(svgPath: string): Promise<boolean> {
   const url = svgPath.startsWith("http") ? svgPath : `${cdnBaseUrl}${svgPath}`
-  try {
-    return await pRetry(
-      async () => {
-        const response = await fetch(url)
-        if (response.ok) return true
-        if (response.status >= 400 && response.status < 500)
-          throw new AbortError(`${response.status}`)
-        throw new Error(`Server error ${response.status}`)
-      },
-      { retries: 2, minTimeout: 1000 },
-    )
-  } catch {
-    return false
-  }
+  return await pRetry(
+    async () => {
+      const response = await fetch(url)
+      if (response.ok) return true
+      // A 4xx is a definitive "absent" answer: findFaviconPath probes the
+      // normalized path first and falls back to the unnormalized one on a
+      // miss, so report the favicon missing without retrying.
+      if (response.status >= 400 && response.status < 500) return false
+      // A 5xx (or a rejected `fetch`, i.e. a network failure) is a transient
+      // real failure. Silently dropping the favicon would shift glyph layout
+      // on every page linking this domain, so throw after retries and let the
+      // build fail loudly rather than encode a degraded layout into the site.
+      throw new Error(`Favicon existence check failed for ${url}: HTTP ${response.status}`)
+    },
+    { retries: 2, minTimeout: 1000 },
+  )
 }
 
 /**
@@ -178,7 +180,7 @@ export interface FaviconNode extends Element {
     alt?: string
     "data-domain"?: string
     "aria-hidden"?: "true" | "false"
-    "aria-focusable"?: "true" | "false"
+    focusable?: "true" | "false"
     role?: "img"
     "aria-label"?: string
   }
@@ -196,7 +198,7 @@ export function createFaviconElement(urlString: string, description = ""): Favic
 
     const accessibilityProps = description
       ? ({ role: "img", "aria-label": description } as const)
-      : ({ "aria-hidden": "true", "aria-focusable": "false" } as const)
+      : ({ "aria-hidden": "true", focusable: "false" } as const)
 
     return {
       type: "element",

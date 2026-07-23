@@ -184,7 +184,10 @@ async function keepOnlyFirstParagraph(page: Page): Promise<void> {
 
 test.describe("Unique content around the site", () => {
   test("Welcome page (screenshot)", async ({ page }, testInfo) => {
-    await gotoPage(page, "http://localhost:8080", "load")
+    // Default domcontentloaded gate: takeRegressionScreenshot's viewport-image
+    // wait covers image readiness, and a `load` gate can stall on WebKit's
+    // never-settling navbar video.
+    await gotoPage(page, "http://localhost:8080")
     await page.locator("body").waitFor({ state: "visible" })
 
     await keepOnlyFirstParagraph(page)
@@ -330,6 +333,24 @@ test.describe("Unique content around the site", () => {
       elementToScreenshot: gooseCodeBlock,
     })
   })
+
+  for (const theme of LIGHT_THEMES) {
+    test(`GDM signature in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
+      await gotoPage(page, "http://localhost:8080/gdm-signature-fixture")
+      await setTheme(page, theme)
+
+      const signature = page.locator("#gdm-signature").first()
+      await signature.scrollIntoViewIfNeeded()
+      await expect(signature).toBeVisible()
+      // The name renders in the serif face; wait for fonts so its metrics are
+      // settled before the shot.
+      await page.evaluate(() => document.fonts.ready)
+
+      await takeRegressionScreenshot(page, testInfo, `gdm-signature-${theme}`, {
+        elementToScreenshot: signature,
+      })
+    })
+  }
 
   for (const theme of LIGHT_THEMES) {
     test(`Inversion demo in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
@@ -1168,6 +1189,18 @@ test.describe("Link color states", () => {
       })
     })
   }
+
+  test("monospace arrow inside a link inherits the link color", async ({ page }) => {
+    const arrowLink = page.locator("a:has(.monospace-arrow)").first()
+    await arrowLink.scrollIntoViewIfNeeded()
+    await expect(arrowLink).toBeVisible()
+
+    const arrow = arrowLink.locator(".monospace-arrow").first()
+    const linkColor = await arrowLink.evaluate((el) => getComputedStyle(el).color)
+    const arrowColor = await arrow.evaluate((el) => getComputedStyle(el).color)
+
+    expect(arrowColor).toEqual(linkColor)
+  })
 })
 
 test.describe("List alignment", () => {

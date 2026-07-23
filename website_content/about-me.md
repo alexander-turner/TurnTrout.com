@@ -4,7 +4,7 @@ hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/about-me.jpg
 description: I'm TurnTrout, but the United States government insists on calling me "Alexander Matt Turner." I like writing and learning about lots of stuff.
 date_published: 2024-10-27
-date_updated: 2026-07-15
+date_updated: 2026-07-22
 tags:
   - personal
 title: About me
@@ -50,6 +50,6 @@ If my writing means something to you or has brightened your life, consider:
 
 I prefer messages over donations.
 
-<iframe title="Bug report form" src="https://dash.palform.app/fill/org_0NG2AE3H31YRM/form_0NG2CY2QF1Z4S?f=fat_0NG2D9YF31NBQ#ak=EA80023B7BCF4EB0A8A6518C17E25669550FDB9B" height="800px"></iframe>
+<iframe title="Bug report form" src="https://dash.palform.app/fill/org_0NG2AE3H31YRM/form_0NG2CY2QF1Z4S?f=fat_0NG2D9YF31NBQ#ak=EA80023B7BCF4EB0A8A6518C17E25669550FDB9B" height="800"></iframe>
 
 [^donate]: Ko-fi donations will not affect my ability to do AI alignment research. To support alignment research, I suggest the [Long-Term Future Fund](https://www.givingwhatwecan.org/charities/long-term-future-fund).

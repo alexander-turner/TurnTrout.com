@@ -3,3 +3,10 @@
 # br_spaces=2) is the authority for markdown trailing whitespace, so exempt
 # markdown from the raw check while keeping blank-at-eof and space-before-tab.
 *.md whitespace=-blank-at-eol
+
+# Pinned CDN asset fixtures (quartz/components/tests/fixtures/cdn-assets) are
+# byte-exact mirrors captured from assets.turntrout.com so (screenshot)
+# baselines don't depend on the live CDN. Treat them as opaque binary: git
+# must not normalize EOLs or run whitespace checks, or the served bytes would
+# diverge from what the baselines were captured against.
+quartz/components/tests/fixtures/cdn-assets/** -text -diff

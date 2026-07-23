@@ -422,8 +422,15 @@ test.describe("Instant Scroll Restoration", () => {
 
     // Navigate to hash and record position
     await gotoPage(page, `http://localhost:8080/${testingPageSlug}#${anchorId}`, "domcontentloaded")
-    await page.waitForLoadState("load")
-    const expectedScrollY = await page.evaluate(() => window.scrollY)
+    // The browser's anchor scroll can land a beat after domcontentloaded
+    // (notably on WebKit); wait for the non-zero position with the same
+    // single-evaluation read used after the reload below.
+    const anchorHandle = await page.waitForFunction(
+      () => (window.scrollY > 0 ? window.scrollY : false),
+      null,
+      { polling: WAIT_POLL_INTERVAL_MS },
+    )
+    const expectedScrollY = await anchorHandle.jsonValue()
     expect(expectedScrollY).toBeGreaterThan(0)
 
     // Reload and wait for completion

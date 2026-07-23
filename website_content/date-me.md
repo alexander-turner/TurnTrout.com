@@ -7,7 +7,7 @@ hideSubscriptionLinks: true
 card_image: https://assets.turntrout.com/static/images/card_images/anime_sunset.jpg
 description: My dating doc, sharing who I am and who I'm looking for. Is it you? 💘
 date_published: 2024-10-27
-date_updated: 2026-06-27
+date_updated: 2026-07-22
 tags:
   - personal
 card_image_alt: An anime rendition of a beautiful orange sunset over the Bay skyline. A man and woman enjoy a picnic.
@@ -58,7 +58,7 @@ That said, I've become a bit less research-focused recently. Somewhat relatedly,
 When I was younger, I wasn't social. These days, I love meeting new people! I'm an _ambivert_: sometimes socializing is energizing, but sometimes it's draining. I have a lot of friends who are precious to me, and I wish I could give each of them the time they each deserve. Sometimes I even look out over a city and wonder at the residents:
 
 <figure>
-  <img src="https://assets.turntrout.com/Attachments/Pasted image 20240624142444.avif" alt="Night-time view of the Bay Area from the Berkeley hills"/>
+  <img src="https://assets.turntrout.com/Attachments/Pasted%20image%2020240624142444.avif" alt="Night-time view of the Bay Area from the Berkeley hills"/>
   <figcaption>Part of me wishes I could meet and deeply understand each and every person here. Each pinpoint of light is shining for a <em>reason</em>, it was put there <em>by another person</em>.</figcaption>
 </figure>
 
@@ -167,4 +167,4 @@ OK, I've written enough! Get to know me if you want to know more. 🪿
 
 # Let's get in touch?
 
-<iframe title="Express interest in a date!" src="https://dash.palform.app/fill/org_0NG2AE3H31YRM/form_0NG2ARWY71R7B?f=fat_0NG2BKQ971N53#ak=EA80023B7BCF4EB0A8A6518C17E25669550FDB9B" height="800px" width="600px"></iframe>
+<iframe title="Express interest in a date!" src="https://dash.palform.app/fill/org_0NG2AE3H31YRM/form_0NG2ARWY71R7B?f=fat_0NG2BKQ971N53#ak=EA80023B7BCF4EB0A8A6518C17E25669550FDB9B" height="800" width="600"></iframe>

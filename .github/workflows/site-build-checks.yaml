@@ -61,6 +61,8 @@ jobs:
               - "config/constants.json"
               - "config/stylelint/.variables-only-stylelintrc.json"
               - "scripts/built_site_checks.py"
+              - "scripts/vnu_check.py"
+              - "config/vnu_allowlist.json"
               - "package.json"
               - "pnpm-lock.yaml"
               - ".github/actions/**"
@@ -117,6 +119,11 @@ jobs:
 
       - name: Run built site checks
         run: uv run python scripts/built_site_checks.py
+
+      # `java` is preinstalled on the ubuntu-24.04 runner; vnu_check fails
+      # loudly if it is ever absent rather than silently skipping validation.
+      - name: Validate emitted HTML (Nu validator)
+        run: uv run python scripts/vnu_check.py
 
   linkchecker:
     needs: [should-run, build]

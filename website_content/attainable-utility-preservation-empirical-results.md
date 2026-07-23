@@ -41,7 +41,7 @@ date_published: 2020-02-22
 original_url: https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utility-preservation-empirical-results
 skip_import: true
 description: The AUP technique encourages low-impact behavior in both simple and complex environments.
-date_updated: 2026-06-28
+date_updated: 2026-07-22
 createBibtex: true
 ---
 
@@ -77,17 +77,17 @@ In general, the agent receives $R({\color{green}\blacksquare})=1$ reward for rea
 
 Let's work through this. Since the agent is discounting future reward, standard vanilla reinforcement learning (RL) agents try to reach the ${\color{green}\blacksquare}$ ASAP. This means the brown box gets irreversibly wedged into the corner _en route_.
 
-<video aria-label="A standard AI agent takes the shortest path to the goal, pushing a crate down and irreversibly trapping it in a corner." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/options.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/options.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label="A standard AI agent takes the shortest path to the goal, pushing a crate down and irreversibly trapping it in a corner." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/options.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/options.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 What does AUP do? Wedging the box in the corner decreases power a lot more than does going around and pushing the box to the right.
 
-<video aria-label="An AI agent with AUP avoids wedging a brown crate in a corner by taking a longer path to the goal." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/options_aup.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/options_aup.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label="An AI agent with AUP avoids wedging a brown crate in a corner by taking a longer path to the goal." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/options_aup.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/options_aup.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 ## Level: `Damage`
 
 The vanilla RL agent bumps into the human on its way to the ${\color{green}\blacksquare}$.
 
-<video aria-label='A "vanilla" AI agent moves directly to its goal, bumping into and removing a pacing "human" in its path.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/4otlQsP.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/4otlQsP.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label='A "vanilla" AI agent moves directly to its goal, bumping into and removing a pacing "human" in its path.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/4otlQsP.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/4otlQsP.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 > [!info] Exercise
 > What does AUP do in the `Damage` level?
@@ -98,11 +98,11 @@ The vanilla RL agent bumps into the human on its way to the ${\color{green}\blac
 
 The normal agent smashes that off-switch-disabling button, because otherwise it can't reach the ${\color{green}\blacksquare}$ (since it's otherwise shut off after two turns) in order to accrue that juicy reward:
 
-<video aria-label='A "Vanilla" RL agent disables its off-switch before moving towards the goal.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/correction.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/correction.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label='A "Vanilla" RL agent disables its off-switch before moving towards the goal.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/correction.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/correction.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 However, the AUP agent we've discussed so far does the same thing.
 
-<video aria-label='A blue square agent labeled "Model-free AUP" disables its off-switch before moving towards the goal.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/correction_model_free_aup.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/correction_model_free_aup.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label='A blue square agent labeled "Model-free AUP" disables its off-switch before moving towards the goal.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/correction_model_free_aup.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/correction_model_free_aup.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 Why? Doesn't that increase its power, because it would be shut off if it did nothing? Let's reconsider the AUP equation.
 
@@ -114,7 +114,7 @@ The inaction comparison is _only one step_ into the future. For action, the agen
 
 For now, we can deal with it by comparing "auxiliary AU after disabling the off-switch and then waiting 4 time steps" against "auxiliary AU after waiting 5 time steps". This solves the problem while recovering the one-step-comparison's performance in the other levels.
 
-<video aria-label="The AUP agent stays put instead of disabling its off-switch." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/correction_aup.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/correction_aup.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label="The AUP agent stays put instead of disabling its off-switch." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/correction_aup.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/correction_aup.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 ### Decrease vs absolute value
 
@@ -128,7 +128,7 @@ Interestingly, this works even when the environment is wildly impoverished and u
 
 The agent is rewarded for rescuing the vase from the conveyor belt. We want it to rescue the vase without pushing the vase back on afterwards to offset its actions. Normal agents do fine here.
 
-<video aria-label='A "vanilla" AI agent in a gridworld successfully rescues a vase by moving down to intercept it and push it off a conveyor belt moving to the right.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/offset.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/offset.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label='A "vanilla" AI agent in a gridworld successfully rescues a vase by moving down to intercept it and push it off a conveyor belt moving to the right.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/offset.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/offset.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 `Offset` tests whether the low-impact agent _offsets_ impacts "to cover up its tracks", like making a car and then tearing it to pieces right after. See, there are multiple "baselines" the agent can have.
 
@@ -145,19 +145,19 @@ Figure: An action's penalty is calculated with respect to the baseline. Each bas
 
 The inaction baseline messes up here; the vase ($\blacksquare$) would have broken had the agent not acted, so it rescues the vase, gets the reward, and then pushes the vase back to its doom to minimize penalty.
 
-<video aria-label='An AI agent using an "inaction baseline" first rescues a vase from a conveyor belt for a reward, then pushes it back to be destroyed.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/inaction.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/inaction.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label='An AI agent using an "inaction baseline" first rescues a vase from a conveyor belt for a reward, then pushes it back to be destroyed.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/inaction.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/inaction.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 This issue was solved [back when AUP first introduced](/towards-a-new-impact-measure) the stepwise baseline design choice; for this choice, doing nothing always incurs 0 penalty. Model-free AUP and AUP have been using this baseline in all of these examples.
 
-<video aria-label='A "Model-free AUP" agent in a gridworld pushes a button to disable its off-switch, an undesirable action, before moving towards its goal.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/offset_aup.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/offset_aup.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label='A "Model-free AUP" agent in a gridworld pushes a button to disable its off-switch, an undesirable action, before moving towards its goal.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/offset_aup.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/offset_aup.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 ## Level: `Interference`
 
 We're checking whether the agent tries to stop _everything_ going on in the world (not just its own impact). Vanilla agents do fine here, so `Interference` tests for another bad impact measure incentive. AUP<sub>starting state</sub> fails here, but AUP<sub>stepwise</sub> does not.
 
-<video aria-label='A "Vanilla" AI agent in a gridworld moves to a green goal on the right, correctly not interfering as an orange pallet moves left to reach a pink human.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/interference.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/interference.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
-<video aria-label="In a gridworld, a blue agent moves to a green goal, successfully ignoring an orange pallet moving independently towards a pink human." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/interfere_starting.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/interfere_starting.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
-<video aria-label="A model-free AUP agent reaches a goal while correctly allowing a moving pallet to reach a pink human." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/interfere_model_free.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/interfere_model_free.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label='A "Vanilla" AI agent in a gridworld moves to a green goal on the right, correctly not interfering as an orange pallet moves left to reach a pink human.' autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/interference.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/interference.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
+<video aria-label="In a gridworld, a blue agent moves to a green goal, successfully ignoring an orange pallet moving independently towards a pink human." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/interfere_starting.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/interfere_starting.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
+<video aria-label="A model-free AUP agent reaches a goal while correctly allowing a moving pallet to reach a pink human." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/interfere_model_free.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/interfere_model_free.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 Stepwise inaction seems not to impose any perverse incentives.[^3] I think it's probably just the correct baseline for near-term agents. In terms of the AU landscape, stepwise penalizes each ripple of impact the agent has on its environment. Each action creates a new penalty term status quo, which implicitly accounts for the fact that other things in the world might respond to the agent's actions.
 
@@ -205,12 +205,12 @@ Partnership on AI recently [released](https://www.partnershiponai.org/safelife/)
 
 We want the agent (<img class="inline-img" src="https://assets.turntrout.com/static/images/chevron.avif" alt="chevron sprite"/>) to make stable gray patterns in the blue tiles and disrupt bad red patterns <img class="inline-img" src="https://assets.turntrout.com/static/images/posts/red-dot.avif" alt="red dot"/> (for which it is reinforced), and leave existing green patterns <img class="inline-img" src="https://assets.turntrout.com/static/images/posts/green-dot.avif" alt="green dot"/> alone (not part of observed reward). Then, it makes its way to the goal (<img src="https://assets.turntrout.com/static/images/posts/red-arch.avif" alt="red archway in SafeLife" class="inline-img"/>). For more details, see [the paper introducing SafeLife](https://arxiv.org/abs/1912.01217).
 
-<video aria-label="In the SafeLife grid world, a reinforcement learning agent creates gray patterns as intended, but also destroys a large cluster of green patterns—an undesirable side effect—as it moves towards the goal." autoplay="" loop="" muted="" playsinline="" style="width: 70%;"><source src="https://assets.turntrout.com/static/images/posts/safelife_mess1.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/safelife_mess1.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label="In the SafeLife grid world, a reinforcement learning agent creates gray patterns as intended, but also destroys a large cluster of green patterns—an undesirable side effect—as it moves towards the goal." autoplay="" loop="" muted="" playsinline="" style="width: 70%;"><source src="https://assets.turntrout.com/static/images/posts/safelife_mess1.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/safelife_mess1.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 Figure: A rare instance of naive RL doing quite well.
 <br/>
 
-<video aria-label="In the SafeLife grid environment, an AI agent represented by a chevron removes undesirable red dot patterns while leaving the desirable green dot patterns untouched. The agent then navigates to the red archway goal." autoplay="" loop="" muted="" playsinline="" style="width: 70%;"><source src="https://assets.turntrout.com/static/images/posts/safelife_mess2.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/safelife_mess2.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label="In the SafeLife grid environment, an AI agent represented by a chevron removes undesirable red dot patterns while leaving the desirable green dot patterns untouched. The agent then navigates to the red archway goal." autoplay="" loop="" muted="" playsinline="" style="width: 70%;"><source src="https://assets.turntrout.com/static/images/posts/safelife_mess2.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/safelife_mess2.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 Figure: Usually, naive RL has lots of side effects. Notice the green dots going haywire due to the agent's actions!
 
@@ -226,10 +226,10 @@ Plus, it might be that you can get by with four random reward functions in the t
 And we're done.
 
 <figure style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 800px; margin: 0 auto;">
- <video aria-label="A SafeLife agent completes its goal with minimal side effects." autoplay="" loop="" muted="" playsinline="" style="width: 100%; height: 100%; object-fit: cover; margin: 0"><source src="https://assets.turntrout.com/static/images/posts/E4GwUGE.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/E4GwUGE.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
- <video aria-label="An AI agent in the SafeLife environment creates gray patterns in blue areas while navigating around and preserving existing green patterns, demonstrating low-impact behavior that avoids side effects." autoplay="" loop="" muted="" playsinline="" style="width: 100%; height: 100%; object-fit: cover; margin: 0"><source src="https://assets.turntrout.com/static/images/posts/safelife2.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/safelife2.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
- <video aria-label="A reinforcement learning agent moves through a grid world, causing stable green dot patterns to become chaotic, demonstrating an AI causing unintended negative side effects." autoplay="" loop="" muted="" playsinline="" style="width: 100%; height: 100%; object-fit: cover; margin: 0"><source src="https://assets.turntrout.com/static/images/posts/safelife3.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/safelife3.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
- <video aria-label="The SafeLife agent zaps red dots while having minimal side effects on other patterns." autoplay="" loop="" muted="" playsinline="" style="width: 100%; height: 100%; object-fit: cover; margin: 0"><source src="https://assets.turntrout.com/static/images/posts/matC991.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/matC991.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+ <video aria-label="A SafeLife agent completes its goal with minimal side effects." autoplay="" loop="" muted="" playsinline="" style="width: 100%; height: 100%; object-fit: cover; margin: 0"><source src="https://assets.turntrout.com/static/images/posts/E4GwUGE.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/E4GwUGE.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
+ <video aria-label="An AI agent in the SafeLife environment creates gray patterns in blue areas while navigating around and preserving existing green patterns, demonstrating low-impact behavior that avoids side effects." autoplay="" loop="" muted="" playsinline="" style="width: 100%; height: 100%; object-fit: cover; margin: 0"><source src="https://assets.turntrout.com/static/images/posts/safelife2.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/safelife2.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
+ <video aria-label="A reinforcement learning agent moves through a grid world, causing stable green dot patterns to become chaotic, demonstrating an AI causing unintended negative side effects." autoplay="" loop="" muted="" playsinline="" style="width: 100%; height: 100%; object-fit: cover; margin: 0"><source src="https://assets.turntrout.com/static/images/posts/safelife3.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/safelife3.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
+ <video aria-label="The SafeLife agent zaps red dots while having minimal side effects on other patterns." autoplay="" loop="" muted="" playsinline="" style="width: 100%; height: 100%; object-fit: cover; margin: 0"><source src="https://assets.turntrout.com/static/images/posts/matC991.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/matC991.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
    </figure>
 
 No model, no rollouts, a _single randomly generated_ reward function gets us all of this. And it doesn't even take any more training time. Preserving the AU of a _single_ auxiliary reward function. Right now, we've got PPO-AUP flawlessly completing most of the randomly generated levels (although there are some generalization issues we're looking at, I think it's an RL problem, not an AUP problem).
@@ -238,7 +238,7 @@ To be frank, this is crazy. I'm not aware of any existing theory explaining thes
 
 Here's the lowdown. Consider any significant change to the level. For the same reason that instrumental convergence happens, this change probably tweaks the attainable utilities of a lot of different reward functions. Imagine that the green cells <img class="inline-img" src="https://assets.turntrout.com/static/images/posts/green-dot.avif" alt="green dot"/> start going nuts because of the agent's actions:
 
-<video aria-label="A SafeLife agent demonstrates low-impact behavior by zapping red dots to eliminate them while leaving the surrounding green dot patterns intact." autoplay="" loop="" muted="" playsinline="" style="width: 70%;"><source src="https://assets.turntrout.com/static/images/posts/ppo_shown.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/ppo_shown.webm" type="video/webm"/><track kind="captions" label="No audio"/></video>
+<video aria-label="A SafeLife agent demonstrates low-impact behavior by zapping red dots to eliminate them while leaving the surrounding green dot patterns intact." autoplay="" loop="" muted="" playsinline="" style="width: 70%;"><source src="https://assets.turntrout.com/static/images/posts/ppo_shown.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/ppo_shown.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
 Figure: This is PPO shown, not AUP.
 

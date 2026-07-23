@@ -8,7 +8,7 @@ tags:
   - shard-theory
 original_url: https://www.lesswrong.com/posts/LWfYjZgXHN5GYtYpH/intrinsic-power-seeking-ai-might-seek-power-for-power-s-sake
 date_published: 2024-10-30
-date_updated: 2026-04-20
+date_updated: 2026-07-22
 ---
 
 The world will change. We will not forever be playing around with chatbots. Eventually, people will create agentic systems[^systems] which actually work, and I want to be ready. Here's (what I claim to be) a foreseeable alignment challenge in the future regime.
@@ -68,7 +68,7 @@ Like the power-seeking argument, the sycophancy argument involves _many tasks in
 
 # Making falsifiable predictions
 
-<iframe title="Will There Exist A Survey Paper on Intrinsic Power-Seekin By Beginning Of 2028?" src="https://fatebook.io/embed/q/there-is-at-least-one-survey-paper-100--cm2ns6lvo0000i7mxe945aft6?compact=true&requireSignIn=false" height="195px"></iframe>
+<iframe title="Will There Exist A Survey Paper on Intrinsic Power-Seekin By Beginning Of 2028?" src="https://fatebook.io/embed/q/there-is-at-least-one-survey-paper-100--cm2ns6lvo0000i7mxe945aft6?compact=true&requireSignIn=false" height="195"></iframe>
 
 Predictions of this hypothesis (predicted with varying confidences):
 
