@@ -19,6 +19,11 @@ name: Update visual baselines
 # screenshots — applies the main-run treatment (synthetic passing
 # check-run + deploy verify rerun). One approval click clears both the PR
 # and main.
+#
+# An approval can race an auto-merge that lands mid-run (deleting the head
+# branch). Both spots that touch the branch — the checkout and the
+# empty-commit push — detect the deletion, confirm the PR merged, and route
+# down the merged-PR carry-through path instead of failing.
 
 on:
   workflow_dispatch:
@@ -90,16 +95,48 @@ jobs:
 
       # Merged PRs skip the branch checkout: the head branch is auto-deleted
       # on merge, and the carry-through path below only needs the scripts on
-      # the default branch.
+      # the default branch. An auto-merge can land (and delete the branch)
+      # between the resolve step and this checkout, so a checkout failure is
+      # tolerated here and re-resolved below instead of failing the approval.
       - name: Checkout target ref
+        id: checkout-branch
         if: steps.resolve.outputs.ref != '' && steps.resolve.outputs.merged != 'true'
+        continue-on-error: true
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted GITHUB_TOKEN is used by the empty-commit push below
         with:
           ref: ${{ steps.resolve.outputs.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # A failed branch checkout is only acceptable when the PR merged after
+      # the resolve step (deleting the branch); in that case the approval
+      # continues down the merged-PR carry-through path. Any other checkout
+      # failure fails the approval loudly.
+      - name: Re-resolve PR after branch checkout failure
+        id: recheck
+        if: steps.checkout-branch.outcome == 'failure'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: Number(process.env.PR_NUMBER),
+            });
+            if (!pr.data.merged) {
+              core.setFailed(
+                `Checkout of the PR branch failed but PR #${process.env.PR_NUMBER} ` +
+                'is still open, so the failure is not a merge-deleted branch.'
+              );
+              return;
+            }
+            core.info(`PR #${process.env.PR_NUMBER} merged after resolve; using the carry-through path.`);
+            core.setOutput('merged', 'true');
+            core.setOutput('merged_at', pr.data.merged_at || '');
+
       - name: Checkout default branch (main runs and merged PRs)
-        if: steps.resolve.outputs.ref == '' || steps.resolve.outputs.merged == 'true'
+        if: steps.resolve.outputs.ref == '' || steps.resolve.outputs.merged == 'true' || steps.recheck.outputs.merged == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
@@ -136,11 +173,14 @@ jobs:
             ./all-blob-reports --staging-dir "$STAGING_DIR"
 
       - name: Push empty commit to retrigger visual-testing (open-PR runs only)
-        if: steps.resolve.outputs.pr_number != '' && steps.resolve.outputs.merged != 'true'
+        id: push
+        if: steps.resolve.outputs.pr_number != '' && steps.resolve.outputs.merged != 'true' && steps.recheck.outputs.merged != 'true'
         env:
           REF: ${{ steps.resolve.outputs.ref }}
           RUN_ID: ${{ github.event.inputs.run_id }}
           APPROVER: ${{ github.actor }}
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # The R2 upload above is the approval; this empty commit only nudges
           # visual-testing to rerun. A push to the PR branch that lands between
@@ -148,11 +188,30 @@ jobs:
           # would non-fast-forward reject the push and fail the approval even
           # though the baselines are already live. Reset to the freshest tip
           # before each attempt so the push is always a fast-forward.
+          #
+          # A merge landing during this job deletes the branch entirely; in
+          # that case the retrigger is moot and the merged-PR carry-through
+          # below takes over, keyed off the merged_late output.
+          check_merged_late() {
+            merged_at=$(gh pr view "$PR_NUMBER" --json mergedAt --jq '.mergedAt // empty')
+            if [ -n "$merged_at" ]; then
+              echo "PR #$PR_NUMBER merged mid-approval; deferring to the carry-through path"
+              {
+                echo "merged_late=true"
+                echo "merged_at=$merged_at"
+              } >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           msg="ci: rerun visual-testing against approved baselines (run $RUN_ID, approved by $APPROVER)"
           for attempt in 1 2 3 4 5; do
-            git fetch origin "$REF"
+            if ! git fetch origin "$REF"; then
+              check_merged_late
+              echo "Fetch of $REF failed but PR #$PR_NUMBER is still open" >&2
+              exit 1
+            fi
             git reset --hard "origin/$REF"
             git commit --allow-empty -m "$msg"
             if git push origin "HEAD:$REF"; then
@@ -161,6 +220,7 @@ jobs:
             fi
             echo "Push rejected (attempt $attempt); refetching $REF and retrying"
           done
+          check_merged_late
           echo "Failed to push retrigger commit after 5 attempts" >&2
           exit 1
 
@@ -172,10 +232,10 @@ jobs:
       # replacement reports.
       - name: Find post-merge visual-testing run on main
         id: find-main-run
-        if: steps.resolve.outputs.merged == 'true'
+        if: steps.resolve.outputs.merged == 'true' || steps.recheck.outputs.merged == 'true' || steps.push.outputs.merged_late == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          MERGED_AT: ${{ steps.resolve.outputs.merged_at }}
+          MERGED_AT: ${{ steps.resolve.outputs.merged_at || steps.recheck.outputs.merged_at || steps.push.outputs.merged_at }}
         with:
           script: |
             const mergedAt = process.env.MERGED_AT;
@@ -464,7 +524,7 @@ jobs:
         env:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
           RUN_ID: ${{ github.event.inputs.run_id }}
-          MERGED: ${{ steps.resolve.outputs.merged }}
+          MERGED: ${{ (steps.resolve.outputs.merged == 'true' || steps.recheck.outputs.merged == 'true' || steps.push.outputs.merged_late == 'true') && 'true' || 'false' }}
           MAIN_RUN_ID: ${{ steps.find-main-run.outputs.main_run_id }}
           MAIN_CONCLUSION: ${{ steps.find-main-run.outputs.main_conclusion }}
           COVERED: ${{ steps.cover.outputs.covered }}
