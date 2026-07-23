@@ -94,8 +94,10 @@ jobs:
             core.setOutput('merged_at', mergedAt);
 
       # Merged PRs skip the branch checkout: the head branch is auto-deleted
-      # on merge, and the carry-through path below only needs the scripts on
-      # the default branch. An auto-merge can land (and delete the branch)
+      # on merge, and the carry-through path below only needs the repo
+      # scripts — from the default branch, or, when the merge lands mid-run,
+      # from the already-checked-out PR branch (whose tree is what just
+      # landed on main). An auto-merge can land (and delete the branch)
       # between the resolve step and this checkout, so a checkout failure is
       # tolerated here and re-resolved below instead of failing the approval.
       - name: Checkout target ref
@@ -193,7 +195,10 @@ jobs:
           # that case the retrigger is moot and the merged-PR carry-through
           # below takes over, keyed off the merged_late output.
           check_merged_late() {
-            merged_at=$(gh pr view "$PR_NUMBER" --json mergedAt --jq '.mergedAt // empty')
+            if ! merged_at=$(gh pr view "$PR_NUMBER" --json mergedAt --jq '.mergedAt // empty'); then
+              echo "gh pr view failed while checking merged state of PR #$PR_NUMBER" >&2
+              exit 1
+            fi
             if [ -n "$merged_at" ]; then
               echo "PR #$PR_NUMBER merged mid-approval; deferring to the carry-through path"
               {
@@ -214,7 +219,11 @@ jobs:
             fi
             git reset --hard "origin/$REF"
             git commit --allow-empty -m "$msg"
-            if git push origin "HEAD:$REF"; then
+            # The lease makes the push a compare-and-swap against the tip we
+            # just fetched: a plain push to a merge-deleted ref would
+            # silently recreate the branch, while the lease rejects it and
+            # the next iteration's fetch routes to check_merged_late.
+            if git push --force-with-lease="refs/heads/$REF:origin/$REF" origin "HEAD:$REF"; then
               echo "Pushed retrigger commit on attempt $attempt"
               exit 0
             fi
@@ -224,6 +233,29 @@ jobs:
           echo "Failed to push retrigger commit after 5 attempts" >&2
           exit 1
 
+      # Single source of truth for whether the PR is merged, however that
+      # was discovered: at resolve time, at branch checkout (recheck), or at
+      # the retrigger push (merged_late).
+      - name: Consolidate effective merge state
+        id: merged-state
+        if: steps.resolve.outputs.pr_number != ''
+        env:
+          RESOLVE_MERGED: ${{ steps.resolve.outputs.merged }}
+          RECHECK_MERGED: ${{ steps.recheck.outputs.merged }}
+          PUSH_MERGED_LATE: ${{ steps.push.outputs.merged_late }}
+          RESOLVE_MERGED_AT: ${{ steps.resolve.outputs.merged_at }}
+          RECHECK_MERGED_AT: ${{ steps.recheck.outputs.merged_at }}
+          PUSH_MERGED_AT: ${{ steps.push.outputs.merged_at }}
+        run: |
+          merged=false
+          if [ "$RESOLVE_MERGED" = "true" ] || [ "$RECHECK_MERGED" = "true" ] || [ "$PUSH_MERGED_LATE" = "true" ]; then
+            merged=true
+          fi
+          {
+            echo "merged=$merged"
+            echo "merged_at=${RESOLVE_MERGED_AT:-${RECHECK_MERGED_AT:-$PUSH_MERGED_AT}}"
+          } >> "$GITHUB_OUTPUT"
+
       # Carry-through for merged PRs: the approved diffs are the ones
       # re-failing main's own visual-testing run, so find that run and (after
       # the safety checks below) give it the main-run treatment. Waits out
@@ -232,10 +264,10 @@ jobs:
       # replacement reports.
       - name: Find post-merge visual-testing run on main
         id: find-main-run
-        if: steps.resolve.outputs.merged == 'true' || steps.recheck.outputs.merged == 'true' || steps.push.outputs.merged_late == 'true'
+        if: steps.merged-state.outputs.merged == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          MERGED_AT: ${{ steps.resolve.outputs.merged_at || steps.recheck.outputs.merged_at || steps.push.outputs.merged_at }}
+          MERGED_AT: ${{ steps.merged-state.outputs.merged_at }}
         with:
           script: |
             const mergedAt = process.env.MERGED_AT;
@@ -524,7 +556,7 @@ jobs:
         env:
           PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
           RUN_ID: ${{ github.event.inputs.run_id }}
-          MERGED: ${{ (steps.resolve.outputs.merged == 'true' || steps.recheck.outputs.merged == 'true' || steps.push.outputs.merged_late == 'true') && 'true' || 'false' }}
+          MERGED: ${{ steps.merged-state.outputs.merged }}
           MAIN_RUN_ID: ${{ steps.find-main-run.outputs.main_run_id }}
           MAIN_CONCLUSION: ${{ steps.find-main-run.outputs.main_conclusion }}
           COVERED: ${{ steps.cover.outputs.covered }}
