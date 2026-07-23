@@ -7,6 +7,10 @@ import { scrollActiveTocLinkIntoView } from "./toc-autoscroll-utils"
 
 let tocAbortController: AbortController | null = null
 
+function slugOf(link: Element): string | undefined {
+  return link.getAttribute("href")?.split("#")[1]
+}
+
 function setupMobileTocClickDelegation(signal: AbortSignal): void {
   const mobileToc = document.getElementById("toc-content-mobile")
   if (!mobileToc) return
@@ -51,7 +55,7 @@ function setupTocActiveHighlighting(signal: AbortSignal): void {
   const navLinks = document.querySelectorAll<HTMLAnchorElement>("#toc-content a")
   const navLinkArray = Array.from(navLinks)
 
-  const navLinkSlugs = new Set(navLinkArray.map((l) => l.getAttribute("href")?.split("#")[1]))
+  const navLinkSlugs = new Set(navLinkArray.map(slugOf))
   const sections = Array.from(allSections).filter(
     (section) => section.id && navLinkSlugs.has(section.id),
   )
@@ -66,8 +70,9 @@ function setupTocActiveHighlighting(signal: AbortSignal): void {
     const markManualScroll = () => {
       lastManualSidebarScroll = performance.now()
     }
-    // Wheel / touch anywhere in the sidebar, or a drag on the scrollbar track
-    // itself (target === sidebar, not a link), counts as manual browsing.
+    // Wheel or touch scrolling within the sidebar marks manual browsing; a
+    // pointerdown on the sidebar itself (its scrollbar, not a link) covers
+    // thumb-drags where the platform exposes a classic scrollbar.
     sidebar.addEventListener("wheel", markManualScroll, { passive: true, signal })
     sidebar.addEventListener("touchmove", markManualScroll, { passive: true, signal })
     sidebar.addEventListener(
@@ -86,8 +91,7 @@ function setupTocActiveHighlighting(signal: AbortSignal): void {
     currentSection = newSection
 
     navLinkArray.forEach((link) => {
-      const slug = link.getAttribute("href")?.split("#")[1]
-      link.classList.toggle("active", Boolean(currentSection && slug === currentSection))
+      link.classList.toggle("active", Boolean(currentSection && slugOf(link) === currentSection))
     })
 
     // Follow the active link with the sidebar. Instant only on the first update
@@ -96,9 +100,7 @@ function setupTocActiveHighlighting(signal: AbortSignal): void {
     isInitialUpdate = false
     if (sidebar === null) return
     if (performance.now() - lastManualSidebarScroll < TOC_MANUAL_SCROLL_GRACE_MS) return
-    const activeIndex = navLinkArray.findIndex(
-      (link) => link.getAttribute("href")?.split("#")[1] === currentSection,
-    )
+    const activeIndex = navLinkArray.findIndex((link) => slugOf(link) === currentSection)
     if (activeIndex === -1) return
     scrollActiveTocLinkIntoView(sidebar, navLinkArray, activeIndex, behavior)
   }

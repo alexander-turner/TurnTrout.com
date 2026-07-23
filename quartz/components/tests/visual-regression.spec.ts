@@ -743,10 +743,25 @@ test.describe("Table of contents", () => {
     if (t0 === null) throw new Error("#right-sidebar not found")
 
     // Highlighting follows the newly active heading, but the sidebar must NOT
-    // scroll while the grace period is active.
+    // scroll while the grace period is active. The active-link poll resolves
+    // within a frame, far inside the multi-second grace, so the stayed-at-0
+    // assertion is not racing the clock.
     await activateHeading(page, suppressedHeading)
     await waitForActiveHref(page, suppressedHeading)
-    expect(await rightSidebar.evaluate((el) => el.scrollTop)).toBe(0)
+    const suppressed = await page.evaluate(() => {
+      const sidebar = document.getElementById("right-sidebar")
+      const active = document.querySelector("#toc-content a.active")
+      if (!sidebar || !active) return null
+      const s = sidebar.getBoundingClientRect()
+      const a = active.getBoundingClientRect()
+      return { scrollTop: sidebar.scrollTop, activeBelowFold: a.top > s.bottom }
+    })
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (!suppressed) throw new Error("Expected sidebar and active link to exist")
+    // The active link is below the fold, so auto-scroll WOULD move the sidebar
+    // were it not suppressed — the stayed-at-0 assertion is therefore meaningful.
+    expect(suppressed.activeBelowFold).toBe(true)
+    expect(suppressed.scrollTop).toBe(0)
 
     // Once the grace period lapses, the next section change re-syncs the sidebar.
     await page.waitForFunction(
