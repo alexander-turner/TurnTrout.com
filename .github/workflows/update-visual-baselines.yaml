@@ -170,9 +170,9 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           msg="ci: rerun visual-testing against approved baselines (run $RUN_ID, approved by $APPROVER)"
           for attempt in 1 2 3 4 5; do
-            # Write the remote-tracking ref explicitly: the checkout is of the
-            # default branch, whose refspec would otherwise leave the PR
-            # branch only in FETCH_HEAD, so origin/$REF must be created here.
+            # The default-branch checkout tracks only the default branch, so
+            # write the PR branch's remote-tracking ref explicitly to make
+            # origin/$REF resolvable for the reset and lease below.
             if ! git fetch origin "+refs/heads/$REF:refs/remotes/origin/$REF"; then
               check_merged_late
               echo "Fetch of $REF failed but PR #$PR_NUMBER is not merged" >&2
