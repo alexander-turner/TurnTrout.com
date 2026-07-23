@@ -589,22 +589,38 @@ export async function search(page: Page, term: string) {
 }
 
 /**
- * Keeps every `<video>`/`<audio>` on frame 0 for the life of the page by
- * pausing it inside a capture-phase "play" listener, which runs before the
- * media clock advances. Screenshot determinism requires frame 0 on the
- * compositor at capture time; once playback advances, restoring frame 0
- * depends on WebKit presenting a seeked frame, which it does not reliably do.
- * Must be called before navigation so the listener exists when autoplay
- * first fires. Only for specs that never assert real playback.
+ * Freezes every `<video>`/`<audio>` on frame 0 for the life of the page.
+ * Screenshot determinism requires frame 0 on the compositor at capture time,
+ * and WebKit only reliably presents a frame *during playback* — a paused
+ * video may never paint (seeked frames are not reliably presented, and a
+ * never-played video can stay blank). So each play attempt is allowed to
+ * present exactly its first frame: playback starts at the current position,
+ * `requestVideoFrameCallback` fires on that first presentation (mediaTime 0
+ * for a fresh start), and the video is paused right there with its clock
+ * snapped back to 0 before any drift accumulates. Audio, and media with no
+ * data to present, are paused immediately. Must be called before navigation
+ * so the listener exists when autoplay first fires. Only for specs that
+ * never assert real playback.
  */
 export async function preventMediaPlayback(page: Page): Promise<void> {
   await page.addInitScript(() => {
     document.addEventListener(
       "play",
       (event) => {
-        const media = event.target as HTMLMediaElement
-        media.pause()
-        if (media.currentTime !== 0) media.currentTime = 0
+        const media = event.target as HTMLMediaElement & {
+          requestVideoFrameCallback?: (cb: () => void) => number
+        }
+        const isPresentableVideo =
+          media instanceof HTMLVideoElement && typeof media.requestVideoFrameCallback === "function"
+        if (!isPresentableVideo) {
+          media.pause()
+          if (media.currentTime !== 0) media.currentTime = 0
+          return
+        }
+        media.requestVideoFrameCallback?.(() => {
+          media.pause()
+          if (media.currentTime !== 0) media.currentTime = 0
+        })
       },
       { capture: true },
     )

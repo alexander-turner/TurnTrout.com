@@ -329,33 +329,75 @@ test.describe("visual_utils functions", () => {
 })
 
 test.describe("preventMediaPlayback", () => {
-  test("pauses a video at frame 0 the moment playback starts", async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await preventMediaPlayback(page)
     // Fresh navigation so the init script is installed in the document.
     await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
+  })
 
+  test("pauses audio at time 0 the moment playback starts", async ({ page }) => {
     await page.evaluate(() => {
-      const video = document.createElement("video")
-      video.id = "prevent-playback-probe"
-      document.body.appendChild(video)
+      const audio = document.createElement("audio")
+      audio.id = "prevent-playback-audio-probe"
+      document.body.appendChild(audio)
       // No source is attached, so play() flips `paused` and queues the "play"
       // event task without needing any media data.
-      video.play().catch(() => {
+      audio.play().catch(() => {
         // The listener's pause() rejects the pending play() promise; that
         // rejection is this helper working as intended.
       })
     })
 
     // The "play" event is dispatched from a queued task, so the prevention
-    // listener pauses the video one task after play() returns.
+    // listener pauses the media one task after play() returns.
     await expect
       .poll(() =>
         page.evaluate(() => {
-          const video = document.getElementById("prevent-playback-probe") as HTMLVideoElement
-          return { paused: video.paused, currentTime: video.currentTime }
+          const audio = document.getElementById("prevent-playback-audio-probe") as HTMLAudioElement
+          return { paused: audio.paused, currentTime: audio.currentTime }
         }),
       )
       .toEqual({ paused: true, currentTime: 0 })
+  })
+
+  test("pauses a video on its first presented frame", async ({ page }) => {
+    await page.evaluate(() => {
+      // A canvas capture stream supplies real presentable frames without any
+      // network fetch, so the rVFC pause-on-first-frame path runs.
+      const canvas = document.createElement("canvas")
+      canvas.width = 32
+      canvas.height = 32
+      const ctx = canvas.getContext("2d")
+      if (!ctx) throw new Error("canvas 2d context unavailable")
+      ctx.fillStyle = "red"
+      ctx.fillRect(0, 0, 32, 32)
+      const video = document.createElement("video")
+      video.id = "prevent-playback-video-probe"
+      video.muted = true
+      video.srcObject = canvas.captureStream(30)
+      document.body.appendChild(video)
+      video.play().catch(() => {
+        // The listener's pause() rejects the pending play() promise; that
+        // rejection is this helper working as intended.
+      })
+    })
+
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const video = document.getElementById("prevent-playback-video-probe") as HTMLVideoElement
+          return video.paused
+        }),
+      )
+      .toBe(true)
+
+    // The pause lands on the first presented frame, so the clock has advanced
+    // by at most a frame or two — never seconds of playback.
+    const currentTime = await page.evaluate(() => {
+      const video = document.getElementById("prevent-playback-video-probe") as HTMLVideoElement
+      return video.currentTime
+    })
+    expect(currentTime).toBeLessThan(0.5)
   })
 })
 
