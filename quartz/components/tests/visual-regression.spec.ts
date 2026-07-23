@@ -699,6 +699,15 @@ test.describe("Table of contents", () => {
     test.skip(!isDesktopViewport(page))
     await page.emulateMedia({ reducedMotion: "reduce" })
 
+    // Shrink the viewport height (keeping the desktop width) so only a handful
+    // of ToC entries fit: middle and late headings are then reliably off-screen
+    // regardless of how much the real ToC overflows.
+    const viewport = page.viewportSize()
+    await page.setViewportSize({
+      width: viewport?.width ?? Math.ceil(minDesktopWidth) + 400,
+      height: 500,
+    })
+
     const rightSidebar = page.locator("#right-sidebar")
     await expect(rightSidebar).toBeVisible()
     expect(await rightSidebar.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true)
@@ -712,89 +721,85 @@ test.describe("Table of contents", () => {
       },
     )
 
-    // The two earliest observable (h1/h2) headings: their ToC links sit at the
-    // top of the ToC, off-screen once the sidebar is scrolled to the bottom.
-    const early = await page.evaluate(() => {
+    // The last observable (h1/h2) heading always wins the detection band when
+    // scrolled to (nothing follows it), and a middle heading well-separated from
+    // it — both reliably activatable, both with ToC links below the fold when
+    // the sidebar sits at the top.
+    const headings = await page.evaluate(() => {
       const navSet = new Set(
         Array.from(document.querySelectorAll("#toc-content a")).map(
           (l) => l.getAttribute("href")?.split("#")[1] ?? "",
         ),
       )
-      return Array.from(
+      const observable = Array.from(
         document.querySelectorAll("#center-content article h1, #center-content article h2"),
       )
         .filter((s) => s.id && navSet.has(s.id))
         .map((s) => s.id)
-        .slice(0, 2)
-    })
-    expect(early).toHaveLength(2)
-    // Activate the second heading first: it differs from the initially active
-    // first heading, so updateActiveLink actually runs. Re-sync onto the first.
-    const suppressedHeading = early[1]
-    const resyncHeading = early[0]
-
-    // The reader scrolls the sidebar to the bottom (e.g. down to the read time),
-    // marking manual intent via the wheel event.
-    const manual = await page.evaluate(() => {
-      const sidebar = document.getElementById("right-sidebar")
-      if (!sidebar) return null
-      sidebar.scrollTop = sidebar.scrollHeight
-      sidebar.dispatchEvent(new WheelEvent("wheel", { bubbles: true }))
-      return { scrollTop: sidebar.scrollTop, at: performance.now() }
+      return { mid: observable[Math.floor(observable.length / 2)], last: observable.at(-1) }
     })
     // eslint-disable-next-line playwright/no-conditional-in-test
-    if (!manual) throw new Error("#right-sidebar not found")
-    expect(manual.scrollTop).toBeGreaterThan(0)
+    if (!headings.mid || !headings.last || headings.mid === headings.last) {
+      throw new Error("Test page needs >= 3 well-separated observable headings")
+    }
 
-    // Highlighting follows the newly active heading, but the sidebar must NOT
-    // scroll while the grace period is active. The active-link poll resolves
-    // within a frame, far inside the multi-second grace, so this does not race
-    // the clock.
-    await activateHeading(page, suppressedHeading)
-    await waitForActiveHref(page, suppressedHeading)
+    // The reader scrolls the sidebar to the top, marking manual intent via the
+    // wheel event. (Top, so a suppressed re-sync would have to scroll *down* to
+    // reveal the active link — making the stayed-put assertion meaningful.)
+    const manualAt = await page.evaluate(() => {
+      const sidebar = document.getElementById("right-sidebar")
+      if (!sidebar) return null
+      sidebar.scrollTop = 0
+      sidebar.dispatchEvent(new WheelEvent("wheel", { bubbles: true }))
+      return performance.now()
+    })
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (manualAt === null) throw new Error("#right-sidebar not found")
+
+    // Activating the last heading changes the active section, but the sidebar
+    // must NOT scroll while the grace period is active. The active-link poll
+    // resolves within a frame, far inside the multi-second grace, so this does
+    // not race the clock.
+    await activateHeading(page, headings.last)
+    await waitForActiveHref(page, headings.last)
     const suppressed = await page.evaluate(() => {
       const sidebar = document.getElementById("right-sidebar")
       const active = document.querySelector("#toc-content a.active")
       if (!sidebar || !active) return null
       const s = sidebar.getBoundingClientRect()
       const a = active.getBoundingClientRect()
-      return { scrollTop: sidebar.scrollTop, activeAboveFold: a.bottom < s.top }
+      return { scrollTop: sidebar.scrollTop, activeBelowFold: a.top > s.bottom }
     })
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (!suppressed) throw new Error("Expected sidebar and active link to exist")
-    // The active link is above the fold, so auto-scroll WOULD move the sidebar
-    // were it not suppressed — the unchanged-scrollTop assertion is meaningful.
-    expect(suppressed.activeAboveFold).toBe(true)
-    expect(suppressed.scrollTop).toBe(manual.scrollTop)
+    // The active link is below the fold, so auto-scroll WOULD move the sidebar
+    // were it not suppressed — the stayed-at-0 assertion is therefore meaningful.
+    expect(suppressed.activeBelowFold).toBe(true)
+    expect(suppressed.scrollTop).toBe(0)
 
-    // Once the grace period lapses, the next section change re-syncs the sidebar.
+    // Once the grace period lapses, the next section change re-syncs the sidebar
+    // — here scrolling down to reveal the middle heading's link.
     await page.waitForFunction(
       ([start, grace]) => performance.now() - start > grace,
-      [manual.at, TOC_MANUAL_SCROLL_GRACE_MS],
+      [manualAt, TOC_MANUAL_SCROLL_GRACE_MS],
       { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
-    // Scroll fully to the top so the first heading (not the second, which may
-    // share the detection band) becomes active.
-    await page.evaluate(() => {
-      window.scrollTo({ top: 0, behavior: "instant" })
-      return new Promise((resolve) => requestAnimationFrame(resolve))
-    })
-    await waitForActiveHref(page, resyncHeading)
-
-    const resynced = await page.evaluate((prevTop) => {
+    await activateHeading(page, headings.mid)
+    await waitForActiveHref(page, headings.mid)
+    const resynced = await page.evaluate(() => {
       const sidebar = document.getElementById("right-sidebar")
       const active = document.querySelector("#toc-content a.active")
       if (!sidebar || !active) return null
       const s = sidebar.getBoundingClientRect()
       const a = active.getBoundingClientRect()
       return {
-        scrolledUp: sidebar.scrollTop < prevTop,
+        scrollTop: sidebar.scrollTop,
         activeVisible: a.top >= s.top - 1 && a.bottom <= s.bottom + 1,
       }
-    }, manual.scrollTop)
+    })
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (!resynced) throw new Error("Expected sidebar and active link to exist after re-sync")
-    expect(resynced.scrolledUp).toBe(true)
+    expect(resynced.scrollTop).toBeGreaterThan(0)
     expect(resynced.activeVisible).toBe(true)
   })
 
