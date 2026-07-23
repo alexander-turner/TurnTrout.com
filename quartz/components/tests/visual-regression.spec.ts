@@ -763,7 +763,9 @@ test.describe("Right sidebar", () => {
 
     // Verify sidebar did scroll
     expect(finalSidebarScrollTop).toBeGreaterThan(initialSidebarScrollTop)
-    expect(finalSidebarScrollTop).toBeCloseTo(initialSidebarScrollTop + 100, 0) // Allow for slight rounding
+    expect(Math.abs(finalSidebarScrollTop - (initialSidebarScrollTop + 100))).toBeLessThanOrEqual(
+      tightScrollTolerance,
+    )
   })
 
   test("Right sidebar fades top/bottom based on scroll position", async ({ page }) => {
