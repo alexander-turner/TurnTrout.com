@@ -134,6 +134,16 @@ export const specialDomainMappings: ReadonlyArray<{ pattern: RegExp; to: string 
 export const TOC_DETECTION_BAND_FRACTION = 0.3
 export const TOC_DETECTION_ROOT_MARGIN = `0px 0px -${(1 - TOC_DETECTION_BAND_FRACTION) * 100}% 0px`
 
+// Vim-scrolloff for the desktop ToC: keep this many ToC entries visible beyond
+// the active link on each side when auto-scrolling the sidebar to follow along.
+export const TOC_SCROLLOFF_COUNT = 2
+// Breathing room (px) between the scrolloff anchor and the sidebar edge, so
+// buffered entries don't sit flush under the scroll-fade gradient.
+export const TOC_AUTOSCROLL_PADDING_PX = 8
+// After the user scrolls the sidebar themselves (e.g. down to the read time),
+// hold off auto-scrolling so the ToC doesn't fight their manual browsing.
+export const TOC_MANUAL_SCROLL_GRACE_MS = 4000
+
 // External link attributes
 export const EXTERNAL_LINK_REL = "noopener noreferrer"
 

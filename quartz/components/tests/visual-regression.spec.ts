@@ -7,6 +7,7 @@ import {
   listTolerance,
   tightScrollTolerance,
   TOC_DETECTION_BAND_FRACTION,
+  TOC_MANUAL_SCROLL_GRACE_MS,
 } from "../constants"
 import { expect, test } from "./fixtures"
 import {
@@ -588,6 +589,214 @@ test.describe("Table of contents", () => {
       expectedSlug,
       { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
+  })
+
+  const waitForActiveHref = (page: Page, slug: string) =>
+    page.waitForFunction(
+      (target) =>
+        document
+          .querySelector("#toc-content a.active")
+          ?.getAttribute("href")
+          ?.endsWith(`#${target}`) ?? false,
+      slug,
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
+    )
+
+  const activateHeading = (page: Page, slug: string) =>
+    page.evaluate((target) => {
+      document.getElementById(target)?.scrollIntoView({ block: "start" })
+      return new Promise((resolve) => requestAnimationFrame(resolve))
+    }, slug)
+
+  test("Auto-scrolls the sidebar to keep the active link visible", async ({ page }) => {
+    test.skip(!isDesktopViewport(page))
+    // Reduced motion forces the sidebar's scroll-behavior to auto (instant), so
+    // positions settle synchronously and assertions stay deterministic.
+    await page.emulateMedia({ reducedMotion: "reduce" })
+
+    const rightSidebar = page.locator("#right-sidebar")
+    await expect(rightSidebar).toBeVisible()
+    expect(await rightSidebar.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true)
+
+    await page.waitForFunction(
+      () => document.querySelector("#toc-content a.active") !== null,
+      null,
+      {
+        timeout: 15_000,
+        polling: WAIT_POLL_INTERVAL_MS,
+      },
+    )
+
+    // The last observable (h1/h2) heading that still has >= 2 ToC entries after
+    // it, so both the active link and its 2-entry scrolloff buffer are testable.
+    const target = await page.evaluate(() => {
+      const navLinks = Array.from(document.querySelectorAll("#toc-content a"))
+      const slugs = navLinks.map((l) => l.getAttribute("href")?.split("#")[1] ?? "")
+      const navSet = new Set(slugs)
+      const sections = Array.from(
+        document.querySelectorAll("#center-content article h1, #center-content article h2"),
+      ).filter((s) => s.id && navSet.has(s.id))
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const linkIdx = slugs.indexOf(sections[i].id)
+        if (linkIdx >= 0 && linkIdx + 2 <= navLinks.length - 1) {
+          return { slug: sections[i].id, bufferIdx: linkIdx + 2 }
+        }
+      }
+      return null
+    })
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (!target) throw new Error("No observable heading with a 2-entry buffer on the test page")
+
+    const initialScrollTop = await rightSidebar.evaluate((el) => el.scrollTop)
+    await activateHeading(page, target.slug)
+    await waitForActiveHref(page, target.slug)
+
+    const down = await page.evaluate((bufferIdx) => {
+      const sidebar = document.getElementById("right-sidebar")
+      const active = document.querySelector("#toc-content a.active")
+      const buffer = Array.from(document.querySelectorAll("#toc-content a"))[bufferIdx]
+      if (!sidebar || !active || !buffer) return null
+      const s = sidebar.getBoundingClientRect()
+      const a = active.getBoundingClientRect()
+      const b = buffer.getBoundingClientRect()
+      return {
+        scrollTop: sidebar.scrollTop,
+        activeVisible: a.top >= s.top - 1 && a.bottom <= s.bottom + 1,
+        bufferVisible: b.bottom <= s.bottom + 1,
+      }
+    }, target.bufferIdx)
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (!down) throw new Error("Expected sidebar, active link, and buffer link to exist")
+    expect(down.scrollTop).toBeGreaterThan(initialScrollTop)
+    expect(down.activeVisible).toBe(true)
+    expect(down.bufferVisible).toBe(true)
+
+    // Scrolling back to the top re-syncs the sidebar upward.
+    await page.evaluate(() => {
+      window.scrollTo({ top: 0, behavior: "instant" })
+      return new Promise((resolve) => requestAnimationFrame(resolve))
+    })
+    await page.waitForFunction(
+      () => (document.getElementById("right-sidebar")?.scrollTop ?? 1) === 0,
+      null,
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
+    )
+    const activeVisibleAfterUp = await page.evaluate(() => {
+      const sidebar = document.getElementById("right-sidebar")
+      const active = document.querySelector("#toc-content a.active")
+      if (!sidebar || !active) return false
+      const s = sidebar.getBoundingClientRect()
+      const a = active.getBoundingClientRect()
+      return a.top >= s.top - 1 && a.bottom <= s.bottom + 1
+    })
+    expect(activeVisibleAfterUp).toBe(true)
+  })
+
+  test("A manually scrolled sidebar is not yanked back within the grace period", async ({
+    page,
+  }) => {
+    test.skip(!isDesktopViewport(page))
+    await page.emulateMedia({ reducedMotion: "reduce" })
+
+    const rightSidebar = page.locator("#right-sidebar")
+    await expect(rightSidebar).toBeVisible()
+    expect(await rightSidebar.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true)
+
+    await page.waitForFunction(
+      () => document.querySelector("#toc-content a.active") !== null,
+      null,
+      {
+        timeout: 15_000,
+        polling: WAIT_POLL_INTERVAL_MS,
+      },
+    )
+
+    // Two distinct late headings whose ToC links sit off the bottom when the
+    // sidebar is at the top.
+    const late = await page.evaluate(() => {
+      const navSet = new Set(
+        Array.from(document.querySelectorAll("#toc-content a")).map(
+          (l) => l.getAttribute("href")?.split("#")[1] ?? "",
+        ),
+      )
+      return Array.from(
+        document.querySelectorAll("#center-content article h1, #center-content article h2"),
+      )
+        .filter((s) => s.id && navSet.has(s.id))
+        .map((s) => s.id)
+        .slice(-2)
+    })
+    expect(late).toHaveLength(2)
+    const suppressedHeading = late[0]
+    const resyncHeading = late[1]
+
+    // The reader wheels the sidebar (e.g. down to the read time), marking manual
+    // intent even though we reset it to the top first.
+    const t0 = await page.evaluate(() => {
+      const sidebar = document.getElementById("right-sidebar")
+      if (!sidebar) return null
+      sidebar.scrollTop = 0
+      sidebar.dispatchEvent(new WheelEvent("wheel", { bubbles: true, deltaY: 40 }))
+      return performance.now()
+    })
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (t0 === null) throw new Error("#right-sidebar not found")
+
+    // Highlighting follows the newly active heading, but the sidebar must NOT
+    // scroll while the grace period is active.
+    await activateHeading(page, suppressedHeading)
+    await waitForActiveHref(page, suppressedHeading)
+    expect(await rightSidebar.evaluate((el) => el.scrollTop)).toBe(0)
+
+    // Once the grace period lapses, the next section change re-syncs the sidebar.
+    await page.waitForFunction(
+      ([start, grace]) => performance.now() - start > grace,
+      [t0, TOC_MANUAL_SCROLL_GRACE_MS],
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
+    )
+    await activateHeading(page, resyncHeading)
+    await waitForActiveHref(page, resyncHeading)
+
+    const resynced = await page.evaluate(() => {
+      const sidebar = document.getElementById("right-sidebar")
+      const active = document.querySelector("#toc-content a.active")
+      if (!sidebar || !active) return null
+      const s = sidebar.getBoundingClientRect()
+      const a = active.getBoundingClientRect()
+      return {
+        scrollTop: sidebar.scrollTop,
+        activeVisible: a.top >= s.top - 1 && a.bottom <= s.bottom + 1,
+      }
+    })
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (!resynced) throw new Error("Expected sidebar and active link to exist after re-sync")
+    expect(resynced.scrollTop).toBeGreaterThan(0)
+    expect(resynced.activeVisible).toBe(true)
+  })
+
+  test("Auto-scroll leaves the mobile sidebar alone", async ({ page }) => {
+    test.skip(isDesktopViewport(page))
+    const errors: string[] = []
+    page.on("pageerror", (error) => errors.push(error.message))
+
+    await page.waitForFunction(() => document.querySelector("#toc-content a") !== null, null, {
+      timeout: 15_000,
+      polling: WAIT_POLL_INTERVAL_MS,
+    })
+
+    await page.evaluate(() => {
+      const headings = document.querySelectorAll(
+        "#center-content article h1, #center-content article h2",
+      )
+      headings[Math.floor(headings.length / 2)]?.scrollIntoView({ block: "start" })
+      return new Promise((resolve) => requestAnimationFrame(resolve))
+    })
+
+    const scrollTop = await page.evaluate(
+      () => document.getElementById("right-sidebar")?.scrollTop ?? -1,
+    )
+    expect(scrollTop).toBe(0)
+    expect(errors).toEqual([])
   })
 })
 

@@ -274,6 +274,10 @@ a {
           flex-shrink: 1;
           padding-right: calc(0.5 * #{$max-sidebar-gap});
 
+          // The ToC auto-scrolls to follow the active heading; glide rather than
+          // jump. The global prefers-reduced-motion block forces this to auto.
+          scroll-behavior: smooth;
+
           @media all and (min-width: $wider-gap-breakpoint) {
             margin-right: 0;
           }
