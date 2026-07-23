@@ -359,7 +359,11 @@ function quotedCard(quoted: QuotedTweet, outerDate: string): Element {
     authorNameRow(quoted.author, profileUrl),
     externalAnchor(profileUrl, [`@${quoted.author.handle}`], "tweet-handle"),
   ])
-  const body = h("div", { className: "tweet-body" }, linkifyTweetText(quoted.text, quoted.urls))
+  const body = h(
+    "div",
+    { className: "tweet-body no-formatting" },
+    linkifyTweetText(quoted.text, quoted.urls),
+  )
   const children: Element[] = [header, body, ...mediaGrid(quoted.media)]
   const formattedDate = formatTweetDate(quoted.createdAt)
   if (formattedDate && formattedDate !== outerDate) {
@@ -398,7 +402,18 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
     ),
   ])
 
-  const body = h("div", { className: "tweet-body" }, linkifyTweetText(snapshot.text, snapshot.urls))
+  // `no-formatting` exempts the quoted text from HTMLFormattingImprovement
+  // (which runs later in the pipeline): a tweet body is a verbatim quote of
+  // someone else's words, so the site's typography rewrites must not touch it.
+  // Without this, slash spacing pads the slashes in a shortened display URL
+  // ("futureoflife.org / open-letter / le…") and other passes would silently
+  // alter the quoted text. It stays on the body alone so the card's own chrome
+  // (the date line, engagement counts) still gets normal typography.
+  const body = h(
+    "div",
+    { className: "tweet-body no-formatting" },
+    linkifyTweetText(snapshot.text, snapshot.urls),
+  )
 
   const children: Element[] = []
   if (retweetedBy) children.push(retweetContext(retweetedBy))
@@ -414,17 +429,7 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
   // TweetEmbed runs after the global Twemoji pass, so the card's text (names,
   // body, quoted text) is built too late to be picked up. Twemojify it here so
   // emoji in a tweet render as inline images like the rest of the site.
-  //
-  // `no-formatting` exempts the card from HTMLFormattingImprovement (which runs
-  // later in the pipeline): a tweet is a verbatim quote of someone else's words,
-  // so the site's typography rewrites must not touch it. Without this, slash
-  // spacing pads the slashes in a shortened display URL ("futureoflife.org /
-  // open-letter / le…") and other passes would silently alter the quoted text.
-  const article = h(
-    "article",
-    { className: "tweet-card no-formatting", "data-tweet-id": snapshot.id },
-    children,
-  )
+  const article = h("article", { className: "tweet-card", "data-tweet-id": snapshot.id }, children)
   return processTree(article) as Element
 }
 

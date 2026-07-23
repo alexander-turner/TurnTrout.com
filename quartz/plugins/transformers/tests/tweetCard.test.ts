@@ -187,8 +187,13 @@ describe("buildTweetCard", () => {
     expect(render(buildTweetCard(baseSnapshot))).toContain('aria-label="View post on X"')
   })
 
-  it("marks the card no-formatting so typography passes leave the quote verbatim", () => {
-    expect(render(buildTweetCard(baseSnapshot))).toContain('class="tweet-card no-formatting"')
+  it("marks only the body no-formatting so typography passes leave the quote verbatim", () => {
+    const html = render(buildTweetCard(baseSnapshot))
+    // The body carries no-formatting; the card as a whole does not, so the date
+    // line and engagement counts still get normal typography.
+    expect(html).toContain('class="tweet-body no-formatting"')
+    expect(html).toContain('class="tweet-card"')
+    expect(html).not.toContain('class="tweet-card no-formatting"')
   })
 
   it("shows the verified badge only when verified", () => {
