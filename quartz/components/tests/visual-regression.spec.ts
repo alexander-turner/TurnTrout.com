@@ -339,7 +339,7 @@ test.describe("Unique content around the site", () => {
       await gotoPage(page, "http://localhost:8080/gdm-signature-fixture")
       await setTheme(page, theme)
 
-      const signature = page.locator("#gdm-signature")
+      const signature = page.locator("#gdm-signature").first()
       await signature.scrollIntoViewIfNeeded()
       await expect(signature).toBeVisible()
       // The name renders in the serif face; wait for fonts so its metrics are
