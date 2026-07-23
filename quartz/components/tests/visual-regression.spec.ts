@@ -335,6 +335,24 @@ test.describe("Unique content around the site", () => {
   })
 
   for (const theme of LIGHT_THEMES) {
+    test(`GDM signature in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
+      await gotoPage(page, "http://localhost:8080/gdm-signature-fixture")
+      await setTheme(page, theme)
+
+      const signature = page.locator("#gdm-signature").first()
+      await signature.scrollIntoViewIfNeeded()
+      await expect(signature).toBeVisible()
+      // The name renders in the serif face; wait for fonts so its metrics are
+      // settled before the shot.
+      await page.evaluate(() => document.fonts.ready)
+
+      await takeRegressionScreenshot(page, testInfo, `gdm-signature-${theme}`, {
+        elementToScreenshot: signature,
+      })
+    })
+  }
+
+  for (const theme of LIGHT_THEMES) {
     test(`Inversion demo in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
       await gotoPage(page, "http://localhost:8080/inversion-demo-fixture")
       await setTheme(page, theme)
