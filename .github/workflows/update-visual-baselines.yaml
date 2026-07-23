@@ -21,9 +21,9 @@ name: Update visual baselines
 # and main.
 #
 # An approval can race an auto-merge that lands mid-run (deleting the head
-# branch). Both spots that touch the branch — the checkout and the
-# empty-commit push — detect the deletion, confirm the PR merged, and route
-# down the merged-PR carry-through path instead of failing.
+# branch, possibly after a lag). Both spots that touch the branch — the
+# checkout and the empty-commit push — re-check the PR's merged state and
+# route down the merged-PR carry-through path instead of failing.
 
 on:
   workflow_dispatch:
@@ -129,7 +129,7 @@ jobs:
             if (!pr.data.merged) {
               core.setFailed(
                 `Checkout of the PR branch failed but PR #${process.env.PR_NUMBER} ` +
-                'is still open, so the failure is not a merge-deleted branch.'
+                'is not merged, so the failure is not a merge-deleted branch.'
               );
               return;
             }
@@ -214,16 +214,18 @@ jobs:
           for attempt in 1 2 3 4 5; do
             if ! git fetch origin "$REF"; then
               check_merged_late
-              echo "Fetch of $REF failed but PR #$PR_NUMBER is still open" >&2
+              echo "Fetch of $REF failed but PR #$PR_NUMBER is not merged" >&2
               exit 1
             fi
             git reset --hard "origin/$REF"
             git commit --allow-empty -m "$msg"
             # The lease makes the push a compare-and-swap against the tip we
-            # just fetched: a plain push to a merge-deleted ref would
-            # silently recreate the branch, while the lease rejects it and
+            # just fetched; a merge-deleted remote ref fails the lease, and
             # the next iteration's fetch routes to check_merged_late.
             if git push --force-with-lease="refs/heads/$REF:origin/$REF" origin "HEAD:$REF"; then
+              # Branch auto-deletion lags the merge, so a successful push
+              # alone does not prove the PR is still open.
+              check_merged_late
               echo "Pushed retrigger commit on attempt $attempt"
               exit 0
             fi
