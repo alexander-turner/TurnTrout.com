@@ -261,9 +261,14 @@ export function shouldSkipNode(node: Text, ancestors: Parent[]): boolean {
   return hasClass(parent, "elvish") || parent.tagName === "abbr"
 }
 
+// Closing quotes/brackets that can sit between sentence-ending punctuation and
+// the following whitespace (e.g. `escalation.” IASEAI`). Straight quotes are
+// omitted because PUNCTUATION_BEFORE_MATCH already strips them upstream.
+const sentenceEndCloser = "[’”)\\]}]?"
+
 // If text comes after sentence ending, capitalize the first letter
 export const capitalizeAfterEnding = new RegExp(
-  `(?<prefix>^\\s*|\\n|[.!?](?<!e\\.g\\.|i\\.e\\.)\\s+)(?<letter>[${upperCapsChars}])$`,
+  `(?<prefix>^\\s*|\\n|[.!?](?<!e\\.g\\.|i\\.e\\.)${sentenceEndCloser}\\s+)(?<letter>[${upperCapsChars}])$`,
   "iu",
 )
 
