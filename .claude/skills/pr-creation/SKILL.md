@@ -69,6 +69,11 @@ Before updating an existing PR (pushing new commits, editing the description, et
 3. Run `git log <base-branch>..HEAD --oneline` to see all commits
 4. Review the changed files to understand the scope
 5. **Check for PR description guidance**—look for `CONTRIBUTING.md`, `.github/PULL_REQUEST_TEMPLATE.md`, or similar files in the repo. If found, read them and adapt the PR description to follow the repository’s conventions (see [pr-templates.md](pr-templates.md) for details)
+6. **Deferred-item sweep**—search plan/handoff docs and follow-up lists (TODO files, open sub-issues, notes in PR descriptions or linked issues) for items that touch this PR’s area:
+   - Small, clearly-wanted items: fold them into this PR before opening it
+   - Larger items: open follow-up PRs in the same session immediately after this one; note them in the PR description
+   - Questionable items: surface in chat before proceeding
+   - Update any plan/handoff doc’s status for items this PR completes or moots
 
 ### Step 2: Push and Create the Pull Request
 
@@ -84,6 +89,18 @@ You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatt
    If a PR already exists, update it with `gh pr edit` instead of creating a new one.
 
 3. Create the PR using `gh pr create` with the template from the resource file. Make sure that you use the target branch
+
+**Write the body for the reviewer's cognitive budget, not as an investigation archive** —
+see [pr-templates.md](pr-templates.md) "Body Guidelines" for the evidence and the rules. The
+load-bearing ones: lead with _what_ the PR does (inverted pyramid — root-cause forensics go
+below the fold, never above the statement of the change); make length proportional to the
+reviewable diff (a ~10-line change is a few sentences, not a 500-word skeleton); omit empty
+ritual sections instead of spending a paragraph to say "None"; and add a **Review focus**
+line naming the file to read first, the cross-file invariant, and the part you're least sure
+of — the single element most correlated with a human actually engaging, which matters because
+agent-authored PRs are systematically _under_-reviewed. Use the exact headings from
+pr-templates.md (`What & why` / `Review focus` / `How it was tested` / `Decisions made` /
+`Lessons Learned`) so a reviewer can scan by habit.
 
 ### Step 3: Iterative Compress-Critique-Fix Loop
 

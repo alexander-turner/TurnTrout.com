@@ -22,9 +22,9 @@ name: Claude
 #   trigger downstream CI, so this is the same existing requirement.
 #
 # AUTH — two credentials, both already documented in the README secrets table:
-#   - Model side: ANTHROPIC_API_KEY authenticates the Anthropic API call. This is
-#     the same secret the security-vulnerability-scan workflow already uses; the
-#     GitHub App does not cover it.
+#   - Model side: CLAUDE_CODE_OAUTH_TOKEN authenticates the Claude Code action
+#     (with CLAUDE_CODE_OAUTH_TOKEN_FALLBACK retried on a primary failure). The
+#     same tokens the other Claude workflows use; the GitHub App does not cover them.
 #   - GitHub side: github_token is TEMPLATE_SYNC_TOKEN (a fine-grained PAT) when
 #     set, falling back to GITHUB_TOKEN. The PAT matters because commits pushed
 #     under GITHUB_TOKEN are suppressed by the recursion guard above and will NOT
@@ -32,7 +32,7 @@ name: Claude
 #     template-sync / phone-home / auto-version.
 #
 # SETUP (per downstream repo, one time): install the Claude GitHub App
-# (https://github.com/apps/claude) and set ANTHROPIC_API_KEY (plus
+# (https://github.com/apps/claude) and set CLAUDE_CODE_OAUTH_TOKEN (plus
 # TEMPLATE_SYNC_TOKEN for CI re-triggering). Access is gated by
 # claude-code-action's built-in check — it only acts for commenters with write
 # access, so a drive-by "@claude" from an outsider is ignored.
@@ -71,8 +71,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Respond to @claude
-        uses: anthropics/claude-code-action@428971d2ecd6e3a7cb0ee0da2a3a8b33fdb3678d # v1.0.157
+        uses: ./.github/actions/claude-run
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          fallback_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK }}
           model: claude-sonnet-4-6
           github_token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
