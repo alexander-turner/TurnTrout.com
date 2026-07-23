@@ -10,6 +10,7 @@ import {
   gotoPage,
   isDesktopViewport,
   pauseMediaElements,
+  preventMediaPlayback,
   setTheme,
   takeRegressionScreenshot,
   waitForImagesInElement,
@@ -324,6 +325,37 @@ test.describe("visual_utils functions", () => {
       expect(parseFloat(finalOpacity)).toBeCloseTo(0, 1)
       expect(finalTransform).toContain("100")
     })
+  })
+})
+
+test.describe("preventMediaPlayback", () => {
+  test("pauses a video at frame 0 the moment playback starts", async ({ page }) => {
+    await preventMediaPlayback(page)
+    // Fresh navigation so the init script is installed in the document.
+    await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
+
+    await page.evaluate(() => {
+      const video = document.createElement("video")
+      video.id = "prevent-playback-probe"
+      document.body.appendChild(video)
+      // No source is attached, so play() flips `paused` and queues the "play"
+      // event task without needing any media data.
+      video.play().catch(() => {
+        // The listener's pause() rejects the pending play() promise; that
+        // rejection is this helper working as intended.
+      })
+    })
+
+    // The "play" event is dispatched from a queued task, so the prevention
+    // listener pauses the video one task after play() returns.
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const video = document.getElementById("prevent-playback-probe") as HTMLVideoElement
+          return { paused: video.paused, currentTime: video.currentTime }
+        }),
+      )
+      .toEqual({ paused: true, currentTime: 0 })
   })
 })
 

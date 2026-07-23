@@ -16,6 +16,7 @@ import {
   isElementChecked,
   isFirefox,
   moveMouseToSafePosition,
+  preventMediaPlayback,
   reloadPage,
   setTheme,
   takeRegressionScreenshot,
@@ -50,6 +51,8 @@ test.beforeEach(async ({ page }) => {
   })
 
   page.on("pageerror", (err) => console.error(err))
+
+  await preventMediaPlayback(page)
 
   // Use domcontentloaded instead of load — Firefox can stall on subresource
   // loads (images, fonts) in CI, causing 30s timeout in beforeEach.
