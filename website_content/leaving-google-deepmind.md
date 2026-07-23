@@ -124,17 +124,7 @@ He suggested it'd be reasonable for me to email a few guys. Their names: Sundar 
 >
 >   History will judge the tech sector by its involvement in these events. I love working at Google, and I want to ensure Google is on the right side of that history.
 >
->   <table style="max-width:600px;margin-top:0;margin-bottom:0;border-collapse:collapse;">
->     <tr style="border:none;">
->       <td style="border:none; vertical-align:middle; padding:0;">
->         <span class="favicon-span"><svg class="favicon" data-domain="deepmind_com" role="img" aria-label="Google DeepMind logo" style="aspect-ratio:24 / 24;--mask-url:url(https://assets.turntrout.com/static/images/external-favicons/deepmind_com.svg); width:2.5rem; height:2.5rem; margin:0; vertical-align:middle;"></svg></span>
->       </td>
->       <td style="border:none; vertical-align:middle; padding:0;">
->         <div>Alexander Matt Turner</div>
->         <div style="color: var(--midground)">Research Scientist</div>
->       </td>
->     </tr>
->   </table>
+>   <span class="populate-markdown-gdm-signature"></span>
 
 They never replied. I returned to Jeff and asked for a lunch to discuss constructive opportunities for real change within Google. I told him: "any time, any place. I'll drive down to Mountain View to meet with you."
 
