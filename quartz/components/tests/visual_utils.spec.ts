@@ -369,13 +369,21 @@ test.describe("preventMediaPlayback", () => {
       canvas.height = 32
       const ctx = canvas.getContext("2d")
       if (!ctx) throw new Error("canvas 2d context unavailable")
-      ctx.fillStyle = "red"
-      ctx.fillRect(0, 0, 32, 32)
+      // captureStream only emits frames when the canvas repaints, so keep
+      // redrawing until the listener pauses the video — otherwise the sole
+      // initial frame can slip past before the video starts consuming the
+      // stream and nothing is ever presented.
+      const redraw = setInterval(() => {
+        ctx.fillStyle = "red"
+        ctx.fillRect(0, 0, 32, 32)
+      }, 20)
       const video = document.createElement("video")
       video.id = "prevent-playback-video-probe"
       video.muted = true
+      video.playsInline = true
       video.srcObject = canvas.captureStream(30)
       document.body.appendChild(video)
+      video.addEventListener("pause", () => clearInterval(redraw), { once: true })
       video.play().catch(() => {
         // The listener's pause() rejects the pending play() promise; that
         // rejection is this helper working as intended.
