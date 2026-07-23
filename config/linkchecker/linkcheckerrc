@@ -1,0 +1,4 @@
+[filtering]
+# GitHub throttles CI runners crawling github.com links (HTTP 429). A
+# rate-limited response is not a broken link; real 4xx/5xx still error.
+ignorewarnings=http-rate-limited
