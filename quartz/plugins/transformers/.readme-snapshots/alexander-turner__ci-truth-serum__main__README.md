@@ -77,6 +77,7 @@ lints that catch two kinds of lie a green check can hide:
 | `check-cron-comment`         | Catches a schedule comment that contradicts its cron. Example: the comment says "daily" but the cron runs weekly, so the job runs 1/7th as often as everyone thinks. Pairs a cadence word (`hourly`/`daily`/`weekly`/`monthly`/`every N minutes\|hours\|days`) in a comment on or within 3 lines above a `cron:` line with the expression, and fails only on a clear contradiction — lists, ranges, and exotic crons always pass. Opt out with `# cron-comment-ok`.                                                                                                                                    |
 | `check-toolchain-skips`      | Catches a test that skips itself when a tool is missing (`skipif(shutil.which("node") is None)`), which silently drops all coverage of the guarded scripts on a runner without that tool while the suite stays green. Flags `pytest.mark.skipif`/`pytest.importorskip` conditions that probe for a binary (`shutil.which`, `which(`, `find_executable`) with no CI guard — in CI the skip must instead FAIL: `shutil.which("node") is None and not os.environ.get("CI")`. Only test files are scanned. Opt out with `# toolchain-skip-ok: <reason>`.                                                   |
 | `check-env-symmetry`         | Catches a half-finished env-var rename: the var was changed where it's **set** but not where it's **read** (or vice-versa), so the reader just sees an unset value and falls back to a default. Scans the whole tracked tree for every var matching a `--prefix` (e.g. `GLOVEBOX_`) and flags any that is written-but-never-read or read-but-never-written. Dynamically-built names are skipped; an out-of-band var opts out with `# env-symmetry-ok: <VARNAME> <reason>`. Needs `args: [--prefix, <PREFIX>]`; not part of a tier aggregate.                                                           |
+| `check-stray-tool-markup`    | Catches an agent's leaked file-authoring scaffolding — a bare closing `content`/`invoke` tag (or an `antml:`-prefixed variant) committed onto its own line in a doc, where it renders as literal garbage that only a human caught. Flags a line that is _entirely_ a stray tool-call tag (`</invoke>`, an opening `invoke`/`parameter` tag, `<function_calls>`, a bare closing `content` tag); inline mentions, inline-code spans, and fenced code blocks are never flagged. Suppress a genuine case with `allow-stray-markup: <reason>` on the line above.                                            |
 
 ## Usage
 
@@ -96,7 +97,7 @@ the only prerequisite.
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v0.1.0 # pin to a tag
+    rev: v0.2.0 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       # ── Tier 1 · Honesty (default-on) ──
       - id: check-workflow-pipefail
@@ -105,7 +106,7 @@ repos:
       - id: check-substitution-exit-swallow
       - id: check-pr-paths
       - id: check-pipefail-grep-pipe
-      - id: check-frozen-head-sha       # ban frozen event head.sha in diff-range/checkout steps
+      - id: check-frozen-head-sha # ban frozen event head.sha in diff-range/checkout steps
       # ── Tier 1 · Identity (default-on) ──
       - id: check-pinned-base-images
       - id: check-pinned-downloads
@@ -147,6 +148,7 @@ repos:
       # - id: check-toolchain-skips      # which()-gated pytest skips must fail (not skip) in CI
       # - id: check-env-symmetry         # prefixed env vars must be both written and read
       #   args: [--prefix, GLOVEBOX_]    # required: only <PREFIX>… vars are checked
+      # - id: check-stray-tool-markup    # ban leaked tool-call tags (</invoke>, </content>) committed into a file
 ```
 
 `pre-commit run --all-files` sweeps the whole repo (handy on first adoption).
@@ -160,7 +162,7 @@ are picked up with **no change to your config**:
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v0.1.0 # pin to a tag
+    rev: v0.2.0 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       - id: check-tier1 # all honesty + identity checks (the safe default-on set)
       # - id: check-tier2   # all opinionated checks: assumes the decide-gate + reporter architecture
@@ -184,7 +186,7 @@ standalone hook with normal pre-commit `files:`/`exclude:` filters:
 
 ```yaml
 - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-  rev: v0.1.0
+  rev: v0.2.0
   hooks:
     - id: check-tier1
       args: [--skip, check_exit_suppression] # drop from aggregate...
@@ -196,7 +198,7 @@ standalone hook with normal pre-commit `files:`/`exclude:` filters:
 `--skip` is repeatable: pass one `--skip <name>` pair per check to drop.
 **An unknown name is a hard error** (to catch typos that would silently
 re-include the check). Module names use underscores and match the TIERS
-registry in `hooks/run_tier.py` (e.g., `check_exit_suppression`, not
+registry in `ci_truth_serum/run_tier.py` (e.g., `check_exit_suppression`, not
 `check-exit-suppression`).
 
 The key property is preserved: any new check added to the tier upstream still
