@@ -223,6 +223,27 @@ test("Popover does not attach when mouse leaves during content fetch", async ({
   await expect(page.locator(".popover")).toHaveCount(0)
 })
 
+test("Popover does not attach when mouseleave fires while hover state is stale", async ({
+  page,
+  dummyLink,
+}) => {
+  const { intercepted, release } = await holdFirstPopoverFetch(page)
+
+  // Hover to start the popover timer; wait until the fetch is in flight.
+  await dummyLink.hover()
+  await intercepted
+
+  // Dispatch mouseleave without moving the pointer: CSS :hover still matches
+  // the link, reproducing the frame where the leave has fired but hover state
+  // hasn't updated yet when the fetch resolves. Cancellation must be driven
+  // by the event, not by re-reading :hover.
+  await dummyLink.dispatchEvent("mouseleave")
+
+  await releaseAndProcessPopoverFetch(page, release)
+
+  await expect(page.locator(".popover")).toHaveCount(0)
+})
+
 test("Popover updates position on window resize", async ({ page, dummyLink }) => {
   const initialPageWidth = await page.evaluate(() => window.innerWidth)
 
