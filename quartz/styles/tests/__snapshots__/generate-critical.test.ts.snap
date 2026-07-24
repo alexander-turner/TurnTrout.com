@@ -135,9 +135,6 @@ em {
     top: $top-spacing;
     overflow-y: auto;
     max-height: calc(100vh - #{$top-spacing});
-
-    // Keep the scrollbar invisible on first paint; the full stylesheet adds
-    // the hover reveal.
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
   }
