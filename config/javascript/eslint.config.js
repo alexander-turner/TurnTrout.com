@@ -46,6 +46,23 @@ const rafPollingSyntax = [
   },
 ]
 
+// A hast node built once at module scope is shared across every page's tree.
+// Later HTML plugins (InlineCodeSpacing, Favicons, ...) mutate the tree in
+// place, so each page's edits accumulate onto the one shared node — output
+// becomes a function of page count and processing order (e.g. the after-article
+// contact line grew one hair space per page, drifting the visual baselines).
+// Build injected nodes fresh inside a function so each page gets its own copy.
+const moduleScopeHastSyntax = {
+  selector: [
+    "Program > VariableDeclaration > VariableDeclarator > CallExpression[callee.name='h']",
+    "Program > VariableDeclaration > VariableDeclarator > TSAsExpression > CallExpression[callee.name='h']",
+    "Program > ExportNamedDeclaration > VariableDeclaration > VariableDeclarator > CallExpression[callee.name='h']",
+    "Program > ExportNamedDeclaration > VariableDeclaration > VariableDeclarator > TSAsExpression > CallExpression[callee.name='h']",
+  ].join(", "),
+  message:
+    "Do not build hast nodes (`h(...)`) at module scope: the single node is shared across every page and accumulates in-place mutations from later pipeline plugins. Build it fresh inside a function so each page gets its own copy.",
+}
+
 // Every built page embeds the looping navbar pond video, whose continuous
 // range requests can hold the `load` event open indefinitely in WebKit, so a
 // load-event gate is a latent shard-flaking timeout. Fixture documents
@@ -133,6 +150,17 @@ export default [
   {
     rules: {
       "no-restricted-syntax": ["error", noReexportSyntax],
+    },
+  },
+
+  // Pipeline plugins mutate the hast tree in place, so nodes they inject must be
+  // built per page — never shared from module scope. (Barrel index.ts files are
+  // re-enabled to "off" below; this block precedes them so that override wins.)
+  {
+    files: ["quartz/plugins/**/*.ts"],
+    ignores: ["**/*.test.ts", "**/*.spec.ts"],
+    rules: {
+      "no-restricted-syntax": ["error", noReexportSyntax, moduleScopeHastSyntax],
     },
   },
 
