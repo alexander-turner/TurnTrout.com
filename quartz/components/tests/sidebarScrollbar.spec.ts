@@ -14,9 +14,17 @@ function supportsScrollbarColor(page: Page): Promise<boolean> {
   return page.evaluate(() => CSS.supports("scrollbar-color", "red transparent"))
 }
 
-/** Split a resolved `scrollbar-color` pair into its thumb and track colours. */
+/** Split a resolved `scrollbar-color` pair into its thumb and track colours.
+ *  Engines serialize colours as `rgb()`/`rgba()`, `color(srgb …)` (Chromium
+ *  for `color-mix()` results), or the `transparent` keyword. */
 function parseColorPair(value: string): readonly string[] {
-  return value.toLowerCase().match(/transparent|rgba?\([^)]*\)/g) ?? []
+  return value.toLowerCase().match(/[a-z-]+\([^)]*\)|transparent/g) ?? []
+}
+
+/** Engines only include an alpha component when it is below 1, either as a
+ *  fourth `rgba()` argument or after a slash in modern syntax. */
+function isOpaqueColor(color: string): boolean {
+  return color !== "transparent" && !/rgba\(/.test(color) && !/\/\s*[\d.]+%?\s*\)/.test(color)
 }
 
 /** The resting state hides the thumb by matching it to the track, with both
@@ -25,8 +33,7 @@ function parseColorPair(value: string): readonly string[] {
 function isHiddenOpaquePair(value: string): boolean {
   const [thumb, track] = parseColorPair(value)
   if (!thumb || !track) return false
-  const opaque = /^rgb\(/.test(thumb) && /^rgb\(/.test(track)
-  return thumb === track && opaque
+  return thumb === track && isOpaqueColor(thumb) && isOpaqueColor(track)
 }
 
 /** The revealed state paints the thumb a different colour than the track. */
