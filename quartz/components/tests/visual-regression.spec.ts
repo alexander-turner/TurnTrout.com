@@ -8,6 +8,7 @@ import {
   tightScrollTolerance,
   TOC_DETECTION_BAND_FRACTION,
   TOC_MANUAL_SCROLL_GRACE_MS,
+  TOC_SCROLLOFF_COUNT,
 } from "../constants"
 import { expect, test } from "./fixtures"
 import {
@@ -671,24 +672,73 @@ test.describe("Table of contents", () => {
     expect(down.activeVisible).toBe(true)
     expect(down.bufferVisible).toBe(true)
 
-    // Scrolling back to the top re-syncs the sidebar upward: it scrolls up from
-    // its down position and the newly active link returns to view. (It need not
-    // land exactly at 0 — the first link sits below the list's padding.)
+    // Scrolling back to the top re-syncs the sidebar all the way to 0 so the ToC
+    // title (which sits above the list) is revealed rather than clipped.
     await page.evaluate(() => {
       window.scrollTo({ top: 0, behavior: "instant" })
       return new Promise((resolve) => requestAnimationFrame(resolve))
     })
     await page.waitForFunction(
-      (prevTop) => {
+      () => {
         const sidebar = document.getElementById("right-sidebar")
         const active = document.querySelector("#toc-content a.active")
-        if (!sidebar || !active) return false
+        const title = document.getElementById("toc-title")
+        if (!sidebar || !active || !title) return false
         const s = sidebar.getBoundingClientRect()
         const a = active.getBoundingClientRect()
-        const visible = a.top >= s.top - 1 && a.bottom <= s.bottom + 1
-        return sidebar.scrollTop < prevTop && visible
+        const t = title.getBoundingClientRect()
+        const activeVisible = a.top >= s.top - 1 && a.bottom <= s.bottom + 1
+        const titleVisible = t.top >= s.top - 1
+        return sidebar.scrollTop === 0 && activeVisible && titleVisible
       },
-      down.scrollTop,
+      null,
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
+    )
+  })
+
+  test("Scrolls the sidebar to the bottom to reveal trailing meta on the last heading", async ({
+    page,
+  }) => {
+    test.skip(!isDesktopViewport(page))
+    await page.emulateMedia({ reducedMotion: "reduce" })
+
+    const rightSidebar = page.locator("#right-sidebar")
+    await expect(rightSidebar).toBeVisible()
+    expect(await rightSidebar.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true)
+
+    await page.waitForFunction(
+      () => document.querySelector("#toc-content a.active") !== null,
+      null,
+      { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
+    )
+
+    // The last observable heading whose ToC link sits within the scrolloff of the
+    // list end, so activating it pins the sidebar to its bottom edge.
+    const lastSlug = await page.evaluate((scrolloff) => {
+      const navLinks = Array.from(document.querySelectorAll("#toc-content a"))
+      const slugs = navLinks.map((l) => l.getAttribute("href")?.split("#")[1] ?? "")
+      const navSet = new Set(slugs)
+      const sections = Array.from(
+        document.querySelectorAll("#center-content article h1, #center-content article h2"),
+      ).filter((s) => s.id && navSet.has(s.id))
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const linkIdx = slugs.indexOf(sections[i].id)
+        if (linkIdx >= navLinks.length - 1 - scrolloff) return sections[i].id
+      }
+      return null
+    }, TOC_SCROLLOFF_COUNT)
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (!lastSlug) throw new Error("No observable heading near the ToC list end on the test page")
+
+    await activateHeading(page, lastSlug)
+    await waitForActiveHref(page, lastSlug)
+    await page.waitForFunction(
+      () => {
+        const sidebar = document.getElementById("right-sidebar")
+        if (!sidebar) return false
+        return sidebar.scrollTop >= sidebar.scrollHeight - sidebar.clientHeight - 1
+      },
+      null,
       { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
   })

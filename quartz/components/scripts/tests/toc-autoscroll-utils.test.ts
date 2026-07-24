@@ -183,26 +183,69 @@ describe("scrollActiveTocLinkIntoView", () => {
   it("does not scroll when the active link is already in view", () => {
     const sidebar = makeSidebar(0, 100, 500)
     const links = makeLinks([
+      [10, 20],
       [20, 30],
       [30, 40],
       [40, 50],
       [50, 60],
       [60, 70],
+      [70, 80],
     ])
-    scrollActiveTocLinkIntoView(sidebar, links, 2, "auto")
+    scrollActiveTocLinkIntoView(sidebar, links, 3, "auto")
     expect(sidebar.scrollTo).not.toHaveBeenCalled()
   })
 
-  it("scrolls to the computed position with the requested behavior", () => {
+  it("scrolls down to the computed position with the requested behavior", () => {
     const sidebar = makeSidebar(0, 100, 500)
     const links = makeLinks([
-      [30, 40],
+      [10, 20],
       [30, 40],
       [40, 50],
-      [90, 100],
+      [40, 50],
+      [50, 60],
       [95, 105],
+      [110, 120],
     ])
-    scrollActiveTocLinkIntoView(sidebar, links, 2, "auto")
+    scrollActiveTocLinkIntoView(sidebar, links, 3, "auto")
     expect(sidebar.scrollTo).toHaveBeenCalledWith({ top: 13, behavior: "auto" })
+  })
+
+  it("scrolls to the very top to reveal the title when near the first entry", () => {
+    const sidebar = makeSidebar(200, 100, 500)
+    const links = makeLinks([
+      [-180, -170],
+      [-140, -130],
+      [-100, -90],
+      [-60, -50],
+      [-20, -10],
+    ])
+    scrollActiveTocLinkIntoView(sidebar, links, 0, "auto")
+    expect(sidebar.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "auto" })
+  })
+
+  it("scrolls to the very bottom to reveal the trailing meta when near the last entry", () => {
+    const sidebar = makeSidebar(0, 100, 500)
+    const links = makeLinks([
+      [10, 20],
+      [30, 40],
+      [50, 60],
+      [70, 80],
+      [90, 100],
+    ])
+    scrollActiveTocLinkIntoView(sidebar, links, 4, "auto")
+    expect(sidebar.scrollTo).toHaveBeenCalledWith({ top: 400, behavior: "auto" })
+  })
+
+  it("does not scroll when already pinned at the target edge", () => {
+    const sidebar = makeSidebar(0, 100, 500)
+    const links = makeLinks([
+      [10, 20],
+      [30, 40],
+      [50, 60],
+      [70, 80],
+      [90, 100],
+    ])
+    scrollActiveTocLinkIntoView(sidebar, links, 0, "auto")
+    expect(sidebar.scrollTo).not.toHaveBeenCalled()
   })
 })

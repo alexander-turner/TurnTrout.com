@@ -72,25 +72,38 @@ export function scrollActiveTocLinkIntoView(
   activeIndex: number,
   behavior: ScrollBehavior,
 ): void {
-  if (sidebar.scrollHeight <= sidebar.clientHeight) return
+  const maxScroll = sidebar.scrollHeight - sidebar.clientHeight
+  if (maxScroll <= 0) return
 
-  const anchors = getScrolloffAnchors(links, activeIndex, TOC_SCROLLOFF_COUNT)
-  const sidebarTop = sidebar.getBoundingClientRect().top
-  const toContent = (viewportY: number): number => viewportY - sidebarTop + sidebar.scrollTop
+  // Pin to the sidebar edges near the list ends so the content flanking the ToC
+  // list is revealed rather than clipped: the title above the first entries, and
+  // the trailing meta (read time) below the last ones.
+  const atStart = activeIndex <= TOC_SCROLLOFF_COUNT
+  const atEnd = activeIndex >= links.length - 1 - TOC_SCROLLOFF_COUNT
 
-  const activeRect = links[activeIndex].getBoundingClientRect()
-  const top = computeAutoScrollTop({
-    scrollTop: sidebar.scrollTop,
-    clientHeight: sidebar.clientHeight,
-    scrollHeight: sidebar.scrollHeight,
-    aboveAnchorTop: toContent(anchors.above.getBoundingClientRect().top),
-    activeTop: toContent(activeRect.top),
-    activeBottom: toContent(activeRect.bottom),
-    belowAnchorBottom: toContent(anchors.below.getBoundingClientRect().bottom),
-    padding: TOC_AUTOSCROLL_PADDING_PX,
-  })
+  let target: number | null
+  if (atStart) {
+    target = 0
+  } else if (atEnd) {
+    target = maxScroll
+  } else {
+    const anchors = getScrolloffAnchors(links, activeIndex, TOC_SCROLLOFF_COUNT)
+    const sidebarTop = sidebar.getBoundingClientRect().top
+    const toContent = (viewportY: number): number => viewportY - sidebarTop + sidebar.scrollTop
+    const activeRect = links[activeIndex].getBoundingClientRect()
+    target = computeAutoScrollTop({
+      scrollTop: sidebar.scrollTop,
+      clientHeight: sidebar.clientHeight,
+      scrollHeight: sidebar.scrollHeight,
+      aboveAnchorTop: toContent(anchors.above.getBoundingClientRect().top),
+      activeTop: toContent(activeRect.top),
+      activeBottom: toContent(activeRect.bottom),
+      belowAnchorBottom: toContent(anchors.below.getBoundingClientRect().bottom),
+      padding: TOC_AUTOSCROLL_PADDING_PX,
+    })
+  }
 
-  if (top !== null) {
-    sidebar.scrollTo({ top, behavior })
+  if (target !== null && Math.abs(target - sidebar.scrollTop) >= 1) {
+    sidebar.scrollTo({ top: target, behavior })
   }
 }
