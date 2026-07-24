@@ -157,7 +157,7 @@ em {
     overflow-y: auto;
     max-height: calc(100vh - #{$top-spacing});
     scrollbar-width: thin;
-    scrollbar-color: transparent transparent;
+    scrollbar-color: var(--background) var(--background);
   }
 
   #left-sidebar {
