@@ -22,7 +22,10 @@ const __dirname = path.dirname(__filename)
 
 /**
  * Generates the critical.scss file content from template
- * This CSS is manually appended to auto-generated critical CSS and inlined in HTML
+ * This CSS is manually appended to auto-generated critical CSS and inlined in HTML.
+ * The inlined output is parsed as plain CSS downstream (e.g. by subfont's
+ * PostCSS tracer), so the template must not contain SCSS-only syntax like
+ * "//" comments.
  * SCSS variables (like $midground-faint-light) are replaced at build time with actual values
  * @returns The complete critical SCSS content as a string
  */
@@ -153,6 +156,8 @@ em {
     top: $top-spacing;
     overflow-y: auto;
     max-height: calc(100vh - #{$top-spacing});
+    scrollbar-width: thin;
+    scrollbar-color: var(--background) var(--background);
   }
 
   #left-sidebar {

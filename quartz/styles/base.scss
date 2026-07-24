@@ -224,10 +224,12 @@ a {
         max-height: calc(100vh - #{$top-spacing});
 
         // Keep the scrollbar gutter reserved (no layout shift) but hide the
-        // thumb until the sidebar is hovered.
+        // thumb until the sidebar is hovered. The resting thumb matches the
+        // track color instead of being transparent, and the reveal is an
+        // instant swap: Chromium paints transparent or animating
+        // scrollbar-color values as the default (black) scrollbar.
         scrollbar-width: thin;
-        scrollbar-color: transparent transparent;
-        transition: scrollbar-color $transition-duration-medium ease;
+        scrollbar-color: var(--background) var(--background);
 
         &:hover {
           scrollbar-color: var(--midground-fainter) var(--background);

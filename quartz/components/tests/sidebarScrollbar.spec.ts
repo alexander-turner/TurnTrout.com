@@ -14,16 +14,32 @@ function supportsScrollbarColor(page: Page): Promise<boolean> {
   return page.evaluate(() => CSS.supports("scrollbar-color", "red transparent"))
 }
 
-/** A single colour token that resolves to fully transparent. Engines serialize
- *  `transparent` as the keyword, `rgba(0, 0, 0, 0)`, or `rgb(0 0 0 / 0)`. */
-function isTransparentColor(color: string): boolean {
-  return color === "transparent" || /[,/]\s*0\s*\)$/.test(color)
+/** Split a resolved `scrollbar-color` pair into its thumb and track colours.
+ *  Engines serialize colours as `rgb()`/`rgba()`, `color(srgb …)` (Chromium
+ *  for `color-mix()` results), or the `transparent` keyword. */
+function parseColorPair(value: string): readonly string[] {
+  return value.toLowerCase().match(/[a-z-]+\([^)]*\)|transparent/g) ?? []
 }
 
-/** `transparent transparent` resolves to a pair of fully-transparent colours. */
-function isTransparentPair(value: string): boolean {
-  const colors = value.toLowerCase().match(/transparent|rgba?\([^)]*\)/g) ?? []
-  return colors.length === 2 && colors.every(isTransparentColor)
+/** Engines only include an alpha component when it is below 1, either as a
+ *  fourth `rgba()` argument or after a slash in modern syntax. */
+function isOpaqueColor(color: string): boolean {
+  return color !== "transparent" && !/rgba\(/.test(color) && !/\/\s*[\d.]+%?\s*\)/.test(color)
+}
+
+/** The resting state hides the thumb by matching it to the track, with both
+ *  colours fully opaque — Chromium can paint transparent scrollbar colours as
+ *  black, so transparency must never be part of the resting state. */
+function isHiddenOpaquePair(value: string): boolean {
+  const [thumb, track] = parseColorPair(value)
+  if (!thumb || !track) return false
+  return thumb === track && isOpaqueColor(thumb) && isOpaqueColor(track)
+}
+
+/** The revealed state paints the thumb a different colour than the track. */
+function isRevealedPair(value: string): boolean {
+  const [thumb, track] = parseColorPair(value)
+  return Boolean(thumb && track) && thumb !== track
 }
 
 test.beforeEach(async ({ page }) => {
@@ -44,16 +60,16 @@ test.describe("Sidebar scrollbar appears only on hover (desktop)", () => {
       const sidebar = page.locator(selector)
       await expect(sidebar).toBeVisible()
 
-      expect(isTransparentPair(await getScrollbarColor(sidebar))).toBe(true)
+      expect(isHiddenOpaquePair(await getScrollbarColor(sidebar))).toBe(true)
 
       await sidebar.hover()
       await expect(async () => {
-        expect(isTransparentPair(await getScrollbarColor(sidebar))).toBe(false)
+        expect(isRevealedPair(await getScrollbarColor(sidebar))).toBe(true)
       }).toPass()
 
       await moveMouseToSafePosition(page)
       await expect(async () => {
-        expect(isTransparentPair(await getScrollbarColor(sidebar))).toBe(true)
+        expect(isHiddenOpaquePair(await getScrollbarColor(sidebar))).toBe(true)
       }).toPass()
     })
   }
@@ -70,7 +86,7 @@ test.describe("Sidebar scrollbar (mobile)", () => {
     const sidebar = page.locator("#left-sidebar")
 
     // The hover-reveal rule lives inside a desktop media query, so on mobile the
-    // sidebar never adopts the transparent-then-coloured scrollbar behavior.
-    expect(isTransparentPair(await getScrollbarColor(sidebar))).toBe(false)
+    // sidebar never adopts the hidden-thumb resting state.
+    expect(isHiddenOpaquePair(await getScrollbarColor(sidebar))).toBe(false)
   })
 })
