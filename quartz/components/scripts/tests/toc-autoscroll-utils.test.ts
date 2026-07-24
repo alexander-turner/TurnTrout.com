@@ -183,31 +183,35 @@ describe("scrollActiveTocLinkIntoView", () => {
   it("does not scroll when the active link is already in view", () => {
     const sidebar = makeSidebar(0, 100, 500)
     const links = makeLinks([
-      [10, 20],
-      [20, 30],
-      [30, 40],
-      [40, 50],
-      [50, 60],
-      [60, 70],
-      [70, 80],
+      [2, 10],
+      [12, 20],
+      [22, 30],
+      [32, 40],
+      [42, 50],
+      [52, 60],
+      [62, 70],
+      [72, 80],
+      [82, 90],
     ])
-    scrollActiveTocLinkIntoView(sidebar, links, 3, "auto")
+    scrollActiveTocLinkIntoView(sidebar, links, 4, "auto")
     expect(sidebar.scrollTo).not.toHaveBeenCalled()
   })
 
   it("scrolls down to the computed position with the requested behavior", () => {
     const sidebar = makeSidebar(0, 100, 500)
     const links = makeLinks([
-      [10, 20],
-      [30, 40],
-      [40, 50],
-      [40, 50],
-      [50, 60],
-      [95, 105],
-      [110, 120],
+      [4, 12],
+      [16, 24],
+      [28, 36],
+      [40, 48],
+      [52, 60],
+      [64, 72],
+      [76, 84],
+      [88, 100],
+      [104, 116],
     ])
-    scrollActiveTocLinkIntoView(sidebar, links, 3, "auto")
-    expect(sidebar.scrollTo).toHaveBeenCalledWith({ top: 13, behavior: "auto" })
+    scrollActiveTocLinkIntoView(sidebar, links, 4, "auto")
+    expect(sidebar.scrollTo).toHaveBeenCalledWith({ top: 8, behavior: "auto" })
   })
 
   it("scrolls to the very top to reveal the title when near the first entry", () => {

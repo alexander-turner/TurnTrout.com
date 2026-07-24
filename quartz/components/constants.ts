@@ -136,7 +136,7 @@ export const TOC_DETECTION_ROOT_MARGIN = `0px 0px -${(1 - TOC_DETECTION_BAND_FRA
 
 // Vim-scrolloff for the desktop ToC: keep this many ToC entries visible beyond
 // the active link on each side when auto-scrolling the sidebar to follow along.
-export const TOC_SCROLLOFF_COUNT = 2
+export const TOC_SCROLLOFF_COUNT = 3
 // Breathing room (px) between the scrolloff anchor and the sidebar edge, so
 // buffered entries don't sit flush under the scroll-fade gradient.
 export const TOC_AUTOSCROLL_PADDING_PX = 8

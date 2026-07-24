@@ -628,9 +628,10 @@ test.describe("Table of contents", () => {
       },
     )
 
-    // The last observable (h1/h2) heading that still has >= 2 ToC entries after
-    // it, so both the active link and its 2-entry scrolloff buffer are testable.
-    const target = await page.evaluate(() => {
+    // The last observable (h1/h2) heading that still has a full scrolloff buffer
+    // of ToC entries after it, so both the active link and that buffer are
+    // testable.
+    const target = await page.evaluate((scrolloff) => {
       const navLinks = Array.from(document.querySelectorAll("#toc-content a"))
       const slugs = navLinks.map((l) => l.getAttribute("href")?.split("#")[1] ?? "")
       const navSet = new Set(slugs)
@@ -639,12 +640,12 @@ test.describe("Table of contents", () => {
       ).filter((s) => s.id && navSet.has(s.id))
       for (let i = sections.length - 1; i >= 0; i--) {
         const linkIdx = slugs.indexOf(sections[i].id)
-        if (linkIdx >= 0 && linkIdx + 2 <= navLinks.length - 1) {
-          return { slug: sections[i].id, bufferIdx: linkIdx + 2 }
+        if (linkIdx >= 0 && linkIdx + scrolloff <= navLinks.length - 1) {
+          return { slug: sections[i].id, bufferIdx: linkIdx + scrolloff }
         }
       }
       return null
-    })
+    }, TOC_SCROLLOFF_COUNT)
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (!target) throw new Error("No observable heading with a 2-entry buffer on the test page")
 
