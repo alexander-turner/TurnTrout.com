@@ -52,34 +52,53 @@ function isRevealedPair(value: string): boolean {
   return Boolean(thumb && track) && thumb !== track
 }
 
-test.beforeEach(async ({ page }) => {
-  await gotoPage(page, testPageUrl, "domcontentloaded")
-  await moveMouseToSafePosition(page)
-})
+/** Register the shared setup for groups that assert on the fixture page. */
+function useTestPage(): void {
+  test.beforeEach(async ({ page }) => {
+    await gotoPage(page, testPageUrl, "domcontentloaded")
+    await moveMouseToSafePosition(page)
+  })
+}
+
+/** Read the resolved `scrollbar-color`/`scrollbar-width` of `document.body`. */
+function getBodyScrollbarStyle(page: Page): Promise<{ color: string; width: string }> {
+  return page.evaluate(() => {
+    const style = getComputedStyle(document.body)
+    return { color: style.scrollbarColor, width: style.scrollbarWidth }
+  })
+}
 
 test.describe("Page scrollbar", () => {
-  test("is restyled only where the engine keeps it on screen", async ({ page }) => {
+  useTestPage()
+
+  test("classic-scrollbar devices get the restyled thin scrollbar", async ({ page }) => {
     test.skip(
       !(await supportsScrollbarColor(page)),
       "Browser does not resolve scrollbar-color in computed style",
     )
+    test.skip(!(await usesClassicScrollbars(page)), "Only relevant for hover+fine-pointer devices")
 
-    const { color, width } = await page.evaluate(() => {
-      const style = getComputedStyle(document.body)
-      return { color: style.scrollbarColor, width: style.scrollbarWidth }
-    })
+    const { color, width } = await getBodyScrollbarStyle(page)
+    expect(isRevealedPair(color)).toBe(true)
+    expect(width).toBe("thin")
+  })
 
-    if (await usesClassicScrollbars(page)) {
-      expect(isRevealedPair(color)).toBe(true)
-      expect(width).toBe("thin")
-    } else {
-      expect(color).toBe("auto")
-      expect(width).toBe("auto")
-    }
+  test("touch devices keep the native scrollbar", async ({ page }) => {
+    test.skip(
+      !(await supportsScrollbarColor(page)),
+      "Browser does not resolve scrollbar-color in computed style",
+    )
+    test.skip(await usesClassicScrollbars(page), "Only relevant for coarse-pointer devices")
+
+    const { color, width } = await getBodyScrollbarStyle(page)
+    expect(color).toBe("auto")
+    expect(width).toBe("auto")
   })
 })
 
 test.describe("Sidebar scrollbar appears only on hover (desktop)", () => {
+  useTestPage()
+
   // The hover-reveal rule targets `.sidebar`, so both sidebars get the behavior.
   for (const selector of ["#left-sidebar", "#right-sidebar"] as const) {
     test(`${selector} thumb is hidden until the sidebar is hovered`, async ({ page }) => {
@@ -108,6 +127,8 @@ test.describe("Sidebar scrollbar appears only on hover (desktop)", () => {
 })
 
 test.describe("Sidebar scrollbar (mobile)", () => {
+  useTestPage()
+
   test("hover does not reveal a scrollbar", async ({ page }) => {
     test.skip(isDesktopViewport(page), "Mobile-only assertion")
     test.skip(
