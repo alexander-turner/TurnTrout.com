@@ -187,10 +187,9 @@
 
 @media all and (max-width: $max-mobile-width) {
   #page-columns #navbar {
-    opacity: 1;
-    transition:
-      transform $transition-duration-slow ease,
-      opacity $transition-duration-slow ease;
+    // Slide out of view without fading. Fading while the bar still overlaps
+    // the article turns it translucent over the text it is passing.
+    transition: transform $transition-duration-slow ease;
     z-index: $z-navbar;
     padding-top: calc(0.5 * $base-margin);
     pointer-events: auto;
@@ -202,7 +201,6 @@
 
     &.hide-above-screen {
       transform: translateY(-100%);
-      opacity: 0;
       pointer-events: none;
     }
   }

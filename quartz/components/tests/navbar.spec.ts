@@ -303,7 +303,7 @@ test("Menu disappears when scrolling down and reappears when scrolling up", asyn
   })
 
   await expect(navbar).toHaveClass(/hide-above-screen/)
-  await expect(navbar).toHaveCSS("opacity", "0")
+  await expect(navbar).toHaveCSS("opacity", "1")
 
   await page.evaluate(() => {
     window.scrollTo({
@@ -344,11 +344,15 @@ test("Content behind hidden navbar is clickable on mobile", async ({ page }) => 
   await expect(page).not.toHaveURL(initialUrl)
 })
 
-test("Menu disappears gradually when scrolling down", async ({ page }) => {
+test("Menu slides out of view without fading when scrolling down", async ({ page }) => {
   test.skip(isDesktopViewport(page), "Mobile-only test")
 
   const navbar = page.locator("#navbar")
+  const sidebar = page.locator("#left-sidebar")
   await expect(navbar).toHaveCSS("opacity", "1")
+
+  const height = (await navbar.boundingBox())?.height
+  expect(height).toBeGreaterThan(0)
 
   // Scroll down past the 50px threshold. scrollTo dispatches a scroll event
   // which the scroll handler picks up via requestAnimationFrame. Using
@@ -356,10 +360,16 @@ test("Menu disappears gradually when scrolling down", async ({ page }) => {
   // Note: mouse.wheel() is not supported in mobile WebKit.
   await page.evaluate(() => window.scrollTo({ top: 200, behavior: "instant" }))
 
-  // The hide-above-screen class triggers a CSS opacity transition.
-  // Wait for the class to be applied and the transition to complete.
+  // The bar travels a full height upward while staying opaque, so it is never
+  // translucent over the article it passes. The sidebar behind it must not
+  // paint a backdrop that would linger once the bar has gone.
   await expect(navbar).toHaveClass(/hide-above-screen/)
-  await expect(navbar).toHaveCSS("opacity", "0")
+  await expect(async () => {
+    const box = await navbar.boundingBox()
+    expect(box?.y ?? 0).toBeLessThanOrEqual(-(height as number) + 1)
+  }).toPass()
+  await expect(navbar).toHaveCSS("opacity", "1")
+  await expect(sidebar).toHaveCSS("background-color", "rgba(0, 0, 0, 0)")
 })
 
 test("Navbar shows shadow when scrolling down (screenshot)", async ({ page }, testInfo) => {
