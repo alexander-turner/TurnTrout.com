@@ -4,7 +4,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 import { expect, test } from "./fixtures"
-import { gotoPage, setTheme, takeRegressionScreenshot } from "./visual_utils"
+import { gotoPage, preventMediaPlayback, setTheme, takeRegressionScreenshot } from "./visual_utils"
 
 const THEMES = ["light", "dark"] as const
 
@@ -35,6 +35,7 @@ test.describe("Test page section fixtures", () => {
   for (const slug of sectionSlugs) {
     for (const theme of THEMES) {
       test(`section ${slug} in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
+        await preventMediaPlayback(page)
         await gotoPage(page, `http://localhost:8080/test-section-${slug}`)
         // Fail loudly if the fixture page didn't build (404s to "Page Not
         // Found") instead of silently screenshotting the 404 page as a diff.

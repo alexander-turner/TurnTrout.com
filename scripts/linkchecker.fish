@@ -12,6 +12,7 @@ set -l INTERNAL_STATUS $status
 # two hosts I control and drops all other external links. --check-extern makes
 # linkchecker fetch the allowlisted external URLs instead of skipping them.
 linkchecker $LOCAL_SERVER \
+    --config config/linkchecker/linkcheckerrc \
     --ignore-url="!^(http://localhost:8080|https://assets\.turntrout\.com|https://github\.com/alexander-turner/TurnTrout\.com)" \
     --check-extern \
     --threads 30 \

@@ -27,6 +27,13 @@ except ImportError:
 R2_PREFIX = "visual-baselines"
 LOCAL_DIR = Path("tests/visual-baselines")
 
+# Cloudflare R2 intermittently answers object transfers with
+# ``501 NotImplemented`` ("Failed to copy"). rclone's default three whole-run
+# retries usually absorb a lone blip, but a cluster of 501s across a
+# multi-file sync can exhaust them and fail an otherwise-good baseline
+# push/pull. Raise the ceiling so transient R2 errors can't sink the sync.
+_R2_RETRY_FLAGS = ["--retries=10", "--low-level-retries=20"]
+
 
 def _write_rclone_config(config_path: Path) -> None:
     """Thin alias for the shared rclone-config writer (see ``r2_sync``)."""
@@ -61,6 +68,7 @@ def download(local_dir: Path) -> None:
                 "--checksum",
                 "--transfers=16",
                 "--checkers=16",
+                *_R2_RETRY_FLAGS,
             ],
             config,
         )
@@ -90,6 +98,7 @@ def upload(local_dir: Path) -> None:
                 "--checksum",
                 "--transfers=16",
                 "--checkers=16",
+                *_R2_RETRY_FLAGS,
             ],
             config,
         )

@@ -296,6 +296,12 @@ document.addEventListener("nav", () => {
       }
 
       const handleMouseLeave = () => {
+        // Leaving the link cancels popover creation at every stage: the
+        // pending show timer and any in-flight createPopover call. The
+        // post-await :hover check in mouseEnterHandler can read stale hover
+        // state when the fetch resolves in the same frame as the leave, so
+        // cancellation must not depend on it.
+        popoverFetchController?.abort()
         if (pendingPopoverTimer) {
           clearTimeout(pendingPopoverTimer)
           pendingPopoverTimer = null

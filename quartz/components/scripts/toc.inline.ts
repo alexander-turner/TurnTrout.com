@@ -1,6 +1,15 @@
-import { TOC_DETECTION_BAND_FRACTION, TOC_DETECTION_ROOT_MARGIN } from "../constants"
+import {
+  TOC_DETECTION_BAND_FRACTION,
+  TOC_DETECTION_ROOT_MARGIN,
+  TOC_MANUAL_SCROLL_GRACE_MS,
+} from "../constants"
+import { scrollActiveTocLinkIntoView } from "./toc-autoscroll-utils"
 
 let tocAbortController: AbortController | null = null
+
+function slugOf(link: Element): string | undefined {
+  return link.getAttribute("href")?.split("#")[1]
+}
 
 function setupMobileTocClickDelegation(signal: AbortSignal): void {
   const mobileToc = document.getElementById("toc-content-mobile")
@@ -35,7 +44,7 @@ function setupTocTitleScrollToTop(signal: AbortSignal): void {
   )
 }
 
-function setupTocActiveHighlighting(): void {
+function setupTocActiveHighlighting(signal: AbortSignal): void {
   if (window.tocObserver) {
     window.tocObserver.disconnect()
   }
@@ -43,16 +52,37 @@ function setupTocActiveHighlighting(): void {
   const allSections = document.querySelectorAll(
     "#center-content article h1, #center-content article h2",
   )
-  const navLinks = document.querySelectorAll("#toc-content a")
+  const navLinks = document.querySelectorAll<HTMLAnchorElement>("#toc-content a")
+  const navLinkArray = Array.from(navLinks)
 
-  const navLinkSlugs = new Set(
-    Array.from(navLinks).map((l) => l.getAttribute("href")?.split("#")[1]),
-  )
+  const navLinkSlugs = new Set(navLinkArray.map(slugOf))
   const sections = Array.from(allSections).filter(
     (section) => section.id && navLinkSlugs.has(section.id),
   )
 
   if (sections.length === 0 || navLinks.length === 0) return
+
+  const sidebar = document.getElementById("right-sidebar")
+  let isInitialUpdate = true
+  let lastManualSidebarScroll = -Infinity
+
+  if (sidebar) {
+    const markManualScroll = () => {
+      lastManualSidebarScroll = performance.now()
+    }
+    // Wheel or touch scrolling within the sidebar marks manual browsing; a
+    // pointerdown on the sidebar itself (its scrollbar, not a link) covers
+    // thumb-drags where the platform exposes a classic scrollbar.
+    sidebar.addEventListener("wheel", markManualScroll, { passive: true, signal })
+    sidebar.addEventListener("touchmove", markManualScroll, { passive: true, signal })
+    sidebar.addEventListener(
+      "pointerdown",
+      (event) => {
+        if (event.target === sidebar) markManualScroll()
+      },
+      { signal },
+    )
+  }
 
   let currentSection = ""
 
@@ -60,10 +90,19 @@ function setupTocActiveHighlighting(): void {
     if (newSection === currentSection) return
     currentSection = newSection
 
-    navLinks.forEach((link) => {
-      const slug = link.getAttribute("href")?.split("#")[1]
-      link.classList.toggle("active", Boolean(currentSection && slug === currentSection))
+    navLinkArray.forEach((link) => {
+      link.classList.toggle("active", Boolean(currentSection && slugOf(link) === currentSection))
     })
+
+    // Follow the active link with the sidebar. Instant only on the first update
+    // after a nav (nothing on screen to snap from); a smooth glide thereafter.
+    const behavior: ScrollBehavior = isInitialUpdate ? "instant" : "auto"
+    isInitialUpdate = false
+    if (sidebar === null) return
+    if (performance.now() - lastManualSidebarScroll < TOC_MANUAL_SCROLL_GRACE_MS) return
+    const activeIndex = navLinkArray.findIndex((link) => slugOf(link) === currentSection)
+    if (activeIndex === -1) return
+    scrollActiveTocLinkIntoView(sidebar, navLinkArray, activeIndex, behavior)
   }
 
   const visibleSections = new Set<string>()
@@ -126,5 +165,5 @@ document.addEventListener("nav", () => {
 
   setupMobileTocClickDelegation(signal)
   setupTocTitleScrollToTop(signal)
-  setupTocActiveHighlighting()
+  setupTocActiveHighlighting(signal)
 })

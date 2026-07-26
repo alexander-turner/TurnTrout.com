@@ -406,15 +406,15 @@ test.describe("Instant Scroll Restoration", () => {
     // a late SPA navigation destroys the execution context between separate
     // waitForFunction + page.evaluate calls (seen on Firefox & Safari).
     const handle = await page.waitForFunction(
-      (target) => {
-        if (Math.abs(window.scrollY - target) < 50) return window.scrollY
+      ({ target, tolerance }) => {
+        if (Math.abs(window.scrollY - target) <= tolerance) return window.scrollY
         return false
       },
-      scrollPos,
+      { target: scrollPos, tolerance: tightScrollTolerance },
       { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
     const finalScroll = await handle.jsonValue()
-    expect(finalScroll).toBeCloseTo(scrollPos, -1)
+    expect(Math.abs(Number(finalScroll) - scrollPos)).toBeLessThanOrEqual(tightScrollTolerance)
   })
 
   test("restores hash position immediately on reload", async ({ page }) => {
@@ -591,7 +591,7 @@ test.describe("Cross-Session Scroll Persistence (localStorage)", () => {
     const key = `${scrollPositionKeyPrefix}${new URL(page.url()).pathname}`
     const stored = await page.evaluate((k) => localStorage.getItem(k), key)
     expect(stored).not.toBeNull()
-    expect(Number(stored)).toBeCloseTo(scrollPos, -1)
+    expect(Math.abs(Number(stored) - scrollPos)).toBeLessThanOrEqual(tightScrollTolerance)
   })
 
   test("does not save scroll position below minimum threshold", async ({ page }) => {
@@ -629,7 +629,7 @@ test.describe("Cross-Session Scroll Persistence (localStorage)", () => {
       { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
     )
     const finalScroll = await handle.jsonValue()
-    expect(finalScroll).toBeCloseTo(scrollPos, -1)
+    expect(Math.abs(Number(finalScroll) - scrollPos)).toBeLessThanOrEqual(tightScrollTolerance)
 
     await newPage.close()
   })
@@ -839,9 +839,10 @@ test.describe("Same-page navigation", () => {
     await clickToc(page)
 
     await page.goBack()
+    await waitForScroll(page, scrollTarget)
 
     const finalScroll = await page.evaluate(() => window.scrollY)
-    expect(finalScroll).toBeCloseTo(scrollTarget, -1)
+    expect(Math.abs(finalScroll - scrollTarget)).toBeLessThanOrEqual(tightScrollTolerance)
   })
 })
 

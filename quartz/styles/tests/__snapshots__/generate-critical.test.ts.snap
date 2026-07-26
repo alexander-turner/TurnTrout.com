@@ -162,6 +162,13 @@ em {
   }
 }
 
+@media all and (min-width: $min-desktop-width) and (hover: hover) and (pointer: fine) {
+  .sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--background) var(--background);
+  }
+}
+
 @media all and (min-width: $wider-gap-breakpoint) {
   #page-columns {
     gap: $max-sidebar-gap;

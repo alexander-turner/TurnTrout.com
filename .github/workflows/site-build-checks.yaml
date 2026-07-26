@@ -166,6 +166,7 @@ jobs:
         with:
           command: |
             uv run linkchecker http://localhost:8080 \
+              --config config/linkchecker/linkcheckerrc \
               --ignore-url='!^(http://localhost:8080|https://assets\.turntrout\.com|https://github\.com/alexander-turner/TurnTrout\.com)' \
               --check-extern \
               --threads 30 \

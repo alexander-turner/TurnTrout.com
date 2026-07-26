@@ -55,11 +55,17 @@ section {
 
 /* Scrollbar styling using the standard property (avoids Chromium repaint
    bug where ::-webkit-scrollbar pseudo-elements render as white rectangles
-   after a tab switch). scrollbar-color is supported in all modern browsers. */
-body,
-.right {
-  scrollbar-color: var(--midground-fainter) var(--background);
-  scrollbar-width: thin;
+   after a tab switch). scrollbar-color is supported in all modern browsers.
+
+   Only pointer devices with an always-present scrollbar may restyle it.
+   Touch devices use overlay scrollbars that fade out after a scroll, and a
+   non-`auto` scrollbar-color leaves the faded thumb painted on screen. */
+@media (hover: hover) and (pointer: fine) {
+  body,
+  .right {
+    scrollbar-color: var(--midground-fainter) var(--background);
+    scrollbar-width: thin;
+  }
 }
 
 .text-highlight {
@@ -224,13 +230,20 @@ a {
         max-height: calc(100vh - #{$top-spacing});
 
         // Keep the scrollbar gutter reserved (no layout shift) but hide the
-        // thumb until the sidebar is hovered.
-        scrollbar-width: thin;
-        scrollbar-color: transparent transparent;
-        transition: scrollbar-color $transition-duration-medium ease;
+        // thumb until the sidebar is hovered. The resting thumb matches the
+        // track color instead of being transparent, and the reveal is an
+        // instant swap: Chromium paints transparent or animating
+        // scrollbar-color values as the default (black) scrollbar. The reveal
+        // needs a hovering pointer, and a touch device's overlay scrollbar
+        // keeps its custom colors painted after it fades out, so touch
+        // devices stay on the native scrollbar.
+        @media (hover: hover) and (pointer: fine) {
+          scrollbar-width: thin;
+          scrollbar-color: var(--background) var(--background);
 
-        &:hover {
-          scrollbar-color: var(--midground-fainter) var(--background);
+          &:hover {
+            scrollbar-color: var(--midground-fainter) var(--background);
+          }
         }
       }
 
@@ -273,6 +286,10 @@ a {
           flex-basis: $right-sidebar-width;
           flex-shrink: 1;
           padding-right: calc(0.5 * #{$max-sidebar-gap});
+
+          // The ToC auto-scrolls to follow the active heading; glide rather than
+          // jump. The global prefers-reduced-motion block forces this to auto.
+          scroll-behavior: smooth;
 
           @media all and (min-width: $wider-gap-breakpoint) {
             margin-right: 0;

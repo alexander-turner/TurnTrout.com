@@ -588,6 +588,45 @@ export async function search(page: Page, term: string) {
   await expect(page.locator(".result-card").first()).toBeVisible({ timeout: 15_000 })
 }
 
+/**
+ * Freezes every `<video>`/`<audio>` on frame 0 for the life of the page.
+ * Screenshot determinism requires frame 0 on the compositor at capture time,
+ * and WebKit only reliably presents a frame *during playback* — a paused
+ * video may never paint (seeked frames are not reliably presented, and a
+ * never-played video can stay blank). So each play attempt is allowed to
+ * present exactly its first frame: playback starts at the current position,
+ * `requestVideoFrameCallback` fires on that first presentation (mediaTime 0
+ * for a fresh start), and the video is paused right there with its clock
+ * snapped back to 0 before any drift accumulates. Audio, and media with no
+ * data to present, are paused immediately. Must be called before navigation
+ * so the listener exists when autoplay first fires. Only for specs that
+ * never assert real playback.
+ */
+export async function preventMediaPlayback(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    document.addEventListener(
+      "play",
+      (event) => {
+        const media = event.target as HTMLMediaElement & {
+          requestVideoFrameCallback?: (cb: () => void) => number
+        }
+        const isPresentableVideo =
+          media instanceof HTMLVideoElement && typeof media.requestVideoFrameCallback === "function"
+        if (!isPresentableVideo) {
+          media.pause()
+          if (media.currentTime !== 0) media.currentTime = 0
+          return
+        }
+        media.requestVideoFrameCallback?.(() => {
+          media.pause()
+          if (media.currentTime !== 0) media.currentTime = 0
+        })
+      },
+      { capture: true },
+    )
+  })
+}
+
 // skipcq: JS-0098
 export async function pauseMediaElements(page: Page, scope?: Locator): Promise<void> {
   const mediaScope = scope ?? page
@@ -680,9 +719,13 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
  *
  * `pauseMediaElements` seeks videos to currentTime 0, but `paused`/`currentTime
  * === 0` are satisfied even when the engine (notably WebKit) has presented no
- * frame yet. Screenshotting that blank, never-painted state diffs against the
- * painted baseline — the source of the flake. requestVideoFrameCallback fires
- * only on a real paint, which is the signal we actually need.
+ * frame yet. A fresh sub-frame seek forces a presentation even when frame 0 was
+ * already on screen, and two independent signals report it: rVFC (a real paint,
+ * but never delivered by WebKit while paused) and "seeked" + double rAF.
+ *
+ * A video that never paints within budget throws instead of letting the
+ * screenshot proceed: a blank-video capture that gets approved poisons the
+ * shared R2 baselines for every later run.
  */
 async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
   for (const video of await scope.locator("video").all()) {
@@ -690,29 +733,47 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
     if (!handle) throw new Error("Could not get element handle for video")
     await handle.evaluate(
       (el, dataTimeoutMs) =>
-        new Promise<void>((resolve) => {
+        new Promise<void>((resolve, reject) => {
           const videoEl = el as HTMLVideoElement & {
             requestVideoFrameCallback?: (cb: () => void) => number
           }
-          const timers: ReturnType<typeof setTimeout>[] = []
           let settled = false
+          const timer = setTimeout(() => {
+            if (settled) return
+            settled = true
+            reject(
+              new Error(
+                `Video never painted within ${dataTimeoutMs}ms ` +
+                  `(readyState=${videoEl.readyState}): ${videoEl.currentSrc || "<no src>"}`,
+              ),
+            )
+          }, dataTimeoutMs)
           const finish = () => {
             if (settled) return
             settled = true
-            timers.forEach(clearTimeout)
+            clearTimeout(timer)
             resolve()
           }
           const waitForPaint = () => {
             videoEl.pause()
-            if (videoEl.currentTime !== 0) videoEl.currentTime = 0
-            if (typeof videoEl.requestVideoFrameCallback !== "function") {
-              finish()
-              return
+            // Race both presentation signals; `finish` is idempotent so the
+            // first to fire wins. WebKit never delivers video-frame callbacks
+            // while the video is paused, so it completes via "seeked" + double
+            // rAF; Chromium and Firefox fire rVFC on the paused seek itself.
+            if (typeof videoEl.requestVideoFrameCallback === "function") {
+              videoEl.requestVideoFrameCallback(finish)
             }
-            videoEl.requestVideoFrameCallback(finish)
-            // Fallback for the case where frame 0 is already on screen: no new
-            // frame is presented, so rVFC would never fire.
-            timers.push(setTimeout(finish, 1500))
+            videoEl.addEventListener(
+              "seeked",
+              () => requestAnimationFrame(() => requestAnimationFrame(finish)),
+              { once: true },
+            )
+            // Seek to a sub-frame offset (or back to 0 if already nudged): an
+            // actual position change runs the full seek algorithm in every
+            // engine, forcing the compositor to present frame 0 whether or not
+            // it was already on screen. That presentation fires the callback
+            // registered above.
+            videoEl.currentTime = videoEl.currentTime === 0 ? 1e-4 : 0
           }
           if (videoEl.readyState >= 2) {
             // HAVE_CURRENT_DATA or better: a frame is decodable now.
@@ -723,9 +784,6 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
             // data at all; for HAVE_METADATA the decode is already in flight.
             if (videoEl.readyState === 0) videoEl.load()
           }
-          // Never hang on a video whose data never arrives (e.g. a broken
-          // source); let the screenshot proceed and fail on its own terms.
-          timers.push(setTimeout(finish, dataTimeoutMs))
         }),
       VIDEO_PAINT_TIMEOUT_MS,
     )
