@@ -156,8 +156,6 @@ em {
     top: $top-spacing;
     overflow-y: auto;
     max-height: calc(100vh - #{$top-spacing});
-    scrollbar-width: thin;
-    scrollbar-color: var(--background) var(--background);
   }
 
   #left-sidebar {
@@ -182,6 +180,13 @@ em {
     overflow-x: hidden;
     width: 100%;
     order: 2;
+  }
+}
+
+@media all and (min-width: $min-desktop-width) and (hover: hover) and (pointer: fine) {
+  .sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--background) var(--background);
   }
 }
 
