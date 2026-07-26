@@ -85,7 +85,7 @@ As I strategized, I judged that Google would not care about 100 random research 
 
 I'd followed the news and guessed that Sundar Pichai (Google's CEO) was more of a businessman than a "make me a big speech about ethics and I'll change my mind" kind of guy. But if a few hard-to-replace people were ready to walk, that would matter for the business, so Sundar might listen.  
 
-That's when I remembered reading *Jeff Dean* tweeting about how bad ICE was, retweeting Anne Frank quotes. Maybe I didn't even need 10 engineers, I just needed *one*.
+That's when I remembered reading *Jeff Dean* tweeting about how bad ICE was, retweeting Anne Frank quotes. Maybe I didn't even need 10 engineers. Maybe I just needed *one*.
 
 ```tweet
 https://xcancel.com/JeffDean/status/2015160545331306894
