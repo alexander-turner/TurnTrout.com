@@ -92,7 +92,10 @@ test.describe("Page scrollbar", () => {
 
     const { color, width } = await getBodyScrollbarStyle(page)
     expect(color).toBe("auto")
-    expect(width).toBe("auto")
+    // Engines pick their own un-styled width for an overlay scrollbar —
+    // Firefox resolves "none" under touch emulation where Chromium says
+    // "auto" — so accept either, as long as our "thin" rule stayed out.
+    expect(["auto", "none"]).toContain(width)
   })
 })
 
