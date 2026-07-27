@@ -195,6 +195,13 @@ $admonition-title-margin-block: calc(1.5 * $base-margin);
       transition: max-height $transition-duration-medium ease;
       overflow: hidden;
     }
+
+    // A subtitle is part of its title, so only the subtitle's own margin-top
+    // separates the two. Here the title's block spacing is padding, which the
+    // margin-bottom zeroing in custom.scss cannot reach.
+    &:not(.is-collapsed) > .admonition-title:has(+ .admonition-content > .subtitle) {
+      padding-bottom: 0;
+    }
   }
 
   &.is-collapsed {
