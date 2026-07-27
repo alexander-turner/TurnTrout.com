@@ -2561,6 +2561,26 @@ describe("applyTextTransforms with useNbsp option", () => {
   })
 })
 
+describe("space runs", () => {
+  // A space run collapses before the nbsp rules run, so a short word never
+  // glues to the first space of the run and strands the nbsp beside a space
+  // that still renders.
+  it.each([
+    ["evaluated by  two senior people", `evaluated by${NBSP}two senior${NBSP}people`],
+    ["a  cat", `a${NBSP}cat`],
+    ["To my  surprise", `To my${NBSP}surprise`],
+  ])("collapses the run in %s", (input, expected) => {
+    expect(applyTextTransforms(input)).toBe(expected)
+  })
+
+  it.each(["evaluated by  two senior people", "a  cat", "To my  surprise"])(
+    "formats %s the same as its single-spaced form",
+    (input) => {
+      expect(applyTextTransforms(input)).toBe(applyTextTransforms(input.replace(/ {2,}/g, " ")))
+    },
+  )
+})
+
 describe("link with trailing slash does not break invariance", () => {
   it.each([
     '<p><a href="https://npmjs.com">ab/</a></p>',
