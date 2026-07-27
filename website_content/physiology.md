@@ -64,7 +64,7 @@ So! There isn't a direct physical path from the mouth to the bladder, but the tr
 
 Subtitle: And that's why they're so distinct.
 
-There isn't a continuous spectrum of  muscle specializations, just two kinds of muscles and activities which engage those kinds to varying degrees. Also, the explosive power of weightlifting comes from the battery-like nature of white muscle fibers. The white fibers (weightlifting) store their energy like a battery while the endurance red fibers are "plugged in" to energy received from the circulatory system.
+There isn't a continuous spectrum of muscle specializations, just two kinds of muscles and activities which engage those kinds to varying degrees. Also, the explosive power of weightlifting comes from the battery-like nature of white muscle fibers. The white fibers (weightlifting) store their energy like a battery while the endurance red fibers are "plugged in" to energy received from the circulatory system.
 
 ## Anus vs rectum
 

@@ -157,7 +157,7 @@ On the other hand, while almost all of the implausible-initialized NLA's claims 
 
 ## The outputs of plausible-initialized and implausible-initialized NLAs
 
-To give the reader a feel for what outputs are like, we provide a  test-set snippet.
+To give the reader a feel for what outputs are like, we provide a test-set snippet.
 
 > [!quote] An input from the test set
 > A great way to augment exercise is to use Manual Resistance immediately after exiting a training device. This approach to strengthening can further target the muscles involved in the movement. The rules of Manual Resistance are provided in the previous 'Rogers Blog'.
