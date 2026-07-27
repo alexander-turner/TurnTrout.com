@@ -2579,6 +2579,12 @@ describe("space runs", () => {
       expect(applyTextTransforms(input)).toBe(applyTextTransforms(input.replace(/ {2,}/g, " ")))
     },
   )
+
+  it("collapses the run in the HTML pipeline too", () => {
+    expect(testHtmlFormattingImprovement("<p>evaluated by  two senior people</p>")).toBe(
+      `<p>evaluated by${NBSP}two senior${NBSP}people</p>`,
+    )
+  })
 })
 
 describe("link with trailing slash does not break invariance", () => {
