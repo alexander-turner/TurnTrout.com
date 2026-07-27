@@ -267,6 +267,11 @@ Hi! Am I being transcluded? Here is a within-page link to the [admonitions secti
 > [!info]+ This collapsible admonition starts off open
 > Displayed content. {#test-open}
 
+> [!info]+ An open collapsible admonition with a subtitle
+> Subtitle: The subtitle hugs its title, just as in a non-collapsible admonition.
+>
+> Displayed content. {#test-open-subtitle}
+
 > [!quote] Admonition with tags
 > <br/>
 > <em>Hi!</em>
