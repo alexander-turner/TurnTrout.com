@@ -312,6 +312,30 @@ test.describe("Collapsible admonition state persistence", () => {
     expect(open.contentTop - open.titleBottom).toBeLessThan(EDGE_TOLERANCE_PX)
   })
 
+  test("an open collapsible's subtitle hugs its title as tightly as a non-collapsible one's", async ({
+    page,
+  }) => {
+    // A collapsible title carries its block spacing as padding, which the
+    // margin-bottom zeroing for a title followed by a subtitle cannot reach.
+    const gapToSubtitle = (admonition: import("@playwright/test").Locator) =>
+      admonition.evaluate((el) => {
+        const title = el.querySelector(".admonition-title-inner") as HTMLElement
+        const subtitle = el.querySelector(".subtitle") as HTMLElement
+        return subtitle.getBoundingClientRect().top - title.getBoundingClientRect().bottom
+      })
+
+    const collapsible = page
+      .locator(".admonition.is-collapsible")
+      .filter({ hasText: "collapsible admonition with a subtitle" })
+    await expect(collapsible).not.toHaveClass(/is-collapsed/)
+    const plain = page
+      .locator(".admonition:not(.is-collapsible)")
+      .filter({ hasText: "A multi-line admonition." })
+    await expect(plain).toBeAttached()
+
+    expect(await gapToSubtitle(collapsible)).toBeCloseTo(await gapToSubtitle(plain), 0)
+  })
+
   test("clicking content does not close open collapsible", async ({ page }) => {
     // Target the specific "[!info]+ This collapsible admonition starts off open" admonition
     const openCollapsible = page

@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-22
+date_updated: 2026-07-27
 createBibtex: true
 ---
 
@@ -266,6 +266,11 @@ Hi! Am I being transcluded? Here is a within-page link to the [admonitions secti
 
 > [!info]+ This collapsible admonition starts off open
 > Displayed content. {#test-open}
+
+> [!info]+ An open collapsible admonition with a subtitle
+> Subtitle: The subtitle hugs its title, just as in a non-collapsible admonition.
+>
+> Displayed content. {#test-open-subtitle}
 
 > [!quote] Admonition with tags
 > <br/>

@@ -135,20 +135,14 @@ jobs:
       # (zstd preinstalled); without zstd here too, this container's restore
       # would hash to a different version and miss a cache that was saved
       # successfully moments earlier.
-      # The image ships a NodeSource apt source, but Node arrives with the
-      # image and every apt package this job installs comes from the Ubuntu
-      # archives. Dropping the source keeps `apt-get update` — here and in
-      # the shared setup actions that follow — independent of NodeSource
-      # availability.
+      # The image bakes in the NodeSource apt repo, but Node already ships in
+      # the image and everything installed here comes from Ubuntu's own
+      # archives — drop the third-party source so its availability cannot
+      # fail `apt-get update`.
       - name: Install container prerequisites
-        uses: ./.github/actions/retry-external
-        with:
-          max-attempts: "3"
-          timeout-minutes: "5"
-          command: |
-            rm -f /etc/apt/sources.list.d/nodesource.list \
-              /etc/apt/sources.list.d/nodesource.sources
-            apt-get update && apt-get install -y --no-install-recommends sudo unzip zstd
+        run: |
+          rm -f /etc/apt/sources.list.d/nodesource*
+          apt-get update && apt-get install -y --no-install-recommends sudo unzip zstd
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
