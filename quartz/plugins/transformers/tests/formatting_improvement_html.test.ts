@@ -380,10 +380,13 @@ describe("HTMLFormattingImprovement", () => {
       expect(processedHtml).toBe(`<p>Dungeons &#x26;${NBSP}Dragons</p>`)
     })
 
-    it("should let the short-word pass glue a 1-letter operand to the ampersand", () => {
+    it("does not let the short-word pass glue a 1-letter operand to the ampersand", () => {
+      // The ampersand is already glued forward to its right operand, so gluing
+      // "A" too would bind three words ("A & B") into one non-breaking atom;
+      // the short-word pass yields and leaves the left space breakable.
       const input = "<p>A+B</p>"
       const processedHtml = testHtmlFormattingImprovement(input)
-      expect(processedHtml).toBe(`<p>A${NBSP}&#x26;${NBSP}B</p>`)
+      expect(processedHtml).toBe(`<p>A &#x26;${NBSP}B</p>`)
     })
   })
 
@@ -2476,7 +2479,9 @@ describe("Non-breaking space insertion", () => {
     ["<p>It weighs 10 kg</p>", `<p>It${NBSP}weighs 10${NBSP}kg</p>`],
     // After reference abbreviations
     ["<p>See Fig. 3 for details</p>", `<p>See Fig.${NBSP}3 for${NBSP}details</p>`],
-    ["<p>Found on p. 42</p>", `<p>Found on${NBSP}p.${NBSP}42</p>`],
+    // "p." is already glued forward to "42", so the short-word pass leaves
+    // "on" unglued rather than binding "on p. 42" into one non-breaking atom.
+    ["<p>Found on p. 42</p>", `<p>Found on p.${NBSP}42</p>`],
   ])("inserts nbsp in %s", (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
     expect(processedHtml).toBe(expected)
@@ -2558,6 +2563,32 @@ describe("applyTextTransforms with useNbsp option", () => {
   ])("applies other transforms when useNbsp=false: %s", (input, expected) => {
     const result = applyTextTransforms(input, { useNbsp: false })
     expect(result).toBe(expected)
+  })
+})
+
+describe("space runs", () => {
+  // A space run collapses before the nbsp rules run, so a short word never
+  // glues to the first space of the run and strands the nbsp beside a space
+  // that still renders.
+  it.each([
+    ["evaluated by  two senior people", `evaluated by${NBSP}two senior${NBSP}people`],
+    ["a  cat", `a${NBSP}cat`],
+    ["To my  surprise", `To my${NBSP}surprise`],
+  ])("collapses the run in %s", (input, expected) => {
+    expect(applyTextTransforms(input)).toBe(expected)
+  })
+
+  it.each(["evaluated by  two senior people", "a  cat", "To my  surprise"])(
+    "formats %s the same as its single-spaced form",
+    (input) => {
+      expect(applyTextTransforms(input)).toBe(applyTextTransforms(input.replace(/ {2,}/g, " ")))
+    },
+  )
+
+  it("collapses the run in the HTML pipeline too", () => {
+    expect(testHtmlFormattingImprovement("<p>evaluated by  two senior people</p>")).toBe(
+      `<p>evaluated by${NBSP}two senior${NBSP}people</p>`,
+    )
   })
 })
 
