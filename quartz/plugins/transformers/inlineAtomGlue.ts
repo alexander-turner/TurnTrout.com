@@ -1,13 +1,13 @@
 import type { Element, ElementContent, Root, Text } from "hast"
 
-import { h } from "hastscript"
-import { visit } from "unist-util-visit"
+import { SKIP, visit } from "unist-util-visit"
 
 import {
   EMOJI_CLASS,
   FAVICON_CLASS,
   INLINE_IMG_CLASS,
   KATEX_CLASS,
+  locale,
   NBSP,
   NOWRAP_SPAN_CLASS,
   RIGHT_DOUBLE_QUOTE,
@@ -15,23 +15,18 @@ import {
   RIGHT_SINGLE_QUOTE,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
-import { hasClass } from "./utils"
+import { createNowrapSpan, hasClass } from "./utils"
 
 /**
  * @module InlineAtomGlue
  *
  * @description
- * A glyph-sized inline image is an atomic box, and UAX #14 puts a break
- * opportunity on both of its edges (LB20, `÷ CB` / `CB ÷`). A word joiner lives
- * inside a text run and so cannot close a break at a box edge; only a
- * `white-space: nowrap` box holding both sides can.
- *
- * Rule order decides which neighbors need that box. LB13 (`× CL`, `× CP`,
- * `× IS`) is evaluated before LB20, so `)`, `]`, `.` and `,` may never begin a
- * line no matter what precedes them. Quotation marks are class QU, protected
- * only by LB19, which is evaluated after LB20 and therefore loses: a closing
- * quote right after an atom is free to start the next line. Letters have no
- * protection at all, which is why a preceding word also needs gluing.
+ * Browsers place a soft-wrap opportunity at each edge of an atomic inline box,
+ * so an `<img>` or inline-block can shed its neighbors to the next line. Which
+ * neighbors actually fall through is measured in `inlineAtomQuoteWrap.spec.ts`:
+ * a closing quote does, a closing bracket or period does not, and a preceding
+ * word always can. A word joiner lives inside a text run and so cannot reach a
+ * box edge — only a `white-space: nowrap` box holding both sides can.
  */
 
 // Atoms whose left neighbor is glued too: each renders about one glyph wide, so
@@ -46,9 +41,9 @@ export function isGlyphAtom(node: Text | Element | undefined): boolean {
   return glyphAtomClasses.some((className) => hasClass(node, className))
 }
 
-/** True for a span already carrying the shared nowrap class. */
+/** True for a span carrying the shared nowrap class. */
 export function isNowrapSpan(node: Text | Element | undefined): boolean {
-  return node?.type === "element" && hasClass(node, NOWRAP_SPAN_CLASS)
+  return node?.type === "element" && node.tagName === "span" && hasClass(node, NOWRAP_SPAN_CLASS)
 }
 
 /**
@@ -61,9 +56,9 @@ function acceptsTrailingGlue(node: Text | Element | undefined): boolean {
   return isNowrapSpan(node) || isGlyphAtom(node) || hasClass(node, KATEX_CLASS)
 }
 
-// Quotes and guillemets are the whole set: every other closing mark is class
-// CL/CP/IS and already barred from starting a line by LB13. Straight forms
-// appear because Twemoji runs before HTMLFormattingImprovement curls them.
+// Quotes and guillemets are the whole set; the other closing marks hold their
+// place on their own. Straight forms appear because Twemoji glues before
+// HTMLFormattingImprovement curls them.
 const trailingGlueChars: ReadonlySet<string> = new Set([
   '"',
   "'",
@@ -73,12 +68,26 @@ const trailingGlueChars: ReadonlySet<string> = new Set([
 ])
 
 /** Length of the leading run of `value` that may not begin a line. */
-export function countLeadingGlue(value: string): number {
+function countLeadingGlue(value: string): number {
   let count = 0
   while (count < value.length && trailingGlueChars.has(value[count])) {
     count += 1
   }
   return count
+}
+
+// Gluing splits on graphemes, not code units: `slice(-1)` would cut an astral
+// pair in half or tear a combining mark off its base letter, leaving both sides
+// to render as their own broken glyph.
+const graphemeSegmenter = new Intl.Segmenter(locale, { granularity: "grapheme" })
+
+/** Splits `value` into everything before its final grapheme and that grapheme. */
+export function splitLastGrapheme(value: string): { head: string; last: string } {
+  let lastIndex = value.length
+  for (const { index } of graphemeSegmenter.segment(value)) {
+    lastIndex = index
+  }
+  return { head: value.slice(0, lastIndex), last: value.slice(lastIndex) }
 }
 
 /**
@@ -92,19 +101,19 @@ function asNowrapSpan(
 ): Element | undefined {
   if (isNowrapSpan(node)) return node as Element
   if (!acceptsTrailingGlue(node)) return undefined
-  const span = h(`span.${NOWRAP_SPAN_CLASS}`, [node as Element])
+  const span = createNowrapSpan([node as Element])
   siblings[siblings.length - 1] = span
   return span
 }
 
 /**
  * Glues every inline atom in `nodes` to the neighbors that may not sit alone at
- * a line edge: the immediately-preceding glyph (a plain space becomes an NBSP)
+ * a line edge: the immediately-preceding grapheme (whitespace becomes an NBSP)
  * and any run of closing quotes that follows. Each glued run shares one nowrap
  * span.
  *
- * An atom with no preceding glyph — the start of its run, or straight after
- * another atom — keeps its left break opportunity, so emoji sequences still
+ * An atom preceded only by whitespace — the start of its run, or straight after
+ * another element — keeps its left break opportunity, so emoji sequences still
  * wrap. Idempotent: a re-run sees spans rather than bare atoms.
  *
  * @param nodes - A parent's inline children, in document order
@@ -116,15 +125,15 @@ export function glueNodeSequence(nodes: (Text | Element)[]): (Text | Element)[] 
     const prev = glued[glued.length - 1]
 
     if (isGlyphAtom(node)) {
-      const lastChar = prev?.type === "text" ? prev.value.slice(-1) : ""
-      const remaining = prev?.type === "text" ? prev.value.slice(0, -1) : ""
-      // A lone leading space means the atom follows another element, not a
+      const value = prev?.type === "text" ? prev.value : ""
+      // Whitespace-only text means the atom follows another element, not a
       // word; leave it breakable. Glue only to real preceding text.
-      if (lastChar && !(lastChar === " " && remaining === "")) {
-        const glyph = lastChar === " " ? NBSP : lastChar
-        ;(prev as Text).value = remaining
-        if (remaining === "") glued.pop()
-        glued.push(h(`span.${NOWRAP_SPAN_CLASS}`, [{ type: "text", value: glyph } as Text, node]))
+      if (value.trim() !== "") {
+        const { head, last } = splitLastGrapheme(value)
+        ;(prev as Text).value = head
+        if (head === "") glued.pop()
+        const glyph = /^\s+$/u.test(last) ? NBSP : last
+        glued.push(createNowrapSpan([{ type: "text", value: glyph }, node]))
         continue
       }
     }
@@ -146,12 +155,13 @@ export function glueNodeSequence(nodes: (Text | Element)[]): (Text | Element)[] 
 
 /**
  * Applies `glueNodeSequence` to every element's children. A nowrap span's own
- * children are already a single unbreakable run, so it is left alone.
+ * children are already one unbreakable run, so it is skipped entirely.
  */
 export function glueInlineAtoms(tree: Root): void {
   visit(tree, "element", (node: Element) => {
-    if (isNowrapSpan(node)) return
+    if (isNowrapSpan(node)) return SKIP
     node.children = glueNodeSequence(node.children as (Text | Element)[]) as ElementContent[]
+    return undefined
   })
 }
 

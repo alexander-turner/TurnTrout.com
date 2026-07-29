@@ -16,6 +16,7 @@ import {
   Twemoji,
   TwemojiOptions,
 } from "../twemoji"
+import { createNowrapSpan } from "../utils"
 
 interface CustomNode extends UnistNode {
   children?: CustomNode[]
@@ -295,7 +296,7 @@ describe("processTree", () => {
       type: "root",
       children: [
         { type: "text", value: "Hello ⤴" },
-        h("span.nowrap-span", [{ type: "text", value: NBSP }, createEmoji("1f600.svg", "😀")]),
+        createNowrapSpan([{ type: "text", value: NBSP }, createEmoji("1f600.svg", "😀")]),
       ],
     })
   })

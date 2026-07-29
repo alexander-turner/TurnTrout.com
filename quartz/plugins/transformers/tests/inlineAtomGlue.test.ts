@@ -11,12 +11,12 @@ import {
   RIGHT_SINGLE_QUOTE,
 } from "../../../components/constants"
 import {
-  countLeadingGlue,
   glueInlineAtoms,
   glueNodeSequence,
   InlineAtomGlue,
   isGlyphAtom,
   isNowrapSpan,
+  splitLastGrapheme,
 } from "../inlineAtomGlue"
 
 const emoji = () => h("img", { className: ["emoji"], alt: "😀" })
@@ -24,7 +24,12 @@ const favicon = () => h("svg", { className: ["favicon"], "data-domain": "example
 const sprite = () => h("img", { className: ["inline-img"], alt: "chevron sprite" })
 const katex = () => h("span", { className: ["katex"] }, ["x"])
 const text = (value: string): Text => ({ type: "text", value })
-const glueSpan = (...children: (Text | Element)[]) => h("span.nowrap-span", children)
+const glueSpan = (...children: (Text | Element)[]): Element => ({
+  type: "element",
+  tagName: "span",
+  properties: { className: "nowrap-span" },
+  children,
+})
 
 describe("isGlyphAtom", () => {
   it.each([
@@ -50,15 +55,16 @@ describe("isNowrapSpan", () => {
   })
 })
 
-describe("countLeadingGlue", () => {
+describe("splitLastGrapheme", () => {
   it.each([
-    ['"', 1],
-    [`${RIGHT_SINGLE_QUOTE}" rest`, 2],
-    [`${RIGHT_GUILLEMET}`, 1],
-    [") rest", 0],
-    ["", 0],
-  ])("counts %s", (value, expected) => {
-    expect(countLeadingGlue(value)).toBe(expected)
+    ["Hi(", "Hi", "("],
+    // An astral pair and a combining mark are each one grapheme, so neither is
+    // cut in half.
+    ["Zoe \u{1D538}", "Zoe ", "\u{1D538}"],
+    ["cafe\u0301", "caf", "e\u0301"],
+    ["", "", ""],
+  ])("splits %j", (value, head, last) => {
+    expect(splitLastGrapheme(value)).toEqual({ head, last })
   })
 })
 
@@ -82,9 +88,29 @@ describe("glueNodeSequence", () => {
     expect(glueNodeSequence([text("("), emoji()])).toEqual([glueSpan(text("("), emoji())])
   })
 
-  it("leaves an atom after a lone space breakable (emoji sequence)", () => {
-    const nodes = [text(" "), emoji()]
+  it.each([" ", "\n", "\t", "  "])("leaves an atom after whitespace %j breakable", (space) => {
+    const nodes = [text(space), emoji()]
     expect(glueNodeSequence(nodes)).toEqual(nodes)
+  })
+
+  it.each([
+    ["a newline", "Hi\n"],
+    ["a tab", "Hi\t"],
+  ])("collapses %s after a word into a non-breaking space", (_name, value) => {
+    expect(glueNodeSequence([text(value), emoji()])).toEqual([
+      text("Hi"),
+      glueSpan(text(NBSP), emoji()),
+    ])
+  })
+
+  it.each([
+    ["an astral character", "Zoe \u{1D538}", "Zoe ", "\u{1D538}"],
+    ["a combining mark", "cafe\u0301", "caf", "e\u0301"],
+  ])("keeps %s whole when gluing", (_name, value, head, last) => {
+    expect(glueNodeSequence([text(value), sprite()])).toEqual([
+      text(head),
+      glueSpan(text(last), sprite()),
+    ])
   })
 
   it("leaves a leading atom (no preceding glyph) bare", () => {

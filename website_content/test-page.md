@@ -542,7 +542,7 @@ https://xcancel.com/ChrisMurphyCT/status/2071998353664000365
 
 ## Glyph-sized inline images
 
-The agent controls the chevron (<img class="inline-img" src="https://assets.turntrout.com/static/images/chevron.avif" alt="chevron sprite"/>) and destroys the red dots <img class="inline-img" src="https://assets.turntrout.com/static/images/posts/red-dot.avif" alt="red dot"/>. An authored sprite, an emoji 🪿, and a favicon [each](https://arxiv.org/abs/1912.01217) stay glued to the neighboring glyphs that may not begin a line, including a closing "quote."
+The agent controls the chevron (<img class="inline-img" src="https://assets.turntrout.com/static/images/chevron.avif" alt="chevron sprite"/>) and destroys the red dots <img class="inline-img" src="https://assets.turntrout.com/static/images/posts/red-dot.avif" alt="red dot"/>. An authored sprite "<img class="inline-img" src="https://assets.turntrout.com/static/images/posts/green-dot.avif" alt="green dot"/>", an emoji "🪿", and a favicon [each](https://arxiv.org/abs/1912.01217) stay glued to the closing quote that follows them.
 
 ![Sample complexity of different kinds of DCTs. The x-axis is "number of training instructions" and the y-axis is "average of logits('Sure') - logits('Sorry')." All conditions are basically flat along the x-dimension. Exponential, quadratic, and linear-projected conditions cluster around a logit difference of 8. Linear has a difference of -6.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif)
 

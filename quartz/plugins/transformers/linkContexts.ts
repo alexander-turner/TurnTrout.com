@@ -168,6 +168,9 @@ function stripIdsDeep(node: Element): Element {
  * both). Their width/height are already stamped by `addAssetDimensionsFromSrc`,
  * which runs before this pass, so the preserved `<img>` satisfies the
  * `images_missing_dimensions` check.
+ *
+ * Narrower than `isGlyphAtom` in `inlineAtomGlue`: excerpts drop favicons, so a
+ * favicon is not an atom worth preserving here.
  */
 function isInlineAtom(node: Element): boolean {
   if (hasClass(node, KATEX_CLASS)) return true
@@ -258,7 +261,9 @@ function sanitizeNode(node: ElementContent, highlightId: string): ElementContent
   if (hasClass(node, NOWRAP_SPAN_CLASS)) {
     const children = sanitizeChildren(node.children, highlightId)
     if (!children.some((child) => child.type === "element" && isInlineAtom(child))) return children
-    return [{ ...node, children }]
+    const properties = { ...node.properties }
+    delete properties.id
+    return [{ ...node, properties, children }]
   }
 
   // Preserve the pipeline's rendered inline atoms verbatim rather than

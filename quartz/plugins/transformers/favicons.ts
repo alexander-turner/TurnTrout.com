@@ -375,7 +375,7 @@ export function maybeSpliceText(
   )
 
   if (!lastChild) {
-    return createNowrapSpan("", imgNodeToAppend)
+    return createNowrapSpan([{ type: "text", value: "" }, imgNodeToAppend])
   }
 
   if (
@@ -401,7 +401,7 @@ export function maybeSpliceText(
   }
 
   if (lastChild.type !== "text" || !lastChild.value) {
-    return createNowrapSpan("", imgNodeToAppend)
+    return createNowrapSpan([{ type: "text", value: "" }, imgNodeToAppend])
   }
 
   const lastChildText = lastChild as Text

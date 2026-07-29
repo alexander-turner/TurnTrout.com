@@ -239,7 +239,7 @@ export const generateSpecialFaviconContent = (
 ): ContentGenerator => {
   return (): Element[] => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return [createNowrapSpan("", faviconElement)]
+    return [createNowrapSpan([{ type: "text", value: "" }, faviconElement])]
   }
 }
 

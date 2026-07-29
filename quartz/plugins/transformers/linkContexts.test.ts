@@ -118,8 +118,8 @@ describe("buildExcerpt sanitizer", () => {
     expect(html.endsWith('<span class="backlink-highlight">moves</span>')).toBe(true)
   })
 
-  it("keeps emoji spans with their inner twemoji image intact", () => {
-    const emojiSpan = h("span.nowrap-span", [
+  it("keeps emoji spans with their inner twemoji image intact, minus their ids", () => {
+    const emojiSpan = h("span.nowrap-span", { id: "collides-with-a-page-anchor" }, [
       { type: "text", value: "a" },
       h("img.emoji", { alt: "🐟" }),
     ]) as ElementContent
