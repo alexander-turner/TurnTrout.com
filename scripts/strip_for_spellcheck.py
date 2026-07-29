@@ -5,6 +5,7 @@ Removes regions that produce false-positive lint hits:
 
 - `[!quote]` callout blocks (external authors, foreign quotes)
 - LaTeX math (`$...$` inline and `$$...$$` display)
+- footnote labels (`[^label]`), which name a footnote rather than render as prose
 
 Replaces stripped regions with blank lines / spaces to preserve line and
 column numbers, so reported error positions still match the original source.
@@ -49,6 +50,16 @@ _MATH_RE = re.compile(
 # full word — `<span class="dropcap">d</span>ropcap` becomes `dropcap`.
 # Narrow to `class="...dropcap..."` so we don't strip unrelated HTML
 # (which could expose code-block contents to spellcheck false positives).
+# Footnote reference/definition labels (`[^label]`, `[^label]:`). Labels are
+# identifiers, not prose, so descriptive ones like `[^fatebook]` are unknown
+# words to the spellchecker.
+_FOOTNOTE_LABEL_RE = re.compile(r"\[\^(?P<label>[^\]\s]+)\]")
+
+# Digits stand in for footnote label characters: the markdown parser keeps
+# treating the construct as a footnote label (so surrounding structure parses
+# identically), while retext has no word to spell-check.
+_FOOTNOTE_LABEL_FILLER = "0"
+
 _DROPCAP_TAG_RE = re.compile(
     r'<(?P<tag>span|div)\b[^>]*\bclass="[^"]*\bdropcap\b[^"]*"[^>]*>'
     r"(?P<inner>[^<]*)</(?P=tag)>"
@@ -171,9 +182,28 @@ def strip_callout_markers(text: str) -> str:
     return _CALLOUT_MARKER_RE.sub(_replace, text)
 
 
+def strip_footnote_labels(text: str) -> str:
+    """
+    Replace the label inside footnote references and definitions with digits.
+
+    A label such as `[^fatebook]` names a footnote; it never renders as prose,
+    but the markdown parser used by the spellchecker treats it as text, so any
+    label that isn't a dictionary word is reported as an unknown word. Each
+    label character becomes a digit, preserving line and column counts (so
+    reported coordinates still match the original source) as well as the
+    surrounding markdown structure.
+    """
+
+    def _replace(match: re.Match[str]) -> str:
+        return f"[^{_FOOTNOTE_LABEL_FILLER * len(match.group('label'))}]"
+
+    return _FOOTNOTE_LABEL_RE.sub(_replace, text)
+
+
 _LINT_STRIPPERS: tuple[Callable[[str], str], ...] = (
     strip_quote_blocks,
     strip_callout_markers,
+    strip_footnote_labels,
     strip_math,
     strip_dropcap_tags,
 )

@@ -324,6 +324,55 @@ def test_strip_callout_markers(text: str, expected: str):
     )
 
 
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        pytest.param("", "", id="empty"),
+        pytest.param("plain text", "plain text", id="no-footnote"),
+        pytest.param("[^1]: Body", "[^0]: Body", id="numeric-definition"),
+        pytest.param(
+            "[^fatebook]: Body", "[^00000000]: Body", id="named-definition"
+        ),
+        pytest.param(
+            "the door.[^fatebook] I left",
+            "the door.[^00000000] I left",
+            id="inline-reference",
+        ),
+        pytest.param(
+            "[^bignote-algs]: Body",
+            "[^000000000000]: Body",
+            id="hyphenated-label",
+        ),
+        pytest.param(
+            "a[^one] b[^two]", "a[^000] b[^000]", id="multiple-references"
+        ),
+        # A bracketed caret without a label, or with whitespace inside it, is
+        # not a footnote label.
+        pytest.param("[^]: Body", "[^]: Body", id="empty-label"),
+        pytest.param("[^two words]", "[^two words]", id="label-with-space"),
+        # `[!type]` callouts and ordinary links are left alone.
+        pytest.param("> [!note] Title", "> [!note] Title", id="callout"),
+        pytest.param("[link](url)", "[link](url)", id="link"),
+    ],
+)
+def test_strip_footnote_labels(text: str, expected: str):
+    result = strip_for_spellcheck.strip_footnote_labels(text)
+    assert result == expected
+    assert len(result) == len(text), "Length must be preserved"
+    assert result.count("\n") == text.count("\n"), (
+        "Line count must be preserved"
+    )
+
+
+def test_strip_for_lint_replaces_footnote_label():
+    text = "Signed the deal.[^fatebook]\n\n[^fatebook]: Tracked on Fatebook."
+    result = strip_for_spellcheck.strip_for_lint(text)
+    assert "fatebook]" not in result
+    assert "Signed the deal." in result
+    assert "Tracked on Fatebook." in result
+    assert len(result) == len(text)
+
+
 def test_strip_for_lint_blanks_non_quote_callout_marker():
     # The integration pipeline (quote-strip → callout-marker-strip → …) should
     # neutralize `[!type]` on non-quote callouts so a trailing period two

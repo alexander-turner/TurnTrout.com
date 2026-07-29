@@ -22,6 +22,7 @@ from scripts.strip_for_spellcheck import (  # noqa: E402
     is_quote_callout_start,
     strip_callout_markers,
     strip_dropcap_tags,
+    strip_footnote_labels,
     strip_for_lint,
     strip_math,
     strip_quote_blocks,
@@ -72,6 +73,12 @@ class TestPositionPreservation:
         assert len(stripped) == len(text)
         assert stripped.count("\n") == text.count("\n")
 
+    @given(markdown_text)
+    def test_strip_footnote_labels_preserves_length(self, text: str):
+        stripped = strip_footnote_labels(text)
+        assert len(stripped) == len(text)
+        assert stripped.count("\n") == text.count("\n")
+
     @given(markdown_lines)
     def test_strip_quote_blocks_preserves_line_count(self, text: str):
         assert strip_quote_blocks(text).count("\n") == text.count("\n")
@@ -93,6 +100,11 @@ class TestIdempotence:
     def test_strip_callout_markers_idempotent(self, text: str):
         once = strip_callout_markers(text)
         assert strip_callout_markers(once) == once
+
+    @given(markdown_text)
+    def test_strip_footnote_labels_idempotent(self, text: str):
+        once = strip_footnote_labels(text)
+        assert strip_footnote_labels(once) == once
 
     @given(markdown_lines)
     def test_strip_quote_blocks_idempotent(self, text: str):
@@ -171,6 +183,10 @@ class TestMutationKillers:
             strip_callout_markers(nested)
             == f"> > {' ' * (len(marker) + 1)} body"
         )
+
+    def test_strip_footnote_labels_exact_filler(self):
+        assert strip_footnote_labels("[^ab]: x") == "[^00]: x"
+        assert strip_footnote_labels("a[^b]c[^de]") == "a[^0]c[^00]"
 
     def test_create_stripped_directory_handles_nested_dirs(
         self, tmp_path: Path
