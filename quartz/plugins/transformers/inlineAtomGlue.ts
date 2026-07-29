@@ -3,6 +3,7 @@ import type { Element, ElementContent, Root, Text } from "hast"
 import { SKIP, visit } from "unist-util-visit"
 
 import {
+  ELLIPSIS,
   EMOJI_CLASS,
   FAVICON_CLASS,
   INLINE_IMG_CLASS,
@@ -72,7 +73,7 @@ const trailingGlueChars: ReadonlySet<string> = new Set([
   ":",
   "!",
   "?",
-  "…",
+  ELLIPSIS,
   ")",
   "]",
   "}",

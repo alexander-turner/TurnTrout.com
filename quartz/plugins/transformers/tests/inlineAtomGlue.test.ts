@@ -3,6 +3,7 @@ import { type Element, type Root, type Text } from "hast"
 import { h } from "hastscript"
 
 import {
+  ELLIPSIS,
   LEFT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
   NBSP,
@@ -129,7 +130,7 @@ describe("glueNodeSequence", () => {
     [":", "Say “", ": loudly"],
     ["!", "Say “", "! loudly"],
     ["?", "Say “", "? loudly"],
-    ["…", "Say “", "… loudly"],
+    [ELLIPSIS, "Say “", `${ELLIPSIS} loudly`],
   ])("pulls a closing %s into the glue span", (_closer, before, after) => {
     expect(glueNodeSequence([text(before), emoji(), text(after)])).toEqual([
       text("Say "),
