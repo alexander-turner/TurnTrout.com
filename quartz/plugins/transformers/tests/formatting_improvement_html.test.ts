@@ -196,45 +196,43 @@ describe("HTMLFormattingImprovement", () => {
 
   describe("Overhang crowding before opening marks", () => {
     const bodyProseInput = "<p>the summer of '24. From</p>"
-    const kernF = (mark: string) => `<span class="overhang-kern-f">${mark}</span>`
-    const kernQ = (mark: string) => `<span class="overhang-kern-q">${mark}</span>`
+    // The margin rides the overhanging glyph's trailing edge, so the span wraps
+    // the "f"/"Q" rather than the mark it clears.
+    const kernF = `<span class="overhang-kern-f">f</span>`
+    const kernQ = `<span class="overhang-kern-q">Q</span>`
 
     it.each([
       // Body prose, with punctilio's NBSP glue left intact as the break point.
-      [bodyProseInput, `<p>the summer of${NBSP}${kernF("’")}24. From</p>`],
+      [bodyProseInput, `<p>the summer o${kernF}${NBSP}’24. From</p>`],
       // Display headings skip the NBSP pass, so a plain space survives.
-      ["<h2>The summer of '24</h2>", `<h2>The summer of ${kernF("’")}24</h2>`],
-      // Markdown soft line break between "of" and the mark.
-      ["<p>the summer of\n'24. From</p>", `<p>the summer of\n${kernF("’")}24. From</p>`],
-      ["<h2>The summer of\t'24</h2>", `<h2>The summer of\t${kernF("’")}24</h2>`],
-      // "f" sits in an earlier sibling, so the lookback crosses the boundary.
-      [
-        "<p><em>of</em> '24 was wild</p>",
-        `<p><em>of</em>${NBSP}${kernF("’")}24 was${NBSP}wild</p>`,
-      ],
-      // Skipped content supplies the preceding glyph: "t", so no kern.
+      ["<h2>The summer of '24</h2>", `<h2>The summer o${kernF} ’24</h2>`],
+      // Markdown soft line break between the glyph and the mark.
+      ["<p>the summer of\n'24. From</p>", `<p>the summer o${kernF}\n’24. From</p>`],
+      ["<h2>The summer of\t'24</h2>", `<h2>The summer o${kernF}\t’24</h2>`],
+      // "f" sits in an earlier sibling, so the lookahead ascends out of the <em>.
+      ["<p><em>of</em> '24 was wild</p>", `<p><em>o${kernF}</em>${NBSP}’24 was${NBSP}wild</p>`],
+      // Skipped content supplies the following mark, so the "f" gets no kern.
       [
         "<p>one of <code>Start</code>'s child states</p>",
         `<p>one of${NBSP}<code>Start</code>’s child${NBSP}states</p>`,
       ],
-      // The mark opens an inline element, so nothing precedes it in its parent.
-      ["<p>of <em>'24</em> was wild</p>", `<p>of${NBSP}<em>’24</em> was${NBSP}wild</p>`],
-      // Mark at the very start of the paragraph.
+      // The mark opens an inline element; the lookahead still reaches it.
+      ["<p>of <em>'24</em> was wild</p>", `<p>o${kernF}${NBSP}<em>’24</em> was${NBSP}wild</p>`],
+      // Mark at the very start of the paragraph: no glyph precedes it.
       ["<p>'24 was wild</p>", `<p>’24 was${NBSP}wild</p>`],
       // Preceding word does not end in an overhanging glyph.
       ["<p>I was born in '94. Nice</p>", `<p>I${NBSP}was born in${NBSP}’94. Nice</p>`],
       // No space before the mark: a mid-word apostrophe is untouched.
       ["<p>don't stop</p>", `<p>don’t${NBSP}stop</p>`],
-      // Every crowded mark after "f", each wrapped independently.
+      // Every crowded mark after "f", each glyph wrapped independently.
       [
         `<h2>of ${LEFT_DOUBLE_QUOTE}x if (x if [x of {x</h2>`,
-        `<h2>of ${kernF(LEFT_DOUBLE_QUOTE)}x if ${kernF("(")}x ` +
-          `if ${kernF("[")}x of ${kernF("{")}x</h2>`,
+        `<h2>o${kernF} ${LEFT_DOUBLE_QUOTE}x i${kernF} (x ` + `i${kernF} [x o${kernF} {x</h2>`,
       ],
       // "Q" overhangs less, so it gets the smaller correction.
-      ["<h2>Q (x and Q [x</h2>", `<h2>Q ${kernQ("(")}x and Q ${kernQ("[")}x</h2>`],
+      ["<h2>Q (x and Q [x</h2>", `<h2>${kernQ} (x and ${kernQ} [x</h2>`],
       // Both tiers inside one text node.
-      ["<h2>of '24 and Q (x</h2>", `<h2>of ${kernF("’")}24 and Q ${kernQ("(")}x</h2>`],
+      ["<h2>of '24 and Q (x</h2>", `<h2>o${kernF} ’24 and ${kernQ} (x</h2>`],
       // Non-overhanging letters before the same marks: untouched.
       [
         `<h2>to ${LEFT_DOUBLE_QUOTE}x an (x an [x</h2>`,
@@ -242,8 +240,8 @@ describe("HTMLFormattingImprovement", () => {
       ],
       // Code is skipped entirely.
       ["<p><code>of '24</code></p>", "<p><code>of '24</code></p>"],
-      // A comment sibling contributes no text, so the "f" is still found.
-      ["<p>of <!-- note -->'24</p>", `<p>of${NBSP}<!-- note -->${kernF("’")}24</p>`],
+      // A comment sibling contributes no text, so the mark is still found.
+      ["<p>of <!-- note -->'24</p>", `<p>o${kernF}${NBSP}<!-- note -->’24</p>`],
     ])("handles overhang crowding: %s", (input, expected) => {
       expect(testHtmlFormattingImprovement(input)).toBe(expected)
     })

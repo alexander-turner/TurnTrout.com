@@ -305,6 +305,8 @@ const OVERHANG_KERN_CLASSES: ReadonlyMap<string, string> = new Map([
   ["Q", "overhang-kern-q"],
 ])
 
+const OVERHANG_KERN_CLASS_NAMES: readonly string[] = [...OVERHANG_KERN_CLASSES.values()]
+
 // Marks whose ink starts high and tight against their left edge, so they land
 // inside that overhang rather than clearing it and the pair reads as glued
 // ("of ’24", "if ‘x"). The font's kern pairs cannot reach across the word
@@ -321,46 +323,57 @@ const CROWDED_AFTER_OVERHANG: ReadonlySet<string> = new Set([
 const OVERHANG_GAP_SPACES: ReadonlySet<string> = new Set([" ", "\t", "\n", NBSP])
 
 /**
- * The last two characters rendered before ``node`` within its parent, so the
- * overhanging glyph is found even when it sits in an earlier sibling
- * ("<em>of</em> ’24").
+ * The first two characters rendered after ``node``, ascending out of inline
+ * wrappers so the mark is found across an element boundary ("<em>of</em> ’24")
+ * but never across a block boundary.
  */
-function precedingChars(parent: Parent, node: Text): string {
-  const nodeIndex = parent.children.indexOf(node as ElementContent)
+function followingChars(ancestors: readonly Parent[], node: Text): string {
   let text = ""
-  for (let i = 0; i < nodeIndex; i++) {
-    const child = parent.children[i]
-    if (child.type === "text") {
-      text += child.value
-    } else if (child.type === "element") {
-      text += getTextContent(child)
+  let child: Parent | Text = node
+  for (let i = ancestors.length - 1; i >= 0 && text.length < 2; i--) {
+    const parent = ancestors[i]
+    const index = parent.children.indexOf(child as ElementContent)
+    for (let j = index + 1; j < parent.children.length && text.length < 2; j++) {
+      const sibling = parent.children[j]
+      if (sibling.type === "text") {
+        text += sibling.value
+      } else if (sibling.type === "element") {
+        text += getTextContent(sibling)
+      }
     }
+    if (parent.type !== "element" || !INLINE_PASSTHROUGH_TAGS.has((parent as Element).tagName)) {
+      break
+    }
+    child = parent
   }
-  return text.slice(-2)
+  return text.slice(0, 2)
 }
 
 /**
  * Widen the word space between an overhanging glyph and a crowded mark.
  *
- * The gap is opened with a margin on the mark rather than an inserted space
- * character, so the text a reader searches for, selects, or copies is still
- * "of ’24". Wrapping only the mark also leaves the space itself intact as the
- * line-break opportunity.
+ * The gap is opened with a margin rather than an inserted space character, so
+ * the text a reader searches for, selects, or copies is still "of ’24", and it
+ * rides the overhanging glyph's trailing edge so a line breaking at that space
+ * leaves the mark flush with the line start. Wrapping only the glyph leaves the
+ * space itself intact as the line-break opportunity.
  */
 export function kernOverhangBeforeMarks(tree: Root): void {
   const ops: { parent: Parent; node: Text; spans: CharSpan[] }[] = []
   visitParents(tree, "text", (node: Text, ancestors) => {
-    if (ancestors.some((ancestor) => toSkip(ancestor as Element))) return
+    // A glyph already inside a kern span keeps its lookahead — the mark is
+    // still there — so re-running the pass must not nest a second span.
+    const skip = (ancestor: Element) =>
+      toSkip(ancestor) || OVERHANG_KERN_CLASS_NAMES.some((name) => hasClass(ancestor, name))
+    if (ancestors.some((ancestor) => skip(ancestor as Element))) return
     const parent = ancestors[ancestors.length - 1] as Parent
-    const preceding = precedingChars(parent, node)
-    const context = preceding + node.value
+    const context = node.value + followingChars(ancestors as readonly Parent[], node)
     const spans: CharSpan[] = []
     for (let i = 0; i < node.value.length; i++) {
-      const contextIndex = preceding.length + i
-      if (!CROWDED_AFTER_OVERHANG.has(node.value[i])) continue
-      if (!OVERHANG_GAP_SPACES.has(context[contextIndex - 1])) continue
-      const className = OVERHANG_KERN_CLASSES.get(context[contextIndex - 2])
-      if (className !== undefined) spans.push({ offset: i, className })
+      const className = OVERHANG_KERN_CLASSES.get(node.value[i])
+      if (className === undefined) continue
+      if (!OVERHANG_GAP_SPACES.has(context[i + 1])) continue
+      if (CROWDED_AFTER_OVERHANG.has(context[i + 2])) spans.push({ offset: i, className })
     }
     if (spans.length > 0) ops.push({ parent, node, spans })
   })
