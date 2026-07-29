@@ -22,11 +22,11 @@ import { createNowrapSpan, hasClass } from "./utils"
  *
  * @description
  * Browsers place a soft-wrap opportunity at each edge of an atomic inline box,
- * so an `<img>` or inline-block can shed its neighbors to the next line. Which
- * neighbors actually fall through is measured in `inlineAtomQuoteWrap.spec.ts`:
- * a closing quote does, a closing bracket or period does not, and a preceding
- * word always can. A word joiner lives inside a text run and so cannot reach a
- * box edge — only a `white-space: nowrap` box holding both sides can.
+ * so an `<img>` or inline-block can shed its neighbors to the next line — any
+ * following character, whatever its line-breaking class, as measured in
+ * `inlineAtomQuoteWrap.spec.ts`. A word joiner lives inside a text run and so
+ * cannot reach a box edge; only a `white-space: nowrap` box holding both sides
+ * can close the opportunity.
  */
 
 // Atoms whose left neighbor is glued too: each renders about one glyph wide, so
@@ -47,24 +47,35 @@ export function isNowrapSpan(node: ElementContent | undefined): boolean {
 }
 
 /**
- * True for anything that can adopt a following quote. KaTeX renders inline math
- * as an inline-block with the same box-edge break, but its width is unbounded,
- * so it takes a trailing quote without ever adopting a preceding word.
+ * True for anything that can adopt following punctuation. KaTeX renders inline
+ * math as an inline-block with the same box-edge break, but its width is
+ * unbounded, so it takes a trailing mark without ever adopting a preceding word.
  */
 function acceptsTrailingGlue(node: Text | Element | undefined): boolean {
   if (node?.type !== "element") return false
   return isNowrapSpan(node) || isGlyphAtom(node) || hasClass(node, KATEX_CLASS)
 }
 
-// Quotes and guillemets are the whole set; the other closing marks hold their
-// place on their own. Straight forms appear because Twemoji glues before
-// HTMLFormattingImprovement curls them.
+// Closing punctuation: marks that belong to the word before them and so must
+// never open a line. Straight quote forms appear because Twemoji glues before
+// HTMLFormattingImprovement curls them. A run is glued as a unit, which is what
+// carries the `,”` that punctilio produces by swapping a comma inside a quote.
 const trailingGlueChars: ReadonlySet<string> = new Set([
   '"',
   "'",
   RIGHT_DOUBLE_QUOTE,
   RIGHT_SINGLE_QUOTE,
   RIGHT_GUILLEMET,
+  ",",
+  ".",
+  ";",
+  ":",
+  "!",
+  "?",
+  "…",
+  ")",
+  "]",
+  "}",
 ])
 
 /** Length of the leading run of `value` that may not begin a line. */
@@ -93,7 +104,7 @@ export function splitLastGrapheme(value: string): { head: string; last: string }
 /**
  * Returns the nowrap span holding `node`, promoting a bare atom into one and
  * replacing it at the tail of `siblings`. Returns undefined when `node` is not
- * something a trailing quote may join.
+ * something a trailing mark may join.
  */
 function asNowrapSpan(
   node: Text | Element | undefined,
@@ -109,15 +120,15 @@ function asNowrapSpan(
 /**
  * Glues every inline atom in `nodes` to the neighbors that may not sit alone at
  * a line edge: the immediately-preceding grapheme (whitespace becomes an NBSP)
- * and any run of closing quotes that follows. Each glued run shares one nowrap
- * span.
+ * and any run of closing punctuation that follows. Each glued run shares one
+ * nowrap span.
  *
  * An atom preceded only by whitespace — the start of its run, or straight after
  * another element — keeps its left break opportunity, so emoji sequences still
  * wrap. Idempotent: a re-run sees spans rather than bare atoms.
  *
  * Gluing reaches siblings only. A span cannot span an element boundary, so an
- * atom ending an inline wrapper (`<em>word 🐟</em>”`) leaves the quote outside;
+ * atom ending an inline wrapper (`<em>word 🐟</em>”`) leaves the mark outside;
  * for links, `rearrangeLinkPunctuation` has already moved trailing quotes in.
  *
  * @param nodes - A parent's inline children, in document order

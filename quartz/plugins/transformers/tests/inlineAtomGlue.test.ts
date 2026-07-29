@@ -120,6 +120,16 @@ describe("glueNodeSequence", () => {
     [RIGHT_DOUBLE_QUOTE, `Say ${LEFT_DOUBLE_QUOTE}`, `${RIGHT_DOUBLE_QUOTE} loudly`],
     [RIGHT_SINGLE_QUOTE, `Say ${LEFT_SINGLE_QUOTE}`, `${RIGHT_SINGLE_QUOTE} loudly`],
     [RIGHT_GUILLEMET, "Say «", `${RIGHT_GUILLEMET} loudly`],
+    [",", "Say “", ", loudly"],
+    [".", "Say “", ". loudly"],
+    [")", "Say (", ") loudly"],
+    ["]", "Say [", "] loudly"],
+    ["}", "Say {", "} loudly"],
+    [";", "Say “", "; loudly"],
+    [":", "Say “", ": loudly"],
+    ["!", "Say “", "! loudly"],
+    ["?", "Say “", "? loudly"],
+    ["…", "Say “", "… loudly"],
   ])("pulls a closing %s into the glue span", (_closer, before, after) => {
     expect(glueNodeSequence([text(before), emoji(), text(after)])).toEqual([
       text("Say "),
@@ -161,8 +171,8 @@ describe("glueNodeSequence", () => {
     expect(glueNodeSequence(nodes)).toEqual(nodes)
   })
 
-  it("leaves text after an atom alone when it opens with a non-quote", () => {
-    expect(glueNodeSequence([emoji(), text(") loudly")])).toEqual([emoji(), text(") loudly")])
+  it("leaves text after an atom alone when it opens with a non-closing mark", () => {
+    expect(glueNodeSequence([emoji(), text("— loudly")])).toEqual([emoji(), text("— loudly")])
   })
 
   it("leaves atom-free nodes untouched", () => {

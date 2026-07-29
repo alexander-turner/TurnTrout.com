@@ -7,8 +7,8 @@
 .nowrap-span {
   white-space: nowrap;
 
-  // Inline math breaks only between its `.base` spans. The box holds the quote
-  // to the math's right edge; the math itself is free to wrap internally.
+  // Inline math breaks only between its `.base` spans. The box holds trailing
+  // punctuation to the math's right edge; the math wraps internally.
   .katex {
     white-space: normal;
   }
