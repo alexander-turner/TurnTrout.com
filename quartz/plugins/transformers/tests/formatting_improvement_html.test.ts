@@ -197,7 +197,7 @@ describe("HTMLFormattingImprovement", () => {
 
   describe("Elision apostrophe after f", () => {
     const bodyProseInput = "<p>the summer of '24. From</p>"
-    const openedGap = `${THIN_SPACE}${WORD_JOINER}’24`
+    const openedGap = `${WORD_JOINER}${THIN_SPACE}${WORD_JOINER}’24`
 
     it.each([
       // Body prose: punctilio's NBSP glue precedes the thin space.
@@ -208,15 +208,23 @@ describe("HTMLFormattingImprovement", () => {
       ["<p>the summer of\n'24. From</p>", `<p>the summer of\n${openedGap}. From</p>`],
       // Display headings skip punctilio's NBSP pass, so a tab survives to here.
       ["<h2>The summer of\t'24</h2>", `<h2>The summer of\t${openedGap}</h2>`],
-      // "f" reached across an element boundary within the prose unit.
+      // "f" ends the glyph run across a closing element boundary.
       ["<p><em>of</em> '24 was wild</p>", `<p><em>of</em>${NBSP}${openedGap} was${NBSP}wild</p>`],
+      // Skipped content between the "f" and the apostrophe: the boundary
+      // disqualifies the match even though the view elides the code text.
+      [
+        "<p>one of <code>Start</code>'s child states</p>",
+        `<p>one of${NBSP}<code>Start</code>’s child${NBSP}states</p>`,
+      ],
+      // Apostrophe opens an inline element: no gap to strand on its edge.
+      ["<p>of <em>'24</em> was wild</p>", `<p>of${NBSP}<em>’24</em> was${NBSP}wild</p>`],
       // Apostrophe at the start of the prose unit: nothing precedes it.
       ["<p>'24 was wild</p>", `<p>’24 was${NBSP}wild</p>`],
       // Preceding word does not end in "f": untouched.
       ["<p>I was born in '94. Nice</p>", `<p>I${NBSP}was born in${NBSP}’94. Nice</p>`],
       // No space before the apostrophe: untouched.
       ["<p>don't stop</p>", `<p>don’t${NBSP}stop</p>`],
-    ])("opens the f–apostrophe gap: %s", (input, expected) => {
+    ])("handles the f–apostrophe gap: %s", (input, expected) => {
       expect(testHtmlFormattingImprovement(input)).toBe(expected)
     })
 
@@ -2141,8 +2149,8 @@ describe("applyTextTransforms function", () => {
   })
 
   it.each([
-    [{}, `The summer of${NBSP}${THIN_SPACE}${WORD_JOINER}’24`],
-    [{ useNbsp: false }, `The summer of ${THIN_SPACE}${WORD_JOINER}’24`],
+    [{}, `The summer of${NBSP}${WORD_JOINER}${THIN_SPACE}${WORD_JOINER}’24`],
+    [{ useNbsp: false }, `The summer of ${WORD_JOINER}${THIN_SPACE}${WORD_JOINER}’24`],
   ])("opens the f–apostrophe gap with options %s", (options, expected) => {
     expect(applyTextTransforms("The summer of '24", options)).toBe(expected)
   })

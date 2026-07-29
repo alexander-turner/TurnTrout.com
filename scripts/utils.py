@@ -34,6 +34,7 @@ _UNICODE_TYPO = _CONSTANTS["unicodeTypography"]
 
 NBSP: str = _UNICODE_TYPO["nbsp"]
 HAIR_SPACE: str = _UNICODE_TYPO["hairSpace"]
+THIN_SPACE: str = _UNICODE_TYPO["thinSpace"]
 LEFT_SINGLE_QUOTE: str = _UNICODE_TYPO["leftSingleQuote"]
 RIGHT_SINGLE_QUOTE: str = _UNICODE_TYPO["rightSingleQuote"]
 LEFT_DOUBLE_QUOTE: str = _UNICODE_TYPO["leftDoubleQuote"]

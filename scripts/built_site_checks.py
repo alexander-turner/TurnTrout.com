@@ -50,6 +50,7 @@ from scripts.utils import (
     RIGHT_DOUBLE_QUOTE,
     RIGHT_GUILLEMET,
     RIGHT_SINGLE_QUOTE,
+    THIN_SPACE,
     TOC_MAX_DEPTH,
     WORD_JOINER,
     ZERO_WIDTH_NBSP,
@@ -2071,7 +2072,9 @@ def _untransform_text(label: str) -> str:
     quote_chars = f"['{LEFT_SINGLE_QUOTE}{RIGHT_SINGLE_QUOTE}{LEFT_DOUBLE_QUOTE}{RIGHT_DOUBLE_QUOTE}]"
     simple_quotes_label = re.sub(quote_chars, '"', lower_label)
     unescaped_label = html.unescape(simple_quotes_label)
-    normalized_spaces = unescaped_label.replace(NBSP, " ")
+    normalized_spaces = strip_invisible_chars(unescaped_label)
+    for space_char in (NBSP, HAIR_SPACE, THIN_SPACE):
+        normalized_spaces = normalized_spaces.replace(space_char, " ")
     # Normalize em-dashes, en-dashes, and ellipsis to ASCII equivalents
     normalized_dashes = (
         normalized_spaces.replace("\u2014", " - ")
@@ -2539,6 +2542,7 @@ ALLOWED_ELT_PRECEDING_CHARS = (
     + "=+' \n\t\r−"
     + NBSP
     + HAIR_SPACE
+    + THIN_SPACE
 )
 ALLOWED_ELT_FOLLOWING_CHARS = (
     "])}.,;!?:-–—~×(+"
@@ -2551,6 +2555,7 @@ ALLOWED_ELT_FOLLOWING_CHARS = (
     + "=' \n\t\r"
     + NBSP
     + HAIR_SPACE
+    + THIN_SPACE
 )
 
 

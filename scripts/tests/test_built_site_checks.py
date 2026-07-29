@@ -5937,6 +5937,12 @@ def test_check_unrendered_emoticons(html, expected):
             f"title with{built_site_checks.NBSP}non-breaking{built_site_checks.NBSP}spaces",
             "title with non-breaking spaces",
         ),
+        # The f-apostrophe gap folds back to a single space
+        (
+            f"the summer of{built_site_checks.NBSP}{built_site_checks.WORD_JOINER}"
+            f"{built_site_checks.THIN_SPACE}{built_site_checks.WORD_JOINER}\u201924",
+            'the summer of "24',
+        ),
         # Em-dash normalization
         ("computations\u2014do transformers", "computations - do transformers"),
         # En-dash normalization

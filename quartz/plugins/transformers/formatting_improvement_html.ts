@@ -429,16 +429,24 @@ const hyphenWordJoinerPass = definePass(/-/g, (match, view) => {
 // space ("of ’24") the two glyphs read as glued together. The font's f’ kern
 // pair can't reach across the intervening space, so open the gap with a thin
 // space (~0.1em in this font). An apostrophe after whitespace is always an
-// elision mark (’24, ’tis), never an opening quote. The thin space is a break
-// opportunity, so a word joiner follows it to preserve punctilio's
-// non-breaking glue. The whitespace class excludes the thin space and word
-// joiner this pass inserts, so re-running the pass leaves its own output
-// unchanged.
+// elision mark (’24, ’tis), never an opening quote.
+//
+// A boundary immediately before the apostrophe disqualifies the match: skipped
+// content (e.g. `<code>`) is elided from the view, so "of <code>Start</code>’s"
+// would otherwise read as "of ’s" and glue a gap onto the code element. It also
+// keeps the thin space off an inline element's leading edge, where
+// stripInlineBoundaryWhitespace trims it and strands the word joiner.
+//
+// The thin space is a break opportunity on both sides, so word joiners flank
+// it. The whitespace class excludes the characters this pass inserts, so
+// re-running it leaves its own output unchanged.
+const whitespaceBeforeElision = new RegExp(`[ \\t\\n${NBSP}]`, "u")
 const fApostropheThinSpacePass = definePass(new RegExp(RIGHT_SINGLE_QUOTE, "gu"), (match, view) => {
+  if (view.hasBoundary(match.index)) return null
   const prev = view.text[match.index - 1]
-  if (prev === undefined || !/[ \t\n\u00A0]/.test(prev)) return null
+  if (prev === undefined || !whitespaceBeforeElision.test(prev)) return null
   if (view.text[match.index - 2] !== "f") return null
-  return `${THIN_SPACE}${WORD_JOINER}${match[0]}`
+  return `${WORD_JOINER}${THIN_SPACE}${WORD_JOINER}${match[0]}`
 })
 
 // Simple find-and-replace transforms local to this site (punctilio handles the rest)
