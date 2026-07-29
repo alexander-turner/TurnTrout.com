@@ -12,6 +12,7 @@ import {
   cdnBaseUrl,
   defaultPath,
   HEADING_TAGS,
+  NOWRAP_SPAN_CLASS,
   simpleConstants,
   specialFaviconPaths,
 } from "../../components/constants"
@@ -380,7 +381,7 @@ export function maybeSpliceText(
   if (
     lastChild.type === "element" &&
     lastChild.tagName === "span" &&
-    hasClass(lastChild, "favicon-span")
+    hasClass(lastChild, NOWRAP_SPAN_CLASS)
   ) {
     lastChild.children.push(imgNodeToAppend)
     return null

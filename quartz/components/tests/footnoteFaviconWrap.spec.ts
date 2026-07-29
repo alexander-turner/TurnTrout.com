@@ -27,7 +27,7 @@ test.describe("footnote reference after a favicon", () => {
       // favicon glyph live in a nowrap span, followed by a footnote `<sup>`.
       const linkHtml =
         '<a href="#" style="text-decoration:underline">some link te' +
-        '<span class="favicon-span">xt<span class="fav-glyph" style="display:inline-block;' +
+        '<span class="nowrap-span">xt<span class="fav-glyph" style="display:inline-block;' +
         'width:14px;height:14px;background:#888;vertical-align:middle"></span></span></a>'
       const supHtml = '<sup class="fn-ref"><a href="#fn">1</a></sup>'
 
@@ -162,7 +162,7 @@ test.describe("footnote reference after a favicon", () => {
         '<p style="margin:0"><span class="favicon-footnote-span">' +
         '<a href="#" style="text-decoration:underline">their Terms of Service promise to ' +
         "&ldquo;send an email to the user account before disclosing information " +
-        '[to the government]<span class="favicon-span">&rdquo;' +
+        '[to the government]<span class="nowrap-span">&rdquo;' +
         '<span class="fav-glyph" style="display:inline-block;width:14px;height:14px;' +
         'background:#888;vertical-align:middle"></span></span></a>' +
         '<sup class="fn-ref"><a href="#fn">1</a></sup></span></p>'

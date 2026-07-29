@@ -621,7 +621,7 @@ If a hostname passes the inclusion criteria (count threshold or whitelist) but n
 
 There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [noted](https://gwern.net/design-graveyard#link-icon-css-regexps), inline favicons sometimes appear on the next line (detached from their link). This looks bad - just like it would look bad if your browser displayed the last letter of a word on the next line, all on its own.
 
-To tackle this, the favicon transformation splices the last few characters from the link text and wraps them together with the favicon inside a `<span class="favicon-span">` with `white-space: nowrap`. This keeps the last few characters glued to the favicon, preventing line breaks at that position.
+To tackle this, the favicon transformation splices the last few characters from the link text and wraps them together with the favicon inside a `<span class="nowrap-span">` with `white-space: nowrap`. This keeps the last few characters glued to the favicon, preventing line breaks at that position.
 
 ### Favicons sit a consistent distance from the text
 
@@ -1078,7 +1078,7 @@ Sometimes I link by the title of a post, like "[@title](/towards-a-new-impact-me
 > **Favicon validation:**
 >
 > 1. Favicons that aren't SVG elements with proper `mask-url` styling;
-> 2. Favicons not wrapped in a [favicon-span](#favicons-never-wrap-alone-to-a-new-line);
+> 2. Favicons not wrapped in a [nowrap-span](#favicons-never-wrap-alone-to-a-new-line);
 >
 > **Common Markdown rendering errors:**
 >

@@ -1,6 +1,10 @@
 @use "./variables.scss" as *;
 
-.favicon-span {
+// Holds a glyph-sized inline atom (emoji, favicon, authored sprite) together
+// with the neighbors that may not sit alone at a line edge. A `<img>`/`<svg>`
+// box opens a break opportunity on each of its own edges, which no in-text
+// joiner can reach.
+.nowrap-span {
   white-space: nowrap;
 }
 

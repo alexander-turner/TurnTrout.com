@@ -1661,16 +1661,16 @@ def _get_favicons_to_check(soup: BeautifulSoup) -> list[Tag]:
 
 def check_favicon_span(soup: BeautifulSoup) -> list[str]:
     """
-    Check that all favicons are inside a favicon-span element.
+    Check that all favicons are inside a nowrap-span element.
 
-    The <span class="favicon-span"> with white-space: nowrap wraps the last
+    The <span class="nowrap-span"> with white-space: nowrap wraps the last
     few characters of text together with the favicon to prevent the favicon
     from orphaning onto a new line.
     Every favicon should be a child of this span, unless it's inside a
     .no-favicon-span container (used for demo/decorative favicons).
 
     Returns:
-        list of strings describing favicons missing favicon-span parents.
+        list of strings describing favicons missing nowrap-span parents.
     """
     issues: list[str] = []
 
@@ -1678,7 +1678,7 @@ def check_favicon_span(soup: BeautifulSoup) -> list[str]:
         parent = favicon.parent
         if isinstance(
             parent, Tag
-        ) and "favicon-span" in script_utils.get_classes(parent):
+        ) and "nowrap-span" in script_utils.get_classes(parent):
             continue
 
         # Identify the favicon for the error message
@@ -1689,7 +1689,7 @@ def check_favicon_span(soup: BeautifulSoup) -> list[str]:
 
         _append_to_list(
             issues,
-            f"Favicon ({context}) missing favicon-span as parent",
+            f"Favicon ({context}) missing nowrap-span as parent",
         )
 
     return issues

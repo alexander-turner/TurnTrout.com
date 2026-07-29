@@ -472,7 +472,7 @@ describe("PopulateContainers", () => {
       it.each([
         ["turntrout", specialFaviconPaths.turntrout],
         ["anchor", specialFaviconPaths.anchor],
-      ])("should generate %s favicon inside favicon-span", async (_name, faviconPath) => {
+      ])("should generate %s favicon inside nowrap-span", async (_name, faviconPath) => {
         const generator = populateModule.generateSpecialFaviconContent(faviconPath)
         const elements = await generator()
         expect(elements).toHaveLength(1)
@@ -480,7 +480,7 @@ describe("PopulateContainers", () => {
         const faviconSpan = elements[0]
         expect(faviconSpan).toMatchObject({
           tagName: "span",
-          properties: { className: "favicon-span" },
+          properties: { className: "nowrap-span" },
         })
         expect(faviconSpan.children[1]).toMatchObject({
           tagName: "svg",
@@ -577,7 +577,7 @@ describe("PopulateContainers", () => {
         let count = 0
         visit(root, "element", (node) => {
           const cls = String(node.properties?.class ?? node.properties?.className ?? "")
-          if (cls.includes("favicon")) count++
+          if (cls.includes("favicon") || cls.includes("nowrap-span")) count++
         })
         return count
       }
@@ -603,11 +603,11 @@ describe("PopulateContainers", () => {
         setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
 
         const html =
-          '<html><body><a class="external" href="https://github.com/foo">Li<span class="favicon-span">nk<img class="favicon" src="test.png" /></span></a></body></html>'
+          '<html><body><a class="external" href="https://github.com/foo">Li<span class="nowrap-span">nk<img class="favicon" src="test.png" /></span></a></body></html>'
         const root = fromHtml(html)
         await populateModule.addFaviconsToLinks(root)
 
-        expect(countsFaviconElements(toHtml(root))).toBe(2) // favicon-span + favicon img
+        expect(countsFaviconElements(toHtml(root))).toBe(2) // nowrap-span + favicon img
       })
     })
 
@@ -821,7 +821,7 @@ describe("PopulateContainers", () => {
           let count = 0
           visit(subtree, "element", (child) => {
             const cls = String(child.properties?.class ?? child.properties?.className ?? "")
-            if (cls.includes("favicon")) count++
+            if (cls.includes("favicon") || cls.includes("nowrap-span")) count++
           })
           return count
         }
@@ -842,7 +842,7 @@ describe("PopulateContainers", () => {
           if (node.properties?.id !== "populate-me") return
           insideFaviconCount = countFaviconsInSubtree(node)
         })
-        expect(insideFaviconCount).toBe(2) // favicon-span + favicon img
+        expect(insideFaviconCount).toBe(2) // nowrap-span + favicon img
       })
 
       it("skips the favicon post-pass when skipFavicons is set", async () => {

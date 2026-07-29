@@ -162,7 +162,6 @@ export const SEARCH_MATCH_CLASS = "search-match"
 // consumers can't drift. `EMOJI_CLASS`/`KATEX_CLASS` are emitted by the twemoji
 // and KaTeX libraries respectively; the constants document the value we match.
 export const EMOJI_CLASS = "emoji"
-export const EMOJI_SPAN_CLASS = "emoji-span"
 // Authored glyph-sized inline images (SafeLife sprites, the agent chevron, …),
 // styled at `0.9rem` in `custom.scss`. Like emoji, each reads as a single inline
 // atom, so backlink excerpts preserve them verbatim rather than dropping them as
@@ -175,7 +174,11 @@ export const INLINE_IMG_CLASS = "inline-img"
 // and avoid layout shift. CSS still renders them at `1em`.
 export const TWEMOJI_INTRINSIC_DIMENSION = 36
 export const FAVICON_CLASS = "favicon"
-export const FAVICON_SPAN_CLASS = "favicon-span"
+// Every glyph-sized inline atom (emoji, favicon, authored sprite) is glued to
+// its neighbors inside one span carrying this class; `white-space: nowrap` on
+// it is the only thing that can close the line-break opportunity an atomic
+// inline box opens on its own edges.
+export const NOWRAP_SPAN_CLASS = "nowrap-span"
 export const KATEX_CLASS = "katex"
 export const SMALL_CAPS_CLASS = "small-caps"
 export const BACKLINK_HIGHLIGHT_CLASS = "backlink-highlight"

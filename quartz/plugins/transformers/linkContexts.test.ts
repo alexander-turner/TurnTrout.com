@@ -75,7 +75,7 @@ describe("buildExcerpt sanitizer", () => {
   })
 
   it("strips favicon elements and unwraps favicon spans", () => {
-    const faviconSpan = h("span.favicon-span", [
+    const faviconSpan = h("span.nowrap-span", [
       { type: "text", value: "site" },
       h("svg", { className: ["favicon"] }),
     ]) as ElementContent
@@ -119,13 +119,13 @@ describe("buildExcerpt sanitizer", () => {
   })
 
   it("keeps emoji spans with their inner twemoji image intact", () => {
-    const emojiSpan = h("span.emoji-span", [
+    const emojiSpan = h("span.nowrap-span", [
       { type: "text", value: "a" },
       h("img.emoji", { alt: "🐟" }),
     ]) as ElementContent
     const html = buildExcerpt(blockWith(emojiSpan, anchored("x")), ANCHOR)
     expect(html).toBe(
-      '<span class="emoji-span">a<img class="emoji" alt="🐟"></span>' +
+      '<span class="nowrap-span">a<img class="emoji" alt="🐟"></span>' +
         '<span class="backlink-highlight">x</span>',
     )
   })

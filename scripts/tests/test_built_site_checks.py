@@ -3576,17 +3576,17 @@ def test_check_tengwar_characters(html, expected):
 @pytest.mark.parametrize(
     "html,expected",
     [
-        # Favicon inside favicon-span (valid)
+        # Favicon inside nowrap-span (valid)
         (
-            '<a>te<span class="favicon-span">xt'
+            '<a>te<span class="nowrap-span">xt'
             '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></span></a>',
             [],
         ),
-        # Favicon without favicon-span parent (invalid)
+        # Favicon without nowrap-span parent (invalid)
         (
             '<a>text<svg class="favicon" data-domain="example_com"'
             ' style="--mask-url: url(test.svg);"></svg></a>',
-            ["Favicon (example_com) missing favicon-span as parent"],
+            ["Favicon (example_com) missing nowrap-span as parent"],
         ),
         # Favicon inside .no-favicon-span (should be ignored)
         (
@@ -3594,23 +3594,23 @@ def test_check_tengwar_characters(html, expected):
             '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></div>',
             [],
         ),
-        # img.favicon without favicon-span parent (invalid)
+        # img.favicon without nowrap-span parent (invalid)
         (
             '<a>text<img class="favicon" src="test.ico"></a>',
-            ["Favicon (test.ico) missing favicon-span as parent"],
+            ["Favicon (test.ico) missing nowrap-span as parent"],
         ),
         # No favicons at all (valid)
         ("<div><p>No favicons</p></div>", []),
-        # Mixed: one with, one without favicon-span parent
+        # Mixed: one with, one without nowrap-span parent
         (
             "<div>"
-            '<a>o<span class="favicon-span">k'
+            '<a>o<span class="nowrap-span">k'
             '<svg class="favicon" data-domain="ok_com"'
             ' style="--mask-url: url(ok.svg);"></svg></span></a>'
             '<a>bad<svg class="favicon" data-domain="bad_com"'
             ' style="--mask-url: url(bad.svg);"></svg></a>'
             "</div>",
-            ["Favicon (bad_com) missing favicon-span as parent"],
+            ["Favicon (bad_com) missing nowrap-span as parent"],
         ),
         # Nested .no-favicon-span (should be ignored)
         (
@@ -7757,7 +7757,7 @@ def test_is_asset_href(href, expected):
         # Included domain WITH favicon (valid)
         (
             '<article><a class="external" href="https://apple.com/products">'
-            'Apple<span class="favicon-span">'
+            'Apple<span class="nowrap-span">'
             '<svg class="favicon" style="--mask-url: url(apple.svg);"></svg>'
             "</span></a></article>",
             {"apple_com"},

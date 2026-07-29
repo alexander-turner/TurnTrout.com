@@ -7,7 +7,7 @@ import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { locale } from "../../components/constants"
+import { locale, NOWRAP_SPAN_CLASS } from "../../components/constants"
 
 export const urlRegex = new RegExp(
   /(?<protocol>https?:\/\/)(?<domain>(?:[\da-z-]+\.)+)(?<path>[/?=\w.-]+(?:\([\w.\-,() ]*\))?)(?=\))/g,
@@ -262,7 +262,7 @@ export function createNowrapSpan(text: string, child: Element): Element {
   return {
     type: "element",
     tagName: "span",
-    properties: { className: "favicon-span" },
+    properties: { className: NOWRAP_SPAN_CLASS },
     children: [{ type: "text" as const, value: text }, child],
   } as Element
 }
