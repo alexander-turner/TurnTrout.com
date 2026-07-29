@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-27
+date_updated: 2026-07-29
 createBibtex: true
 ---
 
@@ -717,7 +717,8 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 | descender + \} | g\} j\} p\} q\} y\} |
 | caps + close | T) T] V) V] Y) Y] |
 | quote + bracket | “\[ ‘\[ \]” \]’ |
-| overhang + space + open | of “x if ‘x of (x if \[x Q (x |
+| overhang + space + open | of “x if ‘x of (x if \[x Q (x Q \[x of \{x |
+| overhang + space + elision | of ’24 if ’24 the summer of ’24 |
 | space + open (control) | to “x an ‘x to (x an \[x O (x |
 | In context | f(x), (glyph), (jpg), (query), [typography] |
 | In context | “\[sic\]” and ‘\[note\]’ |

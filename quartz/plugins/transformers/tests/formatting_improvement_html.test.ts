@@ -194,6 +194,71 @@ describe("HTMLFormattingImprovement", () => {
     })
   })
 
+  describe("Overhang crowding before opening marks", () => {
+    const bodyProseInput = "<p>the summer of '24. From</p>"
+    // The margin rides the overhanging glyph's trailing edge, so the span wraps
+    // the "f"/"Q" rather than the mark it clears.
+    const kernF = `<span class="overhang-kern-f">f</span>`
+    const kernQ = `<span class="overhang-kern-q">Q</span>`
+
+    it.each([
+      // Body prose, with punctilio's NBSP glue left intact as the break point.
+      [bodyProseInput, `<p>the summer o${kernF}${NBSP}’24. From</p>`],
+      // Display headings skip the NBSP pass, so a plain space survives.
+      ["<h2>The summer of '24</h2>", `<h2>The summer o${kernF} ’24</h2>`],
+      // Markdown soft line break between the glyph and the mark.
+      ["<p>the summer of\n'24. From</p>", `<p>the summer o${kernF}\n’24. From</p>`],
+      ["<h2>The summer of\t'24</h2>", `<h2>The summer o${kernF}\t’24</h2>`],
+      // "f" sits in an earlier sibling, so the lookahead ascends out of the <em>.
+      ["<p><em>of</em> '24 was wild</p>", `<p><em>o${kernF}</em>${NBSP}’24 was${NBSP}wild</p>`],
+      // Skipped content supplies the following mark, so the "f" gets no kern.
+      [
+        "<p>one of <code>Start</code>'s child states</p>",
+        `<p>one of${NBSP}<code>Start</code>’s child${NBSP}states</p>`,
+      ],
+      // The mark opens an inline element; the lookahead still reaches it.
+      ["<p>of <em>'24</em> was wild</p>", `<p>o${kernF}${NBSP}<em>’24</em> was${NBSP}wild</p>`],
+      // Mark at the very start of the paragraph: no glyph precedes it.
+      ["<p>'24 was wild</p>", `<p>’24 was${NBSP}wild</p>`],
+      // Preceding word does not end in an overhanging glyph.
+      ["<p>I was born in '94. Nice</p>", `<p>I${NBSP}was born in${NBSP}’94. Nice</p>`],
+      // No space before the mark: a mid-word apostrophe is untouched.
+      ["<p>don't stop</p>", `<p>don’t${NBSP}stop</p>`],
+      // Every crowded mark after "f", each glyph wrapped independently.
+      [
+        `<h2>of ${LEFT_DOUBLE_QUOTE}x if (x if [x of {x</h2>`,
+        `<h2>o${kernF} ${LEFT_DOUBLE_QUOTE}x i${kernF} (x ` + `i${kernF} [x o${kernF} {x</h2>`,
+      ],
+      // "Q" overhangs less, so it gets the smaller correction.
+      ["<h2>Q (x and Q [x</h2>", `<h2>${kernQ} (x and ${kernQ} [x</h2>`],
+      // Both tiers inside one text node.
+      ["<h2>of '24 and Q (x</h2>", `<h2>o${kernF} ’24 and ${kernQ} (x</h2>`],
+      // Non-overhanging letters before the same marks: untouched.
+      [
+        `<h2>to ${LEFT_DOUBLE_QUOTE}x an (x an [x</h2>`,
+        `<h2>to ${LEFT_DOUBLE_QUOTE}x an (x an [x</h2>`,
+      ],
+      // Code is skipped entirely.
+      ["<p><code>of '24</code></p>", "<p><code>of '24</code></p>"],
+      // A comment sibling contributes no text, so the mark is still found.
+      ["<p>of <!-- note -->'24</p>", `<p>o${kernF}${NBSP}<!-- note -->’24</p>`],
+    ])("handles overhang crowding: %s", (input, expected) => {
+      expect(testHtmlFormattingImprovement(input)).toBe(expected)
+    })
+
+    it("is idempotent", () => {
+      const once = testHtmlFormattingImprovement(bodyProseInput)
+      expect(testHtmlFormattingImprovement(once)).toBe(once)
+    })
+
+    it("leaves the text a reader searches for unchanged", () => {
+      const rendered = testHtmlFormattingImprovement(bodyProseInput)
+      const text = rendered.replace(/<[^>]+>/g, "").replaceAll(NBSP, " ")
+      expect(text).toBe("the summer of ’24. From")
+      expect(text).not.toMatch(/\s\s/)
+    })
+  })
+
   describe("Definition Lists", () => {
     it.each([
       [
@@ -2116,6 +2181,13 @@ describe("applyTextTransforms function", () => {
 
     const result = applyTextTransforms(input)
     expect(normalizeNbsp(result)).toBe(expected)
+  })
+
+  it.each([
+    [{}, `The summer of${NBSP}’24`],
+    [{ useNbsp: false }, "The summer of ’24"],
+  ])("leaves overhang kerning to the tree pass, options %s", (options, expected) => {
+    expect(applyTextTransforms("The summer of '24", options)).toBe(expected)
   })
 })
 

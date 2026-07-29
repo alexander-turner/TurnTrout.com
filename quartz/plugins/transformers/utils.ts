@@ -308,19 +308,19 @@ export function spliceAndWrapLastChars(
  * `offsets` must be ascending and in range; an empty list or a detached node is
  * a no-op.
  */
-export function wrapCharsInSpan(
-  parent: Parent,
-  textNode: Text,
-  offsets: readonly number[],
-  className: string,
-): void {
+export interface CharSpan {
+  readonly offset: number
+  readonly className: string
+}
+
+export function wrapCharsInSpan(parent: Parent, textNode: Text, spans: readonly CharSpan[]): void {
   const nodeIndex = parent.children.indexOf(textNode)
-  if (nodeIndex === -1 || offsets.length === 0) return
+  if (nodeIndex === -1 || spans.length === 0) return
 
   const { value } = textNode
   const replacement: ElementContent[] = []
   let cursor = 0
-  for (const offset of offsets) {
+  for (const { offset, className } of spans) {
     if (offset > cursor) {
       replacement.push({ type: "text", value: value.slice(cursor, offset) })
     }

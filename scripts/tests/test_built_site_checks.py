@@ -3530,6 +3530,61 @@ def test_check_consecutive_periods(html, expected):
 
 
 @pytest.mark.parametrize(
+    "html,expected_run",
+    [
+        # A word space paired with a typographic space: invisible on the page,
+        # but find-in-page no longer matches the rendered text.
+        (f"<p>the summer of{NBSP}\u2009\u201924</p>", f"{NBSP}\u2009"),
+        ("<p>the\u200a <code>VPI</code> equation</p>", "\u200a "),
+        # Plain doubled space in prose.
+        ("<p>one  two</p>", "  "),
+        # Trailing space before a newline inside a text node.
+        ("<p>passes. \nNext</p>", " \n"),
+        # Three in a row.
+        ("<p>a   b</p>", "   "),
+    ],
+)
+def test_check_consecutive_whitespace_flags_runs(html: str, expected_run: str):
+    """Runs of two or more whitespace characters in prose are reported."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_consecutive_whitespace(soup)
+    assert len(result) == 1
+    assert repr(expected_run) in result[0]
+
+
+@pytest.mark.parametrize(
+    "html",
+    [
+        # Single spaces, including non-breaking ones, are prose as authored.
+        ("<p>the summer of \u201924. From left</p>"),
+        (f"<p>the summer of{NBSP}\u201924</p>"),
+        # Whitespace-only nodes carry the markup's own indentation.
+        ("<div>\n    <p>hi</p>\n    <p>there</p>\n</div>"),
+        # Regions ``should_skip`` excludes keep their significant whitespace.
+        ("<pre><code>a    b</code></pre>"),
+        ("<p><code>a    b</code></p>"),
+        ('<span class="katex"><mtext>  </mtext></span>'),
+        ('<p class="no-formatting">a  b</p>'),
+        ('<div class="external-readme"><p>a  b</p></div>'),
+        # Comments are not rendered prose.
+        ("<p>ok</p><!-- a  comment -->"),
+    ],
+)
+def test_check_consecutive_whitespace_allows(html: str):
+    """Legitimate single spacing and non-prose regions are not reported."""
+    soup = BeautifulSoup(html, "html.parser")
+    assert built_site_checks.check_consecutive_whitespace(soup) == []
+
+
+def test_check_consecutive_whitespace_reports_each_run():
+    """Every run in a node is reported, with context for locating it."""
+    soup = BeautifulSoup("<p>one  two   three</p>", "html.parser")
+    result = built_site_checks.check_consecutive_whitespace(soup)
+    assert len(result) == 2
+    assert all("one two three" in issue for issue in result)
+
+
+@pytest.mark.parametrize(
     "html,expected",
     [
         # Valid Tengwar text (PUA characters U+E000-U+E07F)

@@ -18,7 +18,7 @@ aliases:
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 date_published: 2025-11-06
-date_updated: 2026-07-28
+date_updated: 2026-07-29
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -251,10 +251,10 @@ Subtitle: Cost: \$130. Time: 10 hours. Optional, but make sure you secure your s
 
 I love my Google Home setup but it sends data home which isn't E2EE. The solutions: either _stop_ using always-listening devices or switch to the open source [Home Assistant](https://www.home-assistant.io/) platform.
 
-- [ ]  Disable the microphones on any Google Home or Amazon Echo devices.  These devices can still work with Home Assistant, but you might want to turn them off until you get that set up.
+- [ ] Disable the microphones on any Google Home or Amazon Echo devices.  These devices can still work with Home Assistant, but you might want to turn them off until you get that set up.
   - [ ] Alternatively, block them from phoning home [at the router level using AdGuard](#buy-a-router-that-respects-you).
-- [ ]  Purchase the [Home Assistant Green](https://www.home-assistant.io/green) for \$130.
-- [ ]  Follow the included instructions.  Make sure to look around for videos which explain the application. It's not totally intuitive.
+- [ ] Purchase the [Home Assistant Green](https://www.home-assistant.io/green) for \$130.
+- [ ] Follow the included instructions.  Make sure to look around for videos which explain the application. It's not totally intuitive.
 
 ## Run an Apple TV instead of your normal smart TV
 
