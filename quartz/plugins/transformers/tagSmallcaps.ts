@@ -496,7 +496,9 @@ export function spaceSmallcapsAfterOpenBracket(tree: Node): void {
     ops.push({ parent, prevText: prev })
   })
   for (const { parent, prevText } of ops) {
-    wrapCharsInSpan(parent, prevText, [prevText.value.length - 1], "smallcaps-gap-before")
+    wrapCharsInSpan(parent, prevText, [
+      { offset: prevText.value.length - 1, className: "smallcaps-gap-before" },
+    ])
   }
 }
 

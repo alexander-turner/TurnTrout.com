@@ -375,7 +375,7 @@ describe("wrapCharsInSpan", () => {
   it("lifts a mid-node character into its own span, splitting the text", () => {
     const node: Text = { type: "text", value: "a / b" }
     const parent: Element = { type: "element", tagName: "p", properties: {}, children: [node] }
-    wrapCharsInSpan(parent, node, [2], "kern")
+    wrapCharsInSpan(parent, node, [{ offset: 2, className: "kern" }])
     expect(parent.children).toEqual([
       { type: "text", value: "a " },
       span("/"),
@@ -386,7 +386,10 @@ describe("wrapCharsInSpan", () => {
   it("wraps multiple characters in one pass, ascending offsets", () => {
     const node: Text = { type: "text", value: "a / b / c" }
     const parent: Element = { type: "element", tagName: "p", properties: {}, children: [node] }
-    wrapCharsInSpan(parent, node, [2, 6], "kern")
+    wrapCharsInSpan(parent, node, [
+      { offset: 2, className: "kern" },
+      { offset: 6, className: "kern" },
+    ])
     expect(parent.children).toEqual([
       { type: "text", value: "a " },
       span("/"),
@@ -399,14 +402,40 @@ describe("wrapCharsInSpan", () => {
   it("emits no leading or trailing text when the char is the whole node", () => {
     const node: Text = { type: "text", value: "/" }
     const parent: Element = { type: "element", tagName: "p", properties: {}, children: [node] }
-    wrapCharsInSpan(parent, node, [0], "kern")
+    wrapCharsInSpan(parent, node, [{ offset: 0, className: "kern" }])
     expect(parent.children).toEqual([span("/")])
+  })
+
+  it("gives each character the class it was paired with", () => {
+    const node: Text = { type: "text", value: "of ’24 Q (x" }
+    const parent: Element = { type: "element", tagName: "p", properties: {}, children: [node] }
+    wrapCharsInSpan(parent, node, [
+      { offset: 3, className: "overhang-kern-f" },
+      { offset: 9, className: "overhang-kern-q" },
+    ])
+    expect(parent.children).toEqual([
+      { type: "text", value: "of " },
+      {
+        type: "element",
+        tagName: "span",
+        properties: { className: ["overhang-kern-f"] },
+        children: [{ type: "text", value: "’" }],
+      },
+      { type: "text", value: "24 Q " },
+      {
+        type: "element",
+        tagName: "span",
+        properties: { className: ["overhang-kern-q"] },
+        children: [{ type: "text", value: "(" }],
+      },
+      { type: "text", value: "x" },
+    ])
   })
 
   it("is a no-op when offsets is empty", () => {
     const node: Text = { type: "text", value: "a / b" }
     const parent: Element = { type: "element", tagName: "p", properties: {}, children: [node] }
-    wrapCharsInSpan(parent, node, [], "kern")
+    wrapCharsInSpan(parent, node, [])
     expect(parent.children).toEqual([node])
   })
 
@@ -414,7 +443,7 @@ describe("wrapCharsInSpan", () => {
     const node: Text = { type: "text", value: "a / b" }
     const other: Text = { type: "text", value: "elsewhere" }
     const parent: Element = { type: "element", tagName: "p", properties: {}, children: [other] }
-    wrapCharsInSpan(parent, node, [2], "kern")
+    wrapCharsInSpan(parent, node, [{ offset: 2, className: "kern" }])
     expect(parent.children).toEqual([other])
   })
 })

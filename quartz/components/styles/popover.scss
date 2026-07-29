@@ -221,9 +221,16 @@
   }
 }
 
-// The initial animation is more complicated and is handled via JS
+// The initial animation is more complicated and is handled via JS.
+// The shown state is declared statically as well as by the animation's final
+// keyframe: an animation that never starts or is interrupted mid-flight would
+// otherwise leave the popover at the base `visibility: hidden` with no way back.
+// `animation-fill-mode: both` applies the 0% keyframe through the delay, so the
+// static values only take effect once the animation is out of the picture.
 .popover-visible {
+  visibility: visible;
+  opacity: 1;
   animation: dropin $transition-duration-medium ease;
-  animation-fill-mode: forwards;
+  animation-fill-mode: both;
   animation-delay: $transition-duration-medium;
 }

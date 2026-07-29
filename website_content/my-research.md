@@ -4,7 +4,7 @@ permalink: research
 hideSubscriptionLinks: false
 description: A tour of the research areas I've loved over the years.
 date_published: 2024-10-27
-date_updated: 2026-07-22
+date_updated: 2026-07-29
 tags:
   - AI
 title: My research
@@ -106,7 +106,7 @@ Figure: AUP does a great job. The policy avoids the green stuff and hits the red
 
 Subtitle: Written in October 2024
 
-I feel fondness for this line of work. The feeling of making a difference - thrilling. Discovering new ideas - thrilling. Making light-hearted posts & steering my own research as a  PhD student - lovely.
+I feel fondness for this line of work. The feeling of making a difference - thrilling. Discovering new ideas - thrilling. Making light-hearted posts & steering my own research as a PhD student - lovely.
 
 Considering the technical contributions themselves... AI has taken a different path than I imagined in 2018-2021. I thought the path to AGI would be longer, entailing real-world robotics and deep RL. Reality turned out to be much friendlier and softer - AI learning language and universal concepts instead of being produced via zero-sum multi-agent learning in simulated games.
 

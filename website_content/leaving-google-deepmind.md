@@ -22,7 +22,7 @@ aliases:
   - leaving-google-deepmind
 no_dropcap_color: true
 date_published: 2026-07-15
-date_updated: 2026-07-23
+date_updated: 2026-07-29
 lw-posted-at: https://www.lesswrong.com/posts/iKm2FhpWkuuBojm82/why-i-left-google-deepmind
 ---
 
@@ -128,7 +128,7 @@ He suggested it'd be reasonable for me to email a few guys. Their names: Sundar 
 
 They never replied. I returned to Jeff and asked for a lunch to discuss constructive opportunities for real change within Google. I told him: "any time, any place. I'll drive down to Mountain View to meet with you."
 
-At this point, I thought this was where "plan A" would fail. To my  surprise, he actually accepted, for a lunch a few weeks out.
+At this point, I thought this was where "plan A" would fail. To my surprise, he actually accepted, for a lunch a few weeks out.
 
 A lot would happen in that time.
 
@@ -481,7 +481,7 @@ After all, what's the worst that would realistically happen? In my estimation, h
 > [!quote] My message to Demis
 > Demis, I drafted a Framework for military AI oversight at Google, along with two candidate standards (which can be considered separately). A foremost legal expert on human/AI warfighting integration said the Framework is "actually pretty good." The oversight is advisory, providing independent technical and ethical assessment of defense AI deployments.
 
-Demis told me to get the Framework evaluated by  two senior people working in GDM policy. I sent it to them. They left the message on read.
+Demis told me to get the Framework evaluated by two senior people working in GDM policy. I sent it to them. They left the message on read.
 
 ## My Framework goes unevaluated
 
