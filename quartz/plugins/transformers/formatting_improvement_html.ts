@@ -428,13 +428,12 @@ const hyphenWordJoinerPass = definePass(/-/g, (match, view) => {
 // the same vertical band the apostrophe's ink occupies, so across a plain
 // space ("of ’24") the two glyphs read as glued together. The font's f’ kern
 // pair can't reach across the intervening space, so open the gap with a thin
-// space (~0.1em in this font). An apostrophe after a space is always an
-// elision mark (’24, ’tis) — a quote opening there would be ‘. The thin
-// space is a break opportunity, so a word joiner follows it to keep
-// punctilio's non-breaking glue intact. The whitespace test is an explicit
-// character class: JS \s would match the thin space itself and break
-// idempotency — once inserted, the character before the apostrophe is the
-// word joiner, which fails the test.
+// space (~0.1em in this font). An apostrophe after whitespace is always an
+// elision mark (’24, ’tis), never an opening quote. The thin space is a break
+// opportunity, so a word joiner follows it to preserve punctilio's
+// non-breaking glue. The whitespace class excludes the thin space and word
+// joiner this pass inserts, so re-running the pass leaves its own output
+// unchanged.
 const fApostropheThinSpacePass = definePass(new RegExp(RIGHT_SINGLE_QUOTE, "gu"), (match, view) => {
   const prev = view.text[match.index - 1]
   if (prev === undefined || !/[ \t\n\u00A0]/.test(prev)) return null

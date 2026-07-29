@@ -206,6 +206,8 @@ describe("HTMLFormattingImprovement", () => {
       ["<h2>The summer of '24</h2>", `<h2>The summer of ${openedGap}</h2>`],
       // Markdown soft line break between "of" and the apostrophe.
       ["<p>the summer of\n'24. From</p>", `<p>the summer of\n${openedGap}. From</p>`],
+      // Display headings skip punctilio's NBSP pass, so a tab survives to here.
+      ["<h2>The summer of\t'24</h2>", `<h2>The summer of\t${openedGap}</h2>`],
       // "f" reached across an element boundary within the prose unit.
       ["<p><em>of</em> '24 was wild</p>", `<p><em>of</em>${NBSP}${openedGap} was${NBSP}wild</p>`],
       // Apostrophe at the start of the prose unit: nothing precedes it.
