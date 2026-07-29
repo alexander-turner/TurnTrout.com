@@ -261,9 +261,7 @@ function sanitizeNode(node: ElementContent, highlightId: string): ElementContent
   if (hasClass(node, NOWRAP_SPAN_CLASS)) {
     const children = sanitizeChildren(node.children, highlightId)
     if (!children.some((child) => child.type === "element" && isInlineAtom(child))) return children
-    const properties = { ...node.properties }
-    delete properties.id
-    return [{ ...node, properties, children }]
+    return [cloneWithoutId(node, children)]
   }
 
   // Preserve the pipeline's rendered inline atoms verbatim rather than
@@ -283,9 +281,14 @@ function sanitizeNode(node: ElementContent, highlightId: string): ElementContent
 
   if (node.tagName === "a") return sanitizeChildren(node.children, highlightId)
 
+  return [cloneWithoutId(node, sanitizeChildren(node.children, highlightId))]
+}
+
+/** Copies `node` with `children`, dropping the `id` that would collide with a page anchor. */
+function cloneWithoutId(node: Element, children: ElementContent[]): Element {
   const properties = { ...node.properties }
   delete properties.id
-  return [{ ...node, properties, children: sanitizeChildren(node.children, highlightId) }]
+  return { ...node, properties, children }
 }
 
 interface Measurement {

@@ -1641,12 +1641,7 @@ def check_tengwar_characters(soup: BeautifulSoup) -> list[str]:
 
 
 def _has_no_favicon_span_ancestor(favicon: Tag) -> bool:
-    """
-    Check if favicon has an ancestor with .no-favicon-span class.
-
-    The opt-out keeps its favicon-specific name: it marks demo and decorative
-    favicons, not every inline atom the nowrap span wraps.
-    """
+    """Check if favicon has an ancestor with .no-favicon-span class."""
     return any(
         "no-favicon-span" in script_utils.get_classes(parent)
         for parent in favicon.parents

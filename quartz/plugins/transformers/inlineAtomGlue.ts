@@ -42,7 +42,7 @@ export function isGlyphAtom(node: Text | Element | undefined): boolean {
 }
 
 /** True for a span carrying the shared nowrap class. */
-export function isNowrapSpan(node: Text | Element | undefined): boolean {
+export function isNowrapSpan(node: ElementContent | undefined): boolean {
   return node?.type === "element" && node.tagName === "span" && hasClass(node, NOWRAP_SPAN_CLASS)
 }
 
@@ -116,6 +116,10 @@ function asNowrapSpan(
  * another element — keeps its left break opportunity, so emoji sequences still
  * wrap. Idempotent: a re-run sees spans rather than bare atoms.
  *
+ * Gluing reaches siblings only. A span cannot span an element boundary, so an
+ * atom ending an inline wrapper (`<em>word 🐟</em>”`) leaves the quote outside;
+ * for links, `rearrangeLinkPunctuation` has already moved trailing quotes in.
+ *
  * @param nodes - A parent's inline children, in document order
  * @returns The children with glue spans spliced in
  */
@@ -153,13 +157,18 @@ export function glueNodeSequence(nodes: (Text | Element)[]): (Text | Element)[] 
   return glued
 }
 
+// Whitespace is content inside these, so folding a newline into an NBSP would
+// weld two source lines together. Nothing in them wraps on a quote either.
+const preformattedTags: ReadonlySet<string> = new Set(["pre", "code"])
+
 /**
  * Applies `glueNodeSequence` to every element's children. A nowrap span's own
  * children are already one unbreakable run, so it is skipped entirely.
  */
 export function glueInlineAtoms(tree: Root): void {
+  tree.children = glueNodeSequence(tree.children as (Text | Element)[]) as ElementContent[]
   visit(tree, "element", (node: Element) => {
-    if (isNowrapSpan(node)) return SKIP
+    if (isNowrapSpan(node) || preformattedTags.has(node.tagName)) return SKIP
     node.children = glueNodeSequence(node.children as (Text | Element)[]) as ElementContent[]
     return undefined
   })

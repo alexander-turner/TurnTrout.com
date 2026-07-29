@@ -582,7 +582,7 @@ describe("insertFavicon", () => {
         let found: string | undefined
         visit(node, "element", (el: Element) => {
           const cls = el.properties?.class
-          if (typeof cls === "string" && cls.includes("favicon") && !cls.includes("nowrap-span")) {
+          if (typeof cls === "string" && cls.includes("favicon")) {
             found = cls
           }
         })

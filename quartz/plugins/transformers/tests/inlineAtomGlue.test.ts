@@ -207,6 +207,18 @@ describe("glueInlineAtoms", () => {
     expect(tree.children[0]).toEqual(h("p", [glueSpan(text("xt"), favicon())]))
   })
 
+  it.each(["pre", "code"])("leaves %s subtrees alone, where whitespace is content", (tag) => {
+    const tree: Root = { type: "root", children: [h(tag, [text("line1\n"), emoji()])] }
+    glueInlineAtoms(tree)
+    expect(tree.children[0]).toEqual(h(tag, [text("line1\n"), emoji()]))
+  })
+
+  it("glues the root's own children", () => {
+    const tree: Root = { type: "root", children: [text("Hi "), emoji()] }
+    glueInlineAtoms(tree)
+    expect(tree.children).toEqual([text("Hi"), glueSpan(text(NBSP), emoji())])
+  })
+
   it("is idempotent", () => {
     const tree = treeOf(text('the chevron "'), sprite(), text('" moves'))
     glueInlineAtoms(tree)

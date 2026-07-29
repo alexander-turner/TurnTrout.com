@@ -12,7 +12,6 @@ import {
   cdnBaseUrl,
   defaultPath,
   HEADING_TAGS,
-  NOWRAP_SPAN_CLASS,
   simpleConstants,
   specialFaviconPaths,
 } from "../../components/constants"
@@ -23,6 +22,7 @@ import {
   normalizeHostname,
 } from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
+import { isNowrapSpan } from "./inlineAtomGlue"
 import { addClass, createNowrapSpan, hasClass, ITALIC_TAGS, spliceAndWrapLastChars } from "./utils"
 
 const { minFaviconCount, faviconFolder } = simpleConstants
@@ -378,12 +378,8 @@ export function maybeSpliceText(
     return createNowrapSpan([{ type: "text", value: "" }, imgNodeToAppend])
   }
 
-  if (
-    lastChild.type === "element" &&
-    lastChild.tagName === "span" &&
-    hasClass(lastChild, NOWRAP_SPAN_CLASS)
-  ) {
-    lastChild.children.push(imgNodeToAppend)
+  if (isNowrapSpan(lastChild)) {
+    ;(lastChild as Element).children.push(imgNodeToAppend)
     return null
   }
 

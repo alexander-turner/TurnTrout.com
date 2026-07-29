@@ -6,6 +6,12 @@
 // joiner can reach.
 .nowrap-span {
   white-space: nowrap;
+
+  // Inline math breaks only between its `.base` spans. The box holds the quote
+  // to the math's right edge; the math itself is free to wrap internally.
+  .katex {
+    white-space: normal;
+  }
 }
 
 // Groups a favicon-ending link with its trailing footnote reference so the

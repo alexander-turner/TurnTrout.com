@@ -18,12 +18,18 @@ test.describe("inline atom quote wrapping", () => {
     // Both the opening and the closing curly quote share the emoji's span.
     expect(spanText).toBe("“”")
 
-    const sprite = page.locator('p img.inline-img[alt="green dot"]').first()
+    const sprite = page.locator('p img.inline-img[alt="green dot"]')
     await expect(sprite).toHaveCount(1)
     const spriteSpanText = await sprite.evaluate(
       (img) => img.closest(".nowrap-span")?.textContent ?? null,
     )
     expect(spriteSpanText).toBe("“”")
+
+    // A favicon reaches its closing quote by a different route: the quote is
+    // moved inside the link before the icon is spliced in beside it.
+    const favicon = page.locator('p a[href*="arxiv.org/abs/1912.01217"] .nowrap-span')
+    await expect(favicon).toHaveCount(1)
+    expect(await favicon.evaluate((span) => span.textContent)).toContain("”")
   })
 
   test("a quote falls through the box edge, a bracket does not", async ({ page }) => {
