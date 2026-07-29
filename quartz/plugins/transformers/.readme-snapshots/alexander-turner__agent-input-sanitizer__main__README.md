@@ -1,4 +1,4 @@
-# `agent-input-sanitizer`
+# `agent-sanitizer`
 
 Most prompt-injection tools run a classifier _over_ the text and hope it
 generalizes. This library targets a narrower, verifiable claim: the
@@ -8,13 +8,13 @@ payload the operator can't see but the model still reads. Every layer is a
 deterministic transform you can unit-test with equality assertions.
 
 ```sh
-npm install agent-input-sanitizer
+npm install agent-sanitizer
 ```
 
 ## Quick start
 
 ```js
-import { sanitize } from "agent-input-sanitizer";
+import { sanitize } from "agent-sanitizer";
 
 // Layer 1 (invisible chars + ANSI), zero heavy deps:
 const { cleaned, found, warnings } = await sanitize(untrustedText);
@@ -96,7 +96,7 @@ library covers, and that gap is exactly where invisible-Unicode and
 hidden-HTML payloads live—content a semantic classifier never "sees" as
 suspicious because it renders as blank space or doesn't render at all.
 
-|                               | `agent-input-sanitizer`                                                                                                  | Semantic guard/classifier (Lakera, Prompt Guard, Rebuff, NeMo rails)                                       | PII redactor (Presidio)                                      |
+|                               | `agent-sanitizer`                                                                                                        | Semantic guard/classifier (Lakera, Prompt Guard, Rebuff, NeMo rails)                                       | PII redactor (Presidio)                                      |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | **What it catches**           | Payload-capable invisible chars, ANSI/SGR, hidden HTML, confusable glyphs, exfil-shaped URLs                             | Malicious _intent_—jailbreaks, injected instructions, off-topic asks                                       | Names, emails, SSNs, and other PII spans                     |
 | **How it decides**            | Deterministic parsing/regex over real tokenizer output—no model call                                                     | ML/LLM classification—probabilistic, needs a threshold and retuning as attacks shift                       | NER + pattern matching                                       |
@@ -115,14 +115,10 @@ riding along in RAG context, that's the gap this library closes.
 ### Examples
 
 ```js
-import { stripInvisibleWithReport } from "agent-input-sanitizer/invisible";
+import { stripInvisibleWithReport } from "agent-sanitizer/invisible";
 const { cleaned, found } = stripInvisibleWithReport(text); // found: ["variation-selectors"]
 
-import {
-  sanitizeHtml,
-  detectExfil,
-  checkExfilUrl,
-} from "agent-input-sanitizer/html";
+import { sanitizeHtml, detectExfil, checkExfilUrl } from "agent-sanitizer/html";
 sanitizeHtml(pageSource); // { text, removed, warned } | null — text may be unchanged if only reportable (not strippable) tags were found
 detectExfil(pageSource); // [{ isImage, reason, target }] or null
 checkExfilUrl(oneUrl); // reason string or null
@@ -132,26 +128,23 @@ The agent-pipeline entry points take plain arguments and inject their
 agent-specific seam:
 
 ```js
-import { normalizeConfusables } from "agent-input-sanitizer/confusables";
+import { normalizeConfusables } from "agent-sanitizer/confusables";
 normalizeConfusables(
   "Bash",
   { command: "/аpt update" },
   { scan: (t) => myHomoglyphEngine.scan(t) }, // -> { findings: [{ index, char, latinEquivalent }] }
 ); // null, or { updatedInput, normalized }
 
-import {
-  scanInstructionFiles,
-  cleanFile,
-} from "agent-input-sanitizer/instructions";
+import { scanInstructionFiles, cleanFile } from "agent-sanitizer/instructions";
 const findings = scanInstructionFiles(["CLAUDE.md", "**/SKILL.md"], {
   cwd: projectDir,
 });
 for (const { file } of findings) cleanFile(`${projectDir}/${file}`);
 
-import { classifyPrompt } from "agent-input-sanitizer/prompt";
+import { classifyPrompt } from "agent-sanitizer/prompt";
 classifyPrompt(submittedPrompt); // { action: "pass" | "note" | "block", reason? }
 
-import { sanitizeText } from "agent-input-sanitizer/output";
+import { sanitizeText } from "agent-sanitizer/output";
 await sanitizeText(toolText, {
   html: isWebPage,
   exfilScan: isUntrustedIngress,
@@ -161,7 +154,7 @@ await sanitizeText(toolText, {
   //   warning:     a FILTER_WARNING enum CODE, never free text (see below)
 });
 
-import { rehydrateRedacted } from "agent-input-sanitizer/rehydrate";
+import { rehydrateRedacted } from "agent-sanitizer/rehydrate";
 await rehydrateRedacted("Edit", toolInput, {
   readFile: (p) => fs.readFileSync(p, "utf8"),
   redactMap: (t) => myRedactor.map(t), // -> { text, pairs } | { unmappable }
@@ -215,7 +208,7 @@ paid **once per process**; Layer-1 calls stay one-shot. `persist=True/False`
 forces the mode and `shutdown_worker()` (also an `atexit` hook) stops it.
 
 ```python
-from agent_input_sanitizer import sanitize, Sanitizer
+from agent_sanitizer import sanitize, Sanitizer
 
 sanitize(untrusted_text)          # Layer 1, one-shot
 sanitize(page_source, html=True)  # HTML layers, warm worker reused

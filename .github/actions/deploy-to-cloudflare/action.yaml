@@ -27,9 +27,16 @@ runs:
     - name: Install pnpm
       uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
 
+    # The registry serves Wrangler's platform binary from a CDN that
+    # intermittently stalls; pnpm's own retries share one aborted request budget
+    # and give up together. A fresh install re-resolves the download.
     - name: Install Wrangler
-      run: pnpm install wrangler@3.99.0
-      shell: bash
+      uses: ./.github/actions/retry-external
+      with:
+        command: pnpm install wrangler@3.99.0
+        max-attempts: "4"
+        initial-delay-seconds: "5"
+        timeout-minutes: "5"
 
     - name: Deploy to Cloudflare Pages
       uses: ./.github/actions/retry-external

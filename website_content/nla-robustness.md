@@ -16,7 +16,7 @@ aliases:
   - robust-nlas
 original_url: https://www.lesswrong.com/posts/LQXWiF8PyJ5ojNsEv/how-robust-are-natural-language-autoencoders-to
 date_published: 2026-07-09
-date_updated: 2026-07-12
+date_updated: 2026-07-28
 ---
 
 Natural language autoencoders are meant to take in an LLM's activation vector and describe in plain text what the model is thinking. However, its training data collection involves asking Claude to guess what a model might be thinking. How robust are NLAs to these guesses? We change Claude's guesses in various ways and measure the impact on the NLA's statements as well as on reconstruction accuracy. We show that Qwen2.5-7B NLAs have some robustness to irrelevant statements and prevailing sentiments in Claude's guesses.
@@ -157,7 +157,7 @@ On the other hand, while almost all of the implausible-initialized NLA's claims 
 
 ## The outputs of plausible-initialized and implausible-initialized NLAs
 
-To give the reader a feel for what outputs are like, we provide a  test-set snippet.
+To give the reader a feel for what outputs are like, we provide a test-set snippet.
 
 > [!quote] An input from the test set
 > A great way to augment exercise is to use Manual Resistance immediately after exiting a training device. This approach to strengthening can further target the muscles involved in the movement. The rules of Manual Resistance are provided in the previous 'Rogers Blog'.

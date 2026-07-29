@@ -3,12 +3,11 @@ import type { Element, ElementContent, Parent, Root, Text } from "hast"
 import { h } from "hastscript"
 import {
   definePass,
-  hyphenReplace,
-  nbspTransform,
-  niceQuotes,
   type ProsePass,
   type ProseView,
-  symbolTransform,
+  transform,
+  type TransformOptions,
+  transformView,
   withProseView,
 } from "punctilio"
 import {
@@ -27,6 +26,7 @@ import type { ElementMaybeWithParent } from "./utils"
 import {
   charsToMoveIntoLinkFromRight,
   HAIR_SPACE,
+  LEFT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
   NBSP,
   RIGHT_SINGLE_QUOTE,
@@ -36,6 +36,7 @@ import {
 import { type QuartzTransformerPlugin } from "../types"
 import { isHeading } from "./favicons"
 import {
+  type CharSpan,
   fractionRegex,
   hasAncestor,
   hasClass,
@@ -287,7 +288,97 @@ export function kernSpacedSlashes(tree: Root): void {
     }
   })
   for (const { parent, node, offsets } of ops) {
-    wrapCharsInSpan(parent, node, offsets, "slash-gap-after")
+    wrapCharsInSpan(
+      parent,
+      node,
+      offsets.map((offset) => ({ offset, className: "slash-gap-after" })),
+    )
+  }
+}
+
+// Glyphs whose ink reaches past their own advance width, mapped to the class
+// that pulls a following mark back out to where an ordinary letter would place
+// it. Against EB Garamond's typical right side bearing (~45 units of its 2048
+// em), "f" falls 307 units short and "Q" 244.
+const OVERHANG_KERN_CLASSES: ReadonlyMap<string, string> = new Map([
+  ["f", "overhang-kern-f"],
+  ["Q", "overhang-kern-q"],
+])
+
+const OVERHANG_KERN_CLASS_NAMES: readonly string[] = [...OVERHANG_KERN_CLASSES.values()]
+
+// Marks whose ink starts high and tight against their left edge, so they land
+// inside that overhang rather than clearing it and the pair reads as glued
+// ("of ’24", "if ‘x"). The font's kern pairs cannot reach across the word
+// space separating them.
+const CROWDED_AFTER_OVERHANG: ReadonlySet<string> = new Set([
+  RIGHT_SINGLE_QUOTE,
+  LEFT_SINGLE_QUOTE,
+  LEFT_DOUBLE_QUOTE,
+  "(",
+  "[",
+  "{",
+])
+
+const OVERHANG_GAP_SPACES: ReadonlySet<string> = new Set([" ", "\t", "\n", NBSP])
+
+/**
+ * The first two characters rendered after ``node``, ascending out of inline
+ * wrappers so the mark is found across an element boundary ("<em>of</em> ’24")
+ * but never across a block boundary.
+ */
+function followingChars(ancestors: readonly Parent[], node: Text): string {
+  let text = ""
+  let child: Parent | Text = node
+  for (let i = ancestors.length - 1; i >= 0 && text.length < 2; i--) {
+    const parent = ancestors[i]
+    const index = parent.children.indexOf(child as ElementContent)
+    for (let j = index + 1; j < parent.children.length && text.length < 2; j++) {
+      const sibling = parent.children[j]
+      if (sibling.type === "text") {
+        text += sibling.value
+      } else if (sibling.type === "element") {
+        text += getTextContent(sibling)
+      }
+    }
+    if (parent.type !== "element" || !INLINE_PASSTHROUGH_TAGS.has((parent as Element).tagName)) {
+      break
+    }
+    child = parent
+  }
+  return text.slice(0, 2)
+}
+
+/**
+ * Widen the word space between an overhanging glyph and a crowded mark.
+ *
+ * The gap is opened with a margin rather than an inserted space character, so
+ * the text a reader searches for, selects, or copies is still "of ’24", and it
+ * rides the overhanging glyph's trailing edge so a line breaking at that space
+ * leaves the mark flush with the line start. Wrapping only the glyph leaves the
+ * space itself intact as the line-break opportunity.
+ */
+export function kernOverhangBeforeMarks(tree: Root): void {
+  const ops: { parent: Parent; node: Text; spans: CharSpan[] }[] = []
+  visitParents(tree, "text", (node: Text, ancestors) => {
+    // A glyph already inside a kern span keeps its lookahead — the mark is
+    // still there — so re-running the pass must not nest a second span.
+    const skip = (ancestor: Element) =>
+      toSkip(ancestor) || OVERHANG_KERN_CLASS_NAMES.some((name) => hasClass(ancestor, name))
+    if (ancestors.some((ancestor) => skip(ancestor as Element))) return
+    const parent = ancestors[ancestors.length - 1] as Parent
+    const context = node.value + followingChars(ancestors as readonly Parent[], node)
+    const spans: CharSpan[] = []
+    for (let i = 0; i < node.value.length; i++) {
+      const className = OVERHANG_KERN_CLASSES.get(node.value[i])
+      if (className === undefined) continue
+      if (!OVERHANG_GAP_SPACES.has(context[i + 1])) continue
+      if (CROWDED_AFTER_OVERHANG.has(context[i + 2])) spans.push({ offset: i, className })
+    }
+    if (spans.length > 0) ops.push({ parent, node, spans })
+  })
+  for (const { parent, node, spans } of ops) {
+    wrapCharsInSpan(parent, node, spans)
   }
 }
 
@@ -341,28 +432,30 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
   })
 }
 
-// Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
-function symbolTransformNoArrows(input: string): string
-function symbolTransformNoArrows(input: ProseView): void
-function symbolTransformNoArrows(input: string | ProseView): string | void {
-  if (typeof input === "string") {
-    return symbolTransform(input, { includeArrows: false })
+// punctilio's full pipeline as a single boundary-aware ProsePass: string in →
+// string out, ProseView in → edits committed in place (e.g., niceQuotes won't
+// pair quotes across element boundaries). Pass ordering is punctilio's to own —
+// it is load-bearing, and each rule is written assuming the state the earlier
+// ones leave behind.
+function punctilioPass(options: TransformOptions): ProsePass {
+  function pass(input: string): string
+  function pass(input: ProseView): void
+  function pass(input: string | ProseView): string | void {
+    if (typeof input === "string") {
+      return transform(input, options)
+    }
+    transformView(input, options)
+    return undefined
   }
-  symbolTransform(input, { includeArrows: false })
-  return undefined
+  return pass
 }
 
-// These lists are automatically added to both applyTextTransforms and the main HTML transforms.
-// Each entry is a boundary-aware ProsePass: string in → string out, ProseView in → edits
-// committed in place (e.g., niceQuotes won't pair quotes across element boundaries).
-const uncheckedTextTransformers: readonly ProsePass[] = [
-  hyphenReplace,
-  // niceQuotes converts primes first (5'10" → 5′10″) before quote processing
-  niceQuotes,
-  symbolTransformNoArrows,
-  // Non-breaking spaces: prevents orphans, keeps numbers with units, etc.
-  nbspTransform,
-]
+// Arrows are disabled: the site uses its own formatArrows.
+const punctilioOptions: TransformOptions = { includeArrows: false }
+const punctilioTransform = punctilioPass(punctilioOptions)
+// Non-breaking spaces prevent natural line-breaking, which looks bad in
+// display headings.
+const punctilioTransformNoNbsp = punctilioPass({ ...punctilioOptions, nbsp: false })
 
 // Glue a word joiner before em/en dashes so they can never be the first glyph
 // on a wrapped line. Boundary decision: an element boundary immediately
@@ -436,14 +529,10 @@ const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransfo
 export function applyTextTransforms(text: string, options: { useNbsp?: boolean } = {}): string {
   const { useNbsp = true } = options
 
-  // Filter out nbspTransform if useNbsp is false
-  const textTransformers = useNbsp
-    ? uncheckedTextTransformers
-    : uncheckedTextTransformers.filter((t) => t !== nbspTransform)
-
   for (const transformer of [
     ...checkedTextTransformers,
-    ...textTransformers,
+    useNbsp ? punctilioTransform : punctilioTransformNoNbsp,
+    // ToC entries, excerpts, and titles render in the same face as body prose.
     spacesAroundSlashes,
   ]) {
     text = transformer(text)
@@ -1156,13 +1245,10 @@ export const improveFormatting = (
       unitsToTransform.forEach((unit) => {
         const unitElement = unit.kind === "run" ? unit.container : unit.element
         const inDisplayHeading = nodeInDisplayHeading || isDisplayHeading(unitElement)
-        const activeUncheckedTransformers = inDisplayHeading
-          ? uncheckedTextTransformers.filter((t) => t !== nbspTransform)
-          : uncheckedTextTransformers
 
         const passes: PassEntry[] = [
           ...checkedTextPasses,
-          ...activeUncheckedTransformers,
+          inDisplayHeading ? punctilioTransformNoNbsp : punctilioTransform,
           // Runs after dash conversion so freshly created dashes get glued.
           dashWordJoinerPass,
         ]
@@ -1193,6 +1279,8 @@ export const improveFormatting = (
     kernItalicBeforePunctuation(tree)
     // After slash spacing, so every separator slash is flanked and wrappable.
     kernSpacedSlashes(tree)
+    // After the quote and NBSP passes, so marks are curled and spaces final.
+    kernOverhangBeforeMarks(tree)
     removeSpaceBeforeFootnotes(tree)
   }
 }

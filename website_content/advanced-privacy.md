@@ -18,7 +18,7 @@ aliases:
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 date_published: 2025-11-06
-date_updated: 2026-06-28
+date_updated: 2026-07-29
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -50,7 +50,7 @@ This guide _is not sufficient to protect you against targeted investigation_. Th
 
 ## Protect your network, not just yourself
 
-Other people are at risk too. Optimize your setup to leak as little information as possible about your friends, family, and colleagues. For example, using E2EE [Proton Calendar](/privacy-despite-authoritarianism#schedule-with-proton-calendar) and E2EE contact management with [EteSync](/privacy-despite-authoritarianism#secure-your-address-book-with-etesync) means that the government can't figure out who you're  meeting with by just demanding data from your cloud calendar provider.
+Other people are at risk too. Optimize your setup to leak as little information as possible about your friends, family, and colleagues. For example, using E2EE [Proton Calendar](/privacy-despite-authoritarianism#schedule-with-proton-calendar) and E2EE contact management with [EteSync](/privacy-despite-authoritarianism#secure-your-address-book-with-etesync) means that the government can't figure out who you're meeting with by just demanding data from your cloud calendar provider.
 
 ## Know your rights
 
@@ -251,10 +251,10 @@ Subtitle: Cost: \$130. Time: 10 hours. Optional, but make sure you secure your s
 
 I love my Google Home setup but it sends data home which isn't E2EE. The solutions: either _stop_ using always-listening devices or switch to the open source [Home Assistant](https://www.home-assistant.io/) platform.
 
-- [ ]  Disable the microphones on any Google Home or Amazon Echo devices.  These devices can still work with Home Assistant, but you might want to turn them off until you get that set up.
+- [ ] Disable the microphones on any Google Home or Amazon Echo devices.  These devices can still work with Home Assistant, but you might want to turn them off until you get that set up.
   - [ ] Alternatively, block them from phoning home [at the router level using AdGuard](#buy-a-router-that-respects-you).
-- [ ]  Purchase the [Home Assistant Green](https://www.home-assistant.io/green) for \$130.
-- [ ]  Follow the included instructions.  Make sure to look around for videos which explain the application. It's not totally intuitive.
+- [ ] Purchase the [Home Assistant Green](https://www.home-assistant.io/green) for \$130.
+- [ ] Follow the included instructions.  Make sure to look around for videos which explain the application. It's not totally intuitive.
 
 ## Run an Apple TV instead of your normal smart TV
 
@@ -794,7 +794,7 @@ iCloud (with ADP) doesn't work because I want complete incremental backup of all
 
 I instead started using [Duplicati](https://duplicati.com/) to send encrypted backup data to [Backblaze B2 storage](https://www.backblaze.com/cloud-storage) on an hourly basis. I start the server on startup and it automatically backs everything up. If you want, you can [download my configuration template](https://assets.turntrout.com/duplicati.json).
 
-I also have local Time Machine backups on an external hard drive. These backups are also encrypted, so  if an adversary grabbed my drive, they wouldn't be able to read my data. As usual, I store the encryption keys in my Bitwarden.
+I also have local Time Machine backups on an external hard drive. These backups are also encrypted, so if an adversary grabbed my drive, they wouldn't be able to read my data. As usual, I store the encryption keys in my Bitwarden.
 
 ## Protect against geo-guessing
 

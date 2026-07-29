@@ -373,6 +373,28 @@ article[data-use-dropcap="true"] > p:first-of-type .small-caps {
   margin-right: 0.125em;
 }
 
+// Inline code's monospace glyph crowds the word before it. The width matches
+// the hair space this gap replaced (20/2048 em in EB Garamond). Like
+// `.slash-gap-after`, the margin is inert at a line end, so code that wraps to a
+// line start stays flush.
+.code-gap-after {
+  margin-right: 0.0098em;
+}
+
+// EB Garamond's "f" and "Q" reach past their advance width, so a mark whose ink
+// starts high and tight against its left edge lands inside the overhang and the
+// pair reads as glued. Restore the shortfall against an ordinary right side
+// bearing: 307/2048 em after "f", 244/2048 after "Q". Like `.slash-gap-after`,
+// the margin is inert at a line end, so a mark that wraps to a line start stays
+// flush.
+.overhang-kern-f {
+  margin-right: 0.15em;
+}
+
+.overhang-kern-q {
+  margin-right: 0.12em;
+}
+
 /* Set monospace font for code blocks, inline code, etc. */
 code,
 pre {
