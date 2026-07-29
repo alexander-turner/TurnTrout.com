@@ -196,22 +196,30 @@ describe("HTMLFormattingImprovement", () => {
   })
 
   describe("Elision apostrophe after f", () => {
+    const bodyProseInput = "<p>the summer of '24. From</p>"
+    const openedGap = `${THIN_SPACE}${WORD_JOINER}’24`
+
     it.each([
-      // Body prose: punctilio's NBSP precedes the thin space.
-      ["<p>the summer of '24. From</p>", `<p>the summer of ${THIN_SPACE}’24. From</p>`],
-      // Display heading: the plain space is kept, still opened with a thin space.
-      ["<h2>The summer of '24</h2>", `<h2>The summer of ${THIN_SPACE}’24</h2>`],
+      // Body prose: punctilio's NBSP glue precedes the thin space.
+      [bodyProseInput, `<p>the summer of${NBSP}${openedGap}. From</p>`],
+      // Display heading: the plain space is kept, still opened.
+      ["<h2>The summer of '24</h2>", `<h2>The summer of ${openedGap}</h2>`],
+      // Markdown soft line break between "of" and the apostrophe.
+      ["<p>the summer of\n'24. From</p>", `<p>the summer of\n${openedGap}. From</p>`],
+      // "f" reached across an element boundary within the prose unit.
+      ["<p><em>of</em> '24 was wild</p>", `<p><em>of</em>${NBSP}${openedGap} was${NBSP}wild</p>`],
+      // Apostrophe at the start of the prose unit: nothing precedes it.
+      ["<p>'24 was wild</p>", `<p>’24 was${NBSP}wild</p>`],
       // Preceding word does not end in "f": untouched.
-      ["<p>I was born in '94. Nice</p>", "<p>I was born in ’94. Nice</p>"],
+      ["<p>I was born in '94. Nice</p>", `<p>I${NBSP}was born in${NBSP}’94. Nice</p>`],
       // No space before the apostrophe: untouched.
-      ["<p>don't stop</p>", "<p>don’t stop</p>"],
+      ["<p>don't stop</p>", `<p>don’t${NBSP}stop</p>`],
     ])("opens the f–apostrophe gap: %s", (input, expected) => {
-      const processedHtml = testHtmlFormattingImprovement(input)
-      expect(normalizeNbsp(processedHtml)).toBe(expected)
+      expect(testHtmlFormattingImprovement(input)).toBe(expected)
     })
 
     it("is idempotent", () => {
-      const once = testHtmlFormattingImprovement("<p>the summer of '24. From</p>")
+      const once = testHtmlFormattingImprovement(bodyProseInput)
       expect(testHtmlFormattingImprovement(once)).toBe(once)
     })
   })

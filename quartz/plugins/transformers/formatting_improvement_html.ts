@@ -428,15 +428,18 @@ const hyphenWordJoinerPass = definePass(/-/g, (match, view) => {
 // the same vertical band the apostrophe's ink occupies, so across a plain
 // space ("of ’24") the two glyphs read as glued together. The font's f’ kern
 // pair can't reach across the intervening space, so open the gap with a thin
-// space (~0.1em in this font; its hair space is a near-zero 0.01em). An
-// apostrophe after a space is always an elision mark (’24, ’tis) — a quote
-// opening there would be ‘. Idempotent: once inserted, the character before
-// the apostrophe is the thin space, which fails the space test.
-const fGapApostrophePass = definePass(new RegExp(RIGHT_SINGLE_QUOTE, "gu"), (match, view) => {
-  const space = view.text[match.index - 1]
-  if (space !== " " && space !== NBSP) return null
+// space (~0.1em in this font). An apostrophe after a space is always an
+// elision mark (’24, ’tis) — a quote opening there would be ‘. The thin
+// space is a break opportunity, so a word joiner follows it to keep
+// punctilio's non-breaking glue intact. The whitespace test is an explicit
+// character class: JS \s would match the thin space itself and break
+// idempotency — once inserted, the character before the apostrophe is the
+// word joiner, which fails the test.
+const fApostropheThinSpacePass = definePass(new RegExp(RIGHT_SINGLE_QUOTE, "gu"), (match, view) => {
+  const prev = view.text[match.index - 1]
+  if (prev === undefined || !/[ \t\n\u00A0]/.test(prev)) return null
   if (view.text[match.index - 2] !== "f") return null
-  return `${THIN_SPACE}${match[0]}`
+  return `${THIN_SPACE}${WORD_JOINER}${match[0]}`
 })
 
 // Simple find-and-replace transforms local to this site (punctilio handles the rest)
@@ -1175,7 +1178,7 @@ export const improveFormatting = (
           // Runs after dash conversion so freshly created dashes get glued.
           dashWordJoinerPass,
           // Runs after quote conversion so straight '24 has become ’24.
-          fGapApostrophePass,
+          fApostropheThinSpacePass,
         ]
 
         // Don't replace slashes in fractions or link text; loose runs are neither.
