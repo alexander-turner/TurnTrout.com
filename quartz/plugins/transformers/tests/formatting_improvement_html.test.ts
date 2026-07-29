@@ -1071,6 +1071,16 @@ describe("rearrangeLinkPunctuation", () => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
+
+    // A nowrap-span around a glyph atom is the mirror case: its leading
+    // character is the atom's glue partner, so moving it into the link would
+    // leave the atom alone in the span and free to wrap by itself.
+    it("should leave a nowrap-span's glue character with its emoji", () => {
+      const input =
+        '<p>Some <a href="/alignment-tier-list">link</a><span class="nowrap-span">.<img class="emoji" alt="🐟"></span> done</p>'
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(normalizeNbsp(processedHtml)).toBe(input)
+    })
   })
 
   describe("End-to-end HTML formatting improvement", () => {

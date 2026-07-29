@@ -77,13 +77,6 @@ describe("glueNodeSequence", () => {
     expect(glueNodeSequence([text("Hi("), atom])).toEqual([text("Hi"), glueSpan(text("("), atom)])
   })
 
-  it("converts a word's trailing space to a non-breaking space", () => {
-    expect(glueNodeSequence([text("Hi "), emoji()])).toEqual([
-      text("Hi"),
-      glueSpan(text(NBSP), emoji()),
-    ])
-  })
-
   it("drops a text node that becomes empty after pulling its only character", () => {
     expect(glueNodeSequence([text("("), emoji()])).toEqual([glueSpan(text("("), emoji())])
   })
@@ -93,15 +86,15 @@ describe("glueNodeSequence", () => {
     expect(glueNodeSequence(nodes)).toEqual(nodes)
   })
 
-  it.each([
-    ["a newline", "Hi\n"],
-    ["a tab", "Hi\t"],
-  ])("collapses %s after a word into a non-breaking space", (_name, value) => {
-    expect(glueNodeSequence([text(value), emoji()])).toEqual([
-      text("Hi"),
-      glueSpan(text(NBSP), emoji()),
-    ])
-  })
+  it.each([" ", "\n", "\t"])(
+    "collapses a word's trailing whitespace %j into a non-breaking space",
+    (space) => {
+      expect(glueNodeSequence([text(`Hi${space}`), emoji()])).toEqual([
+        text("Hi"),
+        glueSpan(text(NBSP), emoji()),
+      ])
+    },
+  )
 
   it.each([
     ["an astral character", "Zoe \u{1D538}", "Zoe ", "\u{1D538}"],
