@@ -5,6 +5,7 @@ Removes regions that produce false-positive lint hits:
 
 - `[!quote]` callout blocks (external authors, foreign quotes)
 - LaTeX math (`$...$` inline and `$$...$$` display)
+- footnote labels (`[^label]`), which name a footnote rather than render as prose
 
 Replaces stripped regions with blank lines / spaces to preserve line and
 column numbers, so reported error positions still match the original source.
@@ -42,6 +43,9 @@ _MATH_RE = re.compile(
     r"(?<!\\)\$\$.*?(?<!\\)\$\$|(?<!\\)\$(?:[^$\n\\]|\\.)+?(?<!\\)\$",
     re.DOTALL,
 )
+
+# Footnote reference/definition label: `[^label]`, optionally followed by `:`.
+_FOOTNOTE_LABEL_RE = re.compile(r"\[\^(?P<label>[^\]\s]+)\]")
 
 # Dropcap span/div pattern: `<span class="dropcap" ...>L</span>` followed
 # by the rest of the word. Replacing the whole tag with just the inner
@@ -171,9 +175,27 @@ def strip_callout_markers(text: str) -> str:
     return _CALLOUT_MARKER_RE.sub(_replace, text)
 
 
+def strip_footnote_labels(text: str) -> str:
+    """
+    Replace the label inside footnote references and definitions with digits.
+
+    A label such as `[^fatebook]` names a footnote and never renders as prose,
+    but the spellchecker's markdown parser reads it as text and reports any
+    label that isn't a dictionary word. Digits keep the construct shaped like a
+    label — so the surrounding markdown parses the same way — while giving
+    retext no word to check, and preserve line and column counts.
+    """
+
+    def _replace(match: re.Match[str]) -> str:
+        return f"[^{'0' * len(match.group('label'))}]"
+
+    return _FOOTNOTE_LABEL_RE.sub(_replace, text)
+
+
 _LINT_STRIPPERS: tuple[Callable[[str], str], ...] = (
     strip_quote_blocks,
     strip_callout_markers,
+    strip_footnote_labels,
     strip_math,
     strip_dropcap_tags,
 )
