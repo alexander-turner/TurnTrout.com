@@ -19,7 +19,6 @@ from ..utils import (
     LEFT_SINGLE_QUOTE,
     NBSP,
     RIGHT_SINGLE_QUOTE,
-    THIN_SPACE,
     WORD_JOINER,
     ZERO_WIDTH_NBSP,
     ZERO_WIDTH_SPACE,
@@ -2069,21 +2068,6 @@ def test_check_spacing_ignores_word_joiner_before_em_dash():
     space."""
     soup = BeautifulSoup(
         f"<p><em>values</em>{WORD_JOINER}—it is</p>", "html.parser"
-    )
-    em_element = soup.find("em")
-    assert isinstance(em_element, Tag)
-
-    result = built_site_checks.check_spacing(
-        em_element, built_site_checks.ALLOWED_ELT_FOLLOWING_CHARS, "after"
-    )
-    assert result == []
-
-
-def test_check_spacing_allows_thin_space_before_elision_apostrophe():
-    """The f-apostrophe gap puts a thin space right after a closing inline
-    element; that is real spacing, not a missing space."""
-    soup = BeautifulSoup(
-        f"<p>one <em>of</em>{THIN_SPACE}{NBSP}’24 was wild</p>", "html.parser"
     )
     em_element = soup.find("em")
     assert isinstance(em_element, Tag)
@@ -5952,12 +5936,6 @@ def test_check_unrendered_emoticons(html, expected):
         (
             f"title with{built_site_checks.NBSP}non-breaking{built_site_checks.NBSP}spaces",
             "title with non-breaking spaces",
-        ),
-        # The f-apostrophe gap folds back to a single space
-        (
-            f"the summer of{built_site_checks.THIN_SPACE}"
-            f"{built_site_checks.NBSP}\u201924",
-            'the summer of "24',
         ),
         # Em-dash normalization
         ("computations\u2014do transformers", "computations - do transformers"),

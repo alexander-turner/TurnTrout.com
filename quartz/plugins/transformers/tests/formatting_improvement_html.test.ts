@@ -22,7 +22,6 @@ import {
   normalizeNbsp,
   RIGHT_DOUBLE_QUOTE,
   RIGHT_SINGLE_QUOTE,
-  THIN_SPACE,
   WORD_JOINER,
 } from "../../../components/constants"
 import {
@@ -197,47 +196,54 @@ describe("HTMLFormattingImprovement", () => {
 
   describe("Overhang crowding before opening marks", () => {
     const bodyProseInput = "<p>the summer of '24. From</p>"
+    const kernF = (mark: string) => `<span class="overhang-kern-f">${mark}</span>`
+    const kernQ = (mark: string) => `<span class="overhang-kern-q">${mark}</span>`
+
     it.each([
-      // Body prose: the thin space precedes punctilio's NBSP glue.
-      [bodyProseInput, `<p>the summer of${THIN_SPACE}${NBSP}’24. From</p>`],
-      // Display heading: the plain space is kept.
-      ["<h2>The summer of '24</h2>", `<h2>The summer of${THIN_SPACE} ’24</h2>`],
-      // Markdown soft line break between "of" and the apostrophe.
-      ["<p>the summer of\n'24. From</p>", `<p>the summer of${THIN_SPACE}\n’24. From</p>`],
-      // Display headings skip punctilio's NBSP pass, so a tab survives to here.
-      ["<h2>The summer of\t'24</h2>", `<h2>The summer of${THIN_SPACE}\t’24</h2>`],
-      // "f" ends the glyph run across a closing element boundary.
+      // Body prose, with punctilio's NBSP glue left intact as the break point.
+      [bodyProseInput, `<p>the summer of${NBSP}${kernF("’")}24. From</p>`],
+      // Display headings skip the NBSP pass, so a plain space survives.
+      ["<h2>The summer of '24</h2>", `<h2>The summer of ${kernF("’")}24</h2>`],
+      // Markdown soft line break between "of" and the mark.
+      ["<p>the summer of\n'24. From</p>", `<p>the summer of\n${kernF("’")}24. From</p>`],
+      ["<h2>The summer of\t'24</h2>", `<h2>The summer of\t${kernF("’")}24</h2>`],
+      // "f" sits in an earlier sibling, so the lookback crosses the boundary.
       [
         "<p><em>of</em> '24 was wild</p>",
-        `<p><em>of</em>${THIN_SPACE}${NBSP}’24 was${NBSP}wild</p>`,
+        `<p><em>of</em>${NBSP}${kernF("’")}24 was${NBSP}wild</p>`,
       ],
-      // Skipped content between the "f" and the apostrophe: the space and the
-      // apostrophe straddle a boundary, so the pair is skipped.
+      // Skipped content supplies the preceding glyph: "t", so no kern.
       [
         "<p>one of <code>Start</code>'s child states</p>",
         `<p>one of${NBSP}<code>Start</code>’s child${NBSP}states</p>`,
       ],
-      // Apostrophe opens an inline element: same straddled pair.
+      // The mark opens an inline element, so nothing precedes it in its parent.
       ["<p>of <em>'24</em> was wild</p>", `<p>of${NBSP}<em>’24</em> was${NBSP}wild</p>`],
-      // Apostrophe at the start of the prose unit: nothing precedes it.
+      // Mark at the very start of the paragraph.
       ["<p>'24 was wild</p>", `<p>’24 was${NBSP}wild</p>`],
-      // Preceding word does not end in "f": untouched.
+      // Preceding word does not end in an overhanging glyph.
       ["<p>I was born in '94. Nice</p>", `<p>I${NBSP}was born in${NBSP}’94. Nice</p>`],
-      // No space before the apostrophe: untouched.
+      // No space before the mark: a mid-word apostrophe is untouched.
       ["<p>don't stop</p>", `<p>don’t${NBSP}stop</p>`],
-      // Opening marks after "f" are crowded by the same overhang.
+      // Every crowded mark after "f", each wrapped independently.
       [
         `<h2>of ${LEFT_DOUBLE_QUOTE}x if (x if [x of {x</h2>`,
-        `<h2>of${THIN_SPACE} ${LEFT_DOUBLE_QUOTE}x if${THIN_SPACE} (x ` +
-          `if${THIN_SPACE} [x of${THIN_SPACE} {x</h2>`,
+        `<h2>of ${kernF(LEFT_DOUBLE_QUOTE)}x if ${kernF("(")}x ` +
+          `if ${kernF("[")}x of ${kernF("{")}x</h2>`,
       ],
-      // "Q" overhangs its advance too, though less than "f".
-      ["<h2>Q (x and Q [x</h2>", `<h2>Q${THIN_SPACE} (x and Q${THIN_SPACE} [x</h2>`],
+      // "Q" overhangs less, so it gets the smaller correction.
+      ["<h2>Q (x and Q [x</h2>", `<h2>Q ${kernQ("(")}x and Q ${kernQ("[")}x</h2>`],
+      // Both tiers inside one text node.
+      ["<h2>of '24 and Q (x</h2>", `<h2>of ${kernF("’")}24 and Q ${kernQ("(")}x</h2>`],
       // Non-overhanging letters before the same marks: untouched.
       [
         `<h2>to ${LEFT_DOUBLE_QUOTE}x an (x an [x</h2>`,
         `<h2>to ${LEFT_DOUBLE_QUOTE}x an (x an [x</h2>`,
       ],
+      // Code is skipped entirely.
+      ["<p><code>of '24</code></p>", "<p><code>of '24</code></p>"],
+      // A comment sibling contributes no text, so the "f" is still found.
+      ["<p>of <!-- note -->'24</p>", `<p>of${NBSP}<!-- note -->${kernF("’")}24</p>`],
     ])("handles overhang crowding: %s", (input, expected) => {
       expect(testHtmlFormattingImprovement(input)).toBe(expected)
     })
@@ -245,6 +251,13 @@ describe("HTMLFormattingImprovement", () => {
     it("is idempotent", () => {
       const once = testHtmlFormattingImprovement(bodyProseInput)
       expect(testHtmlFormattingImprovement(once)).toBe(once)
+    })
+
+    it("leaves the text a reader searches for unchanged", () => {
+      const rendered = testHtmlFormattingImprovement(bodyProseInput)
+      const text = rendered.replace(/<[^>]+>/g, "").replaceAll(NBSP, " ")
+      expect(text).toBe("the summer of ’24. From")
+      expect(text).not.toMatch(/\s\s/)
     })
   })
 
@@ -2163,9 +2176,9 @@ describe("applyTextTransforms function", () => {
   })
 
   it.each([
-    [{}, `The summer of${THIN_SPACE}${NBSP}’24`],
-    [{ useNbsp: false }, `The summer of${THIN_SPACE} ’24`],
-  ])("opens the f–apostrophe gap with options %s", (options, expected) => {
+    [{}, `The summer of${NBSP}’24`],
+    [{ useNbsp: false }, "The summer of ’24"],
+  ])("leaves overhang kerning to the tree pass, options %s", (options, expected) => {
     expect(applyTextTransforms("The summer of '24", options)).toBe(expected)
   })
 })

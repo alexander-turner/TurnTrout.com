@@ -373,6 +373,18 @@ article[data-use-dropcap="true"] > p:first-of-type .small-caps {
   margin-right: 0.125em;
 }
 
+/* EB Garamond's "f" and "Q" reach past their advance width, so a mark whose ink
+   starts high and tight against its left edge lands inside the overhang and the
+   pair reads as glued. Nudge the mark out by the shortfall against an ordinary
+   right side bearing: 307/2048 em after "f", 244/2048 after "Q". */
+.overhang-kern-f {
+  margin-left: 0.15em;
+}
+
+.overhang-kern-q {
+  margin-left: 0.12em;
+}
+
 /* Set monospace font for code blocks, inline code, etc. */
 code,
 pre {

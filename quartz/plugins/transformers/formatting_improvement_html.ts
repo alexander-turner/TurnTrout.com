@@ -31,12 +31,12 @@ import {
   NBSP,
   RIGHT_SINGLE_QUOTE,
   STRIP_BOUNDARY_TAGS,
-  THIN_SPACE,
   WORD_JOINER,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { isHeading } from "./favicons"
 import {
+  type CharSpan,
   fractionRegex,
   hasAncestor,
   hasClass,
@@ -288,7 +288,84 @@ export function kernSpacedSlashes(tree: Root): void {
     }
   })
   for (const { parent, node, offsets } of ops) {
-    wrapCharsInSpan(parent, node, offsets, "slash-gap-after")
+    wrapCharsInSpan(
+      parent,
+      node,
+      offsets.map((offset) => ({ offset, className: "slash-gap-after" })),
+    )
+  }
+}
+
+// Glyphs whose ink reaches past their own advance width, mapped to the class
+// that pulls a following mark back out to where an ordinary letter would place
+// it. Against EB Garamond's typical right side bearing (~45 units of its 2048
+// em), "f" falls 307 units short and "Q" 244.
+const OVERHANG_KERN_CLASSES: ReadonlyMap<string, string> = new Map([
+  ["f", "overhang-kern-f"],
+  ["Q", "overhang-kern-q"],
+])
+
+// Marks whose ink starts high and tight against their left edge, so they land
+// inside that overhang rather than clearing it and the pair reads as glued
+// ("of ’24", "if ‘x"). The font's kern pairs cannot reach across the word
+// space separating them.
+const CROWDED_AFTER_OVERHANG: ReadonlySet<string> = new Set([
+  RIGHT_SINGLE_QUOTE,
+  LEFT_SINGLE_QUOTE,
+  LEFT_DOUBLE_QUOTE,
+  "(",
+  "[",
+  "{",
+])
+
+const OVERHANG_GAP_SPACES: ReadonlySet<string> = new Set([" ", "\t", "\n", NBSP])
+
+/**
+ * The last two characters rendered before ``node`` within its parent, so the
+ * overhanging glyph is found even when it sits in an earlier sibling
+ * ("<em>of</em> ’24").
+ */
+function precedingChars(parent: Parent, node: Text): string {
+  const nodeIndex = parent.children.indexOf(node as ElementContent)
+  let text = ""
+  for (let i = 0; i < nodeIndex; i++) {
+    const child = parent.children[i]
+    if (child.type === "text") {
+      text += child.value
+    } else if (child.type === "element") {
+      text += getTextContent(child)
+    }
+  }
+  return text.slice(-2)
+}
+
+/**
+ * Widen the word space between an overhanging glyph and a crowded mark.
+ *
+ * The gap is opened with a margin on the mark rather than an inserted space
+ * character, so the text a reader searches for, selects, or copies is still
+ * "of ’24". Wrapping only the mark also leaves the space itself intact as the
+ * line-break opportunity.
+ */
+export function kernOverhangBeforeMarks(tree: Root): void {
+  const ops: { parent: Parent; node: Text; spans: CharSpan[] }[] = []
+  visitParents(tree, "text", (node: Text, ancestors) => {
+    if (ancestors.some((ancestor) => toSkip(ancestor as Element))) return
+    const parent = ancestors[ancestors.length - 1] as Parent
+    const preceding = precedingChars(parent, node)
+    const context = preceding + node.value
+    const spans: CharSpan[] = []
+    for (let i = 0; i < node.value.length; i++) {
+      const contextIndex = preceding.length + i
+      if (!CROWDED_AFTER_OVERHANG.has(node.value[i])) continue
+      if (!OVERHANG_GAP_SPACES.has(context[contextIndex - 1])) continue
+      const className = OVERHANG_KERN_CLASSES.get(context[contextIndex - 2])
+      if (className !== undefined) spans.push({ offset: i, className })
+    }
+    if (spans.length > 0) ops.push({ parent, node, spans })
+  })
+  for (const { parent, node, spans } of ops) {
+    wrapCharsInSpan(parent, node, spans)
   }
 }
 
@@ -425,32 +502,6 @@ const hyphenWordJoinerPass = definePass(/-/g, (match, view) => {
   return `-${WORD_JOINER}`
 })
 
-// Glyphs whose ink reaches past their own advance width, so a following word
-// space renders far narrower than it measures. In EB Garamond the lowercase "f"
-// hook overhangs by 262 units and "Q" by 199, against a 423-unit space.
-const OVERHANGING_GLYPHS: ReadonlySet<string> = new Set(["f", "Q"])
-
-// Marks whose ink starts high and close to their left edge, landing inside that
-// overhang rather than clearing it. Pairing one with an overhanging glyph leaves
-// 212-320 units of visible gap where an uncrowded pair gets 402-512, so the two
-// glyphs read as glued ("of ’24", "if ‘x"). The font's kern pairs can't reach
-// across the intervening space, so widen it with a thin space (~0.1em here).
-const CROWDED_AFTER_OVERHANG = `${RIGHT_SINGLE_QUOTE}${LEFT_SINGLE_QUOTE}${LEFT_DOUBLE_QUOTE}(\\[{`
-
-// The thin space goes before the word space rather than after it, so a line
-// that wraps at the space starts flush on the mark. Matching the whitespace and
-// the mark together also lets definePass's default boundary skipping reject a
-// pair split by an element: skipped content is elided from the view, so
-// "of <code>Start</code>’s" reads as "of ’s".
-//
-// The whitespace class excludes the thin space, so re-running the pass leaves
-// its own output unchanged.
-const overhangCrowdingRegex = new RegExp(`[ \\t\\n${NBSP}][${CROWDED_AFTER_OVERHANG}]`, "gu")
-const overhangThinSpacePass = definePass(overhangCrowdingRegex, (match, view) => {
-  if (!OVERHANGING_GLYPHS.has(view.text[match.index - 1])) return null
-  return `${THIN_SPACE}${match[0]}`
-})
-
 // Simple find-and-replace transforms local to this site (punctilio handles the rest)
 const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransform]
 
@@ -469,7 +520,6 @@ export function applyTextTransforms(text: string, options: { useNbsp?: boolean }
     ...checkedTextTransformers,
     useNbsp ? punctilioTransform : punctilioTransformNoNbsp,
     // ToC entries, excerpts, and titles render in the same face as body prose.
-    overhangThinSpacePass,
     spacesAroundSlashes,
   ]) {
     text = transformer(text)
@@ -1188,8 +1238,6 @@ export const improveFormatting = (
           inDisplayHeading ? punctilioTransformNoNbsp : punctilioTransform,
           // Runs after dash conversion so freshly created dashes get glued.
           dashWordJoinerPass,
-          // Runs after quote conversion so straight '24 has become ’24.
-          overhangThinSpacePass,
         ]
 
         // Don't replace slashes in fractions or link text; loose runs are neither.
@@ -1218,6 +1266,8 @@ export const improveFormatting = (
     kernItalicBeforePunctuation(tree)
     // After slash spacing, so every separator slash is flanked and wrappable.
     kernSpacedSlashes(tree)
+    // After the quote and NBSP passes, so marks are curled and spaces final.
+    kernOverhangBeforeMarks(tree)
     removeSpaceBeforeFootnotes(tree)
   }
 }
