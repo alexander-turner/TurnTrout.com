@@ -302,7 +302,7 @@ I began posting this kind of message in the GDM-only discussion channel. These m
 4. I pointed out [the problems with the "protections" in OpenAI's deal](https://www.techpolicy.press/five-unresolved-issues-in-openais-deal-with-the-department-of-defense/) to inoculate GDM employees against similarly fake "protections" that Google might try to pass off. If employees didn't buy the veneer, Google would pay a greater morale cost.
 5. Later, some messages provided people a channel to hint they would leave Google if the deal passed, while still providing soft deniability.
 
-The "❤️" reacts also acted as a subtle organizing mechanism. My understanding was that Google frowned upon people directly organizing through large internal channels. I noted who responded with "❤️" and reached out to them privately for the petition which I'm about to discuss.
+The "❤️" reacts also acted as a subtle organizing mechanism. My understanding was that Google frowned upon people directly organizing through large internal channels. I noted who responded with "❤️" and reached out to them privately for the petition that I'm about to discuss.
 
 ## Jeff Dean, you're our only hope
 
@@ -698,7 +698,9 @@ When I got scared --- and I did --- I'd think about Minneapolis. I'd think about
 
 When an employee leaves a top AI lab, it's often into the arms of another. They usually rack up a huge bonus that way. That's not what I did: I didn't flirt with competitor labs and I declined outreach from the OpenAI safety team. I'm unemployed right now.
 
-In February, I realized that Google would probably sign the deal, which made me think about the door. I realized maybe I should leave and maybe I could do better AI safety work elsewhere. But I think I would have stayed a few more months if they hadn't signed the deal. When Google signed, I just couldn't do any more work. My brain said "no."
+In February, I realized that Google would probably sign the deal, which made me think about the door.[^fatebook] I realized maybe I should leave and maybe I could do better AI safety work elsewhere. But I think I would have stayed a few more months if they hadn't signed the deal. When Google signed, I just couldn't do any more work. My brain said "no."
+
+[^fatebook]: On 1/1/26, I assigned 0.2 probability that I would leave Google that year. The number jumped to 0.95 on May 1st. I tracked this quantity using [`Fatebook.io`](https://fatebook.io/embed/q/will-i-quit-my-job-at-gdm---cmjwd3zl90002j1emt4paysc6).
 
 When I next went to the office, the building felt like a memory. Like going home to your old high school: it used to be the center of your hopes and dreams, and then one day you just know that you don't belong there anymore.
 
@@ -744,7 +746,7 @@ Yes.
 
 When building an advanced AI system, best practice is to make a "safety case" which explains why the system will be aligned and will not cause catastrophic harm. I think any credible GDM safety case would lean heavily on monitoring the "chain of thought", a mechanism their [Frontier Safety Framework](https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/strengthening-our-frontier-safety-framework/frontier-safety-framework_3-1.pdf) discusses.[^sec] For the unfamiliar, a chain of thought is the AI roughly explaining what it's doing and why. It's not perfectly accurate, but it's extremely informative.
 
-[^sec]: Frontier Safety Framework v3.1, section 3.2.1, Ctrl+F "chain-of-thought."
+[^sec]: [Frontier Safety Framework v3.1](https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/strengthening-our-frontier-safety-framework/frontier-safety-framework_3-1.pdf), section 3.2.1, Ctrl+F "chain-of-thought."
 
 An AI that wants to hurt us won't announce it to our faces because we would shut it off and then it couldn't achieve its (misaligned) goals. So the AI will likely be deceptive. One of the best ways we can detect deception is by looking at the chain of thought. To look at the chain of thought, there must be trained human overseers who can access and analyze the data.  But no one *can* do that: Google is handing over its AI to run in a secured military data center that, by default, won't have trained overseers performing this analysis, and that data center obviously isn't transmitting data back to Google![^il6]
 
