@@ -6,7 +6,6 @@ import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
 import { unified } from "unified"
 
-import { HAIR_SPACE } from "../../components/constants"
 import {
   InlineCodeSpacing,
   lastTextChar,
@@ -30,33 +29,40 @@ const processHtmlWithPlugin = async (html: string): Promise<string> => {
 
 describe("InlineCodeSpacing", () => {
   describe("gives the preceding word a gap", () => {
-    it("appends a hair space to the trailing word, leaving the code in place", async () => {
+    it("wraps the trailing word's last glyph in a gap span, leaving the code in place", async () => {
       const out = await processHtmlWithPlugin("<p>of <code>grep</code></p>")
-      expect(out).toBe(`<p>of${HAIR_SPACE} <code class="inline-code-atomic">grep</code></p>`)
+      expect(out).toBe(
+        `<p>o<span class="code-gap-after">f</span> <code class="inline-code-atomic">grep</code></p>`,
+      )
     })
 
     it("leaves earlier text in place, gapping only the trailing word", async () => {
       const out = await processHtmlWithPlugin("<p>help of <code>grep</code></p>")
-      expect(out).toBe(`<p>help of${HAIR_SPACE} <code class="inline-code-atomic">grep</code></p>`)
+      expect(out).toBe(
+        `<p>help o<span class="code-gap-after">f</span> <code class="inline-code-atomic">grep</code></p>`,
+      )
     })
 
     it("gaps the word before a wrapping link, not the link or its code", async () => {
       const out = await processHtmlWithPlugin('<p>help of <a href="#"><code>grep</code></a></p>')
       expect(out).toBe(
-        `<p>help of${HAIR_SPACE} <a href="#"><code class="inline-code-atomic">grep</code></a></p>`,
+        `<p>help o<span class="code-gap-after">f</span> ` +
+          `<a href="#"><code class="inline-code-atomic">grep</code></a></p>`,
       )
     })
 
     it("keeps the gap when the code abuts non-hugging punctuation", async () => {
       const out = await processHtmlWithPlugin("<p>war—<code>grep</code></p>")
-      expect(out).toBe(`<p>war—${HAIR_SPACE}<code class="inline-code-atomic">grep</code></p>`)
+      expect(out).toBe(
+        `<p>war<span class="code-gap-after">—</span><code class="inline-code-atomic">grep</code></p>`,
+      )
     })
 
     it("handles several codes sharing a parent", async () => {
       const out = await processHtmlWithPlugin("<p>a <code>one</code> b <code>two</code></p>")
       expect(out).toBe(
-        `<p>a${HAIR_SPACE} <code class="inline-code-atomic">one</code> ` +
-          `b${HAIR_SPACE} <code class="inline-code-atomic">two</code></p>`,
+        `<p><span class="code-gap-after">a</span> <code class="inline-code-atomic">one</code> ` +
+          `<span class="code-gap-after">b</span> <code class="inline-code-atomic">two</code></p>`,
       )
     })
   })
@@ -64,14 +70,16 @@ describe("InlineCodeSpacing", () => {
   describe("marks short codes atomic so they don't break mid-token", () => {
     it("marks a short hyphenated code atomic", async () => {
       const out = await processHtmlWithPlugin("<p>a <code>conic-gradient</code></p>")
-      expect(out).toContain('<code class="inline-code-atomic">conic-gradient</code>')
+      expect(out).toBe(
+        '<p><span class="code-gap-after">a</span> <code class="inline-code-atomic">conic-gradient</code></p>',
+      )
     })
 
     it("leaves a long code breakable (no atomic class)", async () => {
       const long = "alexander-turner/claude-automation-template"
       const out = await processHtmlWithPlugin(`<p>see <code>${long}</code></p>`)
       expect(out).not.toContain("inline-code-atomic")
-      expect(out).toContain(`<code>${long}</code>`)
+      expect(out).toBe(`<p>se<span class="code-gap-after">e</span> <code>${long}</code></p>`)
     })
 
     it("does not mark block code inside <pre>", async () => {
@@ -84,7 +92,7 @@ describe("InlineCodeSpacing", () => {
     it("leaves closing punctuation as plain text before the next code", async () => {
       const out = await processHtmlWithPlugin("<p>see <code>one</code>); <code>two</code> ok</p>")
       expect(out).toBe(
-        `<p>see${HAIR_SPACE} <code class="inline-code-atomic">one</code>); ` +
+        `<p>se<span class="code-gap-after">e</span> <code class="inline-code-atomic">one</code>); ` +
           '<code class="inline-code-atomic">two</code> ok</p>',
       )
     })
@@ -96,20 +104,22 @@ describe("InlineCodeSpacing", () => {
       ["period", ". "],
     ])("skips the gap when the preceding token is only %s", async (_label, sep) => {
       const out = await processHtmlWithPlugin(`<p>x <code>a</code>${sep}<code>b</code></p>`)
-      // The separator stays untouched — no hair space is appended to it.
+      // The separator stays untouched.
       expect(out).toContain(`${sep}<code`)
     })
 
     it("still gaps a real word that follows the closing punctuation", async () => {
       const out = await processHtmlWithPlugin("<p>a <code>one</code>); then <code>two</code></p>")
-      expect(out).toContain(`then${HAIR_SPACE} <code class="inline-code-atomic">two</code>`)
+      expect(out).toContain(
+        `the<span class="code-gap-after">n</span> <code class="inline-code-atomic">two</code>`,
+      )
     })
   })
 
   describe("adds no gap", () => {
     it.each([...NO_GAP_PREDECESSORS])("when code is glued behind %s", async (char) => {
       const out = await processHtmlWithPlugin(`<p>${char}<code>grep</code></p>`)
-      expect(out).not.toContain(HAIR_SPACE)
+      expect(out).not.toContain("code-gap-after")
     })
 
     it.each([
@@ -123,7 +133,7 @@ describe("InlineCodeSpacing", () => {
       ["code wrapped by its own <em>", "<p>use <em><code>grep</code></em> here</p>"],
     ])("for %s", async (_label, html) => {
       const out = await processHtmlWithPlugin(html)
-      expect(out).not.toContain(HAIR_SPACE)
+      expect(out).not.toContain("code-gap-after")
     })
 
     it.each([
@@ -131,13 +141,13 @@ describe("InlineCodeSpacing", () => {
       ["an em-dash separator between two codes", "<p><code>a</code>—<code>b</code></p>"],
     ])("for %s (no word to crowd the code)", async (_label, html) => {
       const out = await processHtmlWithPlugin(html)
-      expect(out).not.toContain(HAIR_SPACE)
+      expect(out).not.toContain("code-gap-after")
       expect(out).not.toContain("inline-code-nowrap")
     })
 
     it("ignores block code inside <pre>", async () => {
       const out = await processHtmlWithPlugin("<p>run </p><pre><code>grep</code></pre>")
-      expect(out).not.toContain(HAIR_SPACE)
+      expect(out).not.toContain("code-gap-after")
     })
 
     it("leaves non-code elements untouched", async () => {

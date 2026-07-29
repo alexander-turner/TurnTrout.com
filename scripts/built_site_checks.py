@@ -25,7 +25,7 @@ from urllib.parse import urlparse
 import requests
 import tqdm
 import validators
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, Comment, Tag
 from bs4.element import NavigableString, PageElement
 
 # Add the project root to sys.path
@@ -1414,6 +1414,40 @@ def check_unprocessed_quotes(soup: BeautifulSoup) -> list[str]:
     return problematic_quotes
 
 
+# Two spacing characters in a row render as one gap, so the extra character is
+# invisible on the page but still sits in the text: find-in-page and copied
+# text no longer match what the reader sees. Typographic gaps belong in CSS.
+_CONSECUTIVE_WHITESPACE_PATTERN = re.compile(r"\s{2,}")
+
+
+def check_consecutive_whitespace(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for runs of two or more whitespace characters in rendered prose.
+
+    Whitespace-only text nodes carry the markup's own layout (indentation and
+    line breaks between tags), not prose, so they are skipped. ``should_skip``
+    excludes code, KaTeX, and the other non-prose regions.
+    """
+    issues: list[str] = []
+
+    for element in soup.find_all(string=True):
+        if isinstance(element, Comment):
+            continue
+        text = str(element)
+        if not text.strip() or should_skip(element):
+            continue
+
+        for match in _CONSECUTIVE_WHITESPACE_PATTERN.finditer(text):
+            context = text[max(0, match.start() - 30) : match.end() + 30]
+            _append_to_list(
+                issues,
+                " ".join(context.split()),
+                prefix=f"Consecutive whitespace {match.group(0)!r} in: ",
+            )
+
+    return issues
+
+
 def check_unprocessed_dashes(soup: BeautifulSoup) -> list[str]:
     """Check for text nodes containing multiple dashes (-- or ---) that should
     have been processed into em dashes by formatting_improvement_html."""
@@ -2301,6 +2335,7 @@ def check_file_for_issues(
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
         "consecutive_periods": check_consecutive_periods(soup),
+        "consecutive_whitespace": check_consecutive_whitespace(soup),
         "non_svg_favicons": check_favicons_are_svgs(soup),
         "missing_favicon_span": check_favicon_span(soup),
         "katex_span_only_par_child": check_katex_span_only_paragraph_child(
