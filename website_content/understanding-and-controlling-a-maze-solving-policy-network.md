@@ -232,7 +232,7 @@ To understand the network, we tried various hand-designed model edits. These edi
 <img src="https://assets.turntrout.com/static/images/posts/maze_field_diff.avif" alt="The change in the action probability vectors, shown in green. They point away from the cheese."/>
 <figcaption>(c) Steered minus original</figcaption>
 </div>
-<figcaption><b>Left:</b> The net probability vectors induced by the unmodified forward passes.  
+<figcaption><b>Left:</b> The net probability vectors induced by the unmodified forward passes.
 <br/><b>Middle:</b> For any steering modification we make to forward passes, we plot the new probability vectors induced by the modified forward passes.  <br/>
 <b>Right:</b> The “vector field diff”, computed as (steered minus original) for each valid position in the maze. At a glance, we understand the behavioral effect of modifying the network.</figcaption>
 </figure>

@@ -5,8 +5,8 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { HAIR_SPACE, maxAtomicInlineCodeLength } from "../../components/constants"
-import { addClass, INLINE_PASSTHROUGH_TAGS, ITALIC_TAGS } from "./utils"
+import { maxAtomicInlineCodeLength } from "../../components/constants"
+import { addClass, INLINE_PASSTHROUGH_TAGS, ITALIC_TAGS, wrapCharsInSpan } from "./utils"
 
 // A short inline code reads as one token, so it wraps to the next line whole
 // rather than breaking at an internal hyphen (e.g. `conic-gradient`). Longer
@@ -22,11 +22,10 @@ export function textLength(node: RootContent): number {
   return 0
 }
 
-// Inline code's monospace glyph can crowd the word before it, so that word
-// gets a hair space (U+200A) appended. A text character (not CSS spacing)
-// keeps an enclosing link's underline unbroken. It goes before the word's
-// trailing breakable space, so a code that wraps to the next line starts
-// flush there with no indent.
+// Inline code's monospace glyph can crowd the word before it, so that word's
+// last glyph gets a right margin. The gap is CSS rather than a space character so the text a
+// reader searches for, selects, or copies holds a single space between the word
+// and the code.
 //
 // These characters should instead hug the code that immediately follows them,
 // so no gap is added: opening delimiters and the binding operators
@@ -109,14 +108,16 @@ function isItalicized(ancestors: readonly Parent[]): boolean {
  * Rehype plugin for inline `<code>` (block code inside `<pre>` is untouched):
  *   - marks a short code `inline-code-atomic` so it wraps whole instead of
  *     breaking at an internal hyphen;
- *   - appends a hair space to the word preceding a code so the monospace
- *     glyph doesn't crowd it. Adds no gap when the code is italicized (its
- *     leaning glyphs open the space themselves), follows a hugging delimiter
- *     (see `NO_GAP_PREDECESSORS`), follows a bare separator with no word to
- *     crowd, or starts its block.
+ *   - wraps the last character of the word a code's monospace glyph would crowd
+ *     in a `code-gap-after` span, which carries the gap in CSS. Adds no gap when
+ *     the code is italicized (its leaning glyphs open the space themselves),
+ *     follows a hugging delimiter (see `NO_GAP_PREDECESSORS`), follows a bare
+ *     separator with no word to crowd, or starts its block.
  */
 export const rehypeInlineCodeSpacing: Plugin = () => {
   return (tree: Node) => {
+    const gaps: { parent: Parent; node: Text; offset: number }[] = []
+
     visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
       if (node.tagName !== "code" || isInPre(ancestors)) return
       if (textLength(node) <= ATOMIC_CODE_MAX_LENGTH) addClass(node, "inline-code-atomic")
@@ -130,16 +131,22 @@ export const rehypeInlineCodeSpacing: Plugin = () => {
       const match = /(\S+)(\s*)$/u.exec(prev.value)
       // istanbul ignore next -- the \S guard above guarantees a match
       if (!match) return
-      const [, word, trailingSpace] = match
+      const [, word, trailing] = match
       // A bare separator between two inline units — the ", " in `a`, `b`, `c`,
       // a lone dash, or closing punctuation like "); " — has no word for the
       // code to crowd, so add no gap.
       if (!/[\p{L}\p{N}]/u.test(word)) return
-      const head = prev.value.slice(0, prev.value.length - word.length - trailingSpace.length)
-      // The hair space goes before the breakable space, so a code that wraps
-      // to the next line still starts flush there.
-      prev.value = head + word + HAIR_SPACE + trailingSpace
+      // The gap rides the word's last glyph rather than the code's leading edge,
+      // so a line breaking at the space between them leaves the code flush with
+      // the line start.
+      const offset = prev.value.length - trailing.length - 1
+      gaps.push({ parent: boundary.parent, node: prev, offset })
     })
+
+    // Applied after the walk, so splicing siblings can't disturb the traversal.
+    for (const { parent, node, offset } of gaps) {
+      wrapCharsInSpan(parent, node, [offset], "code-gap-after")
+    }
   }
 }
 
