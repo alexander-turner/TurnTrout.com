@@ -44,22 +44,15 @@ _MATH_RE = re.compile(
     re.DOTALL,
 )
 
+# Footnote reference/definition label: `[^label]`, optionally followed by `:`.
+_FOOTNOTE_LABEL_RE = re.compile(r"\[\^(?P<label>[^\]\s]+)\]")
+
 # Dropcap span/div pattern: `<span class="dropcap" ...>L</span>` followed
 # by the rest of the word. Replacing the whole tag with just the inner
 # letter fuses it with the following text so the spellchecker sees the
 # full word — `<span class="dropcap">d</span>ropcap` becomes `dropcap`.
 # Narrow to `class="...dropcap..."` so we don't strip unrelated HTML
 # (which could expose code-block contents to spellcheck false positives).
-# Footnote reference/definition labels (`[^label]`, `[^label]:`). Labels are
-# identifiers, not prose, so descriptive ones like `[^fatebook]` are unknown
-# words to the spellchecker.
-_FOOTNOTE_LABEL_RE = re.compile(r"\[\^(?P<label>[^\]\s]+)\]")
-
-# Digits stand in for footnote label characters: the markdown parser keeps
-# treating the construct as a footnote label (so surrounding structure parses
-# identically), while retext has no word to spell-check.
-_FOOTNOTE_LABEL_FILLER = "0"
-
 _DROPCAP_TAG_RE = re.compile(
     r'<(?P<tag>span|div)\b[^>]*\bclass="[^"]*\bdropcap\b[^"]*"[^>]*>'
     r"(?P<inner>[^<]*)</(?P=tag)>"
@@ -186,16 +179,15 @@ def strip_footnote_labels(text: str) -> str:
     """
     Replace the label inside footnote references and definitions with digits.
 
-    A label such as `[^fatebook]` names a footnote; it never renders as prose,
-    but the markdown parser used by the spellchecker treats it as text, so any
-    label that isn't a dictionary word is reported as an unknown word. Each
-    label character becomes a digit, preserving line and column counts (so
-    reported coordinates still match the original source) as well as the
-    surrounding markdown structure.
+    A label such as `[^fatebook]` names a footnote and never renders as prose,
+    but the spellchecker's markdown parser reads it as text and reports any
+    label that isn't a dictionary word. Digits keep the construct shaped like a
+    label — so the surrounding markdown parses the same way — while giving
+    retext no word to check, and preserve line and column counts.
     """
 
     def _replace(match: re.Match[str]) -> str:
-        return f"[^{_FOOTNOTE_LABEL_FILLER * len(match.group('label'))}]"
+        return f"[^{'0' * len(match.group('label'))}]"
 
     return _FOOTNOTE_LABEL_RE.sub(_replace, text)
 

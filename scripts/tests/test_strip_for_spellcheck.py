@@ -346,11 +346,8 @@ def test_strip_callout_markers(text: str, expected: str):
         pytest.param(
             "a[^one] b[^two]", "a[^000] b[^000]", id="multiple-references"
         ),
-        # A bracketed caret without a label, or with whitespace inside it, is
-        # not a footnote label.
         pytest.param("[^]: Body", "[^]: Body", id="empty-label"),
         pytest.param("[^two words]", "[^two words]", id="label-with-space"),
-        # `[!type]` callouts and ordinary links are left alone.
         pytest.param("> [!note] Title", "> [!note] Title", id="callout"),
         pytest.param("[link](url)", "[link](url)", id="link"),
     ],
