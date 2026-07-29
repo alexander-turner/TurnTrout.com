@@ -427,26 +427,22 @@ const hyphenWordJoinerPass = definePass(/-/g, (match, view) => {
 // EB Garamond's lowercase "f" hook overhangs its advance width by ~0.13em in
 // the same vertical band the apostrophe's ink occupies, so across a plain
 // space ("of ’24") the two glyphs read as glued together. The font's f’ kern
-// pair can't reach across the intervening space, so open the gap with a thin
-// space (~0.1em in this font). An apostrophe after whitespace is always an
-// elision mark (’24, ’tis), never an opening quote.
+// pair can't reach across the intervening space, so widen it with a thin space
+// (~0.1em in this font). An apostrophe after whitespace is always an elision
+// mark (’24, ’tis), never an opening quote.
 //
-// A boundary immediately before the apostrophe disqualifies the match: skipped
-// content (e.g. `<code>`) is elided from the view, so "of <code>Start</code>’s"
-// would otherwise read as "of ’s" and glue a gap onto the code element. It also
-// keeps the thin space off an inline element's leading edge, where
-// stripInlineBoundaryWhitespace trims it and strands the word joiner.
+// The thin space goes before the word space rather than after it, so a line
+// that wraps at the space starts flush on the apostrophe. Matching the
+// whitespace and the apostrophe together also lets definePass's default
+// boundary skipping reject a pair split by an element: skipped content is
+// elided from the view, so "of <code>Start</code>’s" reads as "of ’s".
 //
-// The thin space is a break opportunity on both sides, so word joiners flank
-// it. The whitespace class excludes the characters this pass inserts, so
-// re-running it leaves its own output unchanged.
-const whitespaceBeforeElision = new RegExp(`[ \\t\\n${NBSP}]`, "u")
-const fApostropheThinSpacePass = definePass(new RegExp(RIGHT_SINGLE_QUOTE, "gu"), (match, view) => {
-  if (view.hasBoundary(match.index)) return null
-  const prev = view.text[match.index - 1]
-  if (prev === undefined || !whitespaceBeforeElision.test(prev)) return null
-  if (view.text[match.index - 2] !== "f") return null
-  return `${WORD_JOINER}${THIN_SPACE}${WORD_JOINER}${match[0]}`
+// The whitespace class excludes the thin space, so re-running the pass leaves
+// its own output unchanged.
+const elisionAfterFRegex = new RegExp(`[ \\t\\n${NBSP}]${RIGHT_SINGLE_QUOTE}`, "gu")
+const fApostropheThinSpacePass = definePass(elisionAfterFRegex, (match, view) => {
+  if (view.text[match.index - 1] !== "f") return null
+  return `${THIN_SPACE}${match[0]}`
 })
 
 // Simple find-and-replace transforms local to this site (punctilio handles the rest)
