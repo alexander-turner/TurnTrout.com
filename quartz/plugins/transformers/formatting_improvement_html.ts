@@ -30,6 +30,7 @@ import {
   NBSP,
   RIGHT_SINGLE_QUOTE,
   STRIP_BOUNDARY_TAGS,
+  THIN_SPACE,
   WORD_JOINER,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
@@ -421,6 +422,21 @@ const hyphenWordJoinerPass = definePass(/-/g, (match, view) => {
   if (!shouldGlue) return null
 
   return `-${WORD_JOINER}`
+})
+
+// EB Garamond's lowercase "f" hook overhangs its advance width by ~0.13em in
+// the same vertical band the apostrophe's ink occupies, so across a plain
+// space ("of ’24") the two glyphs read as glued together. The font's f’ kern
+// pair can't reach across the intervening space, so open the gap with a thin
+// space (~0.1em in this font; its hair space is a near-zero 0.01em). An
+// apostrophe after a space is always an elision mark (’24, ’tis) — a quote
+// opening there would be ‘. Idempotent: once inserted, the character before
+// the apostrophe is the thin space, which fails the space test.
+const fGapApostrophePass = definePass(new RegExp(RIGHT_SINGLE_QUOTE, "gu"), (match, view) => {
+  const space = view.text[match.index - 1]
+  if (space !== " " && space !== NBSP) return null
+  if (view.text[match.index - 2] !== "f") return null
+  return `${THIN_SPACE}${match[0]}`
 })
 
 // Simple find-and-replace transforms local to this site (punctilio handles the rest)
@@ -1158,6 +1174,8 @@ export const improveFormatting = (
           inDisplayHeading ? punctilioTransformNoNbsp : punctilioTransform,
           // Runs after dash conversion so freshly created dashes get glued.
           dashWordJoinerPass,
+          // Runs after quote conversion so straight '24 has become ’24.
+          fGapApostrophePass,
         ]
 
         // Don't replace slashes in fractions or link text; loose runs are neither.

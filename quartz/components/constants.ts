@@ -69,6 +69,7 @@ export const {
 export const {
   nbsp: NBSP,
   hairSpace: HAIR_SPACE,
+  thinSpace: THIN_SPACE,
   leftSingleQuote: LEFT_SINGLE_QUOTE,
   rightSingleQuote: RIGHT_SINGLE_QUOTE,
   leftDoubleQuote: LEFT_DOUBLE_QUOTE,

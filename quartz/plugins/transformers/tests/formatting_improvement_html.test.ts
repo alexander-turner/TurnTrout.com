@@ -22,6 +22,7 @@ import {
   normalizeNbsp,
   RIGHT_DOUBLE_QUOTE,
   RIGHT_SINGLE_QUOTE,
+  THIN_SPACE,
   WORD_JOINER,
 } from "../../../components/constants"
 import {
@@ -191,6 +192,27 @@ describe("HTMLFormattingImprovement", () => {
     it("should handle quotes in headers", () => {
       const processedHtml = testHtmlFormattingImprovement(originalHeader)
       expect(normalizeNbsp(processedHtml)).toBe(targetHeader)
+    })
+  })
+
+  describe("Elision apostrophe after f", () => {
+    it.each([
+      // Body prose: punctilio's NBSP precedes the thin space.
+      ["<p>the summer of '24. From</p>", `<p>the summer of ${THIN_SPACE}’24. From</p>`],
+      // Display heading: the plain space is kept, still opened with a thin space.
+      ["<h2>The summer of '24</h2>", `<h2>The summer of ${THIN_SPACE}’24</h2>`],
+      // Preceding word does not end in "f": untouched.
+      ["<p>I was born in '94. Nice</p>", "<p>I was born in ’94. Nice</p>"],
+      // No space before the apostrophe: untouched.
+      ["<p>don't stop</p>", "<p>don’t stop</p>"],
+    ])("opens the f–apostrophe gap: %s", (input, expected) => {
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(normalizeNbsp(processedHtml)).toBe(expected)
+    })
+
+    it("is idempotent", () => {
+      const once = testHtmlFormattingImprovement("<p>the summer of '24. From</p>")
+      expect(testHtmlFormattingImprovement(once)).toBe(once)
     })
   })
 
