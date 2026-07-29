@@ -145,7 +145,7 @@ export const rehypeInlineCodeSpacing: Plugin = () => {
 
     // Applied after the walk, so splicing siblings can't disturb the traversal.
     for (const { parent, node, offset } of gaps) {
-      wrapCharsInSpan(parent, node, [offset], "code-gap-after")
+      wrapCharsInSpan(parent, node, [{ offset, className: "code-gap-after" }])
     }
   }
 }
