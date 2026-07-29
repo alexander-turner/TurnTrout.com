@@ -774,6 +774,14 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
             // it was already on screen. That presentation fires the callback
             // registered above.
             videoEl.currentTime = videoEl.currentTime === 0 ? 1e-4 : 0
+            // The offset can round to the frame already on screen, which lets
+            // the engine satisfy the seek without presenting anything — no
+            // rVFC, no "seeked". The engine reports that by leaving `seeking`
+            // false, and `readyState >= 2` above already guarantees the frame
+            // is up, so settle once the compositor has ticked.
+            if (!videoEl.seeking) {
+              requestAnimationFrame(() => requestAnimationFrame(finish))
+            }
           }
           if (videoEl.readyState >= 2) {
             // HAVE_CURRENT_DATA or better: a frame is decodable now.
