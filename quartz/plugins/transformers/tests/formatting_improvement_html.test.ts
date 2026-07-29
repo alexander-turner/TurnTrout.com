@@ -195,7 +195,7 @@ describe("HTMLFormattingImprovement", () => {
     })
   })
 
-  describe("Elision apostrophe after f", () => {
+  describe("Overhang crowding before opening marks", () => {
     const bodyProseInput = "<p>the summer of '24. From</p>"
     it.each([
       // Body prose: the thin space precedes punctilio's NBSP glue.
@@ -225,7 +225,20 @@ describe("HTMLFormattingImprovement", () => {
       ["<p>I was born in '94. Nice</p>", `<p>I${NBSP}was born in${NBSP}’94. Nice</p>`],
       // No space before the apostrophe: untouched.
       ["<p>don't stop</p>", `<p>don’t${NBSP}stop</p>`],
-    ])("handles the f–apostrophe gap: %s", (input, expected) => {
+      // Opening marks after "f" are crowded by the same overhang.
+      [
+        `<h2>of ${LEFT_DOUBLE_QUOTE}x if (x if [x of {x</h2>`,
+        `<h2>of${THIN_SPACE} ${LEFT_DOUBLE_QUOTE}x if${THIN_SPACE} (x ` +
+          `if${THIN_SPACE} [x of${THIN_SPACE} {x</h2>`,
+      ],
+      // "Q" overhangs its advance too, though less than "f".
+      ["<h2>Q (x and Q [x</h2>", `<h2>Q${THIN_SPACE} (x and Q${THIN_SPACE} [x</h2>`],
+      // Non-overhanging letters before the same marks: untouched.
+      [
+        `<h2>to ${LEFT_DOUBLE_QUOTE}x an (x an [x</h2>`,
+        `<h2>to ${LEFT_DOUBLE_QUOTE}x an (x an [x</h2>`,
+      ],
+    ])("handles overhang crowding: %s", (input, expected) => {
       expect(testHtmlFormattingImprovement(input)).toBe(expected)
     })
 

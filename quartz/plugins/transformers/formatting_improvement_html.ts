@@ -26,6 +26,7 @@ import type { ElementMaybeWithParent } from "./utils"
 import {
   charsToMoveIntoLinkFromRight,
   HAIR_SPACE,
+  LEFT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
   NBSP,
   RIGHT_SINGLE_QUOTE,
@@ -424,24 +425,29 @@ const hyphenWordJoinerPass = definePass(/-/g, (match, view) => {
   return `-${WORD_JOINER}`
 })
 
-// EB Garamond's lowercase "f" hook overhangs its advance width by ~0.13em in
-// the same vertical band the apostrophe's ink occupies, so across a plain
-// space ("of ’24") the two glyphs read as glued together. The font's f’ kern
-// pair can't reach across the intervening space, so widen it with a thin space
-// (~0.1em in this font). An apostrophe after whitespace is always an elision
-// mark (’24, ’tis), never an opening quote.
-//
+// Glyphs whose ink reaches past their own advance width, so a following word
+// space renders far narrower than it measures. In EB Garamond the lowercase "f"
+// hook overhangs by 262 units and "Q" by 199, against a 423-unit space.
+const OVERHANGING_GLYPHS: ReadonlySet<string> = new Set(["f", "Q"])
+
+// Marks whose ink starts high and close to their left edge, landing inside that
+// overhang rather than clearing it. Pairing one with an overhanging glyph leaves
+// 212-320 units of visible gap where an uncrowded pair gets 402-512, so the two
+// glyphs read as glued ("of ’24", "if ‘x"). The font's kern pairs can't reach
+// across the intervening space, so widen it with a thin space (~0.1em here).
+const CROWDED_AFTER_OVERHANG = `${RIGHT_SINGLE_QUOTE}${LEFT_SINGLE_QUOTE}${LEFT_DOUBLE_QUOTE}(\\[{`
+
 // The thin space goes before the word space rather than after it, so a line
-// that wraps at the space starts flush on the apostrophe. Matching the
-// whitespace and the apostrophe together also lets definePass's default
-// boundary skipping reject a pair split by an element: skipped content is
-// elided from the view, so "of <code>Start</code>’s" reads as "of ’s".
+// that wraps at the space starts flush on the mark. Matching the whitespace and
+// the mark together also lets definePass's default boundary skipping reject a
+// pair split by an element: skipped content is elided from the view, so
+// "of <code>Start</code>’s" reads as "of ’s".
 //
 // The whitespace class excludes the thin space, so re-running the pass leaves
 // its own output unchanged.
-const elisionAfterFRegex = new RegExp(`[ \\t\\n${NBSP}]${RIGHT_SINGLE_QUOTE}`, "gu")
-const fApostropheThinSpacePass = definePass(elisionAfterFRegex, (match, view) => {
-  if (view.text[match.index - 1] !== "f") return null
+const overhangCrowdingRegex = new RegExp(`[ \\t\\n${NBSP}][${CROWDED_AFTER_OVERHANG}]`, "gu")
+const overhangThinSpacePass = definePass(overhangCrowdingRegex, (match, view) => {
+  if (!OVERHANGING_GLYPHS.has(view.text[match.index - 1])) return null
   return `${THIN_SPACE}${match[0]}`
 })
 
@@ -463,7 +469,7 @@ export function applyTextTransforms(text: string, options: { useNbsp?: boolean }
     ...checkedTextTransformers,
     useNbsp ? punctilioTransform : punctilioTransformNoNbsp,
     // ToC entries, excerpts, and titles render in the same face as body prose.
-    fApostropheThinSpacePass,
+    overhangThinSpacePass,
     spacesAroundSlashes,
   ]) {
     text = transformer(text)
@@ -1183,7 +1189,7 @@ export const improveFormatting = (
           // Runs after dash conversion so freshly created dashes get glued.
           dashWordJoinerPass,
           // Runs after quote conversion so straight '24 has become ’24.
-          fApostropheThinSpacePass,
+          overhangThinSpacePass,
         ]
 
         // Don't replace slashes in fractions or link text; loose runs are neither.
