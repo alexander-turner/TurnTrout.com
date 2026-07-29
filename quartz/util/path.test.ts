@@ -147,7 +147,7 @@ describe("normalizeHastElement", () => {
       const link = h(
         "a",
         { href: "#section", className: ["internal", "same-page-link", "can-trigger-popover"] },
-        [h("span", { className: ["favicon-span"] }, ["Link", anchorFavicon()])],
+        [h("span", { className: ["nowrap-span"] }, ["Link", anchorFavicon()])],
       )
       const result = normalizeHastElement(h("p", [link]), baseSlug, newSlug)
       const anchor = result.children[0] as Element
@@ -179,7 +179,7 @@ describe("normalizeHastElement", () => {
     it("leaves favicons for other domains untouched", () => {
       const otherFavicon = faviconNode("wikipedia_org", "x")
       const link = h("a", { href: "#section", className: ["same-page-link"] }, [
-        h("span", { className: ["favicon-span"] }, ["Link", otherFavicon]),
+        h("span", { className: ["nowrap-span"] }, ["Link", otherFavicon]),
       ])
       const result = normalizeHastElement(h("p", [link]), baseSlug, newSlug)
       const favicon = ((result.children[0] as Element).children[0] as Element)
@@ -199,7 +199,7 @@ describe("normalizeHastElement", () => {
       // curBase === newBase: the anchor still resolves on the host page, so the
       // link and its anchor favicon must be left untouched.
       const link = h("a", { href: "#section", className: ["internal", "same-page-link"] }, [
-        h("span", { className: ["favicon-span"] }, ["Link", anchorFavicon()]),
+        h("span", { className: ["nowrap-span"] }, ["Link", anchorFavicon()]),
       ])
       const result = normalizeHastElement(h("p", [link]), baseSlug, baseSlug)
       const anchor = result.children[0] as Element

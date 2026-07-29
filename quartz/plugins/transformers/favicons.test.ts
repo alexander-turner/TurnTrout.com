@@ -27,7 +27,7 @@ const { minFaviconCount, faviconSubstringBlocklist } = simpleConstants
 const faviconSpanNode = {
   type: "element",
   tagName: "span",
-  properties: { className: "favicon-span" },
+  properties: { className: "nowrap-span" },
 }
 
 const createExpectedFavicon = (
@@ -431,11 +431,11 @@ describe("insertFavicon", () => {
     expect(node.children.length).toBe(expectedChildren)
   })
 
-  describe("favicon-span insertion", () => {
+  describe("nowrap-span insertion", () => {
     it.each([
       ["Long text concord", "Long text con", "cord"],
       ["Medium", "Me", "dium"],
-    ])("splices last 4 chars into favicon-span for %s", (text, remainingText, splicedChars) => {
+    ])("splices last 4 chars into nowrap-span for %s", (text, remainingText, splicedChars) => {
       const node = h("div", {}, [text])
       favicons.insertFavicon(imgPath, node)
 
@@ -469,7 +469,7 @@ describe("insertFavicon", () => {
     })
 
     it.each(favicons.tagsToZoomInto)(
-      "zooms into %s elements and splices text into favicon-span",
+      "zooms into %s elements and splices text into nowrap-span",
       (tagName) => {
         const innerText = "tag name plan"
         const node = h("a", {}, [
@@ -516,9 +516,9 @@ describe("insertFavicon", () => {
       expect(overlap).toEqual([])
     })
 
-    it("appends to existing favicon-span instead of creating a new one", () => {
+    it("appends to existing nowrap-span instead of creating a new one", () => {
       const existingFavicon = favicons.createFaviconElement("/first/favicon.png")
-      const existingSpan = h("span", { className: "favicon-span" }, ["text", existingFavicon])
+      const existingSpan = h("span", { className: "nowrap-span" }, ["text", existingFavicon])
       const node = h("a", {}, [existingSpan])
 
       const result = favicons.maybeSpliceText(node, favicons.createFaviconElement(imgPath))
@@ -582,7 +582,7 @@ describe("insertFavicon", () => {
         let found: string | undefined
         visit(node, "element", (el: Element) => {
           const cls = el.properties?.class
-          if (typeof cls === "string" && cls.includes("favicon") && !cls.includes("favicon-span")) {
+          if (typeof cls === "string" && cls.includes("favicon")) {
             found = cls
           }
         })
@@ -1027,14 +1027,14 @@ describe("maybeSpliceText edge cases", () => {
   })
 })
 
-describe("favicon must be inside favicon-span", () => {
+describe("favicon must be inside nowrap-span", () => {
   const imgPath = "/test/favicon.png"
 
   const findFaviconSpan = (el: Element): Element | null => {
     for (const child of el.children) {
       if (child.type !== "element") continue
       const elem = child as Element
-      if (hasClass(elem, "favicon-span")) return elem
+      if (hasClass(elem, "nowrap-span")) return elem
       const found = findFaviconSpan(elem)
       if (found) return found
     }
@@ -1046,13 +1046,13 @@ describe("favicon must be inside favicon-span", () => {
     ["nested code element", h("a", {}, [h("code", {}, ["linkchecker"])])],
     ["empty node", h("a", {}, [])],
     ["non-text child div", h("a", {}, [h("div")])],
-  ])("wraps favicon inside favicon-span: %s", (_name, node) => {
+  ])("wraps favicon inside nowrap-span: %s", (_name, node) => {
     const result = favicons.maybeSpliceText(node as Element, favicons.createFaviconElement(imgPath))
     if (result) {
       ;(node as Element).children.push(result)
     }
     const span = findFaviconSpan(node as Element)
-    if (!span) throw new Error("favicon-span not found")
+    if (!span) throw new Error("nowrap-span not found")
     const directNakedFavicon = (node as Element).children.find(
       (child) =>
         child.type === "element" &&
@@ -1090,11 +1090,11 @@ describe("isFootnoteRefSup", () => {
 
 describe("endsWithFavicon", () => {
   const favicon = () => h("img", { className: "favicon" })
-  const faviconSpan = () => h("span", { className: "favicon-span" }, ["ext", favicon()])
+  const faviconSpan = () => h("span", { className: "nowrap-span" }, ["ext", favicon()])
 
   it.each([
     ["a bare trailing favicon", h("a", {}, ["link", favicon()]), true],
-    ["a trailing favicon-span", h("a", {}, ["li", faviconSpan()]), true],
+    ["a trailing nowrap-span", h("a", {}, ["li", faviconSpan()]), true],
     ["a nested favicon inside code", h("a", {}, [h("code", {}, ["fn", favicon()])]), true],
     ["trailing whitespace after the favicon", h("a", {}, ["li", faviconSpan(), "   "]), true],
     ["a link with no favicon", h("a", {}, ["just text"]), false],
@@ -1110,7 +1110,7 @@ describe("glueFootnoteRefsToFavicons", () => {
   const faviconLink = () =>
     h("a", { href: "https://example.com" }, [
       "si",
-      h("span", { className: "favicon-span" }, ["te", favicon()]),
+      h("span", { className: "nowrap-span" }, ["te", favicon()]),
     ])
   const footnoteRef = (n: number) =>
     h("sup", {}, [

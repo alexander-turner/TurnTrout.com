@@ -2,7 +2,7 @@ import { expect, test } from "./fixtures"
 import { gotoPage } from "./visual_utils"
 
 // The favicon transformer wraps a link's last word plus its favicon in a
-// `white-space: nowrap` span (`.favicon-span`) so the icon never orphans alone.
+// `white-space: nowrap` span (`.nowrap-span`) so the icon never orphans alone.
 // Under greedy wrapping that whole unit can still fall to its own line,
 // stranding the last word. Figcaptions defend against this with
 // `text-wrap: pretty`, which pulls the preceding word down to share the line.
@@ -10,7 +10,7 @@ import { gotoPage } from "./visual_utils"
 // `text-wrap: pretty`, so the assertion is scoped there (it degrades to greedy
 // wrapping elsewhere).
 test.describe("figcaption favicon wrapping", () => {
-  test("keeps a trailing favicon-span from orphaning onto its own line", async ({
+  test("keeps a trailing nowrap-span from orphaning onto its own line", async ({
     page,
   }, testInfo) => {
     test.skip(!testInfo.project.name.includes("Chrome"), "text-wrap: pretty is Chromium-only")
@@ -24,12 +24,12 @@ test.describe("figcaption favicon wrapping", () => {
       // mirroring what the favicon transformer emits.
       cap.innerHTML =
         'moments before they pushed the lever and it <span id="pre">killed</span> ' +
-        '<span class="favicon-span">her.<span style="display:inline-block;width:14px;' +
+        '<span class="nowrap-span">her.<span style="display:inline-block;width:14px;' +
         'height:14px;background:#888;vertical-align:middle"></span></span>'
       article.appendChild(cap)
 
       const pre = cap.querySelector<HTMLElement>("#pre")
-      const fav = cap.querySelector<HTMLElement>(".favicon-span")
+      const fav = cap.querySelector<HTMLElement>(".nowrap-span")
       if (!pre || !fav) throw new Error("missing fixture elements")
 
       const sameLine = () =>

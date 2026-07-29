@@ -11,10 +11,10 @@ import {
   BACKLINK_HIGHLIGHT_CLASS,
   EMOJI_CLASS,
   FAVICON_CLASS,
-  FAVICON_SPAN_CLASS,
   HEADING_TAGS,
   INLINE_IMG_CLASS,
   KATEX_CLASS,
+  NOWRAP_SPAN_CLASS,
 } from "../../components/constants"
 import { type FullSlug, type SimpleSlug, simplifySlug } from "../../util/path"
 import { hasClass } from "./utils"
@@ -168,6 +168,9 @@ function stripIdsDeep(node: Element): Element {
  * both). Their width/height are already stamped by `addAssetDimensionsFromSrc`,
  * which runs before this pass, so the preserved `<img>` satisfies the
  * `images_missing_dimensions` check.
+ *
+ * Narrower than `isGlyphAtom` in `inlineAtomGlue`: excerpts drop favicons, so a
+ * favicon is not an atom worth preserving here.
  */
 function isInlineAtom(node: Element): boolean {
   if (hasClass(node, KATEX_CLASS)) return true
@@ -251,7 +254,15 @@ function sanitizeNode(node: ElementContent, highlightId: string): ElementContent
   if (node.tagName === "a" && hasClass(node, "data-footnote-backref")) return []
 
   if (hasClass(node, FAVICON_CLASS)) return []
-  if (hasClass(node, FAVICON_SPAN_CLASS)) return sanitizeChildren(node.children, highlightId)
+
+  // A nowrap span glues an inline atom to its neighbors. Excerpts drop
+  // favicons, so a span that held one has nothing left to glue and unwraps to
+  // its text; a span around an emoji or sprite keeps its wrapper.
+  if (hasClass(node, NOWRAP_SPAN_CLASS)) {
+    const children = sanitizeChildren(node.children, highlightId)
+    if (!children.some((child) => child.type === "element" && isInlineAtom(child))) return children
+    return [cloneWithoutId(node, children)]
+  }
 
   // Preserve the pipeline's rendered inline atoms verbatim rather than
   // reconstructing them downstream.
@@ -270,9 +281,14 @@ function sanitizeNode(node: ElementContent, highlightId: string): ElementContent
 
   if (node.tagName === "a") return sanitizeChildren(node.children, highlightId)
 
+  return [cloneWithoutId(node, sanitizeChildren(node.children, highlightId))]
+}
+
+/** Copies `node` with `children`, dropping the `id` that would collide with a page anchor. */
+function cloneWithoutId(node: Element, children: ElementContent[]): Element {
   const properties = { ...node.properties }
   delete properties.id
-  return [{ ...node, properties, children: sanitizeChildren(node.children, highlightId) }]
+  return { ...node, properties, children }
 }
 
 interface Measurement {

@@ -15,8 +15,8 @@ import {
   replaceEmojiConvertArrows,
   Twemoji,
   TwemojiOptions,
-  wrapEmojiNodes,
 } from "../twemoji"
+import { createNowrapSpan } from "../utils"
 
 interface CustomNode extends UnistNode {
   children?: CustomNode[]
@@ -173,47 +173,6 @@ describe("Twemoji functions", () => {
     })
   })
 
-  describe("wrapEmojiNodes", () => {
-    const emojiImg = () => createEmoji("1f600.svg", "😀")
-    const emojiSpan = (glyph: string) =>
-      h("span.emoji-span", [{ type: "text", value: glyph }, emojiImg()])
-
-    it("wraps an emoji with its preceding character", () => {
-      const result = wrapEmojiNodes([{ type: "text", value: "Hi(" }, emojiImg()])
-      expect(result).toEqual([{ type: "text", value: "Hi" }, emojiSpan("(")])
-    })
-
-    it("converts a word's trailing space to a non-breaking space", () => {
-      const result = wrapEmojiNodes([{ type: "text", value: "Hi " }, emojiImg()])
-      expect(result).toEqual([{ type: "text", value: "Hi" }, emojiSpan(NBSP)])
-    })
-
-    it("drops a text node that becomes empty after pulling its only character", () => {
-      const result = wrapEmojiNodes([{ type: "text", value: "(" }, emojiImg()])
-      expect(result).toEqual([emojiSpan("(")])
-    })
-
-    it("leaves an emoji after a lone space breakable (emoji sequence)", () => {
-      const nodes = [{ type: "text", value: " " }, emojiImg()]
-      expect(wrapEmojiNodes(nodes as never)).toEqual(nodes)
-    })
-
-    it("leaves a leading emoji (no preceding glyph) bare", () => {
-      const result = wrapEmojiNodes([emojiImg(), { type: "text", value: " Hi" }])
-      expect(result).toEqual([emojiImg(), { type: "text", value: " Hi" }])
-    })
-
-    it("leaves an emoji preceding another emoji bare", () => {
-      const result = wrapEmojiNodes([emojiImg(), emojiImg()])
-      expect(result).toEqual([emojiImg(), emojiImg()])
-    })
-
-    it("leaves non-emoji nodes untouched", () => {
-      const nodes = [{ type: "text", value: "no emoji here" }]
-      expect(wrapEmojiNodes(nodes as never)).toEqual(nodes)
-    })
-  })
-
   function createEmoji(path: string, originalChar: string): Element {
     if (!path.endsWith(".svg")) {
       throw new Error("Only SVGs are supported")
@@ -337,7 +296,7 @@ describe("processTree", () => {
       type: "root",
       children: [
         { type: "text", value: "Hello ⤴" },
-        h("span.emoji-span", [{ type: "text", value: NBSP }, createEmoji("1f600.svg", "😀")]),
+        createNowrapSpan([{ type: "text", value: NBSP }, createEmoji("1f600.svg", "😀")]),
       ],
     })
   })
