@@ -2139,6 +2139,13 @@ describe("applyTextTransforms function", () => {
     const result = applyTextTransforms(input)
     expect(normalizeNbsp(result)).toBe(expected)
   })
+
+  it.each([
+    [{}, `The summer of${NBSP}${THIN_SPACE}${WORD_JOINER}’24`],
+    [{ useNbsp: false }, `The summer of ${THIN_SPACE}${WORD_JOINER}’24`],
+  ])("opens the f–apostrophe gap with options %s", (options, expected) => {
+    expect(applyTextTransforms("The summer of '24", options)).toBe(expected)
+  })
 })
 
 describe("Ordinal Suffixes", () => {

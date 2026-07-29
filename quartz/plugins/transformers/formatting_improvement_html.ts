@@ -458,6 +458,8 @@ export function applyTextTransforms(text: string, options: { useNbsp?: boolean }
   for (const transformer of [
     ...checkedTextTransformers,
     useNbsp ? punctilioTransform : punctilioTransformNoNbsp,
+    // ToC entries, excerpts, and titles render in the same face as body prose.
+    fApostropheThinSpacePass,
     spacesAroundSlashes,
   ]) {
     text = transformer(text)
