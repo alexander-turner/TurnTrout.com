@@ -1,5 +1,6 @@
 import type { Element, ElementContent, Root, Text } from "hast"
 
+import { CLOSING_BRACKETS, TERMINAL_PUNCTUATION } from "punctilio"
 import { SKIP, visit } from "unist-util-visit"
 
 import {
@@ -57,25 +58,22 @@ function acceptsTrailingGlue(node: Text | Element | undefined): boolean {
 }
 
 // Closing punctuation: marks that belong to the word before them and so must
-// never open a line. Straight quote forms appear because Twemoji glues before
-// HTMLFormattingImprovement curls them. A run is glued as a unit, which is what
-// carries the `,”` that punctilio produces by swapping a comma inside a quote.
+// never open a line. The terminal marks and closing brackets come from
+// punctilio, which owns those sets for the whole formatting pipeline and spans
+// the fullwidth, CJK, Arabic, and Greek forms alongside the ASCII ones. The
+// quotes are listed here: the curly forms stay on `config/constants.json`, the
+// cross-language source Python reads too, and the straight forms reach this pass
+// because Twemoji glues before HTMLFormattingImprovement curls them. A run is
+// glued as a unit, which is what carries the `,”` that punctilio produces by
+// swapping a comma inside a quote.
 const trailingGlueChars: ReadonlySet<string> = new Set([
   '"',
   "'",
   RIGHT_DOUBLE_QUOTE,
   RIGHT_SINGLE_QUOTE,
   RIGHT_GUILLEMET,
-  ",",
-  ".",
-  ";",
-  ":",
-  "!",
-  "?",
-  "…",
-  ")",
-  "]",
-  "}",
+  ...TERMINAL_PUNCTUATION,
+  ...CLOSING_BRACKETS,
 ])
 
 /** Length of the leading run of `value` that may not begin a line. */
