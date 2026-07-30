@@ -27,11 +27,12 @@ lints that catch two kinds of lie a green check can hide:
 
 ### Identity (Tier 1, default-on)
 
-| Hook                        | Failure it prevents                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Example                                                                |
-| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `check-pinned-base-images`  | Catches a Docker base image pinned to a tag the registry can quietly re-point to different bytes. Example: `FROM node:22` today may not be the same image tomorrow. **Requires a `@sha256:` digest** so the image you reviewed is the image CI builds.                                                                                                                                                                                                                      | `FROM node:22` — the digest behind the tag changes under you           |
-| `check-pinned-downloads`    | Catches downloading a binary and running it with no checksum or signature check, so a tampered release or hacked mirror can swap it. Also flags one-line installers like `curl -fsSL … \| sudo sh`, which pipe unverified bytes straight into a shell.                                                                                                                                                                                                                      | `curl -sL get.example.com \| bash` — no checksum, no signature         |
-| `check-provenance-repo-url` | Catches a `package.json` (or `pyproject.toml`) whose repository URL still points at the repo it was forked from. Example: a fork’s first `npm publish --provenance` fails with `E422 … Failed to validate repository information` because the URL names the upstream, not this fork. Compares the declared repository URL against your `origin` remote (never `Homepage`). A mismatch has no opt-out — forks must fix their URL. Repos with no `origin` remote are skipped. | a fork's `repository.url` still names upstream — npm publish dies E422 |
+| Hook                        | Failure it prevents                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Example                                                                |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `check-pinned-base-images`  | Catches a Docker base image pinned to a tag the registry can quietly re-point to different bytes. Example: `FROM node:22` today may not be the same image tomorrow. **Requires a `@sha256:` digest** so the image you reviewed is the image CI builds.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `FROM node:22` — the digest behind the tag changes under you           |
+| `check-pinned-downloads`    | Catches downloading a binary and running it with no checksum or signature check, so a tampered release or hacked mirror can swap it. Also flags one-line installers like `curl -fsSL … \| sudo sh`, which pipe unverified bytes straight into a shell.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | `curl -sL get.example.com \| bash` — no checksum, no signature         |
+| `check-versionless-install` | Catches an install command that names no version — `pip install ruff`, `apt-get install -y docker-sbx`, `pipx install pre-commit`, `npm install -g pnpm` — so the bytes CI installs today are whatever the index serves today. Worse than an unpinned image tag: the version that changed appears nowhere in the diff. Example: a runtime installed with `apt-get install docker-sbx` served v0.37.1 while the repo’s own version file pinned v0.35.0 — the pin existed and nothing at install time read it, which cost days of red end-to-end runs. Covers shell scripts and inline workflow `run:` blocks (hadolint's DL3008/DL3013/DL3018 already own Dockerfiles). A requirements/constraints file, a local path or archive, a URL/VCS spec, and a variable-built spec are all left alone; a **local** `npm install pkg` is too (its range belongs in `package.json`). Opt out with `# pin-exempt: <reason>` — the distro-package case (`apt-get install -y curl`) is the recurring one, since apt serves one version per release. | `pip install pre-commit` — tomorrow’s CI runs a different pre-commit   |
+| `check-provenance-repo-url` | Catches a `package.json` (or `pyproject.toml`) whose repository URL still points at the repo it was forked from. Example: a fork’s first `npm publish --provenance` fails with `E422 … Failed to validate repository information` because the URL names the upstream, not this fork. Compares the declared repository URL against your `origin` remote (never `Homepage`). A mismatch has no opt-out — forks must fix their URL. Repos with no `origin` remote are skipped.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | a fork's `repository.url` still names upstream — npm publish dies E422 |
 
 ### Security (Tier 1, default-on)
 
@@ -117,6 +118,7 @@ repos:
       # ── Tier 1 · Identity (default-on) ──
       - id: check-pinned-base-images
       - id: check-pinned-downloads
+      - id: check-versionless-install # every install command must name a version
       - id: check-provenance-repo-url
       # ── Tier 1 · Security (default-on) ──
       - id: check-trusted-base
@@ -240,7 +242,7 @@ contexts, and rewrites the repo’s branch-protection ruleset so
 single source of truth, so the required-set stops drifting in the GitHub UI.
 
 ```bash
-pip install ci-truth-serum
+pip install "git+https://github.com/AlexanderMattTurner/ci-truth-serum@v1.0.0"
 
 # Report drift and exit non-zero WITHOUT mutating (PR-safe gate):
 sync-required-checks --repo owner/name --check
@@ -277,22 +279,23 @@ two captures must be equal. Repeat `--pair` for more pins.
 ### Apply: verify a release with release-canary
 
 `release-canary` asserts the places a release leaves its version agree: the
-npm registry (semver-max of `npm view <pkg> versions --json`—deliberately NOT
-`npm view <pkg> version`, which returns the `latest` dist-tag and silently
-misreports when a publish set the tag wrong), the semver-max `v*` git tag, and
-the changelog's top dated `## [x.y.z]` heading (`## Unreleased` is skipped). If
-the repo also ships to the AUR, a `PKGBUILD`'s `pkgver=` is folded in as an
-optional fourth marker — checked only when a PKGBUILD is present, so forgetting
-to bump it is caught while a repo without one is unaffected (a build-time
-`pkgver()` that can't be read offline is skipped, never a failure). On mismatch
-it prints all present labeled values and exits non-zero; the `npm view` call is
-its only network touch.
+semver-max `v*` git tag and the changelog's top dated `## [x.y.z]` heading
+(`## Unreleased` is skipped). If the repo also ships to the AUR, a `PKGBUILD`'s
+`pkgver=` is folded in as an optional third marker — checked only when a
+PKGBUILD is present, so forgetting to bump it is caught while a repo without one
+is unaffected (a build-time `pkgver()` that can't be read offline is skipped,
+never a failure). A marker that is absent entirely — a changelog rolled but
+never tagged — is reported as a missing marker, which is what a half-finished
+release looks like. On mismatch it prints all present labeled values and exits
+non-zero. **Every marker is read locally, so the tool makes no network request
+and needs no registry credentials** — it runs in the same restricted job that
+cut the release.
 
 ```bash
-pip install ci-truth-serum
+pip install "git+https://github.com/AlexanderMattTurner/ci-truth-serum@v1.0.0"
 
-release-canary                    # package name read from ./package.json
-release-canary --package my-pkg --changelog CHANGELOG.md --repo-dir .
+release-canary                           # tag + changelog in the current repo
+release-canary --changelog CHANGELOG.md --repo-dir .
 release-canary --pkgbuild aur/PKGBUILD   # non-default PKGBUILD location
 ```
 
