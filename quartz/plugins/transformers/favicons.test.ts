@@ -32,7 +32,7 @@ const faviconSpanNode = {
 
 const createExpectedFavicon = (
   imgPath: string,
-  nudgeClass?: "close-text" | "closer-text",
+  nudgeClass?: ReturnType<typeof favicons.nudgeClassFor>,
 ): Record<string, unknown> => {
   const faviconElement = favicons.createFaviconElement(imgPath)
   faviconElement.properties.class = `favicon${nudgeClass ? ` ${nudgeClass}` : ""}`
@@ -511,6 +511,7 @@ describe("insertFavicon", () => {
     it.each([
       ["serif sets", favicons.charsToSpace, favicons.charsToSpaceMost],
       ["italic sets", favicons.charsToSpaceItalic, favicons.charsToSpaceMostItalic],
+      ["code sets", favicons.charsToSpaceCode, favicons.charsToSpaceMostCode],
     ])("keeps the %s disjoint", (_label, close, most) => {
       const overlap = close.filter((char) => most.includes(char))
       expect(overlap).toEqual([])
@@ -538,9 +539,17 @@ describe("insertFavicon", () => {
         ["T", {}, "close-text"],
         ["f", {}, "closer-text"],
         ["o", {}, null],
-        // Monospace bearing is handled uniformly in CSS.
-        ["T", { code: true }, null],
+        // Monospace membership follows FiraCode's own bearings, not the serif
+        // sets: "m" and "T" fall short of the uniform correction, "f" and "o"
+        // clear it, and "W" needs the full step back.
+        ["T", { code: true }, "code-close-text"],
+        ["m", { code: true }, "code-close-text"],
+        ["W", { code: true }, "code-closer-text"],
         ["f", { code: true }, null],
+        ["o", { code: true }, null],
+        // A code context wins over the faces it nests inside.
+        ["f", { code: true, italic: true }, null],
+        ["y", { code: true, smallCaps: true }, null],
         // Italic membership is ink-derived; leaning glyphs join, others leave.
         ["t", { italic: true }, "close-text"],
         ["V", { italic: true }, "closer-text"],
@@ -611,10 +620,19 @@ describe("insertFavicon", () => {
         expect(classOf(node)).toBe("favicon")
       })
 
-      it("suppresses per-glyph nudges inside <code>", () => {
+      it("assigns the monospace membership inside <code>", () => {
+        // "-y" ends in "y": monospace non-member, italic member.
         const node = h("a", { href: "https://example.com" }, [h("code", {}, ["subfont -y"])])
         favicons.insertFavicon(imgPath, node)
         expect(classOf(node)).toBe("favicon")
+      })
+
+      it("nudges a code link ending in a tight monospace glyph", () => {
+        const node = h("a", { href: "mailto:alex@turntrout.com" }, [
+          h("code", {}, ["alex@turntrout.com"]),
+        ])
+        favicons.insertFavicon(imgPath, node)
+        expect(classOf(node)).toBe("favicon code-close-text")
       })
 
       it("applies an outer context supplied by the caller", () => {

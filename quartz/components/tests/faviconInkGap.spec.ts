@@ -2,8 +2,10 @@ import type { Page } from "@playwright/test"
 
 import {
   charsToSpace,
+  charsToSpaceCode,
   charsToSpaceItalic,
   charsToSpaceMost,
+  charsToSpaceMostCode,
   charsToSpaceMostItalic,
   EMPTY_GLYPH_CONTEXT,
   nudgeClassFor,
@@ -36,6 +38,11 @@ const PROBE_CHARS: readonly string[] = [
     ..."oenas",
   ]),
 ]
+// The monospace sets are their own membership, so the code context probes them
+// rather than the proportional faces' chars.
+const CODE_PROBE_CHARS: readonly string[] = [
+  ...new Set([...charsToSpaceCode, ...charsToSpaceMostCode, ..."oenas"]),
+]
 
 interface ContextSpec {
   name: "serif" | "italic" | "smallCaps" | "code"
@@ -67,11 +74,13 @@ const CONTEXTS: readonly ContextSpec[] = [
 // varies with the viewport's root font size; the invariant is the RATIO to
 // the classless serif margin (the "unit"): close-text doubles it,
 // closer-text triples it, and inside code a uniform −0.125·base nudge
-// cancels it to zero.
+// cancels it to zero, which the code classes return by a half step and a
+// whole step.
 const MARGIN_UNIT_MULTIPLIER: Readonly<Record<string, number>> = {
-  null: 1,
   "close-text": 2,
   "closer-text": 3,
+  "code-close-text": 0.5,
+  "code-closer-text": 1,
 }
 const UNIT_PROBE_KEY = "serif|o"
 
@@ -88,6 +97,8 @@ const FLOOR_EM: Readonly<Record<string, number>> = {
   null: -0.0125,
   "close-text": -0.0375,
   "closer-text": -0.075,
+  "code-close-text": -0.0125,
+  "code-closer-text": -0.0125,
 }
 const CEILING_EM: Readonly<Record<string, number>> = {
   serif: 0.32,
@@ -112,6 +123,13 @@ interface Probe {
   nudgeClass: ReturnType<typeof nudgeClassFor>
 }
 
+/** The probe's expected margin as a multiple of the classless serif margin. */
+function marginMultiplier(probe: Probe): number {
+  if (probe.nudgeClass) return MARGIN_UNIT_MULTIPLIER[probe.nudgeClass]
+  // The uniform monospace correction cancels the classless margin entirely.
+  return probe.contextName === "code" ? 0 : 1
+}
+
 function collectFailures(probes: readonly Probe[], measurements: readonly Measurement[]): string[] {
   const unit = measurements.find((m) => m.key === UNIT_PROBE_KEY)
   if (!unit || unit.marginPx <= 0) {
@@ -124,10 +142,7 @@ function collectFailures(probes: readonly Probe[], measurements: readonly Measur
       failures.push(`${probe.key}: no measurement`)
       continue
     }
-    const expectedMargin =
-      probe.contextName === "code"
-        ? 0
-        : MARGIN_UNIT_MULTIPLIER[probe.nudgeClass ?? "null"] * unit.marginPx
+    const expectedMargin = marginMultiplier(probe) * unit.marginPx
     if (Math.abs(measured.marginPx - expectedMargin) > 0.1) {
       failures.push(
         `${probe.key}: margin ${measured.marginPx.toFixed(2)}px != ${expectedMargin.toFixed(2)}px`,
@@ -319,6 +334,13 @@ const SERIF_CLOSE_SHORTFALL_EM = 0.05
 const SERIF_MOST_SHORTFALL_EM = 0.12
 const ITALIC_CLOSE_BEARING_EM = -0.04
 const ITALIC_MOST_BEARING_EM = -0.11
+// Monospace measures the bearing itself against what the uniform code
+// correction already covers, so its bars are absolute rather than relative to
+// a reference glyph. The larger class's bar clears "K", the closest
+// non-member, by 0.01em, which leaves the set's own borderline members ("V",
+// "Y") above it — the sweep is one-directional, so extra members pass.
+const CODE_CLOSE_BEARING_EM = 0.05
+const CODE_MOST_BEARING_EM = 0.03
 
 /**
  * Names every glyph whose measured ink qualifies it for a nudge class it
@@ -354,6 +376,15 @@ function collectMembershipViolations(
     } else if (italicBearing <= ITALIC_CLOSE_BEARING_EM && !hasItalicNudge) {
       flag("italic", char, italicBearing, "close-text")
     }
+
+    // A glyph with no ink in band scores as maximally clear, so it never flags.
+    const codeBearing = bearings.get(`code|${char}`) ?? Number.POSITIVE_INFINITY
+    const hasCodeNudge = charsToSpaceCode.includes(char) || charsToSpaceMostCode.includes(char)
+    if (codeBearing < CODE_MOST_BEARING_EM && !charsToSpaceMostCode.includes(char)) {
+      flag("code", char, codeBearing, "code-closer-text")
+    } else if (codeBearing < CODE_CLOSE_BEARING_EM && !hasCodeNudge) {
+      flag("code", char, codeBearing, "code-close-text")
+    }
   }
   return violations
 }
@@ -377,7 +408,16 @@ test.describe("favicon ink gap", () => {
   test("margins resolve exactly and ink gaps stay inside the band", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
 
-    const probes = buildProbes(CONTEXTS, PROBE_CHARS)
+    const probes = [
+      ...buildProbes(
+        CONTEXTS.filter((ctx) => ctx.name !== "code"),
+        PROBE_CHARS,
+      ),
+      ...buildProbes(
+        CONTEXTS.filter((ctx) => ctx.name === "code"),
+        CODE_PROBE_CHARS,
+      ),
+    ]
     const measurements = await measureProbes(page, probes)
     const failures = collectFailures(probes, measurements)
     expect(failures, failures.join("\n")).toEqual([])
@@ -431,7 +471,7 @@ test.describe("favicon ink gap", () => {
   test("glyphs that measure as crowding carry a nudge class", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
 
-    const contexts = CONTEXTS.filter((ctx) => ctx.name === "serif" || ctx.name === "italic")
+    const contexts = CONTEXTS.filter((ctx) => ctx.name !== "smallCaps")
     const measurements = await measureProbes(page, buildProbes(contexts, MEMBERSHIP_CHARS))
     const bearings = bearingsByKey(measurements)
 

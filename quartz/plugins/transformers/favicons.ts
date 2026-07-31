@@ -324,6 +324,34 @@ export const charsToSpaceItalic: readonly string[] = [
   "®",
 ]
 export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/", "W"]
+// FiraCode centers every glyph in one fixed advance, so its right side bearing
+// swings from ~0.01em ("W") to ~0.4em ("L") — the uniform monospace correction
+// in CSS (`code .favicon`) is calibrated to the middle of that range and leaves
+// the tight end crowded. Membership derives from each glyph's ink clearance
+// within the favicon's vertical band (0.2em–0.7em above the baseline), as for
+// the italic sets: below ~0.067em the uniform correction runs short by half a
+// `close-text` step, below ~0.042em by a full one. The superscript marks sit
+// high and narrow, so they land in the tight tier alongside "W". Glyphs whose
+// bearing already covers the gap ("m" is the tightest common letter at
+// 0.059em) take no class.
+export const charsToSpaceCode: readonly string[] = [
+  "K",
+  "M",
+  "T",
+  "P",
+  "C",
+  "~",
+  "Q",
+  "g",
+  "O",
+  "D",
+  "*",
+  "m",
+  "#",
+  "F",
+  "®",
+]
+export const charsToSpaceMostCode: readonly string[] = ["W", "@", "w", "%", "&", "V", "Y", "™", "©"]
 
 /** Widens `context` with whatever face `element` switches its text into. */
 export function broadenContext(element: Element, context: GlyphContext): GlyphContext {
@@ -348,8 +376,9 @@ export function contextFromAncestors(ancestors: readonly Parent[]): GlyphContext
 /**
  * The nudge class for a favicon that lands after `lastChar` rendered in
  * `context`:
- *   - monospace advances carry their own right side bearing, handled uniformly
- *     in CSS (`code .favicon`), so no per-glyph class applies;
+ *   - monospace glyphs sit inside a uniform correction in CSS (`code .favicon`),
+ *     so only the ones whose bearing falls below it take a class, and the
+ *     classes carry monospace-sized nudges of their own;
  *   - small-cap forms of lowercase letters keep their in-band ink clear of the
  *     icon (even ``q``'s tail is a descender, below the icon), so none applies;
  *   - italic uses the ink-derived sets, the serif body face its audited ones.
@@ -357,8 +386,11 @@ export function contextFromAncestors(ancestors: readonly Parent[]): GlyphContext
 export function nudgeClassFor(
   lastChar: string,
   context: GlyphContext,
-): "close-text" | "closer-text" | null {
-  if (context.code) return null
+): "close-text" | "closer-text" | "code-close-text" | "code-closer-text" | null {
+  if (context.code) {
+    if (charsToSpaceMostCode.includes(lastChar)) return "code-closer-text"
+    return charsToSpaceCode.includes(lastChar) ? "code-close-text" : null
+  }
   if (context.smallCaps && /[a-z]/.test(lastChar)) return null
   const [most, close] = context.italic
     ? [charsToSpaceMostItalic, charsToSpaceItalic]

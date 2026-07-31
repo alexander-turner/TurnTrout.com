@@ -650,6 +650,8 @@ Here's a link to [another page](/shard-theory) with popover preview. [This same-
 
 Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons) Link to [`x.com`](https://x.com).
 
+The monospace face's right side bearing swings widely, so a favicon after code ending in a tight glyph keeps the same visual gap as one after a roomy glyph: [`alex@turntrout.com`](mailto:alex@turntrout.com), [`npm i abW`](https://npmjs.com), [`npm i abT`](https://npmjs.com), [`npm i abo`](https://npmjs.com).
+
 A footnote reference right after a favicon-ending [same-page link](#external-links-with-favicons)[^favicon-footnote] must not wrap onto its own line.
 
 Faux-bold text widens glyph ink rightward, so a favicon after a bold link ending in an overhanging glyph, like **[Compete for Pentagon Favor](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)**, keeps the same visual gap, including in a collapsed quote title:
