@@ -19,16 +19,20 @@ import { gotoPage } from "./visual_utils"
 //  1. The computed `margin-left` of a favicon must resolve to the model's
 //     exact value for every (nudge class, context) pair — this pins the CSS
 //     (variable overrides, selector specificity) to the pixel.
-//  2. The rendered ink gap — margin plus the last glyph's right side bearing
-//     measured inside the favicon's vertical band (0.2em–0.7em above the
-//     baseline, mirroring the icon's raised box) — must stay inside a
-//     crowding floor and a drift ceiling for every probed (context, glyph)
-//     pair, using the site's real fonts.
+//  2. The rendered ink gap — margin plus the last glyph's right side bearing,
+//     measured inside the band the icon actually occupies — must hold one
+//     constant across every face and every plausible link-ending glyph.
+//
+// The band is derived per probe from the rendered icon rather than assumed.
+// `--favicon-size` is rem-denominated while glyphs scale in em, so the icon
+// covers a different slice of the glyph in each context: 0.125em–0.750em in
+// body text but 0.154em–0.926em inside `<code>`. A fixed band measures the
+// wrong ink in every context but one.
 //
 // Set membership itself is pinned exactly by `nudgeClassFor` unit tests in
-// favicons.test.ts; the band here catches rendering-level regressions (wrong
-// font served, margin model applied in the wrong context) rather than
-// re-deriving membership.
+// favicons.test.ts; this spec catches rendering-level regressions (wrong font
+// served, margin model applied in the wrong context) rather than re-deriving
+// membership.
 const PROBE_CHARS: readonly string[] = [
   ...new Set([
     ...charsToSpace,
@@ -113,6 +117,9 @@ interface Measurement {
   fontSizePx: number
   gapPx: number | null
   fromFallbackFace: boolean
+  fromUnsupportedSmallCaps: boolean
+  bandTopEm: number
+  bandBottomEm: number
 }
 
 interface Probe {
@@ -180,6 +187,12 @@ function buildProbes(contexts: readonly ContextSpec[], chars: readonly string[])
  * Renders each probe (glyph + favicon inside its context wrapper) on the page
  * and measures the favicon's computed margin plus the glyph's right side
  * bearing inside the favicon's vertical band, using the site's real fonts.
+ *
+ * The band is read off the rendered icon rather than assumed: `--favicon-size`
+ * is rem-denominated while glyphs scale in em, so the slice of a glyph the icon
+ * actually sits beside differs per context (0.125em–0.750em in body text,
+ * 0.060em–0.362em in an `h1`). A zero-sized inline-block marker in the same
+ * line box supplies the baseline the band is measured from.
  */
 async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Measurement[]> {
   return await page.evaluate(async (probeList) => {
@@ -189,31 +202,43 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
 
     const canvas = document.createElement("canvas")
     const CANVAS_FONT_PX = 400
+    const PEN_X = 400
     canvas.width = 1600
     canvas.height = 900
     const ctx2d = canvas.getContext("2d")
     if (!ctx2d) throw new Error("no canvas context")
 
-    // Right side bearing of `char` inside the favicon's vertical band,
-    // in em of the rendered font. Null when the glyph has no ink there.
-    // Small-cap forms reuse the capital outlines, and canvas-level
-    // font-variant support differs per engine, so a small-caps probe
-    // measures the capital glyph directly.
-    const bearingInBand = (style: CSSStyleDeclaration, char: string): number | null => {
-      const glyph = style.fontVariantCaps === "small-caps" ? char.toUpperCase() : char
+    // Selects the face and, for a small-caps context, the real `smcp` form.
+    // Substituting the capital instead (as an earlier revision did) measures a
+    // glyph the page never renders: the small-cap forms carry their own
+    // advance widths and bearings.
+    const applyFont = (style: CSSStyleDeclaration, family?: string): void => {
+      ctx2d.font = `${style.fontStyle} ${CANVAS_FONT_PX}px ${family ?? style.fontFamily}`
+      ctx2d.fontVariantCaps = style.fontVariantCaps === "small-caps" ? "small-caps" : "normal"
+    }
+
+    // Right side bearing of `char` inside `[bottomEm, topEm]` above the
+    // baseline, in em of the rendered font. Null when the glyph has no ink
+    // there — such a glyph cannot crowd the icon.
+    const bearingInBand = (
+      style: CSSStyleDeclaration,
+      char: string,
+      topEm: number,
+      bottomEm: number,
+    ): number | null => {
       const baseline = 700
       ctx2d.clearRect(0, 0, canvas.width, canvas.height)
-      ctx2d.font = `${style.fontStyle} ${CANVAS_FONT_PX}px ${style.fontFamily}`
+      applyFont(style)
       ctx2d.textBaseline = "alphabetic"
-      ctx2d.fillText(glyph, 400, baseline)
-      const advance = ctx2d.measureText(glyph).width
-      const top = Math.floor(baseline - 0.7 * CANVAS_FONT_PX)
-      const bottom = Math.ceil(baseline - 0.2 * CANVAS_FONT_PX)
+      ctx2d.fillText(char, PEN_X, baseline)
+      const advance = ctx2d.measureText(char).width
+      const top = Math.max(0, Math.floor(baseline - topEm * CANVAS_FONT_PX))
+      const bottom = Math.min(canvas.height - 1, Math.ceil(baseline - bottomEm * CANVAS_FONT_PX))
       const image = ctx2d.getImageData(0, 0, canvas.width, canvas.height)
       for (let x = canvas.width - 1; x >= 0; x--) {
         for (let y = top; y <= bottom; y++) {
           if (image.data[(y * canvas.width + x) * 4 + 3] > 40) {
-            return (400 + advance - x) / CANVAS_FONT_PX
+            return (PEN_X + advance - x) / CANVAS_FONT_PX
           }
         }
       }
@@ -226,12 +251,24 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
     // glyph matches what a nonexistent family produces, since both resolve
     // through the same fallback chain.
     const isFallbackGlyph = (style: CSSStyleDeclaration, char: string): boolean => {
-      const glyph = style.fontVariantCaps === "small-caps" ? char.toUpperCase() : char
-      ctx2d.font = `${style.fontStyle} ${CANVAS_FONT_PX}px ${style.fontFamily}`
-      const requested = ctx2d.measureText(glyph).width
-      ctx2d.font = `${style.fontStyle} ${CANVAS_FONT_PX}px "__no_such_family__"`
-      const substituted = ctx2d.measureText(glyph).width
+      applyFont(style)
+      const requested = ctx2d.measureText(char).width
+      applyFont(style, '"__no_such_family__"')
+      const substituted = ctx2d.measureText(char).width
       return Math.abs(requested - substituted) < 0.01
+    }
+
+    // Canvas-level `font-variant-caps` support differs per engine. Where it is
+    // missing, a lowercase probe silently measures the lowercase glyph, which
+    // is exactly the blind spot this sweep exists to close — so detect it and
+    // report those probes rather than judging them. A face with real `smcp`
+    // gives the small-cap form a different advance from the lowercase one.
+    const smallCapsUnsupported = (style: CSSStyleDeclaration, char: string): boolean => {
+      if (style.fontVariantCaps !== "small-caps" || !/[a-z]/.test(char)) return false
+      applyFont(style)
+      const smallCap = ctx2d.measureText(char).width
+      ctx2d.fontVariantCaps = "normal"
+      return Math.abs(smallCap - ctx2d.measureText(char).width) < 0.01
     }
 
     await document.fonts.ready
@@ -241,26 +278,43 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
       fontSizePx: number
       gapPx: number | null
       fromFallbackFace: boolean
+      fromUnsupportedSmallCaps: boolean
+      bandTopEm: number
+      bandBottomEm: number
     }[] = []
     for (const probe of probeList) {
       host.innerHTML =
         `<p>${probe.wrapperHtml[0]}<span class="ink-probe">${probe.char}</span>` +
         `<svg class="favicon${probe.nudgeClass ? ` ${probe.nudgeClass}` : ""}" aria-hidden="true"></svg>` +
+        `<span class="baseline-probe" style="display:inline-block;width:0;height:0"></span>` +
         `${probe.wrapperHtml[1]}</p>`
       const probeSpan = host.querySelector<HTMLElement>(".ink-probe")
       const favicon = host.querySelector<SVGElement>("svg.favicon")
-      if (!probeSpan || !favicon) throw new Error(`fixture failed for ${probe.key}`)
+      const baselineMarker = host.querySelector<HTMLElement>(".baseline-probe")
+      if (!probeSpan || !favicon || !baselineMarker)
+        throw new Error(`fixture failed for ${probe.key}`)
       const faviconStyle = getComputedStyle(favicon)
       const probeStyle = getComputedStyle(probeSpan)
       const marginPx = parseFloat(faviconStyle.marginLeft)
       const fontSizePx = parseFloat(probeStyle.fontSize)
-      const bearingEm = bearingInBand(probeStyle, probe.char)
+
+      // An empty inline-block sits on the baseline, so its bottom edge is the
+      // baseline the glyph is drawn from.
+      const baselineY = baselineMarker.getBoundingClientRect().bottom
+      const iconRect = favicon.getBoundingClientRect()
+      const bandTopEm = (baselineY - iconRect.top) / fontSizePx
+      const bandBottomEm = (baselineY - iconRect.bottom) / fontSizePx
+
+      const bearingEm = bearingInBand(probeStyle, probe.char, bandTopEm, bandBottomEm)
       results.push({
         key: probe.key,
         marginPx,
         fontSizePx,
         gapPx: bearingEm === null ? null : marginPx + bearingEm * fontSizePx,
         fromFallbackFace: isFallbackGlyph(probeStyle, probe.char),
+        fromUnsupportedSmallCaps: smallCapsUnsupported(probeStyle, probe.char),
+        bandTopEm,
+        bandBottomEm,
       })
     }
     host.remove()
@@ -323,85 +377,86 @@ const MEMBERSHIP_CHARS: readonly string[] = [
   ..."()[]{}\\/®™©°%&*+=<>|!?;:’”†‡",
 ]
 
-// Thresholds in em of the probe's font, slackened from the bars that produced
-// the sets so that no glyph sits near a bar: the closest non-qualifying glyph
-// clears its threshold by more than 0.01em, well beyond what antialiasing
-// differences between rasterizers can shift a detected ink edge. Serif
-// measures shortfall against a round letter's clearance (the kerning audit's
-// unit); italic measures the bearing itself, since its glyphs lean past their
-// advance edge.
-const SERIF_CLOSE_SHORTFALL_EM = 0.05
-const SERIF_MOST_SHORTFALL_EM = 0.12
-const ITALIC_CLOSE_BEARING_EM = -0.04
-const ITALIC_MOST_BEARING_EM = -0.11
-// Monospace measures the bearing itself against what the uniform code
-// correction already covers, so its bars are absolute rather than relative to
-// a reference glyph. The larger class's bar clears "K", the closest
-// non-member, by 0.01em, which leaves the set's own borderline members ("V",
-// "Y") above it — the sweep is one-directional, so extra members pass.
-const CODE_CLOSE_BEARING_EM = 0.05
-const CODE_MOST_BEARING_EM = 0.03
+// The gap the model is trying to hold constant, in em: the median across all
+// four faces, which agree to within 0.02em (serif 0.102, italic 0.082,
+// smallCaps 0.100, code 0.095). Only the extremes disagree, which is the point
+// of the sweep.
+const TARGET_GAP_EM = 0.095
 
-/**
- * Names every glyph whose measured ink qualifies it for a nudge class it
- * doesn't have. One-directional on purpose: the sets may hold extra
- * perceptual members (serif "R", "r") whose crowding lives outside the
- * measured band, and glyphs like italic "~" that overhang past what any nudge
- * corrects. Glyphs with no ink in the band are skipped — they cannot crowd.
- */
-function collectMembershipViolations(
-  bearings: ReadonlyMap<string, number>,
-  serifRef: number,
-): string[] {
-  const violations: string[] = []
-  const flag = (face: string, char: string, amount: number, needs: string) =>
-    violations.push(`${face} ${char}: ${amount.toFixed(3)}em needs ${needs}`)
+// Ink must never reach the icon. `f` sets this in both proportional faces —
+// italic `f` clears by 0.004em, a tenth of a pixel at body size — so the floor
+// is the strongest statement that holds today, not a comfortable margin.
+const OVERLAP_FLOOR_EM = 0
 
-  for (const char of MEMBERSHIP_CHARS) {
-    // A glyph with no ink in band scores as maximally clear, so it never flags.
-    const serifBearing = bearings.get(`serif|${char}`) ?? serifRef
-    const shortfall = serifRef - serifBearing
-    const hasSerifNudge = charsToSpace.includes(char) || charsToSpaceMost.includes(char)
-    if (shortfall > SERIF_MOST_SHORTFALL_EM && !charsToSpaceMost.includes(char)) {
-      flag("serif", char, shortfall, "closer-text")
-    } else if (shortfall > SERIF_CLOSE_SHORTFALL_EM && !hasSerifNudge) {
-      flag("serif", char, shortfall, "close-text")
+// A ratchet on how far each face's gaps spread, in em. The model claims one
+// constant gap, so the ideal is 0; these are today's measured spreads rounded
+// up by ~0.005em of rasterizer slack. Two-directional by construction: making
+// any glyph tighter *or* looser than its face's others widens the spread and
+// fails. Phases 2–3 shrink these toward a single global window; they must only
+// ever be lowered.
+const MAX_SPREAD_EM: Readonly<Record<ContextSpec["name"], number>> = {
+  serif: 0.21,
+  italic: 0.18,
+  smallCaps: 0.2,
+  code: 0.345,
+}
+
+interface GapSample {
+  key: string
+  gapEm: number
+}
+
+/** Measured visual gaps per context, dropping probes that can't be judged. */
+function gapsByContext(
+  measurements: readonly Measurement[],
+): ReadonlyMap<ContextSpec["name"], GapSample[]> {
+  const byContext = new Map<ContextSpec["name"], GapSample[]>()
+  for (const measured of measurements) {
+    // No ink in band means the glyph cannot crowd; a substituted face and an
+    // unsupported small-caps probe would both measure differently per OS.
+    if (measured.gapPx === null || measured.fromFallbackFace || measured.fromUnsupportedSmallCaps) {
+      continue
     }
-
-    const italicBearing = bearings.get(`italic|${char}`) ?? 0
-    const hasItalicNudge =
-      charsToSpaceItalic.includes(char) || charsToSpaceMostItalic.includes(char)
-    if (italicBearing <= ITALIC_MOST_BEARING_EM && !charsToSpaceMostItalic.includes(char)) {
-      flag("italic", char, italicBearing, "closer-text")
-    } else if (italicBearing <= ITALIC_CLOSE_BEARING_EM && !hasItalicNudge) {
-      flag("italic", char, italicBearing, "close-text")
-    }
-
-    // A glyph with no ink in band scores as maximally clear, so it never flags.
-    const codeBearing = bearings.get(`code|${char}`) ?? Number.POSITIVE_INFINITY
-    const hasCodeNudge = charsToSpaceCode.includes(char) || charsToSpaceMostCode.includes(char)
-    if (codeBearing < CODE_MOST_BEARING_EM && !charsToSpaceMostCode.includes(char)) {
-      flag("code", char, codeBearing, "code-closer-text")
-    } else if (codeBearing < CODE_CLOSE_BEARING_EM && !hasCodeNudge) {
-      flag("code", char, codeBearing, "code-close-text")
-    }
+    const context = measured.key.split("|")[0] as ContextSpec["name"]
+    const samples = byContext.get(context) ?? []
+    samples.push({ key: measured.key, gapEm: measured.gapPx / measured.fontSizePx })
+    byContext.set(context, samples)
   }
-  return violations
+  return byContext
 }
 
 /**
- * Right side bearings in em, keyed by probe. Probes with no ink in the band
- * and probes the face rendered from a platform substitute are omitted: the
- * former cannot crowd, the latter would measure differently per OS.
+ * Names every way the rendered gap departs from the one constant the model
+ * claims to hold: ink that reaches the icon, and a face whose gaps spread
+ * further than its ratchet allows. Reports every violation in one run rather
+ * than stopping at the first, so a change's full blast radius is visible.
  */
-function bearingsByKey(measurements: readonly Measurement[]): ReadonlyMap<string, number> {
-  const bearings = new Map<string, number>()
-  for (const measured of measurements) {
-    if (measured.gapPx !== null && !measured.fromFallbackFace) {
-      bearings.set(measured.key, (measured.gapPx - measured.marginPx) / measured.fontSizePx)
+function collectSweepViolations(
+  byContext: ReadonlyMap<ContextSpec["name"], readonly GapSample[]>,
+): string[] {
+  const violations: string[] = []
+  for (const [context, samples] of byContext) {
+    if (samples.length === 0) {
+      violations.push(`${context}: no judgeable probes`)
+      continue
+    }
+    const sorted = [...samples].sort((a, b) => a.gapEm - b.gapEm)
+    const tightest = sorted[0]
+    const loosest = sorted[sorted.length - 1]
+
+    if (tightest.gapEm <= OVERLAP_FLOOR_EM) {
+      violations.push(`${tightest.key}: gap ${tightest.gapEm.toFixed(3)}em reaches the icon`)
+    }
+    const spread = loosest.gapEm - tightest.gapEm
+    if (spread > MAX_SPREAD_EM[context]) {
+      violations.push(
+        `${context}: gaps spread ${spread.toFixed(3)}em > ${MAX_SPREAD_EM[context]}em ` +
+          `(tightest ${tightest.key}=${tightest.gapEm.toFixed(3)}, ` +
+          `loosest ${loosest.key}=${loosest.gapEm.toFixed(3)}, target ${TARGET_GAP_EM})`,
+      )
     }
   }
-  return bearings
+  return violations
 }
 
 test.describe("favicon ink gap", () => {
@@ -464,24 +519,35 @@ test.describe("favicon ink gap", () => {
     expect(failures, failures.join("\n")).toEqual([])
   })
 
-  // Membership ratchet: measure every plausible link-ending glyph in the
-  // shipped faces and demand a nudge class wherever the ink qualifies for
-  // one. This keeps the sets honest against future font updates, which shift
-  // bearings without touching any code the other tests cover.
-  test("glyphs that measure as crowding carry a nudge class", async ({ page }) => {
+  // Two-directional sweep: measure every plausible link-ending glyph in every
+  // shipped face and hold the *rendered gap* to the single constant the model
+  // claims. The membership sets this replaced could only be too small — it
+  // demanded a nudge where ink qualified for one and said nothing about a
+  // glyph nudged too far, which is how serif "R" reached 0.263em (2.8x the
+  // target) without ever failing. Face-wide spread catches both directions and
+  // needs no per-face threshold table to stay in sync with the sets.
+  test("rendered gaps hold one constant across every face and glyph", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
 
-    const contexts = CONTEXTS.filter((ctx) => ctx.name !== "smallCaps")
-    const measurements = await measureProbes(page, buildProbes(contexts, MEMBERSHIP_CHARS))
-    const bearings = bearingsByKey(measurements)
+    const measurements = await measureProbes(page, buildProbes(CONTEXTS, MEMBERSHIP_CHARS))
+    const byContext = gapsByContext(measurements)
 
-    const substituted = measurements.filter((m) => m.fromFallbackFace).map((m) => m.key)
-    console.info(`Glyphs judged: ${bearings.size}; rendered by a substitute face: ${substituted}`)
+    const skipped = measurements
+      .filter((m) => m.fromFallbackFace || m.fromUnsupportedSmallCaps)
+      .map((m) => m.key)
+    console.info(`Probes skipped (substitute face or no smcp support): ${skipped}`)
+    for (const [context, samples] of byContext) {
+      const sample = measurements.find((m) => m.key.startsWith(`${context}|`))
+      const sorted = [...samples].sort((a, b) => a.gapEm - b.gapEm)
+      const at = (index: number) => `${sorted[index].key}=${sorted[index].gapEm.toFixed(3)}`
+      console.info(
+        `${context}: band ${sample?.bandBottomEm.toFixed(3)}–${sample?.bandTopEm.toFixed(3)}em ` +
+          `(font ${sample?.fontSizePx}px); n=${sorted.length} ` +
+          `tightest ${at(0)} median ${at(Math.floor(sorted.length / 2))} loosest ${at(sorted.length - 1)}`,
+      )
+    }
 
-    const serifRef = bearings.get("serif|o")
-    expect(serifRef, "round-letter reference probe has no ink in band").toBeDefined()
-
-    const violations = collectMembershipViolations(bearings, serifRef ?? 0)
+    const violations = collectSweepViolations(byContext)
     expect(violations, violations.join("\n")).toEqual([])
   })
 })
