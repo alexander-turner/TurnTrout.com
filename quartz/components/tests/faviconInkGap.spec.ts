@@ -388,9 +388,16 @@ function collectBoldFailures(margins: BoldMargins, wrappers: readonly ContextWra
 // Glyphs that plausibly end link text. A face missing one of them renders it
 // from a platform substitute whose metrics vary per OS; measureProbes marks
 // those and the sweep reports them rather than judging them.
+//
+// `charsToMoveIntoLinkFromRight` pulls a trailing mark inside the link, so
+// every mark in that set ends link text constantly and belongs here — a period
+// and a comma most of all. Their ink sits below the icon's band in the
+// proportional faces, so they cannot crowd it and the sweep skips them; in the
+// monospace face they carry a wide bearing and are judged like any other glyph.
 const MEMBERSHIP_CHARS: readonly string[] = [
   ..."abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
   ..."()[]{}\\/®™©°%&*+=<>|!?;:’”†‡",
+  ...".,'\"",
 ]
 
 // The gap the model is trying to hold constant, in em: the median across all
