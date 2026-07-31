@@ -429,7 +429,7 @@ I considered a negotiations round. The counterparties would object to *something
 
 ### The Framework I created
 
-In my personal time (taking vacation days), I created language that would be a good starting point. I composed 25 pages' worth of "good starting point" material. I have published the Framework on my site in generic form applicable to any provider of both cloud and AI.
+In my personal time (taking vacation days), I created language that would be a good starting point. I composed 25 pages worth of "good starting point" material. I have published the Framework on my site in generic form applicable to any provider of both cloud and AI.
 
 > [!quote] Excerpts from [A Red Line and Oversight Framework for Military AI](/military-ai)
 > Subtitle: I sometimes call this "the Framework" as shorthand.
