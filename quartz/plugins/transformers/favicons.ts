@@ -263,10 +263,12 @@ export function insertFavicon(
 // scripts/notebooks/favicon_kerning_audit, which renders every real
 // (glyph, favicon) pair on the built site and reports each glyph's ink
 // clearance; glyphs land here when their median clearance falls more than
-// ~1px short of a round letter's.
+// ~1px short of a round letter's. "r" joins perceptually: its arm terminal
+// sits at x-height, level with the icon's raised box.
 export const charsToSpace: readonly string[] = [
   "T",
   "R",
+  "r",
   "V",
   "Y",
   "q",
@@ -291,9 +293,11 @@ export const charsToSpaceMost: readonly string[] = ["f", "Q", "/"]
 // The serif sets above come from the perceptual audit and stay its property.
 // Italic glyphs lean rightward, so the overhang set differs; with no audit for
 // the italic face, membership derives from measured ink clearance within the
-// favicon's vertical band (0.2em-0.7em above the baseline): glyphs whose
-// in-band ink reaches their advance edge get a nudge, and glyphs whose ink
-// overhangs by more than 0.1em get the larger one.
+// favicon's vertical band (0.2em-0.7em above the baseline). Among glyphs that
+// plausibly end link text, those whose in-band ink reaches their advance edge
+// get a nudge, and those overhanging by more than 0.1em get the larger one.
+// Glyphs that overhang past what the larger nudge corrects (italic "~", "^")
+// stay out: no nudge restores their gap, and they never end link text.
 export const charsToSpaceItalic: readonly string[] = [
   "T",
   "Y",
@@ -310,8 +314,16 @@ export const charsToSpaceItalic: readonly string[] = [
   "r",
   "l",
   "g",
+  "6",
+  "H",
+  "I",
+  "M",
+  "X",
+  // The italic face has no ®, so it comes from the upright face with
+  // synthesized oblique, which leans its ink past the advance edge.
+  "®",
 ]
-export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/"]
+export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/", "W"]
 
 /** Widens `context` with whatever face `element` switches its text into. */
 export function broadenContext(element: Element, context: GlyphContext): GlyphContext {

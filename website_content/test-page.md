@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-29
+date_updated: 2026-07-31
 createBibtex: true
 ---
 
@@ -651,6 +651,11 @@ Here's a link to [another page](/shard-theory) with popover preview. [This same-
 Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons) Link to [`x.com`](https://x.com).
 
 A footnote reference right after a favicon-ending [same-page link](#external-links-with-favicons)[^favicon-footnote] must not wrap onto its own line.
+
+Faux-bold text widens glyph ink rightward, so a favicon after a bold link ending in an overhanging glyph, like **[Compete for Pentagon Favor](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)**, keeps the same visual gap, including in a collapsed quote title:
+
+> [!quote]- [Google Sits Pretty as A.I. Rivals Compete for Pentagon Favor](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)
+> The favicon in the faux-bold title above keeps its gap after the final "r".
 
 [^favicon-footnote]: The footnote number stays glued to the favicon so it can't wrap onto its own line.
 

@@ -1,4 +1,5 @@
 @use "./variables.scss" as *;
+@use "./faux-bold" as *;
 
 @function calculate-scale($steps) {
   @return calc(1rem * pow($font-scale-factor, #{$steps}));
@@ -297,11 +298,13 @@ b,
 strong,
 .admonition-title-inner,
 dt {
-  text-shadow: $faux-bold-offset $faux-bold-offset;
+  @include faux-bold;
+
   font-weight: 400 !important; // Normal font weight -- otherwise would be eg 600
 
+  // No bolding needed on right sidebar; spacing works
   .right & {
-    text-shadow: 0 0; // No bolding needed on right sidebar; spacing works
+    @include faux-bold-off;
   }
 }
 

@@ -554,6 +554,13 @@ describe("insertFavicon", () => {
         ["(", { smallCaps: true }, "close-text"],
         ["y", { smallCaps: true, italic: true }, null],
         ["R", { italic: true }, null],
+        // Ink-derived italic additions diverge from the serif sets.
+        ["6", { italic: true }, "close-text"],
+        ["H", { italic: true }, "close-text"],
+        ["X", { italic: true }, "close-text"],
+        ["W", { italic: true }, "closer-text"],
+        ["W", {}, null],
+        ["6", {}, null],
       ] as const)("%s in %o gets %s", (char, overrides, expected) => {
         expect(favicons.nudgeClassFor(char, ctx(overrides))).toBe(expected)
       })
