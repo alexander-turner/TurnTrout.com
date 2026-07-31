@@ -155,7 +155,15 @@ function collectFailures(probes: readonly Probe[], measurements: readonly Measur
         `${probe.key}: margin ${measured.marginPx.toFixed(2)}px != ${expectedMargin.toFixed(2)}px`,
       )
     }
-    if (measured.gapPx !== null) {
+    // The margin is pure CSS and holds everywhere, but the gap depends on the
+    // canvas rendering the same glyph the page does. A substituted face, or an
+    // engine without canvas `font-variant-caps` (WebKit draws the lowercase
+    // form instead of the small cap), measures a glyph the reader never sees.
+    if (
+      measured.gapPx !== null &&
+      !measured.fromFallbackFace &&
+      !measured.fromUnsupportedSmallCaps
+    ) {
       const gapEm = measured.gapPx / measured.fontSizePx
       const floor = FLOOR_EM[probe.nudgeClass ?? "null"]
       const ceiling = CEILING_EM[probe.contextName]
