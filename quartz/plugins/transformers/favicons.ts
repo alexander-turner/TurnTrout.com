@@ -22,6 +22,7 @@ import {
   normalizeHostname,
 } from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
+import { isNowrapSpan } from "./inlineAtomGlue"
 import { addClass, createNowrapSpan, hasClass, ITALIC_TAGS, spliceAndWrapLastChars } from "./utils"
 
 const { minFaviconCount, faviconFolder } = simpleConstants
@@ -374,15 +375,11 @@ export function maybeSpliceText(
   )
 
   if (!lastChild) {
-    return createNowrapSpan("", imgNodeToAppend)
+    return createNowrapSpan([{ type: "text", value: "" }, imgNodeToAppend])
   }
 
-  if (
-    lastChild.type === "element" &&
-    lastChild.tagName === "span" &&
-    hasClass(lastChild, "favicon-span")
-  ) {
-    lastChild.children.push(imgNodeToAppend)
+  if (isNowrapSpan(lastChild)) {
+    ;(lastChild as Element).children.push(imgNodeToAppend)
     return null
   }
 
@@ -400,7 +397,7 @@ export function maybeSpliceText(
   }
 
   if (lastChild.type !== "text" || !lastChild.value) {
-    return createNowrapSpan("", imgNodeToAppend)
+    return createNowrapSpan([{ type: "text", value: "" }, imgNodeToAppend])
   }
 
   const lastChildText = lastChild as Text

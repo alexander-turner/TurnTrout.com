@@ -122,37 +122,37 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     mockBackArrow = h("a", { className: "data-footnote-backref" })
   })
 
-  test("should splice last 4 chars into favicon-span with back arrow after text", () => {
+  test("should splice last 4 chars into nowrap-span with back arrow after text", () => {
     const node = h("li", [h("p", ["Long text here"])])
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
     const paragraph = node.children[0] as Element
-    expect(paragraph.children).toHaveLength(2) // shortened text + favicon-span (containing last chars + back arrow)
+    expect(paragraph.children).toHaveLength(2) // shortened text + nowrap-span (containing last chars + back arrow)
     expect(paragraph.children[0]).toEqual({ type: "text", value: "Long text " })
     const faviconSpan = paragraph.children[1] as Element
     expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "favicon-span" },
+      properties: { className: "nowrap-span" },
     })
     expect(faviconSpan.children[0]).toEqual({ type: "text", value: "here" })
     expect(faviconSpan.children[1]).toBe(mockBackArrow)
   })
 
-  test("should handle text shorter than 4 characters by wrapping all text in favicon-span", () => {
+  test("should handle text shorter than 4 characters by wrapping all text in nowrap-span", () => {
     const node = h("li", [h("p", ["Hi"])])
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
     const paragraph = node.children[0] as Element
-    // Text node removed (all chars fit in favicon-span), only favicon-span remains
+    // Text node removed (all chars fit in nowrap-span), only nowrap-span remains
     expect(paragraph.children).toHaveLength(1)
     const faviconSpan = paragraph.children[0] as Element
     expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "favicon-span" },
+      properties: { className: "nowrap-span" },
     })
     expect(faviconSpan.children[0]).toEqual({ type: "text", value: "Hi" })
     expect(faviconSpan.children[1]).toBe(mockBackArrow)
@@ -168,14 +168,14 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(firstParagraph.children[0]).toEqual({ type: "text", value: "First paragraph" })
 
     const lastParagraph = node.children[1] as Element
-    // "Second paragraph" = 16 chars, textIndex = 12, text becomes "Second parag", favicon-span gets "raph"
-    expect(lastParagraph.children).toHaveLength(2) // shortened text + favicon-span
+    // "Second paragraph" = 16 chars, textIndex = 12, text becomes "Second parag", nowrap-span gets "raph"
+    expect(lastParagraph.children).toHaveLength(2) // shortened text + nowrap-span
     expect(lastParagraph.children[0]).toEqual({ type: "text", value: "Second parag" })
     const faviconSpan = lastParagraph.children[1] as Element
     expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "favicon-span" },
+      properties: { className: "nowrap-span" },
     })
     expect(faviconSpan.children[0]).toEqual({ type: "text", value: "raph" })
     expect(faviconSpan.children[1]).toBe(mockBackArrow)
@@ -247,16 +247,16 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(firstPara.children).toHaveLength(1)
     expect(firstPara.children[0]).toEqual({ type: "text", value: "First paragraph" })
 
-    // Check second paragraph: old back arrow removed, last 4 chars spliced into favicon-span
+    // Check second paragraph: old back arrow removed, last 4 chars spliced into nowrap-span
     const secondPara = node.children[1] as Element
     // "Second paragraph." = 17 chars, textIndex = 13
-    expect(secondPara.children).toHaveLength(2) // shortened text + favicon-span
+    expect(secondPara.children).toHaveLength(2) // shortened text + nowrap-span
     expect(secondPara.children[0]).toEqual({ type: "text", value: "Second paragr" })
     const faviconSpan = secondPara.children[1] as Element
     expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "favicon-span" },
+      properties: { className: "nowrap-span" },
     })
     expect(faviconSpan.children[0]).toEqual({ type: "text", value: "aph." })
     expect(faviconSpan.children[1]).toBe(mockBackArrow)
@@ -277,7 +277,7 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
-    // Paragraph should have favicon-span appended even though it's not the last child
+    // Paragraph should have nowrap-span appended even though it's not the last child
     // "Text content" = 12 chars, textIndex = 8
     const paragraph = node.children[0] as Element
     expect(paragraph.children).toHaveLength(2)
@@ -286,7 +286,7 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "favicon-span" },
+      properties: { className: "nowrap-span" },
     })
     expect(faviconSpan.children[0]).toEqual({ type: "text", value: "tent" })
     expect(faviconSpan.children[1]).toBe(mockBackArrow)
@@ -589,13 +589,13 @@ describe("gfmVisitor function", () => {
 
     // "Footnote text" = 13 chars, textIndex = 9
     const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(2) // shortened text + favicon-span
+    expect(paragraph.children).toHaveLength(2) // shortened text + nowrap-span
     expect(paragraph.children[0]).toEqual({ type: "text", value: "Footnote " })
     const faviconSpan = paragraph.children[1] as Element
     expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "favicon-span" },
+      properties: { className: "nowrap-span" },
     })
     expect(faviconSpan.children[0]).toEqual({ type: "text", value: "text" })
     expect((faviconSpan.children[1] as Element).tagName).toBe("a")
@@ -647,14 +647,14 @@ describe("gfmVisitor function", () => {
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // "Hi" = 2 chars (< 4), textIndex = 0, text node removed, all text in favicon-span
+    // "Hi" = 2 chars (< 4), textIndex = 0, text node removed, all text in nowrap-span
     const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(1) // only favicon-span (text node removed)
+    expect(paragraph.children).toHaveLength(1) // only nowrap-span (text node removed)
     const faviconSpan = paragraph.children[0] as Element
     expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "favicon-span" },
+      properties: { className: "nowrap-span" },
     })
     expect(faviconSpan.children[0]).toEqual({ type: "text", value: "Hi" })
     expect((faviconSpan.children[1] as Element).tagName).toBe("a")
@@ -714,7 +714,7 @@ describe("gfmVisitor function", () => {
     // Should have processed the footnote
     const paragraph = footnoteItem.children[0] as Element
     // " and more content." = 18 chars, textIndex = 14
-    // original content (text, em, shortened text) + favicon-span
+    // original content (text, em, shortened text) + nowrap-span
     expect(paragraph.children).toHaveLength(4)
     expect(paragraph.children[0]).toEqual({
       type: "text",
@@ -726,7 +726,7 @@ describe("gfmVisitor function", () => {
     expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "favicon-span" },
+      properties: { className: "nowrap-span" },
     })
     expect(faviconSpan.children[0]).toEqual({ type: "text", value: "ent." })
     expect((faviconSpan.children[1] as Element).tagName).toBe("a")
@@ -754,7 +754,7 @@ describe("gfmVisitor function", () => {
     expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "favicon-span" },
+      properties: { className: "nowrap-span" },
     })
     expect(faviconSpan.children[0]).toEqual({ type: "text", value: "aph." })
     expect((faviconSpan.children[1] as Element).tagName).toBe("a")

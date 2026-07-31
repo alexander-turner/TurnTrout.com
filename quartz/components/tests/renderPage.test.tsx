@@ -268,7 +268,7 @@ describe("renderPage", () => {
       },
     }
     const link = h("a", { href: "#intro", className: ["internal", "same-page-link"] }, [
-      h("span", { className: ["favicon-span"] }, ["Link", anchorFavicon]),
+      h("span", { className: ["nowrap-span"] }, ["Link", anchorFavicon]),
     ])
 
     const transcludedPage: QuartzPluginData = {

@@ -223,7 +223,7 @@ describe("buildTweetCard", () => {
     // The orange-square glyph becomes an inline twemoji image, glued to its
     // preceding word so it can't wrap alone.
     expect(html).toContain('class="emoji"')
-    expect(html).toContain("emoji-span")
+    expect(html).toContain("nowrap-span")
   })
 
   it("renders a photo with its dimensions and alt text", () => {

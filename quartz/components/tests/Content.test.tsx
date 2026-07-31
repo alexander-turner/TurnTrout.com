@@ -315,7 +315,7 @@ describe("createLinkWithFavicon", () => {
     expect(result.props["data-slug"]).toBe("another-page")
   })
 
-  it("should include favicon-span with spliced text in link children", () => {
+  it("should include nowrap-span with spliced text in link children", () => {
     const result = createLinkWithFavicon(
       "Link with favicon",
       "/page",
@@ -324,14 +324,14 @@ describe("createLinkWithFavicon", () => {
 
     assertJSXElement(result)
     const children = result.props.children as unknown[]
-    // text (spliced) + favicon-span (last 4 chars + favicon)
+    // text (spliced) + nowrap-span (last 4 chars + favicon)
     expect(children.length).toBe(2)
     expect(children[0]).toBe("Link with fav")
 
     const faviconSpan = children[1] as JSX.Element
     assertJSXElement(faviconSpan)
     expect(faviconSpan.type).toBe("span")
-    expect(faviconSpan.props.class).toBe("favicon-span")
+    expect(faviconSpan.props.class).toBe("nowrap-span")
 
     const spanChildren = faviconSpan.props.children as unknown[]
     expect(spanChildren[0]).toBe("icon")
@@ -340,20 +340,20 @@ describe("createLinkWithFavicon", () => {
     expect((favicon as JSX.Element).props.class).toContain("favicon")
   })
 
-  it("should splice text and wrap with favicon-span", () => {
+  it("should splice text and wrap with nowrap-span", () => {
     const result = createLinkWithFavicon("Test text", "/page", specialFaviconPaths.turntrout)
 
     assertJSXElement(result)
     const children = result.props.children as unknown[]
 
-    // text (spliced) + favicon-span (last 4 chars + favicon)
+    // text (spliced) + nowrap-span (last 4 chars + favicon)
     expect(children.length).toBe(2)
     expect(children[0]).toBe("Test ")
 
     const faviconSpan = children[1] as JSX.Element
     assertJSXElement(faviconSpan)
     expect(faviconSpan.type).toBe("span")
-    expect(faviconSpan.props.class).toBe("favicon-span")
+    expect(faviconSpan.props.class).toBe("nowrap-span")
 
     const spanChildren = faviconSpan.props.children as unknown[]
     expect(spanChildren[0]).toBe("text")

@@ -19,6 +19,7 @@ import {
   FrontMatter,
   GitHubFlavoredMarkdown,
   HTMLFormattingImprovement,
+  InlineAtomGlue,
   InlineCodeSpacing,
   InvertInDarkMode,
   Latex,
@@ -171,6 +172,10 @@ const config: QuartzConfig = {
       // After whitespace stripping so the preceding-character check sees the
       // final inline structure (a glued "(" isn't separated by stray text).
       InlineCodeSpacing(),
+      // Last of the inline passes: every producer of glyph-sized atoms (emoji,
+      // favicons, authored sprites, KaTeX) has emitted its elements by now, so
+      // one sweep can glue them all to the neighbors that may not start a line.
+      InlineAtomGlue(),
       ColorVariables(),
       TableOfContents({ minEntries: 3 }),
       addAssetDimensionsFromSrc(),

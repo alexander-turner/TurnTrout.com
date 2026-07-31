@@ -7,7 +7,7 @@ import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { locale } from "../../components/constants"
+import { locale, NOWRAP_SPAN_CLASS } from "../../components/constants"
 
 export const urlRegex = new RegExp(
   /(?<protocol>https?:\/\/)(?<domain>(?:[\da-z-]+\.)+)(?<path>[/?=\w.-]+(?:\([\w.\-,() ]*\))?)(?=\))/g,
@@ -255,15 +255,16 @@ export function hasAncestor(
 export const maxCharsToRead = 4
 
 /**
- * Creates a nowrap span element that wraps the given text and child element
- * to prevent line-break orphaning via white-space: nowrap.
+ * The single constructor for the site's nowrap span: `white-space: nowrap` on
+ * it is what keeps an inline atom and its glued neighbors on one line. Sole
+ * source of the element's shape, so every producer serializes it identically.
  */
-export function createNowrapSpan(text: string, child: Element): Element {
+export function createNowrapSpan(children: readonly (Text | Element)[]): Element {
   return {
     type: "element",
     tagName: "span",
-    properties: { className: "favicon-span" },
-    children: [{ type: "text" as const, value: text }, child],
+    properties: { className: NOWRAP_SPAN_CLASS },
+    children: [...children],
   } as Element
 }
 
@@ -295,7 +296,7 @@ export function spliceAndWrapLastChars(
     }
   }
 
-  return createNowrapSpan(lastChars, elementToWrap)
+  return createNowrapSpan([{ type: "text", value: lastChars }, elementToWrap])
 }
 
 /**

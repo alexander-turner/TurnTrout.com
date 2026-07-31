@@ -29,12 +29,14 @@ import {
   LEFT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
   NBSP,
+  NOWRAP_SPAN_CLASS,
   RIGHT_SINGLE_QUOTE,
   STRIP_BOUNDARY_TAGS,
   WORD_JOINER,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { isHeading } from "./favicons"
+import { isGlyphAtom } from "./inlineAtomGlue"
 import {
   type CharSpan,
   fractionRegex,
@@ -909,11 +911,15 @@ export const rearrangeLinkPunctuation = (
 
   if (sibling && "type" in sibling) {
     const hasAttrs = "tagName" in sibling && "children" in sibling
-    // A favicon-span wraps trailing text + an icon/back-arrow (created for
-    // footnote back-arrows before this pass runs). Its leading punctuation
-    // should move into the link just like a bare text sibling's would.
-    const looksTextLike =
-      hasAttrs && (TEXT_LIKE_TAGS.includes(sibling.tagName) || hasClass(sibling, "favicon-span"))
+    // A nowrap span around a footnote back-arrow leads with trailing link text,
+    // whose punctuation belongs in the link just like a bare text sibling's.
+    // One around a glyph atom is the opposite: its leading character is the
+    // glyph's glue partner, and moving it away strands the atom.
+    const isBackArrowSpan =
+      hasAttrs &&
+      hasClass(sibling as Element, NOWRAP_SPAN_CLASS) &&
+      !sibling.children.some((child) => isGlyphAtom(child as Element))
+    const looksTextLike = hasAttrs && (TEXT_LIKE_TAGS.includes(sibling.tagName) || isBackArrowSpan)
     if (sibling.type === "text") {
       textNode = sibling
     } else if (looksTextLike && sibling.children.length > 0) {

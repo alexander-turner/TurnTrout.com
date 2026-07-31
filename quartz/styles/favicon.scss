@@ -1,7 +1,17 @@
 @use "./variables.scss" as *;
 
-.favicon-span {
+// Holds a glyph-sized inline atom (emoji, favicon, authored sprite) together
+// with the neighbors that may not sit alone at a line edge. A `<img>`/`<svg>`
+// box opens a break opportunity on each of its own edges, which no in-text
+// joiner can reach.
+.nowrap-span {
   white-space: nowrap;
+
+  // Inline math breaks only between its `.base` spans. The box holds trailing
+  // punctuation to the math's right edge; the math wraps internally.
+  .katex {
+    white-space: normal;
+  }
 }
 
 // Groups a favicon-ending link with its trailing footnote reference so the
