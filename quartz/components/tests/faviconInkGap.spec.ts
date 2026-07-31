@@ -1,3 +1,5 @@
+import type { Page } from "@playwright/test"
+
 import {
   charsToSpace,
   charsToSpaceItalic,
@@ -145,85 +147,97 @@ function collectFailures(probes: readonly Probe[], measurements: readonly Measur
   return failures
 }
 
+/** Builds one probe per (context, char) pair with its expected nudge class. */
+function buildProbes(contexts: readonly ContextSpec[], chars: readonly string[]): Probe[] {
+  return contexts.flatMap((ctx) =>
+    chars.map((char) => ({
+      key: `${ctx.name}|${char}`,
+      contextName: ctx.name,
+      char,
+      wrapperHtml: ctx.wrapperHtml,
+      nudgeClass: nudgeClassFor(char, ctx.context),
+    })),
+  )
+}
+
+/**
+ * Renders each probe (glyph + favicon inside its context wrapper) on the page
+ * and measures the favicon's computed margin plus the glyph's right side
+ * bearing inside the favicon's vertical band, using the site's real fonts.
+ */
+async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Measurement[]> {
+  return await page.evaluate(async (probeList) => {
+    const host = document.createElement("div")
+    const article = document.querySelector("article") ?? document.body
+    article.appendChild(host)
+
+    const canvas = document.createElement("canvas")
+    const CANVAS_FONT_PX = 400
+    canvas.width = 1600
+    canvas.height = 900
+    const ctx2d = canvas.getContext("2d")
+    if (!ctx2d) throw new Error("no canvas context")
+
+    // Right side bearing of `char` inside the favicon's vertical band,
+    // in em of the rendered font. Null when the glyph has no ink there.
+    // Small-cap forms reuse the capital outlines, and canvas-level
+    // font-variant support differs per engine, so a small-caps probe
+    // measures the capital glyph directly.
+    const bearingInBand = (style: CSSStyleDeclaration, char: string): number | null => {
+      const glyph = style.fontVariantCaps === "small-caps" ? char.toUpperCase() : char
+      const baseline = 700
+      ctx2d.clearRect(0, 0, canvas.width, canvas.height)
+      ctx2d.font = `${style.fontStyle} ${CANVAS_FONT_PX}px ${style.fontFamily}`
+      ctx2d.textBaseline = "alphabetic"
+      ctx2d.fillText(glyph, 400, baseline)
+      const advance = ctx2d.measureText(glyph).width
+      const top = Math.floor(baseline - 0.7 * CANVAS_FONT_PX)
+      const bottom = Math.ceil(baseline - 0.2 * CANVAS_FONT_PX)
+      const image = ctx2d.getImageData(0, 0, canvas.width, canvas.height)
+      for (let x = canvas.width - 1; x >= 0; x--) {
+        for (let y = top; y <= bottom; y++) {
+          if (image.data[(y * canvas.width + x) * 4 + 3] > 40) {
+            return (400 + advance - x) / CANVAS_FONT_PX
+          }
+        }
+      }
+      return null
+    }
+
+    await document.fonts.ready
+    const results: { key: string; marginPx: number; fontSizePx: number; gapPx: number | null }[] =
+      []
+    for (const probe of probeList) {
+      host.innerHTML =
+        `<p>${probe.wrapperHtml[0]}<span class="ink-probe">${probe.char}</span>` +
+        `<svg class="favicon${probe.nudgeClass ? ` ${probe.nudgeClass}` : ""}" aria-hidden="true"></svg>` +
+        `${probe.wrapperHtml[1]}</p>`
+      const probeSpan = host.querySelector<HTMLElement>(".ink-probe")
+      const favicon = host.querySelector<SVGElement>("svg.favicon")
+      if (!probeSpan || !favicon) throw new Error(`fixture failed for ${probe.key}`)
+      const faviconStyle = getComputedStyle(favicon)
+      const probeStyle = getComputedStyle(probeSpan)
+      const marginPx = parseFloat(faviconStyle.marginLeft)
+      const fontSizePx = parseFloat(probeStyle.fontSize)
+      const bearingEm = bearingInBand(probeStyle, probe.char)
+      results.push({
+        key: probe.key,
+        marginPx,
+        fontSizePx,
+        gapPx: bearingEm === null ? null : marginPx + bearingEm * fontSizePx,
+      })
+    }
+    host.remove()
+    return results
+  }, probes)
+}
+
 test.describe("favicon ink gap", () => {
   test("margins resolve exactly and ink gaps stay inside the band", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
 
-    const probes: Probe[] = CONTEXTS.flatMap((ctx) =>
-      PROBE_CHARS.map((char) => ({
-        key: `${ctx.name}|${char}`,
-        contextName: ctx.name,
-        char,
-        wrapperHtml: ctx.wrapperHtml,
-        nudgeClass: nudgeClassFor(char, ctx.context),
-      })),
-    )
-
-    const measurements: Measurement[] = await page.evaluate(async (probeList) => {
-      const host = document.createElement("div")
-      const article = document.querySelector("article") ?? document.body
-      article.appendChild(host)
-
-      const canvas = document.createElement("canvas")
-      const CANVAS_FONT_PX = 400
-      canvas.width = 1600
-      canvas.height = 900
-      const ctx2d = canvas.getContext("2d")
-      if (!ctx2d) throw new Error("no canvas context")
-
-      // Right side bearing of `char` inside the favicon's vertical band,
-      // in em of the rendered font. Null when the glyph has no ink there.
-      // Small-cap forms reuse the capital outlines, and canvas-level
-      // font-variant support differs per engine, so a small-caps probe
-      // measures the capital glyph directly.
-      const bearingInBand = (style: CSSStyleDeclaration, char: string): number | null => {
-        const glyph = style.fontVariantCaps === "small-caps" ? char.toUpperCase() : char
-        const baseline = 700
-        ctx2d.clearRect(0, 0, canvas.width, canvas.height)
-        ctx2d.font = `${style.fontStyle} ${CANVAS_FONT_PX}px ${style.fontFamily}`
-        ctx2d.textBaseline = "alphabetic"
-        ctx2d.fillText(glyph, 400, baseline)
-        const advance = ctx2d.measureText(glyph).width
-        const top = Math.floor(baseline - 0.7 * CANVAS_FONT_PX)
-        const bottom = Math.ceil(baseline - 0.2 * CANVAS_FONT_PX)
-        const image = ctx2d.getImageData(0, 0, canvas.width, canvas.height)
-        for (let x = canvas.width - 1; x >= 0; x--) {
-          for (let y = top; y <= bottom; y++) {
-            if (image.data[(y * canvas.width + x) * 4 + 3] > 40) {
-              return (400 + advance - x) / CANVAS_FONT_PX
-            }
-          }
-        }
-        return null
-      }
-
-      await document.fonts.ready
-      const results: { key: string; marginPx: number; fontSizePx: number; gapPx: number | null }[] =
-        []
-      for (const probe of probeList) {
-        host.innerHTML =
-          `<p>${probe.wrapperHtml[0]}<span class="ink-probe">${probe.char}</span>` +
-          `<svg class="favicon${probe.nudgeClass ? ` ${probe.nudgeClass}` : ""}" aria-hidden="true"></svg>` +
-          `${probe.wrapperHtml[1]}</p>`
-        const probeSpan = host.querySelector<HTMLElement>(".ink-probe")
-        const favicon = host.querySelector<SVGElement>("svg.favicon")
-        if (!probeSpan || !favicon) throw new Error(`fixture failed for ${probe.key}`)
-        const faviconStyle = getComputedStyle(favicon)
-        const probeStyle = getComputedStyle(probeSpan)
-        const marginPx = parseFloat(faviconStyle.marginLeft)
-        const fontSizePx = parseFloat(probeStyle.fontSize)
-        const bearingEm = bearingInBand(probeStyle, probe.char)
-        results.push({
-          key: probe.key,
-          marginPx,
-          fontSizePx,
-          gapPx: bearingEm === null ? null : marginPx + bearingEm * fontSizePx,
-        })
-      }
-      host.remove()
-      return results
-    }, probes)
-
+    const probes = buildProbes(CONTEXTS, PROBE_CHARS)
+    const measurements = await measureProbes(page, probes)
     const failures = collectFailures(probes, measurements)
     expect(failures, failures.join("\n")).toEqual([])
   })
@@ -235,8 +249,7 @@ test.describe("favicon ink gap", () => {
   // shadow offset, and the .right reset must return it to the plain value.
   // The boosted expectation is derived in-page from a probe whose
   // margin-left is the same calc the engine evaluates, so the assertion
-  // inherits the engine's own LayoutUnit quantization instead of comparing
-  // raw floats against the SCSS token.
+  // inherits the engine's own LayoutUnit quantization.
   test("faux-bold contexts widen the favicon margin by the shadow offset", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
 
@@ -269,13 +282,13 @@ test.describe("favicon ink gap", () => {
           if (!favicon) throw new Error(`fixture failed for ${html}`)
           return parseFloat(getComputedStyle(favicon).marginLeft)
         }
-        const plain = measure(`<span>r${faviconHtml}</span>`)
+        const plain = measure(`<span>o${faviconHtml}</span>`)
         const boosted = measure(
           `<span><svg class="favicon" aria-hidden="true" style="margin-left: calc(${plain}px + ${offset})"></svg></span>`,
         )
         const byContext = wrappers.map((wrapper) => ({
           name: wrapper.name,
-          marginPx: measure(`${wrapper.open}r${faviconHtml}${wrapper.close}`),
+          marginPx: measure(`${wrapper.open}o${faviconHtml}${wrapper.close}`),
         }))
         host.remove()
         return { plain, boosted, byContext }
@@ -283,8 +296,8 @@ test.describe("favicon ink gap", () => {
       { wrappers: contextWrappers, offset: fauxBoldOffset },
     )
 
-    // One LayoutUnit (1/64 px in Chromium/WebKit, 1/60 px in Firefox) of
-    // slack absorbs the double quantization of the derived expectation.
+    // Slack just above one LayoutUnit (1/64 px in Chromium/WebKit, 1/60 px
+    // in Firefox) absorbs the double quantization of the derived expectation.
     const quantumPx = 0.02
     for (const [index, { name, marginPx }] of margins.byContext.entries()) {
       const expected = contextWrappers[index].bolded ? margins.boosted : margins.plain
@@ -293,5 +306,77 @@ test.describe("favicon ink gap", () => {
         `${name}: margin ${marginPx}px, expected ${expected}px`,
       ).toBeLessThan(quantumPx)
     }
+  })
+
+  // Membership ratchet: render every plausible link-ending glyph in the
+  // shipped faces and require a nudge class for any glyph whose measured
+  // in-band ink qualifies under the sets' criteria. One-directional on
+  // purpose — the sets may hold extra perceptual members (serif "R", "r")
+  // whose crowding lives outside the measured band. Italic "~" and "^"
+  // overhang further than the largest nudge corrects and never end link
+  // text, so they stay out of the sets and out of this sweep; "†"/"‡" are
+  // absent from the test page's font subset.
+  const MEMBERSHIP_CHARS: readonly string[] = [
+    ..."abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    ..."()[]{}\\/®™©°%&*+=<>|!?;:’”",
+  ]
+
+  // Thresholds in em of the probe's font. Serif mirrors the kerning audit's
+  // bar (clearance more than ~1px short of a round letter's at body size);
+  // italic uses the ink-derived bearing bars that produced its sets. The
+  // nearest non-qualifying glyph sits ≥0.009em from its bar, so engine
+  // rasterization differences cannot flip a verdict.
+  const SERIF_CLOSE_SHORTFALL_EM = 0.05
+  const SERIF_MOST_SHORTFALL_EM = 0.12
+  const ITALIC_CLOSE_BEARING_EM = -0.03
+  const ITALIC_MOST_BEARING_EM = -0.11
+
+  test("glyphs that measure as crowding carry a nudge class", async ({ page }) => {
+    await gotoPage(page, "http://localhost:8080/test-page")
+
+    const contexts = CONTEXTS.filter((ctx) => ctx.name === "serif" || ctx.name === "italic")
+    const probes = buildProbes(contexts, MEMBERSHIP_CHARS)
+    const measurements = await measureProbes(page, probes)
+
+    const bearingOf = (key: string): number | null => {
+      const measured = measurements.find((m) => m.key === key)
+      if (!measured || measured.gapPx === null) return null
+      return (measured.gapPx - measured.marginPx) / measured.fontSizePx
+    }
+
+    const serifRef = bearingOf("serif|o")
+    expect(serifRef, "round-letter reference probe has no ink in band").not.toBeNull()
+
+    const violations: string[] = []
+    for (const char of MEMBERSHIP_CHARS) {
+      const serifBearing = bearingOf(`serif|${char}`)
+      if (serifBearing !== null && serifRef !== null) {
+        const shortfall = serifRef - serifBearing
+        if (shortfall > SERIF_MOST_SHORTFALL_EM && !charsToSpaceMost.includes(char)) {
+          violations.push(`serif ${char}: shortfall ${shortfall.toFixed(3)}em needs closer-text`)
+        } else if (
+          shortfall > SERIF_CLOSE_SHORTFALL_EM &&
+          !charsToSpaceMost.includes(char) &&
+          !charsToSpace.includes(char)
+        ) {
+          violations.push(`serif ${char}: shortfall ${shortfall.toFixed(3)}em needs close-text`)
+        }
+      }
+
+      const italicBearing = bearingOf(`italic|${char}`)
+      if (italicBearing !== null) {
+        if (italicBearing <= ITALIC_MOST_BEARING_EM && !charsToSpaceMostItalic.includes(char)) {
+          violations.push(`italic ${char}: bearing ${italicBearing.toFixed(3)}em needs closer-text`)
+        } else if (
+          italicBearing <= ITALIC_CLOSE_BEARING_EM &&
+          !charsToSpaceMostItalic.includes(char) &&
+          !charsToSpaceItalic.includes(char)
+        ) {
+          violations.push(`italic ${char}: bearing ${italicBearing.toFixed(3)}em needs close-text`)
+        }
+      }
+    }
+
+    expect(violations, violations.join("\n")).toEqual([])
   })
 })

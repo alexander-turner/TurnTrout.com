@@ -9,11 +9,9 @@
 @mixin faux-bold($color: null) {
   --favicon-bold-nudge: #{$faux-bold-offset};
 
-  @if $color {
-    text-shadow: $faux-bold-offset $faux-bold-offset $color;
-  } @else {
-    text-shadow: $faux-bold-offset $faux-bold-offset;
-  }
+  // Sass drops a null from the value list, so one declaration serves both
+  // the plain and the colored shadow.
+  text-shadow: $faux-bold-offset $faux-bold-offset $color;
 }
 
 @mixin faux-bold-off {

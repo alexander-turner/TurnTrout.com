@@ -318,7 +318,7 @@ export const charsToSpaceItalic: readonly string[] = [
   "M",
   "X",
 ]
-export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/", "W", "~", "^"]
+export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/", "W"]
 
 /** Widens `context` with whatever face `element` switches its text into. */
 export function broadenContext(element: Element, context: GlyphContext): GlyphContext {
