@@ -23,11 +23,11 @@ import { gotoPage } from "./visual_utils"
 //     measured inside the band the icon actually occupies — must hold one
 //     constant across every face and every plausible link-ending glyph.
 //
-// The band is derived per probe from the rendered icon rather than assumed.
-// `--favicon-size` is rem-denominated while glyphs scale in em, so the icon
-// covers a different slice of the glyph in each context: 0.125em–0.750em in
-// body text but 0.154em–0.926em inside `<code>`. A fixed band measures the
-// wrong ink in every context but one.
+// The band is derived per probe from the rendered icon rather than assumed, so
+// the sweep keeps measuring the ink the icon actually sits beside even if the
+// box model moves. Every favicon length is em, so that band is the same slice
+// of the glyph in every context — which is what the size-invariance test below
+// asserts directly.
 //
 // Set membership itself is pinned exactly by `nudgeClassFor` unit tests in
 // favicons.test.ts; this spec catches rendering-level regressions (wrong font
@@ -48,8 +48,14 @@ const CODE_PROBE_CHARS: readonly string[] = [
   ...new Set([...charsToSpaceCode, ...charsToSpaceMostCode, ..."oenas"]),
 ]
 
+// The four shipped faces, each with its own metrics, plus the size contexts
+// that render the serif face at a different font size. Faces get per-face
+// thresholds; sizes are judged only against each other.
+type FaceName = "serif" | "italic" | "smallCaps" | "code"
+type ContextName = FaceName | "h1" | "subtitle" | "tableCell"
+
 interface ContextSpec {
-  name: "serif" | "italic" | "smallCaps" | "code"
+  name: ContextName
   wrapperHtml: [string, string]
   context: typeof EMPTY_GLYPH_CONTEXT
 }
@@ -73,20 +79,21 @@ const CONTEXTS: readonly ContextSpec[] = [
   },
 ]
 
-// margin-left = 0.125·base + nudge − inset·size, with a domainless icon
-// (inset 0). $base-margin is rem-denominated, so the absolute pixel value
-// varies with the viewport's root font size; the invariant is the RATIO to
-// the classless serif margin (the "unit"): close-text doubles it,
-// closer-text triples it, and inside code a uniform −0.125·base nudge
-// cancels it to zero, which the code classes return by a half step and a
-// whole step.
-const MARGIN_UNIT_MULTIPLIER: Readonly<Record<string, number>> = {
-  "close-text": 2,
-  "closer-text": 3,
-  "code-close-text": 0.5,
-  "code-closer-text": 1,
+// margin-left = 0.0625em + nudge − inset·size, with a domainless icon
+// (inset 0). Every term is em, so the expectation is a plain em constant per
+// (context, nudge class) rather than a ratio: the classless base, two upward
+// steps in the proportional faces, and a face-level negative in code that the
+// two code classes return by a half step and a whole step.
+const BASE_MARGIN_EM = 0.0625
+const CODE_FACE_NUDGE_EM = -0.0469
+const NUDGE_EM: Readonly<Record<string, number>> = {
+  "close-text": 0.0625,
+  "closer-text": 0.125,
+  // The face nudge returned by half a step and a whole step, rounded to the
+  // four decimals stylelint allows a length.
+  "code-close-text": -0.0156,
+  "code-closer-text": 0.0156,
 }
-const UNIT_PROBE_KEY = "serif|o"
 
 // Crowding floors per class (deep overhangers accept tighter clearance, as in
 // the serif audit) and drift ceilings per context, in em of the probe's font
@@ -104,7 +111,7 @@ const FLOOR_EM: Readonly<Record<string, number>> = {
   "code-close-text": -0.0125,
   "code-closer-text": -0.0125,
 }
-const CEILING_EM: Readonly<Record<string, number>> = {
+const CEILING_EM: Readonly<Record<FaceName, number>> = {
   serif: 0.32,
   italic: 0.22,
   smallCaps: 0.4,
@@ -122,26 +129,28 @@ interface Measurement {
   bandBottomEm: number
 }
 
+/** A per-face threshold, refusing to silently pass a context that has none. */
+function thresholdFor(table: Readonly<Record<FaceName, number>>, context: ContextName): number {
+  const threshold = table[context as FaceName]
+  if (threshold === undefined) throw new Error(`no threshold for context ${context}`)
+  return threshold
+}
+
 interface Probe {
   key: string
-  contextName: ContextSpec["name"]
+  contextName: ContextName
   char: string
   wrapperHtml: [string, string]
   nudgeClass: ReturnType<typeof nudgeClassFor>
 }
 
-/** The probe's expected margin as a multiple of the classless serif margin. */
-function marginMultiplier(probe: Probe): number {
-  if (probe.nudgeClass) return MARGIN_UNIT_MULTIPLIER[probe.nudgeClass]
-  // The uniform monospace correction cancels the classless margin entirely.
-  return probe.contextName === "code" ? 0 : 1
+/** The probe's expected margin-left, in em of the text it sits beside. */
+function expectedMarginEm(probe: Probe): number {
+  const faceNudge = probe.contextName === "code" ? CODE_FACE_NUDGE_EM : 0
+  return BASE_MARGIN_EM + (probe.nudgeClass ? NUDGE_EM[probe.nudgeClass] : faceNudge)
 }
 
 function collectFailures(probes: readonly Probe[], measurements: readonly Measurement[]): string[] {
-  const unit = measurements.find((m) => m.key === UNIT_PROBE_KEY)
-  if (!unit || unit.marginPx <= 0) {
-    return [`margin unit probe ${UNIT_PROBE_KEY} missing or non-positive`]
-  }
   const failures: string[] = []
   for (const probe of probes) {
     const measured = measurements.find((m) => m.key === probe.key)
@@ -149,7 +158,7 @@ function collectFailures(probes: readonly Probe[], measurements: readonly Measur
       failures.push(`${probe.key}: no measurement`)
       continue
     }
-    const expectedMargin = marginMultiplier(probe) * unit.marginPx
+    const expectedMargin = expectedMarginEm(probe) * measured.fontSizePx
     if (Math.abs(measured.marginPx - expectedMargin) > 0.1) {
       failures.push(
         `${probe.key}: margin ${measured.marginPx.toFixed(2)}px != ${expectedMargin.toFixed(2)}px`,
@@ -166,7 +175,7 @@ function collectFailures(probes: readonly Probe[], measurements: readonly Measur
     ) {
       const gapEm = measured.gapPx / measured.fontSizePx
       const floor = FLOOR_EM[probe.nudgeClass ?? "null"]
-      const ceiling = CEILING_EM[probe.contextName]
+      const ceiling = thresholdFor(CEILING_EM, probe.contextName)
       if (gapEm < floor || gapEm > ceiling) {
         failures.push(
           `${probe.key} (${probe.nudgeClass ?? "no class"}): ` +
@@ -196,11 +205,10 @@ function buildProbes(contexts: readonly ContextSpec[], chars: readonly string[])
  * and measures the favicon's computed margin plus the glyph's right side
  * bearing inside the favicon's vertical band, using the site's real fonts.
  *
- * The band is read off the rendered icon rather than assumed: `--favicon-size`
- * is rem-denominated while glyphs scale in em, so the slice of a glyph the icon
- * actually sits beside differs per context (0.125em–0.750em in body text,
- * 0.060em–0.362em in an `h1`). A zero-sized inline-block marker in the same
- * line box supplies the baseline the band is measured from.
+ * The band is read off the rendered icon rather than assumed, so a change to
+ * the box model moves the measurement with it instead of quietly measuring the
+ * wrong ink. A zero-sized inline-block marker in the same line box supplies the
+ * baseline the band is measured from.
  */
 async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Measurement[]> {
   return await page.evaluate(async (probeList) => {
@@ -402,7 +410,7 @@ const OVERLAP_FLOOR_EM = 0
 // any glyph tighter *or* looser than its face's others widens the spread and
 // fails. Phases 2–3 shrink these toward a single global window; they must only
 // ever be lowered.
-const MAX_SPREAD_EM: Readonly<Record<ContextSpec["name"], number>> = {
+const MAX_SPREAD_EM: Readonly<Record<FaceName, number>> = {
   serif: 0.21,
   italic: 0.18,
   smallCaps: 0.2,
@@ -417,15 +425,15 @@ interface GapSample {
 /** Measured visual gaps per context, dropping probes that can't be judged. */
 function gapsByContext(
   measurements: readonly Measurement[],
-): ReadonlyMap<ContextSpec["name"], GapSample[]> {
-  const byContext = new Map<ContextSpec["name"], GapSample[]>()
+): ReadonlyMap<ContextName, GapSample[]> {
+  const byContext = new Map<ContextName, GapSample[]>()
   for (const measured of measurements) {
     // No ink in band means the glyph cannot crowd; a substituted face and an
     // unsupported small-caps probe would both measure differently per OS.
     if (measured.gapPx === null || measured.fromFallbackFace || measured.fromUnsupportedSmallCaps) {
       continue
     }
-    const context = measured.key.split("|")[0] as ContextSpec["name"]
+    const context = measured.key.split("|")[0] as ContextName
     const samples = byContext.get(context) ?? []
     samples.push({ key: measured.key, gapEm: measured.gapPx / measured.fontSizePx })
     byContext.set(context, samples)
@@ -440,7 +448,7 @@ function gapsByContext(
  * than stopping at the first, so a change's full blast radius is visible.
  */
 function collectSweepViolations(
-  byContext: ReadonlyMap<ContextSpec["name"], readonly GapSample[]>,
+  byContext: ReadonlyMap<ContextName, readonly GapSample[]>,
 ): string[] {
   const violations: string[] = []
   for (const [context, samples] of byContext) {
@@ -456,9 +464,10 @@ function collectSweepViolations(
       violations.push(`${tightest.key}: gap ${tightest.gapEm.toFixed(3)}em reaches the icon`)
     }
     const spread = loosest.gapEm - tightest.gapEm
-    if (spread > MAX_SPREAD_EM[context]) {
+    const limit = thresholdFor(MAX_SPREAD_EM, context)
+    if (spread > limit) {
       violations.push(
-        `${context}: gaps spread ${spread.toFixed(3)}em > ${MAX_SPREAD_EM[context]}em ` +
+        `${context}: gaps spread ${spread.toFixed(3)}em > ${limit}em ` +
           `(tightest ${tightest.key}=${tightest.gapEm.toFixed(3)}, ` +
           `loosest ${loosest.key}=${loosest.gapEm.toFixed(3)}, target ${TARGET_GAP_EM})`,
       )
@@ -557,5 +566,68 @@ test.describe("favicon ink gap", () => {
 
     const violations = collectSweepViolations(byContext)
     expect(violations, violations.join("\n")).toEqual([])
+  })
+
+  // The payoff of em-denominating the box: one per-glyph nudge is correct at
+  // every size because the icon covers the same slice of the glyph everywhere.
+  // A heading, a subtitle and a table cell render the same face at different
+  // sizes, so their gaps must agree to the em — not approximately, exactly.
+  // This is the assertion a rem-denominated model cannot pass, and the reason
+  // the `.subtitle` size override and the heading `vertical-align` override
+  // could be deleted rather than merely retuned.
+  test("the gap is the same fraction of the text at every size", async ({ page }) => {
+    await gotoPage(page, "http://localhost:8080/test-page")
+
+    const sizeContexts: readonly ContextSpec[] = [
+      { name: "serif", wrapperHtml: ["", ""], context: EMPTY_GLYPH_CONTEXT },
+      { name: "h1", wrapperHtml: ["<h1>", "</h1>"], context: EMPTY_GLYPH_CONTEXT },
+      {
+        name: "subtitle",
+        wrapperHtml: ['<div class="subtitle">', "</div>"],
+        context: EMPTY_GLYPH_CONTEXT,
+      },
+      {
+        name: "tableCell",
+        wrapperHtml: ["<table><tr><td>", "</td></tr></table>"],
+        context: EMPTY_GLYPH_CONTEXT,
+      },
+    ]
+    const measurements = await measureProbes(page, buildProbes(sizeContexts, [..."oRxTfY(4"]))
+
+    const gapEm = (m: Measurement) => (m.gapPx as number) / m.fontSizePx
+    const byChar = new Map<string, Measurement[]>()
+    for (const measured of measurements) {
+      const char = measured.key.split("|")[1]
+      byChar.set(char, [...(byChar.get(char) ?? []), measured])
+    }
+
+    const sizes = [...new Set(measurements.map((m) => m.fontSizePx))]
+    expect(sizes.length, `contexts must span distinct sizes, saw ${sizes}`).toBeGreaterThan(2)
+
+    const failures: string[] = []
+    for (const [char, group] of byChar) {
+      const reference = group[0]
+      for (const measured of group.slice(1)) {
+        // A glyph whose ink leaves the band in one context but not another is
+        // itself a size-invariance failure, so a null gap is a mismatch.
+        if (measured.gapPx === null || reference.gapPx === null) {
+          failures.push(`${measured.key}: ink left the band (${reference.key} kept it)`)
+          continue
+        }
+        if (Math.abs(gapEm(measured) - gapEm(reference)) > 0.005) {
+          failures.push(
+            `${measured.key}: gap ${gapEm(measured).toFixed(3)}em != ` +
+              `${gapEm(reference).toFixed(3)}em at ${reference.key} (char "${char}")`,
+          )
+        }
+        if (Math.abs(measured.bandTopEm - reference.bandTopEm) > 0.005) {
+          failures.push(
+            `${measured.key}: band top ${measured.bandTopEm.toFixed(3)}em != ` +
+              `${reference.bandTopEm.toFixed(3)}em at ${reference.key}`,
+          )
+        }
+      }
+    }
+    expect(failures, failures.join("\n")).toEqual([])
   })
 })

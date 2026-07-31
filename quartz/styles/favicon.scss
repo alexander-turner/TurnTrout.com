@@ -32,11 +32,19 @@
   }
 }
 
+// Every length here is em, so the icon is the same fraction of its text at
+// every size: a heading, a subtitle, a table cell and inline code all get the
+// same box, the same rise off the baseline, and therefore the same slice of the
+// neighboring glyph beside the icon. That last part is what makes one per-glyph
+// nudge correct everywhere — a rem-sized icon covers a different part of the
+// glyph in each context, so no single correction can suit more than one of
+// them. `$faux-bold-offset` stays px: it is a text-shadow displacement, not a
+// typographic length.
 .favicon {
-  --size-decrease: 0rem; // Decrease in width and height of favicon size -- set this to a positive value to decrease the size
-  --base-vertical-adjustment: calc(0.5 * #{$base-margin});
+  --size-decrease: 0em; // Decrease in width and height of favicon size -- set this to a positive value to decrease the size
+  --base-vertical-adjustment: 0.25em;
   --vertical-adjustment: calc(var(--base-vertical-adjustment) + 0.5 * var(--size-decrease));
-  --favicon-base-size: calc(#{$base-margin} * 1.25 - var(--size-decrease));
+  --favicon-base-size: calc(0.625em - var(--size-decrease));
   --favicon-size: var(--favicon-base-size);
 
   // Left-gap model: constant visual gap = base + glyph nudge + bold nudge −
@@ -53,63 +61,49 @@
   // column (measured by scripts/notebooks/favicon_kerning_audit, capped at
   // ~2px); subtracting it puts every icon's visual left edge the same
   // distance from the text.
-  --glyph-nudge: 0rem;
+  --glyph-nudge: 0em;
   --left-inset: 0;
-  --text-gap: calc(0.125 * #{$base-margin} + var(--glyph-nudge) + var(--favicon-bold-nudge, 0px));
+  --text-gap: calc(0.0625em + var(--glyph-nudge) + var(--favicon-bold-nudge, 0px));
 
   display: inline;
   width: var(--favicon-size);
   height: var(--favicon-size);
-  margin: 0 auto calc(-0.25 * #{$base-margin})
-    calc(var(--text-gap) - var(--left-inset) * var(--favicon-size));
+  margin: 0 auto -0.125em calc(var(--text-gap) - var(--left-inset) * var(--favicon-size));
   vertical-align: var(--vertical-adjustment);
 
   // Don't pollute copied text with favicon
   user-select: none;
 
-  .subtitle & {
-    --favicon-size: calc(var(--favicon-base-size) / #{$font-scale-factor});
-  }
-
-  // Make favicons align properly with headings
-  h1 &,
-  h2 &,
-  h3 &,
-  h4 &,
-  h5 &,
-  h6 & {
-    vertical-align: 65%;
-  }
-
   &.close-text {
-    --glyph-nudge: calc(0.125 * #{$base-margin});
+    --glyph-nudge: 0.0625em;
   }
 
   &.closer-text {
-    --glyph-nudge: calc(0.25 * #{$base-margin});
+    --glyph-nudge: 0.125em;
   }
 
   // A favicon appended after inline code sits inside the <code>; the right gap
   // keeps a trailing ")" / "]" from cramping. Monospace advances end in
-  // built-in right side bearing (FiraCode ≈0.08em vs ≈0.03em for a serif
-  // round letter), so the last code glyph already clears the icon: the
-  // negative nudge returns the bearing's surplus, keeping the visual gap at
-  // the standard width. FiraCode centers each glyph in one fixed advance, so
-  // that surplus varies far more than in the proportional serif: the two
-  // classes below return a half and a whole step to the glyphs whose bearing
-  // falls short of the uniform correction (assigned per charsToSpace(Most)Code
-  // in quartz/plugins/transformers/favicons.ts).
+  // built-in right side bearing, so the last code glyph already clears the
+  // icon: the negative nudge returns that surplus, keeping the visual gap at
+  // the standard width. The constant is the measured offset that lands the
+  // face's median rendered gap on the proportional faces' median (0.098em
+  // against 0.095em). FiraCode centers each glyph in one fixed advance, so the
+  // surplus varies far more than in the proportional serif: the two classes
+  // below return a half and a whole step to the glyphs whose bearing falls
+  // short of the uniform correction (assigned per charsToSpace(Most)Code in
+  // quartz/plugins/transformers/favicons.ts).
   code & {
-    margin-right: calc(0.125 * #{$base-margin});
+    margin-right: 0.0625em;
 
-    --glyph-nudge: calc(-0.125 * #{$base-margin});
+    --glyph-nudge: -0.0469em;
 
     &.code-close-text {
-      --glyph-nudge: calc(-0.0625 * #{$base-margin});
+      --glyph-nudge: -0.0156em;
     }
 
     &.code-closer-text {
-      --glyph-nudge: 0rem;
+      --glyph-nudge: 0.0156em;
     }
   }
 }
@@ -142,12 +136,12 @@ svg.favicon {
   }
 
   &[data-domain="proton_me"] {
-    --size-decrease: calc(0.25 * #{$base-margin});
+    --size-decrease: 0.125em;
   }
 
   &[data-domain="substack_com"],
   &[data-domain="rss"] {
-    --size-decrease: calc(0.25 * #{$base-margin});
+    --size-decrease: 0.125em;
   }
 
   &[data-domain="arbital_com"] {
