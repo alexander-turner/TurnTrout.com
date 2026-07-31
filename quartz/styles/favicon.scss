@@ -44,12 +44,14 @@
   // their advance width (set via .close-text / .closer-text, assigned per
   // charsToSpace/-Most in quartz/plugins/transformers/favicons.ts).
   // `--favicon-bold-nudge` compensates faux-bold contexts, whose text-shadow
-  // paints every glyph's ink $faux-bold-offset further right; it is set (and
-  // reset) by the same rules that apply the shadow (fonts.scss, table.scss),
-  // so the two can't drift apart. `--left-inset` is the fraction of the icon
-  // box left of its first ink column (measured by
-  // scripts/notebooks/favicon_kerning_audit, capped at ~2px); subtracting it
-  // puts every icon's visual left edge the same distance from the text.
+  // paints every glyph's ink $faux-bold-offset further right; the faux-bold
+  // mixin (_faux-bold.scss) emits the shadow and the nudge together. It is
+  // consumed only through the var() fallback and must never be initialized on
+  // .favicon itself — the value has to inherit from the bold ancestor.
+  // `--left-inset` is the fraction of the icon box left of its first ink
+  // column (measured by scripts/notebooks/favicon_kerning_audit, capped at
+  // ~2px); subtracting it puts every icon's visual left edge the same
+  // distance from the text.
   --glyph-nudge: 0rem;
   --left-inset: 0;
   --text-gap: calc(0.125 * #{$base-margin} + var(--glyph-nudge) + var(--favicon-bold-nudge, 0px));

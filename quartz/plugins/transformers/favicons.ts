@@ -263,11 +263,12 @@ export function insertFavicon(
 // scripts/notebooks/favicon_kerning_audit, which renders every real
 // (glyph, favicon) pair on the built site and reports each glyph's ink
 // clearance; glyphs land here when their median clearance falls more than
-// ~1px short of a round letter's.
+// ~1px short of a round letter's. "r" joins perceptually: its arm terminal
+// sits at x-height, level with the icon's raised box.
 export const charsToSpace: readonly string[] = [
   "T",
   "R",
-  "r", // arm terminal at x-height reaches the advance edge, inside the icon's band
+  "r",
   "V",
   "Y",
   "q",
@@ -311,8 +312,13 @@ export const charsToSpaceItalic: readonly string[] = [
   "r",
   "l",
   "g",
+  "6",
+  "H",
+  "I",
+  "M",
+  "X",
 ]
-export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/"]
+export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/", "W", "~", "^"]
 
 /** Widens `context` with whatever face `element` switches its text into. */
 export function broadenContext(element: Element, context: GlyphContext): GlyphContext {

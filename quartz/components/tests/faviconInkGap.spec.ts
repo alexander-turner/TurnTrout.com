@@ -229,28 +229,69 @@ test.describe("favicon ink gap", () => {
   })
 
   // Faux-bold contexts paint glyph ink $faux-bold-offset further right via
-  // text-shadow; the same rules set --favicon-bold-nudge so the favicon's
-  // visual gap stays constant. The margin delta must equal the shadow offset.
+  // text-shadow; the faux-bold mixin (_faux-bold.scss) sets
+  // --favicon-bold-nudge alongside the shadow so the favicon's visual gap
+  // stays constant. Every set-site must widen the margin by exactly the
+  // shadow offset, and the .right reset must return it to the plain value.
+  // The boosted expectation is derived in-page from a probe whose
+  // margin-left is the same calc the engine evaluates, so the assertion
+  // inherits the engine's own LayoutUnit quantization instead of comparing
+  // raw floats against the SCSS token.
   test("faux-bold contexts widen the favicon margin by the shadow offset", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
 
-    const margins = await page.evaluate(() => {
-      const host = document.createElement("div")
-      const article = document.querySelector("article") ?? document.body
-      article.appendChild(host)
-      host.innerHTML =
-        '<p><span id="plain">r<svg class="favicon" aria-hidden="true"></svg></span>' +
-        '<strong id="bold">r<svg class="favicon" aria-hidden="true"></svg></strong></p>'
-      const marginOf = (selector: string): number => {
-        const favicon = host.querySelector(`${selector} svg.favicon`)
-        if (!favicon) throw new Error(`fixture failed for ${selector}`)
-        return parseFloat(getComputedStyle(favicon).marginLeft)
-      }
-      const result = { plain: marginOf("#plain"), bold: marginOf("#bold") }
-      host.remove()
-      return result
-    })
+    const contextWrappers = [
+      { name: "strong", open: "<strong>", close: "</strong>", bolded: true },
+      { name: "title-cell", open: '<div class="title-cell">', close: "</div>", bolded: true },
+      {
+        name: "admonition-title",
+        open: '<span class="admonition-title-inner">',
+        close: "</span>",
+        bolded: true,
+      },
+      {
+        name: "right-reset",
+        open: '<div class="right"><strong>',
+        close: "</strong></div>",
+        bolded: false,
+      },
+    ] as const
 
-    expect(margins.bold - margins.plain).toBeCloseTo(parseFloat(fauxBoldOffset), 2)
+    const margins = await page.evaluate(
+      ({ wrappers, offset }) => {
+        const host = document.createElement("div")
+        const article = document.querySelector("article") ?? document.body
+        article.appendChild(host)
+        const faviconHtml = '<svg class="favicon" aria-hidden="true"></svg>'
+        const measure = (html: string): number => {
+          host.innerHTML = html
+          const favicon = host.querySelector("svg.favicon")
+          if (!favicon) throw new Error(`fixture failed for ${html}`)
+          return parseFloat(getComputedStyle(favicon).marginLeft)
+        }
+        const plain = measure(`<span>r${faviconHtml}</span>`)
+        const boosted = measure(
+          `<span><svg class="favicon" aria-hidden="true" style="margin-left: calc(${plain}px + ${offset})"></svg></span>`,
+        )
+        const byContext = wrappers.map((wrapper) => ({
+          name: wrapper.name,
+          marginPx: measure(`${wrapper.open}r${faviconHtml}${wrapper.close}`),
+        }))
+        host.remove()
+        return { plain, boosted, byContext }
+      },
+      { wrappers: contextWrappers, offset: fauxBoldOffset },
+    )
+
+    // One LayoutUnit (1/64 px in Chromium/WebKit, 1/60 px in Firefox) of
+    // slack absorbs the double quantization of the derived expectation.
+    const quantumPx = 0.02
+    for (const [index, { name, marginPx }] of margins.byContext.entries()) {
+      const expected = contextWrappers[index].bolded ? margins.boosted : margins.plain
+      expect(
+        Math.abs(marginPx - expected),
+        `${name}: margin ${marginPx}px, expected ${expected}px`,
+      ).toBeLessThan(quantumPx)
+    }
   })
 })
