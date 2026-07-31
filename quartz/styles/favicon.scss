@@ -39,21 +39,26 @@
   --favicon-base-size: calc(#{$base-margin} * 1.25 - var(--size-decrease));
   --favicon-size: var(--favicon-base-size);
 
-  // Left-gap model: constant visual gap = base + glyph nudge − icon ink inset.
-  // `--glyph-nudge` compensates glyphs whose ink overhangs their advance width
-  // (set via .close-text / .closer-text, assigned per charsToSpace/-Most in
-  // quartz/plugins/transformers/favicons.ts). `--left-inset` is the fraction of
-  // the icon box left of its first ink column (measured by
+  // Left-gap model: constant visual gap = base + glyph nudge + bold nudge −
+  // icon ink inset. `--glyph-nudge` compensates glyphs whose ink overhangs
+  // their advance width (set via .close-text / .closer-text, assigned per
+  // charsToSpace/-Most in quartz/plugins/transformers/favicons.ts).
+  // `--favicon-bold-nudge` compensates faux-bold contexts, whose text-shadow
+  // paints every glyph's ink $faux-bold-offset further right; it is set (and
+  // reset) by the same rules that apply the shadow (fonts.scss, table.scss),
+  // so the two can't drift apart. `--left-inset` is the fraction of the icon
+  // box left of its first ink column (measured by
   // scripts/notebooks/favicon_kerning_audit, capped at ~2px); subtracting it
   // puts every icon's visual left edge the same distance from the text.
   --glyph-nudge: 0rem;
   --left-inset: 0;
+  --text-gap: calc(0.125 * #{$base-margin} + var(--glyph-nudge) + var(--favicon-bold-nudge, 0px));
 
   display: inline;
   width: var(--favicon-size);
   height: var(--favicon-size);
   margin: 0 auto calc(-0.25 * #{$base-margin})
-    calc(0.125 * #{$base-margin} + var(--glyph-nudge) - var(--left-inset) * var(--favicon-size));
+    calc(var(--text-gap) - var(--left-inset) * var(--favicon-size));
   vertical-align: var(--vertical-adjustment);
 
   // Don't pollute copied text with favicon

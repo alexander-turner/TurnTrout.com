@@ -6,6 +6,7 @@ import {
   EMPTY_GLYPH_CONTEXT,
   nudgeClassFor,
 } from "../../plugins/transformers/favicons"
+import { fauxBoldOffset } from "../../styles/variables"
 import { expect, test } from "./fixtures"
 import { gotoPage } from "./visual_utils"
 
@@ -225,5 +226,31 @@ test.describe("favicon ink gap", () => {
 
     const failures = collectFailures(probes, measurements)
     expect(failures, failures.join("\n")).toEqual([])
+  })
+
+  // Faux-bold contexts paint glyph ink $faux-bold-offset further right via
+  // text-shadow; the same rules set --favicon-bold-nudge so the favicon's
+  // visual gap stays constant. The margin delta must equal the shadow offset.
+  test("faux-bold contexts widen the favicon margin by the shadow offset", async ({ page }) => {
+    await gotoPage(page, "http://localhost:8080/test-page")
+
+    const margins = await page.evaluate(() => {
+      const host = document.createElement("div")
+      const article = document.querySelector("article") ?? document.body
+      article.appendChild(host)
+      host.innerHTML =
+        '<p><span id="plain">r<svg class="favicon" aria-hidden="true"></svg></span>' +
+        '<strong id="bold">r<svg class="favicon" aria-hidden="true"></svg></strong></p>'
+      const marginOf = (selector: string): number => {
+        const favicon = host.querySelector(`${selector} svg.favicon`)
+        if (!favicon) throw new Error(`fixture failed for ${selector}`)
+        return parseFloat(getComputedStyle(favicon).marginLeft)
+      }
+      const result = { plain: marginOf("#plain"), bold: marginOf("#bold") }
+      host.remove()
+      return result
+    })
+
+    expect(margins.bold - margins.plain).toBeCloseTo(parseFloat(fauxBoldOffset), 2)
   })
 })

@@ -267,6 +267,7 @@ export function insertFavicon(
 export const charsToSpace: readonly string[] = [
   "T",
   "R",
+  "r", // arm terminal at x-height reaches the advance edge, inside the icon's band
   "V",
   "Y",
   "q",

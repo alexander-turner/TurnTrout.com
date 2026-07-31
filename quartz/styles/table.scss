@@ -88,6 +88,10 @@ tr.group-boundary > td {
 }
 
 .title-cell {
+  // Faux bold: descendant favicons read back --favicon-bold-nudge to keep
+  // their visual left gap constant despite the rightward ink widening.
+  --favicon-bold-nudge: #{$faux-bold-offset};
+
   text-align: center;
   text-shadow: $faux-bold-offset $faux-bold-offset var(--foreground);
 }
