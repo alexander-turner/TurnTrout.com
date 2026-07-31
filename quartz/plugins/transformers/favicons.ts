@@ -330,8 +330,10 @@ export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/", "W"]
 // the tight end crowded. Membership derives from each glyph's ink clearance
 // within the favicon's vertical band (0.2em–0.7em above the baseline), as for
 // the italic sets: below ~0.067em the uniform correction runs short by half a
-// `close-text` step, below ~0.042em by a full one. Glyphs whose bearing already
-// covers the gap ("m" is the tightest common one at 0.059em) take no class.
+// `close-text` step, below ~0.042em by a full one. The superscript marks sit
+// high and narrow, so they land in the tight tier alongside "W". Glyphs whose
+// bearing already covers the gap ("m" is the tightest common letter at
+// 0.059em) take no class.
 export const charsToSpaceCode: readonly string[] = [
   "K",
   "M",
@@ -347,8 +349,9 @@ export const charsToSpaceCode: readonly string[] = [
   "m",
   "#",
   "F",
+  "®",
 ]
-export const charsToSpaceMostCode: readonly string[] = ["W", "@", "w", "%", "&", "V", "Y"]
+export const charsToSpaceMostCode: readonly string[] = ["W", "@", "w", "%", "&", "V", "Y", "™", "©"]
 
 /** Widens `context` with whatever face `element` switches its text into. */
 export function broadenContext(element: Element, context: GlyphContext): GlyphContext {
