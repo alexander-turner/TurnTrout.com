@@ -145,14 +145,18 @@ jobs:
        needs.detect-changes.outputs.content == 'true') &&
       (github.event_name == 'pull_request' ||
        (github.event_name == 'push' && contains(fromJSON('["refs/heads/main","refs/heads/dev"]'), github.ref)))
-    timeout-minutes: 10
+    # Three 3-minute checkout attempts fit inside this budget with room for
+    # the autofixers themselves.
+    timeout-minutes: 20
     steps:
-      # GitHub's git backend intermittently stalls mid-fetch, and a full-history
-      # fetch is long enough to hit it. The second attempt starts from a clean
-      # workspace, so a partial fetch from the first can't corrupt it.
+      # GitHub's git backend intermittently stalls mid-fetch, and a stalled
+      # fetch takes the whole job down before a step has run. A healthy fetch
+      # of this repo finishes inside a minute, so each attempt gets a budget
+      # that a stall trips quickly rather than one it can sit out; the retry
+      # re-checkouts clean, so a partial fetch can't corrupt the workspace.
       - id: checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
-        timeout-minutes: 5
+        timeout-minutes: 3
         continue-on-error: true
         with:
           ref: ${{ github.head_ref || github.ref_name }}
@@ -163,9 +167,20 @@ jobs:
           # detaches the branch from its PR (GitHub then auto-closes it).
           fetch-depth: 0
 
-      - if: steps.checkout.outcome == 'failure'
+      - id: checkout-retry
+        if: steps.checkout.outcome == 'failure'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
-        timeout-minutes: 5
+        timeout-minutes: 3
+        continue-on-error: true
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.PUSH_TOKEN }}
+          fetch-depth: 0
+          clean: true
+
+      - if: steps.checkout-retry.outcome == 'failure'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
+        timeout-minutes: 3
         with:
           ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ secrets.PUSH_TOKEN }}

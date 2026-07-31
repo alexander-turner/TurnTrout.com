@@ -15,24 +15,38 @@ permissions:
 jobs:
   gitleaks: # required-check: true
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Three 3-minute checkout attempts fit inside this budget with room for
+    # the scan itself.
+    timeout-minutes: 20
     env:
       GITLEAKS_VERSION: "8.30.1"
     steps:
-      # GitHub's git backend intermittently stalls mid-fetch, and a full-history
-      # fetch is long enough to hit it. The second attempt starts from a clean
-      # workspace, so a partial fetch from the first can't corrupt it.
+      # GitHub's git backend intermittently stalls mid-fetch, and a stalled
+      # fetch takes the whole job down before a step has run. A healthy fetch
+      # of this repo finishes inside a minute, so each attempt gets a budget
+      # that a stall trips quickly rather than one it can sit out; the retry
+      # re-checkouts clean, so a partial fetch can't corrupt the workspace.
       - id: checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        timeout-minutes: 5
+        timeout-minutes: 3
         continue-on-error: true
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - if: steps.checkout.outcome == 'failure'
+      - id: checkout-retry
+        if: steps.checkout.outcome == 'failure'
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        timeout-minutes: 5
+        timeout-minutes: 3
+        continue-on-error: true
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          clean: true
+
+      - if: steps.checkout-retry.outcome == 'failure'
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        timeout-minutes: 3
         with:
           fetch-depth: 0
           persist-credentials: false
