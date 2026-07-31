@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import logging
 from collections.abc import Callable, Mapping
 from pathlib import Path
 
@@ -286,6 +287,31 @@ def test_index_marks_state_and_review(client: tuple[FlaskClient, Path]) -> None:
     assert f"{expected_needs_review} unreviewed" in body
 
 
+def test_index_opens_on_unreviewed_when_work_remains(
+    client: tuple[FlaskClient, Path],
+) -> None:
+    test_client, labels_path = client
+    label_invert.save_labels(
+        {u: _label(True, True) for u in EXPECTED[:-1]}, labels_path
+    )
+    body = test_client.get("/").get_data(as_text=True)
+    assert f'data-initial="{label_invert.UNREVIEWED_FILTER}"' in body
+    # The select can only adopt an initial mode that it offers.
+    assert f'<option value="{label_invert.UNREVIEWED_FILTER}"' in body
+
+
+def test_index_opens_on_all_when_everything_reviewed(
+    client: tuple[FlaskClient, Path],
+) -> None:
+    test_client, labels_path = client
+    label_invert.save_labels(
+        {u: _label(True, True) for u in EXPECTED}, labels_path
+    )
+    body = test_client.get("/").get_data(as_text=True)
+    assert f'data-initial="{label_invert.ALL_FILTER}"' in body
+    assert f'<option value="{label_invert.ALL_FILTER}"' in body
+
+
 def test_get_labels_returns_json(client: tuple[FlaskClient, Path]) -> None:
     test_client, labels_path = client
     label_invert.save_labels({EXPECTED[0]: _label(True, True)}, labels_path)
@@ -527,6 +553,39 @@ def test_main_check_and_launch(
     )
     assert rc == 0
     assert ran["flask"] is expect_server
+
+
+def test_check_and_launch_logs_each_unreviewed_url(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    dims = _write_dims(tmp_path, {url: {} for url in EXPECTED})
+    labels_path = tmp_path / "labels.json"
+    labels_path.write_text(
+        json.dumps({u: _label(True, True) for u in EXPECTED[:-1]}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        label_invert.Flask, "run", lambda _self, **_kwargs: None
+    )
+    monkeypatch.setattr(label_invert, "open_browser_async", lambda _u: None)
+
+    with caplog.at_level(logging.INFO, logger=label_invert.__name__):
+        rc = label_invert.main(
+            [
+                "--check-and-launch",
+                "--dimensions",
+                str(dims),
+                "--labels",
+                str(labels_path),
+                "--no-browser",
+                "--skip-luminance",
+            ]
+        )
+    assert rc == 0
+    assert f"needs review: {EXPECTED[-1]}" in caplog.text
+    assert EXPECTED[0] not in caplog.text
 
 
 def test_main_runs_apply_annotations(tmp_path: Path) -> None:
