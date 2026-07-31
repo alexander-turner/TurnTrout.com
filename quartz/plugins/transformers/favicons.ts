@@ -319,6 +319,9 @@ export const charsToSpaceItalic: readonly string[] = [
   "I",
   "M",
   "X",
+  // The italic face has no ®, so it comes from the upright face with
+  // synthesized oblique, which leans its ink past the advance edge.
+  "®",
 ]
 export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/", "W"]
 

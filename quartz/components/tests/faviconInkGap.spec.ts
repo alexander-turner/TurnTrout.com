@@ -101,6 +101,7 @@ interface Measurement {
   marginPx: number
   fontSizePx: number
   gapPx: number | null
+  fromFallbackFace: boolean
 }
 
 interface Probe {
@@ -204,9 +205,28 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
       return null
     }
 
+    // True when the requested family has no outline for `char`, so the
+    // canvas drew whichever face the platform substitutes. Such a glyph
+    // measures differently per OS. Detected by advance width: a substituted
+    // glyph matches what a nonexistent family produces, since both resolve
+    // through the same fallback chain.
+    const isFallbackGlyph = (style: CSSStyleDeclaration, char: string): boolean => {
+      const glyph = style.fontVariantCaps === "small-caps" ? char.toUpperCase() : char
+      ctx2d.font = `${style.fontStyle} ${CANVAS_FONT_PX}px ${style.fontFamily}`
+      const requested = ctx2d.measureText(glyph).width
+      ctx2d.font = `${style.fontStyle} ${CANVAS_FONT_PX}px "__no_such_family__"`
+      const substituted = ctx2d.measureText(glyph).width
+      return Math.abs(requested - substituted) < 0.01
+    }
+
     await document.fonts.ready
-    const results: { key: string; marginPx: number; fontSizePx: number; gapPx: number | null }[] =
-      []
+    const results: {
+      key: string
+      marginPx: number
+      fontSizePx: number
+      gapPx: number | null
+      fromFallbackFace: boolean
+    }[] = []
     for (const probe of probeList) {
       host.innerHTML =
         `<p>${probe.wrapperHtml[0]}<span class="ink-probe">${probe.char}</span>` +
@@ -225,6 +245,7 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
         marginPx,
         fontSizePx,
         gapPx: bearingEm === null ? null : marginPx + bearingEm * fontSizePx,
+        fromFallbackFace: isFallbackGlyph(probeStyle, probe.char),
       })
     }
     host.remove()
@@ -279,12 +300,12 @@ function collectBoldFailures(margins: BoldMargins, wrappers: readonly ContextWra
     .filter(Boolean)
 }
 
-// Glyphs that plausibly end link text, restricted to those the shipped
-// EBGaramond faces actually carry: ™ is absent from both, so a probe for it
-// would measure a platform fallback face and reach a different verdict per OS.
+// Glyphs that plausibly end link text. A face missing one of them renders it
+// from a platform substitute whose metrics vary per OS; measureProbes marks
+// those and the sweep reports them rather than judging them.
 const MEMBERSHIP_CHARS: readonly string[] = [
   ..."abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
-  ..."()[]{}\\/®©°%&*+=<>|!?;:’”†‡",
+  ..."()[]{}\\/®™©°%&*+=<>|!?;:’”†‡",
 ]
 
 // Thresholds in em of the probe's font, slackened from the bars that produced
@@ -337,11 +358,15 @@ function collectMembershipViolations(
   return violations
 }
 
-/** Right side bearings in em, keyed by probe, for probes with ink in band. */
+/**
+ * Right side bearings in em, keyed by probe. Probes with no ink in the band
+ * and probes the face rendered from a platform substitute are omitted: the
+ * former cannot crowd, the latter would measure differently per OS.
+ */
 function bearingsByKey(measurements: readonly Measurement[]): ReadonlyMap<string, number> {
   const bearings = new Map<string, number>()
   for (const measured of measurements) {
-    if (measured.gapPx !== null) {
+    if (measured.gapPx !== null && !measured.fromFallbackFace) {
       bearings.set(measured.key, (measured.gapPx - measured.marginPx) / measured.fontSizePx)
     }
   }
@@ -409,6 +434,9 @@ test.describe("favicon ink gap", () => {
     const contexts = CONTEXTS.filter((ctx) => ctx.name === "serif" || ctx.name === "italic")
     const measurements = await measureProbes(page, buildProbes(contexts, MEMBERSHIP_CHARS))
     const bearings = bearingsByKey(measurements)
+
+    const substituted = measurements.filter((m) => m.fromFallbackFace).map((m) => m.key)
+    console.info(`Glyphs judged: ${bearings.size}; rendered by a substitute face: ${substituted}`)
 
     const serifRef = bearings.get("serif|o")
     expect(serifRef, "round-letter reference probe has no ink in band").toBeDefined()
