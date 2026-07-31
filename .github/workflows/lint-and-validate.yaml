@@ -147,8 +147,13 @@ jobs:
        (github.event_name == 'push' && contains(fromJSON('["refs/heads/main","refs/heads/dev"]'), github.ref)))
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
+      # GitHub's git backend intermittently stalls mid-fetch, and a full-history
+      # fetch is long enough to hit it. The second attempt starts from a clean
+      # workspace, so a partial fetch from the first can't corrupt it.
+      - id: checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
         timeout-minutes: 5
+        continue-on-error: true
         with:
           ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ secrets.PUSH_TOKEN }}
@@ -157,6 +162,15 @@ jobs:
           # `commit --amend` would write an orphan commit whose force-push
           # detaches the branch from its PR (GitHub then auto-closes it).
           fetch-depth: 0
+
+      - if: steps.checkout.outcome == 'failure'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
+        timeout-minutes: 5
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.PUSH_TOKEN }}
+          fetch-depth: 0
+          clean: true
 
       - name: Setup site
         uses: ./.github/actions/setup-site
