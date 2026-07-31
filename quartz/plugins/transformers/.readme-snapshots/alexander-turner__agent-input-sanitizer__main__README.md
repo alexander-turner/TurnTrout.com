@@ -127,13 +127,42 @@ import {
 } from "agent-sanitizer/claude-hooks/lib/hook-io";
 ```
 
-`agent-sanitizer/claude-hooks/<module>` for the four hooks
+The exported set is deliberately small — the four hooks
 (`sanitize-output`, `pretooluse-sanitize`, `sanitize-user-prompt`,
-`scan-invisible-chars`) and `agent-sanitizer/claude-hooks/lib/<module>` for the
-shared libs. Importing one runs no CLI and reads no stdin. Same stability
-posture as the `_AGENT_SANITIZER_*` variables below: reachable and typed, but
-the supported surface is the `--hook=` CLI, so these move between minor
-versions.
+`scan-invisible-chars`) plus `lib/hook-io` and `lib/control-plane`. Everything
+else under `claude-hooks/` stays internal and is refused by the exports map, so
+it never becomes a surface this package owes compatibility on. `lib/hook-io` is
+exported because it must be _shared_ rather than copied: it owns the
+lazy-module registry and the CLI-slot singleton, and two copies in one bundle
+double-fire the inlined CLIs.
+
+Importing one runs no CLI and reads no stdin. Same stability posture as the
+`_AGENT_SANITIZER_*` variables below: reachable and typed, but the supported
+surface is the `--hook=` CLI, so these move between minor versions.
+
+**`sanitize-output` takes a host-extension bag** — an optional last argument on
+`sanitizeText`, `sanitizeValue`, `evaluateToolOutput`, `judgeSanitizeOutput`, and
+`cliMain`, so a composer that wraps `cliMain` gets the hook's exact fail-closed
+CLI wiring plus its own policy:
+
+| Field        | Runs                                                     | Does                                                                     |
+| ------------ | -------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `postText`   | once per string **value** leaf, after Layers 1–4         | returns `{cleaned?, warning?}`; `cleaned` replaces the model-facing text |
+| `redactNote` | on the pre-redaction text of a leaf that tripped Layer 4 | returns a note appended to that leaf's redaction warning                 |
+| `audit`      | once per judged event carrying a tool response           | is handed the output the model will actually see                         |
+
+Omit the bag and every seam is inert — the verdicts are byte-identical to this
+module alone. A callback that throws is **not** caught: it lands in the CLI's
+fail-closed catch and the tool output is suppressed, so a broken extension can
+never degrade into showing unvetted output. `postText` deliberately does not run
+on object field NAMES: a callback sees only the string and the tool, so it cannot
+tell a schema key from content, and rewriting a key can collapse two fields into
+one name — which this hook turns into whole-output suppression.
+
+Beyond the credential-shaped names it infers, the env-bound redaction set unions
+`_AGENT_SANITIZER_EXTRA_SECRET_VARS` — a comma-separated list of `[A-Z0-9_]`
+variable names whose values a deployment forwards under names of its own
+choosing. A malformed entry throws rather than being dropped.
 
 **Layer 4 needs the Python engine** — `pip install 'agent-sanitizer[secrets]'`,
 version-matched to the npm package. Without it `sanitize-output` fails closed:
@@ -219,21 +248,38 @@ await rehydrateRedacted("Edit", toolInput, {
 }); // { updatedInput, context } | { deny } | null — a deny never exposes a secret
 ```
 
-The credential-noun vocabulary — the words that make an identifier name a
-secret — is published as data so a consumer with its own matcher derives it
-rather than forking it. Each noun's `uses` marks where it is valid: `env-name`
-inspects a variable NAME only, `field-value` also redacts what follows
-`noun = ` (too broad for `key` and `pat`, which stay name-only).
+Ask whether a variable NAME holds a credential — don't render the noun list into
+a pattern of your own. Sharing the words but not the rule re-derives the same
+bugs: matching only when the noun ENDS the name misses `DEPLOY_TOKEN_ORG`, a
+case-sensitive match misses npm's lower-case `npm_config__authToken` channel, and
+one alternation of the nouns backtracks polynomially on a long name.
+
+`scope` is the choice that is genuinely yours: `trailing` for a redactor, which
+must not mangle text a human reads; `any-segment` for an env scrub, where an
+unstripped credential leaks silently but an over-stripped one breaks loudly.
+
+```js
+import { credentialNameMatcher } from "agent-sanitizer/credential-names-matcher";
+const holds = credentialNameMatcher({ scope: "any-segment" }); // build once
+holds("TEMPLATE_SYNC_TOKEN_ORG"); // true
+holds("AWS_ACCESS_KEY_ID"); // false — an identifier, not a secret
+```
+
+```python
+from agent_sanitizer.secrets import credential_name_matcher
+holds = credential_name_matcher(scope="any-segment")
+```
+
+The vocabulary stays published as data for a consumer that needs the words rather
+than the predicate (a generated config, an alternation for a different matcher).
+Each noun's `uses` marks where it is valid: `env-name` inspects a variable NAME
+only, `field-value` also redacts what follows `noun = ` (too broad for `key` and
+`pat`, which stay name-only).
 
 ```js
 import { createRequire } from "node:module";
 createRequire(import.meta.url)("agent-sanitizer/credential-names").nouns;
 // [{ parts: ["api", "key"], uses: ["env-name", "field-value"] }, …]
-```
-
-```python
-from agent_sanitizer.secrets import credential_name_segments
-credential_name_segments()  # ("API_KEY", "APIKEY", "ACCESS_KEY", …)
 ```
 
 ## Limits
