@@ -359,9 +359,10 @@ def autolabel_by_luminance(
 # --- Flask app ---------------------------------------------------------------
 
 
-# Filter modes for the card grid. The grid opens on the work that remains,
-# so a pre-push launch with two stale assets does not present hundreds of
-# already-reviewed cards.
+# Card-grid filter modes, matching the template's `<option value>`s. The
+# grid opens on whichever one shows the work that remains, so a pre-push
+# launch presents the handful of assets needing a verdict rather than every
+# candidate on the site.
 UNREVIEWED_FILTER: Final[str] = "unreviewed"
 ALL_FILTER: Final[str] = "all"
 

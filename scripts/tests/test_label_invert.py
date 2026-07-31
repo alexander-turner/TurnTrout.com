@@ -296,6 +296,8 @@ def test_index_opens_on_unreviewed_when_work_remains(
     )
     body = test_client.get("/").get_data(as_text=True)
     assert f'data-initial="{label_invert.UNREVIEWED_FILTER}"' in body
+    # The select can only adopt an initial mode that it offers.
+    assert f'<option value="{label_invert.UNREVIEWED_FILTER}"' in body
 
 
 def test_index_opens_on_all_when_everything_reviewed(
@@ -307,6 +309,7 @@ def test_index_opens_on_all_when_everything_reviewed(
     )
     body = test_client.get("/").get_data(as_text=True)
     assert f'data-initial="{label_invert.ALL_FILTER}"' in body
+    assert f'<option value="{label_invert.ALL_FILTER}"' in body
 
 
 def test_get_labels_returns_json(client: tuple[FlaskClient, Path]) -> None:

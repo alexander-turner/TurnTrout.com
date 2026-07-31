@@ -167,8 +167,8 @@
         });
       };
       filterSelect.addEventListener("change", (ev) => applyFilter(ev.target.value));
-      // Cards that pass the filter at load stay visible as the user labels
-      // them, so a verdict never makes the card being worked on disappear.
+      // Filtering happens at load and on change only: a card that passes the
+      // filter stays visible while the user labels it.
       filterSelect.value = filterSelect.dataset.initial;
       applyFilter(filterSelect.value);
       document.getElementById("confirm-visible").addEventListener("click", async (ev) => {
