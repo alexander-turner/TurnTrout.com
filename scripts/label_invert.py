@@ -359,6 +359,12 @@ def autolabel_by_luminance(
 # --- Flask app ---------------------------------------------------------------
 
 
+# Filter modes for the card grid. The grid opens on the work that remains,
+# so a pre-push launch with two stale assets does not present hundreds of
+# already-reviewed cards.
+UNREVIEWED_FILTER: Final[str] = "unreviewed"
+ALL_FILTER: Final[str] = "all"
+
 _DECISION_PARAM: Final[Mapping[str, bool | None]] = {
     "invert": True,
     "no-invert": False,
@@ -373,6 +379,15 @@ def _index_handler(
 ) -> Callable[[], str]:
     def index() -> str:
         labels = load_labels(labels_path)
+        # An unlabeled card has no JSON entry to review, so it also
+        # counts as "needs review" alongside labeled-but-unreviewed
+        # cards. Mirrors the template's "needs review" badge logic
+        # and the JS recount that targets `data-reviewed="false"`.
+        unreviewed_count = sum(
+            1
+            for u in candidates
+            if u not in labels or not labels[u]["reviewed"]
+        )
         return render_template(
             "invert_labeler.html",
             candidates=candidates,
@@ -383,14 +398,9 @@ def _index_handler(
             invert_count=sum(
                 1 for u in candidates if u in labels and labels[u]["invert"]
             ),
-            # An unlabeled card has no JSON entry to review, so it also
-            # counts as "needs review" alongside labeled-but-unreviewed
-            # cards. Mirrors the template's "needs review" badge logic
-            # and the JS recount that targets `data-reviewed="false"`.
-            unreviewed_count=sum(
-                1
-                for u in candidates
-                if u not in labels or not labels[u]["reviewed"]
+            unreviewed_count=unreviewed_count,
+            initial_filter=(
+                UNREVIEWED_FILTER if unreviewed_count else ALL_FILTER
             ),
         )
 
@@ -538,6 +548,8 @@ def _run_check_and_launch(args: argparse.Namespace) -> int:
         len(missing),
         len(candidates),
     )
+    for url in missing:
+        logger.info("  needs review: %s", url)
     return _run_server(args)
 
 

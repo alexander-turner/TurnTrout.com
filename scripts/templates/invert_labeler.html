@@ -51,7 +51,7 @@
         {{ invert_count }} / {{ candidates|length }} invert &middot; {{ unreviewed_count }} unreviewed
       </span>
       <span class="controls-spacer"></span>
-      <select id="filter" class="filter">
+      <select id="filter" class="filter" data-initial="{{ initial_filter }}">
         <option value="all">Show all</option>
         <option value="invert">Show only invert</option>
         <option value="no-invert">Show only don't-invert</option>
@@ -160,12 +160,17 @@
           }
         });
       });
-      document.getElementById("filter").addEventListener("change", (ev) => {
-        const mode = ev.target.value;
+      const filterSelect = document.getElementById("filter");
+      const applyFilter = (mode) => {
         document.querySelectorAll(".card").forEach((c) => {
           c.style.display = cardMatchesFilter(c, mode) ? "" : "none";
         });
-      });
+      };
+      filterSelect.addEventListener("change", (ev) => applyFilter(ev.target.value));
+      // Cards that pass the filter at load stay visible as the user labels
+      // them, so a verdict never makes the card being worked on disappear.
+      filterSelect.value = filterSelect.dataset.initial;
+      applyFilter(filterSelect.value);
       document.getElementById("confirm-visible").addEventListener("click", async (ev) => {
         const button = ev.target;
         // Bulk-confirm only applies to cards that already have a verdict
