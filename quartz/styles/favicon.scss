@@ -41,7 +41,8 @@
 
   // Left-gap model: constant visual gap = base + glyph nudge + bold nudge −
   // icon ink inset. `--glyph-nudge` compensates glyphs whose ink overhangs
-  // their advance width (set via .close-text / .closer-text, assigned per
+  // their advance width (set via .close-text / .closer-text and their
+  // .code-close-text / .code-closer-text counterparts, assigned per
   // charsToSpace/-Most in quartz/plugins/transformers/favicons.ts).
   // `--favicon-bold-nudge` compensates faux-bold contexts, whose text-shadow
   // paints every glyph's ink $faux-bold-offset further right; the faux-bold
@@ -93,12 +94,23 @@
   // built-in right side bearing (FiraCode ≈0.08em vs ≈0.03em for a serif
   // round letter), so the last code glyph already clears the icon: the
   // negative nudge returns the bearing's surplus, keeping the visual gap at
-  // the standard width. Per-glyph nudge classes are never assigned inside
-  // code (see `nudgeClassFor` in quartz/plugins/transformers/favicons.ts).
+  // the standard width. FiraCode centers each glyph in one fixed advance, so
+  // that surplus varies far more than in the proportional serif: the two
+  // classes below return a half and a whole step to the glyphs whose bearing
+  // falls short of the uniform correction (assigned per charsToSpace(Most)Code
+  // in quartz/plugins/transformers/favicons.ts).
   code & {
     margin-right: calc(0.125 * #{$base-margin});
 
     --glyph-nudge: calc(-0.125 * #{$base-margin});
+
+    &.code-close-text {
+      --glyph-nudge: calc(-0.0625 * #{$base-margin});
+    }
+
+    &.code-closer-text {
+      --glyph-nudge: 0rem;
+    }
   }
 }
 
