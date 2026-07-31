@@ -293,9 +293,11 @@ export const charsToSpaceMost: readonly string[] = ["f", "Q", "/"]
 // The serif sets above come from the perceptual audit and stay its property.
 // Italic glyphs lean rightward, so the overhang set differs; with no audit for
 // the italic face, membership derives from measured ink clearance within the
-// favicon's vertical band (0.2em-0.7em above the baseline): glyphs whose
-// in-band ink reaches their advance edge get a nudge, and glyphs whose ink
-// overhangs by more than 0.1em get the larger one.
+// favicon's vertical band (0.2em-0.7em above the baseline). Among glyphs that
+// plausibly end link text, those whose in-band ink reaches their advance edge
+// get a nudge, and those overhanging by more than 0.1em get the larger one.
+// Glyphs that overhang past what the larger nudge corrects (italic "~", "^")
+// stay out: no nudge restores their gap, and they never end link text.
 export const charsToSpaceItalic: readonly string[] = [
   "T",
   "Y",

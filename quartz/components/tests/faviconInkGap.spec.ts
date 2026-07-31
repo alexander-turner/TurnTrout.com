@@ -232,6 +232,122 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
   }, probes)
 }
 
+interface ContextWrapper {
+  name: string
+  open: string
+  close: string
+  bolded: boolean
+}
+
+// Every rule that applies the faux-bold text-shadow, plus the .right reset
+// that removes it.
+const FAUX_BOLD_WRAPPERS: readonly ContextWrapper[] = [
+  { name: "strong", open: "<strong>", close: "</strong>", bolded: true },
+  { name: "title-cell", open: '<div class="title-cell">', close: "</div>", bolded: true },
+  {
+    name: "admonition-title",
+    open: '<span class="admonition-title-inner">',
+    close: "</span>",
+    bolded: true,
+  },
+  {
+    name: "right-reset",
+    open: '<div class="right"><strong>',
+    close: "</strong></div>",
+    bolded: false,
+  },
+]
+
+interface BoldMargins {
+  plain: number
+  boosted: number
+  byContext: { name: string; marginPx: number }[]
+}
+
+// Slack just above one LayoutUnit (1/64 px in Chromium/WebKit, 1/60 px in
+// Firefox) absorbs the double quantization of the derived expectation.
+const MARGIN_QUANTUM_PX = 0.02
+
+/** Names the contexts whose favicon margin misses its faux-bold expectation. */
+function collectBoldFailures(margins: BoldMargins, wrappers: readonly ContextWrapper[]): string[] {
+  return margins.byContext
+    .map((measured, index) => {
+      const expected = wrappers[index].bolded ? margins.boosted : margins.plain
+      const off = Math.abs(measured.marginPx - expected) >= MARGIN_QUANTUM_PX
+      return off ? `${measured.name}: margin ${measured.marginPx}px != ${expected}px` : ""
+    })
+    .filter(Boolean)
+}
+
+// Glyphs that plausibly end link text, restricted to those the shipped
+// EBGaramond faces actually carry: ™ is absent from both, so a probe for it
+// would measure a platform fallback face and reach a different verdict per OS.
+const MEMBERSHIP_CHARS: readonly string[] = [
+  ..."abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+  ..."()[]{}\\/®©°%&*+=<>|!?;:’”†‡",
+]
+
+// Thresholds in em of the probe's font, slackened from the bars that produced
+// the sets so that no glyph sits near a bar: the closest non-qualifying glyph
+// clears its threshold by more than 0.01em, well beyond what antialiasing
+// differences between rasterizers can shift a detected ink edge. Serif
+// measures shortfall against a round letter's clearance (the kerning audit's
+// unit); italic measures the bearing itself, since its glyphs lean past their
+// advance edge.
+const SERIF_CLOSE_SHORTFALL_EM = 0.05
+const SERIF_MOST_SHORTFALL_EM = 0.12
+const ITALIC_CLOSE_BEARING_EM = -0.04
+const ITALIC_MOST_BEARING_EM = -0.11
+
+/**
+ * Names every glyph whose measured ink qualifies it for a nudge class it
+ * doesn't have. One-directional on purpose: the sets may hold extra
+ * perceptual members (serif "R", "r") whose crowding lives outside the
+ * measured band, and glyphs like italic "~" that overhang past what any nudge
+ * corrects. Glyphs with no ink in the band are skipped — they cannot crowd.
+ */
+function collectMembershipViolations(
+  bearings: ReadonlyMap<string, number>,
+  serifRef: number,
+): string[] {
+  const violations: string[] = []
+  const flag = (face: string, char: string, amount: number, needs: string) =>
+    violations.push(`${face} ${char}: ${amount.toFixed(3)}em needs ${needs}`)
+
+  for (const char of MEMBERSHIP_CHARS) {
+    // A glyph with no ink in band scores as maximally clear, so it never flags.
+    const serifBearing = bearings.get(`serif|${char}`) ?? serifRef
+    const shortfall = serifRef - serifBearing
+    const hasSerifNudge = charsToSpace.includes(char) || charsToSpaceMost.includes(char)
+    if (shortfall > SERIF_MOST_SHORTFALL_EM && !charsToSpaceMost.includes(char)) {
+      flag("serif", char, shortfall, "closer-text")
+    } else if (shortfall > SERIF_CLOSE_SHORTFALL_EM && !hasSerifNudge) {
+      flag("serif", char, shortfall, "close-text")
+    }
+
+    const italicBearing = bearings.get(`italic|${char}`) ?? 0
+    const hasItalicNudge =
+      charsToSpaceItalic.includes(char) || charsToSpaceMostItalic.includes(char)
+    if (italicBearing <= ITALIC_MOST_BEARING_EM && !charsToSpaceMostItalic.includes(char)) {
+      flag("italic", char, italicBearing, "closer-text")
+    } else if (italicBearing <= ITALIC_CLOSE_BEARING_EM && !hasItalicNudge) {
+      flag("italic", char, italicBearing, "close-text")
+    }
+  }
+  return violations
+}
+
+/** Right side bearings in em, keyed by probe, for probes with ink in band. */
+function bearingsByKey(measurements: readonly Measurement[]): ReadonlyMap<string, number> {
+  const bearings = new Map<string, number>()
+  for (const measured of measurements) {
+    if (measured.gapPx !== null) {
+      bearings.set(measured.key, (measured.gapPx - measured.marginPx) / measured.fontSizePx)
+    }
+  }
+  return bearings
+}
+
 test.describe("favicon ink gap", () => {
   test("margins resolve exactly and ink gaps stay inside the band", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
@@ -253,24 +369,7 @@ test.describe("favicon ink gap", () => {
   test("faux-bold contexts widen the favicon margin by the shadow offset", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
 
-    const contextWrappers = [
-      { name: "strong", open: "<strong>", close: "</strong>", bolded: true },
-      { name: "title-cell", open: '<div class="title-cell">', close: "</div>", bolded: true },
-      {
-        name: "admonition-title",
-        open: '<span class="admonition-title-inner">',
-        close: "</span>",
-        bolded: true,
-      },
-      {
-        name: "right-reset",
-        open: '<div class="right"><strong>',
-        close: "</strong></div>",
-        bolded: false,
-      },
-    ] as const
-
-    const margins = await page.evaluate(
+    const margins: BoldMargins = await page.evaluate(
       ({ wrappers, offset }) => {
         const host = document.createElement("div")
         const article = document.querySelector("article") ?? document.body
@@ -293,90 +392,28 @@ test.describe("favicon ink gap", () => {
         host.remove()
         return { plain, boosted, byContext }
       },
-      { wrappers: contextWrappers, offset: fauxBoldOffset },
+      { wrappers: FAUX_BOLD_WRAPPERS, offset: fauxBoldOffset },
     )
 
-    // Slack just above one LayoutUnit (1/64 px in Chromium/WebKit, 1/60 px
-    // in Firefox) absorbs the double quantization of the derived expectation.
-    const quantumPx = 0.02
-    for (const [index, { name, marginPx }] of margins.byContext.entries()) {
-      const expected = contextWrappers[index].bolded ? margins.boosted : margins.plain
-      expect(
-        Math.abs(marginPx - expected),
-        `${name}: margin ${marginPx}px, expected ${expected}px`,
-      ).toBeLessThan(quantumPx)
-    }
+    const failures = collectBoldFailures(margins, FAUX_BOLD_WRAPPERS)
+    expect(failures, failures.join("\n")).toEqual([])
   })
 
-  // Membership ratchet: render every plausible link-ending glyph in the
-  // shipped faces and require a nudge class for any glyph whose measured
-  // in-band ink qualifies under the sets' criteria. One-directional on
-  // purpose — the sets may hold extra perceptual members (serif "R", "r")
-  // whose crowding lives outside the measured band. Italic "~" and "^"
-  // overhang further than the largest nudge corrects and never end link
-  // text, so they stay out of the sets and out of this sweep; "†"/"‡" are
-  // absent from the test page's font subset.
-  const MEMBERSHIP_CHARS: readonly string[] = [
-    ..."abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
-    ..."()[]{}\\/®™©°%&*+=<>|!?;:’”",
-  ]
-
-  // Thresholds in em of the probe's font. Serif mirrors the kerning audit's
-  // bar (clearance more than ~1px short of a round letter's at body size);
-  // italic uses the ink-derived bearing bars that produced its sets. The
-  // nearest non-qualifying glyph sits ≥0.009em from its bar, so engine
-  // rasterization differences cannot flip a verdict.
-  const SERIF_CLOSE_SHORTFALL_EM = 0.05
-  const SERIF_MOST_SHORTFALL_EM = 0.12
-  const ITALIC_CLOSE_BEARING_EM = -0.03
-  const ITALIC_MOST_BEARING_EM = -0.11
-
+  // Membership ratchet: measure every plausible link-ending glyph in the
+  // shipped faces and demand a nudge class wherever the ink qualifies for
+  // one. This keeps the sets honest against future font updates, which shift
+  // bearings without touching any code the other tests cover.
   test("glyphs that measure as crowding carry a nudge class", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
 
     const contexts = CONTEXTS.filter((ctx) => ctx.name === "serif" || ctx.name === "italic")
-    const probes = buildProbes(contexts, MEMBERSHIP_CHARS)
-    const measurements = await measureProbes(page, probes)
+    const measurements = await measureProbes(page, buildProbes(contexts, MEMBERSHIP_CHARS))
+    const bearings = bearingsByKey(measurements)
 
-    const bearingOf = (key: string): number | null => {
-      const measured = measurements.find((m) => m.key === key)
-      if (!measured || measured.gapPx === null) return null
-      return (measured.gapPx - measured.marginPx) / measured.fontSizePx
-    }
+    const serifRef = bearings.get("serif|o")
+    expect(serifRef, "round-letter reference probe has no ink in band").toBeDefined()
 
-    const serifRef = bearingOf("serif|o")
-    expect(serifRef, "round-letter reference probe has no ink in band").not.toBeNull()
-
-    const violations: string[] = []
-    for (const char of MEMBERSHIP_CHARS) {
-      const serifBearing = bearingOf(`serif|${char}`)
-      if (serifBearing !== null && serifRef !== null) {
-        const shortfall = serifRef - serifBearing
-        if (shortfall > SERIF_MOST_SHORTFALL_EM && !charsToSpaceMost.includes(char)) {
-          violations.push(`serif ${char}: shortfall ${shortfall.toFixed(3)}em needs closer-text`)
-        } else if (
-          shortfall > SERIF_CLOSE_SHORTFALL_EM &&
-          !charsToSpaceMost.includes(char) &&
-          !charsToSpace.includes(char)
-        ) {
-          violations.push(`serif ${char}: shortfall ${shortfall.toFixed(3)}em needs close-text`)
-        }
-      }
-
-      const italicBearing = bearingOf(`italic|${char}`)
-      if (italicBearing !== null) {
-        if (italicBearing <= ITALIC_MOST_BEARING_EM && !charsToSpaceMostItalic.includes(char)) {
-          violations.push(`italic ${char}: bearing ${italicBearing.toFixed(3)}em needs closer-text`)
-        } else if (
-          italicBearing <= ITALIC_CLOSE_BEARING_EM &&
-          !charsToSpaceMostItalic.includes(char) &&
-          !charsToSpaceItalic.includes(char)
-        ) {
-          violations.push(`italic ${char}: bearing ${italicBearing.toFixed(3)}em needs close-text`)
-        }
-      }
-    }
-
+    const violations = collectMembershipViolations(bearings, serifRef ?? 0)
     expect(violations, violations.join("\n")).toEqual([])
   })
 })
