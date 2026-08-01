@@ -14,7 +14,10 @@
     --font-size-plus-#{$i}: #{calculate-scale($i)};
   }
 
-  --font-size-code: 0.81em;
+  // Kept unitless so a descendant can divide the em basis back out and size
+  // itself against the surrounding prose instead of the code face.
+  --font-size-code-scale: 0.81;
+  --font-size-code: calc(var(--font-size-code-scale) * 1em);
   --base-line-height: 1.4;
   --min-font-size: 0.875rem; // 14px
   --max-font-size: 1.5rem; // 24px

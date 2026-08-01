@@ -88,6 +88,8 @@ const CONTEXTS: readonly ContextSpec[] = [
 // wider than the proportional ones — see the reasoning in favicon.scss.
 const BASE_MARGIN_EM = 0.0625
 const CODE_FACE_NUDGE_EM = -0.0156
+/** `--font-size-code-scale`: inline code's size as a fraction of its prose. */
+const CODE_FACE_SCALE = 0.81
 const NUDGE_EM: Readonly<Record<string, number>> = {
   "close-text": 0.0625,
   "closer-text": 0.125,
@@ -148,8 +150,13 @@ interface Probe {
 
 /** The probe's expected margin-left, in em of the text it sits beside. */
 function expectedMarginEm(probe: Probe): number {
-  const faceNudge = probe.contextName === "code" ? CODE_FACE_NUDGE_EM : 0
-  return BASE_MARGIN_EM + (probe.nudgeClass ? NUDGE_EM[probe.nudgeClass] : faceNudge)
+  const inCode = probe.contextName === "code"
+  const faceNudge = inCode ? CODE_FACE_NUDGE_EM : 0
+  const em = BASE_MARGIN_EM + (probe.nudgeClass ? NUDGE_EM[probe.nudgeClass] : faceNudge)
+  // In code the icon takes its em from the surrounding prose rather than the
+  // code face, so every length on it — this margin included — buys the same
+  // pixels it would beside body text.
+  return inCode ? em / CODE_FACE_SCALE : em
 }
 
 function collectFailures(probes: readonly Probe[], measurements: readonly Measurement[]): string[] {

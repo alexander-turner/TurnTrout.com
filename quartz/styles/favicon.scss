@@ -90,11 +90,16 @@
   // proportional serif: the two classes below return a half and a whole step to
   // the glyphs whose bearing falls short of the uniform correction (assigned
   // per charsToSpace(Most)Code in quartz/plugins/transformers/favicons.ts).
-  // The face sits a step wider than the proportional faces rather than level
-  // with them. Code runs at 0.81em, so an identical em gap buys a fifth fewer
-  // pixels there, and both the icon and the gap shrink together — the pair
-  // reads as crowded well before the number says it is.
+  // The icon annotates a link inside a paragraph; inline code runs smaller than
+  // the prose it sits in, so an em basis taken from the code face would shrink
+  // the icon against the very line it shares. Dividing that basis back out
+  // denominates the box, the gap and the rise in the surrounding text, which is
+  // the size the reader compares them to.
+  // The face still sits a step wider than the proportional faces: FiraCode
+  // centers each glyph in a fixed advance, so the icon meets a glyph whose ink
+  // stops short of where the advance ends.
   code & {
+    font-size: calc(1em / var(--font-size-code-scale));
     margin-right: 0.0625em;
 
     --glyph-nudge: -0.0156em;
