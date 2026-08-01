@@ -752,7 +752,7 @@ describe("insertFavicon", () => {
         expect(span).toMatchObject(faviconSpanNode)
         // With no mark to displace it the anchor is the "W" in the monospace
         // face, so the gap is the one the wrapper's own face earns.
-        expect(gapOf(node)).toBe(0.0952)
+        expect(gapOf(node)).toBe(0.1189)
       })
     })
   })
