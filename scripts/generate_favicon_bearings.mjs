@@ -79,17 +79,49 @@ const table = await page.evaluate(
       return null
     }
 
-    // A glyph the requested family has no outline for is drawn by whatever the
-    // platform substitutes, so its metrics describe a face the page never uses.
-    const isFallback = (style, char) => {
-      applyFont(style)
-      const own = ctx2d.measureText(char).width
-      applyFont(style, "monospace")
-      const mono = ctx2d.measureText(char).width
-      applyFont(style, "serif")
-      const serif = ctx2d.measureText(char).width
-      return own === mono && own === serif
+    // Advance width, opaque-pixel count and ink bounding box of `char` in
+    // `family`. Two faces that differ anywhere in the outline differ here,
+    // where an advance width alone collides whenever a substitute happens to
+    // be set on the same body.
+    const inkSignature = (style, char, family) => {
+      const baseline = 700
+      ctx2d.clearRect(0, 0, canvas.width, canvas.height)
+      applyFont(style, family)
+      ctx2d.textBaseline = "alphabetic"
+      ctx2d.fillText(char, PEN_X, baseline)
+      const advance = ctx2d.measureText(char).width
+      const left = PEN_X - CANVAS_FONT_PX / 2
+      const top = baseline - CANVAS_FONT_PX * 1.25
+      const width = Math.ceil(advance) + CANVAS_FONT_PX
+      const height = CANVAS_FONT_PX * 1.75
+      const { data } = ctx2d.getImageData(left, top, width, height)
+      let count = 0
+      let minX = width
+      let maxX = -1
+      let minY = height
+      let maxY = -1
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (data[(y * width + x) * 4 + 3] <= 40) continue
+          count += 1
+          minX = Math.min(minX, x)
+          maxX = Math.max(maxX, x)
+          minY = Math.min(minY, y)
+          maxY = Math.max(maxY, y)
+        }
+      }
+      return `${advance.toFixed(2)}|${count}|${minX},${maxX},${minY},${maxY}`
     }
+
+    // A glyph the requested family has no outline for is drawn by whatever the
+    // platform substitutes, so its metrics describe a face the page never uses
+    // and vary per OS and engine. A nonexistent family resolves through the
+    // same fallback chain, so an identical fingerprint means the requested
+    // family never contributed. Kept in step with the same predicate in
+    // quartz/components/tests/faviconInkGap.spec.ts, which skips exactly the
+    // glyphs this excludes.
+    const isFallback = (style, char) =>
+      inkSignature(style, char) === inkSignature(style, char, '"__no_such_family__"')
 
     await document.fonts.ready
     const out = {}

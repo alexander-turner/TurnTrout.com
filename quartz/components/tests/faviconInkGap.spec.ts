@@ -249,18 +249,53 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
       return null
     }
 
-    // True when the requested family has no outline for `char`, so the
-    // canvas drew whichever face the platform substitutes. Such a glyph
-    // measures differently per OS. Detected by advance width: a substituted
-    // glyph matches what a nonexistent family produces, since both resolve
-    // through the same fallback chain.
-    const isFallbackGlyph = (style: CSSStyleDeclaration, char: string): boolean => {
-      applyFont(style)
-      const requested = ctx2d.measureText(char).width
-      applyFont(style, '"__no_such_family__"')
-      const substituted = ctx2d.measureText(char).width
-      return Math.abs(requested - substituted) < 0.01
+    // Advance width, opaque-pixel count and ink bounding box of `char` in
+    // `family`. Two faces that differ anywhere in the outline differ here,
+    // where an advance width alone collides whenever a substitute happens to
+    // be set on the same body.
+    const inkSignature = (style: CSSStyleDeclaration, char: string, family?: string): string => {
+      const baseline = 700
+      ctx2d.clearRect(0, 0, canvas.width, canvas.height)
+      applyFont(style, family)
+      ctx2d.textBaseline = "alphabetic"
+      ctx2d.fillText(char, PEN_X, baseline)
+      const advance = ctx2d.measureText(char).width
+      const left = PEN_X - CANVAS_FONT_PX / 2
+      const top = baseline - CANVAS_FONT_PX * 1.25
+      const width = Math.ceil(advance) + CANVAS_FONT_PX
+      const height = CANVAS_FONT_PX * 1.75
+      const { data } = ctx2d.getImageData(left, top, width, height)
+      let count = 0
+      let minX = width
+      let maxX = -1
+      let minY = height
+      let maxY = -1
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (data[(y * width + x) * 4 + 3] <= 40) continue
+          count += 1
+          minX = Math.min(minX, x)
+          maxX = Math.max(maxX, x)
+          minY = Math.min(minY, y)
+          maxY = Math.max(maxY, y)
+        }
+      }
+      return `${advance.toFixed(2)}|${count}|${minX},${maxX},${minY},${maxY}`
     }
+
+    // True when the requested family has no outline for `char`, so the canvas
+    // drew whichever face the platform substitutes. Such a glyph measures
+    // differently per OS and engine, so the sweep cannot judge it. A
+    // nonexistent family resolves through the same fallback chain, so an
+    // identical fingerprint means the requested family never contributed.
+    // Kept in step with scripts/generate_favicon_bearings.mjs, which must
+    // exclude exactly the same glyphs from the table this sweep checks.
+    const isFallbackGlyph = (style: CSSStyleDeclaration, char: string): boolean =>
+      inkSignature(style, char) === inkSignature(style, char, '"__no_such_family__"')
+
+    // True when the canvas painted no pixels anywhere for `char`.
+    const drawsNoInk = (style: CSSStyleDeclaration, char: string): boolean =>
+      inkSignature(style, char).split("|")[1] === "0"
 
     // Canvas-level `font-variant-caps` support differs per engine. Where it is
     // missing, a lowercase probe silently measures the lowercase glyph, which
@@ -268,7 +303,12 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
     // report those probes rather than judging them. A face with real `smcp`
     // gives the small-cap form a different advance from the lowercase one.
     const smallCapsUnsupported = (style: CSSStyleDeclaration, char: string): boolean => {
-      if (style.fontVariantCaps !== "small-caps" || !/[a-z]/.test(char)) return false
+      if (style.fontVariantCaps !== "small-caps") return false
+      // Some engines draw nothing at all for a glyph in a small-caps run,
+      // reporting a full-em advance over blank pixels. The page still shows
+      // the glyph, so the canvas is describing a rendering no reader gets.
+      if (drawsNoInk(style, char)) return true
+      if (!/[a-z]/.test(char)) return false
       applyFont(style)
       const smallCap = ctx2d.measureText(char).width
       ctx2d.fontVariantCaps = "normal"
