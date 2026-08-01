@@ -526,13 +526,15 @@ describe("insertFavicon", () => {
       ...overrides,
     })
 
-    const classOf = (node: Element): string | undefined => {
-      let found: string | undefined
+    // The gap the transformer wrote onto the icon it inserted, which is the
+    // only place the chosen face and anchor glyph become observable.
+    const gapOf = (node: Element): number | undefined => {
+      let found: number | undefined
       visit(node, "element", (el: Element) => {
-        const cls = el.properties?.class
-        if (typeof cls === "string" && cls.includes("favicon")) {
-          found = cls
-        }
+        const style = el.properties?.style
+        if (typeof style !== "string") return
+        const match = /--glyph-gap: (-?[\d.]+)em/.exec(style)
+        if (match) found = Number(match[1])
       })
       return found
     }
@@ -605,8 +607,16 @@ describe("insertFavicon", () => {
           }
         }
         // Only glyphs that overhang further than any reasonable margin can
-        // correct, none of which end link text.
-        expect(clamped.sort()).toEqual(["italic|^", "italic|~", "serif|f", "smallCaps|f"])
+        // correct, none of which end link text. The italic face dominates the
+        // list because its overhangs are the deepest the site ships.
+        expect(clamped.sort()).toEqual([
+          "italic|V",
+          "italic|W",
+          "italic|^",
+          "italic|f",
+          "italic|~",
+          "serif|f",
+        ])
       })
     })
 
@@ -629,34 +639,35 @@ describe("insertFavicon", () => {
     })
 
     describe("context threading through insertFavicon", () => {
-      it("descends into <em>, assigning the italic membership", () => {
-        // "Incoherent" ends in "t": italic member, serif non-member.
+      it("descends into <em>, taking the gap from the italic face", () => {
+        // Italic "t" overhangs its advance, so the icon is pushed well past
+        // the target; the serif "t" beside it earns much less.
         const node = h("a", { href: "https://example.com" }, [h("em", {}, ["Incoherent"])])
         favicons.insertFavicon(imgPath, node)
-        expect(classOf(node)).toBe("favicon close-text")
+        expect(gapOf(node)).toBe(0.1725)
+        expect(gapOf(node)).not.toBe(favicons.faviconGapEm("t", favicons.EMPTY_GLYPH_CONTEXT))
       })
 
-      it("suppresses the serif nudge after small-cap lowercase", () => {
+      it("takes the gap from the small-caps face after small-cap lowercase", () => {
         const node = h("a", { href: "https://example.com" }, [
           h("abbr", { className: "small-caps" }, ["proxy"]),
         ])
         favicons.insertFavicon(imgPath, node)
-        expect(classOf(node)).toBe("favicon")
+        expect(gapOf(node)).toBe(0.08)
       })
 
-      it("assigns the monospace membership inside <code>", () => {
-        // "-y" ends in "y": monospace non-member, italic member.
+      it("takes the gap from the monospace face inside <code>", () => {
         const node = h("a", { href: "https://example.com" }, [h("code", {}, ["subfont -y"])])
         favicons.insertFavicon(imgPath, node)
-        expect(classOf(node)).toBe("favicon")
+        expect(gapOf(node)).toBe(0.0486)
       })
 
-      it("nudges a code link ending in a tight monospace glyph", () => {
+      it("tightens a code link ending in a wide monospace glyph", () => {
         const node = h("a", { href: "mailto:alex@turntrout.com" }, [
           h("code", {}, ["alex@turntrout.com"]),
         ])
         favicons.insertFavicon(imgPath, node)
-        expect(classOf(node)).toBe("favicon code-close-text")
+        expect(gapOf(node)).toBe(0.0587)
       })
 
       it("applies an outer context supplied by the caller", () => {
@@ -664,7 +675,7 @@ describe("insertFavicon", () => {
         // context from ancestors and passes it in.
         const node = h("a", { href: "https://example.com" }, ["Incoherent"])
         favicons.insertFavicon(imgPath, node, ctx({ italic: true }))
-        expect(classOf(node)).toBe("favicon close-text")
+        expect(gapOf(node)).toBe(0.1725)
       })
     })
 
@@ -672,9 +683,9 @@ describe("insertFavicon", () => {
     // AddFavicons and moves a mark authored after a link to inside it. When
     // the link's last child is an element it appends a fresh text node beside
     // that element rather than into it, so the icon's anchor becomes the mark
-    // and lands outside the wrapper. These tests pin that shape: the wrapper's
-    // face never reaches `nudgeClassFor`, and the wrapper's CSS
-    // (`code .favicon`) does not apply to an icon that is its sibling.
+    // and lands outside the wrapper. These tests pin that shape: the gap is
+    // measured in the mark's face rather than the wrapper's, and the wrapper's
+    // CSS (`code .favicon`) does not apply to an icon that is its sibling.
     describe("anchor displaced by a mark pulled into the link", () => {
       const wrapperOf = (node: Element): Element => node.children[0] as Element
 
@@ -700,30 +711,31 @@ describe("insertFavicon", () => {
         },
       )
 
-      it("nudges for the mark's face, not the wrapper's", () => {
-        // "m" earns code-close-text inside <code>; the comma earns nothing in
-        // the serif face the icon actually renders in.
+      it("takes the gap for the mark's face, not the wrapper's", () => {
+        // The anchor is the comma in the serif face, not the "m" inside the
+        // <code>, so the icon carries the serif fallback rather than the
+        // monospace gap it would earn one character earlier.
         const node = h("a", { href: "mailto:alex@turntrout.com" }, [
           h("code", {}, ["alex@turntrout.com"]),
           { type: "text", value: "," },
         ])
         favicons.insertFavicon(imgPath, node)
-        expect(classOf(node)).toBe("favicon")
+        expect(gapOf(node)).toBe(0.0625)
+        expect(gapOf(node)).not.toBe(favicons.faviconGapEm("m", ctx({ code: true })))
       })
 
       it.each([
-        [".", "favicon"],
-        // A trailing ")" is a serif non-member too, so the whole class of
-        // pulled-in marks lands on the same nudge regardless of the wrapper.
-        [")", "favicon"],
-      ])("anchors to a trailing %s outside the wrapper", (mark, expectedClass) => {
+        // A mark with no ink in the icon's band falls back; ")" is measured.
+        [".", 0.0625],
+        [")", 0.0825],
+      ])("anchors to a trailing %s outside the wrapper", (mark, expectedGap) => {
         const node = h("a", { href: "https://example.com" }, [
           h("code", {}, ["npm i abW"]),
           { type: "text", value: mark },
         ])
         favicons.insertFavicon(imgPath, node)
 
-        expect(classOf(node)).toBe(expectedClass)
+        expect(gapOf(node)).toBe(expectedGap)
         expect((wrapperOf(node).children[0] as { value: string }).value).toBe("npm i abW")
       })
 
@@ -734,7 +746,9 @@ describe("insertFavicon", () => {
         expect(node.children).toHaveLength(1)
         const span = wrapperOf(node).children[1] as Element
         expect(span).toMatchObject(faviconSpanNode)
-        expect(classOf(node)).toBe("favicon code-closer-text")
+        // With no mark to displace it the anchor is the "W" in the monospace
+        // face, so the gap is the one the wrapper's own face earns.
+        expect(gapOf(node)).toBe(0.0952)
       })
     })
   })

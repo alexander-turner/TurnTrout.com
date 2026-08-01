@@ -275,6 +275,13 @@ function clamp(value: number, low: number, high: number): number {
 // for a glyph of average bearing.
 const FALLBACK_GAP_EM = 0.0625
 
+// Decimal places the bearing table is generated at, and therefore the most a
+// gap derived from it can carry. The gap is float arithmetic written verbatim
+// into an inline style on every favicon on the site, so it is rounded on the
+// way out: the digits past here cost bytes on every page and sit far below the
+// resolution of any display.
+const GAP_DIGITS = 4
+
 // The correction is bounded so a freak bearing cannot swing the icon far out of
 // line: a deep overhanger ("f" leans 0.128em past its advance) still only earns
 // so much room, and a glyph centred in a wide advance (monospace "L" clears
@@ -391,7 +398,8 @@ export function maybeSpliceText(
   const lastChildText = lastChild as Text
   const lastChar = lastChildText.value.slice(-1)
   const style = imgNodeToAppend.properties.style ?? ""
-  imgNodeToAppend.properties.style = `${style}--glyph-gap: ${faviconGapEm(lastChar, context)}em;`
+  const gapEm = Number(faviconGapEm(lastChar, context).toFixed(GAP_DIGITS))
+  imgNodeToAppend.properties.style = `${style}--glyph-gap: ${gapEm}em;`
 
   return spliceAndWrapLastChars(lastChildText, node, imgNodeToAppend)
 }
