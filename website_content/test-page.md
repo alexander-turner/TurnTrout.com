@@ -656,14 +656,12 @@ A mark authored after a link is pulled inside it, so the icon lands after that m
 
 A footnote reference right after a favicon-ending [same-page link](#external-links-with-favicons)[^favicon-footnote] must not wrap onto its own line.
 
-### A heading link to [GitHub](https://github.com) sizes its icon to the heading
+The icon is the same fraction of its text everywhere, so it shrinks inside code and inside a table's smaller face without any per-context override. Compare [GitHub](https://github.com) in body text with the same link inside code ([`github.com`](https://github.com)) and in the cells below.
 
-The icon is the same fraction of its text everywhere, so it grows with a heading and shrinks inside code without any per-context override. Compare the heading above with the same link in body text ([GitHub](https://github.com)), in a table cell, and inside code ([`github.com`](https://github.com)).
-
-| Context      | Link                            |
-| ------------ | ------------------------------- |
-| Table cell   | [GitHub](https://github.com)    |
-| Smaller face | [arXiv](https://arxiv.org)      |
+| Context      | Link                         |
+| :----------- | :--------------------------- |
+| Table cell   | [GitHub](https://github.com) |
+| Smaller face | [arXiv](https://arxiv.org)   |
 
 Faux-bold text widens glyph ink rightward, so a favicon after a bold link ending in an overhanging glyph, like **[Compete for Pentagon Favor](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)**, keeps the same visual gap, including in a collapsed quote title:
 

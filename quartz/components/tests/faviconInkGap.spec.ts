@@ -483,6 +483,67 @@ function collectSweepViolations(
   return violations
 }
 
+// The size contexts to compare, and the glyphs to compare them with: a round
+// reference, the widest and tightest serif overhangers, and a bracket and a
+// digit, which sit differently in the band.
+const SIZE_CONTEXTS: readonly ContextSpec[] = [
+  { name: "serif", wrapperHtml: ["", ""], context: EMPTY_GLYPH_CONTEXT },
+  { name: "h1", wrapperHtml: ["<h1>", "</h1>"], context: EMPTY_GLYPH_CONTEXT },
+  {
+    name: "subtitle",
+    wrapperHtml: ['<div class="subtitle">', "</div>"],
+    context: EMPTY_GLYPH_CONTEXT,
+  },
+  {
+    name: "tableCell",
+    wrapperHtml: ["<table><tr><td>", "</td></tr></table>"],
+    context: EMPTY_GLYPH_CONTEXT,
+  },
+]
+const SIZE_CHARS: readonly string[] = [..."oRxTfY(4"]
+
+// Two contexts render the same glyph at different sizes, so em-denominated
+// geometry must put the icon on the same slice of it. A tolerance this tight
+// leaves no room for a size term to hide in.
+const SIZE_TOLERANCE_EM = 0.005
+
+/** Names every size context whose gap or band departs from the first one's. */
+function collectSizeFailures(measurements: readonly Measurement[]): string[] {
+  const gapEm = (m: Measurement) => (m.gapPx as number) / m.fontSizePx
+  const byChar = new Map<string, Measurement[]>()
+  for (const measured of measurements) {
+    const char = measured.key.split("|")[1]
+    byChar.set(char, [...(byChar.get(char) ?? []), measured])
+  }
+
+  return [...byChar].flatMap(([char, group]) => {
+    const reference = group[0]
+    return group.slice(1).flatMap((measured) => {
+      // A glyph whose ink leaves the band in one context but not another is
+      // itself a size-invariance failure, so a null gap is a mismatch.
+      const lostInk = measured.gapPx === null || reference.gapPx === null
+      if (lostInk) return [`${measured.key}: ink left the band (${reference.key} kept it)`]
+
+      const gapOff = Math.abs(gapEm(measured) - gapEm(reference)) > SIZE_TOLERANCE_EM
+      const bandOff = Math.abs(measured.bandTopEm - reference.bandTopEm) > SIZE_TOLERANCE_EM
+      return [
+        ...(gapOff
+          ? [
+              `${measured.key}: gap ${gapEm(measured).toFixed(3)}em != ` +
+                `${gapEm(reference).toFixed(3)}em at ${reference.key} (char "${char}")`,
+            ]
+          : []),
+        ...(bandOff
+          ? [
+              `${measured.key}: band top ${measured.bandTopEm.toFixed(3)}em != ` +
+                `${reference.bandTopEm.toFixed(3)}em at ${reference.key}`,
+            ]
+          : []),
+      ]
+    })
+  })
+}
+
 test.describe("favicon ink gap", () => {
   test("margins resolve exactly and ink gaps stay inside the band", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
@@ -585,56 +646,12 @@ test.describe("favicon ink gap", () => {
   test("the gap is the same fraction of the text at every size", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/test-page")
 
-    const sizeContexts: readonly ContextSpec[] = [
-      { name: "serif", wrapperHtml: ["", ""], context: EMPTY_GLYPH_CONTEXT },
-      { name: "h1", wrapperHtml: ["<h1>", "</h1>"], context: EMPTY_GLYPH_CONTEXT },
-      {
-        name: "subtitle",
-        wrapperHtml: ['<div class="subtitle">', "</div>"],
-        context: EMPTY_GLYPH_CONTEXT,
-      },
-      {
-        name: "tableCell",
-        wrapperHtml: ["<table><tr><td>", "</td></tr></table>"],
-        context: EMPTY_GLYPH_CONTEXT,
-      },
-    ]
-    const measurements = await measureProbes(page, buildProbes(sizeContexts, [..."oRxTfY(4"]))
-
-    const gapEm = (m: Measurement) => (m.gapPx as number) / m.fontSizePx
-    const byChar = new Map<string, Measurement[]>()
-    for (const measured of measurements) {
-      const char = measured.key.split("|")[1]
-      byChar.set(char, [...(byChar.get(char) ?? []), measured])
-    }
+    const measurements = await measureProbes(page, buildProbes(SIZE_CONTEXTS, SIZE_CHARS))
 
     const sizes = [...new Set(measurements.map((m) => m.fontSizePx))]
     expect(sizes.length, `contexts must span distinct sizes, saw ${sizes}`).toBeGreaterThan(2)
 
-    const failures: string[] = []
-    for (const [char, group] of byChar) {
-      const reference = group[0]
-      for (const measured of group.slice(1)) {
-        // A glyph whose ink leaves the band in one context but not another is
-        // itself a size-invariance failure, so a null gap is a mismatch.
-        if (measured.gapPx === null || reference.gapPx === null) {
-          failures.push(`${measured.key}: ink left the band (${reference.key} kept it)`)
-          continue
-        }
-        if (Math.abs(gapEm(measured) - gapEm(reference)) > 0.005) {
-          failures.push(
-            `${measured.key}: gap ${gapEm(measured).toFixed(3)}em != ` +
-              `${gapEm(reference).toFixed(3)}em at ${reference.key} (char "${char}")`,
-          )
-        }
-        if (Math.abs(measured.bandTopEm - reference.bandTopEm) > 0.005) {
-          failures.push(
-            `${measured.key}: band top ${measured.bandTopEm.toFixed(3)}em != ` +
-              `${reference.bandTopEm.toFixed(3)}em at ${reference.key}`,
-          )
-        }
-      }
-    }
+    const failures = collectSizeFailures(measurements)
     expect(failures, failures.join("\n")).toEqual([])
   })
 })
