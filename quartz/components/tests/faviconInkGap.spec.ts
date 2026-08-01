@@ -124,6 +124,22 @@ interface Probe {
 }
 
 /**
+ * The bearing the table holds for a glyph in a context, or undefined where it
+ * holds none.
+ *
+ * A missing entry is the generator's verdict that the glyph cannot be measured
+ * in that face — no ink in the icon's band, or no shipped font covering it. The
+ * transformer answers with the flat fallback gap, so such a glyph has no target
+ * to be held to and no engine may judge its rendered gap. Only the exclusion
+ * travels between engines; the reason for it was decided once, where the table
+ * was generated.
+ */
+function bearingOf(contextName: ContextName, char: string): number | undefined {
+  const face = contextName === "code" ? "code" : (FACE_OF_CONTEXT[contextName] ?? "serif")
+  return (bearings as Record<string, Record<string, number>>)[face]?.[char]
+}
+
+/**
  * The gap the glyph should end up showing, in em of the text beside it: the
  * margin the transformer asked for plus whatever the glyph's own bearing
  * contributes. Equal to the target for every glyph whose correction did not hit
@@ -135,8 +151,7 @@ interface Probe {
  */
 function expectedGapEm(probe: Probe): number {
   const inCode = probe.contextName === "code"
-  const face = inCode ? "code" : (FACE_OF_CONTEXT[probe.contextName] ?? "serif")
-  const bearing = (bearings as Record<string, Record<string, number>>)[face]?.[probe.char] ?? 0
+  const bearing = bearingOf(probe.contextName, probe.char) ?? 0
   return (inCode ? probe.gapEm / CODE_FACE_SCALE : probe.gapEm) + bearing
 }
 
@@ -160,6 +175,7 @@ function collectFailures(probes: readonly Probe[], measurements: readonly Measur
     // form instead of the small cap), measures a glyph the reader never sees.
     if (
       measured.gapPx !== null &&
+      bearingOf(probe.contextName, probe.char) !== undefined &&
       !measured.fromFallbackFace &&
       !measured.fromUnsupportedSmallCaps
     ) {
@@ -482,6 +498,9 @@ function gapsByContext(
       continue
     }
     const context = measured.key.split("|")[0] as ContextName
+    // The table carries no bearing for this glyph, so the transformer gave it
+    // the flat fallback gap and it belongs to no face's distribution.
+    if (bearingOf(context, measured.key.slice(context.length + 1)) === undefined) continue
     const samples = byContext.get(context) ?? []
     samples.push({ key: measured.key, gapEm: measured.gapPx / measured.fontSizePx })
     byContext.set(context, samples)
@@ -662,6 +681,13 @@ test.describe("favicon ink gap", () => {
       .filter((m) => m.fromFallbackFace || m.fromUnsupportedSmallCaps)
       .map((m) => m.key)
     console.info(`Probes skipped (substitute face or no smcp support): ${skipped}`)
+    const untabled = measurements
+      .filter((m) => {
+        const context = m.key.split("|")[0] as ContextName
+        return bearingOf(context, m.key.slice(context.length + 1)) === undefined
+      })
+      .map((m) => m.key)
+    console.info(`Probes skipped (no bearing in the table): ${untabled}`)
     for (const [context, samples] of byContext) {
       const sample = measurements.find((m) => m.key.startsWith(`${context}|`))
       const sorted = [...samples].sort((a, b) => a.gapEm - b.gapEm)
