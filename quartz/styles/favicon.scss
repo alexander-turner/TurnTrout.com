@@ -85,25 +85,26 @@
   // A favicon appended after inline code sits inside the <code>; the right gap
   // keeps a trailing ")" / "]" from cramping. Monospace advances end in
   // built-in right side bearing, so the last code glyph already clears the
-  // icon: the negative nudge returns that surplus, keeping the visual gap at
-  // the standard width. The constant is the measured offset that lands the
-  // face's median rendered gap on the proportional faces' median (0.098em
-  // against 0.095em). FiraCode centers each glyph in one fixed advance, so the
-  // surplus varies far more than in the proportional serif: the two classes
-  // below return a half and a whole step to the glyphs whose bearing falls
-  // short of the uniform correction (assigned per charsToSpace(Most)Code in
-  // quartz/plugins/transformers/favicons.ts).
+  // icon: the negative nudge returns that surplus. FiraCode centers each glyph
+  // in one fixed advance, so the surplus varies far more than in the
+  // proportional serif: the two classes below return a half and a whole step to
+  // the glyphs whose bearing falls short of the uniform correction (assigned
+  // per charsToSpace(Most)Code in quartz/plugins/transformers/favicons.ts).
+  // The face sits a step wider than the proportional faces rather than level
+  // with them. Code runs at 0.81em, so an identical em gap buys a fifth fewer
+  // pixels there, and both the icon and the gap shrink together — the pair
+  // reads as crowded well before the number says it is.
   code & {
     margin-right: 0.0625em;
 
-    --glyph-nudge: -0.0469em;
+    --glyph-nudge: -0.0156em;
 
     &.code-close-text {
-      --glyph-nudge: -0.0156em;
+      --glyph-nudge: 0.0156em;
     }
 
     &.code-closer-text {
-      --glyph-nudge: 0.0156em;
+      --glyph-nudge: 0.0469em;
     }
   }
 }

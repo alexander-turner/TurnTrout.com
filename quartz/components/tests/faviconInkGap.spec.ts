@@ -83,16 +83,18 @@ const CONTEXTS: readonly ContextSpec[] = [
 // (inset 0). Every term is em, so the expectation is a plain em constant per
 // (context, nudge class) rather than a ratio: the classless base, two upward
 // steps in the proportional faces, and a face-level negative in code that the
-// two code classes return by a half step and a whole step.
+// two code classes return by a half step and a whole step. Code's negative is
+// deliberately shallower than its bearing surplus, so the face lands a step
+// wider than the proportional ones — see the reasoning in favicon.scss.
 const BASE_MARGIN_EM = 0.0625
-const CODE_FACE_NUDGE_EM = -0.0469
+const CODE_FACE_NUDGE_EM = -0.0156
 const NUDGE_EM: Readonly<Record<string, number>> = {
   "close-text": 0.0625,
   "closer-text": 0.125,
   // The face nudge returned by half a step and a whole step, rounded to the
   // four decimals stylelint allows a length.
-  "code-close-text": -0.0156,
-  "code-closer-text": 0.0156,
+  "code-close-text": 0.0156,
+  "code-closer-text": 0.0469,
 }
 
 // Crowding floors per class (deep overhangers accept tighter clearance, as in
@@ -400,10 +402,11 @@ const MEMBERSHIP_CHARS: readonly string[] = [
   ...".,'\"",
 ]
 
-// The gap the model is trying to hold constant, in em: the median across all
-// four faces, which agree to within 0.02em (serif 0.102, italic 0.082,
-// smallCaps 0.100, code 0.095). Only the extremes disagree, which is the point
-// of the sweep.
+// The gap the model holds across the proportional faces, in em, which agree to
+// within 0.02em (serif 0.102, italic 0.082, smallCaps 0.100). Reported in
+// violation messages so a spread failure says what it is spreading around.
+// Code targets a step wider; it renders at 0.81em, so an equal em gap there is
+// a fifth fewer pixels beside a proportionally smaller icon.
 const TARGET_GAP_EM = 0.095
 
 // Ink must never reach the icon. `f` sets this in both proportional faces —
