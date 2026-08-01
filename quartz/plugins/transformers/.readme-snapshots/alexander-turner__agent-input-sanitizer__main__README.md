@@ -145,11 +145,12 @@ surface is the `--hook=` CLI, so these move between minor versions.
 `cliMain`, so a composer that wraps `cliMain` gets the hook's exact fail-closed
 CLI wiring plus its own policy:
 
-| Field        | Runs                                                     | Does                                                                     |
-| ------------ | -------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `postText`   | once per string **value** leaf, after Layers 1–4         | returns `{cleaned?, warning?}`; `cleaned` replaces the model-facing text |
-| `redactNote` | on the pre-redaction text of a leaf that tripped Layer 4 | returns a note appended to that leaf's redaction warning                 |
-| `audit`      | once per judged event carrying a tool response           | is handed the output the model will actually see                         |
+| Field        | Runs                                                     | Does                                                                                 |
+| ------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `postText`   | once per string **value** leaf, after Layers 1–4         | returns `{cleaned?, warning?}`; `cleaned` replaces the model-facing text             |
+| `redactNote` | on the pre-redaction text of a leaf that tripped Layer 4 | returns a note appended to that leaf's redaction warning                             |
+| `audit`      | once per judged event carrying a tool response           | is handed the output the model will actually see, and the `session_id` it belongs to |
+| `trace`      | on every exit, in place of the package's trace channel   | receives the engagement announcement (see the trace sink below)                      |
 
 Omit the bag and every seam is inert — the verdicts are byte-identical to this
 module alone. A callback that throws is **not** caught: it lands in the CLI's
@@ -171,6 +172,55 @@ secret-shaped output is suppressed, not shown unvetted. Layers 1–3 still run.
 **Layer 5 (second-model injection filtering) is not included.** These hooks
 never supply the `/output` seam's `filterInjection` callback, so nothing here
 calls a model or leaves the machine.
+
+**Every hook's trace sink is injectable.** Each one announces that it engaged —
+that is what makes a layer that stopped running loud rather than silent — and by
+default that announcement goes to `_AGENT_SANITIZER_TRACE` /
+`_AGENT_SANITIZER_TRACE_FILE`. A host that already runs a trace channel under
+its own variables passes its own sink instead, so the announcement lands where
+its detector actually reads:
+
+```js
+import { cliMain } from "agent-sanitizer/claude-hooks/scan-invisible-chars";
+await cliMain({ trace: (event, fields) => myChannel.emit(event, fields) });
+```
+
+The sink rides each hook's options bag — `cliMain({trace})` on
+`scan-invisible-chars` and `pretooluse-sanitize`, the extension bag's `trace` on
+`sanitize-output`, `main(read, write, {trace})` on `sanitize-user-prompt`. It
+receives the same `TraceEvent` names the default emits, and it **replaces** the
+default rather than running alongside it — the package channel goes silent, so
+there is one announcement to detect, not two. It may throw freely: each hook
+binds the sink it is given through `bestEffortTrace`, so an announcement can
+never be the thing that breaks a hook.
+
+**A host's own cold-start marker can replace the derived one.** The hooks wait
+out an in-flight dependency install by polling a marker file whose path they
+derive from `CLAUDE_PROJECT_DIR`; a host whose setup script already writes one
+calls `configureHookgateMarker(path)` (from `lib/hook-io`) before importing any
+hook module, and every consumer waits on that path instead. `lib/control-plane`
+resolves the marker at module scope, so a call that lands after that import
+warns on stderr — it cannot steer the wait that already started.
+
+**A host's own remedy can replace the packaged one in every fail-closed
+reason.** Deep call sites (`lib/control-plane`'s missing-package throw) take no
+remedy argument, so by default they can only say `pnpm install`. A host whose
+install has one entry point calls `configureMissingPackageRemedy(text)` (from
+`lib/hook-io`) — typically at its bundle entry — and every remedy-less
+`missingPackageMessage`/`missingPackageError` states that text instead. An
+explicit per-call remedy (including a per-gate `MESSAGES.remedy`) still wins,
+and `null` restores the packaged wording. Keep it to a sentence: past ~260
+characters it overruns the 300-char message budget.
+
+**A host's own secret registry can drive the env-bound redaction set.**
+`configureEnvConfigSource({ minSecretLen, extraVars })` (from `lib/env-config`)
+replaces the placeholder floor and unions extra `[A-Z0-9_]` variable names into
+`envBoundSecretVars()`, so a host that already declares its forwarded
+credentials (and their length floor) in a registry of its own feeds the packaged
+helpers from it instead of forking the module. Unset fields keep the package
+derivation; `null` restores it entirely. A malformed source — a non-object, a
+key the seam does not read, a bad field — throws on first use, inside the
+consuming hook's fail-closed catch, never at configure time.
 
 Hook internals are tuned by `_AGENT_SANITIZER_*` variables (redactor daemon
 path/socket/timeouts, sanitize budget, trace channel, Layer-2 reveal dir). The
