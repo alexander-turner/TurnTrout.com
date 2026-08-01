@@ -7,8 +7,8 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 
-// skipcq: JS-C1003 -- the module is exercised wholesale across this suite
 import { faviconGlyphBearings as bearings } from "./faviconGlyphBearings"
+// skipcq: JS-C1003 -- the module is exercised wholesale across this suite
 import * as favicons from "./favicons"
 
 jest.mock("fs")
