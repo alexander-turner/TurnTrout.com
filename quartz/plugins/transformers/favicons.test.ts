@@ -534,6 +534,17 @@ describe("insertFavicon", () => {
       ...overrides,
     })
 
+    const classOf = (node: Element): string | undefined => {
+      let found: string | undefined
+      visit(node, "element", (el: Element) => {
+        const cls = el.properties?.class
+        if (typeof cls === "string" && cls.includes("favicon")) {
+          found = cls
+        }
+      })
+      return found
+    }
+
     describe("nudgeClassFor", () => {
       it.each([
         ["T", {}, "close-text"],
@@ -594,17 +605,6 @@ describe("insertFavicon", () => {
     })
 
     describe("context threading through insertFavicon", () => {
-      const classOf = (node: Element): string | undefined => {
-        let found: string | undefined
-        visit(node, "element", (el: Element) => {
-          const cls = el.properties?.class
-          if (typeof cls === "string" && cls.includes("favicon")) {
-            found = cls
-          }
-        })
-        return found
-      }
-
       it("descends into <em>, assigning the italic membership", () => {
         // "Incoherent" ends in "t": italic member, serif non-member.
         const node = h("a", { href: "https://example.com" }, [h("em", {}, ["Incoherent"])])
@@ -641,6 +641,76 @@ describe("insertFavicon", () => {
         const node = h("a", { href: "https://example.com" }, ["Incoherent"])
         favicons.insertFavicon(imgPath, node, ctx({ italic: true }))
         expect(classOf(node)).toBe("favicon close-text")
+      })
+    })
+
+    // `rearrangeLinkPunctuation` (HTMLFormattingImprovement) runs before
+    // AddFavicons and moves a mark authored after a link to inside it. When
+    // the link's last child is an element it appends a fresh text node beside
+    // that element rather than into it, so the icon's anchor becomes the mark
+    // and lands outside the wrapper. These tests pin that shape: the wrapper's
+    // face never reaches `nudgeClassFor`, and the wrapper's CSS
+    // (`code .favicon`) does not apply to an icon that is its sibling.
+    describe("anchor displaced by a mark pulled into the link", () => {
+      const wrapperOf = (node: Element): Element => node.children[0] as Element
+
+      it.each(["code", "em", "strong"])(
+        "leaves the icon outside a trailing <%s>, anchored to the mark",
+        (tagName) => {
+          const node = h("a", { href: "https://example.com" }, [
+            h(tagName, {}, ["alex@turntrout.com"]),
+            { type: "text", value: "," },
+          ])
+          favicons.insertFavicon(imgPath, node)
+
+          // The mark is consumed into the span, so the link keeps two children.
+          expect(node.children).toHaveLength(2)
+          const wrapper = wrapperOf(node)
+          expect(wrapper.tagName).toBe(tagName)
+          expect(wrapper.children).toEqual([{ type: "text", value: "alex@turntrout.com" }])
+
+          const span = node.children[1] as Element
+          expect(span).toMatchObject(faviconSpanNode)
+          expect(span.children[0]).toEqual({ type: "text", value: "," })
+          expect(span.children[1]).toMatchObject(createExpectedFavicon(imgPath))
+        },
+      )
+
+      it("nudges for the mark's face, not the wrapper's", () => {
+        // "m" earns code-close-text inside <code>; the comma earns nothing in
+        // the serif face the icon actually renders in.
+        const node = h("a", { href: "mailto:alex@turntrout.com" }, [
+          h("code", {}, ["alex@turntrout.com"]),
+          { type: "text", value: "," },
+        ])
+        favicons.insertFavicon(imgPath, node)
+        expect(classOf(node)).toBe("favicon")
+      })
+
+      it.each([
+        [".", "favicon"],
+        // A trailing ")" is a serif non-member too, so the whole class of
+        // pulled-in marks lands on the same nudge regardless of the wrapper.
+        [")", "favicon"],
+      ])("anchors to a trailing %s outside the wrapper", (mark, expectedClass) => {
+        const node = h("a", { href: "https://example.com" }, [
+          h("code", {}, ["npm i abW"]),
+          { type: "text", value: mark },
+        ])
+        favicons.insertFavicon(imgPath, node)
+
+        expect(classOf(node)).toBe(expectedClass)
+        expect((wrapperOf(node).children[0] as { value: string }).value).toBe("npm i abW")
+      })
+
+      it("puts the icon inside the wrapper when no mark follows", () => {
+        const node = h("a", { href: "https://example.com" }, [h("code", {}, ["npm i abW"])])
+        favicons.insertFavicon(imgPath, node)
+
+        expect(node.children).toHaveLength(1)
+        const span = wrapperOf(node).children[1] as Element
+        expect(span).toMatchObject(faviconSpanNode)
+        expect(classOf(node)).toBe("favicon code-closer-text")
       })
     })
   })

@@ -41,20 +41,32 @@ jobs:
       INCLUDE_FIXTURES: ${{ inputs.include-fixtures && 'true' || '' }}
     steps:
       # GitHub's git backend intermittently stalls mid-fetch, and a stalled
-      # fetch takes the whole build down before a single step has run. The
-      # second attempt starts from a clean workspace, so a partial fetch from
-      # the first can't corrupt it.
+      # fetch takes the whole build down before a single step has run. A
+      # healthy fetch of this repo finishes inside a minute, so each attempt
+      # gets a budget that a stall trips quickly rather than one it can sit
+      # out; the retries re-checkout clean, so a partial fetch from an earlier
+      # attempt can't corrupt the workspace.
       - id: checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        timeout-minutes: 5
+        timeout-minutes: 3
         continue-on-error: true
         with:
           fetch-depth: ${{ inputs.fetch-depth }}
           persist-credentials: false
 
-      - if: steps.checkout.outcome == 'failure'
+      - id: checkout-retry
+        if: steps.checkout.outcome == 'failure'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        timeout-minutes: 5
+        timeout-minutes: 3
+        continue-on-error: true
+        with:
+          fetch-depth: ${{ inputs.fetch-depth }}
+          persist-credentials: false
+          clean: true
+
+      - if: steps.checkout-retry.outcome == 'failure'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 3
         with:
           fetch-depth: ${{ inputs.fetch-depth }}
           persist-credentials: false

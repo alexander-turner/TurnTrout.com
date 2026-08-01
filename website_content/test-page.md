@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-31
+date_updated: 2026-08-01
 createBibtex: true
 ---
 
@@ -648,9 +648,11 @@ Here's a link to [another page](/shard-theory) with popover preview. [This same-
 
 ## External links with favicons
 
-Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons) Link to [`x.com`](https://x.com).
+Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons) Link to [`x.com`](https://x.com) keeps its icon inside the code element.
 
-The monospace face's right side bearing swings widely, so a favicon after code ending in a tight glyph keeps the same visual gap as one after a roomy glyph: [`alex@turntrout.com`](mailto:alex@turntrout.com), [`npm i abW`](https://npmjs.com), [`npm i abT`](https://npmjs.com), [`npm i abo`](https://npmjs.com).
+The monospace face's right side bearing swings widely, so a favicon after code ending in a tight glyph keeps the same visual gap as one after a roomy glyph: [`alex@turntrout.com`](mailto:alex@turntrout.com) and [`npm i abW`](https://npmjs.com) and [`npm i abT`](https://npmjs.com) and [`npm i abo`](https://npmjs.com) all sit the same distance from their last glyph.
+
+A mark authored after a link is pulled inside it, so the icon lands after that mark in the surrounding face rather than after the code: [`npm i abW`](https://npmjs.com), [`npm i abo`](https://npmjs.com).
 
 A footnote reference right after a favicon-ending [same-page link](#external-links-with-favicons)[^favicon-footnote] must not wrap onto its own line.
 
