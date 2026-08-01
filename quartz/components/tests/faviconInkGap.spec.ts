@@ -283,15 +283,34 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
       return `${advance.toFixed(2)}|${count}|${minX},${maxX},${minY},${maxY}`
     }
 
-    // True when the requested family has no outline for `char`, so the canvas
+    // The families the site ships as @font-face, which render identically on
+    // every OS. Everything else in a font-family list — a system face like
+    // "Courier New", or a generic keyword — is whatever the platform installs.
+    const shippedFamilies = new Set(
+      [...(document.fonts as unknown as Iterable<FontFace>)].map((face) =>
+        face.family.replace(/^["']|["']$/g, ""),
+      ),
+    )
+
+    // The tail of `family` that no shipped font covers: the same list with
+    // every @font-face family removed.
+    const platformChainOf = (family: string): string =>
+      family
+        .split(",")
+        .map((name) => name.trim())
+        .filter((name) => !shippedFamilies.has(name.replace(/^["']|["']$/g, "")))
+        .join(", ") || '"__no_such_family__"'
+
+    // True when no font the site ships has an outline for `char`, so the canvas
     // drew whichever face the platform substitutes. Such a glyph measures
-    // differently per OS and engine, so the sweep cannot judge it. A
-    // nonexistent family resolves through the same fallback chain, so an
-    // identical fingerprint means the requested family never contributed.
+    // differently per OS and engine — FiraCode has no U+2032, so a prime inside
+    // `code` renders from DejaVu on Linux and Courier on macOS — and the sweep
+    // cannot judge it. Resolving `char` through the chain's platform tail alone
+    // yields the same fingerprint exactly when no shipped font contributed.
     // Kept in step with scripts/generate_favicon_bearings.mjs, which must
     // exclude exactly the same glyphs from the table this sweep checks.
     const isFallbackGlyph = (style: CSSStyleDeclaration, char: string): boolean =>
-      inkSignature(style, char) === inkSignature(style, char, '"__no_such_family__"')
+      inkSignature(style, char) === inkSignature(style, char, platformChainOf(style.fontFamily))
 
     // True when the canvas painted no pixels anywhere for `char`.
     const drawsNoInk = (style: CSSStyleDeclaration, char: string): boolean =>

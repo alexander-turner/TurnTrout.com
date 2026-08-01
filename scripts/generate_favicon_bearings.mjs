@@ -113,15 +113,32 @@ const table = await page.evaluate(
       return `${advance.toFixed(2)}|${count}|${minX},${maxX},${minY},${maxY}`
     }
 
-    // A glyph the requested family has no outline for is drawn by whatever the
-    // platform substitutes, so its metrics describe a face the page never uses
-    // and vary per OS and engine. A nonexistent family resolves through the
-    // same fallback chain, so an identical fingerprint means the requested
-    // family never contributed. Kept in step with the same predicate in
+    // The families the site ships as @font-face, which render identically on
+    // every OS. Everything else in a font-family list — a system face like
+    // "Courier New", or a generic keyword — is whatever the platform installs.
+    const shippedFamilies = new Set(
+      [...document.fonts].map((face) => face.family.replace(/^["']|["']$/g, "")),
+    )
+
+    // The tail of `family` that no shipped font covers: the same list with
+    // every @font-face family removed.
+    const platformChainOf = (family) =>
+      family
+        .split(",")
+        .map((name) => name.trim())
+        .filter((name) => !shippedFamilies.has(name.replace(/^["']|["']$/g, "")))
+        .join(", ") || '"__no_such_family__"'
+
+    // A glyph no shipped font has an outline for is drawn by whatever the
+    // platform substitutes, so its metrics describe a face that differs per OS
+    // and engine — FiraCode has no U+2032, so a prime inside `code` renders
+    // from DejaVu on Linux and Courier on macOS. Resolving it through the
+    // chain's platform tail alone yields the same fingerprint exactly when no
+    // shipped font contributed. Kept in step with the same predicate in
     // quartz/components/tests/faviconInkGap.spec.ts, which skips exactly the
     // glyphs this excludes.
     const isFallback = (style, char) =>
-      inkSignature(style, char) === inkSignature(style, char, '"__no_such_family__"')
+      inkSignature(style, char) === inkSignature(style, char, platformChainOf(style.fontFamily))
 
     await document.fonts.ready
     const out = {}
