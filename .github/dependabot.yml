@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # Track subfont for version updates only. Security updates for all packages
+  # Track punctilio for version updates only. Security updates for all packages
   # are handled separately by GitHub's Dependabot security alerts.
   - package-ecosystem: "npm"
     directory: "/"
@@ -8,11 +8,6 @@ updates:
       interval: "monthly"
     versioning-strategy: auto
     allow:
-      - dependency-name: "subfont"
       - dependency-name: "punctilio"
-    groups:
-      npm-tracked:
-        patterns:
-          - "*"
     cooldown:
       default-days: 7
