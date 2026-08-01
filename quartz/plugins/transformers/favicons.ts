@@ -22,6 +22,7 @@ import {
   normalizeHostname,
 } from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
+import { faviconGlyphBearings as bearings } from "./faviconGlyphBearings"
 import { isNowrapSpan } from "./inlineAtomGlue"
 import { addClass, createNowrapSpan, hasClass, ITALIC_TAGS, spliceAndWrapLastChars } from "./utils"
 
@@ -258,100 +259,69 @@ export function insertFavicon(
   }
 }
 
-// Glyphs whose ink reaches (or overhangs) the right edge of their advance
-// width, crowding the favicon without a nudge. Membership comes from
-// scripts/notebooks/favicon_kerning_audit, which renders every real
-// (glyph, favicon) pair on the built site and reports each glyph's ink
-// clearance; glyphs land here when their median clearance falls more than
-// ~1px short of a round letter's. "r" joins perceptually: its arm terminal
-// sits at x-height, level with the icon's raised box.
-export const charsToSpace: readonly string[] = [
-  "T",
-  "R",
-  "r",
-  "V",
-  "Y",
-  "q",
-  "w",
-  "v",
-  "y",
-  "x",
-  "N",
-  "F",
-  "J",
-  "K",
-  "E",
-  "U",
-  "(",
-  "[",
-  "\\",
-  "®",
-]
-// Glyphs that overhang so far right (per the same audit) that they need a
-// larger nudge than charsToSpace provides.
-export const charsToSpaceMost: readonly string[] = ["f", "Q", "/"]
-// The serif sets above come from the perceptual audit and stay its property.
-// Italic glyphs lean rightward, so the overhang set differs; with no audit for
-// the italic face, membership derives from measured ink clearance within the
-// favicon's vertical band (0.2em-0.7em above the baseline). Among glyphs that
-// plausibly end link text, those whose in-band ink reaches their advance edge
-// get a nudge, and those overhanging by more than 0.1em get the larger one.
-// Glyphs that overhang past what the larger nudge corrects (italic "~", "^")
-// stay out: no nudge restores their gap, and they never end link text.
-export const charsToSpaceItalic: readonly string[] = [
-  "T",
-  "Y",
-  "N",
-  "F",
-  "J",
-  "K",
-  "U",
-  "(",
-  "x",
-  "e",
-  "t",
-  "d",
-  "r",
-  "l",
-  "g",
-  "6",
-  "H",
-  "I",
-  "M",
-  "X",
-  // The italic face has no ®, so it comes from the upright face with
-  // synthesized oblique, which leans its ink past the advance edge.
-  "®",
-]
-export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/", "W"]
-// FiraCode centers every glyph in one fixed advance, so its right side bearing
-// swings from ~0.01em ("W") to ~0.4em ("L") — the uniform monospace correction
-// in CSS (`code .favicon`) is calibrated to the middle of that range and leaves
-// the tight end crowded. Membership derives from each glyph's ink clearance
-// within the favicon's vertical band (0.2em–0.7em above the baseline), as for
-// the italic sets: below ~0.067em the uniform correction runs short by half a
-// `close-text` step, below ~0.042em by a full one. The superscript marks sit
-// high and narrow, so they land in the tight tier alongside "W". Glyphs whose
-// bearing already covers the gap ("m" is the tightest common letter at
-// 0.059em) take no class.
-export const charsToSpaceCode: readonly string[] = [
-  "K",
-  "M",
-  "T",
-  "P",
-  "C",
-  "~",
-  "Q",
-  "g",
-  "O",
-  "D",
-  "*",
-  "m",
-  "#",
-  "F",
-  "®",
-]
-export const charsToSpaceMostCode: readonly string[] = ["W", "@", "w", "%", "&", "V", "Y", "™", "©"]
+// The gap the icon should show past the neighbouring glyph's ink, in em of the
+// text beside it. Every face and glyph aims at this one number; what varies is
+// how much of it the glyph's own right side bearing already provides.
+export const TARGET_GAP_EM = 0.125
+
+/** `--font-size-code-scale`: inline code's size as a fraction of its prose. */
+const CODE_FACE_SCALE = 0.81
+
+function clamp(value: number, low: number, high: number): number {
+  return Math.min(Math.max(value, low), high)
+}
+
+// The gap CSS falls back to when no measurement applies, matching the target
+// for a glyph of average bearing.
+const FALLBACK_GAP_EM = 0.0625
+
+// The correction is bounded so a freak bearing cannot swing the icon far out of
+// line: a deep overhanger ("f" leans 0.128em past its advance) still only earns
+// so much room, and a glyph centred in a wide advance (monospace "L" clears
+// 0.388em) still keeps a hairline of its own.
+const MAX_PUSH_EM = 0.25
+const MAX_PULL_EM = 0.375
+
+// Where the eye and the band disagree, in em added to the target. The band
+// measures ink distance; it cannot see that a flat vertical edge reads closer
+// than a round one at the same remove. Serif "R" is the clearest case: it has
+// more measured clearance than any letter (0.138em) and the audit in
+// scripts/notebooks/favicon_kerning_audit still judged it crowded, because its
+// leg presents a straight edge square to the icon.
+const GAP_OVERRIDES_EM: Readonly<Record<string, Readonly<Record<string, number>>>> = {
+  serif: { R: 0.0625 },
+  smallCaps: { R: 0.0625 },
+}
+
+/** The face whose bearings apply to a glyph rendered in `context`. */
+export function faceFor(context: GlyphContext): string {
+  if (context.code) return "code"
+  if (context.italic) return "italic"
+  return context.smallCaps ? "smallCaps" : "serif"
+}
+
+/**
+ * The favicon's left gap after `lastChar` rendered in `context`, in em of the
+ * favicon's own font size.
+ *
+ * A glyph whose ink stops short of its advance edge has already supplied part
+ * of the gap, so the margin supplies the rest; one that overhangs has eaten
+ * into it, so the margin makes it up. Glyphs with no ink in the icon's band and
+ * glyphs the shipped fonts have no outline for are absent from the table and
+ * take the fallback, since neither can crowd the icon.
+ *
+ * Inside code the icon is sized against the surrounding prose (see
+ * favicon.scss), so its em is larger than the code glyph's. The result is
+ * rescaled into that em, leaving the gap the reader sees unchanged.
+ */
+export function faviconGapEm(lastChar: string, context: GlyphContext): number {
+  const face = faceFor(context)
+  const bearing = (bearings as Record<string, Record<string, number>>)[face]?.[lastChar]
+  if (bearing === undefined) return FALLBACK_GAP_EM
+  const override = GAP_OVERRIDES_EM[face]?.[lastChar] ?? 0
+  const correction = clamp(TARGET_GAP_EM + override - bearing, -MAX_PULL_EM, MAX_PUSH_EM)
+  return context.code ? correction * CODE_FACE_SCALE : correction
+}
 
 /** Widens `context` with whatever face `element` switches its text into. */
 export function broadenContext(element: Element, context: GlyphContext): GlyphContext {
@@ -371,32 +341,6 @@ export function contextFromAncestors(ancestors: readonly Parent[]): GlyphContext
     }
   }
   return context
-}
-
-/**
- * The nudge class for a favicon that lands after `lastChar` rendered in
- * `context`:
- *   - monospace glyphs sit inside a uniform correction in CSS (`code .favicon`),
- *     so only the ones whose bearing falls below it take a class, and the
- *     classes carry monospace-sized nudges of their own;
- *   - small-cap forms of lowercase letters keep their in-band ink clear of the
- *     icon (even ``q``'s tail is a descender, below the icon), so none applies;
- *   - italic uses the ink-derived sets, the serif body face its audited ones.
- */
-export function nudgeClassFor(
-  lastChar: string,
-  context: GlyphContext,
-): "close-text" | "closer-text" | "code-close-text" | "code-closer-text" | null {
-  if (context.code) {
-    if (charsToSpaceMostCode.includes(lastChar)) return "code-closer-text"
-    return charsToSpaceCode.includes(lastChar) ? "code-close-text" : null
-  }
-  if (context.smallCaps && /[a-z]/.test(lastChar)) return null
-  const [most, close] = context.italic
-    ? [charsToSpaceMostItalic, charsToSpaceItalic]
-    : [charsToSpaceMost, charsToSpace]
-  if (most.includes(lastChar)) return "closer-text"
-  return close.includes(lastChar) ? "close-text" : null
 }
 
 // Distinct from the shared INLINE_PASSTHROUGH_TAGS (utils.ts) on purpose:
@@ -446,10 +390,8 @@ export function maybeSpliceText(
 
   const lastChildText = lastChild as Text
   const lastChar = lastChildText.value.slice(-1)
-  const nudgeClass = nudgeClassFor(lastChar, context)
-  if (nudgeClass) {
-    imgNodeToAppend.properties.class = `favicon ${nudgeClass}`
-  }
+  const style = imgNodeToAppend.properties.style ?? ""
+  imgNodeToAppend.properties.style = `${style}--glyph-gap: ${faviconGapEm(lastChar, context)}em;`
 
   return spliceAndWrapLastChars(lastChildText, node, imgNodeToAppend)
 }

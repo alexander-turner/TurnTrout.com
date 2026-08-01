@@ -8,6 +8,7 @@ import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 
 // skipcq: JS-C1003 -- the module is exercised wholesale across this suite
+import { faviconGlyphBearings as bearings } from "./faviconGlyphBearings"
 import * as favicons from "./favicons"
 
 jest.mock("fs")
@@ -30,12 +31,8 @@ const faviconSpanNode = {
   properties: { className: "nowrap-span" },
 }
 
-const createExpectedFavicon = (
-  imgPath: string,
-  nudgeClass?: ReturnType<typeof favicons.nudgeClassFor>,
-): Record<string, unknown> => {
+const createExpectedFavicon = (imgPath: string): Record<string, unknown> => {
   const faviconElement = favicons.createFaviconElement(imgPath)
-  faviconElement.properties.class = `favicon${nudgeClass ? ` ${nudgeClass}` : ""}`
   return faviconElement as unknown as Record<string, unknown>
 }
 
@@ -499,22 +496,17 @@ describe("insertFavicon", () => {
     })
 
     it.each([
-      ...favicons.charsToSpace.map((char) => [char, "close-text"] as const),
-      ...favicons.charsToSpaceMost.map((char) => [char, "closer-text"] as const),
-    ])("trailing %s gets the %s nudge class", (char, nudgeClass) => {
+      // A glyph that overhangs its advance is made up for, one that stops short
+      // of it is taken off, and both land on the same target.
+      ["f", 0.25],
+      ["o", 0.1],
+      ["R", 0.05],
+    ] as const)("trailing %s carries its measured gap inline", (char, gapEm) => {
       const node = h("p", {}, [`Test${char}`])
       favicons.insertFavicon(imgPath, node)
       const span = node.children[1] as Element
-      expect(span.children[1]).toMatchObject(createExpectedFavicon(imgPath, nudgeClass))
-    })
-
-    it.each([
-      ["serif sets", favicons.charsToSpace, favicons.charsToSpaceMost],
-      ["italic sets", favicons.charsToSpaceItalic, favicons.charsToSpaceMostItalic],
-      ["code sets", favicons.charsToSpaceCode, favicons.charsToSpaceMostCode],
-    ])("keeps the %s disjoint", (_label, close, most) => {
-      const overlap = close.filter((char) => most.includes(char))
-      expect(overlap).toEqual([])
+      const icon = (span as Element).children[1] as Element
+      expect(icon.properties?.style).toContain(`--glyph-gap: ${gapEm}em`)
     })
 
     it("appends to existing nowrap-span instead of creating a new one", () => {
@@ -545,44 +537,76 @@ describe("insertFavicon", () => {
       return found
     }
 
-    describe("nudgeClassFor", () => {
+    describe("faceFor", () => {
       it.each([
-        ["T", {}, "close-text"],
-        ["f", {}, "closer-text"],
-        ["o", {}, null],
-        // Monospace membership follows FiraCode's own bearings, not the serif
-        // sets: "m" and "T" fall short of the uniform correction, "f" and "o"
-        // clear it, and "W" needs the full step back.
-        ["T", { code: true }, "code-close-text"],
-        ["m", { code: true }, "code-close-text"],
-        ["W", { code: true }, "code-closer-text"],
-        ["f", { code: true }, null],
-        ["o", { code: true }, null],
-        // A code context wins over the faces it nests inside.
-        ["f", { code: true, italic: true }, null],
-        ["y", { code: true, smallCaps: true }, null],
-        // Italic membership is ink-derived; leaning glyphs join, others leave.
-        ["t", { italic: true }, "close-text"],
-        ["V", { italic: true }, "closer-text"],
-        ["f", { italic: true }, "closer-text"],
-        ["w", { italic: true }, null],
-        ["y", { italic: true }, null],
-        // Small-cap lowercase forms clear the icon; capitals keep their sets.
-        ["y", { smallCaps: true }, null],
-        ["f", { smallCaps: true }, null],
-        ["T", { smallCaps: true }, "close-text"],
-        ["(", { smallCaps: true }, "close-text"],
-        ["y", { smallCaps: true, italic: true }, null],
-        ["R", { italic: true }, null],
-        // Ink-derived italic additions diverge from the serif sets.
-        ["6", { italic: true }, "close-text"],
-        ["H", { italic: true }, "close-text"],
-        ["X", { italic: true }, "close-text"],
-        ["W", { italic: true }, "closer-text"],
-        ["W", {}, null],
-        ["6", {}, null],
-      ] as const)("%s in %o gets %s", (char, overrides, expected) => {
-        expect(favicons.nudgeClassFor(char, ctx(overrides))).toBe(expected)
+        [{}, "serif"],
+        [{ italic: true }, "italic"],
+        [{ smallCaps: true }, "smallCaps"],
+        [{ code: true }, "code"],
+        // A code context wins over the faces it nests inside, because the
+        // monospace face is what actually renders the glyph.
+        [{ code: true, italic: true }, "code"],
+        [{ code: true, smallCaps: true }, "code"],
+        [{ italic: true, smallCaps: true }, "italic"],
+      ] as const)("%o resolves to %s", (overrides, face) => {
+        expect(favicons.faceFor(ctx(overrides))).toBe(face)
+      })
+    })
+
+    describe("faviconGapEm", () => {
+      it.each([
+        // Every face aims at the same target, so the correction is whatever the
+        // glyph's own bearing leaves over.
+        ["o", {}, 0.1],
+        // "f" leans so far past its advance that the correction hits MAX_PUSH.
+        ["f", {}, 0.25],
+        ["m", {}, 0.0275],
+        // The serif override: "R" has more measured clearance than any letter
+        // and still reads crowded, so it keeps a step of its own.
+        ["R", {}, 0.05],
+        ["R", { smallCaps: true }, 0.05],
+        // No override outside those faces.
+        ["R", { italic: true }, 0.11],
+        // Code gaps are rescaled into the icon's prose-sized em.
+        ["m", { code: true }, 0.058725],
+        // A glyph with no ink in the icon's band, and one the fonts have no
+        // outline for, both fall back rather than inventing a correction.
+        [".", {}, 0.0625],
+        ["\u{1F600}", {}, 0.0625],
+      ] as const)("%s in %o gets %s em", (char, overrides, gapEm) => {
+        expect(favicons.faviconGapEm(char, ctx(overrides))).toBeCloseTo(gapEm, 4)
+      })
+
+      it("lands every glyph on the target unless its correction is clamped", () => {
+        const table = bearings as Record<string, Record<string, number>>
+        const clamped: string[] = []
+        for (const [face, row] of Object.entries(table)) {
+          const context = ctx(
+            face === "code"
+              ? { code: true }
+              : face === "italic"
+                ? { italic: true }
+                : { smallCaps: face === "smallCaps" },
+          )
+          for (const [char, bearing] of Object.entries(row)) {
+            const correction = favicons.faviconGapEm(char, context) / (face === "code" ? 0.81 : 1)
+            expect(correction).toBeGreaterThanOrEqual(-0.375)
+            expect(correction).toBeLessThanOrEqual(0.25)
+            // The serif override deliberately overshoots the target, so it is
+            // excluded from the "lands on target" claim rather than hiding in it.
+            if (face === "serif" || face === "smallCaps") {
+              if (char === "R") continue
+            }
+            if (correction === 0.25 || correction === -0.375) {
+              clamped.push(`${face}|${char}`)
+              continue
+            }
+            expect(correction + bearing).toBeCloseTo(favicons.TARGET_GAP_EM, 6)
+          }
+        }
+        // Only glyphs that overhang further than any reasonable margin can
+        // correct, none of which end link text.
+        expect(clamped.sort()).toEqual(["italic|^", "italic|~", "serif|f", "smallCaps|f"])
       })
     })
 
