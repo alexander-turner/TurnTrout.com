@@ -318,16 +318,18 @@ export function faceFor(context: GlyphContext): string {
  * take the fallback, since neither can crowd the icon.
  *
  * Inside code the icon is sized against the surrounding prose (see
- * favicon.scss), so its em is larger than the code glyph's. The result is
- * rescaled into that em, leaving the gap the reader sees unchanged.
+ * favicon.scss), so its em is larger than the code glyph's. The target is the
+ * distance a reader compares against the icon, so it is denominated in the
+ * icon's em in every face; only the bearing, measured in the glyph's own em,
+ * is converted before it is subtracted.
  */
 export function faviconGapEm(lastChar: string, context: GlyphContext): number {
   const face = faceFor(context)
   const bearing = (bearings as Record<string, Record<string, number>>)[face]?.[lastChar]
   if (bearing === undefined) return FALLBACK_GAP_EM
   const override = GAP_OVERRIDES_EM[face]?.[lastChar] ?? 0
-  const correction = clamp(TARGET_GAP_EM + override - bearing, -MAX_PULL_EM, MAX_PUSH_EM)
-  return context.code ? correction * CODE_FACE_SCALE : correction
+  const bearingInIconEm = context.code ? bearing * CODE_FACE_SCALE : bearing
+  return clamp(TARGET_GAP_EM + override - bearingInIconEm, -MAX_PULL_EM, MAX_PUSH_EM)
 }
 
 /** Widens `context` with whatever face `element` switches its text into. */

@@ -569,8 +569,9 @@ describe("insertFavicon", () => {
         ["R", { smallCaps: true }, 0.05],
         // No override outside those faces.
         ["R", { italic: true }, 0.11],
-        // Code gaps are rescaled into the icon's prose-sized em.
-        ["m", { code: true }, 0.058725],
+        // The code face aims at the same target as the rest; only its measured
+        // bearing is converted out of the smaller code em.
+        ["m", { code: true }, 0.082475],
         // A glyph with no ink in the icon's band, and one the fonts have no
         // outline for, both fall back rather than inventing a correction.
         [".", {}, 0.0625],
@@ -591,7 +592,10 @@ describe("insertFavicon", () => {
                 : { smallCaps: face === "smallCaps" },
           )
           for (const [char, bearing] of Object.entries(row)) {
-            const correction = favicons.faviconGapEm(char, context) / (face === "code" ? 0.81 : 1)
+            // The gap, the clamps and the target all share the icon's em, so
+            // the bearing is the only term needing conversion out of its face.
+            const bearingInIconEm = face === "code" ? bearing * 0.81 : bearing
+            const correction = favicons.faviconGapEm(char, context)
             expect(correction).toBeGreaterThanOrEqual(-0.375)
             expect(correction).toBeLessThanOrEqual(0.25)
             // The serif override deliberately overshoots the target, so it is
@@ -603,7 +607,7 @@ describe("insertFavicon", () => {
               clamped.push(`${face}|${char}`)
               continue
             }
-            expect(correction + bearing).toBeCloseTo(favicons.TARGET_GAP_EM, 6)
+            expect(correction + bearingInIconEm).toBeCloseTo(favicons.TARGET_GAP_EM, 6)
           }
         }
         // Only glyphs that overhang further than any reasonable margin can
@@ -659,7 +663,7 @@ describe("insertFavicon", () => {
       it("takes the gap from the monospace face inside <code>", () => {
         const node = h("a", { href: "https://example.com" }, [h("code", {}, ["subfont -y"])])
         favicons.insertFavicon(imgPath, node)
-        expect(gapOf(node)).toBe(0.0486)
+        expect(gapOf(node)).toBe(0.0723)
       })
 
       it("tightens a code link ending in a wide monospace glyph", () => {
@@ -667,7 +671,7 @@ describe("insertFavicon", () => {
           h("code", {}, ["alex@turntrout.com"]),
         ])
         favicons.insertFavicon(imgPath, node)
-        expect(gapOf(node)).toBe(0.0587)
+        expect(gapOf(node)).toBe(0.0825)
       })
 
       it("applies an outer context supplied by the caller", () => {
