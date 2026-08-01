@@ -302,7 +302,7 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
       host.innerHTML =
         `<p>${probe.wrapperHtml[0]}<span class="ink-probe">${probe.char}</span>` +
         `<svg class="favicon${probe.nudgeClass ? ` ${probe.nudgeClass}` : ""}" aria-hidden="true"></svg>` +
-        `<span class="baseline-probe" style="display:inline-block;width:0;height:0"></span>` +
+        '<span class="baseline-probe" style="display:inline-block;width:0;height:0"></span>' +
         `${probe.wrapperHtml[1]}</p>`
       const probeSpan = host.querySelector<HTMLElement>(".ink-probe")
       const favicon = host.querySelector<SVGElement>("svg.favicon")
