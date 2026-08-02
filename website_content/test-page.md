@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-08-01
+date_updated: 2026-08-02
 createBibtex: true
 ---
 
@@ -610,6 +610,10 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 > ! This text is hidden until you click on it.
 > ! Multiple lines can be hidden
 > ! Like this!
+
+> ! A spoiler long enough to wrap runs the full width of the column, so its blur reaches both the left and the right margin and has to dissolve into the page at each of them.
+
+> ! Short spoiler, one line.
 
 # Arrows
 
