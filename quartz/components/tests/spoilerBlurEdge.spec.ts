@@ -70,7 +70,7 @@ function columnLuminance(raw: Buffer, width: number, height: number, x: number):
  * @param spoiler - The `.spoiler-container` to measure.
  * @param edge - Which inline edge the band should favour.
  */
-async function lineBandNearest(
+function lineBandNearest(
   spoiler: Locator,
   edge: "left" | "right",
 ): Promise<{ y: number; height: number; reach: number }> {
