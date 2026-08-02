@@ -855,6 +855,22 @@ export async function waitForTransitionEnd(element: Locator): Promise<void> {
   })
 }
 
+// An alias page (quartz/plugins/emitters/aliases.ts) is a stub whose only
+// content is `<meta http-equiv="refresh" content="0; url=...">`. The stub fires
+// DOMContentLoaded, so a navigation gated on it resolves against a document the
+// browser is about to leave, and the redirect then destroys the execution
+// context out from under whatever the caller evaluates next. `waitForFunction`
+// re-injects across navigations, so waiting for a document that is *not* a stub
+// lands on the destination; on an ordinary page the predicate holds on the
+// first poll.
+const META_REFRESH_SELECTOR = 'meta[http-equiv="refresh" i]'
+const META_REFRESH_TIMEOUT_MS = 10_000
+
+/* istanbul ignore next -- executed in the browser, not under Jest */
+function noMetaRefresh(selector: string): boolean {
+  return document.querySelector(selector) === null
+}
+
 // skipcq: JS-0098
 export async function gotoPage(
   page: Page,
@@ -902,6 +918,11 @@ export async function gotoPage(
   } finally {
     page.off("requestfailed", onRequestFailed)
   }
+
+  await page.waitForFunction(noMetaRefresh, META_REFRESH_SELECTOR, {
+    timeout: META_REFRESH_TIMEOUT_MS,
+    polling: WAIT_POLL_INTERVAL_MS,
+  })
 
   if (failedRequests.length > 0) {
     logFailedRequests(url, failedRequests)
