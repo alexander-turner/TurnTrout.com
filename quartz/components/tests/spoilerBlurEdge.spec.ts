@@ -21,9 +21,10 @@ import { gotoPage, isDesktopViewport, requireBoundingBox, search, setTheme } fro
 // across every viewport, theme, and container, so the gap is wide enough that
 // the threshold is never a judgement call.
 const MAX_EDGE_DELTA = 3
-// The window inboard of the edge has to actually hold blurred text, or these
-// tests would pass just as happily on an empty box. Measured deltas run 14–22.
-const MIN_INTERIOR_DELTA = 8
+// What counts as a column carrying ink rather than bare background. The window
+// inboard of an edge has to clear this, or these tests would pass just as
+// happily on an empty box. Measured deltas run 17–30.
+const MIN_INK_DELTA = 8
 // Where the page background is sampled, measured outboard from the spoiler's
 // edge. Far enough out to clear the fade, near enough to stay inside the
 // narrowest gutter the site has (18px, on a phone).
@@ -39,7 +40,7 @@ const EDGE_REACH_TOLERANCE = 2
 interface EdgeDeltas {
   /** How far the spoiler's outermost pixel column sits from the page background. */
   readonly edge: number
-  /** How far a column well inside the spoiler sits from the page background. */
+  /** How far the strongest column inboard of the edge sits from that background. */
   readonly interior: number
 }
 
@@ -74,12 +75,16 @@ async function lineBandNearest(
   edge: "left" | "right",
 ): Promise<{ y: number; height: number; reach: number }> {
   return spoiler.evaluate((el, which) => {
-    const paragraph = el.querySelector(".spoiler-content p")
-    if (!paragraph) throw new Error("Spoiler has no paragraph to measure")
+    // Ranging over each paragraph's *contents* yields one rect per line box.
+    // Ranging over the block instead would hand back the block's own border
+    // box, which spans every line and reaches the margin whatever the text does.
     const range = document.createRange()
-    range.selectNodeContents(paragraph)
-    const lines = Array.from(range.getClientRects()).filter((r) => r.width > 1 && r.height > 1)
-    if (lines.length === 0) throw new Error("Spoiler paragraph rendered no line boxes")
+    const lines: DOMRect[] = []
+    for (const paragraph of el.querySelectorAll(".spoiler-content p")) {
+      range.selectNodeContents(paragraph)
+      lines.push(...Array.from(range.getClientRects()).filter((r) => r.width > 1 && r.height > 1))
+    }
+    if (lines.length === 0) throw new Error("Spoiler rendered no line boxes")
     const best = lines.reduce((a, b) =>
       which === "right" ? (b.right > a.right ? b : a) : b.left < a.left ? b : a,
     )
@@ -176,7 +181,7 @@ async function expectEdgesDissolve(
   for (const edge of edges) {
     const deltas = await measureEdge(page, spoiler, edge)
     expect(deltas.interior, `${edge} edge: no blurred text inboard of the edge`).toBeGreaterThan(
-      MIN_INTERIOR_DELTA,
+      MIN_INK_DELTA,
     )
     expect(deltas.edge, `${edge} edge: blur is sheared off instead of dissolving`).toBeLessThan(
       MAX_EDGE_DELTA,
@@ -214,7 +219,7 @@ for (const theme of ["light", "dark"] as const) {
   })
 }
 
-test("Revealing a spoiler restores ink at its inline edges", async ({ page }) => {
+test("Revealing a spoiler restores ink at the margin", async ({ page }) => {
   const spoiler = page.locator("article .spoiler-container").first()
   await spoiler.scrollIntoViewIfNeeded()
   await spoiler.click()
@@ -223,7 +228,7 @@ test("Revealing a spoiler restores ink at its inline edges", async ({ page }) =>
   // Revealed text must be legible right up to the margin, so the fade that
   // conceals the blur's seam has to lift along with the blur itself.
   const { edge } = await measureEdge(page, spoiler, "left")
-  expect(edge, "revealed text is still faded at the margin").toBeGreaterThan(MIN_INTERIOR_DELTA)
+  expect(edge, "revealed text is still faded at the margin").toBeGreaterThan(MIN_INK_DELTA)
 })
 
 test("Search-preview spoilers dissolve at the column edge", async ({ page }) => {
