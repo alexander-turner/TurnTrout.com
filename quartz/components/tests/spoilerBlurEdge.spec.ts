@@ -92,6 +92,26 @@ function lineBandNearest(
   }, edge)
 }
 
+/** X coordinate of one inline edge of a laid-out box. */
+function inlineEdgeX(box: { x: number; width: number }, edge: "left" | "right"): number {
+  return edge === "left" ? box.x : box.x + box.width
+}
+
+/**
+ * Whether the spoiler's text actually runs to the given inline edge.
+ *
+ * Only then is there a halo at that edge for a clip to shear. Which spoilers
+ * touch the right margin is not fixed: text is ragged-right, and engines size
+ * `fit-content` differently around the `<br>`s a multi-line spoiler carries.
+ * @param spoiler - The `.spoiler-container` to check.
+ * @param edge - Which inline edge to test.
+ */
+async function reachesMargin(spoiler: Locator, edge: "left" | "right"): Promise<boolean> {
+  const box = await requireBoundingBox(spoiler)
+  const band = await lineBandNearest(spoiler, edge)
+  return Math.abs(band.reach - inlineEdgeX(box, edge)) <= EDGE_REACH_TOLERANCE
+}
+
 /**
  * Measure how a spoiler meets the page at one of its inline edges.
  *
@@ -114,7 +134,7 @@ async function measureEdge(
   const viewport = page.viewportSize()
   if (!viewport) throw new Error("Expected an emulated viewport")
 
-  const edgeX = edge === "left" ? box.x : box.x + box.width
+  const edgeX = inlineEdgeX(box, edge)
   const outward = edge === "left" ? -1 : 1
   // A probe only means something if text actually reaches the edge it targets;
   // otherwise there is no halo there for a clip to shear, and the measurement
@@ -189,33 +209,45 @@ async function expectEdgesDissolve(
   }
 }
 
-// A spoiler sized by its own longest line ends exactly where that line ends, so
-// both margins carry ink. One long enough to wrap is stretched to the column
-// instead, and ragged-right wrapping leaves its right margin bare — the left is
-// all there is to check.
-const BOTH_EDGES = ["left", "right"] as const
 const LEFT_EDGE = ["left"] as const
+
+/**
+ * The inline edges of a spoiler that its text actually runs to.
+ *
+ * Every line starts at the left margin, so that edge is always live; reaching
+ * the right one depends on where the text happens to wrap.
+ * @param spoiler - The `.spoiler-container` to inspect.
+ */
+async function liveEdges(spoiler: Locator): Promise<readonly ("left" | "right")[]> {
+  const edges: ("left" | "right")[] = ["left"]
+  if (await reachesMargin(spoiler, "right")) edges.push("right")
+  return edges
+}
 
 test.beforeEach(async ({ page }) => {
   await gotoPage(page, "http://localhost:8080/test-page")
 })
 
 for (const theme of ["light", "dark"] as const) {
-  test(`Article spoilers dissolve at both inline edges in ${theme} mode`, async ({ page }) => {
+  test(`Article spoilers dissolve at their inline edges in ${theme} mode`, async ({ page }) => {
     await setTheme(page, theme)
     const spoilers = page.locator("article .spoiler-container")
-    // The test page carries a short spoiler and one long enough to wrap and
-    // fill the column; the wrapping one is what puts text against both edges.
-    await expect(spoilers).toHaveCount(2)
+    const count = await spoilers.count()
 
-    for (const [index, edges] of [
-      [0, BOTH_EDGES],
-      [1, LEFT_EDGE],
-    ] as const) {
+    const checked: string[] = []
+    for (let index = 0; index < count; index++) {
       const spoiler = spoilers.nth(index)
       await spoiler.scrollIntoViewIfNeeded()
+      const edges = await liveEdges(spoiler)
       await expectEdgesDissolve(page, spoiler, edges)
+      checked.push(...edges)
     }
+    // The test page carries a one-line spoiler precisely so that some spoiler is
+    // always as wide as its own text; without one, the right fade goes untested.
+    expect(
+      checked.filter((edge) => edge === "right"),
+      "no article spoiler reached the right margin",
+    ).not.toHaveLength(0)
   })
 }
 

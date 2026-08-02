@@ -613,6 +613,8 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 > ! A spoiler long enough to wrap runs the full width of the column, so its blur reaches both the left and the right margin and has to dissolve into the page at each of them.
 
+> ! Short spoiler, one line.
+
 # Arrows
 
 -> and --> should be EB Garamond, but ←, ↑, ↓, and ↗ should be Fira Code.
