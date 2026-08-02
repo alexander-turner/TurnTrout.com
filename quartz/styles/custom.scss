@@ -874,7 +874,15 @@ img.emoji {
     black calc(100% - min($spoiler-edge-fade, 25%)),
     transparent 100%
   );
-  mask-repeat: no-repeat;
+
+  // A mask clips its element's paint to the border box on every side, and the
+  // blur halo bleeds past that box above the first line and below the last, so
+  // the block axis needs both keywords: `no-clip` lifts the clip, and tiling the
+  // horizontal gradient down the block axis keeps the mask opaque out where the
+  // gradient's own box has ended — untiled, it would be transparent there and
+  // erase the halo the lifted clip just let through.
+  mask-clip: no-clip;
+  mask-repeat: repeat-y;
 
   // Safari needs this
   & > * {
