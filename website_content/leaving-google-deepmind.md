@@ -22,7 +22,7 @@ aliases:
   - leaving-google-deepmind
 no_dropcap_color: true
 date_published: 2026-07-15
-date_updated: 2026-07-31
+date_updated: 2026-08-02
 lw-posted-at: https://www.lesswrong.com/posts/iKm2FhpWkuuBojm82/why-i-left-google-deepmind
 ---
 
@@ -159,7 +159,7 @@ When I arrived at the IASEAI venue, I expected some of the hundreds of AI profes
 ## I wanted to mobilize the AI luminaries at the conference
 
 Stuart Russell
-: Founder of IASEAI. Co-authored the standard AI textbook used in [over 1,500 universities](https://www.iaseai.org/conference/people/stuart-russell-2). Founder of UC Berkeley's Center for Human-Compatible AI, where I interned for several summers and completed a postdoc. For many years he was the only big-shot academic who took the existential risk from AI seriously. I had long appreciated that.
+: Founder of IASEAI. Co-authored the standard AI textbook used in [over 1,500 universities](https://aima.cs.berkeley.edu/adoptions.html). Founder of UC Berkeley's Center for Human-Compatible AI, where I interned for several summers and completed a postdoc. For many years he was the only big-shot academic who took the existential risk from AI seriously. I had long appreciated that.
 
 : Most importantly: [the leading figure in the global campaign to ban lethal autonomous weapons](https://awards.acm.org/award_winners/russell_3816360), with [his site highlighting over *two hundred prestigious talks on the subject*](https://people.eecs.berkeley.edu/~russell/research/LAWS.html). He presented the  *[Slaughterbots](https://www.youtube.com/watch?v=O-2tpwW0kmU)* [videos](https://www.youtube.com/watch?v=9rDo1QxI260) to the United Nations. If anyone on this green planet Earth had a reason to call out an "all lawful use" military AI deal, it was the man who organized the field against SLAUGHTERBOTS.
 
