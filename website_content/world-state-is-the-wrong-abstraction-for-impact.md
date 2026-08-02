@@ -143,7 +143,7 @@ Accounting for impact this way misses the point.
 
 Yes, we can think about effects and facilitate academic communication more easily via this frame, but *we should be careful not to guide research from that frame*. To avoid that influence, I avoided vase examples early on in this sequence. Their prevalence seems like a *symptom of an incorrect frame*.
 
-(Of course, I certainly did my part to make them more prevalent, what with my first post about impact being called *[Worrying about the Vase: Whitelisting](/whitelisting-impact-measure)...*)
+(Of course, I certainly did my part to make them more prevalent, what with my first post about impact being called *[@title](/whitelisting-impact-measure)...*)
 
 # Notes
 

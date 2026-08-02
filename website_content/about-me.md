@@ -34,7 +34,7 @@ Why do you love geese so much?
 : We soon happened upon [The Untitled Goose Game](https://goose.game/), a delightful cooperative experience where two players pilot two geese in order to troll and terrorize the residents of a sleepy town. There's even a dedicated button for honking! We loved the game. We loved each other. We loved the cute geese. Our strong feelings splashed onto the geese. Now, when we thought of geese, we thought of each other; when we thought of each other, we thought of geese.
 
 How was this website designed?
-: Refer to [The design of this website.](/design)
+: Refer to [@title.](/design)
 
 `TurnTrout`, you're amazing and handsome and I want to date you!
 : My dating doc resides [on this page.](/date-me) Check to see if we're compatible!

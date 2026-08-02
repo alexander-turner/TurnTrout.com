@@ -256,6 +256,18 @@ Failures inside the parallel group don’t short-circuit—every sibling finish
 
 Heavier checks (Jest, Playwright, built-site checks, link validation) run in CI.
 
+### Markdown lint escape hatches
+
+A few `source_file_checks.py` rules judge prose, so each honors an HTML-comment marker anywhere on the offending line. Give a reason after the colon:
+
+```markdown
+30 days to comply. <!-- lint-ignore sentence-initial-numeral: literal policy deadline -->
+
+[Some Post Title](/some-post) <!-- lint-ignore title-bound-link: the literal text is the point -->
+```
+
+`title-bound-link` flags a bare in-site link (`[text](/slug)`, no `#anchor`) whose text restates the target's frontmatter title—compared with case, punctuation, and quote style normalized away, so a stale hand-copy is caught too. Write `[@title](/slug)` (or `[@title-lower](/slug)`) instead and the build fills in the live title. Keep the sentinel as the anchor's only text: `[_@title_](/slug)` parses to an `<em>` child, which `BindLinkTitles` skips, so wrap the link instead—`_[@title](/slug)_`.
+
 ## CI monitoring
 
 After pushing, **always monitor CI until checks pass or fail**. Claude Code’s native CI watch surfaces failures on the open PR; the Stop hook only enforces local checks (test / lint / typecheck / ruff / pytest).

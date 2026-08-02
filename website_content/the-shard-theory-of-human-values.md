@@ -353,7 +353,7 @@ Before this post was published, many people read draft documents explaining shar
     3. That said, alignment implications are out of scope for this post. We postpone discussion to future posts.
 3. “Shard theory” also has been used to refer to insights gained by considering the shard theory of human values and by operating the shard frame on alignment.
     1. We don’t like this ambiguous usage. We would instead say something like “insights from shard theory.”
-    2. Example insights include [Reward is not the optimization target](/reward-is-not-the-optimization-target) and [Human values & biases are inaccessible to the genome](/human-values-and-biases-are-inaccessible-to-the-genome).
+    2. Example insights include [@title](/reward-is-not-the-optimization-target) and [@title](/human-values-and-biases-are-inaccessible-to-the-genome).
 
 # Appendix C: Evidence for neuroscience assumptions
 

@@ -41,7 +41,7 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-> [!quote] [Steering GPT-2-XL by adding an activation vector](/gpt2-steering-vectors)  
+> [!quote] [@title](/gpt2-steering-vectors)  
 > \[We define\] **activation engineering** \[to be\] techniques which steer models by modifying their activations. As a complement to prompt engineering and finetuning, activation engineering is a low-overhead way to steer models at runtime.
 
 These results were recently complemented by [Inference-Time Intervention: Eliciting Truthful Answers from a Language Model](https://www.lesswrong.com/posts/kuQfnotjkQA4Kkfou/inference-time-intervention-eliciting-truthful-answers-from), which doubled TruthfulQA performance by adding a similarly computed activation vector to forward passes!

@@ -54,9 +54,9 @@ I hope this site encourages me to write more. I miss writing and sharing. I miss
 
 I've imported and remastered all 120 of my LessWrong posts. _Every single post_, retouched and detailed. I both [pin down my favorite posts](/posts#some-of-my-favorite-posts) and [group the posts into sequences](/posts#sequences). I've also launched the site with three extra posts!
 
-1. [The design of this website](/design)
-2. [Can transformers act on information beyond an effective layer horizon?](/effective-layer-horizon)
-3. [Intrinsic power-seeking: AI might seek power for power's sake](/dangers-of-intrinsic-power-seeking)
+1. [@title](/design)
+2. [@title](/effective-layer-horizon)
+3. [@title](/dangers-of-intrinsic-power-seeking)
 
 The [research page](/research) summarizes my past and present research interests, along with short retrospectives on the older areas.
 
@@ -123,7 +123,7 @@ Each post states when it was published and when it was last updated. The updated
 I also took a moment to enable:
 
 > [!quote] Cryptographic timestamping
-> Subtitle: [The design of this website](/design)
+> Subtitle: [@title](/design)
 >
 > I use [Open Timestamps](https://originstamp.com/) to stamp each `git` commit hash onto the blockchain... By committing the hash to the blockchain, I provide cryptographic assurance that I have in fact published the claimed commits by the claimed date. This reduces (or perhaps eliminates) the possibility of undetectably "hiding my tracks" by silently editing away incorrect or embarrassing claims after the fact, or by editing my commit history. In particular, I cannot make the positive claim that I wrote content by a given date, unless I had in fact committed that content at least once by that date.
 

@@ -176,7 +176,7 @@ _Edit_: The initial version of this post talked about "outer alignment"; I chang
 
 [^2]: Thinking about overfitting the AU landscape implicitly involves a prior distribution over the goals of the other agents in the landscape. Since this is just a conceptual tool, it's not a big deal. Basically, you know it when you see it.
 [^3]:
-    Overfitting the AU landscape towards one agent's unaligned goal is exactly what I meant when I wrote the following in [_Towards a New Impact Measure_](/towards-a-new-impact-measure):
+    Overfitting the AU landscape towards one agent's unaligned goal is exactly what I meant when I wrote the following in _[@title](/towards-a-new-impact-measure)_:
 
     > Unfortunately, $u_A=u_H$ almost never,[^9] so we have to stop our reinforcement learners from implicitly interpreting the learned utility function as all we care about. We have to say, "optimize the environment some according to the utility function you've got, but don't be a weirdo by taking us literally and turning the universe into a paperclip factory. Don't overfit the environment to $u_A$, because that stops you from being able to do well for other utility functions."
 

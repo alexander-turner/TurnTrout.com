@@ -867,7 +867,7 @@ I added the $\LaTeX$ formatting.
 >
 > Hawking: "Because... gravity... duh.
 
-For more, see [_To what extent is GPT-3 capable of reasoning?_](/to-what-extent-is-gpt3-capable-of-reasoning).
+For more, see _[@title](/to-what-extent-is-gpt3-capable-of-reasoning)_.
 
 > [!quote]
 >

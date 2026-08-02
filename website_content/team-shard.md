@@ -41,9 +41,9 @@ Our mentees now fill impactful roles.
 
 We likewise have a strong track record in [research outputs](https://turntrout.com/tags/mats-program), including:
 
-1. Pioneering steering vectors for use in LLMs ([@title](/gpt2-steering-vectors), [Steering LLAMA-2 With Contrastive Activation Additions](/llama2-steering-vectors)),
+1. Pioneering steering vectors for use in LLMs ([@title](/gpt2-steering-vectors), [@title](/llama2-steering-vectors)),
 2. [Masking Gradients to Localize Computation in Neural Networks](/gradient-routing),
-3. [Distillation Robustifies Unlearning](/unlearn-and-distill) (NeurIPS 2025 spotlight!), and
+3. [@title](/unlearn-and-distill) (NeurIPS 2025 spotlight!), and
 4. [Output Supervision Can Obfuscate the Chain of Thought](/output-supervision-cot).
 
 > [!quote] Former scholar from Team Shard
@@ -91,7 +91,7 @@ Figure: In MATS 9.0, I led program-wide lifting sessions. Here we stand assemble
 > In short, working with Cloud has been one of the great privileges of my research career.
 
 > [!quote] [Ariana Azarbal](https://www.linkedin.com/in/ariana-azarbal-701928210/)
-> Subtitle: MATS 8.0, [Recontextualization Mitigates Specification Gaming without Modifying the Specification](/recontextualization)
+> Subtitle: MATS 8.0, [@title](/recontextualization)
 >
 > ![[https://assets.turntrout.com/static/images/posts/team-shard-01112026.avif|Ariana Azarbal smiling gently in a striped shirt, standing in front of a sunlit tree with green leaves and small orange fruit.]]{.float-right}
 >

@@ -134,7 +134,7 @@ Give a credence for the following questions / subquestions.
 
 ### Conformity with update rule
 
-_Related:_ [_Reward is not the optimization target_](/reward-is-not-the-optimization-target)\.
+_Related:_ _[@title](/reward-is-not-the-optimization-target)_\.
 
 This network has a value head, which PPO uses to provide policy gradients. How often does the trained policy put maximal probability on the action which maximizes the value head? For example, if the agent can go `left` to a value 5 state, and go `right` to a value 10 state, the value and policy heads "agree" if `right` is the policy's most probable action.
 

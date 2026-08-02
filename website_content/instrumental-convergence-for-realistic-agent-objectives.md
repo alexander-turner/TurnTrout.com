@@ -178,7 +178,7 @@ The general result highlights how $\mathfrak{D} := \{ \text{plausible objective 
 
 # Revisiting how the environment structure affects power-seeking incentive strength
 
-> [!quote] [Seeking Power is Convergently Instrumental in a Broad Class of Environments](/power-seeking-beyond-MDPs)
+> [!quote] [@title](/power-seeking-beyond-MDPs)
 > Structural assumptions on utility really do matter when it comes to instrumental convergence:
 >
 > |                                                  Setting | Strength of instrumental convergence                                                                                                  |
@@ -187,7 +187,7 @@ The general result highlights how $\mathfrak{D} := \{ \text{plausible objective 
 > |                                           u<sub>OH</sub> | [Strong](/power-seeking-beyond-MDPs#formal-justification)                                                                             |
 > | State-based objectives<br/>(e.g. state-based reward in MDPs) | [Moderate](/quantitative-strength-of-instrumental-convergence)                                                                        |
 >
-> [Environmental structure can cause instrumental convergence](/environmental-structure-can-cause-instrumental-convergence), but (the absence of) structural assumptions on utility can make instrumental convergence go away (for optimal agents).
+> [@title](/environmental-structure-can-cause-instrumental-convergence), but (the absence of) structural assumptions on utility can make instrumental convergence go away (for optimal agents).
 
 In particular, for the MDP case, I wrote:
 

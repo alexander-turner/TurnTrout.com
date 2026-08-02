@@ -38,7 +38,7 @@ date_updated: 2026-06-28
 > >
 > > Suppose a designer wants an RL agent to achieve some goal, like moving a box from one side of a room to the other. Sometimes the most effective way to achieve the goal involves doing something unrelated and destructive to the rest of the environment, like knocking over a vase of water that is in its path. If the agent is given a reward only for moving the box, it will probably knock over the vase.
 >
-> > [!quote]`TurnTrout`, _[Worrying about the Vase: Whitelisting](/whitelisting-impact-measure)_
+> > [!quote]`TurnTrout`, _[@title](/whitelisting-impact-measure)_
 > >
 > > Side effect avoidance is a major open problem in AI safety. I present a robust, transferable, easily and more safely trainable, partially reward hacking-resistant impact measure.
 

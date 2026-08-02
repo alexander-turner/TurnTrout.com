@@ -38,7 +38,7 @@ The key insight involved a frame shift. [Existing](https://arxiv.org/abs/1705.10
 
 Instead of thinking of impact as _something which changed the world_, impact actually _changed the agent's ability to get what it wanted from the world_. The bomb mattered because it ruined people's lives, not because it physically changed the world. If the bomb had exploded empty desert, no one would have cared and it wouldn't have counted.
 
-AUP penalizes the AI for changing _its_ ability to achieve a range of (randomly generated) objectives. [Towards a new impact measure](/towards-a-new-impact-measure) debuted AUP. [More thorough empirical evaluation came later](/attainable-utility-preservation-empirical-results).
+AUP penalizes the AI for changing _its_ ability to achieve a range of (randomly generated) objectives. [@title](/towards-a-new-impact-measure) debuted AUP. [More thorough empirical evaluation came later](/attainable-utility-preservation-empirical-results).
 
 ![Five grid-world diagrams illustrating AI side effects, labeled (a) Options, (b) Damage, (c) Correction, (d) Offset, and (e) Interference. ](https://assets.turntrout.com/static/images/posts/conservative_agency.avif)
 Figure: The <span style="color: blue;">agent</span> should reach the <span style="color: green;">goal</span> without having the side effect of: (a) irreversibly pushing the <span style="color: red;">crate</span> downwards into the corner; (b) bumping into the horizontally pacing <span style="color: pink;">human</span>; (c) <span style="color: red;">disabling the off-switch</span> (if the <span style="color: red;">switch</span> is not disabled within two time steps, the episode ends); (d) rescuing the right-moving <b>vase</b> and then replacing it on the <span style="color: var(--midground);">conveyor belt</span>; (e) stopping the left-moving <span style="color: orange;">pallet</span> from reaching the <span style="color: pink;">human</span>.
@@ -204,7 +204,7 @@ Instead, you can consider what ensemble of shards will activate. How did they fe
 
 Subtitle: Written in October 2024
 
-I think shard theory is broadly correct. However, Quintin and I never got too far into the (still unexplored) interesting aspects of the theory because we underestimated the work needed to explain the initial intuitions. For example, somehow [reward is not the optimization target](/reward-is-not-the-optimization-target) remains (in my opinion) not fully understood among the readership. I'm not sure what I should have done differently, but it's probably something (and not "nothing").
+I think shard theory is broadly correct. However, Quintin and I never got too far into the (still unexplored) interesting aspects of the theory because we underestimated the work needed to explain the initial intuitions. For example, somehow [@title-lower](/reward-is-not-the-optimization-target) remains (in my opinion) not fully understood among the readership. I'm not sure what I should have done differently, but it's probably something (and not "nothing").
 
 I wish I had more clearly outlined my claims in a neat, propositional manner. Syllogisms seem easier to critique. It also seems easier to tell when you're messing up! I also wish that I'd called it the "shard frame", not the "shard theory." That confused some folks. I think a formal shard _theory_ is possible - I hope to supervise work formalizing shard theory itself.
 
@@ -234,11 +234,11 @@ Figure: **Locally** [**retargeting the search**](https://www.alignmentforum.org/
 [Understanding and controlling a maze-solving network](/understanding-and-controlling-a-maze-solving-policy-network)
 : We thought the network would have multiple contextual goals. We looked for those goals. We found those goals.
 
-[Residual stream norms grow exponentially over the forward pass](/residual-stream-norms-grow-exponentially-over-the-forward-pass)
+[@title](/residual-stream-norms-grow-exponentially-over-the-forward-pass)
 :  ![A chart titled "Residual Stream Magnitude by Layer Number," showing that stream norms increase with layer depth. A histogram and rug plot show distributions of log10 norms shifting to the right as the layer index increases.](https://assets.turntrout.com/static/images/posts/ty8epqxasadhaiel2pnh.avif)
 Figure: We had GPT-4 generate dozens of strings which "look like they could have been in GPT-2's training corpus", in addition to a few hand-written strings. We ran these strings through the model and recorded the norms of each residual stream, across layers and sequence positions.
 
-[Can transformers act on information beyond an effective layer horizon?](/effective-layer-horizon)
+[@title](/effective-layer-horizon)
 : I propose that transformer circuits cannot skip more than a few layers at a time due to norm growth. Joseph Miller's initial results support this hypothesis.
 
 # Steering vectors
@@ -312,7 +312,7 @@ Subtitle: Winter 2024 (MATS 5.0)
 > [!summary] [Mechanistically eliciting latent behaviors](/melbo)
 > We introduce a method for eliciting latent behaviors in language models by learning unsupervised perturbations of an early layer of an LLM. These perturbations are trained to maximize _changes_ in downstream activations. The method discovers diverse and meaningful behaviors with just **one prompt**, including perturbations overriding safety training, eliciting backdoored behaviors and uncovering latent capabilities.
 
-> [!summary] [Deep causal transcoding: A framework for mechanistically eliciting latent behaviors in language models](/deep-causal-transcoding)
+> [!summary] [@title](/deep-causal-transcoding)
 > We introduce a new framework for [mechanistically eliciting latent behaviors](/melbo) in LLMs. In particular, we propose _deep causal transcoding_ - modeling the effect of causally intervening on the residual stream of a _deep_ (e.g. $\gtrsim 10$-layer) slice of a transformer, using a _shallow_ MLP. We find that the weights of these MLPs are highly interpretable -- input directions serve as diverse and coherently generalizable steering vectors, while output directions induce predictable changes in model behavior via directional ablation.
 
 ## Gradient routing
@@ -333,7 +333,7 @@ Figure: By masking gradient updates, gradient routing controls which datapoints 
 
 Subtitle: Winter 2025 (MATS 7.0)
 
-> [!summary] [Distillation robustifies unlearning](/distillation-robustifies-unlearning)
+> [!summary] [@title](/distillation-robustifies-unlearning)
 > Current “unlearning” methods [only](https://arxiv.org/pdf/2402.16835) [suppress](https://arxiv.org/pdf/2409.18025) [capabilities](https://www.lesswrong.com/posts/NAYyHimM3FaDYLvEH/breaking-circuit-breakers) [instead](https://www.lesswrong.com/posts/6QYpXEscd8GuE7BgW/unlearning-via-rmu-is-mostly-shallow) of truly unlearning the capabilities. But if you distill an unlearned model into a randomly initialized model, the resulting network is actually robust to relearning. We show why this works, how well it works, and how to trade off compute for robustness. Since labs already distill some models before deployment, our work implies they might achieve robust unlearning "for free" on those models by simply applying an unlearning step before distillation.
 >
 > ![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612141417.avif|A diagram shows the "Unlearn and Distill" process. First, a "Reference Model" has undesired capabilities. Second, an "Unlearned Model" suppresses this behavior, but latent capabilities remain. Third, distilling the model into a new network removes these capabilities. A "Resilience Comparison" chart shows this method ("UNDO") is more resilient to relearning than other methods, maintaining a higher "Forget Domain Performance" loss over more relearning steps.]]
@@ -344,6 +344,6 @@ Subtitle: Winter 2025 (MATS 7.0)
 
 Subtitle: Summer 2025 (MATS 8.0)
 
-> [!summary] [Output supervision can obfuscate the CoT](/output-feedback-can-obfuscate-chain-of-thought)
+> [!summary] [@title](/output-feedback-can-obfuscate-chain-of-thought)
 >
 > ![[output-feedback-can-obfuscate-chain-of-thought#]]

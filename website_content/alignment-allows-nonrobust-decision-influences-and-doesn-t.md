@@ -131,7 +131,7 @@ When I talk about shard theory, [people](https://www.lesswrong.com/posts/dqSwccG
 
 <hr/>
 
-> [!quote] [Don't design agents which exploit adversarial inputs](/dont-design-agents-which-exploit-adversarial-inputs)
+> [!quote] [@title](/dont-design-agents-which-exploit-adversarial-inputs)
 >
 > Imagine a mother whose child has been goofing off at school and getting in trouble. The mom just wants her kid to take education seriously and have a good life. Suppose she had two (unrealistic but illustrative) choices.
 >
@@ -152,7 +152,7 @@ Reflective agents can think about their own thought process (e.g. "should I spen
 
 Thoughts about future thinking are a kind of decision. Decisions are steered by values. Therefore, thoughts about future thinking are steered by whatever value shards activate in that mental context. For example, a self-care value might activate, and a learning-shard, and a social value might activate as well. They control your reflective thoughts, just like other shards would control your ("normal") actions (like crossing the room).
 
-> [!quote] [Don't design agents which exploit adversarial inputs](/dont-design-agents-which-exploit-adversarial-inputs)
+> [!quote] [@title](/dont-design-agents-which-exploit-adversarial-inputs)
 >
 > \[In\] [the optimizer's curse](https://pubsonline.informs.org/doi/abs/10.1287/mnsc.1050.0451), evaluations (e.g. "In this plan, how hard is evaluation-child working? Is he behaving?") are often corrupted by the influence of unendorsed factors (e.g. the attractiveness of the gym teacher caused an upwards error in the mother's evaluation of that plan). If you make choices by considering $n$ options and then choosing the highest-evaluated one, then the more $n$ increases, the harder you are selecting for upwards errors in your own evaluation procedure.
 >

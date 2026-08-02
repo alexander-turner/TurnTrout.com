@@ -887,7 +887,7 @@ Let's think about the most common ways of steering LLMs: finetuning and promptin
 
 Why should activation additions do any better?
 
-> [!quote] [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network)
+> [!quote] [@title](/understanding-and-controlling-a-maze-solving-policy-network)
 > It's possible to deeply modify a range of alignment-relevant model properties, without retraining the model, via techniques as simple as activation additions.
 
 Here's how Julian Schulz explains the intuitions:
@@ -1097,7 +1097,7 @@ Goh mirrors our confusion about why activation additions work:
 
 ## Activation additions in reinforcement learning
 
-In ["Understanding and controlling a maze-solving policy network"](/understanding-and-controlling-a-maze-solving-policy-network) and ["Maze-solving agents: Add a top-right vector, make the agent go to the top-right"](/top-right-steering-vector), we algebraically edited the activations of a pretrained deep convolutional policy network (3.7M parameters). We computed a cheese vector (by diffing activations for the same maze with and without cheese) and a top-right vector (by diffing activations for a maze with and without an extended path to the top-right of the screen).
+In ["@title"](/understanding-and-controlling-a-maze-solving-policy-network) and ["@title"](/top-right-steering-vector), we algebraically edited the activations of a pretrained deep convolutional policy network (3.7M parameters). We computed a cheese vector (by diffing activations for the same maze with and without cheese) and a top-right vector (by diffing activations for a maze with and without an extended path to the top-right of the screen).
 
 Subtracting the cheese vector essentially [makes the agent behave as if the cheese is not present](/understanding-and-controlling-a-maze-solving-policy-network#comparing-the-modified-network-against-behavior-when-cheese-isn-t-there), but [_adding_ the cheese vector doesn't do much](/understanding-and-controlling-a-maze-solving-policy-network#not-much-happens-when-you-add-the-cheese-vector). Conversely, [adding the top-right vector attracts the agent to the top-right corner](/top-right-steering-vector#adding-the-top-right-vector-with-different-coefficient-strengths), while [_subtracting_ the top-right vector doesn't do much](/top-right-steering-vector#subtracting-the-top-right-vector-has-little-effect). These vectors not only transfer across agent positions in the maze in which the vector was computed, the vectors also exhibit substantial transfer across mazes themselves. The cheese vector intervention also [works for a range of differently pretrained maze-solving policy networks](/top-right-steering-vector#the-cheese-vector-technique-generalizes-to-other-pretrained-models). Finally, the vectors [compose, in that they can simultaneously modify behavior](/top-right-steering-vector#composing-the-activation-additions). This allows substantial but limited customization of the policy network's behavioral goals.
 
@@ -1336,7 +1336,7 @@ Subtitle: Originally made at [@title](/top-right-steering-vector#predictions-for
 [^38]: Assuming the network isn't deceptively misaligned already. Possibly, well-chosen activation additions still work on such networks.
 
 [^39]:
-    From [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network):
+    From [@title](/understanding-and-controlling-a-maze-solving-policy-network):
 
     > [Editing Models with Task Arithmetic](https://arxiv.org/abs/2212.04089) explored a "dual" version of our algebraic technique. That work took vectors between _weights_ before and after finetuning on a new task, and then added or subtracted task-specific weight-diff vectors.
 

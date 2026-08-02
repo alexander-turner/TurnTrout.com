@@ -219,7 +219,7 @@ I think optimality probability formalizes the intuition behind the instrumental 
 Generally, my theorems assume that reward is independently and identically distributed (IID) across states, because otherwise you could have silly situations like “only **candy** ever has reward available, and so it’s more probable under optimality to eat candy.” We don’t expect reward to be IID for realistic tasks, but that’s OK: this is basic theory about how to begin formally reasoning about instrumental convergence and power-seeking. (Also, I think that grasping the math to a sufficient degree sharpens your thinking about the non-IID case.)
 
 > [!note] Note, 7/21/21
-> As explained in [_Environmental Structure Can Cause Instrumental Convergence_](/environmental-structure-can-cause-instrumental-convergence), the theorems no longer require the IID assumption. This post refers to v6 of _Optimal Policies Tend To Seek Power_, available on [arXiv](https://arxiv.org/abs/1912.01683).
+> As explained in _[@title](/environmental-structure-can-cause-instrumental-convergence)_, the theorems no longer require the IID assumption. This post refers to v6 of _Optimal Policies Tend To Seek Power_, available on [arXiv](https://arxiv.org/abs/1912.01683).
 
 # When is seeking POWER convergently instrumental?
 

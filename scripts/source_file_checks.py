@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Literal, TypedDict
 
@@ -23,6 +24,15 @@ MetadataIssues = dict[str, list[str]]
 PathMap = dict[str, Path]  # Maps URLs to their source files
 
 _http_session = script_utils.http_session()
+
+
+class SiteIndex(TypedDict):
+    """Cross-file data the per-file checks need, built once per run."""
+
+    # Maps a permalink or alias to that post's sequence fields.
+    sequence_data: dict[str, dict]
+    # Maps every slug a page is served at to that page's title.
+    slug_titles: dict[str, str]
 
 
 class ForbiddenPatternConfig(TypedDict):
@@ -1197,11 +1207,74 @@ def check_dates_missing_ordinal_suffix(text: str) -> list[str]:
     return errors
 
 
+_TITLE_BOUND_LINK_IGNORE = "lint-ignore title-bound-link"
+
+# A bare in-site link: `[text](/slug)`, with no `#anchor` and no link title.
+_IN_SITE_LINK_RE = re.compile(r"(?<!!)\[([^\[\]]+)\]\((/[^()\s#]*)\)")
+# Link text wrapped entirely in one emphasis run, e.g. `[_A Work Title_](…)`.
+_EMPHASIS_WRAPPED_RE = re.compile(r"^([_*]{1,2})(.+)\1$")
+
+
+def _title_comparison_key(text: str) -> str:
+    """
+    Casefold and drop everything but letters and digits.
+
+    Typographic drift between a hand-copied link text and the target's
+    frontmatter title—straight versus curly quotes, a trailing period pulled
+    inside the brackets, a hyphen gained or lost—still compares equal, so a
+    stale copy of the title is caught alongside an exact one.
+    """
+    return re.sub(r"[\W_]+", "", text.casefold())
+
+
+def check_title_bound_links(
+    text: str, slug_titles: Mapping[str, str]
+) -> list[str]:
+    """
+    Flag bare in-site links whose text merely restates the target's title.
+
+    Such a link is a hand-copied duplicate of a title the target page owns, so
+    it silently goes stale when that page is retitled. Writing the ``@title``
+    sentinel as the link text binds the text to the live title at build time
+    instead. Anchored links are out of scope: their sentinel resolves against a
+    heading, not the page title. A line carrying the "<!-- lint-ignore title-
+    bound-link -->" marker is skipped, for the rare link whose literal text is
+    the point.
+    """
+    sentinel = script_utils.load_shared_constants()["linkTitleSentinel"]
+    stripped_text = remove_math(remove_code(text))
+    lines = stripped_text.split("\n")
+    _blank_frontmatter_lines(lines)
+
+    errors: list[str] = []
+    for line_num, line in enumerate(lines, 1):
+        if _TITLE_BOUND_LINK_IGNORE in line:
+            continue
+        for match in _IN_SITE_LINK_RE.finditer(line):
+            link_text, url = match.group(1), match.group(2)
+            if sentinel in link_text:
+                continue
+            core = link_text.strip()
+            if emphasized := _EMPHASIS_WRAPPED_RE.match(core):
+                core = emphasized.group(2)
+            title = slug_titles.get(url.strip("/"))
+            key = _title_comparison_key(core)
+            if not key or not title:
+                continue
+            if key != _title_comparison_key(title):
+                continue
+            errors.append(
+                f"Link text restates the title of {url} at line {line_num}: "
+                f"{match.group()} — use [{sentinel}]({url}) instead"
+            )
+    return errors
+
+
 def check_file_data(
     metadata: dict,
     existing_urls: PathMap,
     file_path: Path,
-    all_posts_metadata: dict[str, dict],
+    site_index: SiteIndex,
     *,
     check_publication_dates: bool = False,
 ) -> MetadataIssues:
@@ -1212,7 +1285,7 @@ def check_file_data(
         metadata: The file's frontmatter metadata
         existing_urls: Map of known URLs to their file paths
         file_path: Path to the file being checked
-        all_posts_metadata: Map of file paths to their metadata for all posts
+        site_index: Cross-file data the per-file checks need
         check_publication_dates: If True, also check that date_published exists
 
     Returns:
@@ -1236,6 +1309,9 @@ def check_file_data(
         ),
         "html_braces": check_html_with_braces(text),
         "heading_links": check_heading_links(text),
+        "title_bound_links": check_title_bound_links(
+            text, site_index["slug_titles"]
+        ),
         "heading_case": check_heading_case(text),
         "footnote_references": check_footnote_references(text),
         "self_closing_non_void": check_self_closing_non_void_elements(text),
@@ -1259,7 +1335,7 @@ def check_file_data(
                 urls, existing_urls, file_path
             )
         issues["post_slug_relationships"] = check_sequence_relationships(
-            metadata.get("permalink", ""), all_posts_metadata
+            metadata.get("permalink", ""), site_index["sequence_data"]
         )
         issues["card_image"] = check_card_image(metadata)
 
@@ -1450,6 +1526,26 @@ def build_sequence_data(markdown_files: list[Path]) -> dict[str, dict]:
     return all_sequence_data
 
 
+def build_slug_titles(markdown_files: list[Path]) -> dict[str, str]:
+    """Map every slug a page is served at—filename stem, permalink, and each
+    alias—to that page's title."""
+    slug_titles: dict[str, str] = {}
+    for file_path in markdown_files:
+        metadata, _ = script_utils.split_yaml(file_path)
+        title = metadata.get("title") if metadata else None
+        if not title:
+            continue
+        aliases = metadata.get("aliases") or []
+        # ``aliases`` may be a single scalar string or a list; normalize to a
+        # list so a scalar isn't iterated character-by-character.
+        if isinstance(aliases, str):
+            aliases = [aliases]
+        for slug in (file_path.stem, metadata.get("permalink"), *aliases):
+            if slug:
+                slug_titles[str(slug).strip("/")] = str(title)
+    return slug_titles
+
+
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
@@ -1479,9 +1575,10 @@ def main(check_publication_dates: bool = False) -> None:
     )
 
     # mapping from permalink or alias to its forward and prev post slugs
-    all_sequence_data: dict[str, dict] = build_sequence_data(
-        list(markdown_files)
-    )
+    site_index: SiteIndex = {
+        "sequence_data": build_sequence_data(list(markdown_files)),
+        "slug_titles": build_slug_titles(list(markdown_files)),
+    }
 
     for file_path in markdown_files:
         metadata, _ = script_utils.split_yaml(file_path)
@@ -1491,7 +1588,7 @@ def main(check_publication_dates: bool = False) -> None:
                 metadata,
                 existing_urls,
                 file_path,
-                all_sequence_data,
+                site_index,
                 check_publication_dates=check_publication_dates,
             )
             if any(lst for lst in issues.values()):

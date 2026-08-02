@@ -230,7 +230,7 @@ I often simply left my phone at home and accompanied my Kindle to an empty class
 
 Just over three months ago, I wrote:
 
-> [!quote] [The Art of the Artificial: Insights From “Artificial Intelligence: A Modern Approach](/AI-textbook-review)
+> [!quote] [@title](/AI-textbook-review)
 >
 > **Proofs** remain inordinately difficult for me, although I have noticed a small improvement. To do MIRI-relevant math, proofs will need to become second nature. Depending on how I feel as I progress through my next book (which will likely be a proof-centric linear algebra tome), I'll start trying different supplemental approaches for improving my proof prowess.
 >

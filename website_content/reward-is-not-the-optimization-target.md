@@ -215,7 +215,7 @@ I don't think it's just sloppy talk, I think it's incorrect belief in many cases
 
 [^5]: "Reward reinforces existing thoughts" is ultimately a claim about how updates depend on the existing weights of the network. I think that it's easier to update cognition along the lines of existing abstractions and lines of reasoning. If you're already running away from wolves, then if you see a bear and become afraid, you can be updated to run away from large furry animals. This would leverage your _existing_ concepts.
 
-    > [!quote]  [A shot at the diamond-alignment problem](/a-shot-at-the-diamond-alignment-problem)
+    > [!quote]  [@title](/a-shot-at-the-diamond-alignment-problem)
     >
     > The local mapping from gradient directions to behaviors is given by the neural tangent kernel, and the learnability of different behaviors is given by the NTK’s eigenspectrum, which [seems to adapt to the task at hand](https://arxiv.org/abs/2008.00938), making the network quicker to learn along behavioral dimensions similar to those it has already acquired.
 
