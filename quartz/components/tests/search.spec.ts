@@ -85,9 +85,12 @@ async function clickPreviewToNavigate(page: Page): Promise<void> {
   }
 }
 
-test.afterEach(async ({ page }) => {
+test.afterEach(async ({ page, browserName }) => {
   // Navigate away to flush pending network/script activity, preventing
-  // WebKit from hanging during browserContext.close() teardown.
+  // WebKit from hanging during browserContext.close() teardown. Only WebKit
+  // needs the flush, and Firefox aborts the navigation (NS_BINDING_ABORTED)
+  // when it cancels those same in-flight loads, so scope it to WebKit.
+  if (browserName !== "webkit") return
   await page.goto("about:blank")
 })
 
