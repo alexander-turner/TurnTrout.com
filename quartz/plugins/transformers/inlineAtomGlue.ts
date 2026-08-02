@@ -4,7 +4,6 @@ import { CLOSING_BRACKETS, TERMINAL_PUNCTUATION } from "punctilio"
 import { SKIP, visit } from "unist-util-visit"
 
 import {
-  ELLIPSIS,
   EMOJI_CLASS,
   FAVICON_CLASS,
   INLINE_IMG_CLASS,
