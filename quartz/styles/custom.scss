@@ -838,6 +838,11 @@ img.emoji {
   position: relative;
   cursor: pointer;
   width: fit-content;
+
+  // Contains the negative margin that pays for the content's standoff padding.
+  // Left to collapse out, that margin would escape to the block quote and drag
+  // the surrounding text with it instead of cancelling the padding.
+  display: flow-root;
 }
 
 .spoiler-overlay {
@@ -874,15 +879,27 @@ img.emoji {
     black calc(100% - min($spoiler-edge-fade, 25%)),
     transparent 100%
   );
+  mask-repeat: no-repeat;
 
-  // A mask clips its element's paint to the border box on every side, and the
-  // blur halo bleeds past that box above the first line and below the last, so
-  // the block axis needs both keywords: `no-clip` lifts the clip, and tiling the
-  // horizontal gradient down the block axis keeps the mask opaque out where the
-  // gradient's own box has ended — untiled, it would be transparent there and
-  // erase the halo the lifted clip just let through.
-  mask-clip: no-clip;
-  mask-repeat: repeat-y;
+  // That mask clips this element's paint to its border box on every side, not
+  // just the two the gradient fades, and the halo reaches past the box above
+  // the first line. Standing the box off from the text by the full fade puts
+  // that clip out where the halo has already died; the negative margin hands
+  // back the space the padding took, so the block occupies what it always did.
+  padding-block: $spoiler-edge-fade;
+  margin-block: calc(-1 * #{$spoiler-edge-fade});
+
+  // Padding stops the outermost paragraph margins collapsing out of the block,
+  // which would otherwise trap them and grow every spoiler. Outside a spoiler
+  // they escape to the block quote and merge with its own equal margin, so they
+  // are pure surplus here.
+  & > :first-child {
+    margin-top: 0;
+  }
+
+  & > :last-child {
+    margin-bottom: 0;
+  }
 
   // Safari needs this
   & > * {

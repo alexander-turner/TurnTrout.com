@@ -38,34 +38,35 @@ const INTERIOR_OFFSET = 48
 const EDGE_REACH_TOLERANCE = 2
 
 // A mask clips its element's paint to the border box on every side, not only
-// the two the gradient fades. The box's top edge sits nearer the first line
-// than the halo reaches, so that clip shears the block into a hard horizontal
-// seam — the same defect as at the inline edges, one axis over. (The bottom
-// edge is safe: half-leading and descender space put it further from the last
-// line than the halo carries.)
+// the two the gradient fades, so the block axis is at risk from the very
+// declaration that fixes the inline one — the same defect, one axis over.
+// (Below the last line nothing is at risk: descender space and half-leading put
+// the box further from the text than the halo carries.)
 //
-// The invariant: ink survives in the rows just above a concealed spoiler's box.
-// A clipped edge leaves them pixel-identical to the background further out.
+// The invariant is stated about the text rather than the box: the blur has to
+// carry a few pixels above the first line before the page goes bare. Anchoring
+// on the box would only re-describe wherever the box happens to sit.
 
-// How far above the box the halo is looked for. It is spent within the blur
-// radius; a couple of pixels past that costs nothing and tolerates rounding.
-const HALO_PROBE_DEPTH = 3
-// Where the background is sampled, in pixels above the box. Past the halo, and
-// near enough that a neighbouring element's own paint rarely intrudes.
-const HALO_REFERENCE_OFFSET = 6
-// Fraction of the box width trimmed from each side before sampling. The inline
-// gradient fades those columns toward transparent, so they carry no halo.
+// Fraction of the line's width trimmed from each side before sampling. The
+// inline gradient fades those columns toward transparent, so they carry no halo.
 const HALO_SAMPLE_INSET = 0.2
-// Ink carried by the strongest columns above the box, on the same 0–255
-// luminance scale. A sheared edge measures at most 1 — the residue of a
-// neighbour's paint, never the spoiler's own; an intact halo measures 3 or
-// more.
-const MIN_HALO_INK = 2
-// Which column to read once the columns above the box are ranked by ink. A
+// Which column to read once the columns above the line are ranked by ink. A
 // halo tracks the glyphs that cast it, so it lives in the strongest columns
 // rather than the average one; the top decile keeps that signal while ignoring
 // the single hottest column's noise.
 const HALO_INK_PERCENTILE = 0.9
+// Ink, on the 0–255 luminance scale, that counts as the blur still marking the
+// page rather than rounding noise.
+const MIN_INK = 1
+// How far above the first line the blur must still mark the page. Clipped, it
+// stops at the half-leading — 4px at the very most, across both viewports and
+// themes; intact, it carries 6 to 11.
+const MIN_HALO_REACH = 5
+// Furthest above the line the halo is looked for. Beyond three standard
+// deviations of a 4px blur there is nothing left to find.
+const MAX_HALO_REACH = 14
+// Where the bare page is sampled, in pixels above the first line.
+const HALO_REFERENCE_OFFSET = 18
 
 interface EdgeDeltas {
   /** How far the spoiler's outermost pixel column sits from the page background. */
@@ -215,30 +216,34 @@ async function measureEdge(
 }
 
 /**
- * Ink the blur halo leaves in the rows immediately above a concealed spoiler.
+ * How far above its first line a concealed spoiler's blur still marks the page.
  *
- * Each row is differenced against one {@link HALO_REFERENCE_OFFSET} px higher,
- * column by column, and the columns are ranked; the result is the
- * {@link HALO_INK_PERCENTILE} column of the strongest row. Differencing against
- * a nearby row rather than an absolute level keeps whatever the page paints
- * behind the spoiler out of the measurement.
+ * Rows above the line are differenced against one {@link HALO_REFERENCE_OFFSET}
+ * px higher, column by column, and ranked; a row counts as marked when its
+ * {@link HALO_INK_PERCENTILE} column clears {@link MIN_INK}. Differencing
+ * against a nearby row rather than an absolute level keeps whatever the page
+ * paints behind the spoiler out of the measurement.
+ *
+ * Returns nothing when the page above the spoiler is not bare — a neighbour's
+ * own paint reaching into the probe would be read as this spoiler's halo.
  * @param page - Page the spoiler lives in.
  * @param spoiler - The `.spoiler-container` to measure.
  */
-async function measureTopHaloInk(page: Page, spoiler: Locator): Promise<number> {
-  const box = await requireBoundingBox(spoiler.locator(".spoiler-content"))
+async function haloReachAboveFirstLine(page: Page, spoiler: Locator): Promise<readonly number[]> {
+  const line = await lineBandNearest(spoiler, "left")
   const bandHeight = HALO_REFERENCE_OFFSET + 2
-  if (box.y < bandHeight) {
+  if (line.y < bandHeight) {
     throw new Error(
-      `Spoiler sits ${box.y.toFixed(1)}px from the top of the viewport, too high to probe`,
+      `Spoiler sits ${line.y.toFixed(1)}px from the top of the viewport, too high to probe`,
     )
   }
 
+  const box = await requireBoundingBox(spoiler.locator(".spoiler-content"))
   const inset = box.width * HALO_SAMPLE_INSET
   const buffer = await page.screenshot({
     clip: {
       x: box.x + inset,
-      y: box.y - bandHeight,
+      y: line.y - bandHeight,
       width: box.width - 2 * inset,
       height: bandHeight,
     },
@@ -249,7 +254,7 @@ async function measureTopHaloInk(page: Page, spoiler: Locator): Promise<number> 
     .toBuffer({ resolveWithObject: true })
 
   const scale = info.height / bandHeight
-  // Pixel row holding the point `depth` CSS px above the box.
+  // Pixel row holding the point `depth` CSS px above the first line.
   const rowAt = (depth: number): number =>
     Math.min(info.height - 1, Math.max(0, Math.round((bandHeight - depth - 0.5) * scale)))
   const luminance = (x: number, y: number): number => {
@@ -258,17 +263,27 @@ async function measureTopHaloInk(page: Page, spoiler: Locator): Promise<number> 
   }
 
   const referenceRow = rowAt(HALO_REFERENCE_OFFSET)
-  let ink = 0
-  for (let depth = 1; depth <= HALO_PROBE_DEPTH; depth++) {
+  const inkAt = (depth: number): number => {
     const row = rowAt(depth)
     const deltas: number[] = []
     for (let x = 0; x < info.width; x++) {
       deltas.push(Math.abs(luminance(x, row) - luminance(x, referenceRow)))
     }
     deltas.sort((a, b) => a - b)
-    ink = Math.max(ink, deltas[Math.floor(HALO_INK_PERCENTILE * (deltas.length - 1))])
+    return deltas[Math.floor(HALO_INK_PERCENTILE * (deltas.length - 1))]
   }
-  return ink
+
+  // Every row between where the halo can still reach and the reference must be
+  // bare, or something other than this spoiler is painting into the probe.
+  for (let depth = MAX_HALO_REACH + 1; depth < HALO_REFERENCE_OFFSET; depth++) {
+    if (inkAt(depth) > MIN_INK) return []
+  }
+
+  let reach = 0
+  for (let depth = 1; depth <= MAX_HALO_REACH; depth++) {
+    if (inkAt(depth) > MIN_INK) reach = depth
+  }
+  return [reach]
 }
 
 /**
@@ -322,15 +337,14 @@ for (const theme of ["light", "dark"] as const) {
     const count = await spoilers.count()
 
     const checked: string[] = []
+    const reaches: number[] = []
     for (let index = 0; index < count; index++) {
       const spoiler = spoilers.nth(index)
       await spoiler.scrollIntoViewIfNeeded()
       const edges = await liveEdges(spoiler)
       await expectEdgesDissolve(page, spoiler, edges)
       checked.push(...edges)
-
-      const halo = await measureTopHaloInk(page, spoiler)
-      expect(halo, "blur is sheared off at the top of the spoiler").toBeGreaterThan(MIN_HALO_INK)
+      reaches.push(...(await haloReachAboveFirstLine(page, spoiler)))
     }
     // The test page carries a one-line spoiler precisely so that some spoiler is
     // always as wide as its own text; without one, the right fade goes untested.
@@ -338,6 +352,13 @@ for (const theme of ["light", "dark"] as const) {
       checked.filter((edge) => edge === "right"),
       "no article spoiler reached the right margin",
     ).not.toHaveLength(0)
+
+    // Spoilers stacked directly on top of each other paint into one another's
+    // probes; at least one has to sit under bare page for the halo to be read.
+    expect(reaches, "no article spoiler had bare page above it").not.toHaveLength(0)
+    expect(Math.min(...reaches), "blur is sheared off above the first line").toBeGreaterThanOrEqual(
+      MIN_HALO_REACH,
+    )
   })
 }
 
