@@ -5,6 +5,7 @@ from __future__ import annotations
 import io
 import json
 import logging
+import threading
 from collections.abc import Callable, Mapping
 from pathlib import Path
 
@@ -30,6 +31,37 @@ def _label(invert: bool, reviewed: bool = True) -> label_invert.Label:
     return {"invert": invert, "reviewed": reviewed}
 
 
+class _FakeServer:
+    """Stands in for the werkzeug server so tests never bind a socket."""
+
+    def __init__(self, port: int) -> None:
+        self.port = port
+        self.served = False
+        self.closed = False
+        self.shutdown_called = threading.Event()
+
+    def serve_forever(self) -> None:
+        self.served = True
+
+    def server_close(self) -> None:
+        self.closed = True
+
+    def shutdown(self) -> None:
+        self.shutdown_called.set()
+
+
+def _patch_make_server(monkeypatch: pytest.MonkeyPatch) -> list[_FakeServer]:
+    """Replace ``make_server`` with a socket-free fake; return the instances."""
+    servers: list[_FakeServer] = []
+
+    def fake_make_server(_host: str, port: int, _app: object) -> _FakeServer:
+        servers.append(_FakeServer(port))
+        return servers[-1]
+
+    monkeypatch.setattr(label_invert, "make_server", fake_make_server)
+    return servers
+
+
 DIMS = {
     "https://assets.turntrout.com/static/images/posts/a.avif": {},
     "https://assets.turntrout.com/static/images/posts/b.png": {},
@@ -41,6 +73,7 @@ DIMS = {
     "https://assets.turntrout.com/static/images/twemoji/y.png": {},
     "https://assets.turntrout.com/static/images/card_images/z.jpg": {},
     "../asset_staging/local.avif": {},  # not http(s)
+    "https://assets.turntrout.com/static/paper.pdf": {},  # not labelable
 }
 EXPECTED = (
     "https://assets.turntrout.com/static/images/posts/a.avif",
@@ -358,11 +391,120 @@ def test_post_review_marks_existing_unreviewed(
     assert resp.status_code == 200
     # Only EXPECTED[0] needed promotion; the others were either already
     # reviewed (EXPECTED[1]) or not labeled at all (EXPECTED[2]).
-    assert resp.get_json() == {"ok": True, "reviewed": 1}
+    # 4 of the 6 candidates are still unlabeled, hence still unreviewed.
+    assert resp.get_json() == {"ok": True, "reviewed": 1, "remaining": 4}
     assert json.loads(labels_path.read_text(encoding="utf-8")) == {
         EXPECTED[0]: {"invert": True, "reviewed": True},
         EXPECTED[1]: {"invert": False, "reviewed": True},
     }
+
+
+# --- completion + shutdown ---------------------------------------------------
+
+
+def _completion_app(
+    tmp_path: Path, candidates: tuple[str, ...]
+) -> tuple[FlaskClient, list[int]]:
+    """A client whose app records every ``on_all_reviewed`` firing."""
+    fired: list[int] = []
+    app = label_invert.create_app(
+        candidates,
+        labels_path=tmp_path / "labels.json",
+        on_all_reviewed=lambda: fired.append(1),
+    )
+    app.config["TESTING"] = True
+    return app.test_client(), fired
+
+
+def test_post_label_fires_on_all_reviewed_only_when_done(
+    tmp_path: Path,
+) -> None:
+    test_client, fired = _completion_app(tmp_path, EXPECTED[:2])
+    first = test_client.post(
+        "/api/label", json={"url": EXPECTED[0], "state": "invert"}
+    )
+    assert first.get_json() == {"ok": True, "remaining": 1}
+    assert fired == []
+    second = test_client.post(
+        "/api/label", json={"url": EXPECTED[1], "state": "no-invert"}
+    )
+    assert second.get_json() == {"ok": True, "remaining": 0}
+    assert fired == [1]
+
+
+def test_post_review_fires_on_all_reviewed(tmp_path: Path) -> None:
+    labels_path = tmp_path / "labels.json"
+    label_invert.save_labels(
+        {url: _label(True, False) for url in EXPECTED[:2]}, labels_path
+    )
+    test_client, fired = _completion_app(tmp_path, EXPECTED[:2])
+    resp = test_client.post("/api/review", json={"urls": list(EXPECTED[:2])})
+    assert resp.get_json() == {"ok": True, "reviewed": 2, "remaining": 0}
+    assert fired == [1]
+
+
+@pytest.mark.parametrize("exits_when_complete", [True, False])
+def test_index_exposes_shutdown_flag(
+    tmp_path: Path, exits_when_complete: bool
+) -> None:
+    app = label_invert.create_app(
+        EXPECTED[:1],
+        labels_path=tmp_path / "labels.json",
+        on_all_reviewed=(lambda: None) if exits_when_complete else None,
+    )
+    app.config["TESTING"] = True
+    body = app.test_client().get("/").get_data(as_text=True)
+    flag = "true" if exits_when_complete else "false"
+    assert f'data-exits-when-complete="{flag}"' in body
+
+
+def test_deferred_shutdown_stops_bound_server() -> None:
+    handle = label_invert.DeferredShutdown()
+    server = _FakeServer(port=0)
+    handle.bind(server)  # type: ignore[arg-type]
+    handle.request_shutdown()
+    assert server.shutdown_called.wait(timeout=5)
+
+
+def test_deferred_shutdown_requires_bind() -> None:
+    with pytest.raises(RuntimeError, match="bind"):
+        label_invert.DeferredShutdown().request_shutdown()
+
+
+def test_check_and_launch_server_stops_itself(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The pre-push entry point wires the shutdown into the last verdict."""
+    dims = _write_dims(tmp_path, {EXPECTED[0]: {}})
+    labels_path = tmp_path / "labels.json"
+    servers = _patch_make_server(monkeypatch)
+    apps: list[label_invert.Flask] = []
+    real_create_app = label_invert.create_app
+    monkeypatch.setattr(
+        label_invert,
+        "create_app",
+        lambda *a, **kw: apps.append(real_create_app(*a, **kw)) or apps[-1],
+    )
+
+    rc = label_invert.main(
+        [
+            "--check-and-launch",
+            "--dimensions",
+            str(dims),
+            "--labels",
+            str(labels_path),
+            "--no-browser",
+            "--skip-luminance",
+        ]
+    )
+    assert rc == 0
+
+    apps[0].config["TESTING"] = True
+    resp = apps[0].test_client().post(
+        "/api/label", json={"url": EXPECTED[0], "state": "invert"}
+    )
+    assert resp.get_json() == {"ok": True, "remaining": 0}
+    assert servers[0].shutdown_called.wait(timeout=5)
 
 
 @pytest.mark.parametrize(
@@ -430,14 +572,9 @@ def test_main_serves_app(
     no_browser: bool,
 ) -> None:
     dims = _write_dims(tmp_path, {EXPECTED[0]: {}})
-    captured: dict[str, object] = {"ran": False}
+    servers = _patch_make_server(monkeypatch)
     opened: list[str] = []
 
-    monkeypatch.setattr(
-        label_invert.Flask,
-        "run",
-        lambda _self, **kwargs: captured.update(ran=True, kwargs=kwargs),
-    )
     monkeypatch.setattr(
         label_invert,
         "open_browser_async",
@@ -455,7 +592,8 @@ def test_main_serves_app(
     if no_browser:
         argv.append("--no-browser")
     assert label_invert.main(argv) == 0
-    assert captured["ran"] is True
+    assert servers[0].served is True
+    assert servers[0].closed is True
     assert opened == ([] if no_browser else ["http://127.0.0.1:0/"])
 
 
@@ -527,12 +665,7 @@ def test_main_check_and_launch(
     labels_path = tmp_path / "labels.json"
     if labels:
         labels_path.write_text(json.dumps(labels), encoding="utf-8")
-    ran = {"flask": False}
-    monkeypatch.setattr(
-        label_invert.Flask,
-        "run",
-        lambda _self, **_kwargs: ran.update(flask=True),
-    )
+    servers = _patch_make_server(monkeypatch)
     monkeypatch.setattr(label_invert, "open_browser_async", lambda _u: None)
     monkeypatch.setattr(
         label_invert, "ensure_luminances", lambda *_a, **_kw: {}
@@ -552,7 +685,7 @@ def test_main_check_and_launch(
         ]
     )
     assert rc == 0
-    assert ran["flask"] is expect_server
+    assert bool(servers) is expect_server
 
 
 def test_check_and_launch_logs_each_unreviewed_url(
@@ -566,9 +699,7 @@ def test_check_and_launch_logs_each_unreviewed_url(
         json.dumps({u: _label(True, True) for u in EXPECTED[:-1]}),
         encoding="utf-8",
     )
-    monkeypatch.setattr(
-        label_invert.Flask, "run", lambda _self, **_kwargs: None
-    )
+    _patch_make_server(monkeypatch)
     monkeypatch.setattr(label_invert, "open_browser_async", lambda _u: None)
 
     with caplog.at_level(logging.INFO, logger=label_invert.__name__):
@@ -848,7 +979,7 @@ def test_main_runs_luminance_and_autolabel(
         return _solid_png((255, 255, 255) if "a.avif" in url else (10, 10, 10))
 
     monkeypatch.setattr(label_invert, "_default_fetch", fake_fetch)
-    monkeypatch.setattr(label_invert.Flask, "run", lambda *_a, **_k: None)
+    _patch_make_server(monkeypatch)
     monkeypatch.setattr(label_invert, "open_browser_async", lambda _u: None)
 
     rc = label_invert.main(
@@ -895,7 +1026,7 @@ def test_main_skip_luminance(
         "ensure_luminances",
         lambda *a, **kw: called.append("called") or {},
     )
-    monkeypatch.setattr(label_invert.Flask, "run", lambda *_a, **_k: None)
+    _patch_make_server(monkeypatch)
     monkeypatch.setattr(label_invert, "open_browser_async", lambda _u: None)
 
     rc = label_invert.main(

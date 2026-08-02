@@ -12,6 +12,9 @@ Two ways to populate ``.invert_labels.json``:
    luminance, caches it to ``.invert_luminance.json``, and auto-labels
    every unlabeled asset with ``reviewed=false`` (luminance >= 0.7
    gets ``invert=true``, otherwise ``invert=false``).
+   Under ``--check-and-launch`` (the pre-push entry point) the server
+   stops itself as soon as the last candidate has a reviewed verdict,
+   so the hook proceeds without the user hunting for the terminal.
 
 2. Non-interactive: ``uv run scripts/label_invert.py --apply-annotations``
    Walks ``website_content/*.md`` for asset references followed by
@@ -46,6 +49,7 @@ import numpy as np
 import requests
 from flask import Flask, Response, abort, jsonify, render_template, request
 from PIL import Image
+from werkzeug.serving import BaseWSGIServer, make_server
 
 # Support `uv run python scripts/label_invert.py`: when Python is given
 # a script path, sys.path[0] is `scripts/`, not the project root, so
@@ -185,6 +189,19 @@ def mark_reviewed(labels: dict[str, Label], url: str) -> bool:
         return False
     labels[url] = Label(invert=labels[url]["invert"], reviewed=True)
     return True
+
+
+def find_unreviewed(
+    candidates: Iterable[str], labels: Mapping[str, Label]
+) -> tuple[str, ...]:
+    """
+    Return candidates that are absent from ``labels`` or have ``reviewed:
+
+    False`` — i.e. anything still requiring a human verdict.
+    """
+    return tuple(
+        u for u in candidates if u not in labels or not labels[u]["reviewed"]
+    )
 
 
 # --- markdown scanner --------------------------------------------------------
@@ -377,6 +394,8 @@ def _index_handler(
     candidates: tuple[str, ...],
     labels_path: Path,
     lum_map: Mapping[str, float],
+    *,
+    exits_when_complete: bool = False,
 ) -> Callable[[], str]:
     def index() -> str:
         labels = load_labels(labels_path)
@@ -403,13 +422,16 @@ def _index_handler(
             initial_filter=(
                 UNREVIEWED_FILTER if unreviewed_count else ALL_FILTER
             ),
+            exits_when_complete=exits_when_complete,
         )
 
     return index
 
 
 def _label_handler(
-    candidate_set: frozenset[str], labels_path: Path
+    candidate_set: frozenset[str],
+    labels_path: Path,
+    remaining: Callable[[], int],
 ) -> Callable[[], Response]:
     def post_label() -> Response:
         payload = request.get_json(silent=True) or {}
@@ -429,12 +451,14 @@ def _label_handler(
         labels = load_labels(labels_path)
         set_user_label(labels, url, _DECISION_PARAM[state])
         save_labels(labels, labels_path)
-        return jsonify(ok=True)
+        return jsonify(ok=True, remaining=remaining())
 
     return post_label
 
 
-def _review_handler(labels_path: Path) -> Callable[[], Response]:
+def _review_handler(
+    labels_path: Path, remaining: Callable[[], int]
+) -> Callable[[], Response]:
     def post_review() -> Response:
         """Bulk-mark URLs as user-reviewed (verdict unchanged)."""
         payload = request.get_json(silent=True) or {}
@@ -447,9 +471,30 @@ def _review_handler(labels_path: Path) -> Callable[[], Response]:
         reviewed_count = sum(1 for u in urls if mark_reviewed(labels, u))
         if reviewed_count:
             save_labels(labels, labels_path)
-        return jsonify(ok=True, reviewed=reviewed_count)
+        return jsonify(ok=True, reviewed=reviewed_count, remaining=remaining())
 
     return post_review
+
+
+def _remaining_counter(
+    candidates: tuple[str, ...],
+    labels_path: Path,
+    on_all_reviewed: Callable[[], None] | None,
+) -> Callable[[], int]:
+    """
+    Count still-unreviewed candidates, firing ``on_all_reviewed`` at zero.
+
+    Every label mutation ends with this count, so the last verdict the user
+    gives is what releases the caller waiting on the server.
+    """
+
+    def remaining() -> int:
+        count = len(find_unreviewed(candidates, load_labels(labels_path)))
+        if count == 0 and on_all_reviewed is not None:
+            on_all_reviewed()
+        return count
+
+    return remaining
 
 
 def create_app(
@@ -457,16 +502,27 @@ def create_app(
     *,
     labels_path: Path = LABELS_JSON,
     luminances: Mapping[str, float] | None = None,
+    on_all_reviewed: Callable[[], None] | None = None,
 ) -> Flask:
     """Build the labeling Flask app."""
     app = Flask(__name__, template_folder="templates")
     candidate_set = frozenset(candidates)
     lum_map: Mapping[str, float] = luminances or {}
+    remaining = _remaining_counter(candidates, labels_path, on_all_reviewed)
 
-    app.get("/")(_index_handler(candidates, labels_path, lum_map))
+    app.get("/")(
+        _index_handler(
+            candidates,
+            labels_path,
+            lum_map,
+            exits_when_complete=on_all_reviewed is not None,
+        )
+    )
     app.get("/api/labels")(lambda: jsonify(load_labels(labels_path)))
-    app.post("/api/label")(_label_handler(candidate_set, labels_path))
-    app.post("/api/review")(_review_handler(labels_path))
+    app.post("/api/label")(
+        _label_handler(candidate_set, labels_path, remaining)
+    )
+    app.post("/api/review")(_review_handler(labels_path, remaining))
 
     return app
 
@@ -479,7 +535,32 @@ def open_browser_async(url: str) -> None:
     threading.Thread(target=webbrowser.open, args=(url,), daemon=True).start()
 
 
-def _run_server(args: argparse.Namespace) -> int:
+class DeferredShutdown:
+    """
+    Stops a running server from inside one of its own request handlers.
+
+    ``shutdown()`` blocks until the serving loop drains, so it runs on a
+    separate thread: the handler returns immediately and the browser still
+    receives the response that triggered the shutdown.
+    """
+
+    def __init__(self) -> None:
+        self._server: BaseWSGIServer | None = None
+
+    def bind(self, server: BaseWSGIServer) -> None:
+        """Attach the server this handle stops."""
+        self._server = server
+
+    def request_shutdown(self) -> None:
+        """Ask the bound server to stop serving."""
+        if self._server is None:
+            raise RuntimeError("DeferredShutdown.bind() was never called")
+        threading.Thread(target=self._server.shutdown, daemon=True).start()
+
+
+def _run_server(
+    args: argparse.Namespace, *, exit_when_complete: bool = False
+) -> int:
     dims = json.loads(args.dimensions.read_text(encoding="utf-8"))
     candidates = enumerate_candidates(dims)
     if not candidates:
@@ -510,26 +591,27 @@ def _run_server(args: argparse.Namespace) -> int:
                 len(new) - inverts,
             )
 
-    url = f"http://{args.host}:{args.port}/"
+    shutdown = DeferredShutdown()
+    app = create_app(
+        candidates,
+        labels_path=args.labels,
+        luminances=luminances,
+        on_all_reviewed=(
+            shutdown.request_shutdown if exit_when_complete else None
+        ),
+    )
+    server = make_server(args.host, args.port, app)
+    shutdown.bind(server)
+
+    url = f"http://{args.host}:{server.port}/"
     logger.info("Labeling %d candidates. Open %s", len(candidates), url)
     if not args.no_browser:
         open_browser_async(url)
-    app = create_app(candidates, labels_path=args.labels, luminances=luminances)
-    app.run(host=args.host, port=args.port, debug=False, use_reloader=False)
+    try:
+        server.serve_forever()
+    finally:
+        server.server_close()
     return 0
-
-
-def find_unreviewed(
-    candidates: Iterable[str], labels: Mapping[str, Label]
-) -> tuple[str, ...]:
-    """
-    Return candidates that are absent from ``labels`` or have ``reviewed:
-
-    False`` — i.e. anything still requiring a human verdict.
-    """
-    return tuple(
-        u for u in candidates if u not in labels or not labels[u]["reviewed"]
-    )
 
 
 def _run_check_and_launch(args: argparse.Namespace) -> int:
@@ -551,7 +633,7 @@ def _run_check_and_launch(args: argparse.Namespace) -> int:
     )
     for url in missing:
         logger.info("  needs review: %s", url)
-    return _run_server(args)
+    return _run_server(args, exit_when_complete=True)
 
 
 def _run_apply_annotations(args: argparse.Namespace) -> int:
