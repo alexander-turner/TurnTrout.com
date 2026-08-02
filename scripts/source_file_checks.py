@@ -1208,6 +1208,9 @@ def check_dates_missing_ordinal_suffix(text: str) -> list[str]:
 
 
 _TITLE_BOUND_LINK_IGNORE = "lint-ignore title-bound-link"
+_LINK_TITLE_SENTINEL: str = script_utils.load_shared_constants()[
+    "linkTitleSentinel"
+]
 
 # A bare in-site link: `[text](/slug)`, with no `#anchor` and no link title.
 _IN_SITE_LINK_RE = re.compile(r"(?<!!)\[([^\[\]]+)\]\((/[^()\s#]*)\)")
@@ -1237,11 +1240,9 @@ def check_title_bound_links(
     it silently goes stale when that page is retitled. Writing the ``@title``
     sentinel as the link text binds the text to the live title at build time
     instead. Anchored links are out of scope: their sentinel resolves against a
-    heading, not the page title. A line carrying the "<!-- lint-ignore title-
-    bound-link -->" marker is skipped, for the rare link whose literal text is
-    the point.
+    heading, not the page title. A line carrying an HTML-comment marker naming
+    this check is skipped, for the rare link whose literal text is the point.
     """
-    sentinel = script_utils.load_shared_constants()["linkTitleSentinel"]
     stripped_text = remove_math(remove_code(text))
     lines = stripped_text.split("\n")
     _blank_frontmatter_lines(lines)
@@ -1252,7 +1253,7 @@ def check_title_bound_links(
             continue
         for match in _IN_SITE_LINK_RE.finditer(line):
             link_text, url = match.group(1), match.group(2)
-            if sentinel in link_text:
+            if _LINK_TITLE_SENTINEL in link_text:
                 continue
             core = link_text.strip()
             if emphasized := _EMPHASIS_WRAPPED_RE.match(core):
@@ -1265,7 +1266,8 @@ def check_title_bound_links(
                 continue
             errors.append(
                 f"Link text restates the title of {url} at line {line_num}: "
-                f"{match.group()} — use [{sentinel}]({url}) instead"
+                f"{match.group()} — use "
+                f"[{_LINK_TITLE_SENTINEL}]({url}) instead"
             )
     return errors
 
@@ -1574,7 +1576,6 @@ def main(check_publication_dates: bool = False) -> None:
         ignore_dirs=["templates", "drafts", "partials"],
     )
 
-    # mapping from permalink or alias to its forward and prev post slugs
     site_index: SiteIndex = {
         "sequence_data": build_sequence_data(list(markdown_files)),
         "slug_titles": build_slug_titles(list(markdown_files)),
