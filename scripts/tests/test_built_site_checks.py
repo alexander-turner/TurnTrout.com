@@ -8172,3 +8172,191 @@ def test_process_html_files_duplicate_citations(tmp_path: Path):
             public_dir, content_dir, check_fonts=False
         )
     assert result is True
+
+
+@pytest.mark.parametrize(
+    "srcset,expected",
+    [
+        ("", []),
+        ("   ", []),
+        ("/a.avif", ["/a.avif"]),
+        ("/a.avif 2x", ["/a.avif"]),
+        ("/a.avif 1x, /b.avif 2x", ["/a.avif", "/b.avif"]),
+        ("/a.avif, /b.avif", ["/a.avif", "/b.avif"]),
+        ("  /a.avif 100w ,  /b.avif 200w  ", ["/a.avif", "/b.avif"]),
+        # Per spec the URL token runs to the first space, so an unspaced comma
+        # belongs to the URL rather than separating candidates.
+        ("/a.avif,/b.avif", ["/a.avif,/b.avif"]),
+        ("/a,b.avif 2x", ["/a,b.avif"]),
+        ("/a.avif,, /b.avif", ["/a.avif", "/b.avif"]),
+    ],
+)
+def test_parse_srcset(srcset: str, expected: list[str]):
+    assert built_site_checks.parse_srcset(srcset) == expected
+
+
+def test_collect_srcset_urls_skips_redirect(tmp_path: Path):
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+    html = (
+        '<html><head><meta http-equiv="refresh" content="0;url=/new"></head>'
+        '<body><picture><source srcset="/a-inverted.avif"></picture></body>'
+        "</html>"
+    )
+    file_path = public_dir / "redirect.html"
+    file_path.write_text(html)
+
+    srcset_to_files: dict[str, list[str]] = defaultdict(list)
+    built_site_checks.collect_srcset_urls(
+        BeautifulSoup(html, "html.parser"),
+        file_path,
+        public_dir,
+        srcset_to_files,
+    )
+    assert not srcset_to_files
+
+
+def test_collect_srcset_urls_collects_and_skips_tags_without_srcset(
+    tmp_path: Path,
+):
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+    html = (
+        "<html><body><picture>"
+        '<source srcset="/a-inverted.avif" media="(prefers-color-scheme: dark)">'
+        '<img src="/a.avif">'
+        "</picture>"
+        '<img srcset="/b.avif 2x" src="/b.avif">'
+        "</body></html>"
+    )
+    file_path = public_dir / "page.html"
+    file_path.write_text(html)
+
+    srcset_to_files: dict[str, list[str]] = defaultdict(list)
+    built_site_checks.collect_srcset_urls(
+        BeautifulSoup(html, "html.parser"),
+        file_path,
+        public_dir,
+        srcset_to_files,
+    )
+    assert srcset_to_files == {
+        "/a-inverted.avif": ["page.html"],
+        "/b.avif": ["page.html"],
+    }
+
+
+def test_srcset_url_issue_remote_ok():
+    with patch.object(
+        built_site_checks,
+        "_head_with_retry",
+        return_value=mock.Mock(ok=True, status_code=200),
+    ):
+        assert (
+            built_site_checks._srcset_url_issue(
+                "https://assets.turntrout.com/a-inverted.avif", Path("/public")
+            )
+            is None
+        )
+
+
+def test_srcset_url_issue_remote_404():
+    with patch.object(
+        built_site_checks,
+        "_head_with_retry",
+        return_value=mock.Mock(ok=False, status_code=404),
+    ):
+        issue = built_site_checks._srcset_url_issue(
+            "https://assets.turntrout.com/a-inverted.avif", Path("/public")
+        )
+    assert issue == (
+        "https://assets.turntrout.com/a-inverted.avif returned status 404"
+    )
+
+
+def test_srcset_url_issue_remote_request_exception():
+    with patch.object(
+        built_site_checks,
+        "_head_with_retry",
+        side_effect=requests.RequestException("boom"),
+    ):
+        issue = built_site_checks._srcset_url_issue(
+            "https://assets.turntrout.com/a-inverted.avif", Path("/public")
+        )
+    assert issue is not None
+    assert issue.endswith("failed to load: boom")
+
+
+def test_srcset_url_issue_local_present(tmp_path: Path):
+    (tmp_path / "a-inverted.avif").write_bytes(b"data")
+    assert (
+        built_site_checks._srcset_url_issue("/a-inverted.avif?v=3", tmp_path)
+        is None
+    )
+
+
+def test_srcset_url_issue_local_missing(tmp_path: Path):
+    issue = built_site_checks._srcset_url_issue("/a-inverted.avif", tmp_path)
+    assert issue is not None
+    assert issue.startswith("/a-inverted.avif (resolved to ")
+    assert issue.endswith("does not exist")
+
+
+def test_check_srcset_urls_reports_referencing_pages(tmp_path: Path):
+    (tmp_path / "present.avif").write_bytes(b"data")
+    srcset_to_files = {
+        "/present.avif": ["a.html"],
+        "/absent.avif": ["b.html", "a.html", "a.html"],
+    }
+    issues = built_site_checks.check_srcset_urls(srcset_to_files, tmp_path)
+    assert len(issues) == 1
+    assert issues[0].startswith("<srcset> /absent.avif (resolved to ")
+    assert issues[0].endswith("does not exist (referenced by a.html, b.html)")
+
+
+def test_process_html_files_reports_unresolvable_srcset(tmp_path: Path):
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+    content_dir = tmp_path / "website_content"
+    content_dir.mkdir()
+    (public_dir / "page.html").write_text(
+        "<html><body><picture>"
+        '<source srcset="/missing-inverted.avif">'
+        '<img src="/missing.avif"></picture></body></html>',
+        encoding="utf-8",
+    )
+
+    with (
+        patch.object(
+            built_site_checks, "check_file_for_issues", return_value={}
+        ),
+        patch.object(built_site_checks, "_print_issues") as print_issues,
+        patch.object(script_utils, "build_html_to_md_map", return_value={}),
+        patch.object(script_utils, "collect_aliases", return_value=set()),
+        patch.object(script_utils, "should_have_md", return_value=False),
+        patch.object(
+            built_site_checks,
+            "_build_included_favicon_domains",
+            return_value=frozenset(),
+        ),
+        patch.object(
+            script_utils,
+            "parse_html_file",
+            side_effect=lambda p: BeautifulSoup(
+                Path(p).read_text(encoding="utf-8"), "html.parser"
+            ),
+        ),
+    ):
+        result = built_site_checks._process_html_files(
+            public_dir, content_dir, check_fonts=False
+        )
+
+    assert result is True
+    reported = [
+        call.args[1]
+        for call in print_issues.call_args_list
+        if "unresolvable_srcset_urls" in call.args[1]
+    ]
+    assert len(reported) == 1
+    assert (
+        "/missing-inverted.avif" in reported[0]["unresolvable_srcset_urls"][0]
+    )

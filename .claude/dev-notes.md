@@ -42,6 +42,12 @@ Three stages: **Transform → Filter → Emit**.
   assets already on R2: `uv run scripts/generate_inverted_variants.py
 --asset-directory ~/Downloads/website-media-r2`, then re-run `r2_upload`
   to push the new `-inverted` files.
+- The `-inverted` variants reach the browser only through
+  `<picture><source srcset>`, which **linkchecker never fetches**: its HTML5
+  tag table maps `<source>` to `src` alone (`srcset` is listed for `<img>`
+  only), so a missing variant 404s in dark mode with every link check green.
+  `built_site_checks.check_srcset_urls` covers that hole—it collects every
+  `srcset` URL site-wide and HEADs each unique one exactly once.
 - **Video captions**: `scripts/transcribe_videos.py` (run by
   `handle_assets.sh` after `convert_assets.py`, before `r2_upload.py`)
   transcribes every `.mp4` with a real, non-silent audio stream via a
