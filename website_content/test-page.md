@@ -611,6 +611,8 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 > ! Multiple lines can be hidden
 > ! Like this!
 
+> ! A spoiler long enough to wrap runs the full width of the column, so its blur reaches both the left and the right margin and has to dissolve into the page at each of them.
+
 # Arrows
 
 -> and --> should be EB Garamond, but ←, ↑, ↓, and ↗ should be Fira Code.

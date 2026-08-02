@@ -152,6 +152,10 @@
   .spoiler-content {
     filter: none !important;
     opacity: 1 !important;
+    mask-image: none !important;
+
+    /* stylelint-disable-next-line property-no-vendor-prefix -- needed for Safari print */
+    -webkit-mask-image: none !important;
   }
 
   // ── Elvish: show both Tengwar and translation ──────────────────

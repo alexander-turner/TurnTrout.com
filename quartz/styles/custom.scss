@@ -18,6 +18,13 @@ $page-end-bottom-margin: calc(3 * $base-margin);
 // one variable keeps the two from drifting apart.
 $footnote-blockquote-indent: 0.5 * $base-margin;
 
+// Blur applied to concealed spoiler text, and the distance over which the
+// blurred block dissolves at its inline edges. A Gaussian blur is spent by
+// three standard deviations, so fading over 3× the radius covers the whole
+// halo; deriving one from the other keeps them in step.
+$spoiler-blur-radius: 4px;
+$spoiler-edge-fade: 3 * $spoiler-blur-radius;
+
 body {
   min-height: 100vh;
 }
@@ -851,8 +858,23 @@ img.emoji {
 }
 
 .spoiler-content {
-  filter: blur(4px);
+  filter: blur($spoiler-blur-radius);
   opacity: 0.65;
+
+  // Every container a spoiler renders in — the article column, a popover, the
+  // search preview — clips along its inline axis, and a spoiler runs edge to
+  // edge inside all of them, so the blur halo has nowhere to spill. Dissolve
+  // the block into the page rather than let a clip shear the halo into a hard
+  // vertical seam. The percentage cap keeps a solid core in spoilers narrower
+  // than two fades.
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black min($spoiler-edge-fade, 25%),
+    black calc(100% - min($spoiler-edge-fade, 25%)),
+    transparent 100%
+  );
+  mask-repeat: no-repeat;
 
   // Safari needs this
   & > * {
@@ -870,6 +892,7 @@ img.emoji {
 .spoiler-container.revealed .spoiler-content {
   filter: blur(0);
   opacity: 1;
+  mask-image: none;
 }
 
 // Make sure the bullet points don't feel choked

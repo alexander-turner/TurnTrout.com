@@ -246,6 +246,8 @@ export default [
           allowConditional: true,
         },
       ],
+      // Custom assertion helpers that wrap `expect` internally.
+      "playwright/expect-expect": ["warn", { assertFunctionNames: ["expectEdgesDissolve"] }],
     },
   },
 
