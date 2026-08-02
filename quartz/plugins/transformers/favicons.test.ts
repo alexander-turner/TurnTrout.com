@@ -498,9 +498,9 @@ describe("insertFavicon", () => {
     it.each([
       // A glyph that overhangs its advance is made up for, one that stops short
       // of it is taken off, and both land on the same target.
-      ["f", 0.25],
-      ["o", 0.1],
-      ["R", 0.05],
+      ["f", 0.3775],
+      ["o", 0.225],
+      ["R", 0.175],
     ] as const)("trailing %s carries its measured gap inline", (char, gapEm) => {
       const node = h("p", {}, [`Test${char}`])
       favicons.insertFavicon(imgPath, node)
@@ -559,23 +559,23 @@ describe("insertFavicon", () => {
       it.each([
         // Every face aims at the same target, so the correction is whatever the
         // glyph's own bearing leaves over.
-        ["o", {}, 0.1],
-        // "f" leans so far past its advance that the correction hits MAX_PUSH.
-        ["f", {}, 0.25],
-        ["m", {}, 0.0275],
+        ["o", {}, 0.225],
+        // "f" leans past its advance, so the margin makes up the overhang too.
+        ["f", {}, 0.3775],
+        ["m", {}, 0.1525],
         // The serif override: "R" has more measured clearance than any letter
         // and still reads crowded, so it keeps a step of its own.
-        ["R", {}, 0.05],
-        ["R", { smallCaps: true }, 0.05],
+        ["R", {}, 0.175],
+        ["R", { smallCaps: true }, 0.175],
         // No override outside those faces.
-        ["R", { italic: true }, 0.11],
+        ["R", { italic: true }, 0.235],
         // The code face aims at the same target as the rest; only its measured
         // bearing is converted out of the smaller code em.
-        ["m", { code: true }, 0.082475],
+        ["m", { code: true }, 0.207475],
         // A glyph with no ink in the icon's band, and one the fonts have no
         // outline for, both fall back rather than inventing a correction.
-        [".", {}, 0.0625],
-        ["\u{1F600}", {}, 0.0625],
+        [".", {}, 0.1875],
+        ["\u{1F600}", {}, 0.1875],
       ] as const)("%s in %o gets %s em", (char, overrides, gapEm) => {
         expect(favicons.faviconGapEm(char, ctx(overrides))).toBeCloseTo(gapEm, 4)
       })
@@ -597,30 +597,22 @@ describe("insertFavicon", () => {
             const bearingInIconEm = face === "code" ? bearing * 0.81 : bearing
             const correction = favicons.faviconGapEm(char, context)
             expect(correction).toBeGreaterThanOrEqual(-0.375)
-            expect(correction).toBeLessThanOrEqual(0.25)
+            expect(correction).toBeLessThanOrEqual(0.5)
             // The serif override deliberately overshoots the target, so it is
             // excluded from the "lands on target" claim rather than hiding in it.
             if (face === "serif" || face === "smallCaps") {
               if (char === "R") continue
             }
-            if (correction === 0.25 || correction === -0.375) {
+            if (correction === 0.5 || correction === -0.375) {
               clamped.push(`${face}|${char}`)
               continue
             }
             expect(correction + bearingInIconEm).toBeCloseTo(favicons.TARGET_GAP_EM, 6)
           }
         }
-        // Only glyphs that overhang further than any reasonable margin can
-        // correct, none of which end link text. The italic face dominates the
-        // list because its overhangs are the deepest the site ships.
-        expect(clamped.sort()).toEqual([
-          "italic|V",
-          "italic|W",
-          "italic|^",
-          "italic|f",
-          "italic|~",
-          "serif|f",
-        ])
+        // Only a glyph that overhangs further than any reasonable margin can
+        // correct falls short of the target, and it never ends link text.
+        expect(clamped.sort()).toEqual(["italic|~"])
       })
     })
 
@@ -648,7 +640,7 @@ describe("insertFavicon", () => {
         // the target; the serif "t" beside it earns much less.
         const node = h("a", { href: "https://example.com" }, [h("em", {}, ["Incoherent"])])
         favicons.insertFavicon(imgPath, node)
-        expect(gapOf(node)).toBe(0.1725)
+        expect(gapOf(node)).toBe(0.2975)
         expect(gapOf(node)).not.toBe(favicons.faviconGapEm("t", favicons.EMPTY_GLYPH_CONTEXT))
       })
 
@@ -657,13 +649,13 @@ describe("insertFavicon", () => {
           h("abbr", { className: "small-caps" }, ["proxy"]),
         ])
         favicons.insertFavicon(imgPath, node)
-        expect(gapOf(node)).toBe(0.08)
+        expect(gapOf(node)).toBe(0.205)
       })
 
       it("takes the gap from the monospace face inside <code>", () => {
         const node = h("a", { href: "https://example.com" }, [h("code", {}, ["subfont -y"])])
         favicons.insertFavicon(imgPath, node)
-        expect(gapOf(node)).toBe(0.0723)
+        expect(gapOf(node)).toBe(0.1973)
       })
 
       it("tightens a code link ending in a wide monospace glyph", () => {
@@ -671,7 +663,7 @@ describe("insertFavicon", () => {
           h("code", {}, ["alex@turntrout.com"]),
         ])
         favicons.insertFavicon(imgPath, node)
-        expect(gapOf(node)).toBe(0.0825)
+        expect(gapOf(node)).toBe(0.2075)
       })
 
       it("applies an outer context supplied by the caller", () => {
@@ -679,7 +671,7 @@ describe("insertFavicon", () => {
         // context from ancestors and passes it in.
         const node = h("a", { href: "https://example.com" }, ["Incoherent"])
         favicons.insertFavicon(imgPath, node, ctx({ italic: true }))
-        expect(gapOf(node)).toBe(0.1725)
+        expect(gapOf(node)).toBe(0.2975)
       })
     })
 
@@ -724,14 +716,14 @@ describe("insertFavicon", () => {
           { type: "text", value: "," },
         ])
         favicons.insertFavicon(imgPath, node)
-        expect(gapOf(node)).toBe(0.0625)
+        expect(gapOf(node)).toBe(0.1875)
         expect(gapOf(node)).not.toBe(favicons.faviconGapEm("m", ctx({ code: true })))
       })
 
       it.each([
         // A mark with no ink in the icon's band falls back; ")" is measured.
-        [".", 0.0625],
-        [")", 0.0825],
+        [".", 0.1875],
+        [")", 0.2075],
       ])("anchors to a trailing %s outside the wrapper", (mark, expectedGap) => {
         const node = h("a", { href: "https://example.com" }, [
           h("code", {}, ["npm i abW"]),
@@ -752,7 +744,7 @@ describe("insertFavicon", () => {
         expect(span).toMatchObject(faviconSpanNode)
         // With no mark to displace it the anchor is the "W" in the monospace
         // face, so the gap is the one the wrapper's own face earns.
-        expect(gapOf(node)).toBe(0.1189)
+        expect(gapOf(node)).toBe(0.2439)
       })
     })
   })

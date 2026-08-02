@@ -261,8 +261,12 @@ export function insertFavicon(
 
 // The gap the icon should show past the neighbouring glyph's ink, in em of the
 // text beside it. Every face and glyph aims at this one number; what varies is
-// how much of it the glyph's own right side bearing already provides.
-export const TARGET_GAP_EM = 0.125
+// how much of it the glyph's own right side bearing already provides. The icon
+// is a distinct visual object, so it earns word-scale clearance: EB Garamond's
+// word space advances 0.2em, and two words sit roughly 0.25em of ink apart
+// once their side bearings are counted. Anything much below that reads as
+// kerning — the icon crowding the glyph as if it were the next letter.
+export const TARGET_GAP_EM = 0.25
 
 /** `--font-size-code-scale`: inline code's size as a fraction of its prose. */
 const CODE_FACE_SCALE = 0.81
@@ -273,7 +277,7 @@ function clamp(value: number, low: number, high: number): number {
 
 // The gap CSS falls back to when no measurement applies, matching the target
 // for a glyph of average bearing.
-const FALLBACK_GAP_EM = 0.0625
+const FALLBACK_GAP_EM = 0.1875
 
 // Decimal places the bearing table is generated at, and therefore the most a
 // gap derived from it can carry. The gap is float arithmetic written verbatim
@@ -283,10 +287,11 @@ const FALLBACK_GAP_EM = 0.0625
 const GAP_DIGITS = 4
 
 // The correction is bounded so a freak bearing cannot swing the icon far out of
-// line: a deep overhanger ("f" leans 0.128em past its advance) still only earns
-// so much room, and a glyph centred in a wide advance (monospace "L" clears
-// 0.388em) still keeps a hairline of its own.
-const MAX_PUSH_EM = 0.25
+// line: the deepest overhanger the site ships (italic "~" leans 0.288em past
+// its advance) still only earns twice the target, and a glyph centred in a
+// wide advance (monospace "L" clears 0.388em) still keeps a hairline of its
+// own.
+const MAX_PUSH_EM = 0.5
 const MAX_PULL_EM = 0.375
 
 // Where the eye and the band disagree, in em added to the target. The band

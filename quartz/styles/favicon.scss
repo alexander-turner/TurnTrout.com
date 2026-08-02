@@ -62,7 +62,7 @@
   // ~2px); subtracting it puts every icon's visual left edge the same distance
   // from the text.
   --left-inset: 0;
-  --text-gap: calc(var(--glyph-gap, 0.0625em) + var(--favicon-bold-nudge, 0px));
+  --text-gap: calc(var(--glyph-gap, 0.1875em) + var(--favicon-bold-nudge, 0px));
 
   display: inline;
   width: var(--favicon-size);
