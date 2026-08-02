@@ -263,10 +263,12 @@ export function insertFavicon(
 // scripts/notebooks/favicon_kerning_audit, which renders every real
 // (glyph, favicon) pair on the built site and reports each glyph's ink
 // clearance; glyphs land here when their median clearance falls more than
-// ~1px short of a round letter's.
+// ~1px short of a round letter's. "r" joins perceptually: its arm terminal
+// sits at x-height, level with the icon's raised box.
 export const charsToSpace: readonly string[] = [
   "T",
   "R",
+  "r",
   "V",
   "Y",
   "q",
@@ -291,9 +293,11 @@ export const charsToSpaceMost: readonly string[] = ["f", "Q", "/"]
 // The serif sets above come from the perceptual audit and stay its property.
 // Italic glyphs lean rightward, so the overhang set differs; with no audit for
 // the italic face, membership derives from measured ink clearance within the
-// favicon's vertical band (0.2em-0.7em above the baseline): glyphs whose
-// in-band ink reaches their advance edge get a nudge, and glyphs whose ink
-// overhangs by more than 0.1em get the larger one.
+// favicon's vertical band (0.2em-0.7em above the baseline). Among glyphs that
+// plausibly end link text, those whose in-band ink reaches their advance edge
+// get a nudge, and those overhanging by more than 0.1em get the larger one.
+// Glyphs that overhang past what the larger nudge corrects (italic "~", "^")
+// stay out: no nudge restores their gap, and they never end link text.
 export const charsToSpaceItalic: readonly string[] = [
   "T",
   "Y",
@@ -310,8 +314,44 @@ export const charsToSpaceItalic: readonly string[] = [
   "r",
   "l",
   "g",
+  "6",
+  "H",
+  "I",
+  "M",
+  "X",
+  // The italic face has no ®, so it comes from the upright face with
+  // synthesized oblique, which leans its ink past the advance edge.
+  "®",
 ]
-export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/"]
+export const charsToSpaceMostItalic: readonly string[] = ["V", "f", "/", "W"]
+// FiraCode centers every glyph in one fixed advance, so its right side bearing
+// swings from ~0.01em ("W") to ~0.4em ("L") — the uniform monospace correction
+// in CSS (`code .favicon`) is calibrated to the middle of that range and leaves
+// the tight end crowded. Membership derives from each glyph's ink clearance
+// within the favicon's vertical band (0.2em–0.7em above the baseline), as for
+// the italic sets: below ~0.067em the uniform correction runs short by half a
+// `close-text` step, below ~0.042em by a full one. The superscript marks sit
+// high and narrow, so they land in the tight tier alongside "W". Glyphs whose
+// bearing already covers the gap ("m" is the tightest common letter at
+// 0.059em) take no class.
+export const charsToSpaceCode: readonly string[] = [
+  "K",
+  "M",
+  "T",
+  "P",
+  "C",
+  "~",
+  "Q",
+  "g",
+  "O",
+  "D",
+  "*",
+  "m",
+  "#",
+  "F",
+  "®",
+]
+export const charsToSpaceMostCode: readonly string[] = ["W", "@", "w", "%", "&", "V", "Y", "™", "©"]
 
 /** Widens `context` with whatever face `element` switches its text into. */
 export function broadenContext(element: Element, context: GlyphContext): GlyphContext {
@@ -336,8 +376,9 @@ export function contextFromAncestors(ancestors: readonly Parent[]): GlyphContext
 /**
  * The nudge class for a favicon that lands after `lastChar` rendered in
  * `context`:
- *   - monospace advances carry their own right side bearing, handled uniformly
- *     in CSS (`code .favicon`), so no per-glyph class applies;
+ *   - monospace glyphs sit inside a uniform correction in CSS (`code .favicon`),
+ *     so only the ones whose bearing falls below it take a class, and the
+ *     classes carry monospace-sized nudges of their own;
  *   - small-cap forms of lowercase letters keep their in-band ink clear of the
  *     icon (even ``q``'s tail is a descender, below the icon), so none applies;
  *   - italic uses the ink-derived sets, the serif body face its audited ones.
@@ -345,8 +386,11 @@ export function contextFromAncestors(ancestors: readonly Parent[]): GlyphContext
 export function nudgeClassFor(
   lastChar: string,
   context: GlyphContext,
-): "close-text" | "closer-text" | null {
-  if (context.code) return null
+): "close-text" | "closer-text" | "code-close-text" | "code-closer-text" | null {
+  if (context.code) {
+    if (charsToSpaceMostCode.includes(lastChar)) return "code-closer-text"
+    return charsToSpaceCode.includes(lastChar) ? "code-close-text" : null
+  }
   if (context.smallCaps && /[a-z]/.test(lastChar)) return null
   const [most, close] = context.italic
     ? [charsToSpaceMostItalic, charsToSpaceItalic]

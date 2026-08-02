@@ -426,13 +426,38 @@ jobs:
       needs.aggregate-visual-results.outputs.has-any-failures == 'true'
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        timeout-minutes: 5
+      # GitHub's git backend intermittently stalls mid-fetch, and a stalled
+      # fetch takes the whole job down before a step has run. A healthy fetch
+      # of this repo finishes inside a minute, so each attempt gets a budget
+      # that a stall trips quickly rather than one it can sit out; the retry
+      # re-checkouts clean, so a partial fetch can't corrupt the workspace.
+      - id: checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 3
+        continue-on-error: true
         with:
           persist-credentials: false
           # Full history so the nightly sentinel can diff the recorded
           # baseline-approval commit against main HEAD (see the provenance step).
           fetch-depth: 0
+
+      - id: checkout-retry
+        if: steps.checkout.outcome == 'failure'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 3
+        continue-on-error: true
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          clean: true
+
+      - if: steps.checkout-retry.outcome == 'failure'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          clean: true
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env

@@ -31,7 +31,14 @@ runs:
         SERVE_PORT: ${{ inputs.port }}
         MAX_ATTEMPTS: ${{ inputs.max-attempts }}
       run: |
-        pnpm exec serve "$SERVE_PATH" -l "$SERVE_PORT" &
+        # Resolve the binary before the readiness window opens. `pnpm exec`
+        # reaches for the registry when the store lacks the package, and a
+        # slow registry would otherwise spend the attempt budget on a
+        # download that has nothing to do with server startup.
+        pnpm exec serve --version
+
+        SERVER_LOG="$(mktemp)"
+        pnpm exec serve "$SERVE_PATH" -l "$SERVE_PORT" > "$SERVER_LOG" 2>&1 &
         SERVER_PID=$!
         echo "pid=$SERVER_PID" >> "$GITHUB_OUTPUT"
 
@@ -40,9 +47,16 @@ runs:
             echo "Server ready on port $SERVE_PORT (attempt $i)"
             exit 0
           fi
+          # A dead server never becomes ready; report its output now.
+          if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+            echo "::error::Server on port $SERVE_PORT exited before becoming ready"
+            cat "$SERVER_LOG"
+            exit 1
+          fi
           sleep 1
         done
 
         echo "::error::Server on port $SERVE_PORT not ready after $MAX_ATTEMPTS attempts"
+        cat "$SERVER_LOG"
         kill "$SERVER_PID" 2>/dev/null || true
         exit 1

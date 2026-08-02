@@ -30,11 +30,9 @@ placeholders where hidden HTML was spliced out.
 
 ## Entry points
 
-Split into subpaths so the heavy HTML dependency stays opt-in. The **seam**
-column marks entry points that inject the agent-specific concern (a callback
-you supply) rather than baking it in; `—` means the function is a pure
-transform with no such hook, and `fs (direct)` means it does its own file I/O
-(Node's filesystem, not an agent harness) instead of taking a callback.
+Split into subpaths so the heavy HTML dependency stays opt-in. **Seam** names
+the callback you inject for the agent-specific concern; `—` is a pure transform,
+`fs (direct)` does its own file I/O instead of taking one.
 
 | #   | Import          | Purpose                                                                                                                                                    | Seam                        |
 | --- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
@@ -69,16 +67,12 @@ without notice.
 
 ### `FILTER_WARNING` codes (Layer 5)
 
-The Layer-5 `filterInjection` seam is deliberately thin: the injected filter may
-only ask for **verbatim span deletions** (`removeSpans`) and may only warn with a
-**closed enum code** (`warning`), never free text. Because the filter runs on
-attacker-influenced content and its `warning` would otherwise be concatenated
-straight into the model-facing context **without** re-passing Layer 1, a
-compromised or prompt-injected filter emitting arbitrary text would defeat the
-"a compromised filter can only remove bytes, never inject" contract. So the
-**library owns the message** for each code, and a filter returning any value
-outside this enum makes `sanitizeText` **throw** (fail loud). Branch on the code,
-like `found`:
+The Layer-5 `filterInjection` seam is deliberately thin: the filter may only
+request **verbatim span deletions** (`removeSpans`) and warn with a **closed
+enum code**, never free text. Its warning reaches the model-facing context
+without re-passing Layer 1, so a prompt-injected filter emitting arbitrary text
+would defeat the "can only remove bytes, never inject" contract. The library
+owns each message, and any value outside the enum makes `sanitizeText` **throw**:
 
 | `FILTER_WARNING` code | Meaning                                                                                 |
 | --------------------- | --------------------------------------------------------------------------------------- |
@@ -86,15 +80,160 @@ like `found`:
 | `filter-flagged`      | The filter flagged the output as a possible injection without deleting (content intact) |
 | `filter-error`        | The filter reported a non-fatal internal error while scanning (a fatal filter throws)   |
 
+## Using it with Claude Code
+
+Four hooks put Layers 1–4 on the tool stream: tool input, tool output, user
+prompts, and a session-start scan of the instruction files.
+
+```
+/plugin marketplace add AlexanderMattTurner/agent-sanitizer
+/plugin install agent-sanitizer@agent-sanitizer
+```
+
+The plugin needs no `node_modules` and no build step — just `python3` on PATH
+for Layer 4.
+
+To wire them yourself instead, one entry dispatches all four modes on `--hook=`:
+
+```jsonc
+// settings.json — one entry per event; PreToolUse/PostToolUse also take "matcher": "*"
+{
+  "type": "command",
+  "command": "node ./node_modules/agent-sanitizer/claude-hooks/plugin-hooks.mjs --hook=sanitize-output",
+}
+```
+
+| Event              | `--hook=`              |
+| ------------------ | ---------------------- |
+| `UserPromptSubmit` | `sanitize-user-prompt` |
+| `PreToolUse`       | `pretooluse-sanitize`  |
+| `PostToolUse`      | `sanitize-output`      |
+| `SessionStart`     | `scan-invisible-chars` |
+
+`require.resolve("agent-sanitizer/claude-hooks")` gives the path without
+hardcoding a layout. Importing the module rather than spawning it is a no-op.
+
+**To compose the hooks instead of spawning them**, each module is a subpath of
+its own, typed, with the pieces exported individually:
+
+```js
+import {
+  sanitizeText,
+  evaluateToolOutput,
+} from "agent-sanitizer/claude-hooks/sanitize-output";
+import {
+  lazyImport,
+  makeDeadline,
+} from "agent-sanitizer/claude-hooks/lib/hook-io";
+```
+
+The exported set is deliberately small — the four hooks
+(`sanitize-output`, `pretooluse-sanitize`, `sanitize-user-prompt`,
+`scan-invisible-chars`) plus `lib/hook-io` and `lib/control-plane`. Everything
+else under `claude-hooks/` stays internal and is refused by the exports map, so
+it never becomes a surface this package owes compatibility on. `lib/hook-io` is
+exported because it must be _shared_ rather than copied: it owns the
+lazy-module registry and the CLI-slot singleton, and two copies in one bundle
+double-fire the inlined CLIs.
+
+Importing one runs no CLI and reads no stdin. Same stability posture as the
+`_AGENT_SANITIZER_*` variables below: reachable and typed, but the supported
+surface is the `--hook=` CLI, so these move between minor versions.
+
+**`sanitize-output` takes a host-extension bag** — an optional last argument on
+`sanitizeText`, `sanitizeValue`, `evaluateToolOutput`, `judgeSanitizeOutput`, and
+`cliMain`, so a composer that wraps `cliMain` gets the hook's exact fail-closed
+CLI wiring plus its own policy:
+
+| Field        | Runs                                                     | Does                                                                                 |
+| ------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `postText`   | once per string **value** leaf, after Layers 1–4         | returns `{cleaned?, warning?}`; `cleaned` replaces the model-facing text             |
+| `redactNote` | on the pre-redaction text of a leaf that tripped Layer 4 | returns a note appended to that leaf's redaction warning                             |
+| `audit`      | once per judged event carrying a tool response           | is handed the output the model will actually see, and the `session_id` it belongs to |
+| `trace`      | on every exit, in place of the package's trace channel   | receives the engagement announcement (see the trace sink below)                      |
+
+Omit the bag and every seam is inert — the verdicts are byte-identical to this
+module alone. A callback that throws is **not** caught: it lands in the CLI's
+fail-closed catch and the tool output is suppressed, so a broken extension can
+never degrade into showing unvetted output. `postText` deliberately does not run
+on object field NAMES: a callback sees only the string and the tool, so it cannot
+tell a schema key from content, and rewriting a key can collapse two fields into
+one name — which this hook turns into whole-output suppression.
+
+Beyond the credential-shaped names it infers, the env-bound redaction set unions
+`_AGENT_SANITIZER_EXTRA_SECRET_VARS` — a comma-separated list of `[A-Z0-9_]`
+variable names whose values a deployment forwards under names of its own
+choosing. A malformed entry throws rather than being dropped.
+
+**Layer 4 needs the Python engine** — `pip install 'agent-sanitizer[secrets]'`,
+version-matched to the npm package. Without it `sanitize-output` fails closed:
+secret-shaped output is suppressed, not shown unvetted. Layers 1–3 still run.
+
+**Layer 5 (second-model injection filtering) is not included.** These hooks
+never supply the `/output` seam's `filterInjection` callback, so nothing here
+calls a model or leaves the machine.
+
+**Every hook's trace sink is injectable.** Each one announces that it engaged —
+that is what makes a layer that stopped running loud rather than silent — and by
+default that announcement goes to `_AGENT_SANITIZER_TRACE` /
+`_AGENT_SANITIZER_TRACE_FILE`. A host that already runs a trace channel under
+its own variables passes its own sink instead, so the announcement lands where
+its detector actually reads:
+
+```js
+import { cliMain } from "agent-sanitizer/claude-hooks/scan-invisible-chars";
+await cliMain({ trace: (event, fields) => myChannel.emit(event, fields) });
+```
+
+The sink rides each hook's options bag — `cliMain({trace})` on
+`scan-invisible-chars` and `pretooluse-sanitize`, the extension bag's `trace` on
+`sanitize-output`, `main(read, write, {trace})` on `sanitize-user-prompt`. It
+receives the same `TraceEvent` names the default emits, and it **replaces** the
+default rather than running alongside it — the package channel goes silent, so
+there is one announcement to detect, not two. It may throw freely: each hook
+binds the sink it is given through `bestEffortTrace`, so an announcement can
+never be the thing that breaks a hook.
+
+**A host's own cold-start marker can replace the derived one.** The hooks wait
+out an in-flight dependency install by polling a marker file whose path they
+derive from `CLAUDE_PROJECT_DIR`; a host whose setup script already writes one
+calls `configureHookgateMarker(path)` (from `lib/hook-io`) before importing any
+hook module, and every consumer waits on that path instead. `lib/control-plane`
+resolves the marker at module scope, so a call that lands after that import
+warns on stderr — it cannot steer the wait that already started.
+
+**A host's own remedy can replace the packaged one in every fail-closed
+reason.** Deep call sites (`lib/control-plane`'s missing-package throw) take no
+remedy argument, so by default they can only say `pnpm install`. A host whose
+install has one entry point calls `configureMissingPackageRemedy(text)` (from
+`lib/hook-io`) — typically at its bundle entry — and every remedy-less
+`missingPackageMessage`/`missingPackageError` states that text instead. An
+explicit per-call remedy (including a per-gate `MESSAGES.remedy`) still wins,
+and `null` restores the packaged wording. Keep it to a sentence: past ~260
+characters it overruns the 300-char message budget.
+
+**A host's own secret registry can drive the env-bound redaction set.**
+`configureEnvConfigSource({ minSecretLen, extraVars })` (from `lib/env-config`)
+replaces the placeholder floor and unions extra `[A-Z0-9_]` variable names into
+`envBoundSecretVars()`, so a host that already declares its forwarded
+credentials (and their length floor) in a registry of its own feeds the packaged
+helpers from it instead of forking the module. Unset fields keep the package
+derivation; `null` restores it entirely. A malformed source — a non-object, a
+key the seam does not read, a bad field — throws on first use, inside the
+consuming hook's fail-closed catch, never at configure time.
+
+Hook internals are tuned by `_AGENT_SANITIZER_*` variables (redactor daemon
+path/socket/timeouts, sanitize budget, trace channel, Layer-2 reveal dir). The
+leading underscore marks them unstable — the supported surface is the `--hook=`
+CLI above.
+
 ## How this compares
 
-The "sanitize untrusted LLM input" space mostly splits into two camps: ML
-classifiers that score a prompt's _intent_ (Lakera Guard, Meta's Prompt
-Guard, Rebuff, NeMo Guardrails' input rails), and PII-focused redactors
-(Microsoft Presidio). Neither targets the byte-level hiding channel this
-library covers, and that gap is exactly where invisible-Unicode and
-hidden-HTML payloads live—content a semantic classifier never "sees" as
-suspicious because it renders as blank space or doesn't render at all.
+The space splits into ML classifiers that score a prompt's _intent_ (Lakera
+Guard, Meta's Prompt Guard, Rebuff, NeMo Guardrails) and PII redactors
+(Presidio). Neither targets the byte-level hiding channel — content a semantic
+classifier never "sees" as suspicious because it renders as blank space or
+doesn't render at all.
 
 |                               | `agent-sanitizer`                                                                                                        | Semantic guard/classifier (Lakera, Prompt Guard, Rebuff, NeMo rails)                                       | PII redactor (Presidio)                                      |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
@@ -106,13 +245,10 @@ suspicious because it renders as blank space or doesn't render at all.
 | **Reversibility**             | `/rehydrate` re-anchors a model's edit from the sanitized view back onto real bytes, denying anything ambiguous          | N/A—classifiers only pass/block, they don't rewrite-and-reverse                                            | N/A                                                          |
 | **Non-JS support**            | Same verdicts via a bundled CLI/worker—Python client included, no reimplementation                                       | Usually a hosted API (language-agnostic) or Python-only SDK                                                | Python-first (spaCy-based)                                   |
 
-In practice these are complementary, not competing: run a semantic guard for
-intent, Presidio for PII you must not leak, and this library for the hidden
-channel both of those are blind to. If you already run a classifier and are
-still getting bitten by zero-width payloads or `display:none` instructions
-riding along in RAG context, that's the gap this library closes.
+These are complementary: a semantic guard for intent, Presidio for PII, and this
+for the hidden channel both are blind to.
 
-### Examples
+## Examples
 
 ```js
 import { stripInvisibleWithReport } from "agent-sanitizer/invisible";
@@ -162,6 +298,40 @@ await rehydrateRedacted("Edit", toolInput, {
 }); // { updatedInput, context } | { deny } | null — a deny never exposes a secret
 ```
 
+Ask whether a variable NAME holds a credential — don't render the noun list into
+a pattern of your own. Sharing the words but not the rule re-derives the same
+bugs: matching only when the noun ENDS the name misses `DEPLOY_TOKEN_ORG`, a
+case-sensitive match misses npm's lower-case `npm_config__authToken` channel, and
+one alternation of the nouns backtracks polynomially on a long name.
+
+`scope` is the choice that is genuinely yours: `trailing` for a redactor, which
+must not mangle text a human reads; `any-segment` for an env scrub, where an
+unstripped credential leaks silently but an over-stripped one breaks loudly.
+
+```js
+import { credentialNameMatcher } from "agent-sanitizer/credential-names-matcher";
+const holds = credentialNameMatcher({ scope: "any-segment" }); // build once
+holds("TEMPLATE_SYNC_TOKEN_ORG"); // true
+holds("AWS_ACCESS_KEY_ID"); // false — an identifier, not a secret
+```
+
+```python
+from agent_sanitizer.secrets import credential_name_matcher
+holds = credential_name_matcher(scope="any-segment")
+```
+
+The vocabulary stays published as data for a consumer that needs the words rather
+than the predicate (a generated config, an alternation for a different matcher).
+Each noun's `uses` marks where it is valid: `env-name` inspects a variable NAME
+only, `field-value` also redacts what follows `noun = ` (too broad for `key` and
+`pat`, which stay name-only).
+
+```js
+import { createRequire } from "node:module";
+createRequire(import.meta.url)("agent-sanitizer/credential-names").nouns;
+// [{ parts: ["api", "key"], uses: ["env-name", "field-value"] }, …]
+```
+
 ## Limits
 
 The CLI (and the worker that backs the Python client) rejects any single request
@@ -178,17 +348,14 @@ layer does and does not defend against.
 
 ## Non-JS pipelines (Python, etc.)
 
-The JS is the **single source of truth**—non-JS callers drive the same verdicts
-through the bundled CLI, so there’s
-no second implementation to drift. An `op` field selects the entry point
-(default `sanitize`); the self-contained ones—`sanitizeText`, `classifyPrompt`,
-`scanInstructionFiles`, `cleanFile`—are all bridged. Entry points with an
-injected JS callback have no wire form and stay JS-only. The bridged
-`sanitizeText` runs Layers 1–3 only (invisible/ANSI strip, HTML hidden-content
-splice, exfil detection): it never redacts secrets (Layer 4) or runs injection
-filtering (Layer 5), and the wire protocol's `sgrNote` (Python's
-`TextResult.sgr_note`) is always `false`, since the bridge never wires
-`sgrCarveOut`.
+The JS is the **single source of truth** — non-JS callers drive the same
+verdicts through the bundled CLI, so no second implementation can drift. An `op`
+field selects the entry point (default `sanitize`); the self-contained ones —
+`sanitizeText`, `classifyPrompt`, `scanInstructionFiles`, `cleanFile` — are
+bridged, while entry points taking a JS callback have no wire form. Bridged
+`sanitizeText` runs Layers 1–3 only: no secret redaction (Layer 4), no injection
+filtering (Layer 5), and `sgrNote` is always `false` since the bridge never
+wires `sgrCarveOut`.
 
 ```sh
 echo '{"text":"a​b"}' | npx sanitize-cli           # default op: sanitize
@@ -196,16 +363,13 @@ echo '{"op":"classifyPrompt","text":"…"}' | npx sanitize-cli
 sanitize-cli --worker                              # newline-delimited, one response/line
 ```
 
-The [`python/`](./python) client wraps every bridged op (`sanitize`,
-`sanitize_text`, `classify_prompt`, `scan_instruction_files`, `clean_file`). The
-wheel ships a self-contained, single-file build of the CLI (`src/` and its npm
-dependencies bundled into one `.mjs` at release time), so a `pip install` plus
-Node.js (>=22) on `PATH` works with no separate JavaScript checkout to clone.
-`AGENT_SANITIZER_CLI` is only an override escape hatch (e.g. to point at a
-custom/dev build)—a normal install never needs to set it. The first
-`html=True` call starts a shared worker, so the ~200 ms HTML module-load is
-paid **once per process**; Layer-1 calls stay one-shot. `persist=True/False`
-forces the mode and `shutdown_worker()` (also an `atexit` hook) stops it.
+The [`python/`](./python) client wraps every bridged op. The wheel ships a
+single-file build of the CLI, so `pip install` plus Node.js (>=22) on `PATH`
+needs no JavaScript checkout; `AGENT_SANITIZER_CLI` is an override escape hatch
+a normal install never sets. The first `html=True` call starts a shared worker,
+paying the ~200 ms HTML module-load **once per process**; Layer-1 calls stay
+one-shot. `persist=True/False` forces the mode; `shutdown_worker()` (also an
+`atexit` hook) stops it.
 
 ```python
 from agent_sanitizer import sanitize, Sanitizer

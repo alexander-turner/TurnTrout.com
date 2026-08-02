@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-07-29
+date_updated: 2026-08-02
 createBibtex: true
 ---
 
@@ -611,6 +611,10 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 > ! Multiple lines can be hidden
 > ! Like this!
 
+> ! A spoiler long enough to wrap runs the full width of the column, so its blur reaches both the left and the right margin and has to dissolve into the page at each of them.
+
+> ! Short spoiler, one line.
+
 # Arrows
 
 -> and --> should be EB Garamond, but ←, ↑, ↓, and ↗ should be Fira Code.
@@ -648,9 +652,25 @@ Here's a link to [another page](/shard-theory) with popover preview. [This same-
 
 ## External links with favicons
 
-Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons) Link to [`x.com`](https://x.com).
+Links ending [with code tags should still wrap OK: `code.`](#external-links-with-favicons) Link to [`x.com`](https://x.com) keeps its icon inside the code element.
+
+The monospace face's right side bearing swings widely, so a favicon after code ending in a tight glyph keeps the same visual gap as one after a roomy glyph: [`alex@turntrout.com`](mailto:alex@turntrout.com) and [`npm i abW`](https://npmjs.com) and [`npm i abT`](https://npmjs.com) and [`npm i abo`](https://npmjs.com) all sit the same distance from their last glyph.
+
+A mark authored after a link is pulled inside it, so the icon lands after that mark in the surrounding face rather than after the code: [`npm i abW`](https://npmjs.com), [`npm i abo`](https://npmjs.com).
 
 A footnote reference right after a favicon-ending [same-page link](#external-links-with-favicons)[^favicon-footnote] must not wrap onto its own line.
+
+The icon is the same fraction of its text everywhere, so it shrinks inside code and inside a table's smaller face without any per-context override. Compare [GitHub](https://github.com) in body text with the same link inside code ([`github.com`](https://github.com)) and in the cells below.
+
+| Context      | Link                         |
+| :----------- | :--------------------------- |
+| Table cell   | [GitHub](https://github.com) |
+| Smaller face | [arXiv](https://arxiv.org)   |
+
+Faux-bold text widens glyph ink rightward, so a favicon after a bold link ending in an overhanging glyph, like **[Compete for Pentagon Favor](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)**, keeps the same visual gap, including in a collapsed quote title:
+
+> [!quote]- [Google Sits Pretty as A.I. Rivals Compete for Pentagon Favor](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)
+> The favicon in the faux-bold title above keeps its gap after the final "r".
 
 [^favicon-footnote]: The footnote number stays glued to the favicon so it can't wrap onto its own line.
 

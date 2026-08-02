@@ -18,6 +18,13 @@ $page-end-bottom-margin: calc(3 * $base-margin);
 // one variable keeps the two from drifting apart.
 $footnote-blockquote-indent: 0.5 * $base-margin;
 
+// Blur applied to concealed spoiler text, and the distance over which the
+// blurred block dissolves at its inline edges. A Gaussian blur is spent by
+// three standard deviations, so fading over 3× the radius covers the whole
+// halo; deriving one from the other keeps them in step.
+$spoiler-blur-radius: 4px;
+$spoiler-edge-fade: 3 * $spoiler-blur-radius;
+
 body {
   min-height: 100vh;
 }
@@ -831,6 +838,11 @@ img.emoji {
   position: relative;
   cursor: pointer;
   width: fit-content;
+
+  // Contains the negative margin that pays for the content's standoff padding.
+  // Left to collapse out, that margin would escape to the block quote and drag
+  // the surrounding text with it instead of cancelling the padding.
+  display: flow-root;
 }
 
 .spoiler-overlay {
@@ -851,8 +863,43 @@ img.emoji {
 }
 
 .spoiler-content {
-  filter: blur(4px);
+  filter: blur($spoiler-blur-radius);
   opacity: 0.65;
+
+  // Every container a spoiler renders in — the article column, a popover, the
+  // search preview — clips along its inline axis, and a spoiler runs edge to
+  // edge inside all of them, so the blur halo has nowhere to spill. Dissolve
+  // the block into the page rather than let a clip shear the halo into a hard
+  // vertical seam. The percentage cap keeps a solid core in spoilers narrower
+  // than two fades.
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black min($spoiler-edge-fade, 25%),
+    black calc(100% - min($spoiler-edge-fade, 25%)),
+    transparent 100%
+  );
+  mask-repeat: no-repeat;
+
+  // That mask clips this element's paint to its border box on every side, not
+  // just the two the gradient fades, and the halo reaches past the box above
+  // the first line. Standing the box off from the text by the full fade puts
+  // that clip out where the halo has already died; the negative margin hands
+  // back the space the padding took, so the block occupies what it always did.
+  padding-block: $spoiler-edge-fade;
+  margin-block: calc(-1 * #{$spoiler-edge-fade});
+
+  // Padding stops the outermost paragraph margins collapsing out of the block,
+  // which would otherwise trap them and grow every spoiler. Outside a spoiler
+  // they escape to the block quote and merge with its own equal margin, so they
+  // are pure surplus here.
+  & > :first-child {
+    margin-top: 0;
+  }
+
+  & > :last-child {
+    margin-bottom: 0;
+  }
 
   // Safari needs this
   & > * {
@@ -870,6 +917,7 @@ img.emoji {
 .spoiler-container.revealed .spoiler-content {
   filter: blur(0);
   opacity: 1;
+  mask-image: none;
 }
 
 // Make sure the bullet points don't feel choked

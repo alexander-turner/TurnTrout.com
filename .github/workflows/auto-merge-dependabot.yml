@@ -6,8 +6,11 @@ on:
   # zizmor: ignore[dangerous-triggers] pull_request_target is required so
   # Dependabot PRs (fork-like context) get write permissions; safe because no
   # step checks out or executes PR code — only metadata + gh pr commands run.
+  # `reopened` and `synchronize` keep the job self-healing: a PR whose `opened`
+  # run did not enable auto-merge is picked up on Dependabot's next rebase
+  # rather than sitting open indefinitely.
   pull_request_target:
-    types: [opened]
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: write
@@ -24,20 +27,29 @@ jobs:
     steps:
       - name: Fetch Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444e5b86506 # v2
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
+      # Re-approving on every `synchronize` would post a fresh approval event
+      # per Dependabot rebase, so approve only when this bot has not already.
       - name: Approve PR (minor/patch only)
         if: steps.metadata.outputs.update-type != 'version-update:semver-major'
-        run: gh pr review --approve "$PR_URL"
+        run: |
+          approved=$(gh pr view "$PR_URL" --json reviews \
+            --jq '[.reviews[] | select(.author.login == "github-actions" and .state == "APPROVED")] | length')
+          if [[ "$approved" -eq 0 ]]; then
+            gh pr review --approve "$PR_URL"
+          fi
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # MERGE, not squash: the repository disallows squash merging, and
+      # `gh pr merge --auto` rejects a method the repo does not permit.
       - name: Enable auto-merge (minor/patch only)
         if: steps.metadata.outputs.update-type != 'version-update:semver-major'
-        run: gh pr merge --auto --squash "$PR_URL"
+        run: gh pr merge --auto --merge "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

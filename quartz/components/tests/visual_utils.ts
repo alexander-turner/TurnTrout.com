@@ -788,9 +788,12 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
             waitForPaint()
           } else {
             videoEl.addEventListener("loadeddata", waitForPaint, { once: true })
-            // Mirror pauseMediaElements: only force a reload when there is no
-            // data at all; for HAVE_METADATA the decode is already in flight.
-            if (videoEl.readyState === 0) videoEl.load()
+            // WebKit parks a paused video at HAVE_METADATA and fetches no
+            // further media data until something asks for it, so waiting on
+            // "loadeddata" alone can never return. Kick the load at every
+            // readyState below HAVE_CURRENT_DATA; navbar.inline.ts kicks the
+            // same stall on the page itself.
+            videoEl.load()
           }
         }),
       VIDEO_PAINT_TIMEOUT_MS,

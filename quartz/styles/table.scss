@@ -1,4 +1,5 @@
 @use "./variables.scss" as *;
+@use "./faux-bold" as *;
 
 table {
   table-layout: fixed;
@@ -88,8 +89,9 @@ tr.group-boundary > td {
 }
 
 .title-cell {
+  @include faux-bold(var(--foreground));
+
   text-align: center;
-  text-shadow: $faux-bold-offset $faux-bold-offset var(--foreground);
 }
 
 .percentage-cell {

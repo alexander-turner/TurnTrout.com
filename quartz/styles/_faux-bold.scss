@@ -1,0 +1,21 @@
+@use "./variables.scss" as *;
+
+// Faux bold widens every glyph's ink $faux-bold-offset rightward, so the
+// shadow and the favicon compensation (--favicon-bold-nudge, consumed by the
+// left-gap model in favicon.scss) must always travel together: a context with
+// the shadow but not the nudge crowds every favicon it contains, and vice
+// versa. These mixins are the only sanctioned way to apply or remove faux
+// bold.
+@mixin faux-bold($color: null) {
+  --favicon-bold-nudge: #{$faux-bold-offset};
+
+  // Sass drops a null from the value list, so one declaration serves both
+  // the plain and the colored shadow.
+  text-shadow: $faux-bold-offset $faux-bold-offset $color;
+}
+
+@mixin faux-bold-off {
+  --favicon-bold-nudge: 0px;
+
+  text-shadow: 0 0;
+}

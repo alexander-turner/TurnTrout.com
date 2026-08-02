@@ -1017,14 +1017,14 @@
       "title": "My open source contributions"
     },
     {
-      "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
-      "permalink": "about",
-      "title": "About me"
-    },
-    {
       "excerpt": "Displaying the features of the website for use in visual regression testing.",
       "permalink": "test-page",
       "title": "Testing site features"
+    },
+    {
+      "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
+      "permalink": "about",
+      "title": "About me"
     },
     {
       "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
@@ -2676,9 +2676,9 @@
   ],
   "punctilio": [
     {
-      "excerpt": "Displaying the features of the website for use in visual regression testing.",
-      "permalink": "test-page",
-      "title": "Testing site features"
+      "excerpt": "Showing off and explaining this site's beauty.",
+      "permalink": "design",
+      "title": "The design of this website"
     }
   ],
   "quantitative-strength-of-instrumental-convergence": [
@@ -2879,9 +2879,9 @@
       "title": "Conclusion to 'Reframing Impact'"
     },
     {
-      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
-      "permalink": "attainable-utility-preservation-concepts",
-      "title": "Attainable Utility Preservation: Concepts"
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
     }
   ],
   "residual-stream-norms-grow-exponentially-over-the-forward-pass": [

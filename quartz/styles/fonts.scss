@@ -1,4 +1,5 @@
 @use "./variables.scss" as *;
+@use "./faux-bold" as *;
 
 @function calculate-scale($steps) {
   @return calc(1rem * pow($font-scale-factor, #{$steps}));
@@ -13,7 +14,10 @@
     --font-size-plus-#{$i}: #{calculate-scale($i)};
   }
 
-  --font-size-code: 0.81em;
+  // Kept unitless so a descendant can divide the em basis back out and size
+  // itself against the surrounding prose instead of the code face.
+  --font-size-code-scale: 0.81;
+  --font-size-code: calc(var(--font-size-code-scale) * 1em);
   --base-line-height: 1.4;
   --min-font-size: 0.875rem; // 14px
   --max-font-size: 1.5rem; // 24px
@@ -297,11 +301,13 @@ b,
 strong,
 .admonition-title-inner,
 dt {
-  text-shadow: $faux-bold-offset $faux-bold-offset;
+  @include faux-bold;
+
   font-weight: 400 !important; // Normal font weight -- otherwise would be eg 600
 
+  // No bolding needed on right sidebar; spacing works
   .right & {
-    text-shadow: 0 0; // No bolding needed on right sidebar; spacing works
+    @include faux-bold-off;
   }
 }
 
@@ -358,10 +364,13 @@ article[data-use-dropcap="true"] > p:first-of-type .small-caps {
 // A small-caps "j" hooks left under a preceding open bracket ("(JSON)"). The
 // font's kern pairs can't reach across the abbr's element boundary, so the
 // small-caps transformer wraps that bracket in this span to carry a trailing
-// margin toward the run. The margin collapses at a line end so a bracket that
-// wraps to a line start stays flush.
+// margin toward the run. Set in em, like the other per-glyph kerns below, so
+// it tracks the font size: the overlap it corrects is a property of the two
+// glyphs, so it scales with them rather than with the page's rhythm. The
+// margin collapses at a line end so a bracket that wraps to a line start
+// stays flush.
 .smallcaps-gap-before {
-  margin-right: calc(0.25 * $base-margin);
+  margin-right: 0.125em;
 }
 
 // A separator slash ("cat / dog") leans forward, crowding the glyph after it,
