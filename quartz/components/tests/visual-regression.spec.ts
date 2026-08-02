@@ -1102,10 +1102,15 @@ test.describe("Right sidebar", () => {
       ol.innerHTML = Array.from({ length: 40 }, () => "<li><a>Test heading</a></li>").join("")
     })
 
-    // Scroll halfway through the (now-overflowing) sidebar so both fades show.
-    await rightSidebar.evaluate((el) => {
-      el.scrollTop = Math.floor((el.scrollHeight - el.clientHeight) / 2)
-    })
+    // Scroll by a fixed offset: the capture must be identical run to run, and
+    // sidebar content keeps settling (late-loading images, font swaps) after
+    // any geometry measurement, so a target derived from `scrollHeight` lands
+    // a few pixels apart between runs. 40 synthetic entries overflow well past
+    // this offset, so both fades stay active — asserted below.
+    const scrollOffsetPx = 200
+    await rightSidebar.evaluate((el, offset) => {
+      el.scrollTop = offset
+    }, scrollOffsetPx)
     await expect(rightSidebar).toHaveClass(/can-scroll-up/)
     await expect(rightSidebar).toHaveClass(/can-scroll-down/)
 
