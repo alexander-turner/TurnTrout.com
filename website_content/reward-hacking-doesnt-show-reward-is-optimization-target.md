@@ -17,7 +17,7 @@ aliases:
   - reward-retrospective
 original_url: https://www.lesswrong.com/posts/wwRgR3K8FKShjwwL5/2025-era-reward-hacking-does-not-show-that-reward-is-the
 date_published: 2025-12-18
-date_updated: 2026-04-20
+date_updated: 2026-08-02
 ---
 
  
@@ -120,7 +120,7 @@ I consider direct reward optimization to be more likely than I did in 2022, for 
 
 That said, I still predict that we will not train a system with RL and have it "spontaneously" (defined later) turn into a reward optimizer:
 
-> [!quote] [Reward is not the optimization target](/reward-is-not-the-optimization-target)
+> [!quote] [@title](/reward-is-not-the-optimization-target)
 > I call an agent a “reward optimizer” if it not only gets lots of reward, but if it reliably makes choices like “reward but no task completion” (e.g. receiving reward without eating pizza) over “task completion but no reward” (e.g. eating pizza without receiving reward). Under this definition, an agent can be a reward optimizer even if it doesn't contain an explicit representation of reward, or implement a search process for reward.
 
 I've made two falsifiable predictions.
@@ -168,11 +168,11 @@ I no longer endorse one argument I gave against empirical reward-seeking:
 
 This reasoning seems applicable to humans: people grow to value their friends, happiness, and interests long before they learn about the brain's reward system. However, due to pretraining, LLMs arrive at RL training already understanding concepts like "reward" and "reward optimization." I didn't realize that in 2022. Therefore, I now have less skepticism towards "reward-seeking cognition could exist and then be reinforced."
 
-Why didn't I realize this in 2022? I didn't yet deeply understand LLMs. As evidenced by [A shot at the diamond-alignment problem](/a-shot-at-the-diamond-alignment-problem)'s detailed training story about a robot which we reinforce by pressing a "+1 reward" button, I was most comfortable thinking about an embodied deep RL training process. If I had understood LLM pretraining, I would have likely realized that these systems _have some reason to already be thinking thoughts about "reward"_, which means those thoughts could be upweighted and reinforced into AI values.
+Why didn't I realize this in 2022? I didn't yet deeply understand LLMs. As evidenced by [@title](/a-shot-at-the-diamond-alignment-problem)'s detailed training story about a robot which we reinforce by pressing a "+1 reward" button, I was most comfortable thinking about an embodied deep RL training process. If I had understood LLM pretraining, I would have likely realized that these systems _have some reason to already be thinking thoughts about "reward"_, which means those thoughts could be upweighted and reinforced into AI values.
 
 To my credit, I noted my ignorance:
 
-> [!quote] [Reward is not the optimization target](https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/reward-is-not-the-optimization-target.md)
+> [!quote] [@title](https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/reward-is-not-the-optimization-target.md)
 > Pretraining a language model and then slotting that into an RL setup changes the initial \[agent's\] computations in a way which I have not yet tried to analyze.
 
 # Conclusion
