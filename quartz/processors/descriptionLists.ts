@@ -24,7 +24,7 @@ interface DefinitionEntry extends DefinitionNode {
 }
 
 // A term is a label. Prose carries a sentence break; a label does not.
-const SENTENCE_BREAK_REGEX = /[.!?][)\]"'”’]*\s/
+const SENTENCE_BREAK_REGEX = /[.!?][)\]"'”’]*\s/u
 
 // Nodes which leave a term label-like: the site's terms are wholly emphasized,
 // optionally with a footnote marker.
@@ -64,7 +64,7 @@ function swallowedTermLine(description: DefinitionEntry, lines: readonly string[
     line <= contentEndLine(description);
     line++
   ) {
-    const isTerm = lines[line - 1].trim() && !/^[\s:]/.test(lines[line - 1])
+    const isTerm = lines[line - 1].trim() && !/^[\s:]/u.test(lines[line - 1])
     if (isTerm && (lines[line] ?? "").startsWith(": ")) {
       return line
     }
