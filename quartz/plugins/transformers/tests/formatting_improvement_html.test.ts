@@ -1514,13 +1514,13 @@ describe("setFirstLetterAttribute", () => {
     ],
     [
       "opening double quote joins the letter it introduces",
-      `<p>"Whoever wishes to foresee the future must consult the past."</p>`,
-      `<p data-first-letter="“W">“Whoever wishes to foresee the future must consult the past.”</p>`,
+      '<p>"Whoever wishes to foresee the future must consult the past."</p>',
+      '<p data-first-letter="“W">“Whoever wishes to foresee the future must consult the past.”</p>',
     ],
     [
       "opening quote before a non-letter stands alone",
-      `<p>"1984 was a year."</p>`,
-      `<p data-first-letter="“">“1984 was a year.”</p>`,
+      '<p>"1984 was a year."</p>',
+      '<p data-first-letter="“">“1984 was a year.”</p>',
     ],
   ])("%s", (_description, input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input, false)
