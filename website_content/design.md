@@ -486,7 +486,7 @@ However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
 ### Opening on a quotation
 
 <figure class="float-right" style="margin-top: 2rem;">
-<div class="dropcap" data-first-letter="“W" style="font-size: 4rem;">“W</div>
+<div class="dropcap" data-first-letter="“W" style="font-size: var(--dropcap-font-size);">“W</div>
 <figcaption>The mark hangs off the left of the capital.</figcaption>
 </figure>
 

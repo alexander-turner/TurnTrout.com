@@ -781,7 +781,9 @@ We held a 1-on-1 with GPT-4 about the 9-to-5 grind, X-ray goggles, and the mid-1
 
 <span id="single-letter-dropcap" class="dropcap" data-first-letter="T">T</span>his paragraph demonstrates a dropcap.
 
-<span id="quote-letter-dropcap" class="dropcap" data-first-letter="“W">“W</span>hoever wishes to foresee the future must consult the past,” wrote Machiavelli — and this paragraph demonstrates an opening quote set together with the letter it introduces.
+<figure class="float-right">
+<div id="quote-letter-dropcap" class="dropcap" data-first-letter="“W" style="font-size: var(--dropcap-font-size);">“W</div>
+</figure>
 
 <div style="font-size:4rem;line-height:1.4 !important;" class="centered ignore-pa11y">
 <span class="dropcap ignore-pa11y" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);" aria-hidden="true">A</span>
