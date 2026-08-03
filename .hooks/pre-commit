@@ -1,10 +1,13 @@
 #!/bin/bash
 # Pre-commit hook: Format and lint staged files via lint-staged.
-# Skips gracefully when lint-staged is not installed (non-Node projects).
+# Projects without a package.json have no lint-staged config to run; a Node
+# project whose tools are missing FAILS the commit (see lib-gate.sh).
 
 set -euo pipefail
 
 git_root=$(git rev-parse --show-toplevel)
+# shellcheck source=.hooks/lib-gate.sh
+source "$git_root/.hooks/lib-gate.sh"
 
 # Format staged files FIRST, so fixable issues (trailing whitespace, EOF
 # newlines, import order) are auto-corrected and re-staged before the gate at
@@ -29,6 +32,7 @@ if [ -n "$staged_py_files" ] && command -v uv >/dev/null 2>&1; then
   echo "$staged_py_files" | xargs git add
 fi
 
+<<<<<<< local
 # Five guardrails (merge-conflict markers, large files, gitleaks, codespell,
 # actionlint) live in .pre-commit-config.yaml. Run them via the framework so
 # `pre-commit run --all-files` and the hook share the same source of truth.
@@ -46,4 +50,39 @@ fi
 if ! git diff --cached --check; then
   echo "pre-commit: refusing commit — fix the issues above" >&2
   exit 1
+=======
+# Durable recovery snapshot before the destructive part. lint-staged (and the
+# pre-commit auto-fixers it drives) hide your UNSTAGED tracked edits in an internal
+# stash, rewrite the staged files, then restore that stash. A failed run — a
+# non-auto-fixable lint error, or a stash-restore conflict when a fixer rewrote a
+# file you also had unstaged — can DROP that hidden stash, silently reverting the
+# unstaged work with no obvious way back. Only an unstaged tracked change is at
+# risk (a fully-staged commit has nothing to lose), so snapshot just that case:
+# `git stash create` writes a commit object WITHOUT touching the tree or the stash
+# stack, pinned in a ref so it survives gc and is one `git checkout` away.
+if ! git diff --quiet; then
+  if _gb_snapshot=$(git stash create 2>/dev/null) && [[ -n "$_gb_snapshot" ]]; then
+    git update-ref refs/gb/precommit-recovery "$_gb_snapshot" 2>/dev/null || true
+    echo "pre-commit: unstaged edits present — saved recovery snapshot $_gb_snapshot (ref refs/gb/precommit-recovery). If this commit fails and your uncommitted edits vanish, restore them with: git checkout $_gb_snapshot -- <path>" >&2
+  fi
+fi
+
+# No package.json: not a Node project, so there is no lint-staged gate to run.
+if [[ ! -f "$git_root/package.json" ]]; then
+  exit 0
+fi
+
+# A Node project with lint-staged absent means the gate CANNOT run — fail the
+# commit rather than let it through with zero lint/format enforcement.
+if [[ ! -f "$git_root/node_modules/.bin/lint-staged" ]]; then
+  gate_die_missing_tool pre-commit lint-staged "run 'pnpm install' to provision the lint/format checks, then retry the commit."
+fi
+
+if command -v pnpm >/dev/null 2>&1; then
+  pnpm exec lint-staged --allow-empty
+elif command -v npm >/dev/null 2>&1; then
+  npx lint-staged --allow-empty
+else
+  gate_die_missing_tool pre-commit pnpm "install pnpm (or npm) so lint-staged can run, then retry the commit."
+>>>>>>> template
 fi

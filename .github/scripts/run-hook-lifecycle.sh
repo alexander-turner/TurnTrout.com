@@ -53,4 +53,12 @@ echo "::group::pre-push-check.sh"
 .claude/hooks/pre-push-check.sh
 echo "::endgroup::"
 
+# 4. Git pre-push hook. Feed it an empty ref list (a push with nothing to push)
+#    so the pushed-range pre-commit loop is a no-op and the leg verifies the
+#    hook itself — tool discovery, the workflow pin read, the symlink check —
+#    runs without error.
+echo "::group::pre-push"
+.hooks/pre-push origin "$(git remote get-url origin)" </dev/null
+echo "::endgroup::"
+
 echo "Hook lifecycle completed successfully."
