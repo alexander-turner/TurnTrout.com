@@ -1660,6 +1660,8 @@ ldots
 Leahy
 learnings
 learnt
+Lede
+lede
 LeCun
 leftarrow
 Leftrightarrow
@@ -3044,6 +3046,7 @@ transclude
 transcluded
 Transclusion
 Transclusions
+transclusion
 transclusions
 transcoders
 Transcoding
