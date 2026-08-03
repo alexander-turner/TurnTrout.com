@@ -2448,6 +2448,14 @@ def _print_issues(  # pragma: no cover
         print()  # Add a blank line between files with issues
 
 
+def _report_issues(path: Path, label: str, issues: list[str]) -> bool:
+    """Print ``issues`` under ``label``; ``True`` when there were any."""
+    if not issues:
+        return False
+    _print_issues(path, {label: issues})
+    return True
+
+
 def _strip_path(path_str: str) -> str:
     """Strip the git root path from a path string."""
     beginning_stripped = re.sub(
@@ -3827,50 +3835,49 @@ def _process_html_files(  # pylint: disable=too-many-locals
                 soup, file, file_path, public_dir, paragraph_map
             )
 
-    # Check for duplicate citation keys across all files
-    citation_issues = _find_duplicate_citations(citation_to_files)
-    if citation_issues:
-        _print_issues(public_dir, {"duplicate_citations": citation_issues})
-        issues_found_in_html = True
-
-    srcset_issues = check_srcset_urls(srcset_to_files, public_dir)
-    if srcset_issues:
-        _print_issues(public_dir, {"unresolvable_srcset_urls": srcset_issues})
-        issues_found_in_html = True
-
-    # Spellcheck flattened paragraph text across all pages
-    spelling_issues = _spellcheck_flattened_paragraphs(paragraph_map)
-    if spelling_issues:
-        _print_issues(
+    site_wide_reports = [
+        _report_issues(
             public_dir,
-            {"rendered_text_spelling": spelling_issues},
-        )
-        issues_found_in_html = True
+            "duplicate_citations",
+            _find_duplicate_citations(citation_to_files),
+        ),
+        _report_issues(
+            public_dir,
+            "unresolvable_srcset_urls",
+            check_srcset_urls(srcset_to_files, public_dir),
+        ),
+        _report_issues(
+            public_dir,
+            "rendered_text_spelling",
+            _spellcheck_flattened_paragraphs(paragraph_map),
+        ),
+    ]
 
-    return issues_found_in_html
+    return issues_found_in_html or any(site_wide_reports)
 
 
 def main() -> None:
     """Check all HTML files in the public directory for issues."""
     args = parser.parse_args()
-    overall_issues_found: bool = False
     check_rss_file_for_issues(_GIT_ROOT)
 
     css_file_path: Path = _PUBLIC_DIR / "index.css"
-    css_issues = check_css_issues(css_file_path)
-    if css_issues:
-        _print_issues(css_file_path, {"CSS_issues": css_issues})
-        overall_issues_found = True
-
-    root_files_issues = check_root_files_location(_PUBLIC_DIR)
-    if root_files_issues:
-        _print_issues(_PUBLIC_DIR, {"root_files_issues": root_files_issues})
-        overall_issues_found = True
-
-    fixture_issues = check_fixture_pages_excluded(_PUBLIC_DIR)
-    if fixture_issues:
-        _print_issues(_PUBLIC_DIR, {"fixture_artifacts": fixture_issues})
-        overall_issues_found = True
+    reports = [
+        _report_issues(
+            css_file_path, "CSS_issues", check_css_issues(css_file_path)
+        ),
+        _report_issues(
+            _PUBLIC_DIR,
+            "root_files_issues",
+            check_root_files_location(_PUBLIC_DIR),
+        ),
+        _report_issues(
+            _PUBLIC_DIR,
+            "fixture_artifacts",
+            check_fixture_pages_excluded(_PUBLIC_DIR),
+        ),
+    ]
+    overall_issues_found: bool = any(reports)
 
     defined_css_vars: set[str] = _get_defined_css_variables(css_file_path)
     html_issues_found = _process_html_files(
