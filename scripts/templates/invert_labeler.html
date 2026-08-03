@@ -16,6 +16,9 @@
                       border: 1px solid #2563eb; background: #2563eb; color: #fff;
                       cursor: pointer; }
       header button:disabled { opacity: 0.5; cursor: not-allowed; }
+      #done-banner { position: sticky; top: 3.25rem; z-index: 9; margin: 0;
+                     padding: 0.75rem 1rem; background: #dcfce7; color: #14532d;
+                     border-bottom: 1px solid #86efac; font-weight: 600; }
       main { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
              gap: 1rem; padding: 1rem; }
       .card { background: #fff; border: 2px solid #ddd; border-radius: 6px;
@@ -60,6 +63,10 @@
       </select>
       <button id="confirm-visible" type="button">Confirm visible as reviewed</button>
     </header>
+    <div id="done-banner" hidden data-exits-when-complete="{{ 'true' if exits_when_complete else 'false' }}">
+      All candidates reviewed — the labeler has shut down and your push is
+      continuing. You can close this tab.
+    </div>
     <main>
       {%- for url in candidates -%}
         {%- set entry = labels.get(url) -%}
@@ -121,6 +128,14 @@
         const u = document.querySelectorAll('.card[data-reviewed="false"]').length;
         counter.textContent = `${n} / ${total} invert · ${u} unreviewed`;
       };
+      const doneBanner = document.getElementById("done-banner");
+      // The server stops itself once nothing is left to review, so the banner
+      // is the page's only remaining signal that the work is finished.
+      const announceIfDone = (data) => {
+        if (data.remaining === 0 && doneBanner.dataset.exitsWhenComplete === "true") {
+          doneBanner.hidden = false;
+        }
+      };
       const cardMatchesFilter = (card, mode) => {
         if (mode === "all") return true;
         if (mode === "unreviewed") return card.dataset.reviewed === "false";
@@ -157,7 +172,9 @@
             if (prevRadio) prevRadio.checked = true;
             recount();
             alert(`Save failed: ${r.status}`);
+            return;
           }
+          announceIfDone(await r.json());
         });
       });
       const filterSelect = document.getElementById("filter");
@@ -198,6 +215,7 @@
           if (!r.ok) throw new Error(`HTTP ${r.status}`);
           visible.forEach((c) => (c.dataset.reviewed = "true"));
           recount();
+          announceIfDone(await r.json());
         } catch (err) {
           alert(`Bulk review failed: ${err.message}`);
         } finally {
