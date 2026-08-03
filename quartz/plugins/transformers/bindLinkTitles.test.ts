@@ -64,11 +64,11 @@ describe("bindTitlesInTree", () => {
     expect(textOf(root)).toContain(">The Live Title<")
   })
 
-  it("marks the resolved anchor no-smallcaps so title acronyms stay plain", () => {
+  it("marks the resolved anchor as a work title so it gets the shared title styling", () => {
     const root = tree(boundAnchor({ "data-slug": "other-page", href: "/other-page" }))
     bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")
     const anchor = root.children[0] as Element
-    expect(anchor.properties.className).toContain("no-smallcaps")
+    expect(anchor.properties.className).toContain("work-title")
   })
 
   it("lowercases the title for the @title-lower sentinel", () => {

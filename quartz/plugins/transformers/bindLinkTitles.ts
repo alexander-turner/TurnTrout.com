@@ -7,7 +7,11 @@ import { visit } from "unist-util-visit"
 import type { TitleIndex } from "../../processors/buildTitleIndex"
 import type { QuartzTransformerPlugin } from "../types"
 
-import { LINK_TITLE_LOWER_SENTINEL, LINK_TITLE_SENTINEL } from "../../components/constants"
+import {
+  LINK_TITLE_LOWER_SENTINEL,
+  LINK_TITLE_SENTINEL,
+  WORK_TITLE_CLASS,
+} from "../../components/constants"
 import { titleIndexFile } from "../../components/constants.server"
 import { type FullSlug, splitAnchor } from "../../util/path"
 import { addClass } from "./utils"
@@ -133,9 +137,10 @@ export function bindTitlesInTree(
     const lead = match.groups.lead.trim()
     const trail = match.groups.trail.trim()
     node.children = [{ type: "text", value: `${lead}${bound}${trail}` }]
-    // A resolved title is the name of a work, not prose, so acronyms in it
-    // (AGI, GPT, …) should not render as small-caps.
-    addClass(node, "no-smallcaps")
+    // A resolved title is the name of a work, not prose, so it takes the same
+    // typographic treatment as every other title-rendering surface: plain-caps
+    // acronyms (AGI, GPT, …) and lining figures.
+    addClass(node, WORK_TITLE_CLASS)
   })
 }
 

@@ -244,14 +244,18 @@ test.describe("visual_utils functions", () => {
       })
       await waitPromise
 
-      // Verify element is stable by checking computed transform is at final position
+      // Sample both positions inside a single page evaluate: a handle round
+      // trip against this page can cost seconds, so one iteration of a
+      // multi-call predicate would not fit the poll budget.
       await expect
-        .poll(async () => {
-          const box1 = await element.boundingBox()
-          await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)))
-          const box2 = await element.boundingBox()
-          return box1?.x === box2?.x && box1?.y === box2?.y
-        })
+        .poll(() =>
+          element.evaluate(async (el) => {
+            const before = el.getBoundingClientRect()
+            await new Promise((resolve) => requestAnimationFrame(resolve))
+            const after = el.getBoundingClientRect()
+            return before.x === after.x && before.y === after.y
+          }),
+        )
         .toBe(true)
     })
 

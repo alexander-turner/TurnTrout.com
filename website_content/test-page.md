@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-08-02
+date_updated: 2026-08-03
 createBibtex: true
 ---
 
@@ -44,6 +44,8 @@ Subtitle: MATS (starting with smallcaps).
 # Title-binding links
 
 The `@title` sentinel ties a link's text to its target's current title at build time: [@title](/test-page) renders this page's title, and [@title](#header-4) renders the current text of the "Header 4" section.
+
+A resolved title gets the same typography as every other title surface, so its figures are lining rather than oldstyle: [@title](/reward-hacking-doesnt-show-reward-is-optimization-target).
 
 # `@title`s and quote smallcaps
 
