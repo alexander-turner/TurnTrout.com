@@ -500,7 +500,8 @@ def test_check_and_launch_server_stops_itself(
     assert rc == 0
 
     apps[0].config["TESTING"] = True
-    resp = apps[0].test_client().post(
+    test_client = apps[0].test_client()
+    resp = test_client.post(
         "/api/label", json={"url": EXPECTED[0], "state": "invert"}
     )
     assert resp.get_json() == {"ok": True, "remaining": 0}
