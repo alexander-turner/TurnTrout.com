@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Literal, TypedDict
 
@@ -728,6 +729,155 @@ def check_description_list_continuations(text: str) -> list[str]:
     return errors
 
 
+# Lines which start a new block and therefore cannot be swallowed by the
+# definition above them: a further definition (or a bare `:` spacer), an HTML
+# comment, a footnote definition, and a `Figure:` / `Table:` caption (captions
+# are deliberately attached to the media they follow).
+_SAFE_AFTER_DEFINITION_RE = re.compile(
+    r"""^(?:
+        :                                       # definition or `:` spacer
+        | <!--                                  # HTML comment
+        | \[\^[^\]]+\]:\s                       # footnote definition
+        | (?:<br\s*/?>\s*)?(?:Figure|Table):\s  # caption
+    )""",
+    re.VERBOSE,
+)
+
+
+def _terms_above(lines: Sequence[str], index: int) -> list[str]:
+    """
+    The paragraph lines above ``lines[index]`` that become ``<dt>`` elements.
+
+    ``remark-definition-list`` turns *every* line of the paragraph preceding a
+    ``: `` line into its own term, so the run stops at anything which ends a
+    paragraph: a blank line, another definition, an indented block, or raw HTML.
+    """
+    terms = []
+    for line in reversed(lines[:index]):
+        if not line.strip() or line.startswith((":", " ", "\t", "<")):
+            break
+        terms.append(line)
+    return terms
+
+
+# A term is a label, so a paragraph carrying a sentence break is prose which
+# only became a term by sitting above a `: ` line.
+_SENTENCE_BREAK_RE = re.compile(r"""[.!?][)\]"'”’]*\s""")
+
+# Line starts which mark a block that is never a term.
+_NON_TERM_PREFIXES = (":", " ", "\t", "<", "#", ">", "|", "-", "*", "!")
+
+
+def _stranded_prose_above(lines: Sequence[str], index: int) -> str | None:
+    """
+    The prose paragraph stranded between ``lines[index]`` and the definition
+    above it, if there is one.
+
+    Such a paragraph reads as a continuation of the definition above it, but
+    renders as a term: it steals the definition below it and detaches from the
+    one it belongs to. Prefixing it with ``: `` restores it to a ``<dd>``.
+    """
+    if index < 4 or lines[index - 1].strip():
+        return None
+    line = lines[index - 2]
+    stranded = (
+        line.strip()
+        and not line.startswith(_NON_TERM_PREFIXES)
+        and not lines[index - 3].strip()
+        and lines[index - 4].startswith(": ")
+        and _SENTENCE_BREAK_RE.search(line.strip())
+    )
+    return line if stranded else None
+
+
+def _swallowed_term_below(lines: Sequence[str], index: int) -> str | None:
+    """
+    The term written directly below the definition at ``lines[index]``, if there
+    is one.
+
+    An unindented line touching a definition is a lazy continuation, so a term
+    placed there is absorbed into the ``<dd>`` instead of opening a new entry;
+    the definitions meant for it then reparent onto the term above. A blank
+    line separates them.
+    """
+    if index + 2 >= len(lines):
+        return None
+    line = lines[index + 1]
+    if (
+        not line.strip()
+        or line.startswith((" ", "\t"))
+        or _SAFE_AFTER_DEFINITION_RE.match(line)
+    ):
+        return None
+    after = lines[index + 2]
+    defines_line = after.startswith(": ") or (
+        not after.strip()
+        and index + 3 < len(lines)
+        and lines[index + 3].startswith(": ")
+    )
+    return line if defines_line else None
+
+
+def check_description_list_terms(text: str) -> list[str]:
+    """
+    Check that each description list term stands alone in its own paragraph.
+
+    A term is defined purely by position—the paragraph immediately above a
+    ``: `` line—so three mistakes silently corrupt the list:
+
+    - **A lead-in glued above the term.** Every line of that paragraph becomes
+      its own ``<dt>``, and because terms render inline they collide on one
+      visual line. The lead-in prose also gets pulled into the list.
+    - **A term glued below a definition.** It is absorbed into the preceding
+      ``<dd>`` as a lazy continuation, so the term disappears and its own
+      definitions reparent onto the term above.
+    - **Prose left between two definitions.** It is promoted to a ``<dt>``,
+      which steals the definition below it.
+
+    The first two are fixed by inserting a blank line, the third by prefixing
+    the paragraph with ``: ``.
+
+    Code and math blocks are ignored during checking.
+    """
+    processed_text = remove_math(
+        remove_code(text, mark_boundaries=True), mark_boundaries=True
+    )
+    lines = processed_text.split("\n")
+
+    errors = []
+    for i, line in enumerate(lines):
+        if not line.startswith(": "):
+            continue
+
+        terms = _terms_above(lines, i)
+        if len(terms) > 1:
+            errors.append(
+                f"Line {i - len(terms) + 1}: Description list term paragraph "
+                f"spans {len(terms)} lines, each of which becomes its own "
+                f"`<dt>`. Separate the term from the text above it with a "
+                f"blank line. Found: {terms[-1][:60]}..."
+            )
+
+        stranded = _stranded_prose_above(lines, i)
+        if stranded:
+            errors.append(
+                f"Line {i - 1}: Prose between two definitions renders as a "
+                f"`<dt>` and steals the definition below it. Prefix it with "
+                f"`: `. Found: {stranded[:60]}..."
+            )
+
+        swallowed = _swallowed_term_below(lines, i)
+        if swallowed:
+            errors.append(
+                f"Line {i + 2}: This term is glued to the definition above it "
+                f"and will be absorbed into that `<dd>`, orphaning its own "
+                f"definitions. Separate them with a blank line. "
+                f"Found: {swallowed[:60]}..."
+            )
+
+    return errors
+
+
 def check_html_with_braces(text: str) -> list[str]:
     """Check for HTML elements followed by {style="..."}, which won't work as
     intended."""
@@ -1234,6 +1384,7 @@ def check_file_data(
         "description_list_continuations": check_description_list_continuations(
             text
         ),
+        "description_list_terms": check_description_list_terms(text),
         "html_braces": check_html_with_braces(text),
         "heading_links": check_heading_links(text),
         "heading_case": check_heading_case(text),

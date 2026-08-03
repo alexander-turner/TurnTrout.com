@@ -2609,6 +2609,83 @@ def test_check_description_list_continuations(
     assert errors == expected_errors
 
 
+_MULTI_LINE_TERM_ERR = [
+    "Line 1: Description list term paragraph spans 2 lines, each of which "
+    "becomes its own `<dt>`. Separate the term from the text above it with "
+    "a blank line. Found: Two hypotheses:..."
+]
+_STRANDED_PROSE_ERR = [
+    "Line 3: Prose between two definitions renders as a `<dt>` and steals "
+    "the definition below it. Prefix it with `: `. "
+    "Found: However, weights are unchanged. So interpretability holds...."
+]
+_SWALLOWED_TERM_ERR = [
+    "Line 3: This term is glued to the definition above it and will be "
+    "absorbed into that `<dd>`, orphaning its own definitions. Separate "
+    "them with a blank line. Found: Second term..."
+]
+
+
+@pytest.mark.parametrize(
+    "text,expected_errors",
+    [
+        # Valid: a term alone in its paragraph, tight and loose forms
+        ("Term\n: Definition", []),
+        ("Term\n\n: Definition", []),
+        ("Term1\n: Definition 1\n\nTerm2\n: Definition 2", []),
+        # Valid: consecutive definitions under one term
+        ("Term\n: First\n\n: Second", []),
+        # Valid: indented continuations belong to the `<dd>`
+        ("Term\n: Definition\n  - a bullet", []),
+        # Valid: prose wrapped onto the next line merges into the `<dd>`
+        ("Term\n: Definition which wraps\nonto the next line.", []),
+        # Valid: blocks which cannot be swallowed by the definition above
+        ("Term\n: Definition\n<!-- vale on -->\n\nNext\n: Def", []),
+        ("Term\n: Definition\n[^note]: A footnote.\n\nNext\n: Def", []),
+        ("Term\n: ![alt](/x.png)\nFigure: A caption.\n\nNext\n: Def", []),
+        ("Term\n: ![alt](/x.png)\n<br/>Figure: A caption.\n\nNext\n: Def", []),
+        # Valid: a short label between two definitions is a real term
+        (": First definition\n\nSecond term\n\n: Second definition", []),
+        # Valid: an indented sub-list above a definition is not a term
+        (": First\n\n  - a bullet\n  - another\n: Continued", []),
+        # Error: a lead-in glued above the term yields two `<dt>`s
+        (
+            "Two hypotheses:\nThe first hypothesis\n: Because of X.",
+            _MULTI_LINE_TERM_ERR,
+        ),
+        # Error: prose stranded between two definitions renders as a `<dt>`
+        (
+            ": First definition\n\n"
+            "However, weights are unchanged. So interpretability holds.\n\n"
+            ": Second definition",
+            _STRANDED_PROSE_ERR,
+        ),
+        # Error: a term glued below a definition, tight and loose forms
+        ("Term\n: Definition\nSecond term\n: Second def", _SWALLOWED_TERM_ERR),
+        (
+            "Term\n: Definition\nSecond term\n\n: Second def",
+            _SWALLOWED_TERM_ERR,
+        ),
+        # Edge cases: definitions with nothing after them
+        (": Last definition", []),
+        (": Definition\nTrailing line", []),
+        # Valid: the pattern inside code and math blocks is ignored
+        (
+            "```markdown\nLead-in:\nTerm\n: Definition\n```",
+            [],
+        ),
+        (
+            "$$\nLead-in:\nTerm\n: Definition\n$$",
+            [],
+        ),
+    ],
+)
+def test_check_description_list_terms(text: str, expected_errors: list[str]):
+    """Test checking that description list terms stand alone."""
+    errors = source_file_checks.check_description_list_terms(text)
+    assert errors == expected_errors
+
+
 _MISSING_DATE_ERR = ["Missing or empty date_published field"]
 
 
