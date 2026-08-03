@@ -39,7 +39,7 @@ date_published: 2019-10-01
 original_url: https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
 skip_import: true
 description: 'Understanding impact as change to the world: attractive, but misleading.'
-date_updated: 2026-06-28
+date_updated: 2026-08-03
 ---
 
 !["I've been keeping something from you. Remember the confusion I mentioned in the first post? Before the attainable utility theory of impact came along, people made an assumption about what impact is - a reasonable, obvious, compelling assumption: that impact is primarily about how the state of the world changes."](https://assets.turntrout.com/static/images/posts/DNE5EJg.avif)
@@ -143,7 +143,7 @@ Accounting for impact this way misses the point.
 
 Yes, we can think about effects and facilitate academic communication more easily via this frame, but *we should be careful not to guide research from that frame*. To avoid that influence, I avoided vase examples early on in this sequence. Their prevalence seems like a *symptom of an incorrect frame*.
 
-(Of course, I certainly did my part to make them more prevalent, what with my first post about impact being called *[Worrying about the Vase: Whitelisting](/whitelisting-impact-measure)...*)
+(Of course, I certainly did my part to make them more prevalent, what with my first post about impact being called *[@title](/whitelisting-impact-measure)...*)
 
 # Notes
 

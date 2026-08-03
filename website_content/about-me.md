@@ -4,7 +4,7 @@ hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/about-me.jpg
 description: I'm TurnTrout, but the United States government insists on calling me "Alexander Matt Turner." I like writing and learning about lots of stuff.
 date_published: 2024-10-27
-date_updated: 2026-07-22
+date_updated: 2026-08-03
 tags:
   - personal
 title: About me
@@ -34,7 +34,7 @@ Why do you love geese so much?
 : We soon happened upon [The Untitled Goose Game](https://goose.game/), a delightful cooperative experience where two players pilot two geese in order to troll and terrorize the residents of a sleepy town. There's even a dedicated button for honking! We loved the game. We loved each other. We loved the cute geese. Our strong feelings splashed onto the geese. Now, when we thought of geese, we thought of each other; when we thought of each other, we thought of geese.
 
 How was this website designed?
-: Refer to [The design of this website.](/design)
+: Refer to [@title.](/design)
 
 `TurnTrout`, you're amazing and handsome and I want to date you!
 : My dating doc resides [on this page.](/date-me) Check to see if we're compatible!

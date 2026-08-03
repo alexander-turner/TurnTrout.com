@@ -100,6 +100,9 @@ describe("bindTitlesInTree", () => {
     ["trailing period moved into the link", "@title-lower.", ">the live title.<"],
     ["trailing period and closing quote moved into the link", "@title.”", ">The Live Title.”<"],
     ["leading quote moved into the link", "“@title", ">“The Live Title<"],
+    ["possessive moved into the link", "@title’s", ">The Live Title’s<"],
+    ["possessive and trailing comma moved into the link", "@title’s,", ">The Live Title’s,<"],
+    ["straight-quote possessive moved into the link", "@title's", ">The Live Title's<"],
   ])("binds when formatting moved punctuation into the anchor (%s)", (_desc, text, expected) => {
     const root = tree(boundAnchor({ "data-slug": "other-page", href: "/other-page" }, text))
     bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")
@@ -125,6 +128,7 @@ describe("bindTitlesInTree", () => {
     ["letters after the sentinel", "@titles"],
     ["letters before the sentinel", "see @title"],
     ["letters after the lower sentinel", "@title-lowered"],
+    ["a bare plural after the sentinel", "@title’sy"],
   ])("leaves prose containing the sentinel untouched (%s)", (_desc, text) => {
     const root = tree(boundAnchor({ "data-slug": "other-page", href: "/other-page" }, text))
     bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")

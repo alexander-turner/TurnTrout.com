@@ -11,6 +11,7 @@ export { FixFootnotes } from "./fixFootnotes"
 export {
   HTMLFormattingImprovement,
   NonBreakingHyphens,
+  SetDropcapLetter,
   StripInlineBoundaryWhitespace,
 } from "./formatting_improvement_html"
 export { TextFormattingImprovement } from "./formatting_improvement_text"

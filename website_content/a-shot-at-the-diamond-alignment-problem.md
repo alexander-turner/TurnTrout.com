@@ -36,7 +36,7 @@ date_published: 2022-10-06
 original_url: https://www.lesswrong.com/posts/k4AQqboXz8iE5TNXK/a-shot-at-the-diamond-alignment-problem
 skip_import: true
 description: "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values. "
-date_updated: 2026-06-27
+date_updated: 2026-08-03
 createBibtex: true
 ---
 
@@ -272,7 +272,7 @@ Lastly, of course, there _is_ real simplification occurring when I relax the pro
 
     Asking "why wouldn't the agent want to find an adversarial input to its `diamond` abstraction?" seems like a dressed-up version of "why wouldn't I want to find a plan where I can get myself shot while falsely believing I solved all of the world's problems?". Because it's stupid by my actual values, that's why. (Although some confused people who have taken wrong philosophy too far, might indeed find such a plan appealing).
 
-[^8]: The reader may be surprised. "Doesn't `TurnTrout` think agents probably won't care about reward?". Not quite. As I stated in [_Reward is not the optimization target_](/reward-is-not-the-optimization-target):
+[^8]: The reader may be surprised. "Doesn't `TurnTrout` think agents probably won't care about reward?". Not quite. As I stated in _[@title](/reward-is-not-the-optimization-target)_:
 
     > I think that generally intelligent RL agents will have _secondary, relatively weaker_ values around reward, but that reward will not be a primary motivator. Under my current (weakly held) model, an AI will only start reinforcing computations about reward _after_ it has reinforced other kinds of computations (e.g. putting away trash).
 

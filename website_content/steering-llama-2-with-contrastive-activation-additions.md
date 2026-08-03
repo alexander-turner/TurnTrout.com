@@ -41,7 +41,7 @@ date_published: 2024-01-02
 original_url: https://www.lesswrong.com/posts/v7f8ayBxLhmMFRzpa/steering-llama-2-with-contrastive-activation-additions
 skip_import: true
 description: Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.
-date_updated: 2026-06-26
+date_updated: 2026-08-03
 createBibtex: true
 ---
 
@@ -265,7 +265,7 @@ Furthermore, [Inference-Time Intervention](https://www.lesswrong.com/posts/kuQfn
 > [!info]
 > This section is written in first-person, representing Alex's personal views.
 
-This year (2023) has seen a lot of progress. Activation additions allow model control via linear interventions with a concept algebra. Early this year, my MATS 3.0 team and I discovered a "cheese vector" which makes a maze-solving policy ignore the presence of cheese ([blog post](/understanding-and-controlling-a-maze-solving-policy-network), [paper](https://arxiv.org/abs/2310.08043)). Next came [Steering GPT-2-XL by adding an activation vector](/gpt2-steering-vectors) ([paper](https://arxiv.org/abs/2308.10248)), which steered GPT-2-XL (1.5B params) using relatively crude steering vectors (e.g. not averaging over prompts, adding in at multiple token positions).
+This year (2023) has seen a lot of progress. Activation additions allow model control via linear interventions with a concept algebra. Early this year, my MATS 3.0 team and I discovered a "cheese vector" which makes a maze-solving policy ignore the presence of cheese ([blog post](/understanding-and-controlling-a-maze-solving-policy-network), [paper](https://arxiv.org/abs/2310.08043)). Next came [@title](/gpt2-steering-vectors) ([paper](https://arxiv.org/abs/2308.10248)), which steered GPT-2-XL (1.5B params) using relatively crude steering vectors (e.g. not averaging over prompts, adding in at multiple token positions).
 
 Ever since I first saw the cheese vector, I've been excited for the impact of steering vectors, but a lot of people were still skeptical the technique was "real" or would scale. In this work, we scale up to 13B parameters and investigated both base models and RLHF'd chat models. Our vectors work significantly better than I had expected.
 

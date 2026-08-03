@@ -35,7 +35,7 @@ date_published: 2022-12-02
 original_url: https://www.lesswrong.com/posts/gHefoxiznGfsbiAu9/inner-and-outer-alignment-decompose-one-hard-problem-into
 skip_import: true
 description: Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.
-date_updated: 2026-07-15
+date_updated: 2026-08-03
 createBibtex: true
 ---
 
@@ -137,11 +137,11 @@ On the other hand, agents which terminally value diamonds will make decisions on
 
 > [!failure]
 > **Consider what the actor cares about** **in this setup. The actor does not care about diamond production. The actor cares about high evaluations from the objective function. These two goals (instrumentally) align if the only actor-imaginable way to get maximal evaluation is to make diamonds.[^important]**
-> [^important]: This point is important under my current views, but it strikes me as the kind of concept which may require its own post. I’m not sure I know how to communicate this point quickly and reliably at this point in time, but this essay has languished in my drafts for long enough. For now, refer to [Don't align agents to evaluations of plans](/dont-align-agents-to-evaluations-of-plans) and [Alignment allows "nonrobust" decision-influences and doesn't require robust grading](/alignment-without-total-robustness) for more intuitions.
+> [^important]: This point is important under my current views, but it strikes me as the kind of concept which may require its own post. I’m not sure I know how to communicate this point quickly and reliably at this point in time, but this essay has languished in my drafts for long enough. For now, refer to [@title](/dont-align-agents-to-evaluations-of-plans) and [@title](/alignment-without-total-robustness) for more intuitions.
 >
 > **If you inner-align the agent to the evaluative output of a Platonic outer objective, you have guaranteed the agent won’t make decisions on the same basis that you do.** After all, you do not (on a mechanistic level) terminally value high outputs from that outer objective. This agent will be aligned with you only if you achieve “objective robustness”—i.e. force the agent to make diamonds in order to get high evaluations by the outer objective.
 
-> [!quote] [Don't align agents to evaluations of plans](/dont-align-agents-to-evaluations-of-plans)
+> [!quote] [@title](/dont-align-agents-to-evaluations-of-plans)
 >
 > It's like saying, "What if I made a superintelligent sociopath who only cares about making toasters, and then arranged the world so that the only possible way they can make toasters is by making diamonds?" Yes, _possibly_ there do exist ways to arrange the world so as to satisfy this strange plan. But it's just deeply unwise to try to do! Don't make them care about making toasters, or about evaluations of how many diamonds they're making… Make them care about diamonds.
 >
@@ -153,7 +153,7 @@ On the other hand, agents which terminally value diamonds will make decisions on
 
 Motivation via evaluations-of-_X_ _incentivizes_ agents to seek out adversarial inputs to the evaluative outer objective (e.g. “how many diamonds a specific simulated smart person expects of a plan”), since if there’s any possible way to get an even higher output-number, the inner-aligned agent will try to exploit that opportunity. I’m 95% confident that outer objectives will have adversarial inputs which have nothing to do with what we were attempting to grade on, because the input-space is exponentially large, the adversaries superintelligent, and real-world evaluative tasks are non-crisp/non-syntactic. This case is made in depth in [@title](/dont-design-agents-which-exploit-adversarial-inputs). Don’t build agents which care about evaluations of _X_. Build agents which care about _X_.
 
-This conflict-of-interest between evaluations-of-_X_ and _X_ is why you need to worry about e.g. “[nearest unblocked strategy](https://arbital.com/p/nearest_unblocked/)” and “[edge instantiation](https://arbital.com/p/edge_instantiation/)” within the outer/inner alignment regime. If you’re trying to get an agent to optimize diamonds by making it optimize evaluations, of course the agent will exploit any conceivable way to get high evaluations without high diamonds. I tentatively conjecture[^6] (but will not presently defend) that these problems are artifacts of the assumption that agents must be grader-optimizers (i.e. a smart “capabilities” module which optimizes for the outputs of some evaluation function, be that a utility function over universe-histories, or a grader function over all possible plans). But when I considered the problem with fresh eyes, I concluded that [alignment allows "nonrobust" decision-influences and doesn't require robust grading](/alignment-without-total-robustness).
+This conflict-of-interest between evaluations-of-_X_ and _X_ is why you need to worry about e.g. “[nearest unblocked strategy](https://arbital.com/p/nearest_unblocked/)” and “[edge instantiation](https://arbital.com/p/edge_instantiation/)” within the outer/inner alignment regime. If you’re trying to get an agent to optimize diamonds by making it optimize evaluations, of course the agent will exploit any conceivable way to get high evaluations without high diamonds. I tentatively conjecture[^6] (but will not presently defend) that these problems are artifacts of the assumption that agents must be grader-optimizers (i.e. a smart “capabilities” module which optimizes for the outputs of some evaluation function, be that a utility function over universe-histories, or a grader function over all possible plans). But when I considered the problem with fresh eyes, I concluded that [@title-lower](/alignment-without-total-robustness).
 
 In my opinion, the answer is not to find a clever way to get a robust outer objective. The answer is to not _need_ a robust outer objective. [Robust grading incentivizes an inner-aligned AI to search for upwards errors in your grading procedure](/dont-design-agents-which-exploit-adversarial-inputs), but I think [it’s easy to tell plausible training stories which don’t require robust outer objectives](/a-shot-at-the-diamond-alignment-problem).
 
@@ -171,7 +171,7 @@ We shouldn’t build an agent where the inner agent spends a ton of time thinkin
 >
 > \[...\] If you're building a toaster, you don't build one element that heats the toast and then add a tiny refrigerator that cools down the toast.
 
-> [!quote] [Don't align agents to evaluations of plans](/dont-align-agents-to-evaluations-of-plans)
+> [!quote] [@title](/dont-align-agents-to-evaluations-of-plans)
 > In the intended motivational structure, the actor tries to trick the grader, and the grader tries to avoid being tricked. I think we can realize massive alignment benefits by not designing motivational architectures which require extreme robustness properties and whose parts work at internal cross-purposes.
 
 ## I know of no outer-aligned objectives for any real-world task
@@ -198,7 +198,7 @@ The [_mechanistic function_ of loss is to supply cognitive updates to an agent](
 
 ## Loss-as-chisel is mathematically correct
 
-I kinda thought that when I wrote [Reward is not the optimization target](/reward-is-not-the-optimization-target), people would _click_ and realize “Hey, I guess outer and inner alignment were leaky frames on the true underlying update dynamics, and if we knew what we were doing, we could just control the learned cognition via the cognitive-update-generator we provide (aka the reward function). This lets us dissolve the nearest unblocked strategy problem—how amazing!” This, of course, proved wildly optimistic. Communication takes effort and time. So let me continue from that trailhead.
+I kinda thought that when I wrote [@title](/reward-is-not-the-optimization-target), people would _click_ and realize “Hey, I guess outer and inner alignment were leaky frames on the true underlying update dynamics, and if we knew what we were doing, we could just control the learned cognition via the cognitive-update-generator we provide (aka the reward function). This lets us dissolve the nearest unblocked strategy problem—how amazing!” This, of course, proved wildly optimistic. Communication takes effort and time. So let me continue from that trailhead.
 
 Let’s compare loss-as-chisel with a more common frame for analysis:
 
@@ -227,7 +227,7 @@ For example, shaping is empirically useful in both [AI](https://openai.com/blog/
 
 I also think that people talk extremely imprecisely and confusingly about “loss functions.” I get a lot of mileage out of being precise—if my idea is right in generality, it is right in specificity, so I might as well start there. I have written:
 
-> [!quote] [Four usages of "loss" in AI](/four-usages-of-loss-in-ai)
+> [!quote] [@title](/four-usages-of-loss-in-ai)
 >
 > What does it _mean_ for a loss function to be "aligned with" human goals? I perceive four different concepts which involve "loss function" in importantly different ways:
 >
@@ -320,7 +320,7 @@ An agent with lots of values (e.g. coffee and sex and art) will be more likely t
 > - Even if you have to get the human-aligned values "perfectly right" in order to avoid Goodharting ([which I don’t believe](/alignment-without-total-robustness)), not having to get _all_ of the AI's values perfectly right is good news.
 > - I think these considerations make total alignment failures easier to prevent: As long as human-compatible values are something the AI meaningfully cares about, we survive.
 
-So ultimately, I think “the agent has to exclusively care about this one perfect goal” is dissolved because [alignment allows "nonrobust" decision-influences and doesn't require robust grading](/alignment-without-total-robustness). Trying to make an agent only care about one goal seems to go against important grains of effective real-world cognition.
+So ultimately, I think “the agent has to exclusively care about this one perfect goal” is dissolved because [@title-lower](/alignment-without-total-robustness). Trying to make an agent only care about one goal seems to go against important grains of effective real-world cognition.
 
 ## Outer alignment seems unnatural
 
@@ -431,7 +431,7 @@ Communication is hard. Understanding is hard. Even if I fully understood what ot
 **Alex**
 : That strategy seems unwise for the target motivational structures I have in mind (e.g. "protect humanity" or "do alignment research").
 
-  1. [Section I](#i-robust-grading-is-unnecessary-extremely-hard-and-unnatural) (robust grading is unnecessary): This plan requires an [unrealistic invariant.](/dont-design-agents-which-exploit-adversarial-inputs) The invariant is that the outer objective must "properly grade" every possible plan the agent is smart enough to consider. How are you possibly going to fulfill that invariant? Why would you _want_ to choose a scheme where you have to fulfill such an onerous invariant? For more detail on the concurrent-improvement case, see [the appendix](/dont-design-agents-which-exploit-adversarial-inputs#appendix-maybe-we-just) of [Don't design agents which exploit adversarial inputs.](/dont-design-agents-which-exploit-adversarial-inputs)
+  1. [Section I](#i-robust-grading-is-unnecessary-extremely-hard-and-unnatural) (robust grading is unnecessary): This plan requires an [unrealistic invariant.](/dont-design-agents-which-exploit-adversarial-inputs) The invariant is that the outer objective must "properly grade" every possible plan the agent is smart enough to consider. How are you possibly going to fulfill that invariant? Why would you _want_ to choose a scheme where you have to fulfill such an onerous invariant? For more detail on the concurrent-improvement case, see [the appendix](/dont-design-agents-which-exploit-adversarial-inputs#appendix-maybe-we-just) of [@title.](/dont-design-agents-which-exploit-adversarial-inputs)
   2. [Section II](#ii-loss-functions-chisel-circuits-into-networks) (loss is like a chisel) applies: You're constraining the chisel to look like the statue. Why consider such a narrow class of approaches?
   3. [Section III](#iii-outer-inner-just-isn-t-how-alignment-works-in-people) (inner/outer is anti-natural) applies: That strategy seems _anti-natural_ as a way of getting cognitive work out of an agent.
 
@@ -443,7 +443,7 @@ Communication is hard. Understanding is hard. Even if I fully understood what ot
 
 : In this void, _you should reconsider all fruits which may have grown from the outer/inner frame_. Scrutinize both your reasons for optimism (e.g. “maybe it’s simpler to just point to the outer objective”) and for pessimism (e.g. “if the graders are exploitable by the AI, the proposal fails”). See alignment with fresh eyes for a while. Think for yourself.
 
-: In this void, I wrote [_Seriously, what goes wrong with "reward the agent when it makes you smile"?_](/questioning-why-simple-alignment-plan-fails):
+: In this void, I wrote _[@title](/questioning-why-simple-alignment-plan-fails)_:
 
   > My mood \[in this post\] isn't "And this is what we do for alignment, let's relax." My mood is "Why consider super-complicated reward and feedback schemes when, as far as I can tell, we don't know what's going to happen in this relatively simple scheme? [How do reinforcement schedules map into inner values](https://www.lesswrong.com/posts/xqkGmfikqapbJ2YMj/shard-theory-an-overview)?"
 

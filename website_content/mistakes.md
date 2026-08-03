@@ -12,7 +12,7 @@ authors:
 hideSubscriptionLinks: false
 card_image:
 date_published: 2024-10-31
-date_updated: 2026-07-02
+date_updated: 2026-08-03
 ---
 
 Inspired by Scott Alexander's [Mistakes](https://www.astralcodexten.com/p/mistakes) page:
@@ -23,7 +23,7 @@ Inspired by Scott Alexander's [Mistakes](https://www.astralcodexten.com/p/mistak
 # Not realizing that reward is not the optimization target
 
 Subtitle: July 25th, 2022
-I spent thousands of hours proving theorems about the "tendencies" of "reinforcement learning" agents which are either [optimal](https://arxiv.org/abs/1912.01683) or [trained using a "good enough" learning algorithm](/parametrically-retargetable-power-seeking). (I'm using scare quotes to mark undue connotations.) I later realized that [reward is not the optimization target](/reward-is-not-the-optimization-target). I learned that even though ["reward" is a pleasant word](/dangers-of-suggestive-terminology), it's _definitely not a slam dunk that RL-trained policies will seek to optimize that quantity._ Reward often simply provides a per-datapoint learning rate multiplier - nothing spooky or fundamentally doomed.
+I spent thousands of hours proving theorems about the "tendencies" of "reinforcement learning" agents which are either [optimal](https://arxiv.org/abs/1912.01683) or [trained using a "good enough" learning algorithm](/parametrically-retargetable-power-seeking). (I'm using scare quotes to mark undue connotations.) I later realized that [@title-lower](/reward-is-not-the-optimization-target). I learned that even though ["reward" is a pleasant word](/dangers-of-suggestive-terminology), it's _definitely not a slam dunk that RL-trained policies will seek to optimize that quantity._ Reward often simply provides a per-datapoint learning rate multiplier - nothing spooky or fundamentally doomed.
 
 While the realization may seem simple or obvious, it opened up a crack in my alignment worldview.
 

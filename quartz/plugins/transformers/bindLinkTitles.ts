@@ -69,8 +69,13 @@ const escapeRegExp = (literal: string): string => literal.replace(/[.*+?^${}()|[
 const sentinelAlternation = [LINK_TITLE_LOWER_SENTINEL, LINK_TITLE_SENTINEL]
   .map(escapeRegExp)
   .join("|")
+// `charsToMoveIntoLinkFromRight` includes "s", so a possessive after the link
+// ("[@title](/slug)'s argument") also arrives inside the anchor. It is the one
+// letter permitted in the trail, and only directly after an apostrophe.
+const punctuationRun = "[\\p{P}\\p{S}\\s]*"
 const sentinelTextRegex = new RegExp(
-  `^(?<lead>[\\p{P}\\p{S}\\s]*?)(?<sentinel>${sentinelAlternation})(?<trail>[\\p{P}\\p{S}\\s]*)$`,
+  `^(?<lead>${punctuationRun}?)(?<sentinel>${sentinelAlternation})` +
+    `(?<trail>${punctuationRun}?(?:['’]s)?${punctuationRun})$`,
   "u",
 )
 
