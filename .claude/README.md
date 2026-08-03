@@ -7,16 +7,28 @@ This directory contains configuration and skills for Claude Code.
 ```text
 .claude/
 ├── settings.json              # Claude Code hooks configuration
+├── agents/
+│   └── code-reviewer.md       # Read-only reviewer subagent (Read/Grep/Glob)
 ├── hooks/
+<<<<<<< local
 │   ├── session-setup.sh      # Runs on session start (installs tools, configures git)
 │   ├── pre-push-check.sh    # Runs before git push / gh pr (build, lint, typecheck)
 │   ├── check-narrative-comments.sh  # Runs after Edit/Write (warns on "previously…" / regression comments)
 │   └── lib-checks.sh        # Shared bash helpers (exists, has_script)
+=======
+│   ├── session-setup.sh       # Runs on session start (installs tools, configures git)
+│   ├── pre-push-check.sh      # Runs before git push / gh pr (build, lint, typecheck)
+│   ├── lib-checks.sh          # Shared bash helpers (exists, has_script)
+│   ├── safe-launch.sh         # Wraps PreToolUse hooks so a parse error can't lock the session
+│   └── safe-launch-parse.py   # Helper: extracts tool_name/target path from the PreToolUse payload
+>>>>>>> template
 └── skills/
-    └── pr-creation/       # PR creation workflow with self-critique
-        ├── SKILL.md       # Main skill entrypoint
-        ├── critique-prompt.md  # Self-critique checklist for sub-agent
-        └── pr-templates.md     # PR formatting and validation reference
+    ├── pr-creation/           # PR creation workflow with self-critique
+    ├── update-pr/             # Update an existing PR with new changes
+    ├── peer-review/           # Drive the code-reviewer subagent, then triage/fix
+    ├── explore-plan/          # Explore → Plan → Critique → Review → Verify discipline
+    ├── conventional-commits/  # Conventional Commits helper (invoke with /commit)
+    └── markdown-block/        # Emit copyable raw markdown in a fenced block
 ```
 
 ## How It Works
@@ -53,6 +65,13 @@ and exits 2 (non-blocking) to surface a reminder. Skips docs/config files.
 Skills in `skills/` are reusable workflows that guide Claude through complex tasks:
 
 - **pr-creation**: Creating pull requests with mandatory self-critique before submission (invoke with `/pr-creation`)
+- **update-pr**: Updating an existing PR with new changes and an optionally revised description (`/update-pr`)
+- **peer-review**: Running the read-only `code-reviewer` subagent on the diff, then triaging and fixing findings (`/peer-review`)
+- **explore-plan**: Enforcing the Explore → Plan → Critique → Review → Verify discipline for non-trivial work (`/explore-plan`)
+- **conventional-commits**: Guiding Conventional Commits with secret detection—invoke with `/commit` (the skill's `name` is `commit`)
+- **markdown-block**: Emitting copyable raw markdown in a fenced code block (`/markdown-block`)
+
+The `agents/` directory holds subagents—currently `code-reviewer`, a read-only (Read/Grep/Glob) reviewer used by the `peer-review` skill for an unbiased second opinion on a diff.
 
 Skills are automatically available to Claude Code when working in this repository.
 

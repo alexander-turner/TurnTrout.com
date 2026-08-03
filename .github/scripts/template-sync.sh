@@ -39,6 +39,7 @@ if [[ -z "${TEMPLATE_SYNC_REEXEC:-}" ]]; then
 fi
 [[ "${TEMPLATE_SYNC_REEXEC:-}" == "$0" ]] && trap 'rm -f "$0"' EXIT
 
+<<<<<<< local
 # Wrap all logic in main(), called as the final line. bash reads a running
 # script incrementally from disk, not all at once — this script overwrites
 # its own file when SYNC_PATHS includes the directory it lives in, so any
@@ -46,6 +47,10 @@ fi
 # Deferring everything behind main() forces bash to parse through this
 # file's closing brace and the trailing `main "$@"` call before executing
 # any of it.
+=======
+# All logic lives in main(), called as the final line, so bash parses through
+# this file's closing brace before executing any of it.
+>>>>>>> template
 main() {
 
   SYNC_PATHS="${SYNC_PATHS:-}"
@@ -58,12 +63,16 @@ main() {
   CONFLICT_REPORT="$WORK_DIR/conflict_report.md"
   DELETED_FILES="$WORK_DIR/deleted_files.txt"
   AUTO_MERGED_FILES="$WORK_DIR/auto_merged_files.txt"
+  DOWNGRADE_FILES="$WORK_DIR/downgrade_files.txt"
+  DOWNGRADE_REPORT="$WORK_DIR/downgrade_report.md"
   PREV_TEMPLATE_FILES="$WORK_DIR/prev_template_files.txt"
 
   : >"$CONFLICT_FILES"
   : >"$CONFLICT_REPORT"
   : >"$DELETED_FILES"
   : >"$AUTO_MERGED_FILES"
+  : >"$DOWNGRADE_FILES"
+  : >"$DOWNGRADE_REPORT"
 
   is_excluded() {
     local candidate="$1" exclude
@@ -96,6 +105,19 @@ main() {
       printf '%s\n' "$content"
       echo "$sentinel"
     } >>"$GITHUB_OUTPUT"
+  }
+
+  # Count non-blank lines present in the pre-sync local file but absent from a
+  # candidate result. A clean 3-way merge should preserve every adopter line; a
+  # nonzero count means the merge REMOVED content the adopter had — the silent
+  # downgrade this report exists to surface. Order-insensitive (sorted comm) so a
+  # merely-moved line does not count. grep -c exits 1 with "0" when nothing
+  # matches, so the ||-default keeps set -e from aborting on an all-preserved file.
+  count_dropped_lines() {
+    local local_f="$1" result_f="$2" n
+    n=$(comm -23 <(sort "$local_f") <(sort "$result_f") |
+      grep -cv '^[[:space:]]*$') || n=0
+    printf '%s' "${n:-0}"
   }
 
   #############################################
@@ -166,6 +188,26 @@ main() {
 
     local parent_dir
     parent_dir=$(dirname "$rel_path")
+
+    # Case 0: the child deliberately made this path — or an ancestor directory —
+    # a symlink (e.g. a dotfiles repo pointing .claude/settings.json or
+    # .claude/hooks/ at another repo it clones at runtime). Never write it: cp
+    # through a dangling link errors out, through a live one it escapes into the
+    # link target, and mkdir -p on a symlinked directory fails outright. Leave
+    # the local structure alone; checked before the mkdir below.
+    if [[ -L "$rel_path" ]]; then
+      echo "Skipping symlink: $rel_path (local structure preserved)"
+      return
+    fi
+    local ancestor="$parent_dir"
+    while [[ "$ancestor" != "." && "$ancestor" != "/" && -n "$ancestor" ]]; do
+      if [[ -L "$ancestor" ]]; then
+        echo "Skipping under symlinked dir: $rel_path ($ancestor is a symlink)"
+        return
+      fi
+      ancestor=$(dirname "$ancestor")
+    done
+
     [[ "$parent_dir" != "." ]] && mkdir -p "$parent_dir"
 
     # Case 1: new file in template.
@@ -217,9 +259,24 @@ main() {
 
     if git merge-file -L "local" -L "base" -L "template" \
       "$merge_result" "$base_file" "$template_file" 2>/dev/null; then
+      # Detect a silent downgrade: the merge base here is the single repo-wide
+      # PREV_SHA, which can be STALE for a file first synced at a different
+      # template SHA. A stale base makes git report a "clean" merge while
+      # actually dropping adopter-modified lines. Measure that against the
+      # pre-sync local ($rel_path, not yet overwritten) and surface it loudly so
+      # the reviewer never trusts "auto-merged" to mean "nothing lost".
+      local dropped
+      dropped=$(count_dropped_lines "$rel_path" "$merge_result")
       cp "$merge_result" "$rel_path"
       echo "Auto-merged: $rel_path (clean 3-way merge)"
       echo "$rel_path" >>"$AUTO_MERGED_FILES"
+      if [[ "${dropped:-0}" -gt 0 ]]; then
+        echo "$rel_path" >>"$DOWNGRADE_FILES"
+        # %s are printf specifiers, not shell expansions; single quotes are correct.
+        # shellcheck disable=SC2016
+        printf -- '- `%s` — auto-merge dropped %s line(s) present in the local copy\n' \
+          "$rel_path" "$dropped" >>"$DOWNGRADE_REPORT"
+      fi
       rm -f "$base_file" "$merge_result"
       return
     fi
@@ -327,12 +384,41 @@ main() {
     echo "auto_merged_files=$auto_merged" >>"$GITHUB_OUTPUT"
   fi
 
+  # Downgrade risk: files whose "clean" auto-merge dropped adopter content. This
+  # is the loud counterpart to the silent regression the sync used to ship — the
+  # PR body renders it as a prominent "adopter is ahead" section so the reviewer
+  # eyeballs exactly these files instead of trusting the auto-merge.
+  if [[ -s "$DOWNGRADE_FILES" ]]; then
+    downgrade=$(tr '\n' ' ' <"$DOWNGRADE_FILES")
+    {
+      echo "has_downgrades=true"
+      echo "downgrade_files=$downgrade"
+    } >>"$GITHUB_OUTPUT"
+    emit_multiline_output "downgrade_report" "$(cat "$DOWNGRADE_REPORT")"
+  else
+    echo "has_downgrades=false" >>"$GITHUB_OUTPUT"
+  fi
+
   if [[ -s "$CONFLICT_FILES" ]]; then
     conflicts=$(tr '\n' ' ' <"$CONFLICT_FILES")
     {
       echo "has_conflicts=true"
       echo "conflict_files=$conflicts"
     } >>"$GITHUB_OUTPUT"
+    # Cap the total conflict report before it becomes the PR body. GitHub passes
+    # the body to the create-pull-request action through the environment, and a
+    # body over the exec arg/env limit aborts PR creation with E2BIG ("Argument
+    # list too long") before it starts -- reached when many files have no merge
+    # base (each contributes a full old->new diff). The complete conflicted-file
+    # list is preserved in .template-sync-conflicts, so truncating the narrative
+    # detail here loses nothing load-bearing.
+    max_report_bytes=60000
+    if [[ "$(wc -c <"$CONFLICT_REPORT")" -gt "$max_report_bytes" ]]; then
+      capped="${CONFLICT_REPORT}.capped"
+      head -c "$max_report_bytes" "$CONFLICT_REPORT" | sed '$d' >"$capped"
+      printf '\n\n_Conflict report truncated at %d KB. Every conflicted file is listed in .template-sync-conflicts._\n' "$((max_report_bytes / 1000))" >>"$capped"
+      mv "$capped" "$CONFLICT_REPORT"
+    fi
     emit_multiline_output "conflict_report" "$(cat "$CONFLICT_REPORT")"
     echo "Template updates available for: $conflicts" >.template-sync-conflicts
   else
