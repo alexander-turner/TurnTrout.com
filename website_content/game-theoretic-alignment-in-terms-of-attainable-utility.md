@@ -171,6 +171,7 @@ This interpretation requires caveats. While the "limiting cases" for alignment a
 
 The Coordination inequality
 : is an equality IFF the action profile maximizes social welfare. The set of games for which all action profiles maximize welfare is precisely the constant-welfare games.
+
 The Alignment inequality
 : is an equality IFF there exists a unique [Pareto efficient](https://en.wikipedia.org/wiki/Pareto_efficiency) payoff profile. This payoff profile must be optimal for each player, otherwise some preferred profile would also be Pareto efficient. This class of games is (superficially) much broader than the common-payoff games, but both have unique Pareto efficient Nash Equilibria which can be thought of as "max attainable utility".
 
