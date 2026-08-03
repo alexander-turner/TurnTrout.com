@@ -45,6 +45,8 @@ Subtitle: MATS (starting with smallcaps).
 
 The `@title` sentinel ties a link's text to its target's current title at build time: [@title](/test-page) renders this page's title, and [@title](#header-4) renders the current text of the "Header 4" section.
 
+A resolved title gets the same typography as every other title surface, so its figures are lining rather than oldstyle: [@title](/reward-hacking-doesnt-show-reward-is-optimization-target).
+
 # `@title`s and quote smallcaps
 
 Acronyms in a resolved `@title` fill and in title-cased `[!quote]` titles render as plain caps instead of smallcaps.

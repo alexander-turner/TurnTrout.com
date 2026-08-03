@@ -408,10 +408,12 @@ figure,
   }
 }
 
-// Every title-rendering surface (article title, backlinks, prev/next post,
-// sequence links, related posts, page listings, …) wraps its output in
-// `.work-title` (see `renderTitleNodes`/`renderInlineFormatting` in
-// `component_utils.tsx`), so one rule covers all of them.
+// Every title-rendering surface wraps its output in `.work-title`, so one rule
+// covers all of them: components (article title, backlinks, prev/next post,
+// sequence links, related posts, page listings, …) via `renderTitleNodes` /
+// `renderInlineFormatting` in `component_utils.tsx`, and in-prose titles
+// (`@title`-bound links, title-cased links/emphasis naming a work) via
+// `bindLinkTitles.ts` / `markWorkTitles` in `tagSmallcaps.ts`.
 .work-title {
   font-variant-numeric: lining-nums;
 }
