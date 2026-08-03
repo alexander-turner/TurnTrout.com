@@ -449,9 +449,7 @@ describe("getCodeBlockCopyText", () => {
   /** Build a `<code>` matching rehype-pretty-code's per-line `[data-line]` grid. */
   const codeWithLines = (...lines: string[]): HTMLElement => {
     const code = document.createElement("code")
-    code.innerHTML = lines
-      .map((line) => `<span data-line="">${line}</span>`)
-      .join("\n")
+    code.innerHTML = lines.map((line) => `<span data-line="">${line}</span>`).join("\n")
     return code
   }
 
@@ -468,6 +466,13 @@ describe("getCodeBlockCopyText", () => {
 
   it("handles a single-line block", () => {
     expect(getCodeBlockCopyText(codeWithLines("only line"))).toBe("only line")
+  })
+
+  it("concatenates nested highlight token spans within a line", () => {
+    // The highlighter wraps each token in its own colored <span>; textContent
+    // must recurse and stitch them back into the original line.
+    const code = codeWithLines("<span>const</span><span> a</span><span> =</span><span> 1</span>")
+    expect(getCodeBlockCopyText(code)).toBe("const a = 1")
   })
 
   it("falls back to the element's text when no [data-line] rows exist", () => {

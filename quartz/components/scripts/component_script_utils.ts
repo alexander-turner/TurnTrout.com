@@ -164,8 +164,10 @@ export const COPY_BUTTON_RESET_DELAY_MS = 2000
  * `rehype-pretty-code` renders each source line as a `display: grid` child
  * `[data-line]` span. Reading `innerText` over that layout yields a spurious
  * blank line between every row, so joining each `[data-line]`'s text with a
- * single newline is the only reconstruction that preserves the source exactly —
+ * single newline is the reconstruction that preserves every source line —
  * including intentional blank lines that a blanket `\n\n`→`\n` collapse erases.
+ * (The highlighter renders an empty source line as a lone-space row, so a blank
+ * line copies back as a single space rather than nothing.)
  *
  * Falls back to the element's own text when no `[data-line]` rows are present
  * (a code block that did not pass through the syntax highlighter).
