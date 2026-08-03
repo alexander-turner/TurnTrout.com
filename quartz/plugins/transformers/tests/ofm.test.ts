@@ -619,6 +619,29 @@ describe("processWikilink", () => {
     expect(result).toEqual(expected)
   })
 
+  it.each([
+    {
+      name: "keeps the lede marker in data-block but out of the fallback link",
+      ref: "#section#",
+      expectedHref: "/page#section",
+      expectedAlias: "Transclude of page#section",
+    },
+    {
+      name: "leaves the bare intro hash alone",
+      ref: "#",
+      expectedHref: "/page#",
+      expectedAlias: "Transclude of page#",
+    },
+  ])("$name", ({ ref, expectedHref, expectedAlias }) => {
+    expect(processWikilink(`![[page${ref}]]`, "page", ref, "")).toEqual({
+      type: "html",
+      data: { hProperties: { transclude: true } },
+      value:
+        `<div class="transclude" data-url="page" data-block="${ref}">` +
+        `<a href="${expectedHref}" class="transclude-inner">${expectedAlias}</a></div>`,
+    })
+  })
+
   it("should handle embed syntax with unknown file extension", () => {
     const result = processWikilink("![[file.unknown]]", "file.unknown", "", "")
     expect(result).toEqual({
@@ -1641,6 +1664,32 @@ describe("Header slug consistency between wikilinks and actual headers", () => {
     const mockCtx = {} as BuildCtx
     const result = transformer.textTransform(mockCtx, input)
     expect(result).toBe("![[page#]]")
+  })
+
+  it.each([
+    {
+      name: "keeps the lede marker on an embed and slugifies the header",
+      input: "![[page#My Section#]]",
+      expected: "![[page#my-section#]]",
+    },
+    {
+      name: "drops the lede marker on a plain link",
+      input: "[[page#My Section#]]",
+      expected: "[[page#my-section]]",
+    },
+    {
+      name: "treats a marker without a header as an intro transclusion",
+      input: "![[page##]]",
+      expected: "![[page#]]",
+    },
+  ])("lede transclusion syntax $name", ({ input, expected }) => {
+    resetSlugger()
+    const transformer = ObsidianFlavoredMarkdown({ wikilinks: true })
+    if (!transformer.textTransform) {
+      throw new Error("textTransform is undefined")
+    }
+    const mockCtx = {} as BuildCtx
+    expect(transformer.textTransform(mockCtx, input)).toBe(expected)
   })
 
   it("should not add -1 suffix to transclusion anchors when there are no duplicates", () => {

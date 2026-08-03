@@ -39,9 +39,12 @@ const currentDirPath = path.dirname(currentFilePath)
 /** Regular expression to match external URLs (http/https) */
 export const externalLinkRegex = /^https?:\/\//i
 
-/** Matches Obsidian wikilinks: [[page]], [[page#section]], [[page#]], [[page|alias]], ![[embed]] */
+/**
+ * Matches Obsidian wikilinks: [[page]], [[page#section]], [[page#]],
+ * ![[page#section#]] (lede), [[page|alias]], ![[embed]]
+ */
 export const wikilinkRegex = new RegExp(
-  /!?\[\[(?<page>[^[\]|#\\]+)?(?<section>#+[^[\]|#\\]*)?(?<alias>\\?\|[^[\]#]+)?\]\]/,
+  /!?\[\[(?<page>[^[\]|#\\]+)?(?<section>#+[^[\]|#\\]*#?)?(?<alias>\\?\|[^[\]#]+)?\]\]/,
   "g",
 )
 
@@ -285,12 +288,15 @@ const createTranscludeElement = (
   displayAlias?: string,
 ): PhrasingContent => {
   const isExternal = externalLinkRegex.test(url)
-  const href = isExternal ? `${url}${ref}` : `/${url}${ref}`
+  // The lede marker is a transclusion instruction, not part of the anchor, so
+  // the fallback link points at the plain section.
+  const linkRef = ref === "#" ? ref : ref.replace(/#$/, "")
+  const href = isExternal ? `${url}${linkRef}` : `/${url}${linkRef}`
   return {
     type: "html",
     data: { hProperties: { transclude: true } },
     value: `<div class="transclude" data-url="${escapeHTML(url)}" data-block="${escapeHTML(ref)}"><a href="${escapeHTML(href)}" class="transclude-inner">${escapeHTML(
-      displayAlias ?? `Transclude of ${url}${ref}`,
+      displayAlias ?? `Transclude of ${url}${linkRef}`,
     )}</a></div>`,
   }
 }
@@ -1032,9 +1038,14 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
               // Preserve bare "#" for intro transclusion (![[page#]])
               displayAnchor = "#"
             } else if (rawHeader) {
-              const anchor = rawHeader.trim().replace(/^#+/, "")
+              const trimmed = rawHeader.trim()
+              const anchor = trimmed.replace(/^#+/, "").replace(/#$/, "")
+              // A trailing "#" marks a lede transclusion (![[page#section#]]);
+              // it only means anything to an embed of a named section, so a
+              // plain link or an empty anchor drops it.
+              const ledeMarker = anchor && embedDisplay && trimmed.endsWith("#") ? "#" : ""
               const blockRef = anchor.startsWith("^") ? "^" : ""
-              displayAnchor = `#${blockRef}${slugAnchor(anchor)}`
+              displayAnchor = `#${blockRef}${slugAnchor(anchor)}${ledeMarker}`
             }
 
             // Handle alias processing - only use explicitly provided aliases

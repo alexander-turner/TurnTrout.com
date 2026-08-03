@@ -492,6 +492,56 @@ describe("renderPage", () => {
     expect(html).toContain("<!DOCTYPE html>")
   })
 
+  it("renders a lede transclusion from its trailing-hash data-block", () => {
+    const transcludedPage: QuartzPluginData = {
+      slug: "transcluded-page" as FullSlug,
+      frontmatter: { title: "Transcluded Page" },
+      htmlAst: {
+        type: "root",
+        children: [
+          h("h1", { id: "section" }, "title"),
+          h("p", "lede text"),
+          h("h2", { id: "sub" }, "subtitle"),
+          h("p", "subsection text"),
+        ],
+      },
+    } as unknown as QuartzPluginData
+
+    const props = createMockProps(
+      {
+        tree: {
+          type: "root",
+          children: [
+            h("div", {
+              className: ["transclude"],
+              dataUrl: "transcluded-page",
+              dataBlock: "#section#",
+            }),
+          ],
+        } as unknown as Root,
+      },
+      [transcludedPage],
+    )
+
+    const componentsForTransclusion = {
+      ...components,
+      pageBody: ({ tree }: QuartzComponentProps) => (
+        <div id="page-body">{JSON.stringify(tree)}</div>
+      ),
+    }
+
+    const html = renderPage(
+      props.cfg,
+      slug,
+      props,
+      componentsForTransclusion as typeof components,
+      pageResources,
+    )
+    expect(html).toContain("lede text")
+    expect(html).not.toContain("subsection text")
+    expect(html).not.toContain("subtitle")
+  })
+
   it("handles page transclusion without htmlAst", () => {
     const transcludedPage: QuartzPluginData = {
       slug: "transcluded-page" as FullSlug,
@@ -785,6 +835,29 @@ describe("renderPage helpers", () => {
     expect(c1.tagName).toBe("p")
     expect(c2.tagName).toBe("h3")
     expect(c3.tagName).toBe("p")
+  })
+
+  it.each([
+    { name: "full section", ledeOnly: false, expectedTags: ["p", "h2", "p"] },
+    { name: "lede only", ledeOnly: true, expectedTags: ["p"] },
+  ])("setHeaderTransclusion $name stops at the right heading", ({ ledeOnly, expectedTags }) => {
+    const node = h("span") as unknown as Element
+    const page = {
+      htmlAst: {
+        type: "root",
+        children: [
+          h("h1", { id: "section" }, "title"),
+          h("p", "lede"),
+          h("h2", { id: "sub" }, "subtitle"),
+          h("p", "subsection body"),
+          h("h1", "next"),
+        ],
+      },
+    } as unknown as QuartzPluginData
+
+    setHeaderTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, "section", ledeOnly)
+
+    expect((node.children as Element[]).map((child) => child.tagName)).toEqual(expectedTags)
   })
 
   it.each([
