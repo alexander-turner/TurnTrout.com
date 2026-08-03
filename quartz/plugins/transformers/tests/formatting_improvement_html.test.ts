@@ -37,6 +37,8 @@ import {
   NonBreakingHyphens,
   rearrangeLinkPunctuation,
   replaceFractions,
+  SetDropcapLetter,
+  setFirstLetterAttribute,
   spacesAroundSlashes,
   stripInlineBoundaryWhitespace,
   StripInlineBoundaryWhitespace,
@@ -51,26 +53,20 @@ const MULTIPLICATION = "\u00D7" // ×
 // em dashes, so assertions can compare against human-readable expected output.
 const stripWordJoiner = (s: string) => s.replaceAll(WORD_JOINER, "")
 
-function testHtmlFormattingImprovement(
-  inputHTML: string,
-  skipFirstLetter = true,
-  doNotSetFirstLetterAttribute = false,
-) {
-  const options = { skipFirstLetter }
+function testHtmlFormattingImprovement(inputHTML: string, setDropcapLetter = false) {
   if (!inputHTML.trim().startsWith("<")) {
     throw new Error("Input HTML must start with an HTML tag")
   }
   const processor = rehype().data("settings", { fragment: true })
 
-  if (doNotSetFirstLetterAttribute) {
-    // Do not pass options at all (exercise improveFormatting() default parameter)
-    processor.use(improveFormatting)
-  } else {
-    processor.use(improveFormatting, options)
+  processor.use(improveFormatting)
+  // Match the production pipeline: both passes run as separate late passes in
+  // `quartz.config.ts` (setFirstLetterAttribute after BindLinkTitles,
+  // stripInlineBoundaryWhitespace after AddFavicons). Include them here so
+  // tests see the same end-state.
+  if (setDropcapLetter) {
+    processor.use(() => setFirstLetterAttribute)
   }
-  // Match the production pipeline: stripInlineBoundaryWhitespace runs as a
-  // separate late pass (after AddFavicons in `quartz.config.ts`). Include it
-  // here so tests see the same end-state.
   processor.use(() => stripInlineBoundaryWhitespace)
 
   return processor.processSync(inputHTML).toString()
@@ -908,7 +904,7 @@ describe("HTMLFormattingImprovement", () => {
       ["<p>the GPT-2-XL model</p>", `gpt-${wj}2-${wj}xl</abbr>`],
     ])("composes with smallcaps: %s", (input: string, expectedFragment: string) => {
       const processor = rehype().data("settings", { fragment: true })
-      processor.use(improveFormatting, { skipFirstLetter: true })
+      processor.use(improveFormatting)
       processor.use(rehypeTagSmallcaps)
       processor.use(() => glueHyphens)
       const out = normalizeNbsp(processor.processSync(input).toString())
@@ -1445,12 +1441,11 @@ describe("setFirstLetterAttribute", () => {
     `,
     ],
     [
-      "sets the attribute when skipFirstLetter is not in options",
+      "sets the attribute on a lone paragraph",
       `<p>First paragraph.</p>
     `,
       `<p data-first-letter="F">First paragraph.</p>
     `,
-      true,
     ],
     [
       "skips empty paragraphs and sets attribute on first non-empty paragraph",
@@ -1467,8 +1462,8 @@ describe("setFirstLetterAttribute", () => {
     
     `,
     ],
-  ])("%s", (_description, input, expected, doNotSetFirstLetterAttribute = false) => {
-    const processedHtml = testHtmlFormattingImprovement(input, false, doNotSetFirstLetterAttribute)
+  ])("%s", (_description, input, expected) => {
+    const processedHtml = testHtmlFormattingImprovement(input, true)
     expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 
@@ -1497,7 +1492,7 @@ describe("setFirstLetterAttribute", () => {
       '<p data-first-letter="X"><span></span>X ’s story</p>',
     ],
   ])("%s", (_description, input, expected) => {
-    const processedHtml = testHtmlFormattingImprovement(input, false)
+    const processedHtml = testHtmlFormattingImprovement(input, true)
     expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 
@@ -1509,7 +1504,7 @@ describe("setFirstLetterAttribute", () => {
     "adds space before %s when it is the second character in dropcap paragraph",
     (_description, quote) => {
       const input = `<p>X${quote}s story</p>`
-      const processedHtml = testHtmlFormattingImprovement(input, false)
+      const processedHtml = testHtmlFormattingImprovement(input, true)
       // Smart-quote transform may convert straight apostrophe to RIGHT_SINGLE_QUOTE,
       // so check for a space after X followed by any apostrophe variant
       expect(normalizeNbsp(processedHtml)).toMatch(/X ['\u2018\u2019]s story/u)
@@ -1519,7 +1514,7 @@ describe("setFirstLetterAttribute", () => {
 
   it("replaces nbsp after single-letter first word for dropcap", () => {
     const input = "<p>I use this page.</p>"
-    const processedHtml = testHtmlFormattingImprovement(input, false)
+    const processedHtml = testHtmlFormattingImprovement(input, true)
     // The nbsp transform would normally add nbsp after "I", but setFirstLetterAttribute
     // should replace it with a regular space for proper dropcap rendering
     expect(processedHtml).not.toContain(`I${NBSP}`)
@@ -1528,7 +1523,7 @@ describe("setFirstLetterAttribute", () => {
 
   it("handles paragraph with no direct text node", () => {
     const input = "<p><span>Hello world.</span></p>"
-    const processedHtml = testHtmlFormattingImprovement(input, false)
+    const processedHtml = testHtmlFormattingImprovement(input, true)
     expect(processedHtml).toContain('data-first-letter="H"')
   })
 
@@ -1550,7 +1545,7 @@ describe("setFirstLetterAttribute", () => {
   ])(
     "sets data-first-letter from text content without corrupting text when %s",
     (_description, input, expectedFirstLetter, expectedInline, expectedTrailingText) => {
-      const processedHtml = testHtmlFormattingImprovement(input, false)
+      const processedHtml = testHtmlFormattingImprovement(input, true)
       expect(processedHtml).toContain(`data-first-letter="${expectedFirstLetter}"`)
       // The leading inline element's text is untouched...
       expect(processedHtml).toContain(`<em>${expectedInline}</em>`)
@@ -1582,7 +1577,7 @@ describe("setFirstLetterAttribute", () => {
     ],
   ])("should NOT set data-first-letter when %s", (_description, input) => {
     // setFirstLetterAttribute only applies to <p> that are direct children of the root
-    const processedHtml = testHtmlFormattingImprovement(input, false)
+    const processedHtml = testHtmlFormattingImprovement(input, true)
     expect(normalizeNbsp(processedHtml)).toBe(input)
   })
 })
@@ -2370,26 +2365,16 @@ describe("Italic kerning before punctuation", () => {
   })
 })
 
-describe("improveFormatting function with options", () => {
-  it("should use default options when none provided", () => {
-    // This helper always passes some options to rehype; the true "no options" case is covered
-    // by the direct transformer invocation test below.
+describe("improveFormatting transformer", () => {
+  it("leaves the dropcap attribute to the separate late pass", () => {
     const input = "<article><p>Test text</p></article>"
 
-    const processedHtml = testHtmlFormattingImprovement(input, true)
-    expect(normalizeNbsp(processedHtml)).toBe(input)
-  })
-
-  it("should accept custom options and skip first letter when requested", () => {
-    const input = "<article><p>Test text</p></article>"
-
-    const processedHtml = testHtmlFormattingImprovement(input, true)
+    const processedHtml = testHtmlFormattingImprovement(input)
     expect(normalizeNbsp(processedHtml)).toBe(input) // Should not add data-first-letter
   })
 
-  it("should handle undefined options (default parameter branch)", () => {
-    // Test that calling improveFormatting() without options uses default behavior
-    const transformer = improveFormatting() // Called without options, hits default {} branch
+  it("transforms a tree passed directly to the transformer", () => {
+    const transformer = improveFormatting()
 
     const tree = {
       type: "root" as const,
@@ -2399,7 +2384,6 @@ describe("improveFormatting function with options", () => {
     const mockFile = new VFile("")
     mockFile.data = {}
 
-    // Transform should work with default options (including first letter processing)
     // skipcq: JS-0098 — fire-and-forget; void marks the intentionally floating promise
     void transformer(tree, mockFile, () => {
       /* noop */
@@ -2408,9 +2392,6 @@ describe("improveFormatting function with options", () => {
     const paragraph = tree.children[0] as Element
     paragraph.properties = paragraph.properties ?? {}
     const resultHtml = hastToHtml(paragraph)
-
-    // Should have first letter attribute (default behavior)
-    expect(paragraph.properties["data-first-letter"]).toBe("T")
 
     // Should have transformed fraction and arrow
     expect(resultHtml).toContain('<span class="fraction">1/2</span>')
@@ -2457,6 +2438,23 @@ describe("HTMLFormattingImprovement plugin", () => {
     }
     const result = processor.processSync("<p><em> word </em></p>").toString()
     expect(result).toBe("<p><em>word</em></p>")
+  })
+
+  it("SetDropcapLetter plugin stamps the dropcap letter via rehype", () => {
+    const plugin = SetDropcapLetter()
+    const { htmlPlugins } = plugin
+    if (!htmlPlugins) {
+      throw new Error("htmlPlugins is undefined")
+    }
+
+    const mockCtx = {} as unknown
+    const plugins = htmlPlugins(mockCtx as Parameters<typeof htmlPlugins>[0])
+    const processor = rehype().data("settings", { fragment: true })
+    for (const p of plugins) {
+      processor.use(p as never)
+    }
+    const result = processor.processSync("<p>First paragraph.</p>").toString()
+    expect(result).toBe('<p data-first-letter="F">First paragraph.</p>')
   })
 
   describe("Unicode Arrow Wrapping", () => {
