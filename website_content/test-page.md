@@ -204,9 +204,21 @@ Admonition in a description list
 > [!quote]
 > ![[/test-page#section-to-transclude]]
 
+Lede transclusion, which stops at the first subheading and so leaves out the nested subsection:
+
+> ![[/test-page#section-with-a-subsection#]]
+
 ## Section to transclude
 
 Hi! Am I being transcluded? Here is a within-page link to the [admonitions section](#admonitions); because this section is transcluded from the same page above, both copies stay within-page links.
+
+## Section with a subsection
+
+This lede is the only part of the section which the lede transclusion picks up.
+
+### Nested subsection
+
+A plain section transclusion would include this text; the lede transclusion does not.
 
 # Admonitions
 
