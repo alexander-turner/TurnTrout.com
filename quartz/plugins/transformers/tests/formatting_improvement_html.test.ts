@@ -27,6 +27,7 @@ import {
 import {
   applyTextTransforms,
   arrowsToWrap,
+  dropcapInitial,
   glueHyphens,
   HTMLFormattingImprovement,
   identifyLinkNode,
@@ -1381,6 +1382,21 @@ describe("flattenTextNodes and getTextContent", () => {
   })
 })
 
+describe("dropcapInitial", () => {
+  it.each([
+    ["Alpha", "A"],
+    [`${LEFT_DOUBLE_QUOTE}Whoever wishes`, `${LEFT_DOUBLE_QUOTE}W`],
+    [`${LEFT_SINGLE_QUOTE}Tis the season`, `${LEFT_SINGLE_QUOTE}T`],
+    [`${RIGHT_SINGLE_QUOTE}Twas the night`, `${RIGHT_SINGLE_QUOTE}T`],
+    [`${RIGHT_DOUBLE_QUOTE}Whoever wishes`, RIGHT_DOUBLE_QUOTE],
+    [`${LEFT_DOUBLE_QUOTE}1984 was a year`, LEFT_DOUBLE_QUOTE],
+    [LEFT_DOUBLE_QUOTE, LEFT_DOUBLE_QUOTE],
+    ["", ""],
+  ])("maps %p to %p", (text, expected) => {
+    expect(dropcapInitial(text)).toBe(expected)
+  })
+})
+
 describe("setFirstLetterAttribute", () => {
   it.each([
     [
@@ -1482,19 +1498,29 @@ describe("setFirstLetterAttribute", () => {
     `,
       `
       
-      <p data-first-letter="’">’Twas the night before Christmas.</p>
+      <p data-first-letter="’T">’Twas the night before Christmas.</p>
     
     `,
     ],
     [
       "second character is a quote and we have a direct text node to patch",
       '<p><strong></strong>"Twas the night</p>',
-      '<p data-first-letter="“"><strong></strong>“Twas the night</p>',
+      '<p data-first-letter="“T"><strong></strong>“Twas the night</p>',
     ],
     [
       "second character is an apostrophe and a direct text node exists",
       "<p><span></span>X's story</p>",
       '<p data-first-letter="X"><span></span>X ’s story</p>',
+    ],
+    [
+      "opening double quote joins the letter it introduces",
+      '<p>"Whoever wishes to foresee the future must consult the past."</p>',
+      '<p data-first-letter="“W">“Whoever wishes to foresee the future must consult the past.”</p>',
+    ],
+    [
+      "opening quote before a non-letter stands alone",
+      '<p>"1984 was a year."</p>',
+      '<p data-first-letter="“">“1984 was a year.”</p>',
     ],
   ])("%s", (_description, input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input, false)

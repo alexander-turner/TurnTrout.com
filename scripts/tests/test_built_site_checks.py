@@ -6755,6 +6755,22 @@ def test_check_html_tags_in_text_real_world_katex():
             f'<article><p data-first-letter="{built_site_checks.RIGHT_SINGLE_QUOTE}">{built_site_checks.RIGHT_SINGLE_QUOTE}Twas</p></article>',
             False,
         ),
+        (
+            f'<article><p data-first-letter="{built_site_checks.RIGHT_SINGLE_QUOTE}T">{built_site_checks.RIGHT_SINGLE_QUOTE}Twas</p></article>',
+            True,
+        ),
+        (
+            f'<article><p data-first-letter="{built_site_checks.LEFT_DOUBLE_QUOTE}W">{built_site_checks.LEFT_DOUBLE_QUOTE}Whoever</p></article>',
+            True,
+        ),
+        (
+            f'<article><p data-first-letter="{built_site_checks.LEFT_SINGLE_QUOTE}T">{built_site_checks.LEFT_SINGLE_QUOTE}Tis</p></article>',
+            True,
+        ),
+        (
+            f'<article><p data-first-letter="{built_site_checks.RIGHT_DOUBLE_QUOTE}W">{built_site_checks.RIGHT_DOUBLE_QUOTE}Whoever</p></article>',
+            False,
+        ),
     ],
 )
 def test_check_article_dropcap_first_letter(html: str, ok: bool):
@@ -6780,7 +6796,7 @@ def test_check_article_dropcap_first_letter(html: str, ok: bool):
         # Invalid: missing/empty attribute
         (
             "<article><p>Missing attribute</p></article>",
-            ["invalid data-first-letter length (expected 1): ''"],
+            ["invalid data-first-letter length (expected 1 or 2): ''"],
         ),
         # Invalid: non-alphanumeric
         (
@@ -6789,10 +6805,20 @@ def test_check_article_dropcap_first_letter(html: str, ok: bool):
                 f"non-alphanumeric data-first-letter: '{built_site_checks.RIGHT_SINGLE_QUOTE}'"
             ],
         ),
-        # Invalid: wrong length
+        # Invalid: two characters not led by an opening quote
         (
             '<article><p data-first-letter="AB">Alpha</p></article>',
-            ["invalid data-first-letter length (expected 1): 'AB'"],
+            ["data-first-letter must lead with an opening quote: 'AB'"],
+        ),
+        # Invalid: wrong length
+        (
+            '<article><p data-first-letter="ABC">Alpha</p></article>',
+            ["invalid data-first-letter length (expected 1 or 2): 'ABC'"],
+        ),
+        # Valid: an opening quote joined to the letter it introduces
+        (
+            f'<article><p data-first-letter="{built_site_checks.LEFT_DOUBLE_QUOTE}W">{built_site_checks.LEFT_DOUBLE_QUOTE}Whoever</p></article>',
+            [],
         ),
         # Direct child paragraph only (nested ignored)
         (

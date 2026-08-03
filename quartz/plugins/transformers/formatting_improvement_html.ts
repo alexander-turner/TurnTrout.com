@@ -1076,11 +1076,37 @@ const checkedTextPasses: readonly ProsePass[] = [
 ]
 
 /**
+ * Opening quotes that a dropcap sets together with the letter they introduce.
+ * `RIGHT_SINGLE_QUOTE` is here for elision ("’Twas"), which reads as an opening
+ * mark even though it is typographically a closing one.
+ */
+const DROPCAP_LEADING_QUOTES: ReadonlySet<string> = new Set([
+  LEFT_DOUBLE_QUOTE,
+  LEFT_SINGLE_QUOTE,
+  RIGHT_SINGLE_QUOTE,
+])
+
+/**
+ * The characters a dropcap renders for `text`: a quoted opening yields the
+ * quote plus the letter it introduces, so the attribute matches the pair that
+ * `::first-letter` selects (CSS folds leading punctuation into the pseudo).
+ *
+ * @param text - The dropcap paragraph's text content
+ */
+export function dropcapInitial(text: string): string {
+  const [first, second] = text
+  if (first && second && DROPCAP_LEADING_QUOTES.has(first) && /\p{L}/u.test(second)) {
+    return first + second
+  }
+  return first ?? ""
+}
+
+/**
  * Sets a data-first-letter attribute on the first non-empty paragraph element in the tree.
  *
  * The function:
  * 1. Finds the first non-empty <p> element that is a direct child of the root
- * 2. Sets the data-first-letter attribute to the first character of the paragraph's text content
+ * 2. Sets the data-first-letter attribute to the paragraph's dropcap initial
  * 3. If the second character is an apostrophe, adds a space before it in the text node
  *
  * @param tree - The HAST root node to process
@@ -1090,8 +1116,8 @@ const checkedTextPasses: readonly ProsePass[] = [
  * Output: <p data-first-letter="F">First paragraph</p>
  *
  * @example
- * Input:  <p></p><p>'Twas the night</p>
- * Output: <p></p><p data-first-letter="'">' Twas the night</p>
+ * Input:  <p></p><p>“Twas the night</p>
+ * Output: <p></p><p data-first-letter="“T">“Twas the night</p>
  *
  * Note: Only processes non-empty paragraphs that are direct children of the root.
  * Empty paragraphs or nested paragraphs are ignored.
@@ -1111,7 +1137,7 @@ export function setFirstLetterAttribute(tree: Root): void {
   const firstLetter = paragraphText.charAt(0)
 
   firstParagraph.properties = firstParagraph.properties || /* istanbul ignore next */ {}
-  firstParagraph.properties["data-first-letter"] = firstLetter
+  firstParagraph.properties["data-first-letter"] = dropcapInitial(paragraphText)
 
   const firstTextNode = firstParagraph.children.find(
     (child): child is Text => child.type === "text",

@@ -195,6 +195,22 @@ export const test = base.extend<SiteTestOptions>({
     })
     // skipcq: JS-0820 -- `use` is Playwright's fixture-yield callback, not a React hook
     await use(page)
+    // Specs that opt out of the CDN stubs stream real media bytes, and WebKit's
+    // graceful context close waits for an in-flight stream to finish — long
+    // enough to exceed the test timeout. Detaching the source ends the stream
+    // before teardown starts.
+    if (!page.isClosed()) {
+      await page.evaluate(() => {
+        for (const media of document.querySelectorAll<HTMLMediaElement>("video, audio")) {
+          media.pause()
+          media.removeAttribute("src")
+          for (const source of media.querySelectorAll("source")) {
+            source.remove()
+          }
+          media.load()
+        }
+      })
+    }
   },
 })
 
