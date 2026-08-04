@@ -7,9 +7,21 @@ HTML, confusable glyphs, exfil-shaped URLs—that let an attacker smuggle a
 payload the operator can't see but the model still reads. Every layer is a
 deterministic transform you can unit-test with equality assertions.
 
+**As a library:**
+
 ```sh
 npm install agent-sanitizer
 ```
+
+**As a Claude Code plugin:**
+
+```
+/plugin marketplace add AlexanderMattTurner/agent-sanitizer
+/plugin install agent-sanitizer@agent-sanitizer
+```
+
+See [Using it with Claude Code](#using-it-with-claude-code) for what each hook
+covers and how to wire the hooks by hand instead.
 
 ## Quick start
 
@@ -82,16 +94,14 @@ owns each message, and any value outside the enum makes `sanitizeText` **throw**
 
 ## Using it with Claude Code
 
-Four hooks put Layers 1–4 on the tool stream: tool input, tool output, user
-prompts, and a session-start scan of the instruction files.
+The plugin installed above puts four hooks on the tool stream: tool input, tool
+output, user prompts, and a session-start scan of the instruction files. It
+needs only `python3` on PATH, for Layer 4.
 
 ```
 /plugin marketplace add AlexanderMattTurner/agent-sanitizer
 /plugin install agent-sanitizer@agent-sanitizer
 ```
-
-The plugin needs no `node_modules` and no build step — just `python3` on PATH
-for Layer 4.
 
 To wire them yourself instead, one entry dispatches all four modes on `--hook=`:
 
