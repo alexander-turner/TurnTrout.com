@@ -1156,7 +1156,7 @@ Claude triage (`scripts/spellcheck_triage.py`)
 Reordering elements in `<head>` to ensure social media previews
 : I want nice previews for my site. Unfortunately, the behavior was flaky - working on Facebook, not on Twitter, not on Slack, working on Discord... Why? I had filled out all of the [OpenGraph](https://ogp.me/) fields.
 
-[Apparently](https://forums.slackcommunity.com/s/question/0D53a00008bbu4SCAQ/i-cant-understand-why-my-websites-url-does-not-unfurl-on-slack?language=en_US), Slack only reads the metadata from the first portion of the `<head>`. However, my OpenGraph `<meta>` tags were further back, so they weren't getting read in. Different sites read different lengths of the `<head>`, explaining the flakiness.
+: [Apparently](https://forums.slackcommunity.com/s/question/0D53a00008bbu4SCAQ/i-cant-understand-why-my-websites-url-does-not-unfurl-on-slack?language=en_US), Slack only reads the metadata from the first portion of the `<head>`. However, my OpenGraph `<meta>` tags were further back, so they weren't getting read in. Different sites read different lengths of the `<head>`, explaining the flakiness.
 
 : The solution: Include tags like `<meta>` and `<title>` as early as possible in the `<head>`. As a post-build check, I ensure that these tags are confined to the first 9KB of each file.
 
