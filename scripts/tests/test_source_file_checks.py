@@ -2934,3 +2934,163 @@ def test_check_dates_missing_ordinal_suffix(
     """Test the check_dates_missing_ordinal_suffix function."""
     errors = source_file_checks.check_dates_missing_ordinal_suffix(text)
     assert errors == expected_errors
+
+
+_SLUG_TITLES = {
+    "reward-is-not-the-optimization-target": (
+        "Reward is not the optimization target"
+    ),
+    "design": "The design of this website",
+    "what-counts-as-defection": "Formalizing “defection” using game theory",
+}
+
+
+@pytest.mark.parametrize(
+    "text,expected_errors",
+    [
+        # Exact restatement of the target's title
+        (
+            "See [The design of this website](/design).",
+            [
+                "Link text restates the title of /design at line 1: "
+                "[The design of this website](/design) — use "
+                "[@title](/design) instead"
+            ],
+        ),
+        # Case-insensitive restatement
+        (
+            "See [the design of this website](/design).",
+            [
+                "Link text restates the title of /design at line 1: "
+                "[the design of this website](/design) — use "
+                "[@title](/design) instead"
+            ],
+        ),
+        # Emphasis-wrapped link text
+        (
+            "See [_The design of this website_](/design).",
+            [
+                "Link text restates the title of /design at line 1: "
+                "[_The design of this website_](/design) — use "
+                "[@title](/design) instead"
+            ],
+        ),
+        # Typographic drift: straight quotes and a trailing period
+        (
+            '[Formalizing "defection" using game theory.]'
+            "(/what-counts-as-defection)",
+            [
+                "Link text restates the title of /what-counts-as-defection "
+                "at line 1: "
+                '[Formalizing "defection" using game theory.]'
+                "(/what-counts-as-defection) — use "
+                "[@title](/what-counts-as-defection) instead"
+            ],
+        ),
+        # Line numbers are tracked
+        (
+            "Prose.\n\nSee [The design of this website](/design).",
+            [
+                "Link text restates the title of /design at line 3: "
+                "[The design of this website](/design) — use "
+                "[@title](/design) instead"
+            ],
+        ),
+        # Several restatements on one line
+        (
+            "[The design of this website](/design) and "
+            "[Reward is not the optimization target]"
+            "(/reward-is-not-the-optimization-target)",
+            [
+                "Link text restates the title of /design at line 1: "
+                "[The design of this website](/design) — use "
+                "[@title](/design) instead",
+                "Link text restates the title of "
+                "/reward-is-not-the-optimization-target at line 1: "
+                "[Reward is not the optimization target]"
+                "(/reward-is-not-the-optimization-target) — use "
+                "[@title](/reward-is-not-the-optimization-target) instead",
+            ],
+        ),
+        # The sentinel itself is what the check asks for
+        ("See [@title](/design).", []),
+        ("See [@title-lower](/design).", []),
+        # Descriptive link text is fine
+        ("See [my earlier post](/design).", []),
+        # Anchored links are out of scope: the text binds to a heading
+        ("See [The design of this website](/design#fonts).", []),
+        # Unknown targets and external links are skipped
+        ("See [The design of this website](/nonexistent).", []),
+        ("See [The design of this website](https://example.com/design).", []),
+        # Images are not links
+        ("![The design of this website](/design)", []),
+        # Code and math are blanked before checking
+        ("`[The design of this website](/design)`", []),
+        # Punctuation-only link text can't restate a title
+        ("See […](/design).", []),
+        # Frontmatter is blanked
+        (
+            "---\ndescription: [The design of this website](/design)\n"
+            "---\nBody.",
+            [],
+        ),
+        # An explicit ignore marker suppresses the line
+        (
+            "See [The design of this website](/design). "
+            "<!-- lint-ignore title-bound-link: literal text is the point -->",
+            [],
+        ),
+        ("", []),
+    ],
+)
+def test_check_title_bound_links(text: str, expected_errors: list[str]):
+    """Test the title-bound link checker."""
+    errors = source_file_checks.check_title_bound_links(text, _SLUG_TITLES)
+    assert errors == expected_errors
+
+
+def test_build_slug_titles(create_test_file: Callable):
+    """Every slug a page is served at maps to that page's title."""
+    with_aliases = create_test_file(
+        "with-aliases.md",
+        """---
+title: With Aliases
+permalink: /canonical
+aliases:
+  - old-path
+  - /older-path
+---
+Body.
+""",
+    )
+    scalar_alias = create_test_file(
+        "scalar-alias.md",
+        """---
+title: Scalar Alias
+aliases: sole-alias
+---
+Body.
+""",
+    )
+    untitled = create_test_file(
+        "untitled.md",
+        """---
+permalink: /untitled
+---
+Body.
+""",
+    )
+    no_frontmatter = create_test_file("bare.md", "Body.\n")
+
+    slug_titles = source_file_checks.build_slug_titles(
+        [with_aliases, scalar_alias, untitled, no_frontmatter]
+    )
+
+    assert slug_titles == {
+        "with-aliases": "With Aliases",
+        "canonical": "With Aliases",
+        "old-path": "With Aliases",
+        "older-path": "With Aliases",
+        "scalar-alias": "Scalar Alias",
+        "sole-alias": "Scalar Alias",
+    }

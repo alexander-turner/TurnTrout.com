@@ -64,11 +64,11 @@ describe("bindTitlesInTree", () => {
     expect(textOf(root)).toContain(">The Live Title<")
   })
 
-  it("marks the resolved anchor no-smallcaps so title acronyms stay plain", () => {
+  it("marks the resolved anchor as a work title so it gets the shared title styling", () => {
     const root = tree(boundAnchor({ "data-slug": "other-page", href: "/other-page" }))
     bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")
     const anchor = root.children[0] as Element
-    expect(anchor.properties.className).toContain("no-smallcaps")
+    expect(anchor.properties.className).toContain("work-title")
   })
 
   it("lowercases the title for the @title-lower sentinel", () => {
@@ -100,6 +100,9 @@ describe("bindTitlesInTree", () => {
     ["trailing period moved into the link", "@title-lower.", ">the live title.<"],
     ["trailing period and closing quote moved into the link", "@title.”", ">The Live Title.”<"],
     ["leading quote moved into the link", "“@title", ">“The Live Title<"],
+    ["possessive moved into the link", "@title’s", ">The Live Title’s<"],
+    ["possessive and trailing comma moved into the link", "@title’s,", ">The Live Title’s,<"],
+    ["straight-quote possessive moved into the link", "@title's", ">The Live Title's<"],
   ])("binds when formatting moved punctuation into the anchor (%s)", (_desc, text, expected) => {
     const root = tree(boundAnchor({ "data-slug": "other-page", href: "/other-page" }, text))
     bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")
@@ -125,6 +128,7 @@ describe("bindTitlesInTree", () => {
     ["letters after the sentinel", "@titles"],
     ["letters before the sentinel", "see @title"],
     ["letters after the lower sentinel", "@title-lowered"],
+    ["a bare plural after the sentinel", "@title’sy"],
   ])("leaves prose containing the sentinel untouched (%s)", (_desc, text) => {
     const root = tree(boundAnchor({ "data-slug": "other-page", href: "/other-page" }, text))
     bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")

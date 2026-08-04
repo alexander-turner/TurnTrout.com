@@ -345,4 +345,9 @@ document.addEventListener("nav", () => {
       )
     }
   }
+
+  // Hover listeners attach on `nav`, which fires after `domcontentloaded`, so
+  // a pointer that arrives earlier lands on an unwired link. The marker gives
+  // that readiness a state to observe rather than a duration to guess at.
+  document.body.dataset.popoverListeners = "attached"
 })

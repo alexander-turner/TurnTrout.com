@@ -40,11 +40,11 @@ original_url: https://www.lesswrong.com/posts/eowhY5NaCaqY6Pkj9/behavioural-stat
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.jpg
 description: Closeness to cheese and the top-right corner both influence a maze-solving AI, suggesting a "shard-like" decision-making process.
-date_updated: 2026-06-26
+date_updated: 2026-08-03
 card_image_alt: A scatter plot showing a strong positive correlation between two maze distance metrics. The x-axis is "Euclidean distance between cheese and decision square" and the y-axis is "Steps between cheese and decision square."
 ---
 
-[Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network) analyzed a maze-solving agent's behavior. We isolated four maze properties which seemed to predict whether the mouse goes towards the cheese or towards the top-right corner:
+[@title](/understanding-and-controlling-a-maze-solving-policy-network) analyzed a maze-solving agent's behavior. We isolated four maze properties which seemed to predict whether the mouse goes towards the cheese or towards the top-right corner:
 
 ![Four diagrams illustrating maze properties: 1. A straight arrow from a mouse to cheese. 2. An arrow following the maze path from mouse to cheese. 3. A straight arrow from the cheese to the top-right corner. 4. A straight arrow from the mouse to a red box in the top-right corner.](https://assets.turntrout.com/static/images/posts/caoymohzzppimjllkqx4.avif)
 
@@ -57,7 +57,7 @@ In this post, we conduct a more thorough statistical analysis, addressing issues
 
 Watching videos Langosco et al.'s experiment, we developed a few central intuitions about how the agent behaves. In particular, we tried predicting what the agent does at _decision squares_.
 
-> [!quote] [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network)
+> [!quote] [@title](/understanding-and-controlling-a-maze-solving-policy-network)
 > Some mazes are easy to predict, because the cheese is _on the way_ to the top-right corner. There's no _decision square_ where the agent has to make the hard choice between the paths to the cheese and to the top-right corner:
 >
 > ![The left maze, "Has decision square," shows a red dot at an intersection where an agent must choose between the path to the cheese and the path to the top-right. The right maze, "No decision square," shows the cheese on the path to the top-right, requiring no choice.](https://assets.turntrout.com/static/images/posts/k2vgl3k6myo1rcmg4emy.avif)
@@ -180,7 +180,7 @@ Note that in these individual regressions, all _successfully predictive_ variabl
 
 As we move on to multiple regressions to try finding out which variables drive these results, we have to work carefully: our various operationalizations of 'closeness' in the mazes are inevitably pretty correlated.
 
-> [!quote] Dan Braun's [comment](https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network?commentId=6sqGdeAB9baLME55G#comments) on [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network)
+> [!quote] Dan Braun's [comment](https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network?commentId=6sqGdeAB9baLME55G#comments) on [@title](/understanding-and-controlling-a-maze-solving-policy-network)
 >
 > I'd be \[wary\] about interpreting the regression coefficients of features that are correlated (see [Multicollinearity](https://en.wikipedia.org/wiki/Multicollinearity)). Even the sign may be misleading.
 >
@@ -317,7 +317,7 @@ Our statistics refine, support, and stress-test our impressions about the networ
 However, the statistics are not fully rigorous, and this post's analysis contained freeform domain-specific reasoning. That said, we are overall confident that the agent is influenced by $d_\text{Euclidean}(\text{cheese},\text{top-right})$ and by $d_\text{step}(\text{cheese},\text{decision-square})$. We have weak but suggestive evidence for additional influence from $d_\text{Euclidean}(\text{cheese},\text{decision-square})$.
 
 [^1]: We correctly speculated:
-    > [!quote] [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network)
+    > [!quote] [@title](/understanding-and-controlling-a-maze-solving-policy-network)
     >
     > \[Regression factor\] (4) is an interesting outlier which probably stems from not using a more sophisticated structural model for regression.
 

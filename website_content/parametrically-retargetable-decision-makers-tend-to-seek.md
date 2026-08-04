@@ -37,7 +37,7 @@ date_published: 2023-02-18
 original_url: https://www.lesswrong.com/posts/GY49CKBkEs3bEpteM/parametrically-retargetable-decision-makers-tend-to-seek
 skip_import: true
 description: "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power."
-date_updated: 2026-06-27
+date_updated: 2026-08-03
 createBibtex: true
 ---
 
@@ -77,7 +77,7 @@ This paper isolates the key mechanism—retargetability—which enables the resu
 
 This paper is both published in a top-tier conference and, unlike the previous paper, actually has a shot of being applicable to realistic agents and training processes. Therefore, compared to the original[^1] optimal policy paper, I think this paper is better for communicating concerns about power-seeking to the broader ML world.
 
-[^1]: I've since updated the optimal policy paper with disclaimers about [Reward is not the optimization target](/reward-is-not-the-optimization-target), so the updated version is at least passable in this regard. I still like the first paper, am proud of it, and think it was well-written within its scope. It also takes a more doomy tone about AGI risk, which seems good to me.[^retract]
+[^1]: I've since updated the optimal policy paper with disclaimers about [@title](/reward-is-not-the-optimization-target), so the updated version is at least passable in this regard. I still like the first paper, am proud of it, and think it was well-written within its scope. It also takes a more doomy tone about AGI risk, which seems good to me.[^retract]
 
 [^retract]: As of September 2024, I no longer feel that doomy about technical AGI alignment. More concretely, I estimate
     $$

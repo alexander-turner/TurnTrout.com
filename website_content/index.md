@@ -11,14 +11,14 @@ hideSubscriptionLinks: true
 toc: false
 description: Writings on AI, self-improvement, and living a good life.
 date_published: 2024-10-27
-date_updated: 2026-06-27
+date_updated: 2026-08-03
 tags:
   - website
 ---
 
 Hello! I'm Alex, and this is my pond. _The Pond_ gathers my writings on topics including AI, self-improvement, and living a good life.
 
-The earliest content dates back to January 2018. Over the years, I've built up a web of ideas and philosophies. I even endorse some of them still! I love [my research](/research), and I hope you love it too.
+The earliest content dates back to January 2018. Over the years, I've built up a web of ideas and philosophies. I even endorse some of them still! I love [@title-lower](/research), and I hope you love it too.
 
 I also enjoy writing more personal content and sharing a bit [about myself](/about). While my blog's [previous home](http://www.lesswrong.com/user/turntrout) made `TurnTrout` a familiar name to some folks, only a narrow part of me got to shine through. Hopefully the [launch of this site](/launch) changes that!
 
@@ -26,11 +26,11 @@ Stay a while! The water's great.
 
 # Start here
 
-1. [Looking back on my alignment PhD](/alignment-phd)
-2. [The shard theory of human values](/shard-theory)
-3. [Bruce Wayne and the cost of inaction](/bruce-wayne-and-the-cost-of-inaction)
-4. [Formalizing "defection" using game theory](/what-counts-as-defection)
-5. [English writes numbers backwards](/backwards-numbers)
+1. [@title](/alignment-phd)
+2. [@title](/shard-theory)
+3. [@title](/bruce-wayne-and-the-cost-of-inaction)
+4. [@title](/what-counts-as-defection)
+5. [@title](/backwards-numbers)
 
 # Or dive in
 

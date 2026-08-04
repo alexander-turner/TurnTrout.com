@@ -38,7 +38,7 @@ date_published: 2021-08-08
 original_url: https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
 skip_import: true
 description: "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions. "
-date_updated: 2026-06-28
+date_updated: 2026-08-03
 ---
 
  
@@ -173,7 +173,7 @@ Structural assumptions on utility really do matter when it comes to instrumental
 |u<sub>OH</sub>| [Strong](/power-seeking-beyond-MDPs#formal-justification)|
 |State-based objectives<br/>(e.g. state-based reward in MDPs)| [Moderate](/quantitative-strength-of-instrumental-convergence)|
 
-[Environmental structure can cause instrumental convergence](/environmental-structure-can-cause-instrumental-convergence), but (the absence of) structural assumptions on utility can make instrumental convergence go away (for optimal agents).
+[@title](/environmental-structure-can-cause-instrumental-convergence), but (the absence of) structural assumptions on utility can make instrumental convergence go away (for optimal agents).
 
 ## Notes
 
@@ -194,7 +194,7 @@ Structural assumptions on utility really do matter when it comes to instrumental
   - This suggests that consequentialism over observations/world states is responsible for convergent instrumental incentives.
     - Approaches like approval-directed agency focus on _action selection_ instead of _optimization over future observations._
 
-- [Environmental structure can cause instrumental convergence](/environmental-structure-can-cause-instrumental-convergence), but (lack of) structural assumptions on utility can make instrumental convergence go away.
+- [@title](/environmental-structure-can-cause-instrumental-convergence), but (lack of) structural assumptions on utility can make instrumental convergence go away.
 
 ## Appendix: Tracking key limitations of the power-seeking theorems
 

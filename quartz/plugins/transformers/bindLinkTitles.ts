@@ -7,7 +7,11 @@ import { visit } from "unist-util-visit"
 import type { TitleIndex } from "../../processors/buildTitleIndex"
 import type { QuartzTransformerPlugin } from "../types"
 
-import { LINK_TITLE_LOWER_SENTINEL, LINK_TITLE_SENTINEL } from "../../components/constants"
+import {
+  LINK_TITLE_LOWER_SENTINEL,
+  LINK_TITLE_SENTINEL,
+  WORK_TITLE_CLASS,
+} from "../../components/constants"
 import { titleIndexFile } from "../../components/constants.server"
 import { type FullSlug, splitAnchor } from "../../util/path"
 import { addClass } from "./utils"
@@ -65,8 +69,13 @@ const escapeRegExp = (literal: string): string => literal.replace(/[.*+?^${}()|[
 const sentinelAlternation = [LINK_TITLE_LOWER_SENTINEL, LINK_TITLE_SENTINEL]
   .map(escapeRegExp)
   .join("|")
+// `charsToMoveIntoLinkFromRight` includes "s", so a possessive after the link
+// ("[@title](/slug)'s argument") also arrives inside the anchor. It is the one
+// letter permitted in the trail, and only directly after an apostrophe.
+const punctuationRun = "[\\p{P}\\p{S}\\s]*"
 const sentinelTextRegex = new RegExp(
-  `^(?<lead>[\\p{P}\\p{S}\\s]*?)(?<sentinel>${sentinelAlternation})(?<trail>[\\p{P}\\p{S}\\s]*)$`,
+  `^(?<lead>${punctuationRun}?)(?<sentinel>${sentinelAlternation})` +
+    `(?<trail>${punctuationRun}?(?:['’]s)?${punctuationRun})$`,
   "u",
 )
 
@@ -133,9 +142,10 @@ export function bindTitlesInTree(
     const lead = match.groups.lead.trim()
     const trail = match.groups.trail.trim()
     node.children = [{ type: "text", value: `${lead}${bound}${trail}` }]
-    // A resolved title is the name of a work, not prose, so acronyms in it
-    // (AGI, GPT, …) should not render as small-caps.
-    addClass(node, "no-smallcaps")
+    // A resolved title is the name of a work, not prose, so it takes the same
+    // typographic treatment as every other title-rendering surface: plain-caps
+    // acronyms (AGI, GPT, …) and lining figures.
+    addClass(node, WORK_TITLE_CLASS)
   })
 }
 

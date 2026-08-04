@@ -16,10 +16,11 @@ import unicodedata
 import urllib.parse
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
-from typing import Literal, NamedTuple
+from typing import Final, Literal, NamedTuple
 from urllib.parse import urlparse
 
 import requests
@@ -2447,6 +2448,14 @@ def _print_issues(  # pragma: no cover
         print()  # Add a blank line between files with issues
 
 
+def _report_issues(path: Path, label: str, issues: list[str]) -> bool:
+    """Print ``issues`` under ``label``; ``True`` when there were any."""
+    if not issues:
+        return False
+    _print_issues(path, {label: issues})
+    return True
+
+
 def _strip_path(path_str: str) -> str:
     """Strip the git root path from a path string."""
     beginning_stripped = re.sub(
@@ -3285,6 +3294,98 @@ def _maybe_collect_citation_keys(
         citation_to_files[key].append(rel_path)
 
 
+_SRCSET_TAGS: Final[tuple[str, ...]] = ("img", "source")
+_SRCSET_CHECK_WORKERS: Final[int] = 20
+
+
+def parse_srcset(srcset: str) -> list[str]:
+    """
+    URLs of every candidate in a ``srcset`` attribute.
+
+    Follows the HTML parsing algorithm closely enough that a comma inside a URL
+    (legal, and a candidate separator only when it terminates the URL token)
+    does not split the candidate: the URL runs to the first whitespace, and any
+    trailing commas there end the candidate.
+    """
+    urls: list[str] = []
+    pos, length = 0, len(srcset)
+    while pos < length:
+        while pos < length and (srcset[pos].isspace() or srcset[pos] == ","):
+            pos += 1
+        start = pos
+        while pos < length and not srcset[pos].isspace():
+            pos += 1
+        url = srcset[start:pos]
+        if not url.endswith(","):
+            # Skip the width/density descriptor trailing this candidate.
+            while pos < length and srcset[pos] != ",":
+                pos += 1
+        url = url.rstrip(",")
+        if url:
+            urls.append(url)
+    return urls
+
+
+def collect_srcset_urls(
+    soup: BeautifulSoup,
+    file_path: Path,
+    public_dir: Path,
+    srcset_to_files: dict[str, list[str]],
+) -> None:
+    """
+    Record every ``srcset`` URL and the pages referencing it.
+
+    ``srcset`` is the only place the dark-mode ``-inverted`` variants appear in
+    the HTML, and nothing else fetches them: the per-page media checks read
+    ``src``, and linkchecker's HTML5 tag table maps ``<source>`` to ``src``
+    alone. Collecting site-wide lets one HEAD per unique URL cover every page.
+    """
+    if script_utils.is_redirect(soup):
+        return
+
+    rel_path = str(file_path.relative_to(public_dir))
+    for tag in _tags_only(soup.find_all(_SRCSET_TAGS)):
+        srcset = tag.get("srcset")
+        if not isinstance(srcset, str):
+            continue
+        for url in parse_srcset(srcset):
+            srcset_to_files[url].append(rel_path)
+
+
+def _srcset_url_issue(url: str, public_dir: Path) -> str | None:
+    """Describe why ``url`` fails to resolve, or ``None`` when it resolves."""
+    if url.startswith(("http://", "https://")):
+        try:
+            response = _head_with_retry(url)
+        except requests.RequestException as exc:
+            return f"{url} failed to load: {exc}"
+        if response.ok:
+            return None
+        return f"{url} returned status {response.status_code}"
+
+    resolved = resolve_media_path(_CACHE_VERSION_RE.sub("", url), public_dir)
+    if resolved.is_file():
+        return None
+    return f"{url} (resolved to {resolved}) does not exist"
+
+
+def check_srcset_urls(
+    srcset_to_files: Mapping[str, list[str]], public_dir: Path
+) -> list[str]:
+    """Check that every collected ``srcset`` URL resolves."""
+    urls = list(srcset_to_files)
+    with ThreadPoolExecutor(max_workers=_SRCSET_CHECK_WORKERS) as executor:
+        results = executor.map(
+            lambda url: _srcset_url_issue(url, public_dir), urls
+        )
+        return [
+            f"<srcset> {issue} (referenced by "
+            f"{', '.join(sorted(set(srcset_to_files[url])))})"
+            for url, issue in zip(urls, results)
+            if issue is not None
+        ]
+
+
 def check_root_files_location(base_dir: Path) -> list[str]:
     """Check that required files exist in the root directory."""
     issues = []
@@ -3691,6 +3792,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
     files_to_skip: set[str] = script_utils.collect_aliases(content_dir)
     citation_to_files: dict[str, list[str]] = defaultdict(list)
+    srcset_to_files: dict[str, list[str]] = defaultdict(list)
     paragraph_map: dict[str, list[str]] = {}
 
     included_domains = _build_included_favicon_domains(public_dir.parent)
@@ -3728,49 +3830,54 @@ def _process_html_files(  # pylint: disable=too-many-locals
             _maybe_collect_citation_keys(
                 soup, file_path, public_dir, citation_to_files
             )
+            collect_srcset_urls(soup, file_path, public_dir, srcset_to_files)
             _collect_paragraphs_for_spellcheck(
                 soup, file, file_path, public_dir, paragraph_map
             )
 
-    # Check for duplicate citation keys across all files
-    citation_issues = _find_duplicate_citations(citation_to_files)
-    if citation_issues:
-        _print_issues(public_dir, {"duplicate_citations": citation_issues})
-        issues_found_in_html = True
-
-    # Spellcheck flattened paragraph text across all pages
-    spelling_issues = _spellcheck_flattened_paragraphs(paragraph_map)
-    if spelling_issues:
-        _print_issues(
+    site_wide_reports = [
+        _report_issues(
             public_dir,
-            {"rendered_text_spelling": spelling_issues},
-        )
-        issues_found_in_html = True
+            "duplicate_citations",
+            _find_duplicate_citations(citation_to_files),
+        ),
+        _report_issues(
+            public_dir,
+            "unresolvable_srcset_urls",
+            check_srcset_urls(srcset_to_files, public_dir),
+        ),
+        _report_issues(
+            public_dir,
+            "rendered_text_spelling",
+            _spellcheck_flattened_paragraphs(paragraph_map),
+        ),
+    ]
 
-    return issues_found_in_html
+    return issues_found_in_html or any(site_wide_reports)
 
 
 def main() -> None:
     """Check all HTML files in the public directory for issues."""
     args = parser.parse_args()
-    overall_issues_found: bool = False
     check_rss_file_for_issues(_GIT_ROOT)
 
     css_file_path: Path = _PUBLIC_DIR / "index.css"
-    css_issues = check_css_issues(css_file_path)
-    if css_issues:
-        _print_issues(css_file_path, {"CSS_issues": css_issues})
-        overall_issues_found = True
-
-    root_files_issues = check_root_files_location(_PUBLIC_DIR)
-    if root_files_issues:
-        _print_issues(_PUBLIC_DIR, {"root_files_issues": root_files_issues})
-        overall_issues_found = True
-
-    fixture_issues = check_fixture_pages_excluded(_PUBLIC_DIR)
-    if fixture_issues:
-        _print_issues(_PUBLIC_DIR, {"fixture_artifacts": fixture_issues})
-        overall_issues_found = True
+    reports = [
+        _report_issues(
+            css_file_path, "CSS_issues", check_css_issues(css_file_path)
+        ),
+        _report_issues(
+            _PUBLIC_DIR,
+            "root_files_issues",
+            check_root_files_location(_PUBLIC_DIR),
+        ),
+        _report_issues(
+            _PUBLIC_DIR,
+            "fixture_artifacts",
+            check_fixture_pages_excluded(_PUBLIC_DIR),
+        ),
+    ]
+    overall_issues_found: bool = any(reports)
 
     defined_css_vars: set[str] = _get_defined_css_variables(css_file_path)
     html_issues_found = _process_html_files(

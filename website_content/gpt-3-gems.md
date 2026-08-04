@@ -30,7 +30,7 @@ date_published: 2020-07-23
 original_url: https://www.lesswrong.com/posts/uu8FwG5XPQ6zpFaEN/gpt-3-gems
 skip_import: true
 description: "GPT-3's output: sometimes insightful, sometimes silly. Read my favorite interactions with this intriguing, flawed network."
-date_updated: 2026-06-28
+date_updated: 2026-08-03
 ---
 
 GPT-3 is captivating, and not just because of its [potential reasoning abilities](/to-what-extent-is-gpt3-capable-of-reasoning). This post will be a living collection of my favorite experiences with the network.
@@ -867,7 +867,7 @@ I added the $\LaTeX$ formatting.
 >
 > Hawking: "Because... gravity... duh.
 
-For more, see [_To what extent is GPT-3 capable of reasoning?_](/to-what-extent-is-gpt3-capable-of-reasoning).
+For more, see _[@title](/to-what-extent-is-gpt3-capable-of-reasoning)_.
 
 > [!quote]
 >

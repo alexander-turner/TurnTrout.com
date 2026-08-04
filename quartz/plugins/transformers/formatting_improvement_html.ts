@@ -1189,23 +1189,11 @@ export function replaceFractions(
     (node, idx, parent) => fractionToSkip(node, idx, parent, ancestors),
   )
 }
-interface ImproveFormattingOptions {
-  skipFirstLetter?: boolean // Debug flag
-}
-
 /**
  * Main transformer plugin for HTML formatting improvements
- * @param options - Configuration options
  * @returns Unified transformer function
  */
-export const improveFormatting = (
-  options: ImproveFormattingOptions = {},
-): Transformer<Root, Root> => {
-  const resolvedOptions: ImproveFormattingOptions = {
-    skipFirstLetter: false,
-    ...options,
-  }
-
+export const improveFormatting = (): Transformer<Root, Root> => {
   return (tree: Root) => {
     visitParents(tree, (node, ancestors: Parent[]) => {
       const parent = ancestors[ancestors.length - 1]
@@ -1273,10 +1261,6 @@ export const improveFormatting = (
       })
     })
 
-    if (!resolvedOptions.skipFirstLetter) {
-      setFirstLetterAttribute(tree)
-    }
-
     formatLNumbers(tree) // L_p-norm formatting
     formatArrows(tree)
     wrapUnicodeArrowsWithMonospaceStyle(tree)
@@ -1300,6 +1284,22 @@ export const HTMLFormattingImprovement: QuartzTransformerPlugin = () => {
     name: "htmlFormattingImprovement",
     htmlPlugins() {
       return [improveFormatting]
+    },
+  }
+}
+
+/**
+ * Quartz plugin running ``setFirstLetterAttribute`` as a late pass.
+ *
+ * The dropcap renders the first character of the first paragraph's *rendered*
+ * text, so this must run after ``BindLinkTitles``: a paragraph opening with a
+ * title-bound link starts with the resolved title, not the sentinel.
+ */
+export const SetDropcapLetter: QuartzTransformerPlugin = () => {
+  return {
+    name: "setDropcapLetter",
+    htmlPlugins() {
+      return [() => setFirstLetterAttribute]
     },
   }
 }

@@ -408,10 +408,12 @@ figure,
   }
 }
 
-// Every title-rendering surface (article title, backlinks, prev/next post,
-// sequence links, related posts, page listings, …) wraps its output in
-// `.work-title` (see `renderTitleNodes`/`renderInlineFormatting` in
-// `component_utils.tsx`), so one rule covers all of them.
+// Every title-rendering surface wraps its output in `.work-title`, so one rule
+// covers all of them: components (article title, backlinks, prev/next post,
+// sequence links, related posts, page listings, …) via `renderTitleNodes` /
+// `renderInlineFormatting` in `component_utils.tsx`, and in-prose titles
+// (`@title`-bound links, title-cased links/emphasis naming a work) via
+// `bindLinkTitles.ts` / `markWorkTitles` in `tagSmallcaps.ts`.
 .work-title {
   font-variant-numeric: lining-nums;
 }
@@ -838,6 +840,11 @@ img.emoji {
   position: relative;
   cursor: pointer;
   width: fit-content;
+
+  // A spoiler is written as a block quote and replaces it in the tree, so it
+  // has to carry the block quote's standoff itself: without it, consecutive
+  // spoilers butt against each other and against their neighbors.
+  margin: calc(2 * $base-margin) 0;
 
   // Contains the negative margin that pays for the content's standoff padding.
   // Left to collapse out, that margin would escape to the block quote and drag

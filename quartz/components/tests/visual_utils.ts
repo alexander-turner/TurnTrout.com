@@ -979,6 +979,19 @@ export async function moveMouseToSafePosition(page: Page): Promise<void> {
 }
 
 /**
+ * Wait until the popover script has wired its hover listeners to the links on
+ * the current page.
+ *
+ * Hovering a link before then is silently inert, and re-hovering to recover is
+ * destructive: `mouseleave` aborts the in-flight popover fetch, so a retry loop
+ * that steps the pointer off the link restarts the fetch it is waiting for.
+ * Gate on the marker instead, then trigger the hover exactly once.
+ */
+export async function waitForPopoverListeners(page: Page): Promise<void> {
+  await expect(page.locator("body")).toHaveAttribute("data-popover-listeners", "attached")
+}
+
+/**
  * Trigger an action and wait for the SPA to complete navigation.
  *
  * The SPA dispatches a custom `"nav"` event after fetch → DOM morph →

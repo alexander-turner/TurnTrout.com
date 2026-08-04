@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-07-29
+date_updated: 2026-08-03
 no_dropcap: false
 createBibtex: true
 ---
@@ -97,7 +97,7 @@ That took a few months.
 
 [Cloudflare](https://www.cloudflare.com/) hosts `turntrout.com`. Overall, the site has few external dependencies. In nearly all cases, I host scripts, stylesheets, and media assets on my CDN. If the rest of the Web went down (besides Cloudflare), `turntrout.com` would look nearly the same.[^archive] Furthermore, minimizing embeds (e.g. `<iframe>`s) will minimize the number of invasive tracking cookies.[^video]
 
-[^video]: To avoid YouTube tracking cookies, I even self-host [AI presidents discuss AI alignment agendas](/alignment-tier-list).
+[^video]: To avoid YouTube tracking cookies, I even self-host [@title](/alignment-tier-list).
 
 [^archive]: Examples of content which is not hosted on my website: There are several `<iframe>` embeds (e.g. interactive forms and such). I also use the privacy-friendlier [`umami.is`](https://umami.is/) analytics service and load the script from their site.
 
@@ -1026,7 +1026,7 @@ I use [Playwright](https://playwright.dev/) to interact with my website and scre
 
 However, it's not practical to test every single page. So I have a [test page](/test-page) which stably demonstrates site features. My tests screenshot that page from many angles. I also use visual regression testing to ensure the stability of features like search.
 
-> [!quote] [Lessons from my 428-day battle against flaky Playwright screenshots](/playwright)  
+> [!quote] [@title](/playwright)  
 > ![[playwright-tips#Background]]
 
 > [!info] Keeping CI fast

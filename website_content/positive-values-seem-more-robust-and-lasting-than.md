@@ -31,12 +31,12 @@ date_published: 2022-12-17
 original_url: https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
 skip_import: true
 description: Negative values ("don't kill") may be fragile. Positive values ("protect people") might be more robust and lasting within AI agents.
-date_updated: 2026-04-20
+date_updated: 2026-08-03
 ---
 
 Imagine we train an AI on realistic situations where it can kill people, and penalize it when it does so. Suppose that we successfully instill a strong and widely activated "If going to kill people, then don't" value shard.
 
-Even assuming this much, the situation seems fragile. See, many value shards are self-chaining. In [The shard theory of human values](/shard-theory), I wrote about how:
+Even assuming this much, the situation seems fragile. See, many value shards are self-chaining. In [@title](/shard-theory), I wrote about how:
 
 1. A baby learns "IF juice in front of me, THEN drink",
 2. The baby is later near juice, and then turns to see it, activating the learned "reflex" heuristic, learning to turn around and look at juice when the juice is nearby,

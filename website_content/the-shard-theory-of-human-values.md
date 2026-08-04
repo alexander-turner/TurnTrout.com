@@ -47,7 +47,7 @@ original_url: https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/human_shards.jpg
 description: Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.
-date_updated: 2026-07-15
+date_updated: 2026-08-03
 card_image_alt: A silhouette of a human head in profile, its brain composed of vibrant, glowing crystalline shards—a visual metaphor for the components of decision-making in shard theory.
 createBibtex: true
 ---
@@ -353,7 +353,7 @@ Before this post was published, many people read draft documents explaining shar
     3. That said, alignment implications are out of scope for this post. We postpone discussion to future posts.
 3. “Shard theory” also has been used to refer to insights gained by considering the shard theory of human values and by operating the shard frame on alignment.
     1. We don’t like this ambiguous usage. We would instead say something like “insights from shard theory.”
-    2. Example insights include [Reward is not the optimization target](/reward-is-not-the-optimization-target) and [Human values & biases are inaccessible to the genome](/human-values-and-biases-are-inaccessible-to-the-genome).
+    2. Example insights include [@title](/reward-is-not-the-optimization-target) and [@title](/human-values-and-biases-are-inaccessible-to-the-genome).
 
 # Appendix C: Evidence for neuroscience assumptions
 

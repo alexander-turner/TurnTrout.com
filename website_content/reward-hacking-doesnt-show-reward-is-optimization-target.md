@@ -17,11 +17,11 @@ aliases:
   - reward-retrospective
 original_url: https://www.lesswrong.com/posts/wwRgR3K8FKShjwwL5/2025-era-reward-hacking-does-not-show-that-reward-is-the
 date_published: 2025-12-18
-date_updated: 2026-04-20
+date_updated: 2026-08-03
 ---
 
  
-Folks ask me, "LLMs seem to reward hack a lot. Does that mean that reward _is_ the optimization target?". In 2022, I wrote the essay [Reward is not the optimization target](/reward-is-not-the-optimization-target), which I here abbreviate to "Reward≠OT".
+Folks ask me, "LLMs seem to reward hack a lot. Does that mean that reward _is_ the optimization target?". In 2022, I wrote the essay [@title](/reward-is-not-the-optimization-target), which I here abbreviate to "Reward≠OT".
 
 > [!summary] Reward still is not the optimization target
 > Reward≠OT said that (policy-gradient) RL will not train systems which primarily try to optimize the _reward function for its own sake_ (e.g. searching at inference time for an input which maximally activates the AI's specific reward model). In contrast, empirically observed "reward hacking" almost always involves the AI finding unintended "solutions" (e.g. hardcoding answers to unit tests). Reward≠OT and "reward hacking" concern different phenomena.
@@ -63,7 +63,7 @@ Paying proper attention, Reward≠OT makes claims[^argument] about motivations p
 
 [^argument]: I later had a disagreement with John Wentworth where he criticized my [story for training an AI which cares about real-world diamonds](/a-shot-at-the-diamond-alignment-problem). He basically [complained](https://www.lesswrong.com/posts/k4AQqboXz8iE5TNXK/a-shot-at-the-diamond-alignment-problem?commentId=ikHq2AnuBTiCANCsi) that I hadn't motivated why the AI wouldn't specification game. If I actually had written Reward≠OT to pertain to specification gaming, then I would have linked the essay in my response  -- I'm well known for citing Reward≠OT, like, a lot! In [my reply to John](https://www.lesswrong.com/posts/k4AQqboXz8iE5TNXK/a-shot-at-the-diamond-alignment-problem?commentId=o4xhieQnt5HxLmGDF), I did not cite Reward≠OT because the post was about _reward optimization_, not specification gaming.
 
-> [!quote] [Reward is not the optimization target](/reward-is-not-the-optimization-target)
+> [!quote] [@title](/reward-is-not-the-optimization-target)
 > Therefore, _reward is not the optimization target_ in two senses:
 >
 > 1. Deep reinforcement learning agents will not come to intrinsically and primarily value their reward signal; reward is not _the trained agent’s_ optimization target.
@@ -90,7 +90,7 @@ The culprit is, yet again, the word "reward." Suppose instead that common wisdom
 
 # Evaluating Reward≠OT's actual claims
 
-[Reward is not the optimization target](/reward-is-not-the-optimization-target) made three[^quantity] main claims:
+[@title](/reward-is-not-the-optimization-target) made three[^quantity] main claims:
 
 [^quantity]: The original post demarcated _two_ main claims, but I think I should have pointed out the third (definitional) point I made throughout.
 
@@ -120,7 +120,7 @@ I consider direct reward optimization to be more likely than I did in 2022, for 
 
 That said, I still predict that we will not train a system with RL and have it "spontaneously" (defined later) turn into a reward optimizer:
 
-> [!quote] [Reward is not the optimization target](/reward-is-not-the-optimization-target)
+> [!quote] [@title](/reward-is-not-the-optimization-target)
 > I call an agent a “reward optimizer” if it not only gets lots of reward, but if it reliably makes choices like “reward but no task completion” (e.g. receiving reward without eating pizza) over “task completion but no reward” (e.g. eating pizza without receiving reward). Under this definition, an agent can be a reward optimizer even if it doesn't contain an explicit representation of reward, or implement a search process for reward.
 
 I've made two falsifiable predictions.
@@ -168,11 +168,11 @@ I no longer endorse one argument I gave against empirical reward-seeking:
 
 This reasoning seems applicable to humans: people grow to value their friends, happiness, and interests long before they learn about the brain's reward system. However, due to pretraining, LLMs arrive at RL training already understanding concepts like "reward" and "reward optimization." I didn't realize that in 2022. Therefore, I now have less skepticism towards "reward-seeking cognition could exist and then be reinforced."
 
-Why didn't I realize this in 2022? I didn't yet deeply understand LLMs. As evidenced by [A shot at the diamond-alignment problem](/a-shot-at-the-diamond-alignment-problem)'s detailed training story about a robot which we reinforce by pressing a "+1 reward" button, I was most comfortable thinking about an embodied deep RL training process. If I had understood LLM pretraining, I would have likely realized that these systems _have some reason to already be thinking thoughts about "reward"_, which means those thoughts could be upweighted and reinforced into AI values.
+Why didn't I realize this in 2022? I didn't yet deeply understand LLMs. As evidenced by [@title](/a-shot-at-the-diamond-alignment-problem)'s detailed training story about a robot which we reinforce by pressing a "+1 reward" button, I was most comfortable thinking about an embodied deep RL training process. If I had understood LLM pretraining, I would have likely realized that these systems _have some reason to already be thinking thoughts about "reward"_, which means those thoughts could be upweighted and reinforced into AI values.
 
 To my credit, I noted my ignorance:
 
-> [!quote] [Reward is not the optimization target](https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/reward-is-not-the-optimization-target.md)
+> [!quote] [@title](https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/reward-is-not-the-optimization-target.md)
 > Pretraining a language model and then slotting that into an RL setup changes the initial \[agent's\] computations in a way which I have not yet tried to analyze.
 
 # Conclusion

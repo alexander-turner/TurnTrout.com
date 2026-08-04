@@ -13,6 +13,7 @@ import {
   search,
   takeRegressionScreenshot,
   triggerAndWaitForSPANav,
+  waitForPopoverListeners,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */
@@ -957,20 +958,20 @@ test.describe("Popover checkbox state preservation", () => {
   test("Popover preserves checkbox state", async ({ page }) => {
     await gotoPage(page, "http://localhost:8080/design")
 
+    await waitForPopoverListeners(page)
+
     const testPageLink = page.locator('a[href*="test-page"]').last()
     await testPageLink.scrollIntoViewIfNeeded()
     await expect(testPageLink).toBeVisible()
 
-    // Popovers are suppressed until a real mousemove fires after navigation,
-    // and a single hover can race the nav listeners attaching (or be a no-op
-    // when the pointer is already on the link). Re-hover from a safe position
-    // until the popover mounts.
+    // `nav` clears the moved-since-navigation flag that gates popovers, so the
+    // pointer must make a real move; starting it away from the link also keeps
+    // `hover()` from being a no-op.
+    await moveMouseToSafePosition(page)
+    await testPageLink.hover()
+
     const popover = page.locator(".popover")
-    await expect(async () => {
-      await moveMouseToSafePosition(page)
-      await testPageLink.hover()
-      await expect(popover).toBeVisible({ timeout: 3_000 })
-    }).toPass({ timeout: 30_000 })
+    await expect(popover).toBeVisible()
 
     const popoverCheckbox = popover.locator(baseSelector).first()
     const popoverChecked = await isElementChecked(popoverCheckbox)
