@@ -1,4 +1,4 @@
-import { setupCopyButton } from "./component_script_utils"
+import { getCodeBlockCopyText, setupCopyButton } from "./component_script_utils"
 
 document.addEventListener("nav", () => {
   const els = document.getElementsByTagName("pre")
@@ -10,7 +10,7 @@ document.addEventListener("nav", () => {
       button.className = "clipboard-button"
       button.type = "button"
       button.ariaLabel = "Copy source"
-      setupCopyButton(button, () => codeBlock.innerText.replace(/\n\n/g, "\n"))
+      setupCopyButton(button, () => getCodeBlockCopyText(codeBlock))
       element.prepend(button)
     }
   }
