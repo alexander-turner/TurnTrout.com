@@ -31,3 +31,6 @@ pnpm-lock.yaml
 .claude-tooling/
 .worktrees
 .pnpm-store
+# Email-signature page: prettier-html rewrites the `{{TOKEN}}` placeholders
+# into nested CSS/JS blocks, and `signature.html` is generated output.
+**/scripts/email_signature/*.html
