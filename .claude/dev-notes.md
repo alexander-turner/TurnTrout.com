@@ -187,6 +187,37 @@ runs this daily and opens an auto-merged PR when content changed. When adding a
 new GitHub source, add it to `externalReadmes.ts`, run the script, and commit
 the new snapshot — a missing snapshot fails the build with instructions.
 
+## Email signature
+
+`scripts/email_signature/` builds the signature pasted into Proton Mail. Open
+`signature.html` in a browser and press **Copy signature**; it is a build
+artifact, so edit `template.html` (markup and colours) or `page.js` (clipboard
+handling) and regenerate:
+
+```bash
+uv run python scripts/build_email_signature.py
+```
+
+Two constraints shape the design:
+
+- **Fonts are inlined, not linked.** Mail clients do not fetch remote
+  `@font-face` sources, so the build subsets EBGaramond and FiraCode down to
+  the characters the signature actually renders (a few kB total) and embeds
+  them as base64 `data:` URLs. An element declares its face with
+  `data-tt-font="serif|mono"`; the build reads the glyph set from that
+  annotation and strips the attribute from the output. Adding text to the
+  signature therefore requires a rebuild, or the new glyphs fall back to
+  Garamond/Palatino/Times.
+- **The copy goes through a `copy` event.** `navigator.clipboard.write`
+  sanitizes `text/html` and deletes the `<style>` element the faces arrive in,
+  as does selecting the preview by hand. `document.execCommand("copy")` with an
+  overridden `clipboardData` is passed through verbatim.
+
+Colours are literal hex values mirroring the light palette, with a
+`prefers-color-scheme: dark` block for clients that honour it; `signature.html`
+previews both. `config/prettier/.prettierignore` skips this directory's HTML —
+prettier rewrites the `{{TOKEN}}` placeholders into nested CSS/JS blocks.
+
 ## Favicon kerning audit
 
 Favicon spacing (`quartz/styles/favicon.scss` `$domain-left-insets`,
