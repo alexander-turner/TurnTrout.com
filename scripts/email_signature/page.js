@@ -7,7 +7,7 @@
 
 const signature = document.getElementById("tt-signature")
 const fontStyle = document.getElementById("tt-signature-fonts")
-const status = document.getElementById("copy-status")
+const statusLine = document.getElementById("copy-status")
 
 const signatureHtml = fontStyle.outerHTML + signature.outerHTML
 const plainText = signature.innerText.trim().replace(/\n\s*\n/g, "\n")
@@ -19,10 +19,10 @@ document.getElementById("source").value = signatureHtml
 
 let statusTimer = 0
 function report(message) {
-  status.textContent = message
+  statusLine.textContent = message
   window.clearTimeout(statusTimer)
   statusTimer = window.setTimeout(() => {
-    status.textContent = ""
+    statusLine.textContent = ""
   }, 4000)
 }
 
