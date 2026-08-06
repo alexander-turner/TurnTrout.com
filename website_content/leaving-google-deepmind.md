@@ -39,7 +39,7 @@ In January, Department of Homeland Security (DHS) officers killed [at least](htt
 </div>
 </figure>
 
-I learned that [Google sells its Cloud services to the relevant agencies within DHS](#google-supports-the-immigration-enforcement-supply-chain). I thought that was wrong. Federal agents should not be able to kill citizens in the street. I set out to find the most effective way to push my company to stop serving these agencies. My divestment campaign quickly broadened into an attempt to prevent Google from signing an unethical military AI deal, as the Pentagon started pressuring AI providers into military AI deals with no restrictions against use for killer robots or mass surveillance.[^surveil]
+I learned that [Google sells its Cloud services to the relevant agencies within DHS](#google-supports-the-immigration-enforcement-supply-chain). I thought that was wrong. Federal agents should not be able to kill innocent citizens in the street. I set out to find the most effective way to push my company to stop serving these agencies. My divestment campaign quickly broadened into an attempt to prevent Google from signing an unethical military AI deal, as the Pentagon started pressuring AI providers into military AI deals with no restrictions against use for killer robots or mass surveillance.[^surveil]
 
 [^surveil]: Technically, I'm worried about mass *profiling* from AI. Surveillance concerns data collection. Profiling takes data and draws conclusions, like "does this person dislike the government?".
 
