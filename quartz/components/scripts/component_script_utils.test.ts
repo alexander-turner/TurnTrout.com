@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals
 
 import {
   debounce,
+  getCodeBlockCopyText,
   registerEscapeHandler,
   removeAllChildren,
   setupCopyButton,
@@ -441,5 +442,42 @@ describe("setupCopyButton", () => {
 
     expect(consoleSpy).toHaveBeenCalledWith(error)
     consoleSpy.mockRestore()
+  })
+})
+
+describe("getCodeBlockCopyText", () => {
+  /** Build a `<code>` matching rehype-pretty-code's per-line `[data-line]` grid. */
+  const codeWithLines = (...lines: string[]): HTMLElement => {
+    const code = document.createElement("code")
+    code.innerHTML = lines.map((line) => `<span data-line="">${line}</span>`).join("\n")
+    return code
+  }
+
+  it("preserves an intentional blank line between code lines", () => {
+    // rehype-pretty-code renders a blank source line as a lone-space span.
+    const code = codeWithLines("const a = 1", " ", "const b = 2")
+    expect(getCodeBlockCopyText(code)).toBe("const a = 1\n \nconst b = 2")
+  })
+
+  it("preserves leading indentation and joins adjacent lines with one newline", () => {
+    const code = codeWithLines("def f():", "    return 1")
+    expect(getCodeBlockCopyText(code)).toBe("def f():\n    return 1")
+  })
+
+  it("handles a single-line block", () => {
+    expect(getCodeBlockCopyText(codeWithLines("only line"))).toBe("only line")
+  })
+
+  it("concatenates nested highlight token spans within a line", () => {
+    // The highlighter wraps each token in its own colored <span>; textContent
+    // must recurse and stitch them back into the original line.
+    const code = codeWithLines("<span>const</span><span> a</span><span> =</span><span> 1</span>")
+    expect(getCodeBlockCopyText(code)).toBe("const a = 1")
+  })
+
+  it("falls back to the element's text when no [data-line] rows exist", () => {
+    const code = document.createElement("code")
+    code.textContent = "plain code\nsecond line"
+    expect(getCodeBlockCopyText(code)).toBe("plain code\nsecond line")
   })
 })

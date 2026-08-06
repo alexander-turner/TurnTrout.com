@@ -43,7 +43,7 @@ date_published: 2023-03-01
 original_url: https://www.lesswrong.com/posts/JusJcepE2qohiC3hm/predictions-for-shard-theory-mechanistic-interpretability
 skip_import: true
 description: Predictions about a cheese-finding AI model's internal workings, before the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖
-date_updated: 2026-06-30
+date_updated: 2026-08-03
 createBibtex: true
 ---
 
@@ -134,7 +134,7 @@ Give a credence for the following questions / subquestions.
 
 ### Conformity with update rule
 
-_Related:_ [_Reward is not the optimization target_](/reward-is-not-the-optimization-target)\.
+_Related:_ _[@title](/reward-is-not-the-optimization-target)_\.
 
 This network has a value head, which PPO uses to provide policy gradients. How often does the trained policy put maximal probability on the action which maximizes the value head? For example, if the agent can go `left` to a value 5 state, and go `right` to a value 10 state, the value and policy heads "agree" if `right` is the policy's most probable action.
 

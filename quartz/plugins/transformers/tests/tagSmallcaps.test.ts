@@ -1411,12 +1411,12 @@ describe("markWorkTitles", () => {
     [
       "a title-cased link keeps its acronym as plain caps",
       '<p>See <a href="/x">AGI Ruin: A List of Lethalities</a> for more.</p>',
-      '<p>See <a href="/x" class="no-smallcaps">AGI Ruin: A List of Lethalities</a> for more.</p>',
+      '<p>See <a href="/x" class="work-title">AGI Ruin: A List of Lethalities</a> for more.</p>',
     ],
     [
       "a title-cased emphasized title keeps its acronym as plain caps",
       "<p>I read <em>Seeking Power Is Often Robustly Instrumental in MDPs</em> today.</p>",
-      '<p>I read <em class="no-smallcaps">Seeking Power Is Often Robustly Instrumental in MDPs</em> today.</p>',
+      '<p>I read <em class="work-title">Seeking Power Is Often Robustly Instrumental in MDPs</em> today.</p>',
     ],
     [
       "a sentence-cased link still gets small-caps",
@@ -1441,7 +1441,7 @@ describe("markWorkTitles", () => {
     [
       "a title-cased emphasis nested in a link is suppressed once",
       '<p><a href="/x"><em>Corrigibility Can Be VNM-Incoherent</em></a></p>',
-      '<p><a href="/x" class="no-smallcaps"><em class="no-smallcaps">Corrigibility Can Be VNM-Incoherent</em></a></p>',
+      '<p><a href="/x" class="work-title"><em class="work-title">Corrigibility Can Be VNM-Incoherent</em></a></p>',
     ],
   ])("%s", (_label, input, expected) => {
     expect(testTagSmallcapsHTML(input)).toBe(expected)

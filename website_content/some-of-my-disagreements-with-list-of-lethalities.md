@@ -30,14 +30,14 @@ date_published: 2023-01-24
 original_url: https://www.lesswrong.com/posts/kpFxkXBbpF5pWDRrc/some-of-my-disagreements-with-list-of-lethalities
 skip_import: true
 description: A critical look at the idea of "lethal" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.
-date_updated: 2026-07-15
+date_updated: 2026-08-03
 ---
 
-This was an appendix of [Inner and outer alignment decompose one hard problem into two extremely hard problems](/against-inner-outer-alignment). However, I think the material is self-contained and worth sharing separately, especially since [AGI Ruin: A List of Lethalities](https://www.lesswrong.com/posts/uMQ3cqWDPHhjtiesc/agi-ruin-a-list-of-lethalities) has become so influential.
+This was an appendix of [@title](/against-inner-outer-alignment). However, I think the material is self-contained and worth sharing separately, especially since [AGI Ruin: A List of Lethalities](https://www.lesswrong.com/posts/uMQ3cqWDPHhjtiesc/agi-ruin-a-list-of-lethalities) has become so influential.
 
 <hr/>
 
-Here are some quotes with which I disagree, considering the points I made in [Inner and outer alignment decompose one hard problem into two extremely hard problems](/against-inner-outer-alignment) (consult its TL;DR and detailed summary for a refresher, if need be).
+Here are some quotes with which I disagree, considering the points I made in [@title](/against-inner-outer-alignment) (consult its TL;DR and detailed summary for a refresher, if need be).
 
 # List of "lethalities"
 
@@ -75,14 +75,14 @@ My summary
 : The theory in the current paradigm only tells you how to, at best, align an agent to direct functions of sensory observables. Even if we achieve this kind of alignment, we die. It’s just a fact that sensory observables can’t discriminate between good and bad latent world-trajectories.
 
 > [!warning]
-> It seems to me that Eliezer does not deeply understand that [reward is not the optimization target](/reward-is-not-the-optimization-target).
+> It seems to me that Eliezer does not deeply understand that [@title-lower](/reward-is-not-the-optimization-target).
 
 My response
 : I understand “the on-paper design properties” and “insofar as the current paradigm works at all” to represent Eliezer’s understanding of the properties and the paradigm (he _did_ describe these points as “[central difficulties of outer and inner alignment](https://www.lesswrong.com/posts/uMQ3cqWDPHhjtiesc/agi-ruin-a-list-of-lethalities#Section_B_2___Central_difficulties_of_outer_and_inner_alignment_)”[^1]). But on my view, this lethality does not seem relevant or central to alignment. Use reward to supply good cognitive updates to the agent. I don't find myself thinking about reward as that which gets maximized, or which _should_ get maximized.
 :
 : Also, if you ignore the [oft-repeated wrong/under-hedged claim](https://www.lesswrong.com/posts/uSdPa9nrSgmXCtdKN/concrete-experiments-in-inner-alignment?commentId=aDtza9u4zDEMt4C4a#comments) that “RL agents maximize reward” or whatever, the on-paper design properties suggest that reward aligns agents to objectives in reality according to the computations which reward reinforces. [I think that machine learning does not, in general, align agents to sense data and reward functions.](/reward-is-not-the-optimization-target) I think that focusing on the sensory-alignment question can be misleading as to the nature of the reward-chiseling challenge which we confront.
 :
-: It's true that we don't know that we know how to reliably make superintelligent agents learn human-compatible values. However, by the same coin (e.g. by the arguments in [reward is not the optimization target](/reward-is-not-the-optimization-target)), I can just as equally ask "how do I get agents to care about _sensory_ observables and reward data?". It's not like we know how to ensure deep learning-trained agents care about their sensory observables and reward data.
+: It's true that we don't know that we know how to reliably make superintelligent agents learn human-compatible values. However, by the same coin (e.g. by the arguments in [@title-lower](/reward-is-not-the-optimization-target)), I can just as equally ask "how do I get agents to care about _sensory_ observables and reward data?". It's not like we know how to ensure deep learning-trained agents care about their sensory observables and reward data.
 
 ## "Lethality" 21: Claim that capabilities generalize further than alignment
 
@@ -127,7 +127,7 @@ My response:
 
 First, I want to say: [type error: _loss function_ not of type _goal_](/four-usages-of-loss-in-ai).[^2] Eliezer's writing gives me no indication that he understands this point. I think there's potential for deep confusion. Loss functions provide gradients to the way the AI thinks (i.e. computes forward passes). Trying to cast human values[^3] into a loss function is a _highly unnatural_ type conversion to attempt. Attempting to force the conversion anyways may well damage your view of the alignment problem.
 
-> [!quote] [Four usages of "loss" in AI](/four-usages-of-loss-in-ai)
+> [!quote] [@title](/four-usages-of-loss-in-ai)
 >
 > **3: Loss functions "representing" goals**
 >
@@ -217,7 +217,7 @@ Historical reasoning about RL seems quite bad. This excerpt is a prime example. 
     So if Eliezer's talking about "how do we get agents to care about non-sensory observables", this indicates to me that I disagree with him about what the central subproblems of alignment are.
 
 [^2]:
-    From [Inner and outer alignment decompose one hard problem into two extremely hard problems](/against-inner-outer-alignment):
+    From [@title](/against-inner-outer-alignment):
 
     > **Outer/inner** _**unnecessarily** **assumes**_ **that the loss function/outer objective should “embody” the goals which we want the agent to pursue.**
     >

@@ -29,14 +29,14 @@ date_published: 2018-09-18
 original_url: https://www.lesswrong.com/posts/yEa7kwoMpsBgaBCgb/towards-a-new-impact-measure
 skip_import: true
 description: "Impact is reframed as a change in attainable utility for both humans and AI agents. "
-date_updated: 2026-06-28
+date_updated: 2026-08-03
 createBibtex: true
 ---
 
 > [!note] Summary
 > I propose a closed-form solution to [low impact](https://arbital.com/p/low_impact/), increasing [corrigibility](https://arbital.com/p/corrigibility/) and seemingly taking major steps to neutralize [basic AI drives](https://selfawaresystems.files.wordpress.com/2008/01/ai_drives_final.pdf) 1 (self-improvement), 5 (self-protectiveness), and 6 (acquisition of resources)
 >
-> **Previous posts:** [Worrying about the Vase: Whitelisting](/whitelisting-impact-measure), [@title](/overcoming-clinginess-in-impact-measures), [@title](/impact-measure-desiderata)
+> **Previous posts:** [@title](/whitelisting-impact-measure), [@title](/overcoming-clinginess-in-impact-measures), [@title](/impact-measure-desiderata)
 
 > [!quote] [Safe Impact Measure](https://arbital.com/p/4l/)
 >

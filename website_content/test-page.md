@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-08-02
+date_updated: 2026-08-03
 createBibtex: true
 ---
 
@@ -45,6 +45,8 @@ Subtitle: MATS (starting with smallcaps).
 
 The `@title` sentinel ties a link's text to its target's current title at build time: [@title](/test-page) renders this page's title, and [@title](#header-4) renders the current text of the "Header 4" section.
 
+A resolved title gets the same typography as every other title surface, so its figures are lining rather than oldstyle: [@title](/reward-hacking-doesnt-show-reward-is-optimization-target).
+
 # `@title`s and quote smallcaps
 
 Acronyms in a resolved `@title` fill and in title-cased `[!quote]` titles render as plain caps instead of smallcaps.
@@ -61,7 +63,7 @@ Acronyms in a resolved `@title` fill and in title-cased `[!quote]` titles render
 > [!quote] Does Proton VPN keep logs?
 > A prose quote title: "VPN" is small-capped as usual.
 
-In-text work titles behave the same way: a title-cased link like [Seeking Power is Often Convergently Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps) and an italicized title like _Corrigibility Can Be VNM-Incoherent_ keep their acronyms as plain caps, while prose mentions of NASA, a lone italicized _LLM_, and sentence-cased links like [how the FBI does its work](/test-page) stay small-capped.
+In-text work titles behave the same way: a title-cased link like [Seeking Power is Often Convergently Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps) and an italicized title like _Corrigibility Can Be VNM-Incoherent_ keep their acronyms as plain caps, while prose mentions of NASA, a lone italicized _LLM_, and sentence-cased links like [how the FBI does its work](/test-page) stay small-capped. <!-- lint-ignore title-bound-link: the literal link text is what the small-caps baseline exercises -->
 
 # Lists
 
@@ -202,9 +204,21 @@ Admonition in a description list
 > [!quote]
 > ![[/test-page#section-to-transclude]]
 
+Lede transclusion, which stops at the first subheading and so leaves out the nested subsection:
+
+> ![[/test-page#section-with-a-subsection#]]
+
 ## Section to transclude
 
 Hi! Am I being transcluded? Here is a within-page link to the [admonitions section](#admonitions); because this section is transcluded from the same page above, both copies stay within-page links.
+
+## Section with a subsection
+
+This lede is the only part of the section which the lede transclusion picks up.
+
+### Nested subsection
+
+A plain section transclusion would include this text; the lede transclusion does not.
 
 # Admonitions
 

@@ -10,7 +10,7 @@ hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/test_library.jpg
 description: A selection of the best posts which I've written.
 date_published: 2024-10-27
-date_updated: 2026-06-28
+date_updated: 2026-08-03
 tags:
   - website
 card_image_alt: An anime-style illustration of a grand library bathed in sunlight. Bright light streams through large, arched windows, illuminating floor-to-ceiling bookshelves packed with books and a study table in the foreground, creating a warm and scholarly atmosphere.
@@ -49,7 +49,7 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 
 ![An anime-style illustration of a grand library bathed in sunlight. Bright light streams through large, arched windows, illuminating floor-to-ceiling bookshelves packed with books and a study table in the foreground, creating a warm and scholarly atmosphere.](https://assets.turntrout.com/static/images/posts/test_library.avif)
 
-1. [Set Up for Success: Insights from "Naïve Set Theory"](/set-up-for-success-insights-from-naive-set-theory)
+1. [@title](/set-up-for-success-insights-from-naive-set-theory)
 2. [Lightness and Unease](./lightness-and-unease.md)
 3. [The Art of the Artificial: Insights from "Artificial Intelligence: A Modern Approach"](./the-art-of-the-artificial-insights-from-artificial.md)
 4. [The First Rung: Insights from "Linear Algebra Done Right"](/the-first-rung-insights-from-linear-algebra-done-right.md)

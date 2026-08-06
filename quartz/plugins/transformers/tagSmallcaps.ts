@@ -9,7 +9,7 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { HEADING_TAGS, NBSP } from "../../components/constants"
+import { HEADING_TAGS, NBSP, WORK_TITLE_CLASS } from "../../components/constants"
 import {
   addClass,
   gatherTextBeforeIndex,
@@ -227,6 +227,7 @@ const combinedRegex = new RegExp(
 // Predicate if we should skip smallcaps for a given node
 export const skipSmallcapsClasses: readonly string[] = [
   "no-smallcaps",
+  WORK_TITLE_CLASS,
   "no-formatting",
   "bad-handwriting",
   "katex",
@@ -447,10 +448,11 @@ const WORK_TITLE_TAGS: ReadonlySet<string> = new Set(["a", "em", "i", "cite"])
 
 /**
  * Tags links/emphasis/cite elements whose text reads as a title-cased work
- * title with `no-smallcaps`, so their acronyms render as plain caps. Title
- * case is the marker: authors opt in by writing a work title in title case
- * and opt out by sentence-casing. Heading text must keep its small-caps, so
- * the anchor wrappers inside headings are exempt.
+ * title with {@link WORK_TITLE_CLASS}, the site-wide marker for text naming a
+ * work: acronyms render as plain caps and figures are lining. Title case is
+ * the marker: authors opt in by writing a work title in title case and opt out
+ * by sentence-casing. Heading text must keep its small-caps, so the anchor
+ * wrappers inside headings are exempt.
  */
 export function markWorkTitles(tree: Node): void {
   visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
@@ -460,7 +462,7 @@ export function markWorkTitles(tree: Node): void {
     )
     if (inHeading) return
     if (looksLikeWorkTitle(toString(node))) {
-      addClass(node, "no-smallcaps")
+      addClass(node, WORK_TITLE_CLASS)
     }
   })
 }

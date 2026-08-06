@@ -37,6 +37,14 @@ test.use({ stubCdnAssets: false })
 //     MathML elements is deprecated. KaTeX still emits it, and Firefox's
 //     own chrome://global/...videocontrols.js trips the warning too —
 //     neither is actionable from our code.
+//   - MathML child-count errors: Firefox builds frames for MathML as the HTML
+//     parser flushes, so a flush landing between an <mfrac>'s numerator and
+//     denominator makes it complain about a subtree it has not finished
+//     reading. Splitting `<mfrac><mn>1</mn>` from `<mn>2</mn></mfrac>` across
+//     two `document.write` calls reproduces it on demand; the parsed DOM is
+//     correct either way, and where the chunk boundary falls is not ours to
+//     choose. Math that is actually broken shows up as a `.katex-error` span,
+//     which `check_katex_elements_for_errors` fails the build on.
 //   - "was preloaded … but not used": icons preloaded via <link rel=preload>
 //     for admonition types that don't appear on a given page. Harmless.
 //   - palform.app: the third-party feedback-form embed (on /about) ships its
@@ -50,6 +58,7 @@ const ALLOWED_PATTERNS: readonly RegExp[] = [
   /codecs=hvc1/i,
   /Trying to load from next <source> element/i,
   /mathvariant.*deprecated/i,
+  /Invalid markup: Incorrect number of children for <\w+\/> tag\./,
   /was preloaded using link preload but not used/i,
   /palform\.app/i,
   /^Failed to preconnect to \S+ Error: The request timed out\.$/,

@@ -37,6 +37,7 @@ import {
   RemoveDrafts,
   RemoveFixtures,
   RemovePartials,
+  SetDropcapLetter,
   Static,
   StripInlineBoundaryWhitespace,
   SyntaxHighlighting,
@@ -153,6 +154,10 @@ const config: QuartzConfig = {
       // AddFavicons so the favicon is woven into the resolved title rather than
       // the `@title` sentinel.
       BindLinkTitles(),
+      // After BindLinkTitles: the dropcap renders the first character of the
+      // first paragraph's rendered text, which for a paragraph opening with a
+      // title-bound link is the resolved title.
+      SetDropcapLetter(),
       // After CrawlLinks so it sees normalized https:// hrefs + the "external"
       // class; swaps confirmed-dead outbound links for their archived copy.
       ArchiveLinks(),

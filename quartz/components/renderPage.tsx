@@ -102,14 +102,16 @@ export function setBlockTransclusion(
 
 /**
  * Replaces a transclude element's children with the section under a header in the target page.
- * The section spans from the matching header until the next header of the same or higher depth.
+ * The section spans from the matching header until the next header of the same or higher depth,
+ * or — when `ledeOnly` is set — until the next header of any depth, so that subsections are left
+ * behind and only the header's own lede comes through.
  *
  * @param node - The transclude element node to mutate.
  * @param page - The page being transcluded from (requires `htmlAst`).
  * @param slug - The current page slug where content is rendered.
  * @param transcludeTarget - The target page slug being referenced.
- * @param inner - The inner element of the original transclusion span (for link back href).
  * @param headerId - The id of the header within the target page to transclude from.
+ * @param ledeOnly - Stop at the next header of any depth instead of the same-or-higher one.
  */
 export function setHeaderTransclusion(
   node: Element,
@@ -117,6 +119,7 @@ export function setHeaderTransclusion(
   slug: FullSlug,
   transcludeTarget: FullSlug,
   headerId: string,
+  ledeOnly = false,
 ): void {
   const htmlAst = page.htmlAst
   if (!htmlAst) return
@@ -134,7 +137,7 @@ export function setHeaderTransclusion(
         startIdx = i
         startDepth = depth
       }
-    } else if (depth <= startDepth) {
+    } else if (ledeOnly || depth <= startDepth) {
       endIdx = i
       break
     }
@@ -374,8 +377,11 @@ export function renderPage(
           // intro transclude (from beginning to first heading) - ![[page#]]
           setIntroTransclusion(node, page, slug, transcludeTarget)
         } else if (blockRef?.startsWith("#") && page.htmlAst) {
-          // header transclude - ![[page#section]]
-          setHeaderTransclusion(node, page, slug, transcludeTarget, blockRef.slice(1))
+          // header transclude - ![[page#section]], or its lede-only form
+          // ![[page#section#]], which stops at the first nested subheading
+          const ledeOnly = blockRef.endsWith("#")
+          const headerId = ledeOnly ? blockRef.slice(1, -1) : blockRef.slice(1)
+          setHeaderTransclusion(node, page, slug, transcludeTarget, headerId, ledeOnly)
         } else if (page.htmlAst) {
           // page transclude (whole article excluding trout decoration) - ![[page]]
           setPageTransclusion(node, page, slug, transcludeTarget)

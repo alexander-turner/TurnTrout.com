@@ -38,12 +38,12 @@ date_published: 2021-07-08
 original_url: https://www.lesswrong.com/posts/sunXMY5WyDcrHsNRr/a-world-in-which-the-alignment-problem-seems-lower-stakes
 skip_import: true
 description: "This post explores a hypothetical scenario where the AI alignment problem seems lower-stakes due to a unique universe structure. "
-date_updated: 2026-04-20
+date_updated: 2026-08-03
 ---
 
 The danger from power-seeking is not _intrinsic_ to the alignment problem. This danger also depends on [the structure of the agent's environment](/environmental-structure-can-cause-instrumental-convergence).
 
-In [_The Catastrophic Convergence Conjecture_](/the-catastrophic-convergence-conjecture), I wrote:
+In _[@title](/the-catastrophic-convergence-conjecture)_, I wrote:
 
 !["What happens when agents seek pure control over the future? Not everyone can be king. If you're just seeking power without concern for others, you tend to push others down after a certain point. And most goals don't have concern for others. You'll just compete for resources." Below, a "paperclip maximizer" robot punches a "staple maximizer" robot.](https://assets.turntrout.com/static/images/posts/OsWS97b.avif)![A hand-drawn illustration shows two robots on opposite sides of a green planet. Text reads: "It may take a while for power-seekers to come into conflict. But they will. They don't hate each other; they're just in each other's way."](https://assets.turntrout.com/static/images/posts/d057729cc125ff7e4c1a99e1fab5c7936fb5cef537b9d02b.avif)
 

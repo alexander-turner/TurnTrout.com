@@ -39,7 +39,7 @@ date_published: 2018-06-01
 original_url: https://www.lesswrong.com/posts/cuZxipMFup5uJdeAp/into-the-kiln-insights-from-tao-s-analysis-i
 skip_import: true
 description: Tao's "Analysis I" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.
-date_updated: 2026-06-28
+date_updated: 2026-08-03
 ---
 
 As a young boy, mathematics captivated me. In elementary school, I'd happily while away entire weekends working through the next grade's math book. I was impatient. In middle school, I'd lazily estimate angles of incidence that would result if I shot lasers from my eyes, tracing their trajectories within the classroom and out down the hallway. I was restless.
@@ -230,7 +230,7 @@ I often simply left my phone at home and accompanied my Kindle to an empty class
 
 Just over three months ago, I wrote:
 
-> [!quote] [The Art of the Artificial: Insights From “Artificial Intelligence: A Modern Approach](/AI-textbook-review)
+> [!quote] [@title](/AI-textbook-review)
 >
 > **Proofs** remain inordinately difficult for me, although I have noticed a small improvement. To do MIRI-relevant math, proofs will need to become second nature. Depending on how I feel as I progress through my next book (which will likely be a proof-centric linear algebra tome), I'll start trying different supplemental approaches for improving my proof prowess.
 >

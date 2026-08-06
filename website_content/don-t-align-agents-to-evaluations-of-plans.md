@@ -36,18 +36,18 @@ date_published: 2022-11-26
 original_url: https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans
 description: Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.
 skip_import: true
-date_updated: 2026-05-18
+date_updated: 2026-08-03
 createBibtex: true
 ---
 
 > [!info]
-> This post is another stab at explaining [_Don't design agents which exploit adversarial inputs_](/dont-design-agents-which-exploit-adversarial-inputs).
+> This post is another stab at explaining _[@title](/dont-design-agents-which-exploit-adversarial-inputs)_.
 
 After asking several readers for their understandings, I think that I didn't successfully communicate my points to many readers. I'm now trying again, because I think these points are deeply important. In particular, I think that my arguments rule out many target AI motivational structures, including [approval-directed agents](https://www.alignmentforum.org/posts/7Hr8t6xwuuxBTqADK/approval-directed-agents-1) (over a rich action space), [approval-based amplification](https://www.lesswrong.com/posts/fRsjBseRuvRhMPPE5/an-overview-of-11-proposals-for-building-safe-advanced-ai#4__Approval_based_amplification___relaxed_adversarial_training) (if the trained agent is supposed to be terminally motivated by the amplified overseer's ratings), and [some kinds](https://ordinaryideas.wordpress.com/2012/04/21/indirect-normativity-write-up/) of indirect normativity.
 
 ---
 
-> [!quote] [Don't design agents which exploit adversarial inputs](/dont-design-agents-which-exploit-adversarial-inputs)
+> [!quote] [@title](/dont-design-agents-which-exploit-adversarial-inputs)
 >
 > One motif in some AI alignment proposals is:
 >
@@ -148,7 +148,7 @@ Let's dive into concrete detail. Here's a [story](https://www.lesswrong.com/post
 
 > [!quote]
 >
-> **An alternate mechanistic vision of how agents can be motivated to directly care about e.g. diamonds or working hard.** In [Don't design agents which exploit adversarial inputs](/dont-design-agents-which-exploit-adversarial-inputs), I wrote about two possible mind-designs:
+> **An alternate mechanistic vision of how agents can be motivated to directly care about e.g. diamonds or working hard.** In [@title](/dont-design-agents-which-exploit-adversarial-inputs), I wrote about two possible mind-designs:
 >
 > > Imagine a mother whose child has been goofing off at school and getting in trouble. The mom just wants her kid to take education seriously and have a good life. Suppose she had two (unrealistic but illustrative) choices.
 > >
@@ -300,7 +300,7 @@ I replied:
 >
 > Yeah, I agree that he could be mistaken and take a dumb course of action. This is indeed an upwards evaluation error, so to speak. It's not that I think e.g. shard-agents can freely avoid serious upwards errors, it's that they aren't _seeking them out on purpose_. As I wrote to Daniel K [in a recent comment](https://www.lesswrong.com/posts/k4AQqboXz8iE5TNXK/a-shot-at-the-diamond-alignment-problem?commentId=3BFBhgQeHzBvJmjzi):
 >
-> > One of the main threads is [Don't design agents which exploit adversarial inputs](/dont-design-agents-which-exploit-adversarial-inputs). The point isn't that people can't or don't fall victim to plans which, by virtue of spurious appeal to a person's value shards, cause the person to unwisely pursue the plan. The point here is that (I claim) intelligent people convergently want to avoid this happening to them.
+> > One of the main threads is [@title](/dont-design-agents-which-exploit-adversarial-inputs). The point isn't that people can't or don't fall victim to plans which, by virtue of spurious appeal to a person's value shards, cause the person to unwisely pursue the plan. The point here is that (I claim) intelligent people convergently want to avoid this happening to them.
 > >
 > > A diamond-shard will not try to find adversarial inputs to itself. That was my original point, and I think it stands.
 
