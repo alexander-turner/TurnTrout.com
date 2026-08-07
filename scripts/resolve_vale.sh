@@ -12,6 +12,12 @@ set -uo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 PINNED_VERSION=$(cat "$SCRIPT_DIR/../config/vale/version")
+if [ -z "$PINNED_VERSION" ]; then
+  # An empty pin would match the empty version string of any non-vale
+  # candidate below, silently approving an arbitrary binary.
+  echo "config/vale/version is missing or empty" >&2
+  exit 1
+fi
 
 # `vale --version` prints "vale version X.Y.Z".
 vale_version_of() {
