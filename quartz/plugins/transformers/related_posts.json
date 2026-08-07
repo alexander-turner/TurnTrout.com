@@ -151,14 +151,14 @@
       "title": "Inner and outer alignment decompose one hard problem into two extremely hard problems"
     },
     {
-      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
-      "permalink": "alignment-without-total-robustness",
-      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
-    },
-    {
       "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
       "permalink": "dont-align-agents-to-evaluations-of-plans",
       "title": "Don't align agents to evaluations of plans"
+    },
+    {
+      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
+      "permalink": "alignment-without-total-robustness",
+      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
     }
   ],
   "about": [
@@ -393,14 +393,14 @@
       "title": "Environmental Structure Can Cause Instrumental Convergence"
     },
     {
-      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
-      "permalink": "satisficers-tend-to-seek-power",
-      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
-    },
-    {
       "excerpt": "Power, reframed: It's not just about optimal value, but about what you can actually accomplish.",
       "permalink": "power-as-easily-exploitable-opportunities",
       "title": "Power as Easily Exploitable Opportunities"
+    },
+    {
+      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
+      "permalink": "satisficers-tend-to-seek-power",
+      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
     }
   ],
   "attainable-utility-landscape": [
@@ -501,14 +501,14 @@
       "title": "Attainable Utility Preservation: Empirical Results"
     },
     {
-      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
-      "permalink": "towards-a-new-impact-measure",
-      "title": "Towards a New Impact Measure"
-    },
-    {
       "excerpt": "AI agents trained with Attainable Utility Preservation avoid most side effects in Conway's Game of Life without explicit instructions.",
       "permalink": "avoiding-side-effects-in-complex-environments",
       "title": "Avoiding Side Effects in Complex Environments"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
     }
   ],
   "attainable-utility-preservation-scaling-to-superhuman": [
@@ -765,14 +765,14 @@
       "title": "My research"
     },
     {
-      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
-      "permalink": "towards-a-new-impact-measure",
-      "title": "Towards a New Impact Measure"
-    },
-    {
       "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
       "permalink": "reframing-impact",
       "title": "Reframing Impact"
+    },
+    {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
     }
   ],
   "conservative-agency-with-multiple-stakeholders": [
@@ -841,14 +841,14 @@
       "title": "Thoughts on 'Human-Compatible'"
     },
     {
-      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
-      "permalink": "towards-a-new-impact-measure",
-      "title": "Towards a New Impact Measure"
-    },
-    {
       "excerpt": "Formal analysis showing that, for agents optimizing a reward function, corrigibility is rare and perhaps even incoherent.",
       "permalink": "a-certain-formalization-of-corrigibility-is-vnm-incoherent",
       "title": "A Certain Formalization of Corrigibility Is VNM-Incoherent"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
     },
     {
       "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
@@ -939,9 +939,9 @@
       "title": "My open source contributions"
     },
     {
-      "excerpt": "Showing off and explaining this site's beauty.",
-      "permalink": "design",
-      "title": "The design of this website"
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
     }
   ],
   "deducing-impact": [
@@ -966,9 +966,9 @@
       "title": "World State is the Wrong Abstraction for Impact"
     },
     {
-      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
-      "permalink": "towards-a-new-impact-measure",
-      "title": "Towards a New Impact Measure"
+      "excerpt": "Impact reframed: a gears-level view of how and why some things seem important to us.",
+      "permalink": "the-gears-of-impact",
+      "title": "The Gears of Impact"
     }
   ],
   "deep-causal-transcoding": [
@@ -993,9 +993,9 @@
       "title": "Steering Llama-2 with contrastive activation additions"
     },
     {
-      "excerpt": "Activation additions: steering language models by adding a bias to the forward pass. Surprisingly broad control, small impact on off-target capabilities.",
-      "permalink": "gpt2-steering-paper-announcement",
-      "title": "ActAdd: Steering Language Models without Optimization"
+      "excerpt": "Open questions on controlling language models at runtime via activation engineering.",
+      "permalink": "open-problems-in-activation-engineering",
+      "title": "Open problems in activation engineering"
     }
   ],
   "deepmind-equity-discussion": [
@@ -1017,11 +1017,6 @@
       "title": "My open source contributions"
     },
     {
-      "excerpt": "Displaying the features of the website for use in visual regression testing.",
-      "permalink": "test-page",
-      "title": "Testing site features"
-    },
-    {
       "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
       "permalink": "about",
       "title": "About me"
@@ -1030,6 +1025,11 @@
       "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
       "permalink": "date-me",
       "title": "I'm that \"other fish in the sea\""
+    },
+    {
+      "excerpt": "Displaying the features of the website for use in visual regression testing.",
+      "permalink": "test-page",
+      "title": "Testing site features"
     }
   ],
   "digital-minimalism": [
@@ -1056,14 +1056,14 @@
       "title": "Don't align agents to evaluations of plans"
     },
     {
+      "excerpt": "Common alignment ideas involve gaming the grader, not achieving the goal. Counterproductive, like building a toaster which both warms and cools the bread.",
+      "permalink": "dont-design-agents-which-exploit-adversarial-inputs",
+      "title": "Don't design agents which exploit adversarial inputs"
+    },
+    {
       "excerpt": "Four distinct concepts related to \"loss function\" in AI are often conflated, leading to ambiguity in the field of AI alignment.",
       "permalink": "four-usages-of-loss-in-ai",
       "title": "Four usages of 'loss' in AI"
-    },
-    {
-      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
-      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
-      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
     }
   ],
   "distillation-robustifies-unlearning": [
@@ -1266,14 +1266,14 @@
       "title": "Self-fulfilling misalignment data might be poisoning our AI models"
     },
     {
-      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
-      "permalink": "consistency-training",
-      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
-    },
-    {
       "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
       "permalink": "dont-align-agents-to-evaluations-of-plans",
       "title": "Don't align agents to evaluations of plans"
+    },
+    {
+      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
+      "permalink": "consistency-training",
+      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
     }
   ],
   "excitement-about-impact-measures": [
@@ -1428,14 +1428,14 @@
       "title": "Some of my disagreements with List of Lethalities"
     },
     {
-      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
-      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
-      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
-    },
-    {
       "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
       "permalink": "dont-align-agents-to-evaluations-of-plans",
       "title": "Don't align agents to evaluations of plans"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
     }
   ],
   "functional-analysis-textbook-review": [
@@ -1541,9 +1541,9 @@
       "title": "The shard theory of human values"
     },
     {
-      "excerpt": "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power.",
-      "permalink": "the-catastrophic-convergence-conjecture",
-      "title": "The Catastrophic Convergence Conjecture"
+      "excerpt": "A critical look at the idea of \"lethal\" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.",
+      "permalink": "disagreements-with-list-of-lethalities",
+      "title": "Some of my disagreements with List of Lethalities"
     }
   ],
   "gpt2-steering-paper-announcement": [
@@ -1749,14 +1749,14 @@
       "title": "General alignment properties"
     },
     {
-      "excerpt": "A critical look at the idea of \"lethal\" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.",
-      "permalink": "disagreements-with-list-of-lethalities",
-      "title": "Some of my disagreements with List of Lethalities"
-    },
-    {
       "excerpt": "Imperfect human values like familial love seem to contradict AI alignment arguments about Goodhart's Curse.",
       "permalink": "humane-values-despite-imperfections",
       "title": "People care about each other even though they have imperfect motivational pointers?"
+    },
+    {
+      "excerpt": "A critical look at the idea of \"lethal\" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.",
+      "permalink": "disagreements-with-list-of-lethalities",
+      "title": "Some of my disagreements with List of Lethalities"
     },
     {
       "excerpt": "Stuart Russell's \"Human Compatible\" makes the case for aligning AI with human values and sketches a research agenda based on uncertainty.",
@@ -1820,14 +1820,14 @@
   ],
   "impact-measure-desiderata": [
     {
-      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
-      "permalink": "towards-a-new-impact-measure",
-      "title": "Towards a New Impact Measure"
-    },
-    {
       "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
       "permalink": "reframing-impact",
       "title": "Reframing Impact"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
     },
     {
       "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
@@ -1947,14 +1947,14 @@
       "title": "Reasons for Excitement about Impact of Impact Measure Research"
     },
     {
-      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
-      "permalink": "satisficers-tend-to-seek-power",
-      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
-    },
-    {
       "excerpt": "This post explores a hypothetical scenario where the AI alignment problem seems lower-stakes due to a unique universe structure.",
       "permalink": "lower-stakes-alignment-scenario",
       "title": "A world in which the alignment problem seems lower-stakes"
+    },
+    {
+      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
+      "permalink": "satisficers-tend-to-seek-power",
+      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
     }
   ],
   "instrumental-convergence-via-vnm-preferences": [
@@ -2190,14 +2190,14 @@
       "title": "Walkthrough of 'Formalizing Convergent Instrumental Goals'"
     },
     {
-      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
-      "permalink": "excitement-about-impact-measures",
-      "title": "Reasons for Excitement about Impact of Impact Measure Research"
-    },
-    {
       "excerpt": "The structure of environments, not just reward functions, contributes to power-seeking in AI agents.",
       "permalink": "environmental-structure-can-cause-instrumental-convergence",
       "title": "Environmental Structure Can Cause Instrumental Convergence"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
     }
   ],
   "managerial-decision-making-review": [
@@ -2415,9 +2415,9 @@
       "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
     },
     {
-      "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
-      "permalink": "top-right-steering-vector",
-      "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
+      "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
+      "permalink": "deep-causal-transcoding",
+      "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
     }
   ],
   "open-source": [
@@ -2478,14 +2478,14 @@
       "title": "Recontextualization Mitigates Specification Gaming Without Modifying the Specification"
     },
     {
-      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
-      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
-      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
-    },
-    {
       "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
       "permalink": "mechanistically-eliciting-latent-behaviors",
       "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
     },
     {
       "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
@@ -2510,14 +2510,14 @@
       "title": "Impact Measure Desiderata"
     },
     {
-      "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
-      "permalink": "reframing-impact",
-      "title": "Reframing Impact"
-    },
-    {
       "excerpt": "An impact measure for AI safety that whitelists the object transformations which are allowed.",
       "permalink": "whitelisting-impact-measure",
       "title": "Worrying about the Vase: Whitelisting"
+    },
+    {
+      "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
+      "permalink": "reframing-impact",
+      "title": "Reframing Impact"
     },
     {
       "excerpt": "How to make AI agents avoid negative side effects, especially in multi-stakeholder environments.",
@@ -2566,24 +2566,24 @@
       "title": "Seeking Power is Often Convergently Instrumental in MDPs"
     },
     {
-      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
-      "permalink": "excitement-about-impact-measures",
-      "title": "Reasons for Excitement about Impact of Impact Measure Research"
-    },
-    {
       "excerpt": "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power.",
       "permalink": "the-catastrophic-convergence-conjecture",
       "title": "The Catastrophic Convergence Conjecture"
     },
     {
-      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
-      "permalink": "satisficers-tend-to-seek-power",
-      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
     },
     {
       "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
       "permalink": "announcing-rewrite-of-power-seeking-post",
       "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
+    },
+    {
+      "excerpt": "Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.",
+      "permalink": "satisficers-tend-to-seek-power",
+      "title": "Satisficers Tend To Seek Power: Instrumental Convergence Via Retargetability"
     }
   ],
   "power-seeking-beyond-MDPs": [
@@ -2737,14 +2737,14 @@
   ],
   "questioning-why-simple-alignment-plan-fails": [
     {
-      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
-      "permalink": "invalid-ai-risk-arguments",
-      "title": "Many arguments for AI x-risk are wrong"
-    },
-    {
       "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
       "permalink": "reward-is-not-the-optimization-target",
       "title": "Reward is not the optimization target"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
     },
     {
       "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
@@ -2847,14 +2847,14 @@
       "title": "Reasons for Excitement about Impact of Impact Measure Research"
     },
     {
-      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
-      "permalink": "towards-a-new-impact-measure",
-      "title": "Towards a New Impact Measure"
-    },
-    {
       "excerpt": "Impact measures: Can they make AI safer, or are they a dangerous distraction from more promising approaches?",
       "permalink": "best-reasons-for-pessimism-about-impact-measures",
       "title": "Best reasons for pessimism about impact of impact measures?"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
     }
   ],
   "research": [
@@ -2977,14 +2977,14 @@
       "title": "Many arguments for AI x-risk are wrong"
     },
     {
-      "excerpt": "A list of some of my major conceptual mistakes.",
-      "permalink": "mistakes",
-      "title": "Mistaken claims I've made"
-    },
-    {
       "excerpt": "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts.",
       "permalink": "recontextualization-mitigates-specification-gaming",
       "title": "Recontextualization Mitigates Specification Gaming Without Modifying the Specification"
+    },
+    {
+      "excerpt": "Four distinct concepts related to \"loss function\" in AI are often conflated, leading to ambiguity in the field of AI alignment.",
+      "permalink": "four-usages-of-loss-in-ai",
+      "title": "Four usages of 'loss' in AI"
     }
   ],
   "reward-is-not-the-optimization-target": [
@@ -3279,9 +3279,9 @@
       "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
     },
     {
-      "excerpt": "A deep dive into reinforcement learning, covering algorithms, exploration vs. exploitation, and the importance of safe AI development.",
-      "permalink": "RL-textbook-review",
-      "title": "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
+      "excerpt": "A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.",
+      "permalink": "seeking-power-is-often-convergently-instrumental-in-mdps",
+      "title": "Seeking Power is Often Convergently Instrumental in MDPs"
     }
   ],
   "swimming-upstream": [
@@ -3328,14 +3328,14 @@
       "title": "I'm that \"other fish in the sea\""
     },
     {
-      "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "research",
-      "title": "My research"
-    },
-    {
       "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
       "permalink": "a-shot-at-the-diamond-alignment-problem",
       "title": "A shot at the diamond-alignment problem"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
     }
   ],
   "test-page": [
@@ -3404,9 +3404,9 @@
       "title": "Conclusion to 'Reframing Impact'"
     },
     {
-      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
-      "permalink": "towards-a-new-impact-measure",
-      "title": "Towards a New Impact Measure"
+      "excerpt": "Impact is objectively important to agents, no matter their goals. Even robots hoarding pebbles care about a meteor strike.",
+      "permalink": "value-impact",
+      "title": "Value Impact"
     }
   ],
   "thoughts-on-human-compatible": [
@@ -3639,14 +3639,14 @@
       "title": "Reframing Impact"
     },
     {
-      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
-      "permalink": "towards-a-new-impact-measure",
-      "title": "Towards a New Impact Measure"
-    },
-    {
       "excerpt": "A tour of the research areas I've loved over the years.",
       "permalink": "research",
       "title": "My research"
+    },
+    {
+      "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
+      "permalink": "towards-a-new-impact-measure",
+      "title": "Towards a New Impact Measure"
     }
   ],
   "why-i-left-google-deepmind": [
