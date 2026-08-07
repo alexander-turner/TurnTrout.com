@@ -44,14 +44,17 @@ uv_install_if_missing() {
   fi
 }
 
-# Install vale (prose linter) if missing, from a pinned GitHub release.
-# webi has no vale package, so pull the official tarball directly. The version
-# is the single source of truth in config/vale/version, shared with CI
+# Install vale (prose linter) from a pinned GitHub release. webi has no vale
+# package, so pull the official tarball directly. The version is the single
+# source of truth in config/vale/version, shared with CI
 # (lint-and-validate.yaml) so pre-push and CI never drift; required by the
 # pre-push spellcheck/prose gate.
 VALE_VERSION="$(cat "$PROJECT_DIR/config/vale/version")"
-vale_install_if_missing() {
-  command -v vale &>/dev/null && return 0
+vale_install_if_unpinned() {
+  # A vale of another version (e.g. Homebrew's) does not satisfy the gate:
+  # rule scoping differs across releases, so the pin must be installed
+  # alongside it. ~/.local/bin precedes the rest of PATH in .hooks/pre-push.
+  "$PROJECT_DIR/scripts/resolve_vale.sh" &>/dev/null && return 0
   local os arch
   case "$(uname -s)" in
   Linux) os=Linux ;;
@@ -146,9 +149,10 @@ fi
 webi_install_if_missing shfmt shfmt@3
 webi_install_if_missing gh gh@2
 webi_install_if_missing jq jq@1.7
-# vale is required by the pre-push spellcheck/prose gate (it errors when vale
-# is absent), so install it here rather than letting it silently skip.
-vale_install_if_missing
+# vale is required by the pre-push spellcheck/prose gate (it errors when the
+# pinned version is absent), so install it here rather than letting it
+# silently skip.
+vale_install_if_unpinned
 uv_install_if_missing alt-text-llm
 if is_root; then
   # Map: command-to-probe -> apt package name. ffmpeg/imagemagick are
