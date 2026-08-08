@@ -18,6 +18,7 @@ npm install agent-sanitizer
 ```
 /plugin marketplace add AlexanderMattTurner/agent-sanitizer
 /plugin install agent-sanitizer@agent-sanitizer
+/agent-sanitizer:enable-auto-update
 ```
 
 [What installing entails](#what-installing-entails) covers the footprint of each
@@ -114,12 +115,17 @@ buy you:
    first web page, and the occasional over-redaction of credential-shaped text —
    `AGENT_SANITIZER_OUTPUT_DISABLED=1` opts out of the rewrites.
 
-Failure is loud by design: every layer fails closed, so you see suppressed tool
-output (`[output sanitizer unavailable — original output suppressed]`), blocked
-prompts, or permission asks whose reason names the cause. The exception is a
-plugin that never loaded at all — Claude Code reads a crashed hook as "no
-objection", so confirm with `/plugin` rather than reading a quiet session as a
-working one.
+Failure is loud by design. Installed as Claude Code hooks the layers fail
+**open**: a hook that could not run lets the action through rather than halting
+your session on its own breakage — but it says so, in a warning the model and
+the transcript both carry. Set `AGENT_SANITIZER_FAIL_OPEN=0` and the same
+failures block instead: suppressed tool output
+(`[output sanitizer unavailable — original output suppressed]`), blocked
+prompts, permission asks whose reason names the cause. Either way, a plugin that
+never loaded at all is invisible — Claude Code reads a crashed hook as "no
+objection" — so confirm with `/plugin` rather than reading a quiet session as a
+working one. Neither posture touches what a sanitizer that RAN decided (see
+`plugin/README.md`).
 
 ## Using it with Claude Code
 
@@ -131,7 +137,22 @@ needs only `python3` on PATH, for Layer 4 — the plugin ships the engine itself
 ```
 /plugin marketplace add AlexanderMattTurner/agent-sanitizer
 /plugin install agent-sanitizer@agent-sanitizer
+/agent-sanitizer:enable-auto-update
 ```
+
+Claude Code auto-updates Anthropic's own marketplaces by default and nobody
+else's, so that install pins you to the release you added and later detector
+fixes never arrive. Claude Code ships no slash command for the toggle, so the
+plugin ships one — `/agent-sanitizer:enable-auto-update` writes the same bit the
+`/plugin` picker's **Enable auto-update** does, and refuses loudly rather than
+guessing if the marketplace was never added. To pull a release by hand instead:
+
+```
+/plugin marketplace update agent-sanitizer
+/plugin update agent-sanitizer@agent-sanitizer
+```
+
+`plugin/README.md` has the managed-settings form for enabling it fleet-wide.
 
 To wire them yourself instead, one entry dispatches all four modes on `--hook=`:
 
@@ -182,8 +203,8 @@ surface is the `--hook=` CLI, so these move between minor versions.
 
 **`sanitize-output` takes a host-extension bag** — an optional last argument on
 `sanitizeText`, `sanitizeValue`, `evaluateToolOutput`, `judgeSanitizeOutput`, and
-`cliMain`, so a composer that wraps `cliMain` gets the hook's exact fail-closed
-CLI wiring plus its own policy:
+`cliMain`, so a composer that wraps `cliMain` gets the hook's exact CLI wiring
+plus its own policy:
 
 | Field        | Runs                                                     | Does                                                                                 |
 | ------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------ |
@@ -194,11 +215,13 @@ CLI wiring plus its own policy:
 
 Omit the bag and every seam is inert — the verdicts are byte-identical to this
 module alone. A callback that throws is **not** caught: it lands in the CLI's
-fail-closed catch and the tool output is suppressed, so a broken extension can
-never degrade into showing unvetted output. `postText` deliberately does not run
-on object field NAMES: a callback sees only the string and the tool, so it cannot
+failure catch, so a broken extension gets the caller's failure posture — the
+warning-and-pass-through default, or suppression under
+`AGENT_SANITIZER_FAIL_OPEN=0`. Wire `emitFailClosed` yourself if a host must
+suppress regardless of the environment. `postText` deliberately does not run on
+object field NAMES: a callback sees only the string and the tool, so it cannot
 tell a schema key from content, and rewriting a key can collapse two fields into
-one name — which this hook turns into whole-output suppression.
+one name — which this hook answers with that same failure path.
 
 Beyond the credential-shaped names it infers, the env-bound redaction set unions
 `_AGENT_SANITIZER_EXTRA_SECRET_VARS` — a comma-separated list of `[A-Z0-9_]`
@@ -208,8 +231,9 @@ choosing. A malformed entry throws rather than being dropped.
 **Layer 4 needs the Python engine.** The plugin ships it and provisions it at
 SessionStart; a hand-wired npm install does not, so install it yourself —
 `pip install 'agent-sanitizer[secrets]'`, version-matched to the npm package.
-Without it `sanitize-output` fails closed: secret-shaped output is suppressed,
-not shown unvetted. Layers 1–3 still run.
+Without it `sanitize-output` fails: secret-shaped output reaches the model
+unredacted with a warning attached, or is suppressed under
+`AGENT_SANITIZER_FAIL_OPEN=0`. Layers 1–3 still run.
 
 **Layer 5 (second-model injection filtering) is not included.** These hooks
 never supply the `/output` seam's `filterInjection` callback, so nothing here
@@ -244,8 +268,8 @@ hook module, and every consumer waits on that path instead. `lib/control-plane`
 resolves the marker at module scope, so a call that lands after that import
 warns on stderr — it cannot steer the wait that already started.
 
-**A host's own remedy can replace the packaged one in every fail-closed
-reason.** Deep call sites (`lib/control-plane`'s missing-package throw) take no
+**A host's own remedy can replace the packaged one in every failure reason**
+(the fail-closed verdicts and the fail-open warning alike). Deep call sites (`lib/control-plane`'s missing-package throw) take no
 remedy argument, so by default they can only say `pnpm install`. A host whose
 install has one entry point calls `configureMissingPackageRemedy(text)` (from
 `lib/hook-io`) — typically at its bundle entry — and every remedy-less
@@ -262,7 +286,7 @@ credentials (and their length floor) in a registry of its own feeds the packaged
 helpers from it instead of forking the module. Unset fields keep the package
 derivation; `null` restores it entirely. A malformed source — a non-object, a
 key the seam does not read, a bad field — throws on first use, inside the
-consuming hook's fail-closed catch, never at configure time.
+consuming hook's failure catch, never at configure time.
 
 Hook internals are tuned by `_AGENT_SANITIZER_*` variables (redactor daemon
 path/socket/timeouts, sanitize budget, trace channel, Layer-2 reveal dir). The
