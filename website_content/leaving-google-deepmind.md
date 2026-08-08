@@ -22,7 +22,7 @@ aliases:
   - leaving-google-deepmind
 no_dropcap_color: true
 date_published: 2026-07-15
-date_updated: 2026-08-07
+date_updated: 2026-08-08
 lw-posted-at: https://www.lesswrong.com/posts/iKm2FhpWkuuBojm82/why-i-left-google-deepmind
 ---
 
