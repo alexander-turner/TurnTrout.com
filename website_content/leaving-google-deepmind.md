@@ -639,7 +639,7 @@ What should a pledge-signer do? I see three honest options: explain publicly how
 
 [^rene]: I know of exactly one other person who left over the deal: René Mayrhofer, a director for Android platform security. "Management has lost its moral compass", [he stated](https://www.businessinsider.com/google-director-resigned-pentagon-ai-deal-military-artificial-intelligence-gemini-2026-6). He apparently will serve his notice period from mid-June until August. Brave.
 
-> [!success] [Jeff Dean later left Google](https://www.cnbc.com/2026/08/05/google-chief-scientist-jeff-dean-leaving-company-after-27-years.html), honoring his pledge
+> [!success]- [Jeff Dean later left Google](https://www.cnbc.com/2026/08/05/google-chief-scientist-jeff-dean-leaving-company-after-27-years.html), honoring his pledge
 > Subtitle: August 5th, 2026 (several weeks after publication of this essay)
 >
 >  Sundar tried to keep him:
