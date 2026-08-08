@@ -58,6 +58,15 @@ This essay tells the story of why I left Google DeepMind. It is also the story o
 > [!info] On private communications
 > Throughout this essay, I never quote anyone's private words without permission. Where private conversations matter, I characterize them minimally. I otherwise keep to my own actions, public information, and official communications. You can't verify my characterizations, so weight them accordingly. This minimization has cut content which would have supported my arguments.
 
+> [!success] [Jeff Dean later left Google](https://www.cnbc.com/2026/08/05/google-chief-scientist-jeff-dean-leaving-company-after-27-years.html), honoring his pledge
+> Subtitle: August 5th, 2026 (several weeks after publication of this essay)
+>
+>  Sundar tried to keep him:
+>  > [!quote] [4 of Google’s Top AI Brains Are Leaving—and Launching Their Own AI Startup](https://www.wired.com/story/jeff-dean-google-discovery-loop-startup/)
+>  > Dean says that Alphabet CEO Sundar Pichai tried over multiple meetings to get them to keep their badges. Ultimately the team decided that they wanted the fun–and the freedom–of doing a startup.
+>  
+>  While no public information indicates he left due to the Pentagon deal, I think it's good that Jeff left and thereby honored his 2018 pledge.
+>
 # Google supports the immigration enforcement supply chain
 
 Subtitle: January 26th, 2026
@@ -630,6 +639,15 @@ What should a pledge-signer do? I see three honest options: explain publicly how
 
 [^rene]: I know of exactly one other person who left over the deal: René Mayrhofer, a director for Android platform security. "Management has lost its moral compass", [he stated](https://www.businessinsider.com/google-director-resigned-pentagon-ai-deal-military-artificial-intelligence-gemini-2026-6). He apparently will serve his notice period from mid-June until August. Brave.
 
+> [!success] [Jeff Dean later left Google](https://www.cnbc.com/2026/08/05/google-chief-scientist-jeff-dean-leaving-company-after-27-years.html), honoring his pledge
+> Subtitle: August 5th, 2026 (several weeks after publication of this essay)
+>
+>  Sundar tried to keep him:
+>  > [!quote] [4 of Google’s Top AI Brains Are Leaving—and Launching Their Own AI Startup](https://www.wired.com/story/jeff-dean-google-discovery-loop-startup/)
+>  > Dean says that Alphabet CEO Sundar Pichai tried over multiple meetings to get them to keep their badges. Ultimately the team decided that they wanted the fun–and the freedom–of doing a startup.
+>  
+>  While no public information indicates he left due to the Pentagon deal, I think it's good that Jeff left and thereby honored his 2018 pledge.
+>
 ### Keeping a seat at the table
 
 But should GDM employees not stay to keep steering in a positive direction? To this I must object: "What steering?". This deal may have been the clearest red line Google's Gemini project will ever face, and yet the deal came out with no concessions to ethics-concerned employees. If their "seat at the table" couldn't produce a single binding provision in *that* situation, then when would it?
