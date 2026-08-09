@@ -17,7 +17,7 @@ Many people know me as `TurnTrout`, but you can call me "Alex". I want to let yo
 
 ![[https://assets.turntrout.com/static/images/posts/date-me-12272025.avif|Clad in a black jacket and cold-colored scarf, Alex laughs in front of an out-of-focus yellow fall backdrop]]{style="width: 75%"}
 
-I was born in '94. Now, I'm a research scientist on [Google DeepMind's](https://deepmind.google/) scalable alignment team in San Francisco. In this document, I'll overview what the intervening time has made of me, as a person.
+I was born in '94. Now I'm an AI alignment researcher. I'll overview what the intervening time has made of me, as a person.
 
 I'm hoping to meet a wonderful woman to be [my best friend](https://en.wikipedia.org/wiki/Wife) for many years. 💕 (And by "best friend", I mean "wife.")
 
@@ -130,7 +130,7 @@ Reading textbooks
 <!-- vale off -->
 2. I've historically been polyamorous but I'm open to monogamy. I find it natural to form romantic attachments with multiple people and am not very jealous. I talk regularly with my former partner Emma - I want my friendship with her to stay strong.
 <!-- vale on -->
-3. I currently live in Berkeley. I'm open to (but disprefer) a long-distance relationship if there's a good chance we end up in the same location, assuming the relationship is great! In particular, cities like New York and London are more workable (as DeepMind has offices there I could work out of).
+3. I currently live in Berkeley. I'm open to (but disprefer) a long-distance relationship if there's a good chance we end up in the same location, assuming the relationship is great! In particular, cities like New York and London are more workable for professional reasons.
 
 ## What I'm like in a relationship
 

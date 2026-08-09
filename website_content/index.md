@@ -26,11 +26,12 @@ Stay a while! The water's great.
 
 # Start here
 
-1. [@title](/alignment-phd)
-2. [@title](/shard-theory)
-3. [@title](/bruce-wayne-and-the-cost-of-inaction)
-4. [@title](/what-counts-as-defection)
-5. [@title](/backwards-numbers)
+1. [@title](/why-i-left-google-deepmind)
+2. [@title](/alignment-phd)
+3. [@title](/shard-theory)
+4. [@title](/bruce-wayne-and-the-cost-of-inaction)
+5. [@title](/what-counts-as-defection)
+6. [@title](/backwards-numbers)
 
 # Or dive in
 
