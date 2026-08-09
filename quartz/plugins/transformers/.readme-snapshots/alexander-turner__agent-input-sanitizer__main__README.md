@@ -31,16 +31,21 @@ Code](#using-it-with-claude-code) covers each hook and hand-wiring.
 import { sanitize } from "agent-sanitizer";
 
 // Layer 1 (invisible chars + ANSI), zero heavy deps:
-const { cleaned, found, warnings } = await sanitize(untrustedText);
+const { cleaned, found, warnings, notes } = await sanitize(untrustedText);
 
 // Opt into the HTML layers for web ingress (lazy-loads ~200 ms of deps):
 const result = await sanitize(pageSource, { html: true });
+
+// Layer 3 alone: flag exfil-shaped URLs without splicing anything (for text
+// that must stay byte-faithful, e.g. a PR diff). Implied by `html: true`.
+const scanned = await sanitize(diffText, { exfilScan: true });
 ```
 
 `sanitize` never throws and never silently drops content—any change comes with
-at least one `warnings` entry. `found` names the neutralized category codes
-(e.g. `["cf-format", "hidden-html"]`); `cleaned` is the safe text, with
-placeholders where hidden HTML was spliced out.
+at least one `warnings` or `notes` entry. `found` names the neutralized category
+codes (e.g. `["cf-format", "hidden-html"]`); `cleaned` is the safe text, with
+placeholders where hidden HTML was spliced out. See [warnings vs
+notes](#warnings-vs-notes) for which findings land where.
 
 ## Entry points
 
@@ -48,17 +53,17 @@ Split into subpaths so the heavy HTML dependency stays opt-in. **Seam** names
 the callback you inject for the agent-specific concern; `—` is a pure transform,
 `fs (direct)` does its own file I/O instead of taking one.
 
-| #   | Import          | Purpose                                                                                                                                                                     | Seam                        |
-| --- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| 1   | `/invisible`    | Strip zero-width, bidi, variation-selector and tag chars + ANSI/SGR escapes. Preserves ZWNJ/ZWJ for Arabic/Indic/emoji. Zero deps.                                          | —                           |
-| 2   | `/html`         | Splice out instructions hidden in comments, `display:none`, off-screen, white-on-white, `hidden`. Leaves a placeholder.                                                     | —                           |
-| 3   | `/html`         | Detect exfil-shaped URLs (payloads in query/path, embedded creds, `data:`/`javascript:`, off-origin redirects). Reports only.                                               | —                           |
-| 4   | `/confusables`  | Fold look-alike glyphs in tool-call input (paths, commands) to ASCII, closing a cross-script deny-rule bypass. Gated per token, so non-Latin prose passes through unfolded. | `scan`                      |
-| 5   | `/instructions` | Scan/auto-clean `CLAUDE.md`, `AGENTS.md`, `SKILL.md`, etc., decoding Unicode-tag + zero-width-binary payloads.                                                              | `fs` (direct)               |
-| 6   | `/prompt`       | Classify a prompt pass / SGR-note / block on payload-capable invisible/ANSI content.                                                                                        | —                           |
-| 7   | `/output`       | Run Layers 1–4 over structured tool output, preserving shape. The Layer-5 slot takes a delete-only filter.                                                                  | `redact`, `filterInjection` |
-| 8   | `/rehydrate`    | Re-anchor a model Edit composed from the _sanitized_ view back onto real bytes; deny anything ambiguous or secret-exposing.                                                 | `io`                        |
-| —   | `/view-map`     | Pure offset/text machinery mapping a file's on-disk bytes ↔ the sanitized view (Layer-1 deletions, Layer-4 redactions). No I/O — consumed by `/rehydrate`.                  | —                           |
+| #   | Import          | Purpose                                                                                                                                                                                  | Seam                        |
+| --- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| 1   | `/invisible`    | Strip zero-width, bidi, variation-selector and tag chars + ANSI/SGR escapes. Preserves ZWNJ/ZWJ for Arabic/Indic/emoji. Zero deps.                                                       | —                           |
+| 2   | `/html`         | Splice out HTML comments and elements hidden via `display:none`, off-screen, white-on-white, `hidden`. Each splice leaves a keyed, round-trippable placeholder.                          | —                           |
+| 3   | `/html`         | Detect exfil-shaped URLs (payloads in query/path, embedded creds, `data:`/`javascript:`, off-origin redirects). Reports only.                                                            | —                           |
+| 4   | `/confusables`  | Fold look-alike glyphs in tool-call input (paths, commands) to ASCII, closing a cross-script deny-rule bypass. Gated per token, so non-Latin prose passes through unfolded.              | `scan`                      |
+| 5   | `/instructions` | Scan/auto-clean `CLAUDE.md`, `AGENTS.md`, `SKILL.md`, etc., decoding Unicode-tag + zero-width-binary payloads.                                                                           | `fs` (direct)               |
+| 6   | `/prompt`       | Classify a prompt pass / note / block on payload-capable invisible/ANSI content (inert escapes get the note).                                                                            | —                           |
+| 7   | `/output`       | Run Layers 1–4 over structured tool output, preserving shape. The Layer-5 slot takes a delete-only filter.                                                                               | `redact`, `filterInjection` |
+| 8   | `/rehydrate`    | Re-anchor a model Edit or whole-file Write composed from the _sanitized_ view back onto real bytes; gate MultiEdit on a verified view==disk; deny anything ambiguous or secret-exposing. | `io`                        |
+| —   | `/view-map`     | Pure offset/text machinery mapping a file's on-disk bytes ↔ the sanitized view (Layer-1 deletions, Layer-4 redactions). No I/O — consumed by `/rehydrate`.                               | —                           |
 
 See [`THREAT-MODEL.md`](./THREAT-MODEL.md) for per-vector detail.
 
@@ -75,9 +80,29 @@ without notice.
 | `blank-fillers`       | Blank-rendering fillers not covered by `Cf` (Hangul fillers, Braille blank, zero-width combining marks) |
 | `ansi`                | ANSI/SGR escapes and other terminal control sequences                                                   |
 | `lone-surrogates`     | Unpaired UTF-16 surrogates                                                                              |
-| `html-comments`       | HTML comments spliced out by Layer 2                                                                    |
+| `html-comments`       | HTML comments (incl. bogus `<!…>`/`<?…?>` forms) spliced out by Layer 2, recoverable via `splices`      |
 | `hidden-html`         | Elements hidden via CSS/attribute (`display:none`, `hidden`, etc.) spliced out by Layer 2               |
 | `exfil-urls`          | Exfil-shaped URLs detected by Layer 3 (reported, not removed)                                           |
+
+### warnings vs notes
+
+Findings come back at two volumes, on `sanitize` and on `/output` alike:
+
+- **`warnings`** — injection-shaped. Something was hidden from a human reader,
+  something a payload would have used was removed, or a secret was redacted.
+  This is the set to surface.
+- **`notes`** — it happened, and here is how to look at it, but nothing about it
+  is attack-shaped: a preserved `<script>` on a fetched page, a plain link whose
+  URL merely looks exfil-shaped, or (in `/output`, under `sgrCarveOut`) an
+  incidental strip of pasted terminal colour or a stray soft hyphen.
+
+The tier changes nothing about what is removed—the same bytes are stripped,
+spliced and redacted either way, and a note is still reported. It exists so the
+banner keeps meaning something. A caller that ignores `notes` is exactly as loud
+as before the split. `/output` also returns `sgrNote: true` when a result is
+note-only, so a caller can pick the quiet line without inspecting the arrays.
+[`THREAT-MODEL.md`](./THREAT-MODEL.md#severity-warnings-vs-notes) lists which
+finding lands at which tier and why.
 
 ### `FILTER_WARNING` codes (Layer 5)
 
@@ -94,21 +119,49 @@ owns each message, and any value outside the enum makes `sanitizeText` **throw**
 | `filter-flagged`      | The filter flagged the output as a possible injection without deleting (content intact) |
 | `filter-error`        | The filter reported a non-fatal internal error while scanning (a fatal filter throws)   |
 
+Every span is matched against the **original** text and the deletions applied in
+a single ordered pass, so the bytes a filter can remove are exactly the bytes its
+spans matched in the input — an earlier deletion can never manufacture a match
+for a later span (overlapping spans resolve first-match-wins).
+
+## Secret redaction
+
+Secrets in tool output are redacted **locally**, before the model ever sees
+them. The engine is an injected seam — the plugin wires
+[`detect-secrets`](https://github.com/Yelp/detect-secrets), running entirely
+on-machine; the library bundles no engine. The model reads stable `[REDACTED…]`
+placeholders instead of the values. The write path closes the loop: Edits
+composed against the redacted view are re-anchored onto the real bytes, and
+placeholders in new content resolve back to the real secrets — disk → tool
+input only, never into the model's view. Anything ambiguous is denied rather
+than guessed, the redactor's own map is verified against the file before any
+splice, and a write that would persist placeholder text over a real secret
+asks instead of passing through even when the hook's own machinery fails
+mid-session. The whole layer is opt-in — its denies and asks are friction, so it
+engages only when asked for: set `AGENT_SANITIZER_SECRETS_ENABLED=1` in the
+environment Claude Code runs the hooks with; unset, no redactor runs and no
+placeholders exist.
+Per-vector detail in [`THREAT-MODEL.md`](./THREAT-MODEL.md).
+
 ## What installing entails
 
 Installing the plugin puts four hooks on every session, and this is what they
 buy you:
 
-1. Your `CLAUDE.md`, `AGENTS.md` and `.claude/` markdown are scanned at session
-   start for hidden-Unicode payloads and auto-cleaned where possible.
+1. Your `CLAUDE.md`, `AGENTS.md` and the context markdown under `.claude/` are
+   scanned at session start for hidden-Unicode payloads and auto-cleaned where
+   possible. Only the subdirectories Claude Code loads as context are walked, so
+   bulk data parked under `.claude/` (`worktrees/`, caches, transcripts) does not
+   slow startup.
 2. Prompts carrying payload-capable invisible or ANSI characters are blocked
    before they reach the model; pasted terminal color passes with a note.
 3. Look-alike glyphs in tool inputs are folded to ASCII, so a Cyrillic `а` can't
    walk a command past a deny rule.
 4. Tool output has invisible characters and terminal escapes stripped, hidden
    HTML spliced out with a placeholder, and exfil-shaped URLs flagged.
-5. Secrets in tool output are redacted locally by `detect-secrets` — the engine
-   ships with the plugin and provisions itself on first run, no setup from you.
+5. With `AGENT_SANITIZER_SECRETS_ENABLED=1` set, secrets in tool output are
+   redacted locally by `detect-secrets` — the engine ships with the plugin and
+   provisions itself on first run, no further setup from you.
 6. Edits the model composes against the redacted view are re-anchored onto the
    real bytes on disk, and anything ambiguous is denied rather than guessed.
 7. The costs are a few seconds on the first secret-shaped output, ~200 ms on the
@@ -121,7 +174,10 @@ your session on its own breakage — but it says so, in a warning the model and
 the transcript both carry. Set `AGENT_SANITIZER_FAIL_OPEN=0` and the same
 failures block instead: suppressed tool output
 (`[output sanitizer unavailable — original output suppressed]`), blocked
-prompts, permission asks whose reason names the cause. Either way, a plugin that
+prompts, permission asks whose reason names the cause. One carve-out to the
+open default, with secrets enabled: a write-shaped call carrying `[REDACTED…]` placeholder text asks
+instead of passing through when the hook itself is broken, since letting it
+through would overwrite the real secret with the placeholder. Either way, a plugin that
 never loaded at all is invisible — Claude Code reads a crashed hook as "no
 objection" — so confirm with `/plugin` rather than reading a quiet session as a
 working one. Neither posture touches what a sanitizer that RAN decided (see
@@ -188,14 +244,34 @@ import {
 } from "agent-sanitizer/claude-hooks/lib/hook-io";
 ```
 
-The exported set is deliberately small — the four hooks
-(`sanitize-output`, `pretooluse-sanitize`, `sanitize-user-prompt`,
-`scan-invisible-chars`) plus `lib/hook-io` and `lib/control-plane`. Everything
-else under `claude-hooks/` stays internal and is refused by the exports map, so
-it never becomes a surface this package owes compatibility on. `lib/hook-io` is
-exported because it must be _shared_ rather than copied: it owns the
-lazy-module registry and the CLI-slot singleton, and two copies in one bundle
-double-fire the inlined CLIs.
+The exported set is **curated, not a wildcard**: exactly the subpaths below and
+nothing else. Anything unlisted is refused by the exports map with
+`ERR_PACKAGE_PATH_NOT_EXPORTED`, so it never becomes a surface this package owes
+compatibility on. `lib/hook-io` in particular is exported because it must be
+_shared_ rather than copied: it owns the lazy-module registry and the CLI-slot
+singleton, and two copies in one bundle double-fire the inlined CLIs.
+
+<!-- exports-table: rows are asserted to equal package.json's ./claude-hooks* exports by test/claude-hooks-exports.test.mjs -->
+
+| Subpath                             | What it is                                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------------------------ |
+| `claude-hooks`                      | The `--hook=` CLI dispatcher all four hooks are spawned through                            |
+| `claude-hooks/pretooluse-sanitize`  | PreToolUse orchestrator: invisible-char gate, confusable folding, stego strip, rehydration |
+| `claude-hooks/sanitize-output`      | PostToolUse pipeline: Layers 1–4 over tool output, plus the host-extension bag             |
+| `claude-hooks/sanitize-user-prompt` | UserPromptSubmit verdict on payload-capable invisible/ANSI content                         |
+| `claude-hooks/scan-invisible-chars` | SessionStart scan of `CLAUDE.md` / `.claude/` markdown                                     |
+| `claude-hooks/lib/hook-io`          | Shared hook I/O: the lazy-module registry, the CLI slot, deadlines, the hookgate marker    |
+| `claude-hooks/lib/control-plane`    | Bridge to `agent-control-plane-core` and the shared judge-CLI transport                    |
+| `claude-hooks/lib/authored-content` | Stego + terminal-control stripping of the fields the MODEL authors                         |
+| `claude-hooks/lib/env-config`       | The env-bound secret vocabulary the Layer-4 pre-gate and the redactor client share         |
+| `claude-hooks/lib/invisible-alert`  | Cross-hook alert state for uncleanable invisible-char injection in instruction files       |
+| `claude-hooks/lib/redactor-client`  | Client for the long-lived `agent-secret-redactor-daemon` (Layer 4's transport)             |
+| `claude-hooks/lib/reveal`           | The Layer-2 sidecar that lets the model re-read what the HTML splice removed               |
+| `claude-hooks/lib/secret-annotate`  | The cheap deterministic Layer-4 pre-gate checks around the daemon call                     |
+| `claude-hooks/lib/trace`            | The opt-in structured trace channel every layer announces itself on                        |
+
+Only `plugin-hooks` itself is unexported under its own name — it is reachable as
+the bare `claude-hooks` entry above.
 
 Importing one runs no CLI and reads no stdin. Same stability posture as the
 `_AGENT_SANITIZER_*` variables below: reachable and typed, but the supported
@@ -301,15 +377,15 @@ Guard, Meta's Prompt Guard, Rebuff, NeMo Guardrails) and PII redactors
 classifier never "sees" as suspicious because it renders as blank space or
 doesn't render at all.
 
-|                               | `agent-sanitizer`                                                                                                        | Semantic guard/classifier (Lakera, Prompt Guard, Rebuff, NeMo rails)                                       | PII redactor (Presidio)                                      |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| **What it catches**           | Payload-capable invisible chars, ANSI/SGR, hidden HTML, confusable glyphs, exfil-shaped URLs                             | Malicious _intent_—jailbreaks, injected instructions, off-topic asks                                       | Names, emails, SSNs, and other PII spans                     |
-| **How it decides**            | Deterministic parsing/regex over real tokenizer output—no model call                                                     | ML/LLM classification—probabilistic, needs a threshold and retuning as attacks shift                       | NER + pattern matching                                       |
-| **Failure mode**              | Fails open on ambiguous input (see [`THREAT-MODEL.md`](./THREAT-MODEL.md)); false negative over false positive by design | False positives silently mangle or block legitimate prompts; false negatives are invisible until exploited | Under/over-redaction depending on locale and entity coverage |
-| **Latency / infra**           | Pure JS, mostly zero-dep (`/html` lazy-loads ~200 ms once)                                                               | Network round-trip to a hosted model, or a local model to host yourself                                    | Local, but heavier NLP pipeline                              |
-| **Determinism / testability** | Exact-equality unit tests, no flakiness across runs                                                                      | Same input can classify differently across model versions                                                  | Deterministic per rule, but rule coverage varies             |
-| **Reversibility**             | `/rehydrate` re-anchors a model's edit from the sanitized view back onto real bytes, denying anything ambiguous          | N/A—classifiers only pass/block, they don't rewrite-and-reverse                                            | N/A                                                          |
-| **Non-JS support**            | Same verdicts via a bundled CLI/worker—Python client included, no reimplementation                                       | Usually a hosted API (language-agnostic) or Python-only SDK                                                | Python-first (spaCy-based)                                   |
+|                               | `agent-sanitizer`                                                                                                                   | Semantic guard/classifier (Lakera, Prompt Guard, Rebuff, NeMo rails)                                       | PII redactor (Presidio)                                      |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| **What it catches**           | Payload-capable invisible chars, ANSI/SGR, hidden HTML, confusable glyphs, exfil-shaped URLs                                        | Malicious _intent_—jailbreaks, injected instructions, off-topic asks                                       | Names, emails, SSNs, and other PII spans                     |
+| **How it decides**            | Deterministic parsing/regex over real tokenizer output—no model call                                                                | ML/LLM classification—probabilistic, needs a threshold and retuning as attacks shift                       | NER + pattern matching                                       |
+| **Failure mode**              | Fails open on ambiguous input (see [`THREAT-MODEL.md`](./THREAT-MODEL.md)); false negative over false positive by design            | False positives silently mangle or block legitimate prompts; false negatives are invisible until exploited | Under/over-redaction depending on locale and entity coverage |
+| **Latency / infra**           | Pure JS, mostly zero-dep (`/html` lazy-loads ~200 ms once)                                                                          | Network round-trip to a hosted model, or a local model to host yourself                                    | Local, but heavier NLP pipeline                              |
+| **Determinism / testability** | Exact-equality unit tests, no flakiness across runs                                                                                 | Same input can classify differently across model versions                                                  | Deterministic per rule, but rule coverage varies             |
+| **Reversibility**             | `/rehydrate` re-anchors a model's Edit or whole-file Write from the sanitized view back onto real bytes, denying anything ambiguous | N/A—classifiers only pass/block, they don't rewrite-and-reverse                                            | N/A                                                          |
+| **Non-JS support**            | Same verdicts via a bundled CLI/worker—Python client included, no reimplementation                                                  | Usually a hosted API (language-agnostic) or Python-only SDK                                                | Python-first (spaCy-based)                                   |
 
 These are complementary: a semantic guard for intent, Presidio for PII, and this
 for the hidden channel both are blind to.
@@ -420,8 +496,9 @@ field selects the entry point (default `sanitize`); the self-contained ones —
 `sanitizeText`, `classifyPrompt`, `scanInstructionFiles`, `cleanFile` — are
 bridged, while entry points taking a JS callback have no wire form. Bridged
 `sanitizeText` runs Layers 1–3 only: no secret redaction (Layer 4), no injection
-filtering (Layer 5), and `sgrNote` is always `false` since the bridge never
-wires `sgrCarveOut`.
+filtering (Layer 5), and—since the bridge never wires `sgrCarveOut`—Layer 1's
+findings are never downgraded, so `notes` carries only the Layer-2/3 tiers and
+`sgrNote` is `true` only when those were the whole story.
 
 ```sh
 echo '{"text":"a​b"}' | npx sanitize-cli           # default op: sanitize

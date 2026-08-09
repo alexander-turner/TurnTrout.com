@@ -7,7 +7,7 @@ hideSubscriptionLinks: true
 card_image: https://assets.turntrout.com/static/images/card_images/anime_sunset.jpg
 description: My dating doc, sharing who I am and who I'm looking for. Is it you? 💘
 date_published: 2024-10-27
-date_updated: 2026-07-22
+date_updated: 2026-08-09
 tags:
   - personal
 card_image_alt: An anime rendition of a beautiful orange sunset over the Bay skyline. A man and woman enjoy a picnic.
