@@ -33,6 +33,8 @@ Configuration entry points: `config/quartz/quartz.config.ts`, `config/quartz/qua
 
 - `website_content/`: Markdown source with YAML frontmatter; Obsidian-flavored with custom extensions (spoilers, subtitles, table captions)
 - `public/`: built static site
+- **Compound modifiers that join two independent entities take an en dash, not a hyphen**: “AI–military integration”, “Israel–Palestine”. A hyphen stays for ordinary compounds where one part modifies the other (“AI-enabled”, “kill-chain”). An en dash vanishes in heading slugs (`AI–military` → `aimilitary`), so update in-page anchors to match.
+- **Prefer a description list over a run of `**Bold lead-in:** …` paragraphs.** Put the term on its own line and the body on the next line, prefixed with `:`.
 
 ## Git workflow
 
