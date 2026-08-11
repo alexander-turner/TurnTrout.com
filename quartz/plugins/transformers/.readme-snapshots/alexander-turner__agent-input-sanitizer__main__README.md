@@ -25,9 +25,7 @@ Enter one at a time:
 /plugin install agent-sanitizer@agent-sanitizer
 ```
 
-```
-/agent-sanitizer:enable-auto-update
-```
+Finally, navigate: `/plugin` → Marketplaces → `agent-sanitizer` → Enable auto-update.
 
 [What installing entails](#what-installing-entails) covers the footprint of each
 path and how a failure looks; [Using it with Claude
