@@ -5,7 +5,7 @@ no_dropcap: false
 tags:
   - AI
   - existential-risk
-  - military-ai
+  - military
 description: AI takeover seems easier to pull off for an AI that we teach to wield killer robots.
 authors:
   - Omar Khursheed

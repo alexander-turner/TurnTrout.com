@@ -5,7 +5,7 @@ no_dropcap: false
 tags:
   - AI
   - deepmind
-  - military-ai
+  - military
   - personal
 description: I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.
 similar_posts:
