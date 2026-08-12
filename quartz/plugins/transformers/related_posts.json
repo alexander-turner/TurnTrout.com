@@ -278,6 +278,11 @@
       "title": "Many arguments for AI x-risk are wrong"
     },
     {
+      "excerpt": "AI takeover seems easier to pull off for an AI that we teach to wield killer robots.",
+      "permalink": "killer-robots-takeover",
+      "title": "Misaligned AIs could use killer robots to take over"
+    },
+    {
       "excerpt": "Instrumental and success-conditioned convergence both require AI psychology assumptions, so neither is just a \"fact about reality.\"",
       "permalink": "instrumental-convergence-requires-psychology-assumptions",
       "title": "No instrumental convergence without AI psychology"
@@ -291,11 +296,6 @@
       "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
       "permalink": "conclusion-to-reframing-impact",
       "title": "Conclusion to 'Reframing Impact'"
-    },
-    {
-      "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
-      "permalink": "alignment-phd",
-      "title": "Looking back on my alignment PhD"
     }
   ],
   "alignment-phd": [
@@ -1022,14 +1022,14 @@
       "title": "About me"
     },
     {
-      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
-      "permalink": "date-me",
-      "title": "I'm that \"other fish in the sea\""
-    },
-    {
       "excerpt": "Displaying the features of the website for use in visual regression testing.",
       "permalink": "test-page",
       "title": "Testing site features"
+    },
+    {
+      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
+      "permalink": "date-me",
+      "title": "I'm that \"other fish in the sea\""
     }
   ],
   "digital-minimalism": [
