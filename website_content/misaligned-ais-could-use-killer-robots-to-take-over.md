@@ -21,7 +21,6 @@ similar_posts:
   - why-i-left-google-deepmind
 original_url: https://www.lesswrong.com/posts/9jKhqmFjMzdAvHANr/misaligned-ais-could-use-killer-robots-to-take-over
 date_published: 2026-08-11
-date_updated: 2026-08-11
 ---
 
 **TL;DR:** We are (potentially irreversibly) giving AIs control of weapons systems through the standard procurement process while hiding our strongest warning shots behind classified doors. We’re reducing the capability thresholds required for takeover by misaligned AIs by giving them this level of access. If military integration of AI continues as it is, we may give AIs key tools for a takeover.
