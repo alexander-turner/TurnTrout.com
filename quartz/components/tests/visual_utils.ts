@@ -396,6 +396,7 @@ export async function takeRegressionScreenshot(
   try {
     await forceHighQualityImageInterpolation(page)
     if (!skipMediaPause) {
+      await pinDecodableVideoSource(page, elementToScreenshot)
       await pauseMediaElements(page, elementToScreenshot)
       await waitForVideosPainted(elementToScreenshot ?? page)
     }
@@ -711,6 +712,40 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
       await handle.evaluate((el) => el.removeAttribute("autoplay"))
       await handle.dispose()
     }
+  }
+}
+
+/**
+ * Repoints WebKit at the MP4 source when a video landed on the WebM one.
+ *
+ * WebKit's `<source>` matching accepts `type="video/webm"`, but the engine
+ * produces no frame from the VP9 stream inside: the element fetches the whole
+ * file and sits at readyState 0/1 forever, so the capture that follows has no
+ * frame to paint. Only the HEVC MP4 decodes there, and assigning `src`
+ * directly bypasses the type matching that chose WebM in the first place.
+ *
+ * A video that already has a decodable frame is left untouched, so this never
+ * disturbs a playhead that a test positioned deliberately.
+ */
+async function pinDecodableVideoSource(page: Page, scope?: Locator): Promise<void> {
+  if (page.context().browser()?.browserType().name() !== "webkit") return
+
+  const mediaScope = scope ?? page
+  for (const video of await mediaScope.locator("video").all()) {
+    const handle = await video.elementHandle({ timeout: 2000 }).catch(() => null)
+    if (!handle) continue
+    await handle.evaluate((el) => {
+      const videoEl = el as HTMLVideoElement
+      if (videoEl.readyState >= 2 || !videoEl.currentSrc.endsWith(".webm")) return
+
+      const mp4Source = Array.from(videoEl.querySelectorAll("source")).find(
+        (source) => !source.src.endsWith(".webm"),
+      )
+      if (!mp4Source) return
+      videoEl.src = mp4Source.src
+      videoEl.load()
+    })
+    await handle.dispose()
   }
 }
 
