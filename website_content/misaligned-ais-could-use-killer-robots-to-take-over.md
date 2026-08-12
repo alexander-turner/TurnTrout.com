@@ -10,7 +10,8 @@ authors:
   - Omar Khursheed
   - Alex Turner
 hideSubscriptionLinks: false
-card_image:
+card_image: https://assets.turntrout.com/static/images/card_images/killer-robots-takeover.jpg
+card_image_alt: "A row of small armed quadcopter drones, two of them carrying US flags, staged on pavement outside the Pentagon. Image credit: US Marine Corps, public domain."
 aliases:
   - killer-robots
   - misaligned-ais-could-use-killer-robots-to-take-over
