@@ -15,11 +15,17 @@ npm install agent-sanitizer
 
 **As a Claude Code plugin:**
 
+Enter one at a time:
+
 ```
 /plugin marketplace add AlexanderMattTurner/agent-sanitizer
-/plugin install agent-sanitizer@agent-sanitizer
-/agent-sanitizer:enable-auto-update
 ```
+
+```
+/plugin install agent-sanitizer@agent-sanitizer
+```
+
+Finally, navigate: `/plugin` → Marketplaces → `agent-sanitizer` → Enable auto-update.
 
 [What installing entails](#what-installing-entails) covers the footprint of each
 path and how a failure looks; [Using it with Claude
