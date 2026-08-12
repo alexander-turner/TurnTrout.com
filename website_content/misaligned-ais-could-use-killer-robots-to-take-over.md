@@ -5,7 +5,7 @@ no_dropcap: false
 tags:
   - AI
   - existential-risk
-description: Militaries are handing AIs the ability to exert physical force. Routine procurement is lowering the bar for AI takeover, behind classified doors.
+description: AI takeover seems easier to pull off for an AI that we teach to wield killer robots.
 authors:
   - Omar Khursheed
   - Alex Turner
