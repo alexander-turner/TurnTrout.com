@@ -637,6 +637,60 @@ def check_stray_katex(text: str) -> list[str]:
     return errors
 
 
+# Matches a paired inline math span: `$...$`, not crossing a newline, with
+# neither delimiter escaped. Mirrors the span-matching half of `remove_math`.
+_INLINE_MATH_SPAN_RE = re.compile(r"(?<!\\)\$([^$\n]*?)(?<!\\)\$")
+# LaTeX text-mode macros wrap literal prose inside math on purpose
+# (e.g. `\text{layers}`); their contents don't count as "leaked" prose.
+_TEXT_MACRO_RE = re.compile(
+    r"\\(?:text|mathrm|textrm|textit|textbf|operatorname)\s*\{[^}]*\}"
+)
+_MAGNITUDE_WORD_RE = re.compile(
+    r"\b(?:million|billion|trillion|thousand|percent|per cent)\b", re.IGNORECASE
+)
+# A standalone, whitespace-delimited token that's purely alphabetic prose
+# (with optional trailing punctuation), e.g. "requesting" or "requesting,".
+# Requiring the whole token to be letters excludes LaTeX identifiers such as
+# subscripts and function calls, which contain letter runs but aren't words.
+_PLAIN_WORD_RE = re.compile(r"^[A-Za-z]{3,}[,.;:!?]?$")
+
+
+def check_prose_inside_math(text: str) -> list[str]:
+    """
+    Check for inline math spans (`$...$`) whose contents look like prose that
+    accidentally got wrapped in math delimiters, e.g. two independent dollar
+    amounts in one sentence.
+
+    KaTeX renders such spans without error, so they
+    pass silently; the only symptom is glued-together, italicized output
+    text. This is the inverse of `check_stray_katex`: LaTeX escaping out of
+    math vs. prose leaking into it.
+    """
+    no_code_text = remove_code(text)
+    no_display_math = re.sub(r"\$\$.*?\$\$", "", no_code_text, flags=re.DOTALL)
+    errors = []
+    for match in _INLINE_MATH_SPAN_RE.finditer(no_display_math):
+        span = match.group(1)
+        core = _TEXT_MACRO_RE.sub("", span)
+        plain_words = [
+            token
+            for token in re.split(r"[\s,]+", core)
+            if _PLAIN_WORD_RE.match(token)
+        ]
+        if _MAGNITUDE_WORD_RE.search(core):
+            reason = "contains a magnitude word (million/billion/percent/…)"
+        elif "\\" not in core and len(plain_words) >= 2:
+            reason = "contains multiple plain-English words"
+        else:
+            continue
+        errors.append(
+            f"Prose found inside inline math (${span}$): {reason}. "
+            "If this is currency or literal text, escape the dollar "
+            'sign(s) as "\\$" instead of using math delimiters.'
+        )
+    return errors
+
+
 # Indented block-level constructs that render correctly inside a `<dd>` and so
 # do NOT need a `: ` prefix: list items, image/wikilink embeds, raw HTML,
 # blockquotes, tables, and headings.
@@ -1306,6 +1360,7 @@ def check_file_data(
         "video_tags": validate_video_tags(text),
         "forbidden_patterns": check_no_forbidden_patterns(text),
         "stray_katex": check_stray_katex(text),
+        "prose_inside_math": check_prose_inside_math(text),
         "description_list_continuations": check_description_list_continuations(
             text
         ),

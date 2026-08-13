@@ -2418,6 +2418,31 @@ def test_check_unrendered_title_sentinel(html, expected_count):
 
 
 @pytest.mark.parametrize(
+    "html,expected_count",
+    [
+        # Normal prose and a properly rendered link.
+        ("<p>Normal prose with no issues.</p>", 0),
+        ('<p>See <a href="/x">the link</a> for more.</p>', 0),
+        # A failed markdown link leaks its raw syntax into text.
+        ("<p>Cost was $225 million, now requesting ]($54.6 billion.</p>", 1),
+        # Multiple leaks within one text node still count as one finding
+        # (mirrors check_unrendered_title_sentinel, which reports per node).
+        ("<p>First ](one) and second ](two) leaked.</p>", 1),
+        # Legitimate mentions in code must be ignored.
+        ("<p><code>[text](url)</code> is markdown link syntax.</p>", 0),
+        ("<pre>[text](url)</pre>", 0),
+        # A lone bracket or paren without the pair isn't a leak.
+        ("<p>A closing bracket] then an open paren( elsewhere.</p>", 0),
+    ],
+)
+def test_check_unrendered_markdown_link_syntax(html, expected_count):
+    """The check flags any non-code text still containing literal ']('."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_unrendered_markdown_link_syntax(soup)
+    assert len(result) == expected_count
+
+
+@pytest.mark.parametrize(
     "md_content,expected_counts",
     [
         # Basic Markdown Image
