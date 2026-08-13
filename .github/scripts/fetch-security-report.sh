@@ -10,9 +10,10 @@
 # packages only ever execute in the build/CI environment. Server-side
 # vulnerability classes (SQLi, auth bypass, session hijacking, etc.) can't be
 # exploited in either case since there's no server — the triage prompt applies
-# that judgment. Both groups are still reported: a "Development"-scope RCE or
-# malicious-package alert is a real supply-chain risk to the CI pipeline, so
-# scope alone must not silently drop alerts.
+# that judgment. All alerts are still reported, including ones GitHub didn't
+# scope at all (their own "Unclassified" section): a "Development"-scope RCE
+# or malicious-package alert is a real supply-chain risk to the CI pipeline,
+# so scope alone must not silently drop or reclassify alerts.
 #
 # Inputs (env):
 #   GH_TOKEN       GitHub token (Dependabot/secret APIs require security_events scope)
