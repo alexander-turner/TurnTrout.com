@@ -22,7 +22,7 @@ lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
 original_url: https://www.lesswrong.com/posts/BPyieRshykmrdY36A/an-opinionated-guide-to-privacy-despite-authoritarianism
 date_published: 2025-10-28
-date_updated: 2026-07-15
+date_updated: 2026-08-13
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -572,14 +572,26 @@ Subtitle: Time: 10 minutes.
   - [ ] Once your local maps have downloaded, open the settings and click "Maps." Download maps for your area.
 - [ ] Delete your Maps location data from the cloud.
 
-Open-source maps are not as comprehensive or reliable as Google Maps or Apple Maps. I recommend using Apple Maps in your Brave web browser as a more-private backup --- a web browser transmits less information to Apple.
-
 Honorable mention: the open source [Transportr](https://transportr.app/)  for public transit timetables on Android.
 
 - [ ] Android: Download [Transportr](https://transportr.app/).
 
 > [!warning] Ridesharing apps
 > Remember that Uber and Lyft record who you are and where you're going. Usually this is okay, but keep it in mind for sensitive situations where you want more privacy.
+
+### Keep Google Maps as a fallback, but keep it away from your account
+
+Let's be honest: Magic Earth will fail you. Its business listings go stale, it has no reviews, and its transit directions get spotty outside of major metros. If I tell you to just tough that out, you'll abandon the whole recommendation the first time you can't find a restaurant's hours. So keep a fallback and make it a good one.
+
+Google Maps got substantially less dangerous while I wasn't looking. [Google moved your Maps "Timeline" onto your own device instead of their servers](https://blog.google/products-and-platforms/products/maps/updates-incognito-mode-and-your-timeline-maps/), finishing the migration in July 2025 and retiring the central location database which police used to query. Google has since [told the Supreme Court that it can no longer answer geofence warrants](https://www.forbes.com/sites/larsdaniel/2026/04/28/google-geofence-warrants-are-dead-supreme-court-heard-last-one-monday/) --- the dragnet which used to sweep up every phone near a protest or a crime scene. That's a genuine win and it changes the math.
+
+The risk which remains is *targeted*: Google can still be compelled to produce what your account did. So don't involve your account.
+
+- [ ] First choice: open [Google Maps](https://maps.google.com) in a Brave private window, logged out and [behind your VPN](#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you). Google sees a query from an anonymous VPN address, not from you.
+- [ ] If you need turn-by-turn navigation from the app, switch on Incognito mode first: tap your profile picture, then "Turn on Incognito mode."
+
+> [!warning] Incognito mode is narrower than it sounds
+> Incognito stops Maps from writing your searches and destinations to your Google account. It does not hide you from your cell carrier, your phone's GPS, or your operating system, and Google still receives your queries and your IP address. Read it as "don't log this to my account," not as anonymity.
 
 ## Schedule with Proton Calendar
 

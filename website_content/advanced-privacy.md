@@ -18,7 +18,7 @@ aliases:
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 date_published: 2025-11-06
-date_updated: 2026-08-03
+date_updated: 2026-08-13
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -139,6 +139,25 @@ The above list contained the [Aurora app store](https://auroraoss.com/). Aurora 
 For GrapheneOS users, I recommend first installing Aurora, Bitwarden, and then ProtonVPN via Aurora. Once behind a VPN, the rest of your mobile installation activity will be more private.
 
 - [ ] Even if you aren't setting up GrapheneOS, reinstall all of your apps which can be installed using Obtainium. By doing so, you download your apps directly from the developers, reducing the possibility of government-inserted vulnerabilities.
+
+#### For any Android user: Replace Gboard with the FUTO Keyboard
+
+Subtitle: Time: 10 minutes.
+
+Your keyboard reads everything. It sees the Signal message before Signal encrypts it, the password you paste in by hand, and the sentence you thought better of and deleted. Gboard is closed source and holds the network permission, so you're taking Google's word for what stays on your phone. That's a bad bargain for the single most sensitive app you run.
+
+[FUTO Keyboard](https://keyboard.futo.tech/) is a Gboard look-alike which never connects to the internet. Swipe typing, autocorrect, prediction, themes, and multiple languages all work. Best of all, its voice input runs a Whisper model _on your device_ --- so dictation stops being an audio upload to Google. Download the largest voice model --- the small default transcribes noticeably worse than Gboard, while the large one holds its own.
+
+What you give up: cloud sync for your personal dictionary and clipboard. That's the whole cost. FUTO funds itself by donations and an optional one-time license purchase rather than by selling what you type.
+
+- [ ] Install FUTO Keyboard via Obtainium (a "simple" installation from the GitHub repository [`futo-org/android-keyboard`](https://github.com/futo-org/android-keyboard)).
+- [ ] In the app, download the largest voice input model and your language packs.
+- [ ] Set it as your default keyboard, then **fully uninstall Gboard** (or at least disable it and revoke its network permission).
+
+> [!warning] FUTO is "source first", not open source
+> You can read every line of FUTO's code, but its license is not [OSI-approved](https://opensource.org/licenses) --- so it doesn't get the "many eyes plus anyone can fork it" guarantee I rely on elsewhere in these guides. If that bothers you, use [HeliBoard](https://github.com/Helium314/HeliBoard) instead. HeliBoard is released under the GNU General Public License, is built on AOSP, and doesn't even declare the internet permission. HeliBoard has no voice input, so pair it with [FUTO Voice Input](https://voiceinput.futo.tech/) if you dictate.
+>
+> GrapheneOS ships the stock AOSP keyboard, which also has no network access. If you'd rather install nothing, you're already fine --- you'll just miss swipe typing and dictation.
 
 #### The rest of the switch to GrapheneOS
 

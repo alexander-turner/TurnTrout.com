@@ -290,6 +290,7 @@ Anytype
 anywhen
 ao
 AOH
+AOSP
 aoungus
 APG
 API
@@ -1211,6 +1212,7 @@ ful
 Functionals
 functionals
 Fuson
+FUTO
 FVE
 FY2027
 fórmula
@@ -1228,6 +1230,7 @@ Garamond-12
 Garrabrant
 Garriga-Alonso
 Gazans
+Gboard
 GC
 GDM
 GDM-only
@@ -1244,6 +1247,7 @@ GenAI
 generalizable
 geo-guessed
 geo-guessing
+geofence
 GeoGuessr
 Georg
 geq
@@ -1393,6 +1397,7 @@ heeee-oh
 Hegseth
 heil
 Heimersheim
+HeliBoard
 HellaSwag
 Hellaswag
 Hendrycks
