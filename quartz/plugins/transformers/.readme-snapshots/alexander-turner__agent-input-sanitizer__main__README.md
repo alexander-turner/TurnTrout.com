@@ -151,14 +151,20 @@ Per-vector detail in [`THREAT-MODEL.md`](./THREAT-MODEL.md).
 
 ## What installing entails
 
-Installing the plugin puts four hooks on every session, and this is what they
+Installing the plugin puts five hooks on every session, and this is what they
 buy you:
 
 1. Your `CLAUDE.md`, `AGENTS.md` and the context markdown under `.claude/` are
-   scanned at session start for hidden-Unicode payloads and auto-cleaned where
-   possible. Only the subdirectories Claude Code loads as context are walked, so
-   bulk data parked under `.claude/` (`worktrees/`, caches, transcripts) does not
-   slow startup.
+   scanned for hidden-Unicode payloads and auto-cleaned where possible. Session
+   start covers what Claude Code loads at launch — the project root's own
+   instruction files, the `CLAUDE.md` chain above it, and the root `.claude/`
+   context subdirectories (rules, skills, agents), never bulk data parked there
+   (`worktrees/`, caches, transcripts). Everything else Claude Code loads — a
+   subdirectory's `CLAUDE.md`, a path-scoped rule, an `@import`, your
+   user-global `~/.claude/CLAUDE.md` and global rules — is scanned from the
+   bytes the load event carries, at the moment it loads, so startup costs no
+   tree walk at all. Only files inside the project are rewritten: one shared
+   with every other project on the machine is reported, not edited.
 2. Prompts carrying payload-capable invisible or ANSI characters are blocked
    before they reach the model; pasted terminal color passes with a note.
 3. Look-alike glyphs in tool inputs are folded to ASCII, so a Cyrillic `а` can't
@@ -191,8 +197,9 @@ working one. Neither posture touches what a sanitizer that RAN decided (see
 
 ## Using it with Claude Code
 
-The plugin installed above puts four hooks on the tool stream: tool input, tool
-output, user prompts, and a session-start scan of the instruction files. It
+The plugin installed above puts five hooks on the tool stream: tool input, tool
+output, user prompts, a session-start scan of the instruction files that load at
+launch, and a per-file scan of every instruction file loaded after that. It
 needs only `python3` on PATH, for Layer 4 — the plugin ships the engine itself
 (see [What installing entails](#what-installing-entails)).
 
@@ -216,7 +223,7 @@ guessing if the marketplace was never added. To pull a release by hand instead:
 
 `plugin/README.md` has the managed-settings form for enabling it fleet-wide.
 
-To wire them yourself instead, one entry dispatches all four modes on `--hook=`:
+To wire them yourself instead, one entry dispatches every mode on `--hook=`:
 
 ```jsonc
 // settings.json — one entry per event; PreToolUse/PostToolUse also take "matcher": "*"
@@ -226,12 +233,13 @@ To wire them yourself instead, one entry dispatches all four modes on `--hook=`:
 }
 ```
 
-| Event              | `--hook=`              |
-| ------------------ | ---------------------- |
-| `UserPromptSubmit` | `sanitize-user-prompt` |
-| `PreToolUse`       | `pretooluse-sanitize`  |
-| `PostToolUse`      | `sanitize-output`      |
-| `SessionStart`     | `scan-invisible-chars` |
+| Event                | `--hook=`                  |
+| -------------------- | -------------------------- |
+| `UserPromptSubmit`   | `sanitize-user-prompt`     |
+| `PreToolUse`         | `pretooluse-sanitize`      |
+| `PostToolUse`        | `sanitize-output`          |
+| `SessionStart`       | `scan-invisible-chars`     |
+| `InstructionsLoaded` | `scan-loaded-instructions` |
 
 `require.resolve("agent-sanitizer/claude-hooks")` gives the path without
 hardcoding a layout. Importing the module rather than spawning it is a no-op.
@@ -259,22 +267,23 @@ singleton, and two copies in one bundle double-fire the inlined CLIs.
 
 <!-- exports-table: rows are asserted to equal package.json's ./claude-hooks* exports by test/claude-hooks-exports.test.mjs -->
 
-| Subpath                             | What it is                                                                                 |
-| ----------------------------------- | ------------------------------------------------------------------------------------------ |
-| `claude-hooks`                      | The `--hook=` CLI dispatcher all four hooks are spawned through                            |
-| `claude-hooks/pretooluse-sanitize`  | PreToolUse orchestrator: invisible-char gate, confusable folding, stego strip, rehydration |
-| `claude-hooks/sanitize-output`      | PostToolUse pipeline: Layers 1–4 over tool output, plus the host-extension bag             |
-| `claude-hooks/sanitize-user-prompt` | UserPromptSubmit verdict on payload-capable invisible/ANSI content                         |
-| `claude-hooks/scan-invisible-chars` | SessionStart scan of `CLAUDE.md` / `.claude/` markdown                                     |
-| `claude-hooks/lib/hook-io`          | Shared hook I/O: the lazy-module registry, the CLI slot, deadlines, the hookgate marker    |
-| `claude-hooks/lib/control-plane`    | Bridge to `agent-control-plane-core` and the shared judge-CLI transport                    |
-| `claude-hooks/lib/authored-content` | Stego + terminal-control stripping of the fields the MODEL authors                         |
-| `claude-hooks/lib/env-config`       | The env-bound secret vocabulary the Layer-4 pre-gate and the redactor client share         |
-| `claude-hooks/lib/invisible-alert`  | Cross-hook alert state for uncleanable invisible-char injection in instruction files       |
-| `claude-hooks/lib/redactor-client`  | Client for the long-lived `agent-secret-redactor-daemon` (Layer 4's transport)             |
-| `claude-hooks/lib/reveal`           | The Layer-2 sidecar that lets the model re-read what the HTML splice removed               |
-| `claude-hooks/lib/secret-annotate`  | The cheap deterministic Layer-4 pre-gate checks around the daemon call                     |
-| `claude-hooks/lib/trace`            | The opt-in structured trace channel every layer announces itself on                        |
+| Subpath                                 | What it is                                                                                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `claude-hooks`                          | The `--hook=` CLI dispatcher every hook is spawned through                                 |
+| `claude-hooks/pretooluse-sanitize`      | PreToolUse orchestrator: invisible-char gate, confusable folding, stego strip, rehydration |
+| `claude-hooks/sanitize-output`          | PostToolUse pipeline: Layers 1–4 over tool output, plus the host-extension bag             |
+| `claude-hooks/sanitize-user-prompt`     | UserPromptSubmit verdict on payload-capable invisible/ANSI content                         |
+| `claude-hooks/scan-invisible-chars`     | SessionStart scan of the instruction files that load at launch                             |
+| `claude-hooks/scan-loaded-instructions` | InstructionsLoaded scan of each instruction file as Claude Code loads it                   |
+| `claude-hooks/lib/hook-io`              | Shared hook I/O: the lazy-module registry, the CLI slot, deadlines, the hookgate marker    |
+| `claude-hooks/lib/control-plane`        | Bridge to `agent-control-plane-core` and the shared judge-CLI transport                    |
+| `claude-hooks/lib/authored-content`     | Stego + terminal-control stripping of the fields the MODEL authors                         |
+| `claude-hooks/lib/env-config`           | The env-bound secret vocabulary the Layer-4 pre-gate and the redactor client share         |
+| `claude-hooks/lib/invisible-alert`      | Cross-hook alert state for uncleanable invisible-char injection in instruction files       |
+| `claude-hooks/lib/redactor-client`      | Client for the long-lived `agent-secret-redactor-daemon` (Layer 4's transport)             |
+| `claude-hooks/lib/reveal`               | The Layer-2 sidecar that lets the model re-read what the HTML splice removed               |
+| `claude-hooks/lib/secret-annotate`      | The cheap deterministic Layer-4 pre-gate checks around the daemon call                     |
+| `claude-hooks/lib/trace`                | The opt-in structured trace channel every layer announces itself on                        |
 
 Only `plugin-hooks` itself is unexported under its own name — it is reachable as
 the bare `claude-hooks` entry above.
@@ -334,7 +343,8 @@ await cliMain({ trace: (event, fields) => myChannel.emit(event, fields) });
 ```
 
 The sink rides each hook's options bag — `cliMain({trace})` on
-`scan-invisible-chars` and `pretooluse-sanitize`, the extension bag's `trace` on
+`scan-invisible-chars`, `scan-loaded-instructions` and `pretooluse-sanitize`,
+the extension bag's `trace` on
 `sanitize-output`, `main(read, write, {trace})` on `sanitize-user-prompt`. It
 receives the same `TraceEvent` names the default emits, and it **replaces** the
 default rather than running alongside it — the package channel goes silent, so
