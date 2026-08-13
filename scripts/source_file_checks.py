@@ -6,6 +6,7 @@ import argparse
 import json
 import re
 import shutil
+import string
 import subprocess
 import sys
 from collections.abc import Mapping
@@ -648,11 +649,20 @@ _TEXT_MACRO_RE = re.compile(
 _MAGNITUDE_WORD_RE = re.compile(
     r"\b(?:million|billion|trillion|thousand|percent|per cent)\b", re.IGNORECASE
 )
-# A standalone, whitespace-delimited token that's purely alphabetic prose
-# (with optional trailing punctuation), e.g. "requesting" or "requesting,".
-# Requiring the whole token to be letters excludes LaTeX identifiers such as
-# subscripts and function calls, which contain letter runs but aren't words.
-_PLAIN_WORD_RE = re.compile(r"^[A-Za-z]{3,}[,.;:!?]?$")
+# Sentence-trailing punctuation a word may carry, drawn from the stdlib
+# punctuation set rather than a hand-picked literal so the character class
+# has a single source of truth.
+_SENTENCE_TRAILING_PUNCT = "".join(
+    c for c in string.punctuation if c in ",.;:!?"
+)
+# A standalone, whitespace-delimited token that's purely Latin-alphabetic
+# prose (with optional trailing punctuation), e.g. "requesting" or
+# "requesting,". Requiring the whole token to be letters excludes LaTeX
+# identifiers such as subscripts and function calls, which contain letter
+# runs but aren't words.
+_PLAIN_WORD_RE = re.compile(
+    rf"^[{string.ascii_letters}]{{3,}}[{re.escape(_SENTENCE_TRAILING_PUNCT)}]?$"
+)
 
 
 def check_prose_inside_math(text: str) -> list[str]:
