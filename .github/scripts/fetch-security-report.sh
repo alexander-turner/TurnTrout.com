@@ -53,11 +53,10 @@ gh_api_section() {
 
 echo "## Dependabot Alerts" >"$REPORT_PATH"
 dependabot_tmp=$(mktemp)
-trap 'rm -f "$dependabot_tmp"' EXIT
 # echo-fallback-ok: same best-effort-section reasoning as gh_api_section above.
 if gh api "repos/${REPO}/dependabot/alerts?state=open&per_page=100" \
   --arg repo "$REPO" \
-  --jq '.[] | "\(.dependency.scope // "unknown")\t- **\(.security_advisory.severity | ascii_upcase)**: [\(.security_advisory.summary)](https://github.com/\($repo)/security/dependabot/\(.number)) in `\(.dependency.package.name)` (\(.dependency.package.ecosystem))"' \
+  --jq '.[] | "\(.dependency.scope // "unclassified")\t- **\(.security_advisory.severity | ascii_upcase)**: [\(.security_advisory.summary)](https://github.com/\($repo)/security/dependabot/\(.number)) in `\(.dependency.package.name)` (\(.dependency.package.ecosystem))"' \
   >"$dependabot_tmp" 2>&1; then
   {
     echo ""
@@ -65,7 +64,10 @@ if gh api "repos/${REPO}/dependabot/alerts?state=open&per_page=100" \
     grep '^runtime' "$dependabot_tmp" | cut -f2- || echo "_None._"
     echo ""
     echo "### Development (build/CI only — no visitor-facing exposure, but still a supply-chain risk if RCE/malicious-package)"
-    grep -v '^runtime' "$dependabot_tmp" | cut -f2- || echo "_None._"
+    grep '^development' "$dependabot_tmp" | cut -f2- || echo "_None._"
+    echo ""
+    echo "### Unclassified (GitHub didn't report a scope — verify manually before assuming build-only)"
+    grep -v -e '^runtime' -e '^development' "$dependabot_tmp" | cut -f2- || echo "_None._"
   } >>"$REPORT_PATH"
 else
   cat "$dependabot_tmp" >>"$REPORT_PATH"
