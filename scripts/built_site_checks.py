@@ -431,6 +431,33 @@ def check_unrendered_title_sentinel(soup: BeautifulSoup) -> list[str]:
     return leaked
 
 
+_MARKDOWN_LINK_SYNTAX_PATTERN = re.compile(r"\]\(")
+
+
+def check_unrendered_markdown_link_syntax(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for visible text still containing literal ``](`` link syntax.
+
+    A surviving ``](`` means a markdown link failed to parse—often because
+    unescaped ``$`` signs elsewhere in the paragraph opened an inline-math
+    span that swallowed the link's own ``[...]`` and ``(...)`` parts—so the
+    raw syntax leaked into the rendered page instead of becoming an anchor.
+    Legitimate mentions live inside ``<code>`` elements, which ``should_skip``
+    excludes.
+    """
+    leaked: list[str] = []
+    for element in soup.find_all(string=True):
+        if not isinstance(element, NavigableString):  # pragma: no cover
+            continue
+        if not element.strip() or should_skip(element):
+            continue
+        if _MARKDOWN_LINK_SYNTAX_PATTERN.search(str(element)):
+            _append_to_list(
+                leaked, str(element), prefix="Unrendered markdown link syntax: "
+            )
+    return leaked
+
+
 def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
     """Check for invalid internal anchor links in the HTML."""
     invalid_anchors: list[str] = []
@@ -2306,6 +2333,9 @@ def check_file_for_issues(
         "localhost_links": check_localhost_links(soup),
         "invalid_internal_links": check_invalid_internal_links(soup),
         "unrendered_title_sentinel": check_unrendered_title_sentinel(soup),
+        "unrendered_markdown_link_syntax": check_unrendered_markdown_link_syntax(
+            soup
+        ),
         "invalid_anchors": check_invalid_anchors(soup, base_dir),
         "malformed_hrefs": check_malformed_hrefs(soup),
         "problematic_paragraphs": paragraphs_contain_canary_phrases(soup),
