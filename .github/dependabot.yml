@@ -1,4 +1,9 @@
 version: 2
+
+# Security-update PRs are grouped per ecosystem (npm-all / uv-all / actions-all)
+# so multiple CVE fixes land as one PR instead of one PR per package. The
+# weekly security-vulnerability-scan workflow subsumes these grouped PRs
+# alongside routine version-update PRs into a single rollup PR.
 updates:
   # Track punctilio for version updates only. Security updates for all packages
   # are handled separately by GitHub's Dependabot security alerts.
@@ -11,3 +16,37 @@ updates:
       - dependency-name: "punctilio"
     cooldown:
       default-days: 7
+    groups:
+      npm-all:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # No version-update PRs (uv deps are bumped via the weekly security-scan
+  # rollup); security updates still fire regardless of this limit and are
+  # grouped into a single PR.
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 0
+    groups:
+      uv-all:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    cooldown:
+      default-days: 7
+    groups:
+      actions-all:
+        patterns:
+          - "*"
+      actions-all-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
