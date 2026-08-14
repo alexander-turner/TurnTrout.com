@@ -561,16 +561,17 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, smooth migratio
 
 [^googleDelete]: To delete your data from Google Photos *after* importing to Ente, you'll have to select photos one screen at a time and then click "Download." I found it best to do this on desktop, zoom out my browser a bunch, and then continually expanding my selection by shift-clicking. I selected about 3,000 photos at a time.
 
-## Make Magic Earth your map of choice
+## Navigate with Google Maps in Incognito mode
 
-Subtitle: Time: 10 minutes.
+Subtitle: Time: 2 minutes.
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251126162412.avif|Three screenshots of the Magic Earth app. The first, "Download Offline Maps," lists regions for offline use. The second, "Multiple Transport Modes," displays options for bicycle, pedestrian, car, and public transit. The third, "Explore the world map," shows a planned route through Berlin.]]
+Incognito mode stops Google Maps from attaching your searches and destinations to your Google account, and Google has separately [moved your location "Timeline" onto your own device](https://blog.google/products-and-platforms/products/maps/updates-incognito-mode-and-your-timeline-maps/) --- retiring the central database which police used to sweep with [geofence warrants](https://www.forbes.com/sites/larsdaniel/2026/04/28/google-geofence-warrants-are-dead-supreme-court-heard-last-one-monday/). To switch it on, open Maps, tap your profile picture in the top right, and select "Turn on Incognito mode"; the setting sticks until you turn it off. When a trip is genuinely sensitive, skip the app entirely and open [Google Maps](https://maps.google.com) in a logged-out Brave private window [behind your VPN](#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you), so Google sees an anonymous address instead of your household.
 
-- [ ] Download [Magic Earth](https://www.magicearth.com/).
-  - [ ] As a sanity check, verify that familiar local addresses are present in the application.
-  - [ ] Once your local maps have downloaded, open the settings and click "Maps." Download maps for your area.
+- [ ] Turn on Incognito mode in Google Maps.
 - [ ] Delete your Maps location data from the cloud.
+
+> [!warning] Incognito mode is a promise, not a mechanism
+> Incognito asks Google not to file your searches and destinations under your name. Google still receives every query and your IP address --- nothing is hidden, it's just supposed to go unlabeled. Google's word on its location controls has not held up before: [forty state attorneys general extracted \$391.5 million from Google in 2022](https://www.cnn.com/2022/11/14/tech/google-location-tracking-settlement/index.html) after finding that switching "Location History" off did not stop Google from logging where you went --- it kept doing so through a second setting which was on by default and which most users had never heard of. Tap the toggle, but don't navigate anywhere sensitive on the strength of it.
 
 Honorable mention: the open source [Transportr](https://transportr.app/)  for public transit timetables on Android.
 
@@ -578,20 +579,6 @@ Honorable mention: the open source [Transportr](https://transportr.app/)  for pu
 
 > [!warning] Ridesharing apps
 > Remember that Uber and Lyft record who you are and where you're going. Usually this is okay, but keep it in mind for sensitive situations where you want more privacy.
-
-### Keep Google Maps as a fallback, but keep it away from your account
-
-Let's be honest: Magic Earth will fail you. Its business listings go stale, it has no reviews, and its transit directions get spotty outside of major metros. If I tell you to just tough that out, you'll abandon the whole recommendation the first time you can't find a restaurant's hours. So keep a fallback and make it a good one.
-
-Google Maps got substantially less dangerous while I wasn't looking. [Google moved your Maps "Timeline" onto your own device instead of their servers](https://blog.google/products-and-platforms/products/maps/updates-incognito-mode-and-your-timeline-maps/), finishing the migration in July 2025 and retiring the central location database which police used to query. Google has since [told the Supreme Court that it can no longer answer geofence warrants](https://www.forbes.com/sites/larsdaniel/2026/04/28/google-geofence-warrants-are-dead-supreme-court-heard-last-one-monday/) --- the dragnet which used to sweep up every phone near a protest or a crime scene. That's a genuine win and it changes the math.
-
-The risk which remains is *targeted*: Google can still be compelled to produce what your account did. So don't involve your account.
-
-- [ ] First choice: open [Google Maps](https://maps.google.com) in a Brave private window, logged out and [behind your VPN](#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you). Google sees a query from an anonymous VPN address, not from you.
-- [ ] If you need turn-by-turn navigation from the app, switch on Incognito mode first: tap your profile picture, then "Turn on Incognito mode."
-
-> [!warning] Incognito mode is a promise, not a mechanism
-> Incognito asks Google not to file your searches and destinations under your name. Google still receives every query and your IP address --- nothing is hidden, it's just supposed to go unlabeled. Google's word on its location controls has not held up before: [forty state attorneys general extracted \$391.5 million from Google in 2022](https://www.cnn.com/2022/11/14/tech/google-location-tracking-settlement/index.html) after finding that switching "Location History" off did not stop Google from logging where you went --- it kept doing so through a second setting which was on by default and which most users had never heard of. Tap the toggle, but don't navigate anywhere sensitive on the strength of it.
 
 ## Schedule with Proton Calendar
 

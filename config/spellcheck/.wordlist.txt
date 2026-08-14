@@ -290,7 +290,6 @@ Anytype
 anywhen
 ao
 AOH
-AOSP
 aoungus
 APG
 API

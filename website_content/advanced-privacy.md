@@ -104,7 +104,7 @@ Complete this section whether you're on a new GrapheneOS installation or whether
 
 Obtainium is not as intuitive as the Play or App Store, but it's fine with a bit of practice. Here's what I figured out. You'll navigate two kinds of installations: simple installations and "complicated" installations.
 
-To download a "simple" app (like the [Transportr public transit scheduler](/privacy-despite-authoritarianism#make-magic-earth-your-map-of-choice)):
+To download a "simple" app (like the [Transportr public transit scheduler](/privacy-despite-authoritarianism#navigate-with-google-maps-in-incognito-mode)):
         1. Open the "Add app" tab in Obtainium.
         2. Search for the name of the app (e.g. "Transportr") using the field "Search (some sources only)".
         3. Select the search sources "GitHub", "GitLab", and "Forgejo".
