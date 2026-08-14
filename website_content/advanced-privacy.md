@@ -100,7 +100,7 @@ Subtitle: Time: 30 minutes to reinstall apps from secure sources.
 
 Complete this section whether you're on a new GrapheneOS installation or whether you're keeping your current Android device. Obtainium downloads apps directly from developers (cutting out potentially compromised middlemen). Aurora lets you access the Play Store's full catalog without a Google account tracking every installation.
 
-1. [ ] Install [Obtainium.](https://obtainium.imranr.dev/)
+[ ] Install [Obtainium.](https://obtainium.imranr.dev/)
 
 Obtainium is not as intuitive as the Play or App Store, but it's fine with a bit of practice. Here's what I figured out. You'll navigate two kinds of installations: simple installations and "complicated" installations.
 
@@ -115,13 +115,10 @@ To download a "simple" app (like the [Transportr public transit scheduler](/priv
 
 The Signal messaging app is a "complicated" installation. To download Signal, just go to [this set of crowdsourced app configurations](https://apps.obtainium.imranr.dev/) and click "add to Obtainium" --- other folks did the complicated work for you. :)
 
-2. [ ] Install AppVerifier (a "complicated" installation). AppVerifier helps you check that you're installing legit versions of apps. When you install an application through Obtainium, you can "share" the downloaded file with AppVerifier to check.
-
 > [!tip] Complicated installations from these guides
 > I recommend adding all of these configurations to your Obtainium so you can install them. Make sure to uninstall any existing versions first.
 >
 > - [ ] AnyType,
-> - [ ] AppVerifier,
 > - [ ] Aurora Store,
 > - [ ] Bitwarden,
 > - [ ] Brave,
@@ -136,11 +133,9 @@ The Signal messaging app is a "complicated" installation. To download Signal, ju
 
 The above list contained the [Aurora app store](https://auroraoss.com/). Aurora carries everything on the Google Play app store, but it's open source and downloads applications anonymously (even Google won't know). Not all apps are on Obtainium. When you want to download an app, first check if it's on Obtainium and then check Aurora.
 
-For GrapheneOS users, I recommend first installing Aurora, Bitwarden, and then ProtonVPN via Aurora. Once behind a VPN, the rest of your mobile installation activity will be more private.
+For GrapheneOS users, I recommend first installing Aurora, Bitwarden, and then ProtonVPN (via Aurora). Once behind a VPN, the rest of your mobile installation activity will be more private. 
 
 - [ ] Even if you aren't setting up GrapheneOS, reinstall all of your apps which can be installed using Obtainium. By doing so, you download your apps directly from the developers, reducing the possibility of government-inserted vulnerabilities.
-
-- [ ] Replace Gboard with [FUTO Keyboard](https://keyboard.futo.tech/) (install via Obtainium from [`futo-org/android-keyboard`](https://github.com/futo-org/android-keyboard)) or the fully open-source [HeliBoard](https://github.com/Helium314/HeliBoard), since neither sends your keystrokes or voice dictation to Google the way Gboard does.
 
 #### The rest of the switch to GrapheneOS
 
