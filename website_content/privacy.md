@@ -590,8 +590,8 @@ The risk which remains is *targeted*: Google can still be compelled to produce w
 - [ ] First choice: open [Google Maps](https://maps.google.com) in a Brave private window, logged out and [behind your VPN](#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you). Google sees a query from an anonymous VPN address, not from you.
 - [ ] If you need turn-by-turn navigation from the app, switch on Incognito mode first: tap your profile picture, then "Turn on Incognito mode."
 
-> [!warning] Incognito mode is narrower than it sounds
-> Incognito stops Maps from writing your searches and destinations to your Google account. It does not hide you from your cell carrier, your phone's GPS, or your operating system, and Google still receives your queries and your IP address. Read it as "don't log this to my account," not as anonymity.
+> [!warning] Incognito mode is a promise, not a mechanism
+> Incognito asks Google not to file your searches and destinations under your name. Google still receives every query and your IP address --- nothing is hidden, it's just supposed to go unlabeled. And Google's word on this is worth what you'd expect: [a court made Google destroy billions of records it had collected from Chrome users who thought Incognito meant private](https://www.npr.org/2024/04/01/1242019127/google-incognito-mode-settlement-search-history). Tap the toggle, but don't navigate anywhere sensitive on the strength of it.
 
 ## Schedule with Proton Calendar
 
