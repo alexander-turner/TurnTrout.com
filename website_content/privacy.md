@@ -416,6 +416,14 @@ Brave is much better for our high privacy needs. However, Brave is not as good a
 
 - [ ] In your browser's settings, set Brave to be the default search.
 
+## Replace Gboard with FUTO Keyboard
+
+Subtitle: Time: 5 minutes.
+
+Gboard is closed source and holds Google's network permission, so your keyboard --- the app which sees every message and password you type --- reports home. [FUTO Keyboard](https://keyboard.futo.tech/) is a free Gboard look-alike that never connects to the internet, so no keystroke metadata reaches Google.
+
+- [ ] Replace Gboard with [FUTO Keyboard](https://keyboard.futo.tech/) because FUTO doesn't send metadata to Google.
+
 ## Give each app as few permissions as possible
 
 Subtitle: Time: 20 minutes to review existing permission settings.
@@ -571,7 +579,7 @@ Incognito mode stops Google Maps from attaching your searches and destinations t
 - [ ] Delete your Maps location data from the cloud.
 
 > [!warning] Incognito mode is a promise, not a mechanism
-> Google did close the worst hole: it [moved your location "Timeline" onto your own device](https://blog.google/products-and-platforms/products/maps/updates-incognito-mode-and-your-timeline-maps/), retiring the central database which police used to sweep with [geofence warrants](https://www.forbes.com/sites/larsdaniel/2026/04/28/google-geofence-warrants-are-dead-supreme-court-heard-last-one-monday/). Incognito is a softer thing --- it asks Google not to file your searches under your name, but Google still receives every query and your IP address. Google's word on its location controls has not held up before: [forty state attorneys general extracted \$391.5 million from Google in 2022](https://www.cnn.com/2022/11/14/tech/google-location-tracking-settlement/index.html) after finding that switching "Location History" off did not stop Google from logging where you went. Tap the toggle, but don't navigate anywhere sensitive on the strength of it.
+> Google did close the worst hole: as of July 2025, [your location "Timeline" is encrypted and stored only on your own device](https://blog.google/products-and-platforms/products/maps/updates-incognito-mode-and-your-timeline-maps/) instead of on Google's servers, retiring the central database police used to query. One reason I believe Google actually made this change --- rather than just saying so --- is that after claiming the shift, Google [told the Supreme Court that it can no longer answer geofence warrants](https://www.forbes.com/sites/larsdaniel/2026/04/28/google-geofence-warrants-are-dead-supreme-court-heard-last-one-monday/), the tool police used to sweep everyone's Timeline near a crime scene. A false claim there would be a stunning admission to a court. Incognito is a softer thing --- it asks Google not to file your searches under your name, but Google still receives every query and your IP address. Google's word on its location controls has not held up before: [forty state attorneys general extracted \$391.5 million from Google in 2022](https://www.cnn.com/2022/11/14/tech/google-location-tracking-settlement/index.html) after finding that switching "Location History" off did not stop Google from logging where you went. Tap the toggle, but don't navigate anywhere sensitive on the strength of it.
 
 Honorable mention: the open source [Transportr](https://transportr.app/)  for public transit timetables on Android.
 
