@@ -591,7 +591,7 @@ The risk which remains is *targeted*: Google can still be compelled to produce w
 - [ ] If you need turn-by-turn navigation from the app, switch on Incognito mode first: tap your profile picture, then "Turn on Incognito mode."
 
 > [!warning] Incognito mode is a promise, not a mechanism
-> Incognito asks Google not to file your searches and destinations under your name. Google still receives every query and your IP address --- nothing is hidden, it's just supposed to go unlabeled. And Google's word on this is worth what you'd expect: [a court made Google destroy billions of records it had collected from Chrome users who thought Incognito meant private](https://www.npr.org/2024/04/01/1242019127/google-incognito-mode-settlement-search-history). Tap the toggle, but don't navigate anywhere sensitive on the strength of it.
+> Incognito asks Google not to file your searches and destinations under your name. Google still receives every query and your IP address --- nothing is hidden, it's just supposed to go unlabeled. Google's word on its location controls has not held up before: [forty state attorneys general extracted \$391.5 million from Google in 2022](https://www.cnn.com/2022/11/14/tech/google-location-tracking-settlement/index.html) after finding that switching "Location History" off did not stop Google from logging where you went --- it kept doing so through a second setting which was on by default and which most users had never heard of. Tap the toggle, but don't navigate anywhere sensitive on the strength of it.
 
 ## Schedule with Proton Calendar
 
