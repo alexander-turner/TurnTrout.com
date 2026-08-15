@@ -100,7 +100,7 @@ Subtitle: Time: 30 minutes to reinstall apps from secure sources.
 
 Complete this section whether you're on a new GrapheneOS installation or whether you're keeping your current Android device. Obtainium downloads apps directly from developers (cutting out potentially compromised middlemen). Aurora lets you access the Play Store's full catalog without a Google account tracking every installation.
 
-[ ] Install [Obtainium.](https://obtainium.imranr.dev/)
+1. [ ] Install [Obtainium.](https://obtainium.imranr.dev/)
 
 Obtainium is not as intuitive as the Play or App Store, but it's fine with a bit of practice. Here's what I figured out. You'll navigate two kinds of installations: simple installations and "complicated" installations.
 
@@ -135,7 +135,7 @@ The above list contained the [Aurora app store](https://auroraoss.com/). Aurora 
 
 For GrapheneOS users, I recommend first installing Aurora, Bitwarden, and then ProtonVPN (via Aurora). Once behind a VPN, the rest of your mobile installation activity will be more private.
 
-- [ ] Even if you aren't setting up GrapheneOS, reinstall all of your apps which can be installed using Obtainium. By doing so, you download your apps directly from the developers, reducing the possibility of government-inserted vulnerabilities.
+2. [ ] Even if you aren't setting up GrapheneOS, reinstall all of your apps which can be installed using Obtainium. By doing so, you download your apps directly from the developers, reducing the possibility of government-inserted vulnerabilities.
 
 #### The rest of the switch to GrapheneOS
 
