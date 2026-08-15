@@ -241,6 +241,8 @@ To wire them yourself instead, one entry dispatches every mode on `--hook=`:
 | `SessionStart`       | `scan-invisible-chars`     |
 | `InstructionsLoaded` | `scan-loaded-instructions` |
 
+**Wire all five.** The instruction-file scan is split across two of them: `SessionStart` covers the files that load at launch, and `InstructionsLoaded` covers every one a subdirectory loads later. A host that wires the first without the second leaves a nested `CLAUDE.md` scanned by nothing, and the one-time PreToolUse coverage notice is the only thing that says so.
+
 `require.resolve("agent-sanitizer/claude-hooks")` gives the path without
 hardcoding a layout. Importing the module rather than spawning it is a no-op.
 
