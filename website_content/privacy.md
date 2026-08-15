@@ -578,8 +578,8 @@ Incognito mode stops Google Maps from tying your searches to your account. Open 
 - [ ] Turn on Incognito mode in Google Maps.
 - [ ] Delete your Maps location data from the cloud.
 
-> [!info] CoMaps if you want to leave Google entirely
-> [CoMaps](https://www.comaps.app/) is a free, open-source offline maps app built on OpenStreetMap data that never phones home. Try it if you'd rather sidestep Google altogether and can live with sparser business listings.
+> [!info] CoMaps is fully private
+> [CoMaps](https://www.comaps.app/) is a free, open-source, offline app built on [OpenStreetMap](https://www.openstreetmap.org/) data.
 
 > [!warning] Incognito mode is a promise
 > As of July 2025, [your location "Timeline" is stored locally](https://blog.google/products-and-platforms/products/maps/updates-incognito-mode-and-your-timeline-maps/). I believe Google actually made this change because they later [told the Supreme Court that it can no longer answer geofence warrants](https://www.forbes.com/sites/larsdaniel/2026/04/28/google-geofence-warrants-are-dead-supreme-court-heard-last-one-monday/).
