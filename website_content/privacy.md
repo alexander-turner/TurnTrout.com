@@ -22,7 +22,7 @@ lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
 original_url: https://www.lesswrong.com/posts/BPyieRshykmrdY36A/an-opinionated-guide-to-privacy-despite-authoritarianism
 date_published: 2025-10-28
-date_updated: 2026-07-15
+date_updated: 2026-08-15
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -71,8 +71,8 @@ This guide will help you protect your communications and information so you can 
 
 Let's get started.
 
-> [!info]  I'm only speaking for myself
-> My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
+> [!info]  Conflict of interest disclaimer
+> When I wrote the original version of this article, my day job was AI alignment research at [Google DeepMind](https://deepmind.google/). [I have since left](/why-i-left-google-deepmind).
 
 # What should I read?
 
@@ -416,6 +416,14 @@ Brave is much better for our high privacy needs. However, Brave is not as good a
 
 - [ ] In your browser's settings, set Brave to be the default search.
 
+## Replace Gboard with FUTO Keyboard
+
+Subtitle: Time: 5 minutes.
+
+Gboard is closed source and holds Google's network permission, so your keyboard --- the app which sees every message and password you type --- reports home. [FUTO Keyboard](https://keyboard.futo.tech/) is a free Gboard look-alike that never connects to the internet, so no keystroke metadata reaches Google.
+
+- [ ] Replace Gboard with [FUTO Keyboard](https://keyboard.futo.tech/) because FUTO doesn't send metadata to Google.
+
 ## Give each app as few permissions as possible
 
 Subtitle: Time: 20 minutes to review existing permission settings.
@@ -561,22 +569,22 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, smooth migratio
 
 [^googleDelete]: To delete your data from Google Photos *after* importing to Ente, you'll have to select photos one screen at a time and then click "Download." I found it best to do this on desktop, zoom out my browser a bunch, and then continually expanding my selection by shift-clicking. I selected about 3,000 photos at a time.
 
-## Make Magic Earth your map of choice
+## Navigate with Google Maps in Incognito mode
 
-Subtitle: Time: 10 minutes.
+Subtitle: Time: 2 minutes.
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251126162412.avif|Three screenshots of the Magic Earth app. The first, "Download Offline Maps," lists regions for offline use. The second, "Multiple Transport Modes," displays options for bicycle, pedestrian, car, and public transit. The third, "Explore the world map," shows a planned route through Berlin.]]
+Incognito mode stops Google Maps from tying your searches to your account. Open Maps, tap your profile picture, and select "Turn on Incognito mode". For super-secret trips, skip the app and open Maps in a logged-out Brave private window [behind your VPN](#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you).
 
-- [ ] Download [Magic Earth](https://www.magicearth.com/).
-  - [ ] As a sanity check, verify that familiar local addresses are present in the application.
-  - [ ] Once your local maps have downloaded, open the settings and click "Maps." Download maps for your area.
+- [ ] Turn on Incognito mode in Google Maps.
 - [ ] Delete your Maps location data from the cloud.
 
-Open-source maps are not as comprehensive or reliable as Google Maps or Apple Maps. I recommend using Apple Maps in your Brave web browser as a more-private backup --- a web browser transmits less information to Apple.
+> [!info] CoMaps is fully private
+> [CoMaps](https://www.comaps.app/) is a free, open-source, offline app built on [OpenStreetMap](https://www.openstreetmap.org/) data. 
 
-Honorable mention: the open source [Transportr](https://transportr.app/)  for public transit timetables on Android.
-
-- [ ] Android: Download [Transportr](https://transportr.app/).
+> [!warning] Incognito mode is a promise
+> As of July 2025, [your location "Timeline" is stored locally](https://blog.google/products-and-platforms/products/maps/updates-incognito-mode-and-your-timeline-maps/). I believe Google actually made this change because they later [told the Supreme Court that it can no longer answer geofence warrants](https://www.forbes.com/sites/larsdaniel/2026/04/28/google-geofence-warrants-are-dead-supreme-court-heard-last-one-monday/).
+>
+> Incognito is separate, asking Google not to file your searches under your name. Technically, Google still receives every query and your IP address. Google has misled before: [Google paid out \$391.5 million in 2022](https://www.cnn.com/2022/11/14/tech/google-location-tracking-settlement/index.html). Apparently, disabling "Location History" did not stop Google from logging your actual location history.
 
 > [!warning] Ridesharing apps
 > Remember that Uber and Lyft record who you are and where you're going. Usually this is okay, but keep it in mind for sensitive situations where you want more privacy.
