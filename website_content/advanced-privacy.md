@@ -133,7 +133,7 @@ The Signal messaging app is a "complicated" installation. To download Signal, ju
 
 The above list contained the [Aurora app store](https://auroraoss.com/). Aurora carries everything on the Google Play app store, but it's open source and downloads applications anonymously (even Google won't know). Not all apps are on Obtainium. When you want to download an app, first check if it's on Obtainium and then check Aurora.
 
-For GrapheneOS users, I recommend first installing Aurora, Bitwarden, and then ProtonVPN (via Aurora). Once behind a VPN, the rest of your mobile installation activity will be more private.
+For GrapheneOS users, I recommend first installing Aurora and then ProtonVPN. Once behind a VPN, the rest of your mobile installation activity will be more private.
 
 2. [ ] Even if you aren't setting up GrapheneOS, reinstall all of your apps which can be installed using Obtainium. By doing so, you download your apps directly from the developers, reducing the possibility of government-inserted vulnerabilities.
 
