@@ -71,8 +71,8 @@ This guide will help you protect your communications and information so you can 
 
 Let's get started.
 
-> [!info]  I'm only speaking for myself
-> My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
+> [!info]  Conflict of interest disclaimer
+> When I wrote the original version of this article, my day job was AI alignment research at [Google DeepMind](https://deepmind.google/). [I have since left](/why-i-left-google-deepmind).
 
 # What should I read?
 
@@ -573,13 +573,15 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, smooth migratio
 
 Subtitle: Time: 2 minutes.
 
-Incognito mode stops Google Maps from attaching your searches and destinations to your Google account. To turn it on, open Maps, tap your profile picture, and select "Turn on Incognito mode" --- the setting sticks until you switch it off. For genuinely sensitive trips, skip the app and open [Google Maps](https://maps.google.com) in a logged-out Brave private window [behind your VPN](#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you).
+Incognito mode stops Google Maps from tying your searches to your account. Open Maps, tap your profile picture, and select "Turn on Incognito mode". For super-secret trips, skip the app and open Maps in a logged-out Brave private window [behind your VPN](#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you).
 
 - [ ] Turn on Incognito mode in Google Maps.
 - [ ] Delete your Maps location data from the cloud.
 
-> [!warning] Incognito mode is a promise, not a mechanism
-> Google did close the worst hole: as of July 2025, [your location "Timeline" is encrypted and stored only on your own device](https://blog.google/products-and-platforms/products/maps/updates-incognito-mode-and-your-timeline-maps/) instead of on Google's servers, retiring the central database police used to query. One reason I believe Google actually made this change --- rather than just saying so --- is that after claiming the shift, Google [told the Supreme Court that it can no longer answer geofence warrants](https://www.forbes.com/sites/larsdaniel/2026/04/28/google-geofence-warrants-are-dead-supreme-court-heard-last-one-monday/), the tool police used to sweep everyone's Timeline near a crime scene. A false claim there would be a stunning admission to a court. Incognito is a softer thing --- it asks Google not to file your searches under your name, but Google still receives every query and your IP address. Google's word on its location controls has not held up before: [forty state attorneys general extracted \$391.5 million from Google in 2022](https://www.cnn.com/2022/11/14/tech/google-location-tracking-settlement/index.html) after finding that switching "Location History" off did not stop Google from logging where you went. Tap the toggle, but don't navigate anywhere sensitive on the strength of it.
+> [!warning] Incognito mode is a promise
+> As of July 2025, [your location "Timeline" is stored locally](https://blog.google/products-and-platforms/products/maps/updates-incognito-mode-and-your-timeline-maps/). I believe Google actually made this change because they later [told the Supreme Court that it can no longer answer geofence warrants](https://www.forbes.com/sites/larsdaniel/2026/04/28/google-geofence-warrants-are-dead-supreme-court-heard-last-one-monday/).
+>
+> Incognito is separate, asking Google not to file your searches under your name. Technically, Google still receives every query and your IP address. Google has misled before: [Google paid out \$391.5 million in 2022](https://www.cnn.com/2022/11/14/tech/google-location-tracking-settlement/index.html). Apparently, disabling "Location History" did not stop Google from logging your actual location history. 
 
 Honorable mention: the open source [Transportr](https://transportr.app/)  for public transit timetables on Android.
 
