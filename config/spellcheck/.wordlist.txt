@@ -692,6 +692,7 @@ colorings
 colour
 colourless
 colours
+CoMaps
 combinatorial
 combinatorially
 combinatorics
@@ -2134,6 +2135,7 @@ OpenbookQA
 OpenGraph
 OpenMind
 OpenPhilanthropy
+OpenStreetMap
 OpenType
 OpenVPN
 OpenWebText
