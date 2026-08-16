@@ -715,10 +715,15 @@ export const AddFavicons = () => {
       const offline = ctx.argv.offline ?? false
       if (offline) return []
 
+      // Read the counts file once per processor and share the result across
+      // every page, mirroring ArchiveLinks/RelatedPosts. Reading inside the
+      // per-tree transformer would re-read and re-parse the same JSON for each
+      // of the hundreds of pages in a build.
+      const countsPromise = readFaviconCounts()
       return [
         () => {
           return async (tree: Root) => {
-            const faviconCounts = await readFaviconCounts()
+            const faviconCounts = await countsPromise
 
             const nodesToProcess: [Element, Parent, GlyphContext][] = []
             visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
