@@ -716,14 +716,18 @@ export const AddFavicons = () => {
       if (offline) return []
 
       // Read the counts file once per processor and share the result across
-      // every page, mirroring ArchiveLinks/RelatedPosts. Reading inside the
-      // per-tree transformer would re-read and re-parse the same JSON for each
-      // of the hundreds of pages in a build.
-      const countsPromise = readFaviconCounts()
+      // every page, mirroring RelatedPosts' lazy memoization. The read is
+      // created on first await (inside the per-file try context) rather than
+      // eagerly, so a corrupt/unreadable counts file fails per page via the
+      // parser's trace() instead of surfacing as an unhandled rejection.
+      // Reading inside the per-tree transformer would instead re-read and
+      // re-parse the same JSON for each of the hundreds of pages in a build.
+      let countsPromise: Promise<ReadonlyMap<string, number>> | null = null
+      const counts = () => (countsPromise ??= readFaviconCounts())
       return [
         () => {
           return async (tree: Root) => {
-            const faviconCounts = await countsPromise
+            const faviconCounts = await counts()
 
             const nodesToProcess: [Element, Parent, GlyphContext][] = []
             visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
