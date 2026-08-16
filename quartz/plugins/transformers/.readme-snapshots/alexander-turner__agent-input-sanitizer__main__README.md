@@ -3,8 +3,9 @@
 Most prompt-injection tools run a classifier _over_ the text and hope it
 generalizes. This library targets a narrower, verifiable claim: the
 specific byte-level channels—invisible Unicode, ANSI escapes, human-hidden
-HTML, confusable glyphs, exfil-shaped URLs—that let an attacker smuggle a
-payload the operator can't see but the model still reads. Every layer is a
+HTML, confusable glyphs and look-alike hosts, exfil-shaped URLs—that let an
+attacker smuggle a payload the operator can't see but the model still reads.
+Every layer is a
 deterministic transform you can unit-test with equality assertions.
 
 **As a library:**
@@ -63,8 +64,8 @@ the callback you inject for the agent-specific concern; `—` is a pure transfor
 | --- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
 | 1   | `/invisible`    | Strip zero-width, bidi, variation-selector and tag chars + ANSI/SGR escapes. Preserves ZWNJ/ZWJ for Arabic/Indic/emoji. Zero deps.                                                       | —                           |
 | 2   | `/html`         | Splice out HTML comments and elements hidden via `display:none`, off-screen, white-on-white, `hidden`. Each splice leaves a keyed, round-trippable placeholder.                          | —                           |
-| 3   | `/html`         | Detect exfil-shaped URLs (payloads in query/path, embedded creds, `data:`/`javascript:`, off-origin redirects). Reports only.                                                            | —                           |
-| 4   | `/confusables`  | Fold look-alike glyphs in tool-call input (paths, commands) to ASCII, closing a cross-script deny-rule bypass. Gated per token, so non-Latin prose passes through unfolded.              | `scan`                      |
+| 3   | `/html`         | Detect exfil-shaped URLs (payloads in query/path, embedded creds, `data:`/`javascript:`, off-origin redirects) and confusable HOSTS (`аpple.com`). Reports only — never rewrites.        | —                           |
+| 4   | `/confusables`  | Fold look-alike glyphs in tool-call input (paths, commands) to ASCII, closing a cross-script deny-rule bypass. Gated per token, so non-Latin prose passes through unfolded.              | `scan` (optional)           |
 | 5   | `/instructions` | Scan/auto-clean `CLAUDE.md`, `AGENTS.md`, `SKILL.md`, etc., decoding Unicode-tag + zero-width-binary payloads.                                                                           | `fs` (direct)               |
 | 6   | `/prompt`       | Classify a prompt pass / note / block on payload-capable invisible/ANSI content (inert escapes get the note).                                                                            | —                           |
 | 7   | `/output`       | Run Layers 1–4 over structured tool output, preserving shape. The Layer-5 slot takes a delete-only filter.                                                                               | `redact`, `filterInjection` |
@@ -79,16 +80,17 @@ See [`THREAT-MODEL.md`](./THREAT-MODEL.md) for per-vector detail.
 contract—branch on these codes, not on `warnings` prose, which can be reworded
 without notice.
 
-| Code                  | Meaning                                                                                                 |
-| --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `cf-format`           | Unicode format chars (`Cf`): zero-width space/joiner, bidi overrides, tag chars                         |
-| `variation-selectors` | Variation selectors (U+FE00–FE0F, U+E0100–E01EF)                                                        |
-| `blank-fillers`       | Blank-rendering fillers not covered by `Cf` (Hangul fillers, Braille blank, zero-width combining marks) |
-| `ansi`                | ANSI/SGR escapes and other terminal control sequences                                                   |
-| `lone-surrogates`     | Unpaired UTF-16 surrogates                                                                              |
-| `html-comments`       | HTML comments (incl. bogus `<!…>`/`<?…?>` forms) spliced out by Layer 2, recoverable via `splices`      |
-| `hidden-html`         | Elements hidden via CSS/attribute (`display:none`, `hidden`, etc.) spliced out by Layer 2               |
-| `exfil-urls`          | Exfil-shaped URLs detected by Layer 3 (reported, not removed)                                           |
+| Code                  | Meaning                                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `cf-format`           | Unicode format chars (`Cf`): zero-width space/joiner, bidi overrides, tag chars                              |
+| `variation-selectors` | Variation selectors (U+FE00–FE0F, U+E0100–E01EF)                                                             |
+| `blank-fillers`       | Blank-rendering fillers not covered by `Cf` (Hangul fillers, Braille blank, zero-width combining marks)      |
+| `ansi`                | ANSI/SGR escapes and other terminal control sequences                                                        |
+| `lone-surrogates`     | Unpaired UTF-16 surrogates                                                                                   |
+| `html-comments`       | HTML comments (incl. bogus `<!…>`/`<?…?>` forms) spliced out by Layer 2, recoverable via `splices`           |
+| `hidden-html`         | Elements hidden via CSS/attribute (`display:none`, `hidden`, etc.) spliced out by Layer 2                    |
+| `exfil-urls`          | Exfil-shaped URLs detected by Layer 3 (reported, not removed)                                                |
+| `confusable-host`     | URL hosts that are look-alikes of an ASCII name (`аpple.com`), detected by Layer 3 (reported, not rewritten) |
 
 ### warnings vs notes
 
@@ -397,7 +399,7 @@ doesn't render at all.
 
 |                               | `agent-sanitizer`                                                                                                                   | Semantic guard/classifier (Lakera, Prompt Guard, Rebuff, NeMo rails)                                       | PII redactor (Presidio)                                      |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| **What it catches**           | Payload-capable invisible chars, ANSI/SGR, hidden HTML, confusable glyphs, exfil-shaped URLs                                        | Malicious _intent_—jailbreaks, injected instructions, off-topic asks                                       | Names, emails, SSNs, and other PII spans                     |
+| **What it catches**           | Payload-capable invisible chars, ANSI/SGR, hidden HTML, confusable glyphs and look-alike hosts, exfil-shaped URLs                   | Malicious _intent_—jailbreaks, injected instructions, off-topic asks                                       | Names, emails, SSNs, and other PII spans                     |
 | **How it decides**            | Deterministic parsing/regex over real tokenizer output—no model call                                                                | ML/LLM classification—probabilistic, needs a threshold and retuning as attacks shift                       | NER + pattern matching                                       |
 | **Failure mode**              | Fails open on ambiguous input (see [`THREAT-MODEL.md`](./THREAT-MODEL.md)); false negative over false positive by design            | False positives silently mangle or block legitimate prompts; false negatives are invisible until exploited | Under/over-redaction depending on locale and entity coverage |
 | **Latency / infra**           | Pure JS, mostly zero-dep (`/html` lazy-loads ~200 ms once)                                                                          | Network round-trip to a hosted model, or a local model to host yourself                                    | Local, but heavier NLP pipeline                              |
@@ -414,10 +416,16 @@ for the hidden channel both are blind to.
 import { stripInvisibleWithReport } from "agent-sanitizer/invisible";
 const { cleaned, found } = stripInvisibleWithReport(text); // found: ["variation-selectors"]
 
-import { sanitizeHtml, detectExfil, checkExfilUrl } from "agent-sanitizer/html";
+import {
+  sanitizeHtml,
+  detectExfil,
+  checkExfilUrl,
+  detectConfusableHosts,
+} from "agent-sanitizer/html";
 sanitizeHtml(pageSource); // { text, removed, warned } | null — text may be unchanged if only reportable (not strippable) tags were found
 detectExfil(pageSource); // [{ isImage, reason, target }] or null
 checkExfilUrl(oneUrl); // reason string or null
+detectConfusableHosts(pageSource); // [{ severity, description }] or null
 ```
 
 The agent-pipeline entry points take plain arguments and inject their
@@ -425,11 +433,12 @@ agent-specific seam:
 
 ```js
 import { normalizeConfusables } from "agent-sanitizer/confusables";
+normalizeConfusables("Bash", { command: "/аpt update" }); // null, or { updatedInput, normalized }
 normalizeConfusables(
   "Bash",
   { command: "/аpt update" },
-  { scan: (t) => myHomoglyphEngine.scan(t) }, // -> { findings: [{ index, char, latinEquivalent }] }
-); // null, or { updatedInput, normalized }
+  { scan: (t) => myHomoglyphEngine.scan(t) }, // override the default namespace-guard engine
+);
 
 import { scanInstructionFiles, cleanFile } from "agent-sanitizer/instructions";
 const findings = scanInstructionFiles(["CLAUDE.md", "**/SKILL.md"], {
