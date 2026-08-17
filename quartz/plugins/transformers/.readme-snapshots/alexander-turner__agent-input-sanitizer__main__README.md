@@ -186,9 +186,13 @@ Failure is loud by design. Installed as Claude Code hooks the layers fail
 **open**: a hook that could not run lets the action through rather than halting
 your session on its own breakage — but it says so, in a warning the model and
 the transcript both carry. Set `AGENT_SANITIZER_FAIL_OPEN=0` and the same
-failures block instead: suppressed tool output
-(`[output sanitizer unavailable — original output suppressed]`), blocked
-prompts, permission asks whose reason names the cause. One carve-out to the
+failures block instead: blocked prompts, permission asks whose reason names the
+cause, and tool output withheld over two channels. The node hook substitutes
+`[output sanitizer unavailable — original output suppressed]`, which only
+withholds a string-shaped response; the shell arm in `plugin/scripts/safe-launch.sh`
+therefore also emits a top-level `decision`/`reason` pair, honored whatever
+shape the response had, telling the model that any output still visible above
+it is unsanitized. One carve-out to the
 open default, with secrets enabled: a write-shaped call carrying `[REDACTED…]` placeholder text asks
 instead of passing through when the hook itself is broken, since letting it
 through would overwrite the real secret with the placeholder. Either way, a plugin that
