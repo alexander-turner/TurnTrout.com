@@ -698,3 +698,45 @@ def _assert_no_nonzero_kern(
                     assert xadv == 0, (
                         f"Existing kern {f_name}+{t_name} = {xadv}"
                     )
+
+
+class TestMainTempCleanup:
+    """The verify-mode build output goes to a temp dir; it must not survive."""
+
+    def test_temp_dir_is_removed_on_verify_success(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        captured: dict[str, Path] = {}
+
+        def fake_build_all(output_dir: Path) -> bool:
+            captured["output_dir"] = output_dir
+            assert output_dir.exists()
+            return True
+
+        monkeypatch.setattr(build_fonts, "build_all", fake_build_all)
+        monkeypatch.setattr(build_fonts.sys, "argv", ["build_fonts.py"])
+        # Redirect the OS temp root so the created dir is confined to tmp_path.
+        monkeypatch.setattr(build_fonts.tempfile, "tempdir", str(tmp_path))
+
+        build_fonts.main()
+
+        assert captured["output_dir"].exists() is False
+
+    def test_temp_dir_is_removed_on_verify_drift(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        captured: dict[str, Path] = {}
+
+        def fake_build_all(output_dir: Path) -> bool:
+            captured["output_dir"] = output_dir
+            return False  # simulate drift
+
+        monkeypatch.setattr(build_fonts, "build_all", fake_build_all)
+        monkeypatch.setattr(build_fonts.sys, "argv", ["build_fonts.py"])
+        monkeypatch.setattr(build_fonts.tempfile, "tempdir", str(tmp_path))
+
+        with pytest.raises(SystemExit) as excinfo:
+            build_fonts.main()
+        assert excinfo.value.code == 1
+        # ``TemporaryDirectory`` must clean up on the sys.exit path too.
+        assert captured["output_dir"].exists() is False
