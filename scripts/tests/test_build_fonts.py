@@ -740,3 +740,30 @@ class TestMainTempCleanup:
         assert excinfo.value.code == 1
         # ``TemporaryDirectory`` must clean up on the sys.exit path too.
         assert captured["output_dir"].exists() is False
+
+    def test_install_copies_fonts_and_removes_temp_dir(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        captured: dict[str, Path] = {}
+        install_dir = tmp_path / "install"
+        install_dir.mkdir()
+
+        def fake_build_all(output_dir: Path) -> bool:
+            captured["output_dir"] = output_dir
+            for filename in build_fonts._FONT_FILENAMES:
+                (output_dir / filename).write_bytes(b"font-bytes")
+            return True
+
+        monkeypatch.setattr(build_fonts, "build_all", fake_build_all)
+        monkeypatch.setattr(build_fonts, "_FONT_DIR", install_dir)
+        monkeypatch.setattr(
+            build_fonts.sys, "argv", ["build_fonts.py", "--install"]
+        )
+        monkeypatch.setattr(build_fonts.tempfile, "tempdir", str(tmp_path))
+
+        build_fonts.main()
+
+        for filename in build_fonts._FONT_FILENAMES:
+            assert (install_dir / filename).read_bytes() == b"font-bytes"
+        # Cleanup fires on the install path too — "every run".
+        assert captured["output_dir"].exists() is False

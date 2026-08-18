@@ -242,6 +242,31 @@ def test_replace_urls_in_file_applies_multiple_replacements_in_one_pass(
     assert "asset_staging/two.jpg" in updated
 
 
+def test_replace_urls_in_file_prefix_url_not_corrupted(mock_git_root):
+    """A URL that is a strict prefix of another must not corrupt the longer
+    one: longest-first ordering rewrites the longer URL before the shorter."""
+    short_url = "https://example.com/image.png"
+    long_url = "https://example.com/image.png/thumb.jpg"
+    md_file = mock_git_root / "website_content" / "test.md"
+    md_file.write_text(f"![Short]({short_url})\n![Long]({long_url})\n")
+
+    download_external_media.replace_urls_in_file(
+        md_file,
+        {
+            short_url: "asset_staging/image.png",
+            long_url: "asset_staging/thumb.jpg",
+        },
+    )
+
+    updated = md_file.read_text()
+    assert "asset_staging/image.png" in updated
+    assert "asset_staging/thumb.jpg" in updated
+    # The longer URL must not have been mangled into the shorter's target.
+    assert "asset_staging/image.png/thumb.jpg" not in updated
+    assert short_url not in updated
+    assert long_url not in updated
+
+
 def test_replace_urls_in_file_outside_content_dir(mock_git_root, tmp_path):
     """Test that replacing URLs in file outside content dir raises error."""
     outside_file = tmp_path / "outside.md"
@@ -281,6 +306,56 @@ def test_disambiguate_filename_prefixes_on_collision():
         "https://elsewhere.example.com/image.png", "image.png", taken
     )
     assert other != disambiguated
+
+
+def test_disambiguate_filename_widens_prefix_on_prefix_collision(monkeypatch):
+    """If the 8-hex prefix is already taken, the prefix widens so the returned
+    name is always free."""
+    base = "image.png"
+    digest = "0" * 40
+
+    class _FakeHash:
+        def hexdigest(self) -> str:
+            return digest
+
+    monkeypatch.setattr(
+        download_external_media.hashlib,
+        "sha1",
+        lambda _data: _FakeHash(),
+    )
+
+    taken = {base, f"{digest[:8]}-{base}"}
+    result = download_external_media.disambiguate_filename(
+        "https://example.com/image.png", base, taken
+    )
+    assert result not in taken
+    assert result.endswith(f"-{base}")
+    assert len(result.split("-", 1)[0]) == 9
+
+
+def test_disambiguate_filename_raises_when_every_width_taken(monkeypatch):
+    """When every SHA1 prefix width is already taken, fail loudly rather than
+    return a name that would clobber an existing download."""
+    base = "image.png"
+    digest = "0" * 40
+
+    class _FakeHash:
+        def hexdigest(self) -> str:
+            return digest
+
+    monkeypatch.setattr(
+        download_external_media.hashlib,
+        "sha1",
+        lambda _data: _FakeHash(),
+    )
+
+    taken = {base} | {
+        f"{digest[:width]}-{base}" for width in range(8, len(digest) + 1)
+    }
+    with pytest.raises(RuntimeError, match="Could not disambiguate filename"):
+        download_external_media.disambiguate_filename(
+            "https://example.com/image.png", base, taken
+        )
 
 
 def test_main_no_markdown_files(mock_git_root):

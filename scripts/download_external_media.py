@@ -103,8 +103,18 @@ def disambiguate_filename(url: str, base_filename: str, taken: set[str]) -> str:
     """
     if base_filename not in taken:
         return base_filename
-    prefix = hashlib.sha1(url.encode("utf-8")).hexdigest()[:8]
-    return f"{prefix}-{base_filename}"
+    digest = hashlib.sha1(url.encode("utf-8")).hexdigest()
+    # Widen the prefix until the name is free, so `taken` always holds
+    # distinct on-disk names even if two colliding URLs share an 8-hex
+    # SHA1 prefix.
+    for width in range(8, len(digest) + 1):
+        candidate = f"{digest[:width]}-{base_filename}"
+        if candidate not in taken:
+            return candidate
+    raise RuntimeError(
+        f"Could not disambiguate filename {base_filename!r} for {url}: "
+        f"every SHA1 prefix width is already taken."
+    )
 
 
 def replace_urls_in_file(file_path: Path, url_map: dict[str, str]) -> None:
@@ -122,8 +132,12 @@ def replace_urls_in_file(file_path: Path, url_map: dict[str, str]) -> None:
             f"{script_utils.CONTENT_DIR_NAME} directory."
         )
 
+    # Replace longest URLs first so a URL that is a strict prefix of another
+    # cannot corrupt the longer one before its own replacement runs.
+    ordered = sorted(url_map.items(), key=lambda kv: len(kv[0]), reverse=True)
+
     def apply(content: str) -> str:
-        for old_url, new_url in url_map.items():
+        for old_url, new_url in ordered:
             content = content.replace(old_url, new_url)
         return content
 
