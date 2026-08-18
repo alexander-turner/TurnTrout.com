@@ -46,7 +46,7 @@ This would be really impressive and seems like great evidence that I really know
 
 Proposed eval: The developers have to predict the next-token probabilities on a range of government-provided validation prompts,[^2] without running the model itself. To do so, the developers are not allowed to use helper AIs whose outputs the developers can't predict by this criterion. Perfect prediction is not required. Instead, there is a fixed log-prob misprediction tolerance, averaged across the validation prompts.[^3]
 
-## Benefits
+# Benefits
 
 Developers probably have to truly understand the model in order to predict it so finely
 : This correlates with high levels of alignment expertise, on my view. If we could predict GPT-4 generalization quite finely, down to the next-token probabilities, we may in fact be ready to use it to help understand GPT-5.  
@@ -63,11 +63,11 @@ Somewhat agnostic to theories of AI risk.
 Partially incentivizes labs to do alignment research for us.
 : Under this requirement, the profit-seeking move is to get better at predicting (and, perhaps, interpreting) model behaviors.
 
-## Drawbacks
+# Drawbacks
 
 Most notably, this test seems _extremely strict_, perhaps beyond even the strict standards we will want to demand of those looking to deploy potentially world-changing models. I'll discuss a few drawbacks in [the next section](#anticipated-questions).
 
-## Anticipated questions
+# Anticipated questions
 
 **If we pass this, no one will be able to train new frontier models for a long time.**
 

@@ -60,7 +60,7 @@ Under this view, alignment isn’t a property of reward functions: it’s a prop
 
 Yikes.
 
-## Qualifications
+# Qualifications
 
 The argument seems to hold for $n$\-step Markovian reward functions, if $n$ isn’t ridiculously large. If the input observation space is rich, then the problem probably relaxes. The problem isn't present in fully observable environments: by force of theorem (which presently assumes determinism and a finite state space), there exist Markovian reward functions whose only optimal policy is desirable.
 
