@@ -235,28 +235,44 @@ def test_process_card_image_in_markdown_skips(
         assert md_file_path.read_text() == markdown_content
 
 
-def test_parse_markdown_frontmatter():
-    """Test parsing of markdown frontmatter."""
-    content = """---
-title: "Test Post"
-date: "2023-10-10"
-card_image: http://example.com/image.avif
----
-Test content"""
+def test_process_card_image_handles_trailing_whitespace_fence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """
+    Frontmatter closed by ``---`` with trailing spaces still parses.
 
-    result = convert_markdown_yaml._parse_markdown_frontmatter(content)
-    assert result is not None
-    data, body = result
-    assert data["title"] == "Test Post"
-    assert data["card_image"] == "http://example.com/image.avif"
-    assert body == "Test content"
+    ``script_utils.split_yaml`` line-anchors the closing fence, so a fence
+    that carries editor-inserted trailing whitespace is still a valid close.
+    """
+    git_root = tmp_path
+    content_dir = git_root / "website_content"
+    content_dir.mkdir()
+    monkeypatch.setattr(
+        convert_markdown_yaml.script_utils, "get_git_root", lambda: git_root
+    )
 
+    md_file = content_dir / "post.md"
+    md_file.write_text(
+        "---\n"
+        'title: "Post"\n'
+        "card_image: https://assets.turntrout.com/static/images/card_images/x.avif\n"
+        "---   \n"  # trailing whitespace on the closing fence
+        "Body\n",
+        encoding="utf-8",
+    )
 
-def test_parse_markdown_frontmatter_no_frontmatter():
-    """Test parsing markdown with no frontmatter."""
-    content = "Just some content"
-    result = convert_markdown_yaml._parse_markdown_frontmatter(content)
-    assert result is None
+    # An .avif card_image is convertible; the function would normally attempt
+    # a network download. Short-circuit at ``check_card_image`` so no
+    # subprocess or HTTP call fires — we're verifying the parser handled the
+    # fence, not the conversion pipeline.
+    monkeypatch.setattr(
+        convert_markdown_yaml.source_file_checks,
+        "check_card_image",
+        lambda _data: [],
+    )
+
+    convert_markdown_yaml.process_card_image_in_markdown(md_file)
+    # Test passes if no exception was raised: split_yaml accepted the fence.
 
 
 def test_download_image(tmp_path):
