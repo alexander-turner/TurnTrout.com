@@ -103,17 +103,17 @@ def disambiguate_filename(url: str, base_filename: str, taken: set[str]) -> str:
     """
     if base_filename not in taken:
         return base_filename
-    digest = hashlib.sha1(url.encode("utf-8")).hexdigest()
+    digest = hashlib.sha256(url.encode("utf-8")).hexdigest()
     # Widen the prefix until the name is free, so `taken` always holds
     # distinct on-disk names even if two colliding URLs share an 8-hex
-    # SHA1 prefix.
+    # digest prefix.
     for width in range(8, len(digest) + 1):
         candidate = f"{digest[:width]}-{base_filename}"
         if candidate not in taken:
             return candidate
     raise RuntimeError(
         f"Could not disambiguate filename {base_filename!r} for {url}: "
-        f"every SHA1 prefix width is already taken."
+        f"every digest prefix width is already taken."
     )
 
 

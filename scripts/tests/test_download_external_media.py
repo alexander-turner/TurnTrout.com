@@ -312,7 +312,7 @@ def test_disambiguate_filename_widens_prefix_on_prefix_collision(monkeypatch):
     """If the 8-hex prefix is already taken, the prefix widens so the returned
     name is always free."""
     base = "image.png"
-    digest = "0" * 40
+    digest = "0" * 64
 
     class _FakeHash:
         def hexdigest(self) -> str:
@@ -320,7 +320,7 @@ def test_disambiguate_filename_widens_prefix_on_prefix_collision(monkeypatch):
 
     monkeypatch.setattr(
         download_external_media.hashlib,
-        "sha1",
+        "sha256",
         lambda _data: _FakeHash(),
     )
 
@@ -334,10 +334,10 @@ def test_disambiguate_filename_widens_prefix_on_prefix_collision(monkeypatch):
 
 
 def test_disambiguate_filename_raises_when_every_width_taken(monkeypatch):
-    """When every SHA1 prefix width is already taken, fail loudly rather than
+    """When every digest prefix width is already taken, fail loudly rather than
     return a name that would clobber an existing download."""
     base = "image.png"
-    digest = "0" * 40
+    digest = "0" * 64
 
     class _FakeHash:
         def hexdigest(self) -> str:
@@ -345,7 +345,7 @@ def test_disambiguate_filename_raises_when_every_width_taken(monkeypatch):
 
     monkeypatch.setattr(
         download_external_media.hashlib,
-        "sha1",
+        "sha256",
         lambda _data: _FakeHash(),
     )
 
