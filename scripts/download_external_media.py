@@ -132,8 +132,11 @@ def replace_urls_in_file(file_path: Path, url_map: dict[str, str]) -> None:
             f"{script_utils.CONTENT_DIR_NAME} directory."
         )
 
-    # Replace longest URLs first so a URL that is a strict prefix of another
-    # cannot corrupt the longer one before its own replacement runs.
+    # Replace longest URLs first so that when one ``old_url`` is a substring
+    # of another, the longer one is rewritten before its substring's pass
+    # runs and cannot be corrupted. Sound because every ``new_url`` is an
+    # ``asset_staging/…`` path that can never contain an ``https://`` URL,
+    # so no replacement reintroduces another key's ``old_url``.
     ordered = sorted(url_map.items(), key=lambda kv: len(kv[0]), reverse=True)
 
     def apply(content: str) -> str:
