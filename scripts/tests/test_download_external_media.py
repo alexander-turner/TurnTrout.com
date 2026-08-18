@@ -156,6 +156,29 @@ def test_download_media_success(mock_git_root, tmp_path):
         assert response.raw.decode_content is True
 
 
+def test_download_media_respects_target_filename_override(
+    mock_git_root, tmp_path
+):
+    """The caller can override the on-disk filename (used for collision-
+    safety)."""
+    target_dir = tmp_path / "downloads"
+    target_dir.mkdir()
+
+    response = _mock_response(b"image-bytes")
+    with mock.patch.object(
+        download_external_media._http_session, "get", return_value=response
+    ):
+        result = download_external_media.download_media(
+            "https://example.com/image.png",
+            target_dir,
+            target_filename="ab12cd34-image.png",
+        )
+
+    assert result is True
+    assert (target_dir / "ab12cd34-image.png").read_bytes() == b"image-bytes"
+    assert not (target_dir / "image.png").exists()
+
+
 def test_download_media_failure(mock_git_root, tmp_path):
     """Test failed media download."""
     target_dir = tmp_path / "downloads"
@@ -175,14 +198,15 @@ def test_download_media_failure(mock_git_root, tmp_path):
         assert result is False
 
 
-def test_replace_url_in_file(mock_git_root):
-    """Test URL replacement in markdown file."""
+def test_replace_urls_in_file(mock_git_root):
+    """Test URL replacement in markdown file with a single-URL map."""
     md_file = mock_git_root / "website_content" / "test.md"
     original_content = "![Image](https://example.com/image.png)"
     md_file.write_text(original_content)
 
-    download_external_media.replace_url_in_file(
-        md_file, "https://example.com/image.png", "asset_staging/image.png"
+    download_external_media.replace_urls_in_file(
+        md_file,
+        {"https://example.com/image.png": "asset_staging/image.png"},
     )
 
     updated_content = md_file.read_text()
@@ -190,19 +214,73 @@ def test_replace_url_in_file(mock_git_root):
     assert "https://example.com/image.png" not in updated_content
 
 
-def test_replace_url_in_file_outside_content_dir(mock_git_root, tmp_path):
-    """Test that replacing URL in file outside content dir raises error."""
+def test_replace_urls_in_file_applies_multiple_replacements_in_one_pass(
+    mock_git_root,
+):
+    """Every mapping is applied to a single-file read/write pair."""
+    md_file = mock_git_root / "website_content" / "test.md"
+    md_file.write_text(
+        "![A](https://a.example.com/one.png)\n"
+        "![B](https://b.example.com/two.jpg)\n"
+    )
+
+    with mock.patch(
+        "scripts.download_external_media.script_utils.update_markdown_file",
+        wraps=download_external_media.script_utils.update_markdown_file,
+    ) as spy:
+        download_external_media.replace_urls_in_file(
+            md_file,
+            {
+                "https://a.example.com/one.png": "asset_staging/one.png",
+                "https://b.example.com/two.jpg": "asset_staging/two.jpg",
+            },
+        )
+
+    assert spy.call_count == 1
+    updated = md_file.read_text()
+    assert "asset_staging/one.png" in updated
+    assert "asset_staging/two.jpg" in updated
+
+
+def test_replace_urls_in_file_outside_content_dir(mock_git_root, tmp_path):
+    """Test that replacing URLs in file outside content dir raises error."""
     outside_file = tmp_path / "outside.md"
     outside_file.write_text("![Image](https://example.com/image.png)")
 
     with pytest.raises(
         ValueError, match="not in the website_content directory"
     ):
-        download_external_media.replace_url_in_file(
+        download_external_media.replace_urls_in_file(
             outside_file,
-            "https://example.com/image.png",
-            "asset_staging/image.png",
+            {"https://example.com/image.png": "asset_staging/image.png"},
         )
+
+
+def test_disambiguate_filename_passes_through_when_free():
+    """A basename with no collision is returned unchanged."""
+    assert (
+        download_external_media.disambiguate_filename(
+            "https://example.com/image.png", "image.png", set()
+        )
+        == "image.png"
+    )
+
+
+def test_disambiguate_filename_prefixes_on_collision():
+    """A colliding basename gets a URL-derived prefix so downloads stay
+    distinct."""
+    taken = {"image.png"}
+    disambiguated = download_external_media.disambiguate_filename(
+        "https://example.com/other/image.png", "image.png", taken
+    )
+    assert disambiguated != "image.png"
+    assert disambiguated.endswith("-image.png")
+    # The prefix is deterministic (URL-derived), so distinct URLs get distinct
+    # disambiguations even when the original basenames match.
+    other = download_external_media.disambiguate_filename(
+        "https://elsewhere.example.com/image.png", "image.png", taken
+    )
+    assert other != disambiguated
 
 
 def test_main_no_markdown_files(mock_git_root):
@@ -263,6 +341,87 @@ def test_main_downloads_and_updates(mock_git_root, capsys):
         captured = capsys.readouterr()
         assert "Found 1 external media URLs" in captured.out
         assert "Successfully downloaded 1/1 files" in captured.out
+
+
+def test_main_skips_urls_without_filenames(mock_git_root, capsys, monkeypatch):
+    """A URL whose filename extraction raises is skipped without aborting
+    main."""
+    md_file = mock_git_root / "website_content" / "test.md"
+    md_file.write_text("![Image](https://example.com/image.png)")
+
+    def raise_value_error(_url: str) -> str:
+        raise ValueError("no filename component")
+
+    monkeypatch.setattr(
+        download_external_media.script_utils,
+        "extract_filename_from_url",
+        raise_value_error,
+    )
+    with mock.patch("subprocess.run"):
+        download_external_media.main()
+
+    captured = capsys.readouterr()
+    assert "Skipping URL with no filename" in captured.err
+    assert "Successfully downloaded 0/1 files" in captured.out
+
+
+def test_main_disambiguates_filename_collisions(mock_git_root, capsys):
+    """Two URLs with the same basename must land as distinct staged files."""
+    md_file = mock_git_root / "website_content" / "test.md"
+    md_file.write_text(
+        "![One](https://a.example.com/image.png)\n"
+        "![Two](https://b.example.com/image.png)\n"
+    )
+
+    response = _mock_response(b"image-bytes")
+    with (
+        mock.patch("subprocess.run"),
+        mock.patch.object(
+            download_external_media._http_session,
+            "get",
+            return_value=response,
+        ),
+    ):
+        download_external_media.main()
+
+    asset_staging = mock_git_root / "website_content" / "asset_staging"
+    staged_files = sorted(asset_staging.iterdir())
+    # Two distinct files must exist on disk.
+    assert len(staged_files) == 2
+    updated = md_file.read_text()
+    # Both markdown references must point at their own staged file, and
+    # neither original URL may survive.
+    assert "https://a.example.com/image.png" not in updated
+    assert "https://b.example.com/image.png" not in updated
+    for staged in staged_files:
+        assert f"asset_staging/{staged.name}" in updated
+
+
+def test_main_rewrites_each_markdown_file_once(mock_git_root):
+    """Many URLs across many files rewrite each file at most once."""
+    for name in ("a.md", "b.md", "c.md"):
+        (mock_git_root / "website_content" / name).write_text(
+            "![X](https://x.example.com/x.png)\n"
+            "![Y](https://y.example.com/y.jpg)\n"
+        )
+
+    response = _mock_response(b"image-bytes")
+    with (
+        mock.patch("subprocess.run"),
+        mock.patch.object(
+            download_external_media._http_session,
+            "get",
+            return_value=response,
+        ),
+        mock.patch(
+            "scripts.download_external_media.script_utils.update_markdown_file",
+            wraps=download_external_media.script_utils.update_markdown_file,
+        ) as spy,
+    ):
+        download_external_media.main()
+
+    # 3 markdown files x 1 pass each = 3 total calls, not 3 x 2 URLs = 6.
+    assert spy.call_count == 3
 
 
 def test_main_handles_download_failures(mock_git_root, capsys):
