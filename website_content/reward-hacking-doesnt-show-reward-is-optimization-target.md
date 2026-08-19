@@ -172,7 +172,7 @@ Why didn't I realize this in 2022? I didn't yet deeply understand LLMs. As evide
 
 To my credit, I noted my ignorance:
 
-> [!quote] [@title](https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/reward-is-not-the-optimization-target.md)
+> [!quote] [@title](/reward-is-not-the-optimization-target)
 > Pretraining a language model and then slotting that into an RL setup changes the initial \[agent's\] computations in a way which I have not yet tried to analyze.
 
 # Conclusion
