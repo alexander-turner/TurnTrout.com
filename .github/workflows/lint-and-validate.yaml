@@ -31,7 +31,7 @@ jobs:
       github.ref == 'refs/heads/main' &&
       needs.detect-changes.outputs.content == 'true'
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the amend + force-push below
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the amend + force-push below
         timeout-minutes: 5
         with:
           fetch-depth: 0
@@ -77,12 +77,12 @@ jobs:
       source-checks: ${{ steps.changes.outputs.source-checks }}
       workflows: ${{ steps.changes.outputs.workflows }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 5
         with:
           persist-credentials: false
 
-      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: changes
         with:
           filters: |
@@ -155,7 +155,7 @@ jobs:
       # that a stall trips quickly rather than one it can sit out; the retry
       # re-checkouts clean, so a partial fetch can't corrupt the workspace.
       - id: checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
         timeout-minutes: 3
         continue-on-error: true
         with:
@@ -169,7 +169,7 @@ jobs:
 
       - id: checkout-retry
         if: steps.checkout.outcome == 'failure'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
         timeout-minutes: 3
         continue-on-error: true
         with:
@@ -179,7 +179,7 @@ jobs:
           clean: true
 
       - if: steps.checkout-retry.outcome == 'failure'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6 # zizmor: ignore[artipacked] the persisted PUSH_TOKEN is used by the auto-fix commit + push below
         timeout-minutes: 3
         with:
           ref: ${{ github.head_ref || github.ref_name }}
@@ -265,7 +265,7 @@ jobs:
     if: needs.detect-changes.outputs.workflows == 'true'
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 5
         with:
           persist-credentials: false
@@ -279,7 +279,7 @@ jobs:
             echo "$UNPINNED"
             echo ""
             echo "Pin actions to a commit SHA, e.g.:"
-            echo "  uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6"
+            echo "  uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6"
             exit 1
           fi
           echo "All action references are SHA-pinned"
@@ -298,7 +298,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 5
         with:
           persist-credentials: false
@@ -319,7 +319,7 @@ jobs:
         run: actionlint -color .github/workflows/*.yml .github/workflows/*.yaml
 
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v7
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v7
 
       - name: Run zizmor
         env:
@@ -355,7 +355,7 @@ jobs:
     steps:
       # Always check out the branch tip (not the triggering SHA) so lint
       # sees the final state after any update-dates or autofix commits.
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 5
         with:
           ref: ${{ github.head_ref || github.ref_name }}
