@@ -408,26 +408,38 @@ def check_unrendered_title_sentinel(soup: BeautifulSoup) -> list[str]:
     ``@title-lower``).
 
     A surviving sentinel means the build-time title binding never resolved,
-    leaking the raw token into the page instead of the target's title. The
-    sentinel is matched as a substring of any non-code text node—not just as
-    exact link text—because formatting passes can move punctuation into the
-    anchor around the sentinel or split it into sibling text nodes.
+    leaking the raw token into the page instead of the target's title. Anchor
+    text is matched as one joined string because the favicon pass lifts a
+    link's trailing characters into a ``nowrap-span``, so no single text node
+    holds the whole sentinel. Text outside anchors is matched per node, as a
+    substring, since formatting passes can leave punctuation beside it.
     Legitimate mentions of the sentinel live inside ``<code>`` elements, which
     ``should_skip`` excludes.
     """
     leaked: list[str] = []
-    for element in soup.find_all(string=True):
-        if not isinstance(element, NavigableString):  # pragma: no cover
-            continue
-        if not element.strip() or should_skip(element):
-            continue
-        match = _TITLE_SENTINEL_PATTERN.search(str(element))
+
+    def record(text: str) -> None:
+        match = _TITLE_SENTINEL_PATTERN.search(text)
         if match:
             _append_to_list(
                 leaked,
-                str(element),
+                text,
                 prefix=f"Unrendered title sentinel {match.group(0)}: ",
             )
+
+    for link in soup.find_all("a"):
+        if not should_skip(link):
+            record(link.get_text())
+
+    for element in soup.find_all(string=True):
+        if (
+            not element.strip()
+            or should_skip(element)
+            or element.find_parent("a") is not None
+        ):
+            continue
+        record(str(element))
+
     return leaked
 
 

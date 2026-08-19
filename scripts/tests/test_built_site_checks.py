@@ -2403,6 +2403,18 @@ def test_check_invalid_internal_links(html, expected_count):
         ('<a href="/page">“@title.”</a>', 1),
         # A leaked sentinel outside any anchor is also flagged.
         ("<p>Check out @title-lower today.</p>", 1),
+        # The favicon pass lifts the link's last characters into a
+        # `nowrap-span`, so the sentinel spans two text nodes.
+        (
+            '<a href="https://example.com">@t'
+            '<span class="nowrap-span">itle<svg class="favicon"/></span></a>',
+            1,
+        ),
+        (
+            '<a href="https://example.com">@title-l'
+            '<span class="nowrap-span">ower<svg class="favicon"/></span></a>',
+            1,
+        ),
         # Sentinel glued to letters/digits is prose, not a leak (mirrors the
         # transformer, which leaves such anchors untouched).
         ("<p>@titles and quote smallcaps</p>", 0),
