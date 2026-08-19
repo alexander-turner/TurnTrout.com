@@ -779,7 +779,9 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
             reject(
               new Error(
                 `Video never painted within ${dataTimeoutMs}ms ` +
-                  `(readyState=${videoEl.readyState}): ${videoEl.currentSrc || "<no src>"}`,
+                  `(readyState=${videoEl.readyState}, ` +
+                  `networkState=${videoEl.networkState}): ` +
+                  `${videoEl.currentSrc || "<no src>"}`,
               ),
             )
           }, dataTimeoutMs)
@@ -825,10 +827,14 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
             videoEl.addEventListener("loadeddata", waitForPaint, { once: true })
             // WebKit parks a paused video at HAVE_METADATA and fetches no
             // further media data until something asks for it, so waiting on
-            // "loadeddata" alone can never return. Kick the load at every
-            // readyState below HAVE_CURRENT_DATA; navbar.inline.ts kicks the
-            // same stall on the page itself.
-            videoEl.load()
+            // "loadeddata" alone can never return. Kick the load only while no
+            // fetch is in flight: `load()` restarts resource selection from
+            // scratch, discarding whatever the `preload="auto"` fetch already
+            // buffered and returning the element to HAVE_NOTHING.
+            // navbar.inline.ts guards the same kick on the page itself.
+            if (videoEl.networkState !== HTMLMediaElement.NETWORK_LOADING) {
+              videoEl.load()
+            }
           }
         }),
       VIDEO_PAINT_TIMEOUT_MS,
