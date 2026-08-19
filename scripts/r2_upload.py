@@ -54,34 +54,46 @@ def check_exists_on_r2(upload_target: str, verbose: bool = False) -> bool:
     _, _, path = upload_target.partition(":")
     bucket, _, key = path.partition("/")
     rclone_executable = script_utils.find_executable("rclone")
-    try:
-        result = subprocess.run(
-            [rclone_executable, "ls", f"r2:{bucket}"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError as e:
-        error_msg = f"Failed to check existence of file in R2: {e}"
-        raise RuntimeError(error_msg) from e
 
-    # ``rclone ls`` prints "<size> <path>" per line; match the path exactly so
-    # "static/a.png" doesn't spuriously match "static/a.png-backup" (or the
-    # size digits) via a naive substring test.
-    existing_keys = set()
-    for line in result.stdout.splitlines():
-        parts = line.split(maxsplit=1)
-        if len(parts) == 2:
-            existing_keys.add(parts[1])
+    # Query the single key rather than listing the whole bucket. `rclone lsf`
+    # on an exact object path prints its basename on success; on a missing
+    # path it exits with code 3 ("directory not found").
+    result = subprocess.run(
+        [rclone_executable, "lsf", "--files-only", f"r2:{bucket}/{key}"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
 
-    if key in existing_keys:
+    key_basename = key.rsplit("/", 1)[-1]
+    if result.returncode == 0:
+        # Match the basename exactly so a prefix-listing whose entries share
+        # our key's leading path doesn't spuriously count as a hit.
+        if key_basename in result.stdout.splitlines():
+            if verbose:
+                print(f"File found in R2: {upload_target}")
+            return True
         if verbose:
-            print(f"File found in R2: {upload_target}")
-        return True
+            print(f"No existing file found in R2: {upload_target}")
+        return False
 
-    if verbose:
-        print(f"No existing file found in R2: {upload_target}")
-    return False
+    # Distinguish "target absent" from a real subprocess failure. Rclone uses
+    # exit code 3 for a missing directory/object, and the message is stable
+    # across versions ("directory not found") — either signal is a clean miss.
+    stderr_lower = result.stderr.lower()
+    if (
+        result.returncode == 3
+        or "not found" in stderr_lower
+        or "no such" in stderr_lower
+    ):
+        if verbose:
+            print(f"No existing file found in R2: {upload_target}")
+        return False
+
+    raise RuntimeError(
+        f"Failed to check existence of file in R2 "
+        f"(exit {result.returncode}): {result.stderr.strip()[:300]}"
+    )
 
 
 def update_markdown_references(

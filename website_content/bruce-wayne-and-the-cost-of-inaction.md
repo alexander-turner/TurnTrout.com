@@ -37,7 +37,7 @@ original_url: https://www.lesswrong.com/posts/9KF28JSTJBqqkmkJZ/bruce-wayne-and-
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/QBOtBED.jpg
 description: Christopher Nolan's Batman Begins, but more rationalist and severe. Looking right at the pain you ignore whenever you walk by a homeless person.
-date_updated: 2026-07-22
+date_updated: 2026-08-19
 card_image_alt: A destitute man slumped against a brick wall, surrounded by darkness and lit by a spotlight - the bat-signal.
 ---
 
@@ -45,7 +45,7 @@ None of the characters are meant to express my views. I recommend reading accomp
 
 <div class="centered"><audio src="https://assets.turntrout.com/static/audio/batman.mp3" controls> </audio></div>
 
-## 1: Don't Look Away
+# 1: Don't Look Away
 
 "The man's starving. That doesn't change if you look away, Bruce."
 
@@ -127,7 +127,7 @@ They were home.<br>
 
 <div class="centered"><img id="fade-img" alt="A man and two young boys stand at the edge of a large, circular fountain in front of a grand manor at dusk. The fountain is illuminated, with a central marble statue of a man holding a lit torch and a book, flanked by dolphin statues spouting water." src="https://assets.turntrout.com/static/images/posts/bruce-wayne-and-the-cost-of-inaction-05222026-1.avif" width="90%" height="auto" class="no-select"></div>
 
-## 2: The World is Messy
+# 2: The World is Messy
 
 Thomas and Bruce passed through carven mahogany doors into a warm, high-ceilinged room of pale marble floor. Opposite them burned a fireplace of hardwood mantel and brick hearth. Family legend held that its fire had burned uninterrupted through the last century. For his part, Thomas had never seen it darkened.
 
@@ -191,7 +191,7 @@ Bruce looked out the tall windows and onto the rolling hills surrounding the est
 
 "Is this kinda like how the city keeps falling apart?", Bruce asked.
 
-## 3: How People See the World
+# 3: How People See the World
 
 The rich, warm tones of smooth jazz wafted through the apartment: the croon of the saxophone, the deep _doom_ of the bass, the shimmering harmony of the piano. Thomas sank into the cushy leather couch as he sank into the groove of the music.
 
@@ -249,7 +249,7 @@ Martha's gentle hand squeezed his leg under the table. His thoughts slowed, and 
 
 When they were together, he felt invincible.
 
-## 4: Family Night at the Opera
+# 4: Family Night at the Opera
 
 Bruce's half-lidded eyes opened fully. The opera was finally over. He couldn't believe it.
 
@@ -335,7 +335,7 @@ His eyes were closing.
 
 "Don't <span style="font-size:smaller">be <span style="font-size:smaller">afraid…"</span></span>
 
-## 5: The Dream of Flight
+# 5: The Dream of Flight
 
 Bruce left the warm glow of Wayne Manor's entry chamber and entered the night. Water spilled from the mouths of the dolphins, but he barely noticed. Bruce left the warmth behind him and turned left, his eyes on the stone-block path which wandered the grounds with him.
 
@@ -435,7 +435,7 @@ More soft flapping sounds from the well. Bruce heard the bats fly out into the n
 
 Bruce again wondered what it would be like to be a bat, flapping through the night. Bats weren't afraid of the dark, or of the cold, or of the unknown. They lived there.
 
-## 6: The Cost of Inaction
+# 6: The Cost of Inaction
 
 Bruce stared at the man who had killed his parents twelve years ago. He stared at Joe Chill while Judge Faden rendered his verdict.
 

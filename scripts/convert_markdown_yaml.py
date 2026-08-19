@@ -9,7 +9,6 @@ ImageMagick, and uploads them to R2 storage.
 
 #!/usr/bin/env python3
 import argparse
-import re
 import shutil
 import subprocess
 import tempfile
@@ -28,26 +27,6 @@ except ImportError:
 
 yaml_parser = script_utils.get_yaml_parser()
 _http_session = script_utils.http_session()
-
-
-def _parse_markdown_frontmatter(content: str) -> tuple[dict, str] | None:
-    """
-    Extract and parse YAML frontmatter from markdown content.
-
-    Args:
-        content: Raw markdown file content
-
-    Returns:
-        Tuple of (YAML data dict, markdown body) if frontmatter exists,
-        None otherwise
-    """
-    match = re.match(r"^---\n(.*?)\n---\n(.*)", content, re.DOTALL)
-    if not match:
-        return None
-
-    yaml_content, md_body = match.groups()
-    data = yaml_parser.load(yaml_content)
-    return data, md_body
 
 
 _DOWNLOAD_HEADERS = frozendict(
@@ -222,14 +201,16 @@ def process_card_image_in_markdown(md_file: Path) -> None:
             f"{script_utils.CONTENT_DIR_NAME} directory."
         )
 
-    with open(md_file, encoding="utf-8") as file:
-        content = file.read()
-
-    parsed = _parse_markdown_frontmatter(content)
-    if not parsed:
+    # ``split_yaml`` shares the frontmatter parsing (and closing-fence
+    # tolerance) with the rest of the codebase, so a trailing-whitespace
+    # ``---`` or a scalar frontmatter block behaves identically here.
+    data, md_body = script_utils.split_yaml(md_file)
+    if not data:
         return
-
-    data, md_body = parsed
+    # ``write_yaml_frontmatter`` emits its own ``---\n`` fence-and-newline,
+    # so drop the one newline ``split_yaml`` returns immediately after the
+    # closing fence to avoid a blank line between fence and body on rewrite.
+    md_body = md_body.removeprefix("\n")
 
     # Check if we need to process this file
     card_image_url = data.get("card_image")

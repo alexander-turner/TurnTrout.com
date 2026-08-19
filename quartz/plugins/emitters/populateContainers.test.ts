@@ -15,7 +15,7 @@ jest.unstable_mockModule("child_process", () => ({
 }))
 
 import fs from "fs"
-import { type Element } from "hast"
+import { type Element, type Root } from "hast"
 import { fromHtml } from "hast-util-from-html"
 import { toHtml } from "hast-util-to-html"
 import { visit } from "unist-util-visit"
@@ -402,6 +402,44 @@ describe("PopulateContainers", () => {
       ])("%s", (_, html, id, assertFn) => {
         const root = populateModule.findElementById(fromHtml(html), id)
         assertFn(root)
+      })
+
+      it("stops walking the tree at the first match", () => {
+        // Elements after the match must never have their id inspected;
+        // an id lookup is done once the first hit is found.
+        const inspected: string[] = []
+        const makeElement = (id: string): Element => ({
+          type: "element",
+          tagName: "div",
+          properties: new Proxy(
+            { id },
+            {
+              get(target, prop) {
+                if (prop === "id") inspected.push(id)
+                return (target as Record<string, unknown>)[prop as string]
+              },
+            },
+          ),
+          children: [],
+        })
+
+        const tree = {
+          type: "root",
+          children: [
+            makeElement("a"),
+            makeElement("b"),
+            makeElement("target"),
+            makeElement("after-1"),
+            makeElement("after-2"),
+          ],
+        } as unknown as Root
+
+        const match = populateModule.findElementById(tree, "target")
+        expect(match).not.toBeNull()
+        // Assert traversal record before any post-hoc property access that
+        // would push another entry into the proxy-tracked array.
+        expect(inspected).toEqual(["a", "b", "target"])
+        expect((match as Element).properties?.id).toBe("target")
       })
     })
 
