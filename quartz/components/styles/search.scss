@@ -60,6 +60,10 @@ $search-panel-max-height: 100vh - $search-space-top-offset - $search-modal-botto
       cursor: pointer;
       width: 0.625rem;
 
+      // Overrides the global bottom margin on `svg`, which the flex line would
+      // otherwise center along with the glyph and leave the icon sitting high.
+      margin: 0;
+
       .search-path {
         stroke: var(--midground);
         stroke-width: 2px;
