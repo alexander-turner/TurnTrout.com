@@ -42,7 +42,11 @@ $search-panel-max-height: 100vh - $search-space-top-offset - $search-modal-botto
       font-size: var(--font-size-minus-1);
       color: color-mix(in srgb, var(--midground) 75%, var(--foreground));
       display: inline;
-      padding: 0;
+
+      // Nudges the glyphs down to their optical center: EBGaramond's line box
+      // reserves more room above the cap line than below the baseline, so an
+      // untouched flex-centered box leaves "Search" looking too high.
+      padding: 0.125em 0 0;
       margin: 0 $base-margin;
 
       // Make it more centered for mobile
