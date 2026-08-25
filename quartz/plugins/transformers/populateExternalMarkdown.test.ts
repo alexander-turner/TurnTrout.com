@@ -324,6 +324,17 @@ describe("PopulateExternalMarkdown", () => {
       expect(mockReadFile).toHaveBeenCalledTimes(1)
     })
 
+    it("leaves a mid-line span alone for a source that renders no heading", () => {
+      // design.md and leaving-google-deepmind.md both place a local-file span
+      // mid-sentence; only a section-list source requires a line start.
+      mockReadFile.mockReturnValue("Content")
+      expect(
+        populateExternalContent('Inline <span class="populate-markdown-project"></span>.', {
+          project: { owner: "user", repo: "project" },
+        }),
+      ).toBe("Inline Content.")
+    })
+
     it("should ignore unconfigured placeholders", () => {
       const input = '<span class="populate-markdown-unknown"></span>'
       expect(populateExternalContent(input, {})).toBe(input)
@@ -427,7 +438,7 @@ describe("PopulateExternalMarkdown", () => {
         populateExternalContent('<span class="populate-markdown-tooling"></span>', {
           tooling: { sections: [{ heading: "  ", source: alpha }] },
         }),
-      ).toThrow('Section list for placeholder "tooling" has an entry with a blank heading')
+      ).toThrow('Section list for placeholder "tooling" has a blank heading at entry 0')
     })
 
     it("throws when the span sits mid-line, where the generated heading would be literal text", () => {

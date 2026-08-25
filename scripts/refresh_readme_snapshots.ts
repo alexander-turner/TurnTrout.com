@@ -103,7 +103,7 @@ export async function refreshSnapshots(
   const result: RefreshResult = { written: [], unchanged: [], failed: [], pruned: [] }
 
   for (const source of sources) {
-    // The snapshot filename, not owner/repo: it also distinguishes ref and path.
+    // The snapshot filename identifies a source uniquely, ref and path included.
     const name = path.basename(githubSnapshotPath(source))
     let content: string
     try {

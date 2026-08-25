@@ -5,7 +5,8 @@ import {
   type MarkdownSource,
 } from "../../quartz/plugins/transformers/populateExternalMarkdown"
 
-interface RepoSection {
+/** An `EmbeddedSection` narrowed to a GitHub source, which is what needs a snapshot. */
+export interface RepoSection {
   heading: string
   source: GitHubMarkdownSource
 }
@@ -52,16 +53,24 @@ const PAGE_SECTIONS: Readonly<Record<string, readonly RepoSection[]>> = {
 }
 
 /**
- * Every source needing a committed snapshot; `refreshSnapshots` iterates this
- * list. Keyed by snapshot path so a repo listed in two groups is fetched once.
+ * Flattens grouped sections into the sources needing a snapshot, keyed by
+ * snapshot path so a repo listed in two groups is fetched once. First
+ * occurrence wins, so the order follows the page.
  */
-export const SNAPSHOT_SOURCES: readonly GitHubMarkdownSource[] = [
-  ...new Map(
-    Object.values(PAGE_SECTIONS)
-      .flat()
-      .map(({ source }) => [githubSnapshotPath(source), source]),
-  ).values(),
-]
+export function snapshotSourcesFrom(
+  pageSections: Readonly<Record<string, readonly RepoSection[]>>,
+): readonly GitHubMarkdownSource[] {
+  return [
+    ...new Map(
+      Object.values(pageSections)
+        .flat()
+        .map(({ source }) => [githubSnapshotPath(source), source] as const),
+    ).values(),
+  ]
+}
+
+/** Every source needing a committed snapshot; `refreshSnapshots` iterates this list. */
+export const SNAPSHOT_SOURCES: readonly GitHubMarkdownSource[] = snapshotSourcesFrom(PAGE_SECTIONS)
 
 /** Placeholder map for `PopulateExternalMarkdown`: one section-list source per group. */
 export const EXTERNAL_README_SOURCES: Readonly<Record<string, MarkdownSource>> = Object.fromEntries(

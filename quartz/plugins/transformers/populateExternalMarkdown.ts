@@ -305,13 +305,20 @@ function renderSectionList(name: string, source: SectionListMarkdownSource): str
       `Section list for placeholder "${name}" is empty; it would erase the page section it renders`,
     )
   }
+  // Every heading is checked before any snapshot is read, so a config error
+  // surfaces without first having to fix an unrelated missing snapshot.
+  source.sections.forEach(({ heading }, index) => {
+    if (heading.trim() === "") {
+      throw new Error(
+        `Section list for placeholder "${name}" has a blank heading at entry ${index}`,
+      )
+    }
+  })
   return source.sections
-    .map(({ heading, source: sectionSource }) => {
-      if (heading.trim() === "") {
-        throw new Error(`Section list for placeholder "${name}" has an entry with a blank heading`)
-      }
-      return `# ${heading}\n\n${getContent(`${name}:${heading}`, sectionSource)}`
-    })
+    .map(
+      ({ heading, source: sectionSource }) =>
+        `# ${heading}\n\n${getContent(`${name}:${heading}`, sectionSource)}`,
+    )
     .join("\n\n")
 }
 

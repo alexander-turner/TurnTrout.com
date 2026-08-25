@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals
 import fs from "node:fs"
 import path from "node:path"
 
-import { SNAPSHOT_SOURCES } from "../../config/quartz/externalReadmes"
+import { SNAPSHOT_SOURCES, snapshotSourcesFrom } from "../../config/quartz/externalReadmes"
 import {
   githubSnapshotPath,
   README_SNAPSHOT_DIR,
@@ -142,10 +142,43 @@ describe("refresh_readme_snapshots", () => {
   })
 
   describe("SNAPSHOT_SOURCES", () => {
-    it("gives every configured source a distinct snapshot path", () => {
-      const paths = SNAPSHOT_SOURCES.map(githubSnapshotPath)
+    it("has a committed snapshot on disk for every configured source", () => {
       expect(SNAPSHOT_SOURCES.length).toBeGreaterThan(0)
-      expect(new Set(paths).size).toBe(paths.length)
+      const missing = SNAPSHOT_SOURCES.filter(
+        (source) => !fs.existsSync(githubSnapshotPath(source)),
+      ).map(githubSnapshotPath)
+      expect(missing).toEqual([])
+    })
+  })
+
+  describe("snapshotSourcesFrom", () => {
+    const punctilio = { owner: "o", repo: "punctilio" }
+
+    it("fetches a repo listed in two groups once, keeping first-occurrence page order", () => {
+      expect(
+        snapshotSourcesFrom({
+          first: [
+            { heading: "A", source: punctilio },
+            { heading: "B", source: { owner: "o", repo: "second" } },
+          ],
+          later: [{ heading: "C", source: punctilio }],
+        }),
+      ).toEqual([punctilio, { owner: "o", repo: "second" }])
+    })
+
+    it("keeps two sources that share a repo but differ by ref or path", () => {
+      const sources = snapshotSourcesFrom({
+        group: [
+          { heading: "A", source: { owner: "o", repo: "r" } },
+          { heading: "B", source: { owner: "o", repo: "r", ref: "dev" } },
+          { heading: "C", source: { owner: "o", repo: "r", path: "docs/API.md" } },
+        ],
+      })
+      expect(sources.map(githubSnapshotPath).map((p) => path.basename(p))).toEqual([
+        "o__r__main__README.md",
+        "o__r__dev__README.md",
+        "o__r__main__docs__API.md",
+      ])
     })
   })
 
@@ -220,6 +253,21 @@ describe("refresh_readme_snapshots", () => {
       expect(result.failed).toEqual(["o__broken__main__README.md"])
       expect(result.written).toEqual(["o__working__main__README.md"])
       expect(writeSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it("labels two sources that differ only by ref distinctly", async () => {
+      // A fresh Response per call — a body can only be read once
+      const fetchFn = jest
+        .fn<typeof fetch>()
+        .mockImplementation(() => Promise.resolve(response(200, "body")))
+      const result = await refreshSnapshots([SOURCE, { ...SOURCE, ref: "dev" }], {
+        fetchFn,
+        sleepFn,
+      })
+      expect(result.written).toEqual([
+        "test-owner__test-repo__main__README.md",
+        "test-owner__test-repo__dev__README.md",
+      ])
     })
 
     it("prunes snapshots that no longer match any configured source", async () => {
