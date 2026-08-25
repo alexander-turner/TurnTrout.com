@@ -1107,12 +1107,22 @@ test.describe("Right sidebar", () => {
     // any geometry measurement, so a target derived from `scrollHeight` lands
     // a few pixels apart between runs. 40 synthetic entries overflow well past
     // this offset, so both fades stay active — asserted below.
+    //
+    // `behavior: "instant"` overrides the sidebar's `scroll-behavior: smooth`,
+    // which would otherwise animate this scroll: the capture's own
+    // reduced-motion emulation flips that property to `auto` mid-flight, and
+    // Blink abandons the animation wherever it has reached, freezing the
+    // sidebar a couple of pixels short of the target.
     const scrollOffsetPx = 200
     await rightSidebar.evaluate((el, offset) => {
-      el.scrollTop = offset
+      el.scrollTo({ top: offset, behavior: "instant" })
     }, scrollOffsetPx)
     await expect(rightSidebar).toHaveClass(/can-scroll-up/)
     await expect(rightSidebar).toHaveClass(/can-scroll-down/)
+    // A sidebar sitting anywhere but the target renders every entry off by the
+    // difference, which reads as a whole-image baseline diff rather than the
+    // scroll bug it is.
+    expect(await rightSidebar.evaluate((el) => el.scrollTop)).toBe(scrollOffsetPx)
 
     await takeRegressionScreenshot(page, testInfo, "right-sidebar-fade-mid-scroll", {
       elementToScreenshot: rightSidebar,
