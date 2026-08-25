@@ -57,7 +57,7 @@ export interface LocalMarkdownSource {
 }
 
 /** One page section: an H1 heading followed by an embedded markdown source. */
-export interface ReadmeSection {
+export interface EmbeddedSection {
   heading: string
   source: GitHubMarkdownSource | LocalMarkdownSource
 }
@@ -66,9 +66,12 @@ export interface ReadmeSection {
  * A source that renders a list of sections, one `# heading` plus embedded
  * content per entry. Lets a page enumerate related repos from a single data
  * list instead of hand-authoring a heading and placeholder span per repo.
+ * A section's own source is never a section list, so the rendering is one
+ * level deep. The placeholder span must sit on its own line at column 0, or
+ * the generated `# heading` lands mid-paragraph as literal text.
  */
 export interface SectionListMarkdownSource {
-  sections: readonly ReadmeSection[]
+  sections: readonly EmbeddedSection[]
 }
 
 export type MarkdownSource = GitHubMarkdownSource | LocalMarkdownSource | SectionListMarkdownSource
@@ -298,10 +301,15 @@ export function githubReadmeSource(
 
 function getContent(name: string, source: MarkdownSource): string {
   if (isSectionListSource(source)) {
+    if (source.sections.length === 0) {
+      throw new Error(
+        `Section list for placeholder "${name}" is empty; it would erase the page section it renders`,
+      )
+    }
     return source.sections
       .map(
         ({ heading, source: sectionSource }) =>
-          `# ${heading}\n\n${getContent(name, sectionSource)}`,
+          `# ${heading}\n\n${getContent(`${name}:${heading}`, sectionSource)}`,
       )
       .join("\n\n")
   }

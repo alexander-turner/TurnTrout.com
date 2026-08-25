@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import fs from "node:fs"
 
-import { GITHUB_README_SOURCES } from "../../config/quartz/externalReadmes"
+import { SNAPSHOT_SOURCES } from "../../config/quartz/externalReadmes"
 import {
   githubSnapshotPath,
   README_SNAPSHOT_DIR,
@@ -141,7 +141,7 @@ describe("refresh_readme_snapshots", () => {
   })
 
   describe("refreshSnapshots", () => {
-    const sources = { "test-repo": SOURCE }
+    const sources = [SOURCE]
     const snapshotPath = githubSnapshotPath(SOURCE)
     let mkdirSpy: jest.SpiedFunction<typeof fs.mkdirSync>
     let existsSpy: jest.SpiedFunction<typeof fs.existsSync>
@@ -166,7 +166,12 @@ describe("refresh_readme_snapshots", () => {
       const result = await refreshSnapshots(sources, { fetchFn, sleepFn })
       expect(mkdirSpy).toHaveBeenCalledWith(README_SNAPSHOT_DIR, { recursive: true })
       expect(writeSpy).toHaveBeenCalledWith(snapshotPath, "fresh", "utf-8")
-      expect(result).toEqual({ written: ["test-repo"], unchanged: [], failed: [], pruned: [] })
+      expect(result).toEqual({
+        written: ["test-owner/test-repo"],
+        unchanged: [],
+        failed: [],
+        pruned: [],
+      })
     })
 
     it("rewrites a snapshot whose upstream content changed", async () => {
@@ -175,7 +180,7 @@ describe("refresh_readme_snapshots", () => {
       const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(response(200, "fresh"))
       const result = await refreshSnapshots(sources, { fetchFn, sleepFn })
       expect(writeSpy).toHaveBeenCalledWith(snapshotPath, "fresh", "utf-8")
-      expect(result.written).toEqual(["test-repo"])
+      expect(result.written).toEqual(["test-owner/test-repo"])
     })
 
     it("leaves an identical snapshot untouched", async () => {
@@ -184,22 +189,27 @@ describe("refresh_readme_snapshots", () => {
       const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(response(200, "same"))
       const result = await refreshSnapshots(sources, { fetchFn, sleepFn })
       expect(writeSpy).not.toHaveBeenCalled()
-      expect(result).toEqual({ written: [], unchanged: ["test-repo"], failed: [], pruned: [] })
+      expect(result).toEqual({
+        written: [],
+        unchanged: ["test-owner/test-repo"],
+        failed: [],
+        pruned: [],
+      })
     })
 
     it("keeps the last-known-good snapshot and continues past a failing source", async () => {
-      const twoSources = {
-        broken: { owner: "o", repo: "broken" },
-        working: { owner: "o", repo: "working" },
-      }
+      const twoSources = [
+        { owner: "o", repo: "broken" },
+        { owner: "o", repo: "working" },
+      ]
       const fetchFn = jest
         .fn<typeof fetch>()
         .mockImplementation((url) =>
           Promise.resolve(String(url).includes("broken") ? response(404) : response(200, "ok")),
         )
       const result = await refreshSnapshots(twoSources, { fetchFn, sleepFn })
-      expect(result.failed).toEqual(["broken"])
-      expect(result.written).toEqual(["working"])
+      expect(result.failed).toEqual(["o/broken"])
+      expect(result.written).toEqual(["o/working"])
       expect(writeSpy).toHaveBeenCalledTimes(1)
     })
 
@@ -222,15 +232,23 @@ describe("refresh_readme_snapshots", () => {
       expect(result.pruned).toEqual([])
     })
 
-    it("defaults to the configured GITHUB_README_SOURCES", async () => {
+    it("defaults to the configured SNAPSHOT_SOURCES", async () => {
       // A fresh Response per call — a body can only be read once
       const fetchSpy = jest
         .spyOn(globalThis, "fetch")
         .mockImplementation(() => Promise.resolve(response(200, "body")))
       const result = await refreshSnapshots()
-      expect(result.written).toEqual(Object.keys(GITHUB_README_SOURCES))
+      expect(result.written).toEqual(
+        SNAPSHOT_SOURCES.map((source) => `${source.owner}/${source.repo}`),
+      )
       expect(result.failed).toEqual([])
-      expect(fetchSpy).toHaveBeenCalledTimes(Object.keys(GITHUB_README_SOURCES).length)
+      expect(fetchSpy).toHaveBeenCalledTimes(SNAPSHOT_SOURCES.length)
+    })
+
+    it("gives every configured source a distinct snapshot path", () => {
+      const paths = SNAPSHOT_SOURCES.map(githubSnapshotPath)
+      expect(SNAPSHOT_SOURCES.length).toBeGreaterThan(0)
+      expect(new Set(paths).size).toBe(paths.length)
     })
   })
 })

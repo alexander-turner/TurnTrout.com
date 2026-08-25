@@ -378,49 +378,55 @@ describe("PopulateExternalMarkdown", () => {
     })
   })
 
-  describe("isSectionListSource", () => {
-    it.each([
-      [{ sections: [] }, true],
-      [{ filePath: "package.json" }, false],
-      [{ owner: "user", repo: "project" }, false],
-    ])("should identify source %j as a section list: %s", (source, expected) => {
-      expect(isSectionListSource(source)).toBe(expected)
-    })
-  })
-
   describe("populateExternalContent with section-list sources", () => {
-    it("renders one H1 section per entry, in list order, from each entry's snapshot", () => {
+    const alpha = { owner: "user", repo: "alpha-repo" }
+    const beta = { owner: "user", repo: "beta-repo", transform: stripBadges }
+    const twoSections = {
+      tooling: {
+        sections: [
+          { heading: "First tool", source: alpha },
+          { heading: "Second tool", source: beta },
+        ],
+      },
+    }
+
+    it("renders one H1 per entry in list order, reading each entry's own snapshot and applying its transform", () => {
       mockReadFile.mockImplementation((filePath) =>
-        String(filePath).includes("alpha-repo") ? "Alpha body" : "Beta body",
+        filePath === githubSnapshotPath(alpha)
+          ? "Alpha body"
+          : "[![Badge](url)](link)\n\nBeta body",
       )
-      const sources = {
-        tooling: {
-          sections: [
-            { heading: "First tool", source: { owner: "user", repo: "alpha-repo" } },
-            { heading: "Second tool", source: { owner: "user", repo: "beta-repo" } },
-          ],
-        },
-      }
       expect(
-        populateExternalContent('<span class="populate-markdown-tooling"></span>', sources),
+        populateExternalContent('<span class="populate-markdown-tooling"></span>', twoSections),
       ).toBe("# First tool\n\nAlpha body\n\n# Second tool\n\nBeta body")
+      expect(mockReadFile).toHaveBeenNthCalledWith(1, githubSnapshotPath(alpha), "utf-8")
+      expect(mockReadFile).toHaveBeenNthCalledWith(2, githubSnapshotPath(beta), "utf-8")
     })
 
-    it("applies each entry's own transform", () => {
-      mockReadFile.mockReturnValue("[![Badge](url)](link)\n\nBody")
-      const sources = {
-        tooling: {
-          sections: [
-            {
-              heading: "Tool",
-              source: { owner: "user", repo: "project", transform: stripBadges },
-            },
-          ],
-        },
+    it("names the failing section, not the containing placeholder, when a snapshot fails to load", () => {
+      const cause = new Error("Disk error")
+      mockReadFile.mockImplementation(() => {
+        throw cause
+      })
+      let thrown: Error | undefined
+      try {
+        populateExternalContent('<span class="populate-markdown-tooling"></span>', twoSections)
+      } catch (e) {
+        thrown = e as Error
       }
-      expect(
-        populateExternalContent('<span class="populate-markdown-tooling"></span>', sources),
-      ).toBe("# Tool\n\nBody")
+      expect(thrown?.message).toBe(
+        'Failed to load content for placeholder "tooling:First tool" from user/alpha-repo',
+      )
+    })
+
+    it("throws rather than silently erasing the page section when the list is empty", () => {
+      expect(() =>
+        populateExternalContent('<span class="populate-markdown-tooling"></span>', {
+          tooling: { sections: [] },
+        }),
+      ).toThrow(
+        'Section list for placeholder "tooling" is empty; it would erase the page section it renders',
+      )
     })
   })
 
@@ -431,6 +437,16 @@ describe("PopulateExternalMarkdown", () => {
       [{ owner: "user", repo: "project" }, false],
     ])("should identify source %j as local: %s", (source, expected) => {
       expect(isLocalSource(source)).toBe(expected)
+    })
+  })
+
+  describe("isSectionListSource", () => {
+    it.each([
+      [{ sections: [] }, true],
+      [{ filePath: "package.json" }, false],
+      [{ owner: "user", repo: "project" }, false],
+    ])("should identify source %j as a section list: %s", (source, expected) => {
+      expect(isSectionListSource(source)).toBe(expected)
     })
   })
 

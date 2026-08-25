@@ -12,7 +12,7 @@ import fs from "node:fs"
 import path from "node:path"
 import { setTimeout as sleep } from "node:timers/promises"
 
-import { GITHUB_README_SOURCES } from "../config/quartz/externalReadmes"
+import { SNAPSHOT_SOURCES } from "../config/quartz/externalReadmes"
 import {
   type GitHubMarkdownSource,
   githubSnapshotPath,
@@ -96,13 +96,14 @@ export interface RefreshResult {
  * source are deleted and reported in `pruned`.
  */
 export async function refreshSnapshots(
-  sources: Readonly<Record<string, GitHubMarkdownSource>> = GITHUB_README_SOURCES,
+  sources: readonly GitHubMarkdownSource[] = SNAPSHOT_SOURCES,
   deps: FetchDeps = {},
 ): Promise<RefreshResult> {
   fs.mkdirSync(README_SNAPSHOT_DIR, { recursive: true })
   const result: RefreshResult = { written: [], unchanged: [], failed: [], pruned: [] }
 
-  for (const [name, source] of Object.entries(sources)) {
+  for (const source of sources) {
+    const name = `${source.owner}/${source.repo}`
     let content: string
     try {
       content = await fetchReadme(source, deps)
@@ -123,7 +124,7 @@ export async function refreshSnapshots(
     result.written.push(name)
   }
 
-  const expectedPaths = new Set(Object.values(sources).map(githubSnapshotPath))
+  const expectedPaths = new Set(sources.map(githubSnapshotPath))
   for (const fileName of fs.readdirSync(README_SNAPSHOT_DIR)) {
     const filePath = path.join(README_SNAPSHOT_DIR, fileName)
     if (!expectedPaths.has(filePath)) {
