@@ -56,7 +56,24 @@ export interface LocalMarkdownSource {
   transform?: (content: string) => string
 }
 
-export type MarkdownSource = GitHubMarkdownSource | LocalMarkdownSource
+/** One page section: an H1 heading followed by an embedded markdown source. */
+export interface EmbeddedSection {
+  heading: string
+  source: GitHubMarkdownSource | LocalMarkdownSource
+}
+
+/**
+ * A source that renders a list of sections, one `# heading` plus embedded
+ * content per entry, letting a page enumerate repos from one data list.
+ * A section's own source is never a section list, so rendering is one level
+ * deep. The placeholder span must start a line, so that the generated
+ * `# heading` opens one too; `populateExternalContent` enforces this.
+ */
+export interface SectionListMarkdownSource {
+  sections: readonly EmbeddedSection[]
+}
+
+export type MarkdownSource = GitHubMarkdownSource | LocalMarkdownSource | SectionListMarkdownSource
 
 export interface PopulateExternalMarkdownOptions {
   /** Map of placeholder names to their sources. */
@@ -68,6 +85,11 @@ const contentCache = new Map<string, string>()
 /** Type guard: true if the source is a local-file source rather than a GitHub source. */
 export function isLocalSource(source: MarkdownSource): source is LocalMarkdownSource {
   return "filePath" in source
+}
+
+/** Type guard: true if the source is a section list rather than a single document. */
+export function isSectionListSource(source: MarkdownSource): source is SectionListMarkdownSource {
+  return "sections" in source
 }
 
 /** Resolves a GitHub source's optional fields to their defaults. */
@@ -276,7 +298,33 @@ export function githubReadmeSource(
   }
 }
 
+/** Renders a section list as `# heading` plus that section's embedded content, per entry. */
+function renderSectionList(name: string, source: SectionListMarkdownSource): string {
+  if (source.sections.length === 0) {
+    throw new Error(
+      `Section list for placeholder "${name}" is empty; it would erase the page section it renders`,
+    )
+  }
+  // Every heading is checked before any snapshot is read, so a config error
+  // surfaces without first having to fix an unrelated missing snapshot.
+  source.sections.forEach(({ heading }, index) => {
+    if (heading.trim() === "") {
+      throw new Error(
+        `Section list for placeholder "${name}" has a blank heading at entry ${index}`,
+      )
+    }
+  })
+  return source.sections
+    .map(
+      ({ heading, source: sectionSource }) =>
+        `# ${heading}\n\n${getContent(`${name}:${heading}`, sectionSource)}`,
+    )
+    .join("\n\n")
+}
+
 function getContent(name: string, source: MarkdownSource): string {
+  if (isSectionListSource(source)) return renderSectionList(name, source)
+
   const local = isLocalSource(source)
   const cacheKey = local
     ? `local:${source.filePath}:${source.jsonPath}`
@@ -322,9 +370,14 @@ export function populateExternalContent(
 ): string {
   const regex = buildPlaceholderRegex(Object.keys(sources))
   if (!regex) return content
-  return content.replace(regex, (_match, name: string) => {
+  return content.replace(regex, (_match: string, name: string, offset: number) => {
     // regex is built from Object.keys(sources), so `name` is always present
     const source = sources[name] as MarkdownSource
+    if (isSectionListSource(source) && offset > 0 && content[offset - 1] !== "\n") {
+      throw new Error(
+        `Placeholder "${name}" renders headings, so its span must start a line; found it mid-line at offset ${offset}`,
+      )
+    }
     return getContent(name, source)
   })
 }
