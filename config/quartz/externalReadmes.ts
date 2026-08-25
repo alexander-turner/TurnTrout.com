@@ -1,12 +1,7 @@
-/**
- * The repo sections embedded into pages via `populate-markdown-*` placeholders.
- * The build reads each repo's README from a committed snapshot in
- * `quartz/plugins/transformers/.readme-snapshots/`;
- * `scripts/refresh_readme_snapshots.ts` re-fetches and updates the snapshots.
- */
 import {
   type GitHubMarkdownSource,
   githubReadmeSource,
+  githubSnapshotPath,
   type MarkdownSource,
 } from "../../quartz/plugins/transformers/populateExternalMarkdown"
 
@@ -18,7 +13,8 @@ interface RepoSection {
 /**
  * Repo sections on /open-source, grouped by the placeholder span that renders
  * them, each group in page order. To list a new repo: add an entry here, run
- * `npx tsx scripts/refresh_readme_snapshots.ts`, and commit the new snapshot.
+ * `npx tsx scripts/refresh_readme_snapshots.ts`, and commit the new snapshot in
+ * `quartz/plugins/transformers/.readme-snapshots/`, which the build reads.
  */
 const PAGE_SECTIONS: Readonly<Record<string, readonly RepoSection[]>> = {
   punctilio: [
@@ -55,10 +51,17 @@ const PAGE_SECTIONS: Readonly<Record<string, readonly RepoSection[]>> = {
   ],
 }
 
-/** Every source needing a committed snapshot; `refreshSnapshots` iterates this list. */
-export const SNAPSHOT_SOURCES: readonly GitHubMarkdownSource[] = Object.values(PAGE_SECTIONS)
-  .flat()
-  .map(({ source }) => source)
+/**
+ * Every source needing a committed snapshot; `refreshSnapshots` iterates this
+ * list. Keyed by snapshot path so a repo listed in two groups is fetched once.
+ */
+export const SNAPSHOT_SOURCES: readonly GitHubMarkdownSource[] = [
+  ...new Map(
+    Object.values(PAGE_SECTIONS)
+      .flat()
+      .map(({ source }) => [githubSnapshotPath(source), source]),
+  ).values(),
+]
 
 /** Placeholder map for `PopulateExternalMarkdown`: one section-list source per group. */
 export const EXTERNAL_README_SOURCES: Readonly<Record<string, MarkdownSource>> = Object.fromEntries(

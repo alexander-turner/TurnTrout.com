@@ -64,11 +64,10 @@ export interface EmbeddedSection {
 
 /**
  * A source that renders a list of sections, one `# heading` plus embedded
- * content per entry. Lets a page enumerate related repos from a single data
- * list instead of hand-authoring a heading and placeholder span per repo.
- * A section's own source is never a section list, so the rendering is one
- * level deep. The placeholder span must sit on its own line at column 0, or
- * the generated `# heading` lands mid-paragraph as literal text.
+ * content per entry, letting a page enumerate repos from one data list.
+ * A section's own source is never a section list, so rendering is one level
+ * deep. The placeholder span must start a line, so that the generated
+ * `# heading` opens one too; `populateExternalContent` enforces this.
  */
 export interface SectionListMarkdownSource {
   sections: readonly EmbeddedSection[]
@@ -299,20 +298,25 @@ export function githubReadmeSource(
   }
 }
 
-function getContent(name: string, source: MarkdownSource): string {
-  if (isSectionListSource(source)) {
-    if (source.sections.length === 0) {
-      throw new Error(
-        `Section list for placeholder "${name}" is empty; it would erase the page section it renders`,
-      )
-    }
-    return source.sections
-      .map(
-        ({ heading, source: sectionSource }) =>
-          `# ${heading}\n\n${getContent(`${name}:${heading}`, sectionSource)}`,
-      )
-      .join("\n\n")
+/** Renders a section list as `# heading` plus that section's embedded content, per entry. */
+function renderSectionList(name: string, source: SectionListMarkdownSource): string {
+  if (source.sections.length === 0) {
+    throw new Error(
+      `Section list for placeholder "${name}" is empty; it would erase the page section it renders`,
+    )
   }
+  return source.sections
+    .map(({ heading, source: sectionSource }) => {
+      if (heading.trim() === "") {
+        throw new Error(`Section list for placeholder "${name}" has an entry with a blank heading`)
+      }
+      return `# ${heading}\n\n${getContent(`${name}:${heading}`, sectionSource)}`
+    })
+    .join("\n\n")
+}
+
+function getContent(name: string, source: MarkdownSource): string {
+  if (isSectionListSource(source)) return renderSectionList(name, source)
 
   const local = isLocalSource(source)
   const cacheKey = local
@@ -359,9 +363,14 @@ export function populateExternalContent(
 ): string {
   const regex = buildPlaceholderRegex(Object.keys(sources))
   if (!regex) return content
-  return content.replace(regex, (_match, name: string) => {
+  return content.replace(regex, (_match: string, name: string, offset: number) => {
     // regex is built from Object.keys(sources), so `name` is always present
     const source = sources[name] as MarkdownSource
+    if (isSectionListSource(source) && offset > 0 && content[offset - 1] !== "\n") {
+      throw new Error(
+        `Placeholder "${name}" renders headings, so its span must start a line; found it mid-line at offset ${offset}`,
+      )
+    }
     return getContent(name, source)
   })
 }

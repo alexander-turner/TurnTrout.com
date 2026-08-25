@@ -1205,7 +1205,7 @@ Monthly newsletter
 : A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/monthly-newsletter.yml) collects commits since the last newsletter, feeds them to the Claude API with a [prompt template](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/prompts/newsletter-prompt.md), and emails me the draft via [Resend](https://resend.com/).
 
 Template sync
-: A [daily workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/template-sync.yaml) diffs local automation files against the [template repo](https://github.com/alexander-turner/claude-automation-template), copies new files, and opens a PR.
+: A [daily workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/template-sync.yaml) diffs local automation files against the [template repo](https://github.com/AlexanderMattTurner/claude-automation-template), copies new files, and opens a PR.
 
 > [!thanks]
 > [Boyd Kane](https://github.com/beyarkay) made [a pull request](https://github.com/alexander-turner/TurnTrout.com/pull/1404) to wrap long lines in `pre` blocks.

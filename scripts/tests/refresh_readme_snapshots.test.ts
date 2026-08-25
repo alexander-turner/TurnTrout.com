@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import fs from "node:fs"
+import path from "node:path"
 
 import { SNAPSHOT_SOURCES } from "../../config/quartz/externalReadmes"
 import {
@@ -140,6 +141,14 @@ describe("refresh_readme_snapshots", () => {
     })
   })
 
+  describe("SNAPSHOT_SOURCES", () => {
+    it("gives every configured source a distinct snapshot path", () => {
+      const paths = SNAPSHOT_SOURCES.map(githubSnapshotPath)
+      expect(SNAPSHOT_SOURCES.length).toBeGreaterThan(0)
+      expect(new Set(paths).size).toBe(paths.length)
+    })
+  })
+
   describe("refreshSnapshots", () => {
     const sources = [SOURCE]
     const snapshotPath = githubSnapshotPath(SOURCE)
@@ -167,7 +176,7 @@ describe("refresh_readme_snapshots", () => {
       expect(mkdirSpy).toHaveBeenCalledWith(README_SNAPSHOT_DIR, { recursive: true })
       expect(writeSpy).toHaveBeenCalledWith(snapshotPath, "fresh", "utf-8")
       expect(result).toEqual({
-        written: ["test-owner/test-repo"],
+        written: ["test-owner__test-repo__main__README.md"],
         unchanged: [],
         failed: [],
         pruned: [],
@@ -180,7 +189,7 @@ describe("refresh_readme_snapshots", () => {
       const fetchFn = jest.fn<typeof fetch>().mockResolvedValue(response(200, "fresh"))
       const result = await refreshSnapshots(sources, { fetchFn, sleepFn })
       expect(writeSpy).toHaveBeenCalledWith(snapshotPath, "fresh", "utf-8")
-      expect(result.written).toEqual(["test-owner/test-repo"])
+      expect(result.written).toEqual(["test-owner__test-repo__main__README.md"])
     })
 
     it("leaves an identical snapshot untouched", async () => {
@@ -191,7 +200,7 @@ describe("refresh_readme_snapshots", () => {
       expect(writeSpy).not.toHaveBeenCalled()
       expect(result).toEqual({
         written: [],
-        unchanged: ["test-owner/test-repo"],
+        unchanged: ["test-owner__test-repo__main__README.md"],
         failed: [],
         pruned: [],
       })
@@ -208,8 +217,8 @@ describe("refresh_readme_snapshots", () => {
           Promise.resolve(String(url).includes("broken") ? response(404) : response(200, "ok")),
         )
       const result = await refreshSnapshots(twoSources, { fetchFn, sleepFn })
-      expect(result.failed).toEqual(["o/broken"])
-      expect(result.written).toEqual(["o/working"])
+      expect(result.failed).toEqual(["o__broken__main__README.md"])
+      expect(result.written).toEqual(["o__working__main__README.md"])
       expect(writeSpy).toHaveBeenCalledTimes(1)
     })
 
@@ -239,16 +248,10 @@ describe("refresh_readme_snapshots", () => {
         .mockImplementation(() => Promise.resolve(response(200, "body")))
       const result = await refreshSnapshots()
       expect(result.written).toEqual(
-        SNAPSHOT_SOURCES.map((source) => `${source.owner}/${source.repo}`),
+        SNAPSHOT_SOURCES.map((source) => path.basename(githubSnapshotPath(source))),
       )
       expect(result.failed).toEqual([])
       expect(fetchSpy).toHaveBeenCalledTimes(SNAPSHOT_SOURCES.length)
-    })
-
-    it("gives every configured source a distinct snapshot path", () => {
-      const paths = SNAPSHOT_SOURCES.map(githubSnapshotPath)
-      expect(SNAPSHOT_SOURCES.length).toBeGreaterThan(0)
-      expect(new Set(paths).size).toBe(paths.length)
     })
   })
 })

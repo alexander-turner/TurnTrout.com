@@ -103,7 +103,8 @@ export async function refreshSnapshots(
   const result: RefreshResult = { written: [], unchanged: [], failed: [], pruned: [] }
 
   for (const source of sources) {
-    const name = `${source.owner}/${source.repo}`
+    // The snapshot filename, not owner/repo: it also distinguishes ref and path.
+    const name = path.basename(githubSnapshotPath(source))
     let content: string
     try {
       content = await fetchReadme(source, deps)

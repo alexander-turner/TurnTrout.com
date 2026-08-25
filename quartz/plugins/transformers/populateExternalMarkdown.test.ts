@@ -379,7 +379,7 @@ describe("PopulateExternalMarkdown", () => {
   })
 
   describe("populateExternalContent with section-list sources", () => {
-    const alpha = { owner: "user", repo: "alpha-repo" }
+    const alpha = { owner: "user", repo: "alpha-repo", transform: stripLeadingH1 }
     const beta = { owner: "user", repo: "beta-repo", transform: stripBadges }
     const twoSections = {
       tooling: {
@@ -390,10 +390,12 @@ describe("PopulateExternalMarkdown", () => {
       },
     }
 
-    it("renders one H1 per entry in list order, reading each entry's own snapshot and applying its transform", () => {
+    it("renders one H1 per entry in list order, reading each entry's own snapshot and applying its own transform", () => {
+      // Each snapshot carries what only the OTHER entry's transform would remove,
+      // so a transform applied to the wrong section shows up in the output.
       mockReadFile.mockImplementation((filePath) =>
         filePath === githubSnapshotPath(alpha)
-          ? "Alpha body"
+          ? "# Alpha title\n\nAlpha body"
           : "[![Badge](url)](link)\n\nBeta body",
       )
       expect(
@@ -417,6 +419,33 @@ describe("PopulateExternalMarkdown", () => {
       expect(thrown?.message).toBe(
         'Failed to load content for placeholder "tooling:First tool" from user/alpha-repo',
       )
+      expect(thrown?.cause).toBe(cause)
+    })
+
+    it("throws rather than emitting an empty heading for a blank entry heading", () => {
+      expect(() =>
+        populateExternalContent('<span class="populate-markdown-tooling"></span>', {
+          tooling: { sections: [{ heading: "  ", source: alpha }] },
+        }),
+      ).toThrow('Section list for placeholder "tooling" has an entry with a blank heading')
+    })
+
+    it("throws when the span sits mid-line, where the generated heading would be literal text", () => {
+      expect(() =>
+        populateExternalContent(
+          'Text <span class="populate-markdown-tooling"></span>',
+          twoSections,
+        ),
+      ).toThrow(/must start a line; found it mid-line at offset 5/)
+    })
+
+    it("allows a span that starts a line other than the first", () => {
+      mockReadFile.mockReturnValue("Body")
+      expect(
+        populateExternalContent('Intro\n<span class="populate-markdown-tooling"></span>', {
+          tooling: { sections: [{ heading: "Tool", source: alpha }] },
+        }),
+      ).toBe("Intro\n# Tool\n\nBody")
     })
 
     it("throws rather than silently erasing the page section when the list is empty", () => {
