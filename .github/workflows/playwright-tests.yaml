@@ -30,7 +30,7 @@ jobs:
       run-macos: ${{ steps.gate.outputs.run-macos }}
       browsers: ${{ steps.gate.outputs.browsers }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 5
         with:
           sparse-checkout: .github/actions/ci-gate
@@ -92,7 +92,7 @@ jobs:
     env:
       PLAYWRIGHT_BROWSERS: ${{ needs.should-run.outputs.browsers }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 5
         with:
           persist-credentials: false
@@ -211,7 +211,7 @@ jobs:
       # Reverted upstream but no 1.59.2 release yet. Remove when upgrading Playwright.
       PLAYWRIGHT_NO_UA_PLATFORM: "1"
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 5
         with:
           persist-credentials: false
@@ -329,7 +329,7 @@ jobs:
     steps:
       - name: Checkout
         if: contains(needs.*.result, 'cancelled')
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 5
         with:
           persist-credentials: false
@@ -370,7 +370,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 5
         with:
           persist-credentials: false
