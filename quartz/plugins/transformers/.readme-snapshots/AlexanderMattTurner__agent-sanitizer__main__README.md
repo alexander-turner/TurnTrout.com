@@ -1,12 +1,8 @@
 # `agent-sanitizer`
 
-Most prompt-injection tools run a classifier _over_ the text and hope it
-generalizes. This library targets a narrower, verifiable claim: the
-specific byte-level channels—invisible Unicode, ANSI escapes, human-hidden
-HTML, confusable glyphs and look-alike hosts, exfil-shaped URLs—that let an
-attacker smuggle a payload the operator can't see but the model still reads.
-Every layer is a
-deterministic transform you can unit-test with equality assertions.
+**Cleans untrusted text before your agent reads it.** An attacker hides a payload where a person cannot see it but the model still reads it: invisible Unicode, ANSI escapes, human-hidden HTML, confusable glyphs, look-alike hosts, and exfil-shaped URLs.
+
+This library handles each channel on its own terms. It strips invisible characters and ANSI escapes by default, splices out hidden HTML when you opt in, and _reports_ exfil-shaped URLs and look-alike hosts rather than rewriting them — mangling a legitimate link is the worse failure. Every layer is a deterministic transform, so you can unit-test it with equality assertions. There is no classifier and no model call, so nothing rests on whether a prediction generalized.
 
 **As a library:**
 
@@ -28,9 +24,7 @@ Enter one at a time:
 
 Finally, navigate: `/plugin` → Marketplaces → `agent-sanitizer` → Enable auto-update.
 
-[What installing entails](#what-installing-entails) covers the footprint of each
-path and how a failure looks; [Using it with Claude
-Code](#using-it-with-claude-code) covers each hook and hand-wiring.
+[What installing entails](#what-installing-entails) covers the footprint of each path and how a failure looks; [Using it with Claude Code](#using-it-with-claude-code) covers each hook and hand-wiring.
 
 ## Quick start
 

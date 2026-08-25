@@ -1,15 +1,11 @@
 # ci-truth-serum
 
-**A green CI check can hide a failure. This pack of pre-commit lints finds the
-places where that happens.** The lints are fast and they run offline. They catch
-two kinds of false report:
+**A green check does not always mean the work passed.** These pre-commit lints find the places where CI reports success over a real failure. They are fast and they run offline.
 
-- **Honesty failures:** the pipeline reports success, but the real work failed.
-  A pipe hides the exit code of the command that failed. Or a required check
-  never reports at all, and the pull request waits forever.
-- **Identity failures:** a base image or a downloaded file names a _mutable_
-  target, such as a tag or a bare URL. The target can change. You cannot prove
-  that the bytes you run are the bytes you reviewed.
+Two things go wrong, and neither one shows up as a red check:
+
+- **The pipeline hides a failure.** A pipe drops the exit code of the command that failed. Or a required check never reports, so the pull request waits forever.
+- **You cannot prove what you ran.** A base image or a download names a tag or a bare URL. That target can change, so the bytes you run may differ from the bytes you reviewed.
 
 ## What it checks
 
