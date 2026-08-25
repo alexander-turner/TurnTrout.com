@@ -17,7 +17,7 @@ aliases:
   - software
   - OSS
 date_published: 2025-10-28
-date_updated: 2026-08-03
+date_updated: 2026-08-25
 ---
 
 # Punctilio for meticulous typography
@@ -111,17 +111,7 @@ The original `subfont` traced font usage from scratch on every page. That took a
 
 [`alexander-turner/claude-automation-template`](https://github.com/alexander-turner/claude-automation-template) packages my automation workflows into a reusable starting point for any project using Claude Code. The template is designed so that adopting repos get improvements automatically via the sync workflow --- fix a bug in the template, and every downstream project picks it up.
 
-# Sandbox your coding agent
-
-<span class="populate-markdown-claude-guard"></span>
-
-# Make your CI confess
-
-<span class="populate-markdown-ci-truth-serum"></span>
-
-# Sanitize untrusted text before your agent sees it
-
-<span class="populate-markdown-agent-input-sanitizer"></span>
+<span class="populate-markdown-agent-tooling"></span>
 
 # Pull requests on other projects
 

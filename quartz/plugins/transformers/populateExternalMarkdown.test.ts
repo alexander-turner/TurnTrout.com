@@ -12,6 +12,7 @@ import {
   githubReadmeSource,
   githubSnapshotPath,
   isLocalSource,
+  isSectionListSource,
   populateExternalContent,
   PopulateExternalMarkdown,
   readGitHubSnapshotSync,
@@ -374,6 +375,52 @@ describe("PopulateExternalMarkdown", () => {
       const regex = buildPlaceholderRegex(["test.name"]) as RegExp
       expect('<span class="populate-markdown-test.name"></span>'.match(regex)).not.toBeNull()
       expect('<span class="populate-markdown-testXname"></span>'.match(regex)).toBeNull()
+    })
+  })
+
+  describe("isSectionListSource", () => {
+    it.each([
+      [{ sections: [] }, true],
+      [{ filePath: "package.json" }, false],
+      [{ owner: "user", repo: "project" }, false],
+    ])("should identify source %j as a section list: %s", (source, expected) => {
+      expect(isSectionListSource(source)).toBe(expected)
+    })
+  })
+
+  describe("populateExternalContent with section-list sources", () => {
+    it("renders one H1 section per entry, in list order, from each entry's snapshot", () => {
+      mockReadFile.mockImplementation((filePath) =>
+        String(filePath).includes("alpha-repo") ? "Alpha body" : "Beta body",
+      )
+      const sources = {
+        tooling: {
+          sections: [
+            { heading: "First tool", source: { owner: "user", repo: "alpha-repo" } },
+            { heading: "Second tool", source: { owner: "user", repo: "beta-repo" } },
+          ],
+        },
+      }
+      expect(
+        populateExternalContent('<span class="populate-markdown-tooling"></span>', sources),
+      ).toBe("# First tool\n\nAlpha body\n\n# Second tool\n\nBeta body")
+    })
+
+    it("applies each entry's own transform", () => {
+      mockReadFile.mockReturnValue("[![Badge](url)](link)\n\nBody")
+      const sources = {
+        tooling: {
+          sections: [
+            {
+              heading: "Tool",
+              source: { owner: "user", repo: "project", transform: stripBadges },
+            },
+          ],
+        },
+      }
+      expect(
+        populateExternalContent('<span class="populate-markdown-tooling"></span>', sources),
+      ).toBe("# Tool\n\nBody")
     })
   })
 

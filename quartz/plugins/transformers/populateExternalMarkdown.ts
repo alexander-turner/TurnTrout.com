@@ -56,7 +56,22 @@ export interface LocalMarkdownSource {
   transform?: (content: string) => string
 }
 
-export type MarkdownSource = GitHubMarkdownSource | LocalMarkdownSource
+/** One page section: an H1 heading followed by an embedded markdown source. */
+export interface ReadmeSection {
+  heading: string
+  source: GitHubMarkdownSource | LocalMarkdownSource
+}
+
+/**
+ * A source that renders a list of sections, one `# heading` plus embedded
+ * content per entry. Lets a page enumerate related repos from a single data
+ * list instead of hand-authoring a heading and placeholder span per repo.
+ */
+export interface SectionListMarkdownSource {
+  sections: readonly ReadmeSection[]
+}
+
+export type MarkdownSource = GitHubMarkdownSource | LocalMarkdownSource | SectionListMarkdownSource
 
 export interface PopulateExternalMarkdownOptions {
   /** Map of placeholder names to their sources. */
@@ -68,6 +83,11 @@ const contentCache = new Map<string, string>()
 /** Type guard: true if the source is a local-file source rather than a GitHub source. */
 export function isLocalSource(source: MarkdownSource): source is LocalMarkdownSource {
   return "filePath" in source
+}
+
+/** Type guard: true if the source is a section list rather than a single document. */
+export function isSectionListSource(source: MarkdownSource): source is SectionListMarkdownSource {
+  return "sections" in source
 }
 
 /** Resolves a GitHub source's optional fields to their defaults. */
@@ -277,6 +297,15 @@ export function githubReadmeSource(
 }
 
 function getContent(name: string, source: MarkdownSource): string {
+  if (isSectionListSource(source)) {
+    return source.sections
+      .map(
+        ({ heading, source: sectionSource }) =>
+          `# ${heading}\n\n${getContent(name, sectionSource)}`,
+      )
+      .join("\n\n")
+  }
+
   const local = isLocalSource(source)
   const cacheKey = local
     ? `local:${source.filePath}:${source.jsonPath}`
