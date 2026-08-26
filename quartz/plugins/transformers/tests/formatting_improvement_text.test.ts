@@ -1,18 +1,25 @@
+import type { Paragraph, Root } from "mdast"
+
 import { describe, expect, it } from "@jest/globals"
+import remarkParse from "remark-parse"
+import { unified } from "unified"
 
 import type { BuildCtx } from "../../../util/ctx"
 
+import { NBSP } from "../../../components/constants"
 import {
   applyTextTransforms,
   editAdmonition,
   encodeLinkDestinationSpaces,
   formattingImprovement,
   noteAdmonition,
+  ProseCharacterSubstitutions,
   spaceAdmonitions,
   TextFormattingImprovement,
   wrapLeadingNumbers,
   wrapNumbersBeforeColon,
 } from "../formatting_improvement_text"
+import { renderProse } from "./test-utils"
 
 describe("TextFormattingImprovement Plugin", () => {
   describe("End-to-end formatting improvement", () => {
@@ -27,12 +34,76 @@ describe("TextFormattingImprovement Plugin", () => {
       expect(processed).toBe(expected)
     })
   })
-  describe("Non-breaking spaces", () => {
-    it("should replace &nbsp; with regular spaces", () => {
-      const input = "This&nbsp;is&nbsp;a&nbsp;test."
-      const expected = "This is a test."
-      const processed = formattingImprovement(input)
-      expect(processed).toBe(expected)
+  describe("Prose character substitutions", () => {
+    it.each([
+      {
+        name: "the &nbsp; entity",
+        input: "This&nbsp;is&nbsp;a&nbsp;test.",
+        expected: "This is a test.",
+      },
+      { name: "a literal NBSP", input: `This${NBSP}is a test.`, expected: "This is a test." },
+      { name: "spaces before a comma", input: "  ,", expected: "," },
+      { name: "a comma mid-sentence", input: "Hi, he said", expected: "Hi, he said" },
+      {
+        name: "spaces before a mid-sentence comma",
+        input: "Hi  , he said",
+        expected: "Hi, he said",
+      },
+      { name: "the definition symbol", input: "Let x := 5", expected: "Let x ≝ 5" },
+      { name: "a katex opener", input: "$:=$", expected: ":=" },
+      { name: "a spaced katex opener", input: "$ :=$", expected: " ≝" },
+      {
+        name: "math the author typed as prose",
+        input: "$\\rho := \\prod$",
+        expected: "\\rho ≝ \\prod",
+      },
+      {
+        name: "display math",
+        input: "$$\nx := y\n$$",
+        expected: "x ≝ y",
+      },
+      {
+        name: "the alt text of an image",
+        input: "![R(s) := 0 with a wink ;)](/img.png)",
+        expected: 'alt="R(s) ≝ 0 with a wink 😉"',
+      },
+      {
+        name: "a link title",
+        input: '[link](/page "GPT-4o explained")',
+        expected: 'title="GPT-4-o explained"',
+      },
+      { name: "repeated definitions", input: "a:=b:=c", expected: "a≝b≝c" },
+      { name: "a smile before words", input: " :) The best", expected: "🙂 The best" },
+      { name: "a lone smile", input: " :)", expected: "🙂" },
+      { name: "a smile with no leading space", input: ":)", expected: "🙂" },
+      { name: "a frown", input: " :( The worst", expected: "🙁 The worst" },
+      { name: "a wink before words", input: " ;) Winking", expected: "😉 Winking" },
+      { name: "a lone wink", input: ";)", expected: "😉" },
+      {
+        name: "a wink after a sentence",
+        input: "Join Team Shard! ;)",
+        expected: "Join Team Shard! 😉",
+      },
+      { name: "a wink at a line end", input: "line1 ;)\nline2", expected: "line1 😉\nline2" },
+      { name: "the model name", input: "Ask GPT-4o about it", expected: "Ask GPT-4-o about it" },
+      { name: "a longer model name", input: "GPT-4omni", expected: "GPT-4omni" },
+    ])("substitutes $name", ({ input, expected }) => {
+      expect(renderProse(input)).toContain(expected)
+    })
+
+    // Every rule above rewrites prose, so a sample of the same characters typed
+    // inside backticks must survive: the mdast pass sees `inlineCode` as a node
+    // it cannot descend into.
+    it.each([
+      { name: "a walrus operator", input: "Use `if (n := f()) > 0:` here." },
+      { name: "a spaced argument list", input: "Call `f(a , b)` now." },
+      { name: "a model name", input: "Model `GPT-4o` rocks." },
+      { name: "a smiley", input: "Draw `:)` in code." },
+      { name: "an entity", input: "Write `&nbsp;` for a space." },
+    ])("leaves $name in inline code alone", ({ input }) => {
+      const inlineCode = /<code>(?<sample>.*?)<\/code>/.exec(renderProse(input))?.groups?.sample
+      const original = /`(?<sample>.*?)`/.exec(input)?.groups?.sample
+      expect(inlineCode).toBe(original?.replaceAll("&", "&#x26;"))
     })
   })
   describe("Footnote Formatting", () => {
@@ -111,16 +182,6 @@ describe("TextFormattingImprovement Plugin", () => {
       ],
     ])("should correctly wrap numbers for %s", (input: string, expected: string) => {
       expect(wrapNumbersBeforeColon(input)).toBe(expected)
-    })
-
-    describe("Comma spacing", () => {
-      it.each([
-        ["  ,", ","],
-        ["Hi, he said", "Hi, he said"],
-      ])("Removes spaces before commas.", (input: string, expected: string): void => {
-        const result = formattingImprovement(input)
-        expect(result).toBe(expected)
-      })
     })
 
     describe("YAML Header Handling", () => {
@@ -242,18 +303,6 @@ And some hyphens-to-be-ignored.`
 
   describe("Mass transforms", () => {
     it.each([
-      ["Let x := 5", "Let x ≝ 5"],
-      ["$:=$", "$:=$"],
-      ["$ :=$", "$ ≝$"],
-      ["a:=b:=c", "a≝b≝c"],
-      [" :) The best", " 🙂 The best"],
-      [" :)", " 🙂"],
-      [":)", "🙂"],
-      [" :( The worst", " 🙁 The worst"],
-      [" ;) Winking", " 😉 Winking"],
-      [";)", "😉"],
-      ["Join Team Shard! ;)", "Join Team Shard! 😉"],
-      ["line1 ;)\nline2", "line1 😉\nline2"],
       ["Subtitle: This is a subtitle", "Subtitle: This is a subtitle"],
       ["Subtitle: This is a subtitle\nTest", "Subtitle: This is a subtitle\n\nTest"],
       ["Subtitle: This is a subtitle\n\n", "Subtitle: This is a subtitle\n\n"],
@@ -509,6 +558,20 @@ And some hyphens-to-be-ignored.`
       const input = Buffer.from("Test buffer input", "utf-8")
       const result = plugin.textTransform?.(mockCtx, input)
       expect(result).toBe("Test buffer input")
+    })
+  })
+
+  describe("ProseCharacterSubstitutions plugin", () => {
+    it("substitutes through the plugin it registers", () => {
+      const plugin = ProseCharacterSubstitutions()
+      expect(plugin.name).toBe("proseCharacterSubstitutions")
+
+      const [markdownPlugin] = plugin.markdownPlugins?.({} as BuildCtx) ?? []
+      const tree = unified().use(remarkParse).parse("Let x := 5")
+      ;(markdownPlugin as () => (tree: Root) => void)()(tree)
+
+      const [paragraph] = tree.children as Paragraph[]
+      expect(paragraph.children[0]).toMatchObject({ type: "text", value: "Let x ≝ 5" })
     })
   })
 })

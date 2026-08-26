@@ -30,6 +30,7 @@ import {
   PopulateContainers,
   PopulateExternalMarkdown,
   PrefixExternalReadmeIds,
+  ProseCharacterSubstitutions,
   RecentPostsPage,
   rehypeCustomSpoiler,
   rehypeCustomSubtitle,
@@ -74,6 +75,9 @@ const config: QuartzConfig = {
   },
   plugins: {
     transformers: [
+      // Before FrontMatter, which gathers the search index from the tree: the
+      // index should carry the characters the reader sees, not the source ones.
+      ProseCharacterSubstitutions(),
       FrontMatter(),
       PopulateExternalMarkdown({
         sources: {

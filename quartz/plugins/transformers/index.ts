@@ -14,7 +14,10 @@ export {
   SetDropcapLetter,
   StripInlineBoundaryWhitespace,
 } from "./formatting_improvement_html"
-export { TextFormattingImprovement } from "./formatting_improvement_text"
+export {
+  ProseCharacterSubstitutions,
+  TextFormattingImprovement,
+} from "./formatting_improvement_text"
 export { FrontMatter } from "./frontmatter"
 export { GitHubFlavoredMarkdown } from "./gfm"
 export { InlineAtomGlue } from "./inlineAtomGlue"
