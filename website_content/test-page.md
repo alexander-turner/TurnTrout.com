@@ -249,6 +249,9 @@ A plain section transclusion would include this text; the lede transclusion does
 > > The content of both the nested and non-nested "note" admonition.
 >
 > > [!quote] A nested quote
+>
+> > [!quote] [A nested admonition with a linked title](/dataset-protection)
+> > This body belongs to the nested admonition's content, not to its title.
 
 > [!goose]
 > Geese are better than dogs.
