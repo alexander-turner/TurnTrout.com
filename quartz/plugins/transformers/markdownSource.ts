@@ -11,7 +11,7 @@
  *
  * Deciding *where* such a transform may write is still the parser's job:
  * {@link transformOutsideCode} parses the source and skips the span every
- * `code` and `inlineCode` node occupies.
+ * `code` node occupies.
  */
 
 import type { Root } from "mdast"
