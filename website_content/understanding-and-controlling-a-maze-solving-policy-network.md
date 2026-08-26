@@ -49,7 +49,7 @@ original_url: https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-an
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/dc4zupnie9hr2hm7tfnx.jpg
 description: A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.
-date_updated: 2026-07-29
+date_updated: 2026-08-26
 card_image_alt: An illustration of a cute gray mouse whose body is composed of glowing, crystalline yellow cheese shards. This visually represents an AI agent with "cheese subshards" as its motivational components.
 createBibtex: true
 ---
@@ -201,6 +201,7 @@ Cheese's Euclidean distance to top-right free square, negative (-2.786)
 : The L2 distance to the cheese is **the strongest factor.** After piling up evidence from a range of mechanistic and behavioral sources, we're comfortable concluding that _cheese affects decision-making more when it's closer to the top-right_. See this footnote[^4] for an example maze illustrating the power of this factor.
 : In the language of shard theory, the cheese-shard is more strongly activated when cheese is closer to the top-right.
 : Notably, this factor isn't trivially influential—we're only considering mazes with decision squares, so the cheese isn't on the way to the top-right corner! Furthermore, as with all factors, this factor matters when controlling for the others.
+
 **Decision square's Euclidean distance to the top-right** 5x5 **corner, positive (**+1.326). The _farther_ the decision square from the top-right 5x5 corner, the _more likely_ the agent is to choose "cheese."
 : This has the opposite of the sign we expected. We thought the sign would be negative. Surely if the agent is farther from the 5x5 corner, the decision context is less similar to its historical cheese reinforcement events in that corner?
 : This factor _does_ have the hypothesized sign when we regress on it in isolation from all other variables, but dropping this factor from the multiple linear regression significantly deteriorates its predictive accuracy.

@@ -43,7 +43,7 @@ date_published: 2023-05-13
 original_url: https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-xl-by-adding-an-activation-vector
 skip_import: true
 description: Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.
-date_updated: 2026-08-03
+date_updated: 2026-08-26
 createBibtex: true
 ---
 
@@ -930,7 +930,7 @@ Activation additions are _way cheaper_ than finetuning
 Activation additions may preserve model interpretability, even while changing the model's alignment properties
 : If you're finetuning the whole model, then a single gradient can potentially change _every parameter in your model_, thereby undoing your interpretability work (unless you can understand the update itself).
 
-However, activation additions leave weights unchanged. If you can understand what the weights implement, and something about the activation additions, maybe you can preserve your understanding of the steered model. (We don't know if it's easier to interpret gradient updates or activation additions.)
+: However, activation additions leave weights unchanged. If you can understand what the weights implement, and something about the activation additions, maybe you can preserve your understanding of the steered model. (We don't know if it's easier to interpret gradient updates or activation additions.)
 
 : Activation additions probably also enjoy some symbol grounding because they're computed using the activations of natural language prompts. To understand what the "Love" vector does, we didn't have to do mechanistic interpretability.
 
