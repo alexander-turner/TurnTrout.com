@@ -777,6 +777,30 @@ def check_unrendered_subtitles(soup: BeautifulSoup) -> list[str]:
     return unrendered_subtitles
 
 
+# An admonition title is a label, not a paragraph. The longest deliberate title
+# in `website_content/` renders at ~180 characters, so a title past this bound
+# means body text was absorbed into the title instead of becoming content.
+MAX_ADMONITION_TITLE_LENGTH = 200
+
+
+def check_overlong_admonition_titles(soup: BeautifulSoup) -> list[str]:
+    """Check for admonition titles long enough to signal absorbed body text."""
+    overlong_titles: list[str] = []
+    titles = _tags_only(soup.find_all("div", class_="admonition-title"))
+    for title in titles:
+        text = " ".join(strip_invisible_chars(title.get_text()).split())
+        if len(text) > MAX_ADMONITION_TITLE_LENGTH:
+            _append_to_list(
+                overlong_titles,
+                text,
+                prefix=(
+                    f"Admonition title too long ({len(text)} characters, "
+                    f"max {MAX_ADMONITION_TITLE_LENGTH}): "
+                ),
+            )
+    return overlong_titles
+
+
 # Check the existence of local files with these extensions
 _MEDIA_EXTENSIONS = list(compress.ALLOWED_EXTENSIONS) + [
     ".svg",
@@ -2356,6 +2380,7 @@ def check_file_for_issues(
         "missing_assets": check_asset_references(soup, file_path, base_dir),
         "problematic_katex": check_katex_elements_for_errors(soup),
         "unrendered_subtitles": check_unrendered_subtitles(soup),
+        "overlong_admonition_titles": check_overlong_admonition_titles(soup),
         "unrendered_footnotes": check_unrendered_footnotes(soup),
         "footnote_ref_not_in_sup": check_footnote_refs_in_sup(soup),
         "missing_critical_css": not check_critical_css(soup),
