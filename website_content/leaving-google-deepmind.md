@@ -23,7 +23,7 @@ aliases:
   - leaving-google-deepmind
 no_dropcap_color: true
 date_published: 2026-07-15
-date_updated: 2026-08-12
+date_updated: 2026-08-26
 lw-posted-at: https://www.lesswrong.com/posts/iKm2FhpWkuuBojm82/why-i-left-google-deepmind
 ---
 
@@ -64,7 +64,7 @@ This essay tells the story of why I left Google DeepMind. It is also the story o
 >
 >  Sundar tried to keep him:
 >  > [!quote] [4 of Google’s Top AI Brains Are Leaving—and Launching Their Own AI Startup](https://www.wired.com/story/jeff-dean-google-discovery-loop-startup/)
->  > Dean says that Alphabet CEO Sundar Pichai tried over multiple meetings to get them to keep their badges. Ultimately the team decided that they wanted the fun–and the freedom–of doing a startup.
+>  > Dean says that Alphabet CEO Sundar Pichai tried over multiple meetings to get them to keep their badges. Ultimately the team decided that they wanted the fun—and the freedom—of doing a startup.
 >  
 >  While no public information indicates he left due to the Pentagon deal, I think it's good that Jeff left and thereby honored his 2018 pledge.
 >
@@ -645,7 +645,7 @@ What should a pledge-signer do? I see three honest options: explain publicly how
 >
 >  Sundar tried to keep him:
 >  > [!quote] [4 of Google’s Top AI Brains Are Leaving—and Launching Their Own AI Startup](https://www.wired.com/story/jeff-dean-google-discovery-loop-startup/)
->  > Dean says that Alphabet CEO Sundar Pichai tried over multiple meetings to get them to keep their badges. Ultimately the team decided that they wanted the fun–and the freedom–of doing a startup.
+>  > Dean says that Alphabet CEO Sundar Pichai tried over multiple meetings to get them to keep their badges. Ultimately the team decided that they wanted the fun—and the freedom—of doing a startup.
 >  
 >  While no public information indicates he left due to the Pentagon deal, I think it's good that Jeff left and thereby honored his 2018 pledge.
 >

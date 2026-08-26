@@ -804,6 +804,72 @@ def test_check_unrendered_subtitles():
     ]
 
 
+_MAX_TITLE = built_site_checks.MAX_ADMONITION_TITLE_LENGTH
+
+
+def _admonition_html(*title_inners: str) -> str:
+    return "".join(
+        '<blockquote class="admonition quote">'
+        '<div class="admonition-title"><span class="admonition-title-inner">'
+        f'<span class="admonition-icon"></span>{inner}</span></div>'
+        "</blockquote>"
+        for inner in title_inners
+    )
+
+
+def _overlong_issue(rendered_title: str) -> str:
+    return (
+        f"Admonition title too long ({len(rendered_title)} characters, "
+        f"max {_MAX_TITLE}): {rendered_title[:100]}"
+    )
+
+
+# A body absorbed into the title by a lazy continuation line: the newline
+# between the linked title and the run-on prose collapses to a single space.
+_ABSORBED_BODY = "Body sentence. " * 20
+_ABSORBED_TITLE_HTML = (
+    f'<a href="https://example.com">Headline</a>\n{_ABSORBED_BODY}'
+)
+_ABSORBED_RENDERED = f"Headline {_ABSORBED_BODY.strip()}"
+
+
+@pytest.mark.parametrize(
+    "title_inners,expected",
+    [
+        pytest.param(["Short title"], [], id="short"),
+        pytest.param(["t" * _MAX_TITLE], [], id="at_limit"),
+        pytest.param(
+            ["t" * (_MAX_TITLE + 1)],
+            [_overlong_issue("t" * (_MAX_TITLE + 1))],
+            id="over_limit",
+        ),
+        pytest.param(
+            [_ABSORBED_TITLE_HTML],
+            [_overlong_issue(_ABSORBED_RENDERED)],
+            id="absorbed_body",
+        ),
+        pytest.param(
+            # Markup, the icon span, and word joiners carry no visible text, so
+            # a title that reads short stays under the bound.
+            [f"<em>{'t' * _MAX_TITLE}</em>{WORD_JOINER * 50}"],
+            [],
+            id="invisible_characters_do_not_inflate_measurement",
+        ),
+        pytest.param(
+            ["t" * (_MAX_TITLE + 5), "Fine", "u" * (_MAX_TITLE + 7)],
+            [
+                _overlong_issue("t" * (_MAX_TITLE + 5)),
+                _overlong_issue("u" * (_MAX_TITLE + 7)),
+            ],
+            id="every_overlong_admonition_reported",
+        ),
+    ],
+)
+def test_check_overlong_admonition_titles(title_inners, expected):
+    soup = BeautifulSoup(_admonition_html(*title_inners), "html.parser")
+    assert built_site_checks.check_overlong_admonition_titles(soup) == expected
+
+
 @requires_xmllint
 def test_check_valid_rss_file_with_xmllint(temp_site_root):
     """Test that check_rss_file_for_issues validates a correctly formatted RSS

@@ -204,6 +204,35 @@ describe("markdownPlugins", () => {
     },
   )
 
+  describe("body text under an admonition title", () => {
+    // The full source path: textTransform forces the newline that separates the
+    // title from a body typed on the next line, and only then do the markdown
+    // plugins split the blockquote into title and content nodes.
+    const renderFromSource = (source: string): string => {
+      const transformer = ObsidianFlavoredMarkdown(defaultOptions)
+      /* istanbul ignore next -- textTransform is always defined on the transformer */
+      if (!transformer.textTransform) throw new Error("textTransform is undefined")
+      return testMarkdownPlugins(transformer.textTransform({} as BuildCtx, source) as string)
+    }
+
+    it.each([
+      { name: "top level", markers: ">" },
+      { name: "nested", markers: "> >" },
+      { name: "nested behind an indented marker", markers: ">  >" },
+    ])("separates a linked title from its body when $name", ({ markers }) => {
+      const output = renderFromSource(
+        [
+          `${markers} [!quote] [Headline](https://example.com)`,
+          `${markers} Body text that belongs under the title.`,
+        ].join("\n"),
+      )
+      expect(output).toContain(
+        '<div class="admonition-content"><p>Body text that belongs under the title.</p></div>',
+      )
+      expect(output).not.toContain("Body text that belongs under the title.</span>")
+    })
+  })
+
   describe("usedAdmonitionIcons tracking", () => {
     const collectIcons = (input: string): readonly string[] | undefined => {
       const processor = unified()
@@ -738,6 +767,18 @@ describe("ObsidianFlavoredMarkdown", () => {
       options: { admonitions: true },
       input: "> [!note]",
       expected: "> [!note]\n> ",
+    },
+    {
+      name: "admonition nested one blockquote deep",
+      options: { admonitions: true },
+      input: "> > [!quote] Title",
+      expected: "> > [!quote] Title\n> > ",
+    },
+    {
+      name: "admonition nested behind indented blockquote markers",
+      options: { admonitions: true },
+      input: ">  > [!quote] Title",
+      expected: ">  > [!quote] Title\n>  > ",
     },
   ]
 
