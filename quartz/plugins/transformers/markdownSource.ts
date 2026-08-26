@@ -3,92 +3,89 @@
  * the mdast.
  *
  * A transform belongs here only when it repairs the *input to the parser* —
- * markdown that would otherwise parse into the wrong nodes (a link destination
- * holding raw spaces, display math sharing a line with prose, an HTML block
- * swallowing the prose beneath it). Everything that merely rewrites prose runs
- * on the mdast instead, where node types make code, math, and HTML untouchable.
+ * markdown that would otherwise parse into the wrong nodes. Comments are the
+ * clearest case: left in the source, an HTML comment opens an HTML block, which
+ * ends the enclosing list or footnote and re-parses the remainder as indented
+ * code. Once an mdast exists that damage is already done, and undoing it means
+ * guessing which sibling blocks were meant to be one.
  *
- * Source-level transforms still must not reach inside fenced code, so they run
- * through {@link transformOutsideCode}.
+ * Deciding *where* such a transform may write is still the parser's job:
+ * {@link transformOutsideCode} parses the source and skips the span every
+ * `code` and `inlineCode` node occupies.
  */
 
-/** The maximum indent CommonMark allows before a fence still counts as one. */
-const maxFenceIndent = 3
+import type { Root } from "mdast"
 
-/** The shortest run of fence characters that opens a block. */
-const minFenceLength = 3
+import remarkFrontmatter from "remark-frontmatter"
+import remarkGfm from "remark-gfm"
+import remarkParse from "remark-parse"
+import { unified } from "unified"
+import { visit } from "unist-util-visit"
 
-interface Fence {
-  marker: string
-  length: number
-  info: string
+/**
+ * Parses markdown for span discovery only; this tree is never emitted.
+ *
+ * It must carry the same block-level grammar the real pipeline registers, or it
+ * reads a different language: without GFM a footnote definition is an ordinary
+ * paragraph, so its indented body looks like an indented code block and the
+ * transforms are steered away from prose they are supposed to reach.
+ */
+const sourceParser = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkFrontmatter, ["yaml", "toml"])
+
+/** Half-open `[start, end)` source offsets of a block the transforms must not touch. */
+interface CodeSpan {
+  start: number
+  end: number
 }
 
 /**
- * Reads the fence a line carries, or `null` when the line is not a fence.
- * Scanned by hand rather than by regex: a fence run and its info string are
- * both unbounded, and any regex splitting them backtracks super-linearly.
+ * Source offsets of every code *block* in `src`, in document order.
+ *
+ * Only the parser knows these: four leading spaces are code or a list
+ * continuation depending on what encloses them, and a fence ends at the first
+ * line of the same marker that is at least as long.
+ *
+ * Inline code is deliberately not included. A `code` node always spans whole
+ * lines, so skipping one leaves the surrounding prose line-aligned and the
+ * `^`/`$` anchors these transforms rely on keep their meaning. An `inlineCode`
+ * node sits mid-line, and cutting there would turn one line into two chunks
+ * whose edges those anchors would read as line boundaries. Protecting inline
+ * code is the job of the mdast passes, where it is a node rather than a range.
  */
-function readFence(line: string): Fence | null {
-  let index = 0
-  while (index < line.length && line[index] === " ") index++
-  if (index > maxFenceIndent) return null
+function findCodeSpans(src: string): CodeSpan[] {
+  const tree = sourceParser.parse(src) as Root
+  const spans: CodeSpan[] = []
 
-  const marker = line[index]
-  if (marker !== "`" && marker !== "~") return null
+  visit(tree, "code", (node) => {
+    const start = node.position?.start.offset
+    const end = node.position?.end.offset
+    /* istanbul ignore next -- remark-parse records offsets for every node when parsing a string */
+    if (start === undefined || end === undefined) return
+    spans.push({ start, end })
+  })
 
-  const start = index
-  while (index < line.length && line[index] === marker) index++
-  const length = index - start
-  if (length < minFenceLength) return null
-
-  return { marker, length, info: line.slice(index) }
-}
-
-/** Reports whether `line` closes `open`: same marker, at least as long, no info string. */
-function closesFence(line: string, open: Fence): boolean {
-  const fence = readFence(line)
-  if (!fence) return false
-  return fence.marker === open.marker && fence.length >= open.length && fence.info.trim() === ""
+  // Code blocks never nest and a visit is document-ordered, so the spans come
+  // out ascending and disjoint.
+  return spans
 }
 
 /**
- * Applies `transform` to every run of lines outside fenced code blocks, leaving
- * fenced blocks (and their delimiters) byte-for-byte intact.
- *
- * Indented code blocks are not recognized: four leading spaces are a list
- * continuation as often as they are code, and telling the two apart is the job
- * of the parser, not of this scanner. Content that needs that guarantee should
- * use a fence.
+ * Applies `transform` to every run of source outside a code block, leaving
+ * fenced and indented code byte-for-byte intact.
  */
 export function transformOutsideCode(src: string, transform: (chunk: string) => string): string {
-  const lines = src.split("\n")
   const out: string[] = []
-  let prose: string[] = []
-  let open: Fence | null = null
+  let cursor = 0
 
-  const flushProse = (): void => {
-    if (prose.length === 0) return
-    out.push(transform(prose.join("\n")))
-    prose = []
+  for (const span of findCodeSpans(src)) {
+    if (span.start > cursor) out.push(transform(src.slice(cursor, span.start)))
+    out.push(src.slice(span.start, span.end))
+    cursor = span.end
   }
+  if (cursor < src.length) out.push(transform(src.slice(cursor)))
 
-  for (const line of lines) {
-    if (open) {
-      out.push(line)
-      if (closesFence(line, open)) open = null
-      continue
-    }
-    const fence = readFence(line)
-    if (fence) {
-      flushProse()
-      out.push(line)
-      open = fence
-      continue
-    }
-    prose.push(line)
-  }
-  flushProse()
-
-  return out.join("\n")
+  return out.join("")
 }
