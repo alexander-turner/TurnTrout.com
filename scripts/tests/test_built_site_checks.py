@@ -851,7 +851,7 @@ _ABSORBED_RENDERED = f"Headline {_ABSORBED_BODY.strip()}"
         pytest.param(
             # Markup, the icon span, and word joiners carry no visible text, so
             # a title that reads short stays under the bound.
-            [f'<em>{"t" * _MAX_TITLE}</em>{WORD_JOINER * 50}'],
+            [f"<em>{'t' * _MAX_TITLE}</em>{WORD_JOINER * 50}"],
             [],
             id="invisible_characters_do_not_inflate_measurement",
         ),
@@ -867,9 +867,7 @@ _ABSORBED_RENDERED = f"Headline {_ABSORBED_BODY.strip()}"
 )
 def test_check_overlong_admonition_titles(title_inners, expected):
     soup = BeautifulSoup(_admonition_html(*title_inners), "html.parser")
-    assert (
-        built_site_checks.check_overlong_admonition_titles(soup) == expected
-    )
+    assert built_site_checks.check_overlong_admonition_titles(soup) == expected
 
 
 @requires_xmllint
