@@ -16,7 +16,7 @@ aliases:
   - robust-nlas
 original_url: https://www.lesswrong.com/posts/LQXWiF8PyJ5ojNsEv/how-robust-are-natural-language-autoencoders-to
 date_published: 2026-07-09
-date_updated: 2026-07-29
+date_updated: 2026-08-26
 ---
 
 Natural language autoencoders are meant to take in an LLM's activation vector and describe in plain text what the model is thinking. However, its training data collection involves asking Claude to guess what a model might be thinking. How robust are NLAs to these guesses? We change Claude's guesses in various ways and measure the impact on the NLA's statements as well as on reconstruction accuracy. We show that Qwen2.5-7B NLAs have some robustness to irrelevant statements and prevailing sentiments in Claude's guesses.
@@ -190,6 +190,7 @@ For reasons of convenience, cost, and time, we only experimented with one fairly
 Even our best NLAs produce far fewer plausible guesses than the Opus 4.6 NLA that Anthropic trained. Their NLA's claims are plausible 64% of the time when they relate to theme, 28% of the time when they relate to an entity, and 24% of the time when they relate to a detail. Interestingly, their Opus 4.6 NLA achieves a lower reconstruction accuracy than our NLAs (FVE=0.61 vs. our 0.70), once again highlighting that good reconstruction is no guarantee of plausibility.
 
 Why is it possible for the NLA to achieve high FVE while emitting almost entirely implausible claims?  Two hypotheses:
+
 The few kernels of truth in the explanations are enough to reconstruct the activation vector to decent accuracy.  
 : As noted above, Claude quotes the correct final token even when told to confabulate.  [Earlier work](https://www.lesswrong.com/posts/ahu9BCHPFDg9AJF75/some-observations-about-nla-explanations) found that of the three paragraphs that make up a typical NLA explanation, the final paragraph about the last token is by far the most important. Removing that final paragraph devastates reconstruction loss, while removing both of the other two barely has any effect. One of our side experiments supports this hypothesis.  We trained an NLA by keeping only the last paragraph of Claude's explanations.  Despite training for only 540 iterations, the NLA achieved a FVE of 0.67 (close to the control experiment's 0.70).
 

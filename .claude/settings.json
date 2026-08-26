@@ -6,9 +6,6 @@
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
   },
   "permissions": {
-<<<<<<< local
-    "deny": ["Read(**/.env)", "Read(**/.env.*)", "Read(**/*.pem)", "Read(**/*.key)"]
-=======
     "deny": [
       "Read(**/.env)",
       "Read(**/.env.*)",
@@ -17,7 +14,6 @@
       "Bash(*env -i*)",
       "Bash(*env --ignore-environment*)"
     ]
->>>>>>> template
   },
   "hooks": {
     "SessionStart": [

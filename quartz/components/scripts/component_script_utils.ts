@@ -159,6 +159,27 @@ export const svgCheck =
 export const COPY_BUTTON_RESET_DELAY_MS = 2000
 
 /**
+ * Reconstructs a code block's source text for copying.
+ *
+ * `rehype-pretty-code` renders each source line as a `display: grid` child
+ * `[data-line]` span. Reading `innerText` over that layout yields a spurious
+ * blank line between every row, so joining each `[data-line]`'s text with a
+ * single newline is the reconstruction that preserves every source line —
+ * including intentional blank lines that a blanket `\n\n`→`\n` collapse erases.
+ * (The highlighter renders an empty source line as a lone-space row, so a blank
+ * line copies back as a single space rather than nothing.)
+ *
+ * Falls back to the element's own text when no `[data-line]` rows are present
+ * (a code block that did not pass through the syntax highlighter).
+ */
+export function getCodeBlockCopyText(codeBlock: HTMLElement): string {
+  const lines = codeBlock.querySelectorAll("[data-line]")
+  const sources = lines.length ? lines : [codeBlock]
+  // NodeList/array `.join` coerces a null textContent to an empty string.
+  return Array.from(sources, (line) => line.textContent).join("\n")
+}
+
+/**
  * Sets up a clipboard copy button with icon swap animation.
  * Shared between code block copy buttons and the punctilio demo.
  */

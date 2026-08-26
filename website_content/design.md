@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-08-03
+date_updated: 2026-08-26
 no_dropcap: false
 createBibtex: true
 ---
@@ -1156,7 +1156,7 @@ Claude triage (`scripts/spellcheck_triage.py`)
 Reordering elements in `<head>` to ensure social media previews
 : I want nice previews for my site. Unfortunately, the behavior was flaky - working on Facebook, not on Twitter, not on Slack, working on Discord... Why? I had filled out all of the [OpenGraph](https://ogp.me/) fields.
 
-[Apparently](https://forums.slackcommunity.com/s/question/0D53a00008bbu4SCAQ/i-cant-understand-why-my-websites-url-does-not-unfurl-on-slack?language=en_US), Slack only reads the metadata from the first portion of the `<head>`. However, my OpenGraph `<meta>` tags were further back, so they weren't getting read in. Different sites read different lengths of the `<head>`, explaining the flakiness.
+: [Apparently](https://forums.slackcommunity.com/s/question/0D53a00008bbu4SCAQ/i-cant-understand-why-my-websites-url-does-not-unfurl-on-slack?language=en_US), Slack only reads the metadata from the first portion of the `<head>`. However, my OpenGraph `<meta>` tags were further back, so they weren't getting read in. Different sites read different lengths of the `<head>`, explaining the flakiness.
 
 : The solution: Include tags like `<meta>` and `<title>` as early as possible in the `<head>`. As a post-build check, I ensure that these tags are confined to the first 9KB of each file.
 
@@ -1205,7 +1205,7 @@ Monthly newsletter
 : A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/monthly-newsletter.yml) collects commits since the last newsletter, feeds them to the Claude API with a [prompt template](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/prompts/newsletter-prompt.md), and emails me the draft via [Resend](https://resend.com/).
 
 Template sync
-: A [daily workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/template-sync.yaml) diffs local automation files against the [template repo](https://github.com/alexander-turner/claude-automation-template), copies new files, and opens a PR.
+: A [daily workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/template-sync.yaml) diffs local automation files against the [template repo](https://github.com/AlexanderMattTurner/claude-automation-template), copies new files, and opens a PR.
 
 > [!thanks]
 > [Boyd Kane](https://github.com/beyarkay) made [a pull request](https://github.com/alexander-turner/TurnTrout.com/pull/1404) to wrap long lines in `pre` blocks.

@@ -155,12 +155,12 @@ transform(text, {
 
 Markdown sinks (`remarkPunctilio`, `transformMarkdown`, the Prettier plugin, and the CLI for Markdown files) default `nbsp` to `false` instead, because invisible U+00A0 characters in Markdown source files break `grep` and Ctrl+F. Pass `nbsp: true` (or the `--nbsp` CLI flag) to opt in.
 
-The `rehype` plugin accepts additional options. Elements matching any `skipTags` tag name or carrying any `skipClasses` class are left untransformed (values shown are the defaults for `skipTags`):
+The `rehype` plugin accepts additional options. Elements matching any `skipTags` tag name or carrying any `skipClasses` class are left untransformed. The `skipTags` value below is the default; `skipClasses` defaults to `[]`, and the value shown is a common opt-in (add `no-formatting` yourself to skip elements marked with it):
 
 ```typescript
 rehypePunctilio({
-  skipTags: ["code", "pre", "script", "style", "kbd", "var", "samp", "template", "math", "svg"],
-  skipClasses: ["no-formatting"],
+  skipTags: ["code", "pre", "script", "style", "kbd", "var", "samp", "template", "math", "svg"], // default
+  skipClasses: ["no-formatting"], // default: [] — shown here as a common opt-in
   transformAllElements: false, // see below
 });
 ```
@@ -210,7 +210,7 @@ prettier --write 'docs/**/*.md'
 # "Hello" -- world.    →    “Hello” – world.
 ```
 
-Code spans, fenced code blocks, and inline HTML are left untouched. The plugin currently transforms Markdown (`*.md`, `*.mdx` via the markdown parser); for HTML files, use the [CLI](#cli) or the [`rehype` plugin](#works-with-html-doms-via-boundary-aware-views) below.
+Code spans, fenced code blocks, and inline HTML are left untouched. The plugin extends Prettier’s `markdown` parser, so it transforms the files Prettier routes there (`*.md`, `*.markdown`); for HTML files, use the [CLI](#cli) or the [`rehype` plugin](#works-with-html-doms-via-boundary-aware-views) below.
 
 ### CLI
 
@@ -233,7 +233,7 @@ A `.pre-commit-hooks.yaml` ships in the package, so [pre-commit](https://pre-com
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/punctilio
-    rev: v5.4.0
+    rev: v5.4.4
     hooks:
       - id: punctilio          # rewrites *.md / *.html in place
       - id: punctilio-check    # or: fail without writing (CI-friendly)

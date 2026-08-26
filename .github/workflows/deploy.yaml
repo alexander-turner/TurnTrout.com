@@ -33,7 +33,7 @@ jobs:
     outputs:
       run: ${{ steps.gate.outputs.run }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 5
         with:
           sparse-checkout: .github/actions/ci-gate
@@ -85,7 +85,7 @@ jobs:
       # that a stall trips quickly rather than one it can sit out; the retry
       # re-checkouts clean, so a partial fetch can't corrupt the workspace.
       - id: checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 3
         continue-on-error: true
         with:
@@ -94,7 +94,7 @@ jobs:
 
       - id: checkout-retry
         if: steps.checkout.outcome == 'failure'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 3
         continue-on-error: true
         with:
@@ -103,7 +103,7 @@ jobs:
           clean: true
 
       - if: steps.checkout-retry.outcome == 'failure'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 3
         with:
           fetch-depth: 0
@@ -303,7 +303,7 @@ jobs:
       id-token: write
       pages: write
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
         timeout-minutes: 5
         with:
           persist-credentials: false

@@ -149,8 +149,13 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                 return null
               })
               if (hasFootnotes) {
+                // Push at `highestDepth` so the following `entry.depth -
+                // highestDepth` shift lands Footnotes at 0 — the top of the
+                // rendered TOC. Hard-coding depth 1 would render a negative
+                // depth whenever the shallowest body heading is h2+, which
+                // TableOfContents.buildNestedList would silently drop.
                 toc.push({
-                  depth: 1,
+                  depth: highestDepth,
                   text: "Footnotes",
                   slug: footnoteHeadingId,
                 })

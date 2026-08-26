@@ -17,10 +17,8 @@ aliases:
   - software
   - OSS
 date_published: 2025-10-28
-date_updated: 2026-08-03
+date_updated: 2026-08-25
 ---
-
-# Punctilio for meticulous typography
 
 <span class="populate-markdown-punctilio"></span>
 
@@ -50,7 +48,7 @@ When I started writing in 2018, I didn't include alt text. Over the years, over 
 
 To implement [accessibility best practices](https://www.section508.gov/create/alternative-text/), I needed alt text that didn't describe the image so much as _communicate the information the image is supposed to communicate._ None of the scattershot AI projects I found met the bar, so I wrote my own package.
 
-[`alt-text-llm`](https://github.com/alexander-turner/alt-text-llm) is an AI-powered tool for generating and managing alt text in Markdown files. Originally developed for this website, `alt-text-llm` streamlines the process of making web content accessible. The package detects assets missing alt text, suggests context-aware descriptions, and provides an interactive reviewing interface in the terminal.
+[`alt-text-llm`](https://github.com/AlexanderMattTurner/alt-text-llm) is an AI-powered tool for generating and managing alt text in Markdown files. Originally developed for this website, `alt-text-llm` streamlines the process of making web content accessible. The package detects assets missing alt text, suggests context-aware descriptions, and provides an interactive reviewing interface in the terminal.
 
 ![[https://assets.turntrout.com/static/images/posts/open-source-20251122162738.avif|A labeled diagram of the labeling pipeline.]]
 
@@ -58,7 +56,7 @@ Figure: Generating alt text for maze diagrams from [@title](/understanding-and-c
 
 In the end, I generated over 550 high-quality alt-text suggestions for about \$12.50 using Gemini 2.5 Pro. With `alt-text-llm`, I addressed hundreds and hundreds of alt-less images: detecting them; describing them; reviewing them; and lastly applying my finalized alts to the original Markdown files. [`turntrout.com`](https://turntrout.com) is now friendlier to the millions of people who browse the web with the help of screen readers.
 
-If you want to improve accessibility for your content, go ahead and [check out my repository](https://github.com/alexander-turner/alt-text-llm)!
+If you want to improve accessibility for your content, go ahead and [check out my repository](https://github.com/AlexanderMattTurner/alt-text-llm)!
 
 # Protect datasets from scrapers
 
@@ -73,7 +71,7 @@ I helped fund this project. Here's the introduction to an article I wrote:
 
 Subtitle: One command to set up your shell, editor, and secret management.
 
-My [`.dotfiles`](https://github.com/alexander-turner/.dotfiles) repository provides comprehensive development environment setup. With this command, I quickly personalize any shell --- even if I'm just visiting with `ssh` for a few hours.
+My [`.dotfiles`](https://github.com/AlexanderMattTurner/.dotfiles) repository provides comprehensive development environment setup. With this command, I quickly personalize any shell --- even if I'm just visiting with `ssh` for a few hours.
 
 1. Fish shell with autocomplete, syntax highlighting, and the [`tide`](https://github.com/IlanCosman/tide) theme,
 2. `neovim` via LazyVim, providing a full IDE experience,
@@ -107,21 +105,7 @@ The way this works is that:
 
 The original `subfont` traced font usage from scratch on every page. That took almost two hours per deploy. My fork groups pages by their CSS and only traces one representative per group, extracting just the text from the rest (for my site: 382 -> 5 CSS traces). Those remaining traces run in parallel across worker threads.
 
-# Claude Code automation template
-
-[`alexander-turner/claude-automation-template`](https://github.com/alexander-turner/claude-automation-template) packages my automation workflows into a reusable starting point for any project using Claude Code. The template is designed so that adopting repos get improvements automatically via the sync workflow --- fix a bug in the template, and every downstream project picks it up.
-
-# Sandbox your coding agent
-
-<span class="populate-markdown-claude-guard"></span>
-
-# Make your CI confess
-
-<span class="populate-markdown-ci-truth-serum"></span>
-
-# Sanitize untrusted text before your agent sees it
-
-<span class="populate-markdown-agent-input-sanitizer"></span>
+<span class="populate-markdown-tooling"></span>
 
 # Pull requests on other projects
 

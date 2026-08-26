@@ -217,6 +217,7 @@ AIES
 AirPods
 AirTags
 AISC
+AISI
 aiungus
 AIXI
 AIXI-like
@@ -268,6 +269,7 @@ Anca
 and-my-axiom-insights-from-computability-and-logic
 Andis
 Andreas
+Anduril
 Anki
 AnkiWeb
 Annatar
@@ -497,6 +499,8 @@ Bing
 biomes
 biometric
 biomimicry
+Biorisk
+biorisk
 bioterror
 Bisk
 bitstrings
@@ -594,10 +598,12 @@ Cauchy-Schwarz
 caungus
 CB-VAE
 CBP
+CBRN
 cbungus
 CCC
 ccc
 ccungus
+CCW
 CDF
 CDN
 cdot
@@ -606,6 +612,7 @@ cdungus
 CEA
 CelebA
 Centauri
+CENTCOM
 central-to-EY
 CEO
 ceungus
@@ -685,6 +692,7 @@ colorings
 colour
 colourless
 colours
+CoMaps
 combinatorial
 combinatorially
 combinatorics
@@ -804,6 +812,8 @@ datacenter
 datapoint
 datapoints
 Davide
+Davidovic
+DAWG
 DCT
 dct
 DCT-based
@@ -899,6 +909,7 @@ distillgpt2
 distributivity
 disvalued
 disvalues
+DIU
 dividir
 DL
 DM
@@ -1201,7 +1212,9 @@ ful
 Functionals
 functionals
 Fuson
+FUTO
 FVE
+FY2027
 fórmula
 G5
 G6
@@ -1216,6 +1229,8 @@ Garamond
 Garamond-12
 Garrabrant
 Garriga-Alonso
+Gazans
+Gboard
 GC
 GDM
 GDM-only
@@ -1232,6 +1247,7 @@ GenAI
 generalizable
 geo-guessed
 geo-guessing
+geofence
 GeoGuessr
 Georg
 geq
@@ -1442,6 +1458,7 @@ hypersurface
 Hänni
 IASEAI
 iCloud
+ICRC
 id001
 IDC
 ideia
@@ -1595,6 +1612,7 @@ Kaj
 Kaldor-Hicks
 Kamath
 Karim
+Karnofsky
 Karp
 Karvonen
 KaTeX
@@ -1646,6 +1664,7 @@ LADR
 Lahav
 LAMA-ConceptNet
 lambda_1R
+Lamberth
 langle
 Langosco
 Lanham
@@ -1829,6 +1848,7 @@ Mazeika
 MC1
 MC2
 McGrath
+MCP
 MCTS
 MDP
 MDPs
@@ -1856,6 +1876,7 @@ Mesaro-what
 mesocorticolimbic
 metadatum
 metamorals
+METR
 micpie
 micro-incoherences
 microecon
@@ -1866,8 +1887,10 @@ midwest
 Mihaylov
 Mikolov
 Milgram
+Militaries
 militaries
 min-maxers
+Minab
 Minas
 Minecraft
 mineshafts
@@ -2112,6 +2135,7 @@ OpenbookQA
 OpenGraph
 OpenMind
 OpenPhilanthropy
+OpenStreetMap
 OpenType
 OpenVPN
 OpenWebText
@@ -2175,6 +2199,7 @@ oſtentatiouſly
 O₂
 P2
 Pac-Man
+Palantir
 Palform
 Pangolin
 Panickserry
@@ -2232,6 +2257,7 @@ piecewise
 piecewise-linear
 PIQA
 pixelated
+PLA
 plaintext
 plan-diamondness
 planning-api
@@ -2545,6 +2571,7 @@ Reolink
 rephrasings
 Repo
 repo
+reportable
 repos
 repositioned
 Representability
@@ -2731,6 +2758,7 @@ SHA
 SHA-1
 SHA-256
 Shadowrun
+Shahed
 Shapley
 Sharan
 shard

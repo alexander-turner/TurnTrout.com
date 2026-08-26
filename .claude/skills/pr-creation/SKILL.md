@@ -153,13 +153,8 @@ Push any commits made during the critique and validation steps, then update the 
 
 1. Push: `git push`
 
-<<<<<<< local
-1. Re-read the diff (`git diff $CLAUDE_CODE_BASE_REF...HEAD`) and commit log (`git log $CLAUDE_CODE_BASE_REF..HEAD --oneline`) to see the full scope
-1. Rewrite the title and body to accurately describe the **current totality** of changes, not just the original scope:
-=======
 2. Re-read the diff (`git diff $CLAUDE_CODE_BASE_REF...HEAD`) and commit log (`git log $CLAUDE_CODE_BASE_REF..HEAD --oneline`) to see the full scope
 3. Rewrite the title and body to accurately describe the **current totality** of changes, not just the original scope:
->>>>>>> template
 
    ```bash
    gh pr edit <pr-number> --title "<type>: <updated description>" --body "$(cat <<'EOF'
@@ -221,23 +216,6 @@ State each insight as one concrete line. Skip this step if the task was trivial 
 
 **Claude’s actions:**
 
-<<<<<<< local
-1. Runs `git diff $CLAUDE_CODE_BASE_REF...HEAD`—sees changes in `src/auth/login.ts` and `tests/auth/login.test.ts`
-2. Runs `git log $CLAUDE_CODE_BASE_REF..HEAD --oneline`—sees 2 commits
-3. Launches critique sub-agent with the diff
-4. Critique returns: “Looks good, minor suggestion to add null check on line 42”
-5. Fixes the null check, commits: `fix: add null check for empty session token`
-6. Runs `pnpm check && pnpm test && pnpm lint`—all pass
-7. Pushes and creates PR:
-
-   ```bash
-   gh pr create --title "fix: handle null session token in login flow" --body "..."
-   ```
-
-8. Updates PR description to reflect the null-check fix added during critique
-9. Watches CI with `gh pr checks 47 --watch`—all green
-10. Reports: “PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>″
-=======
 1. Runs `git diff $CLAUDE_CODE_BASE_REF...HEAD`—sees changes in `src/auth/login.ts` and `tests/auth/login.test.ts`
 2. Runs `git log $CLAUDE_CODE_BASE_REF..HEAD --oneline`—sees 2 commits
 3. Pushes and creates PR: `gh pr create --title "fix: handle null session token in login flow" --body "..."`—CI starts immediately
@@ -248,7 +226,6 @@ State each insight as one concrete line. Skip this step if the task was trivial 
 8. Pushes fixes, updates PR description to reflect the null-check fix
 9. Watches CI with `gh pr checks 47 --watch`—all green
 10. Reports: “PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
->>>>>>> template
 
 ### Example 2: Multi-Commit Feature
 

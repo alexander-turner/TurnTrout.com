@@ -39,7 +39,6 @@ if [[ -z "${TEMPLATE_SYNC_REEXEC:-}" ]]; then
 fi
 [[ "${TEMPLATE_SYNC_REEXEC:-}" == "$0" ]] && trap 'rm -f "$0"' EXIT
 
-<<<<<<< local
 # Wrap all logic in main(), called as the final line. bash reads a running
 # script incrementally from disk, not all at once — this script overwrites
 # its own file when SYNC_PATHS includes the directory it lives in, so any
@@ -47,10 +46,6 @@ fi
 # Deferring everything behind main() forces bash to parse through this
 # file's closing brace and the trailing `main "$@"` call before executing
 # any of it.
-=======
-# All logic lives in main(), called as the final line, so bash parses through
-# this file's closing brace before executing any of it.
->>>>>>> template
 main() {
 
   SYNC_PATHS="${SYNC_PATHS:-}"

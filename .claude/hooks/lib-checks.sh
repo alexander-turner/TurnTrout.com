@@ -8,10 +8,6 @@ exists() { command -v "$1" &>/dev/null; }
 
 has_script() {
   [[ -f package.json ]] || return 1
-<<<<<<< local
-  jq -e ".scripts.$1" package.json &>/dev/null &&
-    ! jq -r ".scripts.$1" package.json | grep -q "ERROR: Configure"
-=======
   local val
   # A jq parse failure means package.json is malformed, not that the script is
   # simply unconfigured — fail loudly instead of silently skipping checks.
@@ -22,5 +18,4 @@ has_script() {
     exit 2
   fi
   [[ -n "$val" && "$val" != *"ERROR: Configure"* ]]
->>>>>>> template
 }

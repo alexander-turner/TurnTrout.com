@@ -52,7 +52,7 @@ import {
   WrapNakedElements,
 } from "../../quartz/plugins"
 import { QuartzConfig } from "../../quartz/util/ctx"
-import { GITHUB_README_SOURCES } from "./externalReadmes"
+import { EXTERNAL_README_SOURCES } from "./externalReadmes"
 
 const config: QuartzConfig = {
   configuration: {
@@ -77,7 +77,7 @@ const config: QuartzConfig = {
       FrontMatter(),
       PopulateExternalMarkdown({
         sources: {
-          ...GITHUB_README_SOURCES,
+          ...EXTERNAL_README_SOURCES,
           "lint-staged": {
             filePath: "package.json",
             jsonPath: "lint-staged",

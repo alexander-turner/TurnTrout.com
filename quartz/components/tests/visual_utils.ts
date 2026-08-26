@@ -396,6 +396,7 @@ export async function takeRegressionScreenshot(
   try {
     await forceHighQualityImageInterpolation(page)
     if (!skipMediaPause) {
+      await pinDecodableVideoSource(page, elementToScreenshot)
       await pauseMediaElements(page, elementToScreenshot)
       await waitForVideosPainted(elementToScreenshot ?? page)
     }
@@ -715,6 +716,40 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
 }
 
 /**
+ * Repoints WebKit at the MP4 source when a video landed on the WebM one.
+ *
+ * WebKit's `<source>` matching accepts `type="video/webm"`, but the engine
+ * produces no frame from the VP9 stream inside: the element fetches the whole
+ * file and sits at readyState 0/1 forever, so the capture that follows has no
+ * frame to paint. Only the HEVC MP4 decodes there, and assigning `src`
+ * directly bypasses the type matching that chose WebM in the first place.
+ *
+ * A video that already has a decodable frame is left untouched, so this never
+ * disturbs a playhead that a test positioned deliberately.
+ */
+async function pinDecodableVideoSource(page: Page, scope?: Locator): Promise<void> {
+  if (page.context().browser()?.browserType().name() !== "webkit") return
+
+  const mediaScope = scope ?? page
+  for (const video of await mediaScope.locator("video").all()) {
+    const handle = await video.elementHandle({ timeout: 2000 }).catch(() => null)
+    if (!handle) continue
+    await handle.evaluate((el) => {
+      const videoEl = el as HTMLVideoElement
+      if (videoEl.readyState >= 2 || !videoEl.currentSrc.endsWith(".webm")) return
+
+      const mp4Source = Array.from(videoEl.querySelectorAll("source")).find(
+        (source) => !source.src.endsWith(".webm"),
+      )
+      if (!mp4Source) return
+      videoEl.src = mp4Source.src
+      videoEl.load()
+    })
+    await handle.dispose()
+  }
+}
+
+/**
  * Blocks until every video has actually painted its frame-0 to the compositor.
  *
  * `pauseMediaElements` seeks videos to currentTime 0, but `paused`/`currentTime
@@ -744,7 +779,9 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
             reject(
               new Error(
                 `Video never painted within ${dataTimeoutMs}ms ` +
-                  `(readyState=${videoEl.readyState}): ${videoEl.currentSrc || "<no src>"}`,
+                  `(readyState=${videoEl.readyState}, ` +
+                  `networkState=${videoEl.networkState}): ` +
+                  `${videoEl.currentSrc || "<no src>"}`,
               ),
             )
           }, dataTimeoutMs)
@@ -790,10 +827,14 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
             videoEl.addEventListener("loadeddata", waitForPaint, { once: true })
             // WebKit parks a paused video at HAVE_METADATA and fetches no
             // further media data until something asks for it, so waiting on
-            // "loadeddata" alone can never return. Kick the load at every
-            // readyState below HAVE_CURRENT_DATA; navbar.inline.ts kicks the
-            // same stall on the page itself.
-            videoEl.load()
+            // "loadeddata" alone can never return. Kick the load only while no
+            // fetch is in flight: `load()` restarts resource selection from
+            // scratch, discarding whatever the `preload="auto"` fetch already
+            // buffered and returning the element to HAVE_NOTHING.
+            // navbar.inline.ts guards the same kick on the page itself.
+            if (videoEl.networkState !== HTMLMediaElement.NETWORK_LOADING) {
+              videoEl.load()
+            }
           }
         }),
       VIDEO_PAINT_TIMEOUT_MS,

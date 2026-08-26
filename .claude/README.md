@@ -10,18 +10,12 @@ This directory contains configuration and skills for Claude Code.
 ├── agents/
 │   └── code-reviewer.md       # Read-only reviewer subagent (Read/Grep/Glob)
 ├── hooks/
-<<<<<<< local
-│   ├── session-setup.sh      # Runs on session start (installs tools, configures git)
-│   ├── pre-push-check.sh    # Runs before git push / gh pr (build, lint, typecheck)
-│   ├── check-narrative-comments.sh  # Runs after Edit/Write (warns on "previously…" / regression comments)
-│   └── lib-checks.sh        # Shared bash helpers (exists, has_script)
-=======
 │   ├── session-setup.sh       # Runs on session start (installs tools, configures git)
 │   ├── pre-push-check.sh      # Runs before git push / gh pr (build, lint, typecheck)
+│   ├── check-narrative-comments.sh  # Runs after Edit/Write (warns on "previously…" / regression comments)
 │   ├── lib-checks.sh          # Shared bash helpers (exists, has_script)
 │   ├── safe-launch.sh         # Wraps PreToolUse hooks so a parse error can't lock the session
 │   └── safe-launch-parse.py   # Helper: extracts tool_name/target path from the PreToolUse payload
->>>>>>> template
 └── skills/
     ├── pr-creation/           # PR creation workflow with self-critique
     ├── update-pr/             # Update an existing PR with new changes
