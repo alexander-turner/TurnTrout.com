@@ -215,6 +215,43 @@ describe("markdownPlugins", () => {
       return testMarkdownPlugins(transformer.textTransform({} as BuildCtx, source) as string)
     }
 
+    it("keeps a body that opens with inline markup out of the title", () => {
+      const output = renderFromSource(
+        "> [!quote] [Headline](https://example.com)\n> **Bold body** and more.",
+      )
+      expect(output).toContain(
+        '<div class="admonition-content"><p><strong>Bold body</strong> and more.</p></div>',
+      )
+    })
+
+    it.each([
+      {
+        name: "a plain title whose body opens with inline markup",
+        source: "> [!note] Title\n> **Bold body**",
+        expectedTitle: ">Title</span>",
+        expectedBody: '<div class="admonition-content"><p><strong>Bold body</strong></p></div>',
+      },
+      {
+        name: "a linked title with trailing plain text",
+        source: "> [!quote] [Headline](https://example.com) and a tail\n> Body text.",
+        expectedTitle: "and a tail</span>",
+        expectedBody: '<div class="admonition-content"><p>Body text.</p></div>',
+      },
+    ])("splits $name", ({ source, expectedTitle, expectedBody }) => {
+      const output = renderFromSource(source)
+      expect(output).toContain(expectedTitle)
+      expect(output).toContain(expectedBody)
+    })
+
+    it("separates a title from its body across a hard line break", () => {
+      const output = renderFromSource(
+        "> [!quote] [Headline](https://example.com)\\\n> Body text that belongs under the title.",
+      )
+      expect(output).toContain(
+        '<div class="admonition-content"><p>Body text that belongs under the title.</p></div>',
+      )
+    })
+
     it.each([
       { name: "top level", markers: ">" },
       { name: "nested", markers: "> >" },
@@ -230,6 +267,66 @@ describe("markdownPlugins", () => {
         '<div class="admonition-content"><p>Body text that belongs under the title.</p></div>',
       )
       expect(output).not.toContain("Body text that belongs under the title.</span>")
+    })
+  })
+
+  describe("comment stripping", () => {
+    // Comments are stripped before parsing, so the assertions must run the
+    // source through textTransform — asserting on the plugins alone would pass
+    // no matter what the transform did.
+    const renderSource = (source: string, options: OFMOptions = defaultOptions): string => {
+      const transformer = ObsidianFlavoredMarkdown(options)
+      /* istanbul ignore next -- textTransform is always defined on the transformer */
+      if (!transformer.textTransform) throw new Error("textTransform is undefined")
+      return testMarkdownPlugins(
+        transformer.textTransform({} as BuildCtx, source) as string,
+        options,
+      )
+    }
+
+    it.each([
+      {
+        name: "an HTML comment in prose",
+        input: "Hello <!-- this is a comment --> World",
+        expected: ["Hello", "World"],
+        notExpected: ["this is a comment"],
+      },
+      {
+        name: "an Obsidian comment in prose",
+        input: "Hello %%this is an obsidian comment%% World",
+        expected: ["Hello", "World"],
+        notExpected: ["this is an obsidian comment"],
+      },
+      {
+        name: "a comment inside a larger HTML block",
+        input: '<video>\n  <!-- only Safari -->\n  <source src="a.mp4" />\n</video>',
+        expected: ["<video>", '<source src="a.mp4" />'],
+        notExpected: ["only Safari"],
+      },
+    ])("removes $name", ({ input, expected, notExpected }) => {
+      const output = renderSource(input)
+      for (const fragment of expected) expect(output).toContain(fragment)
+      for (const fragment of notExpected) expect(output).not.toContain(fragment)
+    })
+
+    it("leaves Obsidian comments alone when the option is off", () => {
+      const output = renderSource("Hello %%kept%% World", {
+        ...defaultOptions,
+        comments: false,
+      })
+      expect(output).toContain("%%kept%%")
+    })
+
+    it.each([
+      {
+        name: "an HTML comment",
+        body: "const x = 1 // <!-- keep me -->",
+        keep: "&#x3C;!-- keep me -->",
+      },
+      { name: "an Obsidian comment", body: "%%keep me%%", keep: "%%keep me%%" },
+    ])("preserves $name inside a fenced code block", ({ body, keep }) => {
+      const output = renderSource(`\`\`\`js\n${body}\n\`\`\``)
+      expect(output).toContain(keep)
     })
   })
 
@@ -741,44 +838,21 @@ describe("ObsidianFlavoredMarkdown", () => {
 
   const textTransformCases: TextTransformTestCase[] = [
     {
-      name: "HTML comments",
-      input: "Hello <!-- this is a comment --> World",
-      expected: "Hello  World",
-    },
-    {
-      name: "Obsidian comments when enabled",
-      options: { comments: true },
-      input: "Hello %%this is an obsidian comment%% World",
-      expected: "Hello  World",
-    },
-    {
       name: "Buffer input",
       input: Buffer.from("Hello World"),
       expected: "Hello World",
     },
     {
-      name: "admonition line regex",
-      options: { admonitions: true },
-      input: "> [!note] Title",
-      expected: "> [!note] Title\n> ",
+      name: "a wikilink rewritten to markdown link syntax",
+      options: { wikilinks: true },
+      input: "See [[some page|the docs]]",
+      expected: "See [[some page|the docs]]",
     },
     {
-      name: "empty admonition titles",
-      options: { admonitions: true },
-      input: "> [!note]",
-      expected: "> [!note]\n> ",
-    },
-    {
-      name: "admonition nested one blockquote deep",
-      options: { admonitions: true },
-      input: "> > [!quote] Title",
-      expected: "> > [!quote] Title\n> > ",
-    },
-    {
-      name: "admonition nested behind indented blockquote markers",
-      options: { admonitions: true },
-      input: ">  > [!quote] Title",
-      expected: ">  > [!quote] Title\n>  > ",
+      name: "source left untouched inside a fenced code block",
+      options: { wikilinks: true, admonitions: true },
+      input: "```md\n> [!note] Title\n[[page]]\n```",
+      expected: "```md\n> [!note] Title\n[[page]]\n```",
     },
   ]
 

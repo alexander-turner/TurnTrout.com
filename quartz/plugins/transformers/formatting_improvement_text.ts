@@ -6,9 +6,17 @@
 import type { QuartzTransformerPlugin } from "../types"
 
 import { NBSP } from "../../components/constants"
+import { transformOutsideCode } from "./markdownSource"
 import { mdLinkRegex } from "./utils"
 
-const nbspCleanupRegex = new RegExp(`(?:${NBSP}|&nbsp;)`, "gu")
+// A literal NBSP is a paste artifact wherever it lands, and inside a code
+// sample it silently breaks copy-paste (Python rejects it as indentation), so
+// it is normalized everywhere — fenced blocks included.
+const nbspCharRegex = new RegExp(NBSP, "gu")
+
+// The `&nbsp;` entity is real markup in an HTML sample, so it is only cleaned
+// up in prose.
+const nbspEntityRegex = /&nbsp;/g
 
 // Regular expression for footnotes not followed by a colon (definition) or opening parenthesis (md URL)
 const footnoteSpacingRegex = /(?<content>\S) (?<footnote>\[\^[^\]]+\])(?![:(]) ?/g
@@ -149,6 +157,25 @@ const concentrateEmphasisAroundLinks = (text: string): string => {
   return text.replace(emphRegex, "$<whitespace1>$<emph>$<url>$<emph>$<whitespace2>")
 }
 
+/** Applies every prose rule to one run of markdown lines outside fenced code. */
+function improveProse(chunk: string): string {
+  let text = chunk.replaceAll(nbspEntityRegex, " ")
+
+  text = improveFootnoteFormatting(text)
+  text = text.replace(/ *,/g, ",") // Remove space before commas
+  text = editAdmonition(text)
+  text = noteAdmonition(text)
+  text = spaceAdmonitions(text)
+  text = concentrateEmphasisAroundLinks(text)
+  text = encodeLinkDestinationSpaces(text)
+  text = wrapLeadingNumbers(text)
+  text = wrapNumbersBeforeColon(text)
+  text = applyTextTransforms(text, massTransforms)
+
+  // Ensure that bulleted lists display properly
+  return text.replaceAll("\\-", "-")
+}
+
 /**
  * Applies formatting improvements to the input text.
  * @param text - The input text to process.
@@ -164,22 +191,10 @@ export const formattingImprovement = (text: string) => {
     content = text.substring(yamlHeader.length)
   }
 
-  // Format the content (non-YAML part)
-  let newContent = content.replaceAll(nbspCleanupRegex, " ")
-
-  newContent = improveFootnoteFormatting(newContent)
-  newContent = newContent.replace(/ *,/g, ",") // Remove space before commas
-  newContent = editAdmonition(newContent)
-  newContent = noteAdmonition(newContent)
-  newContent = spaceAdmonitions(newContent)
-  newContent = concentrateEmphasisAroundLinks(newContent)
-  newContent = encodeLinkDestinationSpaces(newContent)
-  newContent = wrapLeadingNumbers(newContent)
-  newContent = wrapNumbersBeforeColon(newContent)
-  newContent = applyTextTransforms(newContent, massTransforms)
-
-  // Ensure that bulleted lists display properly
-  newContent = newContent.replaceAll("\\-", "-")
+  // Every rule below rewrites prose, so none may reach inside a fenced code
+  // block: a sample showing `<!-- -->`, `> [!note]`, or `:=` must render as the
+  // author typed it.
+  const newContent = transformOutsideCode(content.replaceAll(nbspCharRegex, " "), improveProse)
 
   return yamlHeader + newContent // Concatenate YAML header and formatted content
 }

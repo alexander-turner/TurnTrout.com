@@ -11,7 +11,7 @@ import type {
   Parent,
   Properties,
 } from "hast"
-import type { BlockContent, Blockquote, Html, Paragraph, PhrasingContent, Root } from "mdast"
+import type { BlockContent, Blockquote, Html, Paragraph, PhrasingContent, Root, Text } from "mdast"
 import type { PluggableList } from "unified"
 
 import fs from "fs"
@@ -31,6 +31,7 @@ import { escapeHTML } from "../../util/escape"
 import { type FilePath, slugifyFilePath, slugTag } from "../../util/path"
 import { UNICODE_WORD_CHAR } from "../../util/regex"
 import { resetSlugger, slugify as slugAnchor } from "./gfm"
+import { transformOutsideCode } from "./markdownSource"
 import { isEffectivelyTitleCased } from "./utils"
 
 const currentFilePath = fileURLToPath(import.meta.url)
@@ -60,8 +61,11 @@ export const tableWikilinkRegex = new RegExp(/(?<wikilink>!?\[\[[^\]]*\]\])/, "g
 /** Regular expression to match highlight syntax (==text==) */
 const highlightRegex = new RegExp(/[=]{2}(?<content>[^=]+)[=]{2}/, "g")
 
-/** Regular expression to match Obsidian-style comments (%%comment%%) */
+/** Matches an Obsidian-style comment (%%comment%%) inside a text node. */
 const commentRegex = new RegExp(/%%[\s\S]*?%%/, "g")
+
+/** Matches an HTML comment inside a raw-HTML node. */
+const htmlCommentRegex = /<!--[\s\S]*?-->/g
 
 /** Regular expression to match admonition syntax ([!type][fold]) */
 const admonitionRegex = new RegExp(`^\\[!(?<type>${UNICODE_WORD_CHAR}+)\\](?<collapse>[+-]?)`, "u")
@@ -78,17 +82,6 @@ export function admonitionCollapseState(firstLine: string): "collapsed" | "expan
   if (!match?.groups) return null
   return match.groups.collapse === "-" ? "collapsed" : "expanded"
 }
-
-/**
- * Regular expression to match admonition lines in blockquotes. The `prefix`
- * group captures every `>` marker leading the line, so an admonition nested
- * inside another blockquote (`>  > [!quote] …`) matches too and the forced
- * newline can be re-prefixed to stay inside the same nesting level.
- */
-const admonitionLineRegex = new RegExp(
-  `^(?<prefix>(?:>[ \\t]*)+)\\[!${UNICODE_WORD_CHAR}+\\][+-]?.*$`,
-  "gmu",
-)
 
 /** Matches tags with Unicode support: #tag, #tag/subtag */
 const tagRegex = new RegExp(
@@ -361,24 +354,84 @@ const parseAdmonitionHeader = (firstLine: string): AdmonitionHeader | null => {
   }
 }
 
-/** Builds the title element from an admonition's first paragraph. */
+/** An opening callout paragraph split into its title and its first body block. */
+interface AdmonitionParagraphSplit {
+  /** The paragraph's opening text node, truncated when the break falls inside it. */
+  head: Text
+  /** Inline nodes after the head that still belong to the title. */
+  titleRest: PhrasingContent[]
+  body: PhrasingContent[]
+}
+
+/**
+ * Splits a callout's opening paragraph at its first line break. The title ends
+ * there; everything after it is body content the author typed on the next line.
+ *
+ * The break is a `\n` inside a text node for a soft wrap and a `break` node for
+ * a hard one, and it can sit behind any number of inline nodes — a linked title
+ * leaves the break in a *later* text node, not the paragraph's first child.
+ */
+function splitAdmonitionParagraph(
+  head: Text,
+  rest: readonly PhrasingContent[],
+): AdmonitionParagraphSplit {
+  const headBreak = head.value.indexOf("\n")
+  if (headBreak !== -1) {
+    const after = head.value.slice(headBreak + 1)
+    return {
+      head: { ...head, value: head.value.slice(0, headBreak) },
+      titleRest: [],
+      body: [...(after !== "" ? [{ ...head, value: after }] : []), ...rest],
+    }
+  }
+
+  const titleRest: PhrasingContent[] = []
+  for (const [index, child] of rest.entries()) {
+    if (child.type === "break") {
+      return { head, titleRest, body: [...rest.slice(index + 1)] }
+    }
+    if (child.type === "text") {
+      const newline = child.value.indexOf("\n")
+      if (newline !== -1) {
+        const before = child.value.slice(0, newline)
+        const after = child.value.slice(newline + 1)
+        if (before !== "") titleRest.push({ ...child, value: before })
+        return {
+          head,
+          titleRest,
+          body: [...(after !== "" ? [{ ...child, value: after }] : []), ...rest.slice(index + 1)],
+        }
+      }
+    }
+    titleRest.push(child)
+  }
+
+  return { head, titleRest, body: [] }
+}
+
+/** Reports whether inline nodes carry anything beyond whitespace. */
+function hasVisibleContent(nodes: readonly PhrasingContent[]): boolean {
+  return nodes.some((node) => node.type !== "text" || node.value.trim() !== "")
+}
+
+/** Builds the title element from an admonition's title nodes. */
 const buildAdmonitionTitle = (
-  firstChild: Paragraph,
-  firstLine: string,
+  split: AdmonitionParagraphSplit,
   header: AdmonitionHeader,
 ): BlockContent => {
-  const rawTitle = firstLine.slice(header.admonitionDirective.length)
+  // The directive opens the paragraph's first text node; the rest of that node
+  // is the plain-text head of the title.
+  const rawTitle = split.head.value.slice(header.admonitionDirective.length)
   const titleContent = rawTitle.trim()
   // Preserve the source spacing between the plain-text title and any following
   // inline child (e.g. a link). Appending a space unconditionally would insert
   // one after a trailing opening delimiter, turning "remarks ([video])" into
   // "remarks ( video)".
   const titleSeparator = /\s$/u.test(rawTitle) ? " " : ""
-  /* istanbul ignore next -- admonition title detection edge case */
-  const useDefaultTitle = titleContent === "" && firstChild.children.length === 1
+  const useDefaultTitle = titleContent === "" && split.titleRest.length === 0
   const capitalizedTypeString =
     header.typeString.charAt(0).toUpperCase() + header.typeString.slice(1)
-  const remainingChildren = firstChild.children.slice(1)
+  const remainingChildren = split.titleRest
 
   // An admonition title that already reads as a title-cased work name (a
   // cited article, a named act) should not render its acronyms as
@@ -386,9 +439,7 @@ const buildAdmonitionTitle = (
   // A blank title (the admonition type's own name, e.g. "Note") is never a
   // work title, and an empty string is vacuously "title-cased" by the Hamming
   // check, so guard on non-empty text first.
-  const fullTitleText = `${titleContent} ${collectInlineText(
-    remainingChildren as PhrasingContent[],
-  )}`.trim()
+  const fullTitleText = `${titleContent} ${collectInlineText(remainingChildren)}`.trim()
   const noSmallcaps = fullTitleText !== "" && isEffectivelyTitleCased(fullTitleText)
 
   return createAdmonitionTitle(
@@ -402,21 +453,15 @@ const buildAdmonitionTitle = (
   ) as unknown as BlockContent
 }
 
-/** Builds the content node holding the body after an admonition's first line. */
-const buildAdmonitionContentNode = (node: Blockquote, remainingText: string): Element | null => {
-  // The body is the title line's trailing text (any lines the user typed under
-  // the title, minus the title line itself) followed by the blockquote's
+/** Builds the content node holding the body after an admonition's title. */
+const buildAdmonitionContentNode = (
+  node: Blockquote,
+  body: readonly PhrasingContent[],
+): Element | null => {
+  // The body is what followed the title line's break, then the blockquote's
   // remaining block children — the first block held the title and is dropped.
-  /* istanbul ignore next -- admonition content handling edge case */
   const contentChildren = [
-    ...(remainingText.trim() !== ""
-      ? [
-          {
-            type: "paragraph" as const,
-            children: [{ type: "text" as const, value: remainingText }],
-          },
-        ]
-      : []),
+    ...(hasVisibleContent(body) ? [{ type: "paragraph" as const, children: [...body] }] : []),
     ...node.children.slice(1),
   ]
 
@@ -460,17 +505,14 @@ const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
     return
   }
 
-  // The marker text node also carries body text typed on lines beneath the
-  // title: textTransform injects a newline after the title, so the first line
-  // is the directive + title and the rest is leading body content.
-  const [firstLine, ...remainingLines] = firstChild.children[0].value.split("\n")
-  const header = parseAdmonitionHeader(firstLine)
+  const header = parseAdmonitionHeader(firstChild.children[0].value)
   if (!header) return // Not a `[!type]` directive — an ordinary blockquote.
 
   recordAdmonitionIcons(file, header.admonitionType, header.collapse)
 
-  const admonitionTitle = buildAdmonitionTitle(firstChild, firstLine, header)
-  const contentNode = buildAdmonitionContentNode(node, remainingLines.join("\n"))
+  const split = splitAdmonitionParagraph(firstChild.children[0], firstChild.children.slice(1))
+  const admonitionTitle = buildAdmonitionTitle(split, header)
+  const contentNode = buildAdmonitionContentNode(node, split.body)
 
   // Swap the blockquote's children for the title (+ content when present); the
   // admonition classes/data attributes go on the blockquote element itself.
@@ -994,22 +1036,15 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
       // Reset slugger per file so IDs are unique per page, not globally
       resetSlugger()
 
-      // strip HTML comments
-      src = src.replace(/<!--[\s\S]*?-->/g, "")
-
-      /* istanbul ignore next -- comment removal is optional feature */
-      if (opts.comments) {
-        src = src.replace(commentRegex, "")
-      }
-
-      // pre-transform blockquotes
-      if (opts.admonitions) {
-        src = src.replace(admonitionLineRegex, (value: string, prefix: string): string => {
-          // force newline after title of admonition, re-using the line's own
-          // blockquote markers so the break lands inside the same blockquote
-          return `${value}\n${prefix}`
-        })
-      }
+      // Comments are stripped before parsing, not on the tree: an HTML comment
+      // left in the source opens an HTML block, which ends the surrounding list
+      // or footnote and re-parses the rest of it as indented code. Running
+      // outside fenced blocks keeps a code sample that documents comment syntax
+      // rendering as the author typed it.
+      src = transformOutsideCode(src, (chunk) => {
+        const stripped = chunk.replace(htmlCommentRegex, "")
+        return opts.comments ? stripped.replace(commentRegex, "") : stripped
+      })
 
       // pre-transform wikilinks (fix anchors to things that may contain illegal syntax e.g. codeblocks, latex)
       if (opts.wikilinks) {
