@@ -1,29 +1,28 @@
 name: Claude reviewers
 
-# Umbrella for the three automated PR reviewers: the Opus first-pass reviewer
-# (claude-pr-review.yaml), the Sonnet merge-delta reviewer
-# (claude-merge-delta-review.yaml), and the Haiku review-thread resolver
-# (claude-review-thread-resolve.yaml). Each was its own file; they are
-# consolidated here to cut the per-PR workflow fan-out on a shared, capped runner
-# pool. Every job stays self-contained and carries its own SECURITY header,
-# `permissions:`, base-only checkout posture, and `if:` guards verbatim — nothing
-# about the trust boundary changed in the move. All three run on the reviewers'
-# shared pull_request_target trigger (the union of the three source triggers) with
-# a base-only checkout and a least-privilege token, and each is guarded by
-# `github.event.action` so it fires on exactly the events its source workflow
-# fired on. Concurrency is declared PER JOB (never workflow-level), keeping each
-# source workflow's own group name so the jobs never cancel one another.
+# Umbrella for the PR automation that runs on one shared pull_request_target
+# trigger: the first-pass reviewer (the `review` job, a CALL into
+# AlexanderMattTurner/agent-review, which owns the reviewer), the auto-approval
+# for the classes that reviewer skips, and the Sonnet merge-delta reviewer. One
+# file cuts the per-PR workflow fan-out on a shared, capped runner pool. Every
+# job stays self-contained and carries its own SECURITY header, `permissions:`,
+# base-only checkout posture, and `if:` guards. Each is guarded by
+# `github.event.action` so it fires on exactly the events it acts on.
+# Concurrency is declared PER JOB (never workflow-level), so the jobs never
+# cancel one another.
 #
 # The merge-conflict auto-resolver stays a SEPARATE file
-# (auto-resolve-conflicts.yaml): it checks out the PR HEAD to merge into it, and
+# (auto-resolve-conflicts.yaml), and it CALLS its own upstream reusable workflow
+# in AlexanderMattTurner/agent-resolve-merge-conflicts the same way this file
+# calls the reviewer. It checks out the PR HEAD to merge into it, and
 # co-locating a head checkout with pull_request_target trips CodeQL's
 # untrusted-checkout query (file-scoped, blind to per-job event gating) and would
 # blind that query to these secrets-bearing reviewer jobs. The scheduled
 # reviewer-hold sweeper (claude-reviewer-hold-clear.yaml) is likewise separate.
 
 on: # zizmor: ignore[dangerous-triggers] — reviewer jobs are base-only checkout + least privilege; see each job's header
-  # Union of the three source triggers. `opened`/`ready_for_review`/`synchronize`
-  # drive the first-pass reviewer; `synchronize` also drives the thread resolver;
+  # `opened`/`ready_for_review`/`synchronize` drive the first-pass reviewer and
+  # the merge-delta reviewer; `opened`/`ready_for_review` drive the auto-approval;
   # `labeled` is the first-pass reviewer's on-demand escape hatch (the
   # `needs-auto-review` label). Each job's `if:` re-scopes it to its own events.
   # Because pull_request_target always runs the workflow file from the base
@@ -35,249 +34,113 @@ permissions: {}
 
 jobs:
   # ────────────────────────────────────────────────────────────────────────────
-  # Claude PR review (Opus first pass) — from claude-pr-review.yaml
+  # Claude PR review (first pass) — the `review` job
   #
-  # Auto-review every incoming PR — including PRs from forks/outside contributors
-  # — with Claude, using the CLAUDE_CODE_OAUTH_TOKEN secret (with a fallback).
+  # The reviewer itself lives in AlexanderMattTurner/agent-review as a reusable
+  # workflow, and this job only CALLS it. That repository holds the whole
+  # reviewer: the one-read-per-PR budget, the per-file split for a diff that
+  # outgrows one model context, the input sanitizer, the credential ladder and
+  # the posting path. Its scripts run from the commit the `uses:` line pins,
+  # cloned from a repository a pull request here cannot write, so the tree under
+  # review can no longer rewrite the code that reviews it.
   #
-  # SECURITY — why `pull_request_target` is safe here:
-  #   A fork PR triggered via plain `pull_request` gets NO secrets, so it could
-  #   never see the API key. `pull_request_target` runs in the BASE repo's
-  #   trusted context (with secrets), so to stay safe this job:
-  #     1. checks out the BASE branch, never the untrusted PR head — no
-  #        fork-authored code is ever checked out or executed here;
-  #     2. reads the PR's changes only as DATA via `gh pr diff` (a unified diff
-  #        fetched from the API), and the prompt treats that diff as untrusted
-  #        input, never as instructions;
-  #     3. holds least privilege — contents:read + pull-requests:write only, so
-  #        even a successful prompt injection can post a PR comment but cannot
-  #        push code, merge, or reach any other scope.
-  #   Because `pull_request_target` always runs the workflow file from the base
-  #   branch, this reviewer only takes effect once merged to the default branch.
+  # One piece stays HERE, because the reviewer takes it as an input: the review
+  # prompt (.github/prompts/claude-pr-review.md), which carries the conventions a
+  # reviewer of THIS tree should hold it to.
+  #
+  # SECURITY — the called workflow's own header states the posture in full: a
+  # base-only checkout, the PR's changes read only as sanitized DATA, and least
+  # privilege per job. The `permissions:` block below is the CEILING those jobs
+  # are narrowed from, never a grant — GitHub lets a called workflow request only
+  # what the calling job holds, so a caller that grants less ends the run in
+  # `startup_failure` before any job starts.
+  #
+  # THE TITLE SKIP IS GATED ON A TRUSTED AUTHOR, and the same guard appears
+  # verbatim on auto-approve-skipped below. A PR title is written by the PR
+  # AUTHOR, so on its own it is an attacker-chosen string that decides whether
+  # this repo reviews the PR at all: an outside contributor titling a fork PR
+  # `chore: bump` skipped the review AND collected the auto-approval, clearing
+  # three merge levers with one string. The guard is the pair GitHub sets, not
+  # the author: `head.repo.full_name` (same-repo branch, so the author already
+  # has push access) or `author_association` in OWNER/MEMBER/COLLABORATOR.
+  #
+  # It must gate BOTH jobs or neither. Guarding only the approval leaves an
+  # untrusted `chore:` PR skipped here and approved by nobody — reviewed by
+  # nobody, with no event able to produce either outcome. Guarded on both, the
+  # skip set is simply EMPTY for an untrusted author: their PR always gets the
+  # real review, whatever its title.
+  #
+  # This `if:` carries the cheap payload-only skips (no runner boots for a
+  # draft/bot/chore PR); the called workflow's own decide job then spends the
+  # one-read-per-PR budget. A `labeled` event bypasses the title/author skips
+  # entirely — the label IS the request to review a PR the skips would otherwise
+  # drop — and the reviewer's decide script confirms the label is
+  # `needs-auto-review` before running, so every other label edit costs one
+  # skipped job. The bot guard rides the label arm too: claude-code-action
+  # refuses a Bot-initiated run outright, so a labelled bot PR would walk every
+  # credential rung and fail each one identically, for a cause no token changes.
   # ────────────────────────────────────────────────────────────────────────────
-
-  # Decide whether to (re-)review. Skip the whole thing — no runner boots, no
-  # model spend — when the review has little value:
-  #   - draft PRs and bot-authored PRs (dependabot et al. are handled by
-  #     dependabot-auto-merge.yaml);
-  #   - low-risk Conventional-Commit types by title — chore/style (matched
-  #     as `type:` or `type(scope)`) — and machine-cut release PRs (title
-  #     `release:`/`release(...)`), which carry no new human-authored code to
-  #     read. Skipping them (paired with the auto-approve below) lets them ship
-  #     without a review gate — CI still gates the merge. We deliberately DO
-  #     review ci/build/test and all code types (feat/fix/refactor/perf) AND
-  #     docs (a docs PR can restate a security boundary or an install step
-  #     wrong, which is exactly the kind of drift a second read catches): a
-  #     fork PR touching CI, tests, or docs is exactly what a human wants a
-  #     second read on. A PR whose title isn't a recognized skip-type is
-  #     reviewed (fail toward reviewing).
-  # This job `if:` carries the cheap payload-only skips (no runner boots for a
-  # draft/bot/docs PR); the script then decides opened/ready (always, on Opus) vs
-  # synchronize (the [opus-review] head-commit opt-in on Opus, or a Haiku
-  # re-check while a reviewer change request is still outstanding). A `labeled`
-  # event bypasses the title/author skips entirely — the label IS the request to
-  # review a PR the skips would otherwise drop — and the script confirms the
-  # label is `needs-auto-review` before running (any other label is a no-op).
-  decide:
-    name: Decide whether to review
-    if: >-
-      github.event.action == 'labeled' ||
-      (
-        github.event.pull_request.draft == false &&
-        github.event.pull_request.user.type != 'Bot' &&
-        !startsWith(github.event.pull_request.title, 'chore:') &&
-        !startsWith(github.event.pull_request.title, 'chore(') &&
-        !startsWith(github.event.pull_request.title, 'style:') &&
-        !startsWith(github.event.pull_request.title, 'style(') &&
-        !startsWith(github.event.pull_request.title, 'release:') &&
-        !startsWith(github.event.pull_request.title, 'release(')
-      )
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read # sparse-checkout the trusted decide script
-      pull-requests: read # read the head commit title via the API
-    outputs:
-      run: ${{ steps.decide.outputs.run }}
-      model: ${{ steps.decide.outputs.model }}
-    steps:
-      - name: Checkout base (trusted) decide script
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          # Base BRANCH only (trusted), never the untrusted PR head — the same
-          # posture the review job takes. The script is read as trusted repo
-          # content; the PR head is only ever read as DATA via the API.
-          ref: ${{ github.event.pull_request.base.ref }}
-          persist-credentials: false
-          sparse-checkout: .github/scripts/decide-pr-review-trigger.sh
-          sparse-checkout-cone-mode: false
-      - name: Decide whether (and on which model) to review
-        id: decide
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ACTION: ${{ github.event.action }}
-          REPO: ${{ github.repository }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PR: ${{ github.event.pull_request.number }}
-          LABEL: ${{ github.event.label.name }}
-        run: bash .github/scripts/decide-pr-review-trigger.sh
-
   review:
-    name: Claude PR review
-    needs: decide
-    if: needs.decide.outputs.run == 'true'
-    # Concurrency lives on the REVIEW job, not the workflow: a `synchronize` that
-    # decide drops (run=false — no opt-in, no outstanding change request) skips
-    # this job, so it never enters the group and cannot cancel an in-flight
-    # review — the guaranteed `opened` first-look always runs to completion. Only
-    # a real review joins the group, so cancel-in-progress means one review per
-    # PR at a time and a fresh re-review (an [opus-review] re-read or a Haiku
-    # recheck) supersedes an older one (latest head wins). Keyed by PR number
-    # (not static), so it never strands a required check.
-    concurrency:
-      group: claude-pr-review-${{ github.event.pull_request.number }}
-      cancel-in-progress: true
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    if: >-
+      (
+      github.event.label.name == 'needs-auto-review' &&
+      github.event.pull_request.user.type != 'Bot'
+      ) ||
+      (
+      github.event.action != 'labeled' &&
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.user.type != 'Bot' &&
+      (
+        !(
+          github.event.pull_request.head.repo.full_name == github.repository ||
+          contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
+        ) ||
+        (
+          !startsWith(github.event.pull_request.title, 'chore:') &&
+          !startsWith(github.event.pull_request.title, 'chore(') &&
+          !startsWith(github.event.pull_request.title, 'style:') &&
+          !startsWith(github.event.pull_request.title, 'style(') &&
+          !startsWith(github.event.pull_request.title, 'release:') &&
+          !startsWith(github.event.pull_request.title, 'release(')
+        )
+      )
+      )
     permissions:
-      contents: read # checkout the trusted base branch
+      contents: read # the reviewer checks out this repository's default branch
       pull-requests: write # post the review
-    steps:
-      - name: Checkout base (trusted) branch
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          # The base BRANCH is trusted repo content; the untrusted PR head is
-          # never checked out. Do NOT change this to head.sha/head.ref. It must
-          # be base.ref (the branch, resolved at checkout) rather than base.sha:
-          # base.sha is a stale snapshot of the base branch recorded when the PR
-          # was created, so on any PR opened before this workflow's scripts
-          # landed it checks out a tree WITHOUT them and every run dies with
-          # "No such file or directory" — while pull_request_target takes the
-          # workflow file itself from the branch tip. base.ref keeps the
-          # checkout and the workflow definition on the same (trusted) commit.
-          ref: ${{ github.event.pull_request.base.ref }}
-          persist-credentials: false
-          fetch-depth: 1
+      statuses: write # the reviewer reports its own verdict on the head
+      actions: read # the owed-review re-check lists this workflow's in-flight runs
+      checks: read # the owed-review re-check reads the head's check runs
+    uses: AlexanderMattTurner/agent-review/.github/workflows/review.yaml@8fd4317a10020e28b8e721a11a2c9857b0027fc3 # pin-comment-ok: agent-review cuts no release yet; re-pin at its first vX.Y
+    with:
+      reviewer-repository: AlexanderMattTurner/agent-review
+      # The SAME sha the `uses:` line above pins. Change both together. Leaving
+      # it unset reads the pin out of `github.job_workflow_sha`, which resolves
+      # to the EMPTY string in the expression context: the reviewer's own guard
+      # then refuses to clone rather than run unpinned code, and the review never
+      # runs.
+      reviewer-ref: 8fd4317a10020e28b8e721a11a2c9857b0027fc3
+      review-prompt: .github/prompts/claude-pr-review.md
+      # No setup-command, elide-command, log-redactor or post-review-command:
+      # this repository ships none of those scripts, every one of those inputs is
+      # optional, and an unset log-redactor is the fail-closed default — the
+      # reviewer publishes NO agent logs rather than an unredacted transcript.
+    secrets:
+      # ANTHROPIC_API_KEY fills the first tier: a metered key is spent
+      # unconditionally, the dedicated tokens are reached only once it errors,
+      # and CLAUDE_CODE_OAUTH_TOKEN — the operator's personal account — comes
+      # last, once every dedicated token is dead. A rung left unset is empty and
+      # is skipped, so a repository that configures only the last one reaches it
+      # with no wasted attempt.
+      rung_1: ${{ secrets.ANTHROPIC_API_KEY }}
+      rung_2: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK }}
+      rung_3: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_2 }}
+      rung_4: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_3 }}
+      rung_5: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_4 }}
+      rung_6: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_5 }}
+      rung_7: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_6 }}
+      rung_8: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
-      - name: Install the input sanitizer
-        # Self-contained install (into .github/scripts/node_modules) so repos
-        # synced from the template need no sanitizer entry in their own
-        # package.json. --ignore-scripts keeps the install hermetic.
-        run: bash .github/scripts/install-input-sanitizer.sh
-
-      - name: Fetch and sanitize the untrusted PR input
-        # Runs the diff + metadata through the agent-input-sanitizer BEFORE Claude
-        # sees them, writing sanitized files under runner.temp. Claude reads only
-        # those files (below), never the raw `gh pr diff` — so an injection hidden
-        # in the diff (invisible control text, ANSI escapes, exfil beacons) is
-        # neutralized before it can reach the agent. Also gates the review by
-        # size: a diff over MAX_DIFF_LINES sets oversized=true and the Opus read
-        # is skipped (the notice step below asks for a human review instead).
-        id: prepare
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          PR: ${{ github.event.pull_request.number }}
-          PR_INPUT_DIR: ${{ runner.temp }}/pr-input
-        run: bash .github/scripts/prepare-pr-review-input.sh
-
-      - name: Note an oversized diff (skip the Opus read, ask for a human review)
-        # Posts a plain COMMENT — not an approving/blocking review — so a diff too
-        # large for automated review leaves the PR needing a human look rather
-        # than being auto-approved unread or falsely held.
-        if: steps.prepare.outputs.oversized == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          PR: ${{ github.event.pull_request.number }}
-          PR_INPUT_DIR: ${{ runner.temp }}/pr-input
-        run: gh pr comment "$PR" --body-file "${PR_INPUT_DIR}/oversized-notice.txt"
-
-      - name: Review the PR with Claude
-        id: claude_review
-        if: steps.prepare.outputs.oversized != 'true'
-        uses: ./.github/actions/claude-run
-        with:
-          oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          fallback_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK }}
-          fallback_oauth_token_2: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_2 }}
-          fallback_oauth_token_3: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_3 }}
-          fallback_oauth_token_4: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_4 }}
-          fallback_oauth_token_5: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_5 }}
-          fallback_oauth_token_6: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_6 }}
-          # Give the action the workflow token directly. Without it, the action
-          # tries to mint one via an OIDC→GitHub-App token exchange that isn't
-          # authorized here and fails with "401 Invalid OIDC token" before Claude
-          # runs.
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          # Review PRs from outside contributors, not just repo collaborators.
-          # In agent mode the action gates on the TRIGGERING ACTOR's repo
-          # permission and aborts for anyone below write ("Actor does not have
-          # write permissions") — which would reject every fork PR, the exact
-          # case this reviewer exists to cover. Allowing all actors is safe here
-          # for the same reasons the header lays out: the checkout is base-only
-          # (no fork code runs), the token is least-privilege (cannot push or
-          # merge), and the diff reaches Claude only as pre-sanitized data it
-          # treats as untrusted, never as instructions.
-          allowed_non_write_users: "*"
-          # Claude only ANALYZES here — it reads the pre-sanitized files and WRITES
-          # its findings to review.json; the next step posts it. --setting-sources
-          # user loads ONLY user-level settings, so this repo's OWN project .claude
-          # hooks and deny rules do not apply to the reviewer in CI. --add-dir
-          # grants read+write to the sanitized-input dir under runner.temp
-          # (Claude Code sandboxes reads and writes outside the checked-out
-          # workspace).
-          model: ${{ needs.decide.outputs.model || 'claude-opus-4-8' }}
-          claude_args: >-
-            --effort medium
-            --setting-sources user
-            --allowedTools "Read,Grep,Glob,Write"
-            --add-dir "${{ runner.temp }}/pr-input"
-          prompt: |
-            You are the automated reviewer for PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
-            Follow the instructions in .github/prompts/claude-pr-review.md — it is the single
-            source of truth for how to review and the exact review.json format.
-
-            Write your review JSON to ${{ runner.temp }}/pr-input/review.json — nothing else.
-            Do not post comments, push commits, edit the PR, or merge; a later step posts it.
-          # claude-run prepends the canonical untrusted-data guard for these.
-          untrusted_files: |
-            PR metadata: ${{ runner.temp }}/pr-input/meta.txt
-            diff: ${{ runner.temp }}/pr-input/diff.txt
-            sanitizer report: ${{ runner.temp }}/pr-input/sanitizer-report.txt
-
-      - name: Post the structured review
-        # Turns review.json into ONE PR review with inline comments + suggested
-        # edits, validating anchors against the diff first.
-        if: steps.prepare.outputs.oversized != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          PR: ${{ github.event.pull_request.number }}
-          PR_INPUT_DIR: ${{ runner.temp }}/pr-input
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          # The action's execution log carries total_cost_usd; post-pr-review.mjs
-          # reads it to append the per-review cost footer (falls back to the
-          # RUNNER_TEMP default path if the output is empty).
-          EXECUTION_FILE: ${{ steps.claude_review.outputs.execution_file }}
-        run: bash .github/scripts/post-pr-review.sh
-
-  # Auto-approve the PRs the reviewer deliberately SKIPS (see `decide` above:
-  # low-risk chore/style by title, machine-cut `release:` PRs, and
-  # bot-authored PRs like Dependabot). Under a review-required ruleset the Claude
-  # review IS the approval for the PRs it reads (looks_good -> APPROVE), so a class
-  # it never reads would otherwise be stranded with no approving review and never
-  # auto-merge. This posts that approval so the ruleset can let them through, and
-  # its body points a human at the `needs-auto-review` label to force a real Opus
-  # read when one is wanted. Draft PRs are excluded — they
-  # can't merge anyway and get reviewed on `ready_for_review`. Fires only on the
-  # first-look events (opened/ready_for_review), never on `synchronize`: it relies
-  # on the ruleset NOT dismissing approvals on push (the same assumption the
-  # reviewer makes by not re-reviewing every push).
-  #
-  # Title/author come from the event payload (set by GitHub, unspoofable by the
-  # triggering actor). This posts a review only; it needs no checkout, runs no PR
-  # code, and holds pull-requests:write and nothing else.
   auto-approve-skipped:
     name: Auto-approve low-risk and bot PRs the reviewer skips
     if: >-
@@ -431,200 +294,3 @@ jobs:
           PR_INPUT_DIR: ${{ runner.temp }}/pr-input
         run: bash .github/scripts/post-merge-delta-review.sh
 
-  # ────────────────────────────────────────────────────────────────────────────
-  # Claude review-thread resolver (Haiku) — from claude-review-thread-resolve.yaml
-  #
-  # On every push to a PR, check whether the new commits addressed the STILL-OPEN
-  # review comments the Claude reviewer (the review job) left, using a cheap
-  # Claude Haiku pass, and resolve each conversation Haiku judges addressed.
-  # Complements the reviewer: the reviewer raises concerns and holds the merge; this
-  # closes them out as the author fixes them, without a human clicking "Resolve
-  # conversation" on each. The APPROVE that clears the hold once every reviewer
-  # thread is resolved is a separate, state-based step (approve-if-reviewer-hold-
-  # clear.sh) that runs on EVERY push regardless of what this run resolved, so a
-  # thread resolved by a human or a prior race still clears the hold rather than
-  # stranding the reviewer's CHANGES_REQUESTED; a thread-resolved event outside a
-  # push is covered by claude-reviewer-hold-clear.yaml.
-  #
-  # SECURITY — same posture as the review job (see its header): a fork PR on
-  # plain `pull_request` gets no secrets, so `pull_request_target` runs in the
-  # trusted BASE context. To stay safe this workflow:
-  #   1. checks out the BASE branch, never the untrusted PR head — no fork-authored
-  #      code is checked out or executed;
-  #   2. reads the PR's diff only as DATA, pre-sanitized through the
-  #      agent-input-sanitizer, and the reviewer-thread bodies it acts on were
-  #      authored by our own bot; the Haiku prompt treats both as untrusted input;
-  #   3. holds least privilege — contents:read + pull-requests:write only, so even a
-  #      successful injection can resolve/reply/approve on THIS PR but cannot push
-  #      code, merge, or reach any other scope. The one broader credential — the PAT
-  #      that actually resolves threads (the Actions GITHUB_TOKEN cannot, see the
-  #      resolve step) — is confined to the deterministic resolve step's env and is
-  #      NEVER exposed to the Haiku step, the only step that ingests untrusted PR
-  #      data, so it stays out of reach of a model injection.
-  # Because pull_request_target always runs the workflow from the base branch, this
-  # resolver only takes effect once merged to the default branch.
-  # ────────────────────────────────────────────────────────────────────────────
-  thread_resolve:
-    name: Resolve addressed review threads
-    # Trigger identity preserved: this resolver ran ONLY on `synchronize` as a
-    # standalone workflow, so the union's added opened/ready_for_review/labeled
-    # types are excluded here by the action guard. Skip drafts (can't merge) and
-    # bot-authored PRs (Dependabot et al. are handled elsewhere and are never
-    # Claude-reviewed).
-    if: >-
-      github.event.action == 'synchronize' &&
-      github.event.pull_request.draft == false &&
-      github.event.pull_request.user.type != 'Bot'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    # One resolver per PR at a time; a newer push supersedes an in-flight run
-    # (latest head wins). Keyed by PR number, so it never strands a required check.
-    concurrency:
-      group: claude-review-thread-resolve-${{ github.event.pull_request.number }}
-      cancel-in-progress: true
-    permissions:
-      contents: read # checkout the trusted base branch
-      pull-requests: write # resolve threads, reply, submit the approval
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GH_REPO: ${{ github.repository }}
-      PR: ${{ github.event.pull_request.number }}
-    steps:
-      - name: Checkout base (trusted) branch
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          # Base BRANCH (trusted repo content), never the untrusted PR head — same
-          # rationale as the review job: base.ref keeps the checkout and the
-          # workflow definition on the same trusted commit, and base.sha would be a
-          # stale snapshot missing scripts that landed after the PR opened.
-          ref: ${{ github.event.pull_request.base.ref }}
-          persist-credentials: false
-          fetch-depth: 1
-
-      - name: Find unresolved reviewer threads
-        id: threads
-        env:
-          PR_INPUT_DIR: ${{ runner.temp }}/pr-input
-        run: bash .github/scripts/fetch-unresolved-review-threads.sh
-
-      # A reviewer hold whose concern lives only in the review BODY opens no thread
-      # for the resolver to close, so it would strand until a human dismisses it.
-      # Detect it (only when there is no unresolved thread to work) so the Haiku
-      # pass below can assess whether a later commit addressed the body finding,
-      # and the approve step can then clear it.
-      - name: Detect a thread-less reviewer body hold
-        id: bodyhold
-        if: steps.threads.outputs.has_threads != 'true'
-        env:
-          PR_INPUT_DIR: ${{ runner.temp }}/pr-input
-        run: bash .github/scripts/detect-reviewer-body-hold.sh
-
-      - name: Install the input sanitizer
-        if: steps.threads.outputs.has_threads == 'true' || steps.bodyhold.outputs.has_body_hold == 'true'
-        # Self-contained install (into .github/scripts/node_modules) so the diff
-        # can be sanitized before Haiku sees it, with no sanitizer entry needed
-        # in the repo's own package.json.
-        run: bash .github/scripts/install-input-sanitizer.sh
-
-      - name: Fetch and sanitize the untrusted PR diff
-        if: steps.threads.outputs.has_threads == 'true' || steps.bodyhold.outputs.has_body_hold == 'true'
-        env:
-          PR_INPUT_DIR: ${{ runner.temp }}/pr-input
-        run: bash .github/scripts/prepare-pr-review-input.sh
-
-      - name: Judge which threads (and any body hold) are addressed (Claude Haiku)
-        id: haiku
-        if: steps.threads.outputs.has_threads == 'true' || steps.bodyhold.outputs.has_body_hold == 'true'
-        uses: ./.github/actions/claude-run
-        with:
-          oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          fallback_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK }}
-          fallback_oauth_token_2: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_2 }}
-          fallback_oauth_token_3: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_3 }}
-          fallback_oauth_token_4: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_4 }}
-          fallback_oauth_token_5: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_5 }}
-          fallback_oauth_token_6: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_6 }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          # Haiku is enough for a per-thread yes/no "does the diff address this?"
-          # judgement — far cheaper than the Opus reviewer that raises the concerns.
-          model: claude-haiku-4-5-20251001
-          claude_args: >-
-            --setting-sources user
-            --allowedTools "Read,Grep,Glob,Write"
-            --add-dir "${{ runner.temp }}/pr-input"
-          prompt: |
-            You are the review-thread resolver for PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
-            Follow the instructions in .github/prompts/claude-review-thread-resolve.md — it is the
-            single source of truth for how to judge and the exact verdicts.json format.
-
-            Write your verdicts to ${{ runner.temp }}/pr-input/verdicts.json — nothing else.
-            Do not resolve threads, post comments, push commits, edit the PR, or merge.
-          # claude-run prepends the canonical untrusted-data guard for these.
-          untrusted_files: |
-            unresolved threads: ${{ runner.temp }}/pr-input/threads.json (may be an empty array)
-            thread-less body hold: ${{ runner.temp }}/pr-input/body-hold.json (present ONLY for a body hold — {state, body}; judge whether the diff addresses that body finding)
-            sanitized diff: ${{ runner.temp }}/pr-input/diff.txt
-            sanitizer report: ${{ runner.temp }}/pr-input/sanitizer-report.txt
-
-      - name: Tally this Haiku run's cost onto the review footnote
-        if: steps.threads.outputs.has_threads == 'true' || steps.bodyhold.outputs.has_body_hold == 'true'
-        # Runs on every Haiku pass (even one that resolves nothing), so the
-        # footnote's running Haiku cost stays current. Independent of the
-        # resolve step below.
-        env:
-          EXECUTION_FILE: ${{ steps.haiku.outputs.execution_file }}
-        run: bash .github/scripts/append-haiku-cost.sh
-
-      - name: Resolve the threads Haiku judged addressed
-        if: steps.threads.outputs.has_threads == 'true'
-        env:
-          PR_INPUT_DIR: ${{ runner.temp }}/pr-input
-          # resolveReviewThread is not available to the Actions GITHUB_TOKEN — it
-          # can reply to a thread but a resolve returns "Resource not accessible by
-          # integration" even with pull-requests:write, so resolving needs a PAT
-          # acting as a user. The PAT is scoped to THIS step only, never the Haiku
-          # step, so it is out of reach of a model injection. The ambient GH_TOKEN
-          # (GITHUB_TOKEN) still posts the audit reply, keeping the
-          # github-actions[bot] identity.
-          #
-          # Org secret first, then the per-repo one, then the built-in. Both PAT
-          # spellings are load-bearing for different consumers: an org-owned repo
-          # sets TEMPLATE_SYNC_TOKEN_ORG once for every repo it owns, while a
-          # personal fork can only set a repo secret. Trying the org name first
-          # means a downstream repo needs no edit either way.
-          # Every candidate is an identity this repo's owner controls, so the
-          # fallback trades away capability (a resolve the Actions token may not
-          # perform), never which account acts.
-          # token-fallback-ok: designed graceful degradation, not an accident.
-          GH_RESOLVE_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
-        run: bash .github/scripts/resolve-addressed-threads.sh
-
-      # State-based, and deliberately NOT gated on has_threads: the approval is a
-      # function of the CURRENT state (no unresolved reviewer thread remains + the
-      # reviewer is still holding), so it clears the hold no matter who resolved
-      # the last thread — the Haiku resolve above, a human clicking Resolve, or a
-      # prior run. This closes the stranding gap where a thread resolved any other
-      # way left the reviewer's CHANGES_REQUESTED with nothing to supersede it. No
-      # `if:` = runs whenever the job reaches it (no earlier step failed),
-      # including the has_threads==false path where the resolve step was skipped.
-      - name: Approve if the reviewer's hold is now cleared
-        env:
-          # For a thread-less body hold, the approve script clears only on the
-          # model's body verdict (.body.addressed). Threads clear on state alone,
-          # so this file is irrelevant there; a missing/garbled file reads as
-          # "not addressed" and defers. The hourly sweep sets no such file, so it
-          # never clears a body hold — only this push-time assessor does.
-          BODY_VERDICT_FILE: ${{ runner.temp }}/pr-input/verdicts.json
-          # GitHub refuses addPullRequestReview outright for an Actions token
-          # ("GitHub Actions is not permitted to approve pull requests"), the
-          # approval-side sibling of the resolve restriction above. A PAT acting as
-          # a user is what makes the approval postable, so this step takes the
-          # same candidates in the same order as the resolve step — and the script
-          # reports and stands down (rather than reddening the PR) when none of
-          # them can approve, so the PAT only ever upgrades this step from "a
-          # human must approve" to "approved automatically".
-          # Every candidate is an identity this repo's owner controls, so the
-          # fallback trades away capability, never which account acts.
-          # token-fallback-ok: designed graceful degradation, not an accident.
-          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
-        run: bash .github/scripts/approve-if-reviewer-hold-clear.sh

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Install the agent-input-sanitizer package the PR-review scripts import
-# (sanitize-pr-input.mjs, post-pr-review.mjs, select-resolvable-threads.mjs).
+# Install the agent-input-sanitizer package the merge-delta reviewer's scripts
+# import (sanitize-pr-input.mjs).
 # Installs into .github/scripts/node_modules so ESM resolution from those
 # scripts finds it without touching the repository's own package.json or
 # lockfile — repos synced from this template need no sanitizer dependency of
