@@ -2259,6 +2259,40 @@ def test_check_stray_katex(text: str, expected_errors: list[str]):
 
 
 @pytest.mark.parametrize(
+    "text, expected_error_count",
+    [
+        ("This is normal text without any math.", 0),
+        # Real math: numerals, single identifiers, LaTeX commands.
+        ("The formula is $10^{-4}$ approximately.", 0),
+        ("Let $x$ be a variable and $U_{ideal}(plan)$ its utility.", 0),
+        ("A tensor $2\\cdot n_\\text{layers} \\cdot d_\\text{model}$ here.", 0),
+        ("The bound is $100\\times(1-\\alpha)\\%$ confidence.", 0),
+        # A single bare `$` (no pair) is untouched, e.g. a lone price mention.
+        ("Cost: $250 one-time.", 0),
+        # Two independent dollar amounts in one paragraph, wrapped as math:
+        # the classic "prose glued into a math span" bug.
+        (
+            "The budget was $225 million, now requesting $54.6 billion.",
+            1,
+        ),
+        # Magnitude word alone is enough, even with only two prose words.
+        ("A jump of $40 percent more$ than last year.", 1),
+        # Two plain English words with no magnitude word or backslash.
+        ("This is $clearly not math$ at all.", 1),
+        # Should be ignored: inside code or display math.
+        ("`$225 million, now requesting $54.6 billion`", 0),
+        ("$$225 million, now requesting $54.6 billion$$", 0),
+        # A single plain word doesn't trigger (could be a real identifier).
+        ("The variable $foo$ is defined above.", 0),
+    ],
+)
+def test_check_prose_inside_math(text: str, expected_error_count: int):
+    """Test the check_prose_inside_math function."""
+    errors = source_file_checks.check_prose_inside_math(text)
+    assert len(errors) == expected_error_count
+
+
+@pytest.mark.parametrize(
     "text, expected_errors",
     [
         # No HTML or valid HTML

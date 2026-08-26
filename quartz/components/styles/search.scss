@@ -34,6 +34,11 @@ $search-panel-max-height: 100vh - $search-space-top-offset - $search-modal-botto
     cursor: pointer;
     white-space: nowrap;
 
+    // Matching the gap after the magnifying glass to the padding after the
+    // label centers "Search" in the width the glass leaves over.
+    gap: calc(1.5 * $base-margin);
+    padding: 0 calc(1.5 * $base-margin) 0 $base-margin;
+
     & > div {
       flex-grow: 1;
     }
@@ -42,20 +47,22 @@ $search-panel-max-height: 100vh - $search-space-top-offset - $search-modal-botto
       font-size: var(--font-size-minus-1);
       color: color-mix(in srgb, var(--midground) 75%, var(--foreground));
       display: inline;
-      padding: 0;
-      margin: 0 $base-margin;
+      margin: 0;
 
-      // Make it more centered for mobile
-      @media all and (max-width: $max-mobile-width) {
-        margin-right: calc(1.5 * $base-margin);
-      }
+      // Nudges the glyphs down to their optical center: EBGaramond's line box
+      // reserves more room above the cap line than below the baseline, so an
+      // untouched flex-centered box leaves "Search" looking too high.
+      padding: 0.125em 0 0;
     }
 
     // The actual search icon
     & svg {
       cursor: pointer;
       width: 0.625rem;
-      margin: 0 $base-margin;
+
+      // Overrides the global bottom margin on `svg`, which the flex line would
+      // otherwise center along with the glyph and leave the icon sitting high.
+      margin: 0;
 
       .search-path {
         stroke: var(--midground);
@@ -373,10 +380,4 @@ $match-color: var(--green);
 // which animates `color` back to `inherit`, is left untouched.
 #search-container .search-match {
   color: $match-color !important;
-}
-
-@media all and (max-width: $tablet-breakpoint) {
-  .search > #search-icon > p {
-    padding: 0;
-  }
 }

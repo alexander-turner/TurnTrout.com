@@ -25,7 +25,7 @@ export const lineHeight = "1.8rem"
 export const listPaddingLeft = "1.875rem"
 export const fontScaleFactor = 1.2
 
-export const backgroundDark = "#12141e"
+export const backgroundDark = "#000"
 export const backgroundLight = "#fcfcff"
 export const foregroundDark = "#eff2ff"
 export const foregroundLight = "#383a4e"

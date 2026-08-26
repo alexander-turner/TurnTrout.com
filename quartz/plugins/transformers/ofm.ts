@@ -79,8 +79,16 @@ export function admonitionCollapseState(firstLine: string): "collapsed" | "expan
   return match.groups.collapse === "-" ? "collapsed" : "expanded"
 }
 
-/** Regular expression to match admonition lines in blockquotes */
-const admonitionLineRegex = new RegExp(`^> *\\[!${UNICODE_WORD_CHAR}+\\][+-]?.*$`, "gmu")
+/**
+ * Regular expression to match admonition lines in blockquotes. The `prefix`
+ * group captures every `>` marker leading the line, so an admonition nested
+ * inside another blockquote (`>  > [!quote] …`) matches too and the forced
+ * newline can be re-prefixed to stay inside the same nesting level.
+ */
+const admonitionLineRegex = new RegExp(
+  `^(?<prefix>(?:>[ \\t]*)+)\\[!${UNICODE_WORD_CHAR}+\\][+-]?.*$`,
+  "gmu",
+)
 
 /** Matches tags with Unicode support: #tag, #tag/subtag */
 const tagRegex = new RegExp(
@@ -996,9 +1004,10 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
 
       // pre-transform blockquotes
       if (opts.admonitions) {
-        src = src.replace(admonitionLineRegex, (value: string): string => {
-          // force newline after title of admonition
-          return `${value}\n> `
+        src = src.replace(admonitionLineRegex, (value: string, prefix: string): string => {
+          // force newline after title of admonition, re-using the line's own
+          // blockquote markers so the break lands inside the same blockquote
+          return `${value}\n${prefix}`
         })
       }
 

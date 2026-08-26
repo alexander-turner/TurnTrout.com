@@ -59,7 +59,7 @@ Since the last newsletter, I've continued refining my privacy guides based on re
 
 ## Open Source
 
-**[`alt-text-llm`](https://github.com/alexander-turner/alt-text-llm)** is now a standalone PyPI package for AI-powered alt text generation. It scans markdown files for images/videos missing meaningful alt text, generates context-aware suggestions using the LLM of your choice, and lets you interactively review and apply them. Now using Gemini 2.5 Pro, which can handle videos.
+**[`alt-text-llm`](https://github.com/AlexanderMattTurner/alt-text-llm)** is now a standalone PyPI package for AI-powered alt text generation. It scans markdown files for images/videos missing meaningful alt text, generates context-aware suggestions using the LLM of your choice, and lets you interactively review and apply them. Now using Gemini 2.5 Pro, which can handle videos.
 
 ---
 
@@ -130,7 +130,7 @@ Since the last newsletter, I've continued refining my privacy guides based on re
 
 # Open source
 
-I built [alt-text-llm](https://github.com/alexander-turner/alt-text-llm), a Python package for AI-powered alt text generation. It scans markdown files for images and videos missing meaningful alt text, generates context-aware suggestions using the LLM of your choice, and lets you interactively review and apply them. Now using Gemini 2.5 Pro, which can handle videos.
+I built [alt-text-llm](https://github.com/AlexanderMattTurner/alt-text-llm), a Python package for AI-powered alt text generation. It scans markdown files for images and videos missing meaningful alt text, generates context-aware suggestions using the LLM of your choice, and lets you interactively review and apply them. Now using Gemini 2.5 Pro, which can handle videos.
 
 # Team Shard recruitment page
 
