@@ -25,7 +25,7 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@c459c5b3be28f824f8410a673c7556ac0e8c8d77 # v1.13.3
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@b4e4a501aa806830db3bb32edf9329ed7c14de0d # v1.14.0
     with:
       pr: ${{ matrix.pr.number }}
       resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
@@ -50,7 +50,7 @@ That job is half of an adoption. Copy `.github/workflows/auto-resolve-conflicts.
 
 The `permissions:` block on the calling job is the ceiling its nested jobs are narrowed from, not a grant. GitHub lets a called workflow request only what the calling job already holds, so a caller that grants less ends the whole run in `startup_failure` before any job starts — no red job, no reported check.
 
-Every input fails closed when empty. No `log-redactor` publishes no fan-out logs. No `pre-pass-command` refuses to bundle a deferred generated file rather than shipping bytes no build produces. An empty `bot-actors` admits no bot. `post-merge-check-command` is the exception in one direction only: empty runs no whole-tree check, so a merge that keeps both parents' definition of one name reaches the branch and reds the pull request's own checks instead. Name your type-checker or import-check there — `bash .github/scripts/pyright-passes.sh` — and a resolution that breaks the tree is refused rather than pushed. The command runs in the `resolve` job, which holds no push credential, and it must only REPORT; one that stages a file is refused. Exit 1 to 125 judges the merged tree, and 126 and above is read as the shell's `never ran`, which blames this workflow's provisioning rather than your branch.
+Every input fails closed when empty. No `log-redactor` publishes no fan-out logs. No `setup-command` prepares nothing, so a repository whose checkout an agent cannot start in — a tracked symlink that dangles in CI, for one — names its own repair there. It runs on the merged tree just before the model, whatever it changes is put back before the merge is bundled, and a fork head runs none. It is the one command input evaluated by a shell (`bash -eo pipefail -c`); `pre-pass-command` and `post-merge-check-command` are split into argv and run with none. No `pre-pass-command` refuses to bundle a deferred generated file rather than shipping bytes no build produces. An empty `bot-actors` admits no bot. `post-merge-check-command` is the exception in one direction only: empty runs no whole-tree check, so a merge that keeps both parents' definition of one name reaches the branch and reds the pull request's own checks instead. Name your type-checker or import-check there — `bash .github/scripts/pyright-passes.sh` — and a resolution that breaks the tree is refused rather than pushed. The command runs in the `resolve` job, which holds no push credential, and it must only REPORT; one that stages a file is refused. Exit 1 to 125 judges the merged tree, and 126 and above is read as the shell's `never ran`, which blames this workflow's provisioning rather than your branch.
 
 ## Configuration
 
@@ -123,7 +123,7 @@ A `uses:` ref may be a SHA, a tag or a branch. GitHub calls [the commit SHA the 
 **Pin the SHA and name the version beside it**, the way this repository's own caller does:
 
 ```yaml
-uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@c459c5b3be28f824f8410a673c7556ac0e8c8d77 # v1.13.3
+uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@b4e4a501aa806830db3bb32edf9329ed7c14de0d # v1.14.0
 ```
 
 That line reads as a version and resolves as an immutable commit. It names the newest release: `.github/scripts/release-tag.sh` rewrites both copies in this README, and the caller's, in the commit after each release. Copy it as it stands.
