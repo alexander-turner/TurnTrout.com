@@ -96,6 +96,18 @@ describe("TableCaption helper functions", () => {
       expect(result[0].tagName).toBe("figcaption")
       expect(result[0].children).toHaveLength(0)
     })
+    it.each([
+      ["tag-looking text", "compare <b> and <i> tags"],
+      ["a closing-figcaption token", "the </figcaption> token"],
+      ["a stray ampersand", "Costs 5 & 6"],
+    ])("should keep %s verbatim in a single element", (_description, captionText) => {
+      const result = createFigcaption(captionText)
+      expect(result).toHaveLength(1)
+      expect(result[0].tagName).toBe("figcaption")
+      expect(result[0].children).toHaveLength(1)
+      expect((result[0].children[0] as Text).value).toBe(captionText)
+    })
+
     it("should create figcaption elements from HTML content", () => {
       const result = createFigcaption("My <strong>bold</strong> caption")
       expect(result).toHaveLength(1)
@@ -383,6 +395,32 @@ describe("TableCaption transformer integration", () => {
       )
       expect(link?.properties?.href).toBe("/source")
       expect((link?.children[0] as Text).value).toBe("source")
+    })
+
+    it.each([
+      ["tag-looking text", "compare <b> and <i> tags"],
+      ["a closing-figcaption token", "the </figcaption> token"],
+    ])("keeps %s inside one figcaption alongside its siblings", (_description, captionText) => {
+      const root: Root = {
+        type: "root",
+        children: [
+          h("table", [h("tr", [h("td", "Data")])]),
+          h("p", [{ type: "text", value: `^Table: ${captionText}` }, h("em", "note")]),
+        ],
+      }
+
+      const plugin = TableCaption()
+      const transformer = getTransformer(plugin)
+      transformer(root)
+
+      expect(root.children).toHaveLength(1)
+      const figure = root.children[0] as Element
+      expect(figure.children).toHaveLength(2)
+      const figcaption = figure.children[1] as Element
+      expect(figcaption.tagName).toBe("figcaption")
+      expect(figcaption.children).toHaveLength(2)
+      expect((figcaption.children[0] as Text).value).toBe(captionText)
+      expect((figcaption.children[1] as Element).tagName).toBe("em")
     })
   })
 
