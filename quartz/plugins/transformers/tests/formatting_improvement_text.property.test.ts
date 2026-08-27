@@ -11,6 +11,7 @@ import {
   wrapLeadingNumbers,
   wrapNumbersBeforeColon,
 } from "../formatting_improvement_text"
+import { renderProse } from "./test-utils"
 
 // Deterministic runs: a fixed seed keeps CI reproducible (zero-flakiness policy).
 fc.configureGlobal({ seed: 20260612, numRuns: 300 })
@@ -39,7 +40,9 @@ describe("formatting_improvement_text (property)", () => {
             // sprinkle NBSPs between words
             const withNbsp = body.replace(/ /g, NBSP)
             expect(formattingImprovement(withNbsp)).not.toContain(NBSP)
-            expect(formattingImprovement(`a&nbsp;${body}`)).not.toContain("&nbsp;")
+            // The entity survives the source pass and is decoded by the parser,
+            // so only the rendered output shows whether it was normalized.
+            expect(renderProse(`a&nbsp;${body}`)).not.toContain(NBSP)
           },
         ),
       )
@@ -67,7 +70,7 @@ describe("formatting_improvement_text (property)", () => {
       const commaText = fc.stringMatching(/^[a-z, ]*$/)
       fc.assert(
         fc.property(commaText, (body) => {
-          expect(formattingImprovement(body)).not.toMatch(/ ,/)
+          expect(renderProse(body)).not.toMatch(/ ,/)
         }),
       )
     })

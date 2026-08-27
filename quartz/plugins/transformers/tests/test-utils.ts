@@ -3,8 +3,14 @@ import type { Element, Parent, Root } from "hast"
 import { jest } from "@jest/globals"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
+import remarkGfm from "remark-gfm"
+import remarkMath from "remark-math"
+import remarkParse from "remark-parse"
+import remarkRehype from "remark-rehype"
 import { unified } from "unified"
 import { visit } from "unist-util-visit"
+
+import { formattingImprovement, substituteProseCharacters } from "../formatting_improvement_text"
 
 /**
  * Mocks a single successful fetch request on the provided mock instance.
@@ -92,4 +98,21 @@ export function createRehypeProcessor(
       .process(input)
     return result.toString()
   }
+}
+
+/**
+ * Runs both formatting tiers over markdown and renders the result.
+ *
+ * The source pass repairs block structure, then the mdast pass substitutes
+ * prose characters, so a rule's end-to-end effect is what this returns.
+ */
+export function renderProse(markdown: string): string {
+  const processor = unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkMath)
+    .use(() => substituteProseCharacters)
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeStringify, { allowDangerousHtml: true })
+  return processor.processSync(formattingImprovement(markdown)).toString()
 }
