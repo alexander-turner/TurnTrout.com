@@ -100,19 +100,13 @@ describe("TableCaption helper functions", () => {
       ["tag-looking text", "compare <b> and <i> tags"],
       ["a closing-figcaption token", "the </figcaption> token"],
       ["a stray ampersand", "Costs 5 & 6"],
+      ["an element-looking span", "My <strong>bold</strong> caption"],
     ])("should keep %s verbatim in a single element", (_description, captionText) => {
       const result = createFigcaption(captionText)
       expect(result).toHaveLength(1)
       expect(result[0].tagName).toBe("figcaption")
       expect(result[0].children).toHaveLength(1)
       expect((result[0].children[0] as Text).value).toBe(captionText)
-    })
-
-    it("should create figcaption elements from HTML content", () => {
-      const result = createFigcaption("My <strong>bold</strong> caption")
-      expect(result).toHaveLength(1)
-      expect(result[0].tagName).toBe("figcaption")
-      expect(result[0].children).toHaveLength(3) // "My ", <strong>, " caption"
     })
   })
 
@@ -273,7 +267,7 @@ describe("TableCaption transformer integration", () => {
       expect((root.children[1] as Element).tagName).toBe("figure")
     })
 
-    it("should handle complex HTML in caption", () => {
+    it("should not interpret tag-looking caption text as markup", () => {
       const root: Root = {
         type: "root",
         children: [
@@ -294,7 +288,10 @@ describe("TableCaption transformer integration", () => {
       expect(root.children).toHaveLength(1)
       const figure = root.children[0] as Element
       const figcaption = figure.children[1] as Element
-      expect(figcaption.children.length).toBeGreaterThan(1) // Should have parsed HTML
+      expect(figcaption.children).toHaveLength(1)
+      expect((figcaption.children[0] as Text).value).toBe(
+        "Caption with <strong>bold</strong> and <em>italic</em>",
+      )
     })
 
     it("should handle empty caption text", () => {
