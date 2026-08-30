@@ -14,6 +14,8 @@ import {
 const DROPCAP_URL = "http://localhost:8080/test-page"
 // A solemn post that opts out of the random color via `no_dropcap_color`.
 const OPTED_OUT_URL = "http://localhost:8080/bruce-wayne-and-the-cost-of-inaction"
+// A fixture whose first paragraph opens on a quotation.
+const QUOTE_DROPCAP_URL = "http://localhost:8080/quote-dropcap-fixture"
 
 /** Mock Math.random so sequential calls return the given values (then 0.5).
  *  Must accept values as a parameter (not closure) because addInitScript serializes the function. */
@@ -39,6 +41,74 @@ const midgroundFaintColor = (paragraph: Locator) =>
 
 const firstDropcapParagraph = (root: Locator) =>
   root.locator("> p:not(.subtitle):first-of-type").first()
+
+/** Size of the `::before` float that reserves room for the dropcap. */
+const floatSpacerMetrics = (paragraph: Locator) =>
+  paragraph.evaluate((el) => {
+    const style = getComputedStyle(el, "::before")
+    return { fontSize: parseFloat(style.fontSize), paddingLeft: parseFloat(style.paddingLeft) }
+  })
+
+test.describe("Combined quote-and-letter dropcap", () => {
+  test("the opening quote joins the letter it introduces", async ({ page }) => {
+    await gotoPage(page, QUOTE_DROPCAP_URL)
+
+    const paragraph = firstDropcapParagraph(
+      page.locator('article[data-use-dropcap="true"]').first(),
+    )
+    await expect(paragraph).toHaveAttribute("data-first-letter", "“W")
+  })
+
+  test("the dropcap pads left by the quote's advance", async ({ page }) => {
+    await gotoPage(page, QUOTE_DROPCAP_URL)
+    await page.evaluate(() => document.fonts.ready)
+
+    const paragraph = firstDropcapParagraph(
+      page.locator('article[data-use-dropcap="true"]').first(),
+    )
+    await paragraph.scrollIntoViewIfNeeded()
+
+    const { fontSize, paddingLeft } = await floatSpacerMetrics(paragraph)
+
+    // The quote's advance in EB Garamond Initials is 266/1000 em.
+    expect(paddingLeft).toBeCloseTo(fontSize * 0.266, 1)
+  })
+
+  test("a letter-initial paragraph takes no left pad", async ({ page }) => {
+    await gotoPage(page, DROPCAP_URL)
+    await page.evaluate(() => document.fonts.ready)
+
+    const paragraph = firstDropcapParagraph(
+      page.locator('article[data-use-dropcap="true"]').first(),
+    )
+    const { paddingLeft } = await floatSpacerMetrics(paragraph)
+
+    expect(paddingLeft).toBe(0)
+  })
+
+  test("the quote renders inside the text block", async ({ page }) => {
+    await gotoPage(page, QUOTE_DROPCAP_URL)
+    await page.evaluate(() => document.fonts.ready)
+
+    const paragraph = firstDropcapParagraph(
+      page.locator('article[data-use-dropcap="true"]').first(),
+    )
+    await paragraph.scrollIntoViewIfNeeded()
+
+    // `#center-content` clips horizontal overflow, so a mark set outside the
+    // paragraph's content edge would be invisible.
+    const { paragraphLeft, initialLeft } = await paragraph.evaluate((el) => {
+      const range = document.createRange()
+      range.setStart(el.firstChild as ChildNode, 0)
+      range.setEnd(el.firstChild as ChildNode, 2)
+      return {
+        paragraphLeft: el.getBoundingClientRect().left,
+        initialLeft: range.getBoundingClientRect().left,
+      }
+    })
+    expect(initialLeft).toBeGreaterThanOrEqual(paragraphLeft)
+  })
+})
 
 test.describe("Random dropcap color", () => {
   test(`no color applied when Math.random >= ${colorDropcapProbability}`, async ({ page }) => {
