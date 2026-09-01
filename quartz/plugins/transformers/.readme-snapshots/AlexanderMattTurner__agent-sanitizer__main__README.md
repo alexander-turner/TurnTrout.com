@@ -40,6 +40,15 @@ const result = await sanitize(pageSource, { html: true });
 // Layer 3 alone: flag exfil-shaped URLs without splicing anything (for text
 // that must stay byte-faithful, e.g. a PR diff). Implied by `html: true`.
 const scanned = await sanitize(diffText, { exfilScan: true });
+
+// Layer 3 reads an exact-digest-length hex value under a generic parameter
+// name (`?v=<md5>`, an ETag, a commit id) as a fingerprint. `flagDigestValues`
+// reports it as payload instead — more false positives, no 16-to-64-byte
+// channel under a name the caller picks. For monitors, not for splicing.
+const strict = await sanitize(logText, {
+  exfilScan: true,
+  flagDigestValues: true,
+});
 ```
 
 `sanitize` never throws and never silently drops content—any change comes with
@@ -289,6 +298,7 @@ singleton, and two copies in one bundle double-fire the inlined CLIs.
 | `claude-hooks/lib/reveal`               | The Layer-2 sidecar that lets the model re-read what the HTML splice removed               |
 | `claude-hooks/lib/secret-annotate`      | The cheap deterministic Layer-4 pre-gate checks around the daemon call                     |
 | `claude-hooks/lib/trace`                | The opt-in structured trace channel every layer announces itself on                        |
+| `claude-hooks/lib/hook-timing`          | The shared slow-hook budget, its measured windows and the notice they compose              |
 
 Only `plugin-hooks` itself is unexported under its own name — it is reachable as
 the bare `claude-hooks` entry above.
