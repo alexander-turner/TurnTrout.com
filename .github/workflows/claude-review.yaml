@@ -1,0 +1,296 @@
+name: Claude reviewers
+
+# Umbrella for the PR automation that runs on one shared pull_request_target
+# trigger: the first-pass reviewer (the `review` job, a CALL into
+# AlexanderMattTurner/agent-review, which owns the reviewer), the auto-approval
+# for the classes that reviewer skips, and the Sonnet merge-delta reviewer. One
+# file cuts the per-PR workflow fan-out on a shared, capped runner pool. Every
+# job stays self-contained and carries its own SECURITY header, `permissions:`,
+# base-only checkout posture, and `if:` guards. Each is guarded by
+# `github.event.action` so it fires on exactly the events it acts on.
+# Concurrency is declared PER JOB (never workflow-level), so the jobs never
+# cancel one another.
+#
+# The merge-conflict auto-resolver stays a SEPARATE file
+# (auto-resolve-conflicts.yaml), and it CALLS its own upstream reusable workflow
+# in AlexanderMattTurner/agent-resolve-merge-conflicts the same way this file
+# calls the reviewer. It checks out the PR HEAD to merge into it, and
+# co-locating a head checkout with pull_request_target trips CodeQL's
+# untrusted-checkout query (file-scoped, blind to per-job event gating) and would
+# blind that query to these secrets-bearing reviewer jobs. The scheduled
+# reviewer-hold sweeper (claude-reviewer-hold-clear.yaml) is likewise separate.
+
+on: # zizmor: ignore[dangerous-triggers] — reviewer jobs are base-only checkout + least privilege; see each job's header
+  # `opened`/`ready_for_review`/`synchronize` drive the first-pass reviewer and
+  # the merge-delta reviewer; `opened`/`ready_for_review` drive the auto-approval;
+  # `labeled` is the first-pass reviewer's on-demand escape hatch (the
+  # `needs-auto-review` label). Each job's `if:` re-scopes it to its own events.
+  # Because pull_request_target always runs the workflow file from the base
+  # branch, these reviewers only take effect once merged to the default branch.
+  pull_request_target: # not-required-check
+    types: [opened, ready_for_review, synchronize, labeled]
+
+permissions: {}
+
+jobs:
+  # ────────────────────────────────────────────────────────────────────────────
+  # Claude PR review (first pass) — the `review` job
+  #
+  # The reviewer itself lives in AlexanderMattTurner/agent-review as a reusable
+  # workflow, and this job only CALLS it. That repository holds the whole
+  # reviewer: the one-read-per-PR budget, the per-file split for a diff that
+  # outgrows one model context, the input sanitizer, the credential ladder and
+  # the posting path. Its scripts run from the commit the `uses:` line pins,
+  # cloned from a repository a pull request here cannot write, so the tree under
+  # review can no longer rewrite the code that reviews it.
+  #
+  # One piece stays HERE, because the reviewer takes it as an input: the review
+  # prompt (.github/prompts/claude-pr-review.md), which carries the conventions a
+  # reviewer of THIS tree should hold it to.
+  #
+  # SECURITY — the called workflow's own header states the posture in full: a
+  # base-only checkout, the PR's changes read only as sanitized DATA, and least
+  # privilege per job. The `permissions:` block below is the CEILING those jobs
+  # are narrowed from, never a grant — GitHub lets a called workflow request only
+  # what the calling job holds, so a caller that grants less ends the run in
+  # `startup_failure` before any job starts.
+  #
+  # THE TITLE SKIP IS GATED ON A TRUSTED AUTHOR, and the same guard appears
+  # verbatim on auto-approve-skipped below. A PR title is written by the PR
+  # AUTHOR, so on its own it is an attacker-chosen string that decides whether
+  # this repo reviews the PR at all: an outside contributor titling a fork PR
+  # `chore: bump` skipped the review AND collected the auto-approval, clearing
+  # three merge levers with one string. The guard is the pair GitHub sets, not
+  # the author: `head.repo.full_name` (same-repo branch, so the author already
+  # has push access) or `author_association` in OWNER/MEMBER/COLLABORATOR.
+  #
+  # It must gate BOTH jobs or neither. Guarding only the approval leaves an
+  # untrusted `chore:` PR skipped here and approved by nobody — reviewed by
+  # nobody, with no event able to produce either outcome. Guarded on both, the
+  # skip set is simply EMPTY for an untrusted author: their PR always gets the
+  # real review, whatever its title.
+  #
+  # This `if:` carries the cheap payload-only skips (no runner boots for a
+  # draft/bot/chore PR); the called workflow's own decide job then spends the
+  # one-read-per-PR budget. A `labeled` event bypasses the title/author skips
+  # entirely — the label IS the request to review a PR the skips would otherwise
+  # drop — and the reviewer's decide script confirms the label is
+  # `needs-auto-review` before running, so every other label edit costs one
+  # skipped job. The bot guard rides the label arm too: claude-code-action
+  # refuses a Bot-initiated run outright, so a labelled bot PR would walk every
+  # credential rung and fail each one identically, for a cause no token changes.
+  # ────────────────────────────────────────────────────────────────────────────
+  review:
+    if: >-
+      (
+      github.event.label.name == 'needs-auto-review' &&
+      github.event.pull_request.user.type != 'Bot'
+      ) ||
+      (
+      github.event.action != 'labeled' &&
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.user.type != 'Bot' &&
+      (
+        !(
+          github.event.pull_request.head.repo.full_name == github.repository ||
+          contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.pull_request.author_association)
+        ) ||
+        (
+          !startsWith(github.event.pull_request.title, 'chore:') &&
+          !startsWith(github.event.pull_request.title, 'chore(') &&
+          !startsWith(github.event.pull_request.title, 'style:') &&
+          !startsWith(github.event.pull_request.title, 'style(') &&
+          !startsWith(github.event.pull_request.title, 'release:') &&
+          !startsWith(github.event.pull_request.title, 'release(')
+        )
+      )
+      )
+    permissions:
+      contents: read # the reviewer checks out this repository's default branch
+      pull-requests: write # post the review
+      statuses: write # the reviewer reports its own verdict on the head
+      actions: read # the owed-review re-check lists this workflow's in-flight runs
+      checks: read # the owed-review re-check reads the head's check runs
+    uses: AlexanderMattTurner/agent-review/.github/workflows/review.yaml@8fd4317a10020e28b8e721a11a2c9857b0027fc3 # pin-comment-ok: agent-review cuts no release yet; re-pin at its first vX.Y
+    with:
+      reviewer-repository: AlexanderMattTurner/agent-review
+      # The SAME sha the `uses:` line above pins. Change both together. Leaving
+      # it unset reads the pin out of `github.job_workflow_sha`, which resolves
+      # to the EMPTY string in the expression context: the reviewer's own guard
+      # then refuses to clone rather than run unpinned code, and the review never
+      # runs.
+      reviewer-ref: 8fd4317a10020e28b8e721a11a2c9857b0027fc3
+      review-prompt: .github/prompts/claude-pr-review.md
+      # No setup-command, elide-command, log-redactor or post-review-command:
+      # this repository ships none of those scripts, every one of those inputs is
+      # optional, and an unset log-redactor is the fail-closed default — the
+      # reviewer publishes NO agent logs rather than an unredacted transcript.
+    secrets:
+      # ANTHROPIC_API_KEY fills the first tier: a metered key is spent
+      # unconditionally, the dedicated tokens are reached only once it errors,
+      # and CLAUDE_CODE_OAUTH_TOKEN — the operator's personal account — comes
+      # last, once every dedicated token is dead. A rung left unset is empty and
+      # is skipped, so a repository that configures only the last one reaches it
+      # with no wasted attempt.
+      rung_1: ${{ secrets.ANTHROPIC_API_KEY }}
+      rung_2: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK }}
+      rung_3: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_2 }}
+      rung_4: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_3 }}
+      rung_5: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_4 }}
+      rung_6: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_5 }}
+      rung_7: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_6 }}
+      rung_8: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+  auto-approve-skipped:
+    name: Auto-approve low-risk and bot PRs the reviewer skips
+    if: >-
+      (github.event.action == 'opened' || github.event.action == 'ready_for_review') &&
+      github.event.pull_request.draft == false &&
+      (
+        github.event.pull_request.user.type == 'Bot' ||
+        startsWith(github.event.pull_request.title, 'chore:') ||
+        startsWith(github.event.pull_request.title, 'chore(') ||
+        startsWith(github.event.pull_request.title, 'style:') ||
+        startsWith(github.event.pull_request.title, 'style(') ||
+        startsWith(github.event.pull_request.title, 'release:') ||
+        startsWith(github.event.pull_request.title, 'release(')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read # sparse-checkout the trusted approval script
+      pull-requests: write # submit an approving review; no other scope
+    steps:
+      - name: Checkout base (trusted) approval script
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # Base BRANCH only (trusted) — never the untrusted PR head. Matches the
+          # decide/review jobs: the script is trusted repo content, no PR code runs.
+          ref: ${{ github.event.pull_request.base.ref }}
+          persist-credentials: false
+          sparse-checkout: .github/scripts/auto-approve-skipped-pr.sh
+          sparse-checkout-cone-mode: false
+      - name: Approve so a review-required ruleset doesn't strand a skipped PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: bash .github/scripts/auto-approve-skipped-pr.sh
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Claude merge-delta review (Sonnet) — from claude-merge-delta-review.yaml
+  #
+  # A dedicated Sonnet reviewer for a PR's hand-authored MERGE-RESOLUTION deltas
+  # (`git show --remerge-diff`) — the one channel through which a conflict
+  # resolution can introduce content present in neither parent (an "evil merge")
+  # that the ordinary PR diff never isolates. Separate from the first-pass
+  # reviewer (the review job) and the thread-resolver: those read the net
+  # diff and so share the blind spot this closes.
+  #
+  # SECURITY — same posture as the review job (see its header): a fork PR on
+  # plain `pull_request` gets no secrets, so `pull_request_target` runs in the
+  # trusted BASE context. To stay safe this workflow:
+  #   1. checks out the BASE branch, never the untrusted PR head — no fork-authored
+  #      code is checked out or executed;
+  #   2. brings the PR head's commits in only as git OBJECTS (prepare-merge-delta-
+  #      input.sh fetches refs/pull/N/head with per-command auth and never checks it
+  #      out), renders the remerge-diff with the trusted base-checkout renderer, and
+  #      sanitizes it before the model sees it — treated as untrusted DATA;
+  #   3. holds least privilege — contents:read + pull-requests:write only, so even a
+  #      successful injection can post a PR comment but cannot push, merge, or reach
+  #      any other scope; the reviewer only ANALYZES and the post step is advisory.
+  # Because pull_request_target always runs the workflow from the base branch, this
+  # reviewer only takes effect once merged to the default branch.
+  # ────────────────────────────────────────────────────────────────────────────
+  merge_delta_review:
+    name: Review the PR's merge-resolution deltas
+    # Skip drafts (can't merge) and bot-authored PRs (never Claude-reviewed). The
+    # action guard keeps it off the union's `labeled` escape hatch — the source
+    # workflow fired only on opened/ready_for_review/synchronize.
+    if: >-
+      contains(fromJSON('["opened","ready_for_review","synchronize"]'), github.event.action) &&
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # One review per PR at a time; a newer push supersedes an in-flight run (latest
+    # head wins). Keyed by PR number, so it never strands a required check.
+    concurrency:
+      group: claude-merge-delta-review-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    permissions:
+      contents: read # checkout the trusted base commit
+      pull-requests: write # post the advisory comment
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Checkout base (trusted) branch
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          # Base BRANCH (trusted repo content), never the untrusted PR head — same
+          # rationale as the review job. fetch-depth: 0 so the merge-base of
+          # the PR head (fetched as objects) resolves.
+          ref: ${{ github.event.pull_request.base.ref }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install the input sanitizer
+        # Self-contained install (into .github/scripts/node_modules) so repos
+        # synced from the template need no sanitizer entry in their own
+        # package.json. --ignore-scripts keeps the install hermetic.
+        run: bash .github/scripts/install-input-sanitizer.sh
+
+      - name: Render and sanitize the merge-resolution deltas
+        id: prepare
+        env:
+          PR_INPUT_DIR: ${{ runner.temp }}/pr-input
+        run: bash .github/scripts/prepare-merge-delta-input.sh
+
+      - name: Review the merge deltas with Claude (Sonnet)
+        if: steps.prepare.outputs.has_deltas == 'true'
+        uses: ./.github/actions/claude-run
+        with:
+          oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          fallback_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK }}
+          fallback_oauth_token_2: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_2 }}
+          fallback_oauth_token_3: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_3 }}
+          fallback_oauth_token_4: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_4 }}
+          fallback_oauth_token_5: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_5 }}
+          fallback_oauth_token_6: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_6 }}
+          # Give the action the workflow token directly. Without it, the action
+          # tries to mint one via an OIDC→GitHub-App token exchange that isn't
+          # authorized here and fails with "401 Invalid OIDC token" before Claude
+          # runs.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Review outside-contributor PRs too; safe for the same reasons as the
+          # first-pass reviewer (base-only checkout, least-privilege token,
+          # sanitized data-only input).
+          allowed_non_write_users: "*"
+          model: claude-sonnet-5
+          claude_args: >-
+            --setting-sources user
+            --allowedTools "Read,Grep,Glob,Write"
+            --add-dir "${{ runner.temp }}/pr-input"
+          prompt: |
+            You are the merge-delta reviewer for PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
+            Follow the instructions in .github/prompts/claude-merge-delta-review.md — it is the
+            single source of truth for how to review and the exact merge-review.md format.
+
+            Write your review to ${{ runner.temp }}/pr-input/merge-review.md — nothing else.
+            Do not post comments, resolve threads, push commits, edit the PR, or merge.
+          # claude-run prepends the canonical untrusted-data guard for these.
+          untrusted_files: |
+            merge deltas: ${{ runner.temp }}/pr-input/merge-delta.txt
+
+      - name: Post the advisory merge-delta review
+        # Runs whenever prepare SUCCEEDED — including has_deltas=false — so a
+        # sticky comment about a since-removed merge is refreshed to the clean
+        # verdict rather than left stale. Skipped when prepare failed loud (an
+        # octopus / renderer error), where the red job IS the signal.
+        if: steps.prepare.conclusion == 'success'
+        env:
+          PR_INPUT_DIR: ${{ runner.temp }}/pr-input
+        run: bash .github/scripts/post-merge-delta-review.sh
+

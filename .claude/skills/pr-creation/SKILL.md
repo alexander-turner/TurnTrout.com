@@ -69,6 +69,11 @@ Before updating an existing PR (pushing new commits, editing the description, et
 3. Run `git log <base-branch>..HEAD --oneline` to see all commits
 4. Review the changed files to understand the scope
 5. **Check for PR description guidance**—look for `CONTRIBUTING.md`, `.github/PULL_REQUEST_TEMPLATE.md`, or similar files in the repo. If found, read them and adapt the PR description to follow the repository’s conventions (see [pr-templates.md](pr-templates.md) for details)
+6. **Deferred-item sweep**—search plan/handoff docs and follow-up lists (TODO files, open sub-issues, notes in PR descriptions or linked issues) for items that touch this PR’s area:
+   - Small, clearly-wanted items: fold them into this PR before opening it
+   - Larger items: open follow-up PRs in the same session immediately after this one; note them in the PR description
+   - Questionable items: surface in chat before proceeding
+   - Update any plan/handoff doc’s status for items this PR completes or moots
 
 ### Step 2: Push and Create the Pull Request
 
@@ -84,6 +89,18 @@ You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatt
    If a PR already exists, update it with `gh pr edit` instead of creating a new one.
 
 3. Create the PR using `gh pr create` with the template from the resource file. Make sure that you use the target branch
+
+**Write the body for the reviewer's cognitive budget, not as an investigation archive** —
+see [pr-templates.md](pr-templates.md) "Body Guidelines" for the evidence and the rules. The
+load-bearing ones: lead with _what_ the PR does (inverted pyramid — root-cause forensics go
+below the fold, never above the statement of the change); make length proportional to the
+reviewable diff (a ~10-line change is a few sentences, not a 500-word skeleton); omit empty
+ritual sections instead of spending a paragraph to say "None"; and add a **Review focus**
+line naming the file to read first, the cross-file invariant, and the part you're least sure
+of — the single element most correlated with a human actually engaging, which matters because
+agent-authored PRs are systematically _under_-reviewed. Use the exact headings from
+pr-templates.md (`What & why` / `Review focus` / `How it was tested` / `Decisions made` /
+`Lessons Learned`) so a reviewer can scan by habit.
 
 ### Step 3: Iterative Compress-Critique-Fix Loop
 
@@ -136,8 +153,8 @@ Push any commits made during the critique and validation steps, then update the 
 
 1. Push: `git push`
 
-1. Re-read the diff (`git diff $CLAUDE_CODE_BASE_REF...HEAD`) and commit log (`git log $CLAUDE_CODE_BASE_REF..HEAD --oneline`) to see the full scope
-1. Rewrite the title and body to accurately describe the **current totality** of changes, not just the original scope:
+2. Re-read the diff (`git diff $CLAUDE_CODE_BASE_REF...HEAD`) and commit log (`git log $CLAUDE_CODE_BASE_REF..HEAD --oneline`) to see the full scope
+3. Rewrite the title and body to accurately describe the **current totality** of changes, not just the original scope:
 
    ```bash
    gh pr edit <pr-number> --title "<type>: <updated description>" --body "$(cat <<'EOF'
@@ -199,21 +216,16 @@ State each insight as one concrete line. Skip this step if the task was trivial 
 
 **Claude’s actions:**
 
-1. Runs `git diff $CLAUDE_CODE_BASE_REF...HEAD`—sees changes in `src/auth/login.ts` and `tests/auth/login.test.ts`
-2. Runs `git log $CLAUDE_CODE_BASE_REF..HEAD --oneline`—sees 2 commits
-3. Launches critique sub-agent with the diff
-4. Critique returns: “Looks good, minor suggestion to add null check on line 42”
-5. Fixes the null check, commits: `fix: add null check for empty session token`
-6. Runs `pnpm check && pnpm test && pnpm lint`—all pass
-7. Pushes and creates PR:
-
-   ```bash
-   gh pr create --title "fix: handle null session token in login flow" --body "..."
-   ```
-
-8. Updates PR description to reflect the null-check fix added during critique
-9. Watches CI with `gh pr checks 47 --watch`—all green
-10. Reports: “PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>″
+1. Runs `git diff $CLAUDE_CODE_BASE_REF...HEAD`—sees changes in `src/auth/login.ts` and `tests/auth/login.test.ts`
+2. Runs `git log $CLAUDE_CODE_BASE_REF..HEAD --oneline`—sees 2 commits
+3. Pushes and creates PR: `gh pr create --title "fix: handle null session token in login flow" --body "..."`—CI starts immediately
+4. Launches critique sub-agent with the diff
+5. Critique returns: “Looks good, minor suggestion to add null check on line 42”
+6. Fixes the null check, commits: `fix: add null check for empty session token`
+7. Runs `pnpm check && pnpm test && pnpm lint`—all pass
+8. Pushes fixes, updates PR description to reflect the null-check fix
+9. Watches CI with `gh pr checks 47 --watch`—all green
+10. Reports: “PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
 
 ### Example 2: Multi-Commit Feature
 
@@ -247,3 +259,17 @@ State each insight as one concrete line. Skip this step if the task was trivial 
 - **Push fails**: Check branch permissions and remote configuration
 - **PR already exists (HTTP 422)**: Check for existing PRs first with `gh pr list --head "$(git branch --show-current)"`, then use `gh pr edit` to update
 - **No changes to PR**: Confirm with the user that work is committed
+
+## Shaping the PR
+
+**Default to ONE consolidated PR even when a task produces several independent changes.** Every PR boots the full workflow fan-out on a shared runner pool, so N small PRs cost ~N× the CI _and_ each one's required checks queue behind the others' long jobs. Land related and merely co-discovered work on one branch, one CI run, one review. Split only when a piece must land on its own timeline, or the consolidated diff would be too large to review coherently. One big PR still owes the reviewer legibility: one commit per separable concern, plus a `## Partitions` map in the body.
+
+Use the `/pr-creation` skill. For contributions to others' repos, before writing a PR description, check for `CONTRIBUTING.md` or `.github/PULL_REQUEST_TEMPLATE.md` in the target repo and follow its conventions. **Never** include `claude.ai` URLs, session links, or AI-tool attribution links in PRs.
+
+**A `## Lessons Learned` section is the exception, not the norm — most PRs should have none.** Each PR that carries one files an issue on the template repo (`phone-home` propagates it on merge), so the bar is high: include one **only** for a genuinely novel, non-obvious insight that generalizes to a downstream repo sharing none of this code and would change a template file (`.claude/`, `.hooks/`, `.github/workflows/`, `CLAUDE.md`, `setup.sh`). A repo-specific fix, a restatement of an existing rule, or an obvious CI tweak is triage noise — omit the section. When you do include one, each lesson must be actionable: **what** to change in the template, **where** (file/component), and **why**. **Never write a negative placeholder** ("none applicable", "N/A", "nothing generalizable") — phone-home drops those, so the sentence only churns; delete the heading entirely.
+
+**Skip the `## Lessons Learned` section entirely when the PR targets the `claude-automation-template` repo itself.** phone-home propagates lessons _from_ downstream repos _into_ the template; a change made directly in the template is already there, so a lessons section here propagates nothing and is pure noise.
+
+**Lessons only reach the template repo if they appear in the PR description**—lessons mentioned only in chat are never propagated and are permanently lost.
+
+**Resolve each review thread once you've addressed it**, so the unresolved count reflects only what still needs attention and auto-merge isn't held on stale threads. Resolve **only** a thread you actually addressed — a fix or a reply first, never resolving to clear the count.

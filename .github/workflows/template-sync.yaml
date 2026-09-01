@@ -39,7 +39,7 @@ on:
     - cron: "0 9 * * 1"
 
 env:
-  TEMPLATE_REPO: "alexander-turner/claude-automation-template"
+  TEMPLATE_REPO: "${{ vars.TEMPLATE_SYNC_ORG || 'alexander-turner' }}/claude-automation-template"
   # Whole directories of core automation files that are always template-owned.
   # Every file under these paths propagates to downstream consumers; new files
   # added to the template auto-sync without anyone having to edit this list.
@@ -101,14 +101,22 @@ jobs:
         with:
           repository: ${{ env.TEMPLATE_REPO }}
           path: _template
-          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          # TEMPLATE_SYNC_TOKEN_ORG is optional — GITHUB_TOKEN has no cross-repo
+          # reach, so this checkout only works without the PAT when TEMPLATE_REPO
+          # is public (the default). A private template repo needs the org PAT.
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
           filter: blob:none
           persist-credentials: false
 
       - name: Check token workflow scope
         env:
-          TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          # Mirrors the checkout step above — validates whichever token is
+          # actually in play (PAT or the default token) for the 'workflow'
+          # scope this sync needs to push .github/workflows/ changes.
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
         # Run the child repo's own copy — never execute scripts directly from
         # the template checkout. Template script updates arrive via sync PRs
         # and go through human review before they can execute.
@@ -135,7 +143,13 @@ jobs:
         id: create-pr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
-          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          # A PR authored under GITHUB_TOKEN doesn't trigger other
+          # on:pull_request workflows (GitHub's recursion guard), so this sync PR
+          # needs TEMPLATE_SYNC_TOKEN_ORG to get real CI; falling back to
+          # GITHUB_TOKEN still opens the PR when the org PAT isn't configured,
+          # just without triggering downstream checks until a human comments/pushes.
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
           commit-message: "chore: sync from template repository (${{ steps.sync.outputs.template_sha_short }})"
           title: "chore: sync from template repository"
           body: |
@@ -151,7 +165,15 @@ jobs:
             {0}
             ```
 
-            ', steps.sync.outputs.changelog) }}${{ steps.sync.outputs.auto_merged_files && format('### Auto-merged files
+            ', steps.sync.outputs.changelog) }}${{ steps.sync.outputs.has_downgrades == 'true' && format('---
+
+            ## ⚠️ Adopter-ahead — review these auto-merges for lost customizations
+
+            A "clean" 3-way auto-merge dropped lines that existed in this repo''s local copy. The sync uses a single repo-wide merge base (`.template-version`), which can be stale for a file first synced at a different template revision — when it is, git reports no conflict while silently shrinking your changes. **Review each file below** and restore anything of yours the merge removed:
+
+            {0}
+
+            ', steps.sync.outputs.downgrade_report) || '' }}${{ steps.sync.outputs.auto_merged_files && format('### Auto-merged files
 
             The following files were merged automatically (3-way merge, no conflicts):
 
@@ -177,12 +199,12 @@ jobs:
             Please review the changes and merge if appropriate.
           branch: template-sync
           delete-branch: true
-          labels: ${{ steps.sync.outputs.has_conflicts == 'true' && 'template-sync,needs-conflict-resolution' || 'template-sync' }}
+          labels: ${{ steps.sync.outputs.has_conflicts == 'true' && 'template-sync,merge-conflict' || 'template-sync' }}
 
       - name: Request Claude to resolve conflicts
         if: inputs.dry-run != 'true' && (steps.sync.outputs.has_conflicts == 'true' || steps.sync.outputs.has_deletions == 'true') && steps.create-pr.outputs.pull-request-number
         env:
-          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || github.token }}
           HAS_CONFLICTS: ${{ steps.sync.outputs.has_conflicts }}
           HAS_DELETIONS: ${{ steps.sync.outputs.has_deletions }}
           CONFLICT_FILES: ${{ steps.sync.outputs.conflict_files }}

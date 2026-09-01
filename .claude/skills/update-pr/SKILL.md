@@ -78,7 +78,9 @@ After pushing, dynamically update the PR to reflect **all** changes (not just th
 ### 7. Verify CI (with 15-minute timeout)
 
 ```bash
-timeout 15m gh pr checks --watch || true
+timeout 15m gh pr checks --watch; rc=$?
+# 0=all green, 8=still pending, 124=our timeout. Anything else is a real failure.
+case "$rc" in 0 | 8 | 124) ;; *) exit "$rc" ;; esac
 ```
 
 If checks fail, fix issues and repeat steps 3–5.

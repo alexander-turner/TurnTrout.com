@@ -1,0 +1,1 @@
+Template updates available for: .claude/hooks/session-setup.sh .claude/hooks/pre-push-check.sh .claude/hooks/lib-checks.sh .claude/skills/pr-creation/SKILL.md .claude/skills/update-pr/SKILL.md .claude/README.md .claude/settings.json .hooks/pre-push .hooks/pre-commit .github/scripts/gitleaks-scan.sh .github/scripts/template-sync.sh .github/workflows/build-publish-notify.yaml 

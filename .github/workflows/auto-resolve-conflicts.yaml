@@ -1,0 +1,244 @@
+# THIS repository's entry point to the merge-conflict resolver: turn whichever
+# event fired into the set of eligible PRs, then hand each one to the reusable
+# workflow in AlexanderMattTurner/agent-resolve-merge-conflicts. The resolution
+# itself — the deterministic pre-pass, the per-file model fan-out, the merge
+# commit it pushes back, and the two-job privilege split that makes all of it
+# safe — lives in that workflow and is documented in its own header. Nothing
+# here holds a write credential.
+#
+# It mutates the PR branch, so — like the pre-commit autofix — it is NOT a
+# required check.
+#
+# Adopters turn it off with repository VARIABLES rather than by editing this
+# file, which template-sync would hand back: AUTO_RESOLVE_DISABLED=true for the
+# whole workflow, AUTO_RESOLVE_SCHEDULE_DISABLED=true for the backstop scan
+# alone.
+#
+# WHY FOUR TRIGGERS. A base branch that moves underneath a PR conflicts it while
+# emitting no `pull_request` event, and it does not re-fire `labeled` for a PR
+# that already carries the merge-conflict label — so the push-to-main scan is the
+# only trigger that reaches a conflict introduced from underneath the branch. The
+# schedule covers the born-conflicted PR: one cut from an older main conflicts the
+# instant it opens, and GitHub suppresses the `opened` event when a GITHUB_TOKEN
+# or app actor created it, so nothing else picks that PR up until the next push.
+#
+# Neither push nor schedule can resolve directly — claude-code-action rejects both
+# ("Unsupported event type") — so the `relay` job re-fires this workflow as a
+# workflow_dispatch, which it accepts. GITHUB_TOKEN's recursion guard exempts
+# workflow_dispatch, so the relay does start a run, and relay fires only on
+# push/schedule, so the dispatched run cannot relay again.
+# ci-map: PR automation & review bots | Discovers this repository's conflicting PRs and hands each to the reusable resolver workflow
+name: Auto-resolve merge conflicts
+
+# concurrency-not-required: the expensive jobs are not in this file. The reusable
+# workflow keys `resolve` and `land` on `auto-resolve-pr-<n>`, both with
+# `cancel-in-progress: false`, so a resolution that has already paid a model
+# finishes. A workflow-level group here would cancel the whole call tree on the
+# next push and throw that spend away; the jobs this file does own — discover and
+# relay — are one `gh` scan each.
+
+on:
+  pull_request: # not-required-check — mutates the PR branch; never gate merges on it
+    types: [opened, synchronize, reopened, labeled]
+  # push-ungated: a push to main is what flips open PRs to CONFLICTING; re-scan
+  # them all (the labeler fires on the same event for the same reason).
+  push:
+    branches: [main]
+  # Backstop for born-conflicted PRs no push/label/opened event resolved in time
+  # (see the header note). Runs discover across every open PR and relays like the
+  # push scan. Every 5 minutes (GitHub's minimum cron granularity) — discover is a
+  # cheap, deterministic scan (a few gh API calls, ~30s) that only fans out to the
+  # paid resolve when it actually finds a conflicting PR.
+  #
+  # CADENCE IS ADOPTER-TUNABLE: this cron is the knob — a low-PR-volume repo can
+  # slow it (e.g. "*/30 * * * *" or hourly). A repo that wants no scheduled
+  # backstop at all sets the repository variable AUTO_RESOLVE_SCHEDULE_DISABLED=true
+  # (the discover job's `if:` gates the schedule path on it) without editing YAML.
+  schedule:
+    - cron: "*/5 * * * *"
+  # The push/schedule scan's resolve vehicle (see the relay note above); discover
+  # re-scans every open PR, so the relay dispatch carries no inputs. `catch-up`
+  # is for a HUMAN dispatch over a backlog: it drops both spend filters (the
+  # commit-age window and the per-head attempt mark) for that one run, so PRs a
+  # resolver defect stranded are picked up without waiting out the mark's TTL.
+  workflow_dispatch:
+    inputs:
+      catch-up:
+        description: "Ignore the commit-age window and per-head attempt marks for this run"
+        type: boolean
+        default: false
+
+permissions: {}
+
+# WHERE THE RESOLVER COMES FROM, named once for the job that clones it. `resolve`
+# passes the same repository to the reusable workflow, which cannot read these (a
+# `with:` value may not reference `env`), so that literal must match. RESOLVER_REF
+# is the SAME sha the `uses:` line in `resolve` pins, so discover.py and the
+# workflow it feeds come from one commit. Change the two together.
+env:
+  RESOLVER_REPOSITORY: AlexanderMattTurner/agent-resolve-merge-conflicts
+  RESOLVER_REF: 6e8ef6110fd27a4402a964d4c65c596a0ce7e938
+
+jobs:
+  discover:
+    name: Discover PRs to auto-resolve
+    # The master switch and the scheduled backstop are both opt-out via a
+    # repository variable (cadence knob lives on the cron above), so an adopting
+    # repo turns the resolver off without editing this file and having the next
+    # template sync hand the edit back. On a `labeled` event, only the
+    # merge-conflict label is relevant; every other event enters and the
+    # discover script decides eligibility per PR.
+    if: >-
+      vars.AUTO_RESOLVE_DISABLED != 'true' &&
+      (github.event_name != 'schedule' || vars.AUTO_RESOLVE_SCHEDULE_DISABLED != 'true') &&
+      (github.event_name != 'pull_request' ||
+      github.event.action != 'labeled' ||
+      github.event.label.name == 'merge-conflict')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: read # the per-head attempt mark is a commit status
+    outputs:
+      prs: ${{ steps.discover.outputs.prs }}
+    steps:
+      # NO checkout of this repository. discover reads GitHub, never the tree, and
+      # a pull_request event checks out the MERGE REF by default — the PR-authored
+      # copy of the script whose `prs` output drives the write-token resolve job.
+      # Cloning the resolver instead removes that substitution entirely: the code
+      # comes from a repository the pull request cannot write, on every event.
+      - name: Check out the resolver from its own repository
+        id: resolver
+        run: |
+          dest="${RUNNER_TEMP}/resolver"
+          git clone --no-tags "https://github.com/${RESOLVER_REPOSITORY}.git" "${dest}"
+          git -C "${dest}" checkout --detach "${RESOLVER_REF}"
+          echo "dir=${dest}/.github/resolver" >>"$GITHUB_OUTPUT"
+
+      - name: Discover conflicting PRs
+        id: discover
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          # Present on a pull_request event → the script considers that one PR;
+          # empty on push → it scans every open PR.
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          # A human catch-up dispatch drops both spend filters for this one run;
+          # empty values keep the script's own defaults on every other trigger.
+          AUTO_RESOLVE_MAX_COMMIT_AGE_HOURS: ${{ inputs.catch-up && '0' || vars.AUTO_RESOLVE_MAX_COMMIT_AGE_HOURS }}
+          AUTO_RESOLVE_IGNORE_ATTEMPT_MARK: ${{ inputs.catch-up && 'true' || 'false' }}
+          # Unset repository variables arrive empty, and every script defaults an
+          # empty value — so an adopter tunes these without editing this file.
+          AUTO_RESOLVE_ATTEMPT_TTL_HOURS: ${{ vars.AUTO_RESOLVE_ATTEMPT_TTL_HOURS }}
+          # Which repository and ref hold the resolver, so the handoff-mark probe
+          # asks THAT repository when the resolver's own code last changed rather
+          # than scanning a tree that no longer carries it.
+          AUTO_RESOLVE_RESOLVER_REPO: ${{ env.RESOLVER_REPOSITORY }}
+          AUTO_RESOLVE_RESOLVER_REF: ${{ env.RESOLVER_REF }}
+          # Read as a name rather than expanded into the `run:` body below. A
+          # step's own `env:` outranks the job environment, so a write to
+          # $GITHUB_ENV cannot repoint which tree this step executes.
+          RESOLVER_DIR: ${{ steps.resolver.outputs.dir }}
+        # No bootstrap guard: the script comes from the resolver clone above, so an
+        # absent one is a bad RESOLVER_REF and fails loud instead of quietly
+        # reporting an empty set.
+        run: python3 "${RESOLVER_DIR}/auto-resolve/discover.py"
+
+  relay:
+    name: Relay push/schedule scan as workflow_dispatch
+    needs: discover
+    # Both the push and the scheduled scan run under an event claude-code-action
+    # rejects, so both resolve indirectly by re-dispatching. Keep this off
+    # workflow_dispatch itself so the relayed run can't relay again (no loop).
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'schedule') &&
+      needs.discover.outputs.prs != '' && needs.discover.outputs.prs != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Re-dispatch this workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh workflow run auto-resolve-conflicts.yaml --ref "${GITHUB_REF_NAME}"
+
+  resolve:
+    name: Auto-resolve merge conflicts
+    needs: discover
+    # push and schedule run relay instead of resolving (claude-code-action rejects
+    # both); resolve happens on the relayed workflow_dispatch (and directly on a
+    # pull_request event).
+    if: >-
+      github.event_name != 'push' && github.event_name != 'schedule' &&
+      needs.discover.outputs.prs != '' && needs.discover.outputs.prs != '[]'
+    strategy:
+      fail-fast: false
+      # Serialize the fan-out: each PR gets its own push, and the shared LLM/token
+      # budget makes parallel resolves more contention than speed is worth.
+      max-parallel: 1
+      matrix:
+        pr: ${{ fromJSON(needs.discover.outputs.prs) }}
+    # The resolver itself, its two-job privilege split, its permissions and its
+    # concurrency all live in the reusable workflow — this file only says WHICH
+    # pull requests to hand it and what this repository can do.
+    #
+    # Pinned by SHA, never by tag: the resolver runs with this repository's
+    # secrets, so a moving ref would let its owner change what runs here. The
+    # `uses:` line below is the only place that sha appears in the call — the
+    # called workflow reads it back from `job.workflow_sha` and runs the scripts
+    # from the same commit, so no `resolver-ref` is passed and nothing drifts.
+    #
+    # The CEILING on what the called workflow may hold, not a grant to this file.
+    # It must cover the UNION of the resolver's two jobs, because a calling job that
+    # names less silently narrows them: this workflow sets `permissions: {}` at the
+    # top, so without this block the called jobs inherit an EMPTY default and the
+    # resolver cannot even read the repository. The split between `resolve` and
+    # `land` is enforced inside the called workflow, per job — this ceiling does
+    # not weaken it.
+    permissions:
+      contents: write # `land` pushes the merge commit; `resolve` only reads
+      pull-requests: write # both jobs comment on the PR
+      issues: write # `gh label create` for auto-resolve-blocked rides the issues API
+      statuses: write # the per-head attempt mark is a commit status
+      actions: write # `land` re-dispatches the resolver after a lost race
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@6e8ef6110fd27a4402a964d4c65c596a0ce7e938 # v1.13.5
+    with:
+      pr: ${{ matrix.pr.number }}
+      # The literal from this file's `env:` block, repeated because a reusable
+      # workflow's `with:` cannot read `env`. Change both together.
+      resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
+      # This repository ships no scripts/lib_marked_region.py and no regen rule
+      # table, so the generated-region pre-pass and the deterministic pre-pass
+      # both stay off and every conflict reaches the model whole. A consumer that
+      # declares rules passes `marked-regions: true`, `resolver-mjs` and
+      # `pre-pass-command`.
+      #
+      # `log-redactor` is likewise unset, which publishes NO fan-out logs. That is
+      # the fail-closed default: an agent transcript carries whatever the merge
+      # exposed it to, so a repository with no redactor uploads nothing.
+      #
+      # A repository VARIABLE with this file's own default behind it. An adopter
+      # widens the flagged set without editing a synced file, which template-sync
+      # would hand straight back on the next run.
+      protected-paths-regex: ${{ vars.AUTO_RESOLVE_PROTECTED_RE || '^(\.github/|\.claude/|\.hooks/)' }}
+    # Named rather than `secrets: inherit`, so this call passes only what the
+    # resolver declares and every name here is one it accepts. Each is optional:
+    # an unset secret arrives empty, which drops that ladder rung rather than
+    # failing the call.
+    secrets:
+      # This repository's metered key fills the resolver's first rung, which it
+      # names FAR_ANTHROPIC_API_KEY; the subscription tokens follow, and the
+      # operator's personal account comes last.
+      FAR_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      CLAUDE_CODE_OAUTH_TOKEN_FALLBACK: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK }}
+      CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_2: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_2 }}
+      CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_3: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_3 }}
+      CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_4: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_4 }}
+      CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_5: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_5 }}
+      CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_6: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_6 }}
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      AUTOFIX_TOKEN_ORG: ${{ secrets.AUTOFIX_TOKEN_ORG }}
+      TEMPLATE_SYNC_TOKEN_ORG: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG }}

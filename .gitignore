@@ -104,3 +104,4 @@ AGENTS.md
 reports/
 mutants/
 .hypothesis/
+.claude/settings.local.json

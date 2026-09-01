@@ -21,7 +21,8 @@ on: # zizmor: ignore[dangerous-triggers]
   workflow_run:
     types: [completed]
     workflows:
-      - Deploy to Cloudflare
+      - Auto version bump and publish
+      - Release canary
 
 concurrency:
   # Keyed per triggering workflow so notifications never queue behind each other;
