@@ -28,7 +28,7 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@8e2a693236b63f843ef3313816a6a74c9cf2b5c4 # v1.21.3
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@4f5669dc6818f30b5ad19e8ff0c74cc3462fd13a # v1.25.1
     with:
       pr: ${{ matrix.pr.number }}
       resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
@@ -112,6 +112,8 @@ Every knob is a repository VARIABLE, so you tune the resolver without editing a 
 | `AUTO_RESOLVE_PROTECTED_RE`          | `^(\.github/\|\.claude/\|\.hooks/)` | ERE over repo-relative paths. A conflict inside one is still resolved, and the pushed-resolution comment flags it for a human. |
 | `AUTO_RESOLVE_CHAINED_CHILDREN`      | `on`                                | `log` reports each stacked pull request the resolver would take, and refuses it.                                               |
 
+The push scan reaches a pull request against any base branch, and it has one bound worth knowing before you turn the schedule off: GitHub reads a `push` trigger from the workflow file the PUSHED branch carries, so a long-lived release branch that predates your copy of the caller starts no scan of its own. Merge the caller into that branch, or keep the scheduled backstop, which runs from the default branch and scans every open pull request whatever its base.
+
 The scheduled scan runs every 5 minutes and costs a few `gh` API calls. It reaches the model only when it finds a conflicting pull request, so an idle repository pays no model cost for the cadence. Change the cron in your own copy of the caller to slow it.
 
 ## Derived files
@@ -174,7 +176,7 @@ A `uses:` ref may be a SHA, a tag or a branch. GitHub calls [the commit SHA the 
 **Pin the SHA and name the version beside it**, the way this repository's own caller does:
 
 ```yaml
-uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@8e2a693236b63f843ef3313816a6a74c9cf2b5c4 # v1.21.3
+uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@4f5669dc6818f30b5ad19e8ff0c74cc3462fd13a # v1.25.1
 ```
 
 That line reads as a version and resolves as an immutable commit. It names the newest release: `.github/scripts/release-tag.sh` rewrites both copies in this README, and the caller's, in the commit after each release. Copy it as it stands.
