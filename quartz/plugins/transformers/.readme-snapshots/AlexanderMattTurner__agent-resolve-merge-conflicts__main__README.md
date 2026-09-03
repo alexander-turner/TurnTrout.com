@@ -8,7 +8,7 @@ The workflow resolves a conflict in three passes. Only the last one spends model
 
 1. **The pre-pass rebuilds every conflicted generated file instead of guessing it.** A lockfile goes through its own lock command, and a generated artifact through its generator.
 2. **The structural pre-pass re-merges what is left, syntax-aware.** It runs [mergiraf](https://mergiraf.org), which this workflow installs at a pinned version from its own tree. mergiraf merges a conflict by the file's syntax rather than its lines, so it settles many source conflicts for free. Nothing reaches the model that this pass already solved.
-3. **A model resolves the source conflicts that remain.** With the pre-pass configured, the model sees only files a person wrote by hand. Without it the model sees every remaining conflict, generated files included. That is what a fork head gets, because the workflow empties `resolver-mjs` there, and what a repository that declares no rules gets. A generator that fails sends its file to the model the same way.
+3. **A model resolves the source conflicts that remain.** With the pre-pass configured, the model sees only files a person wrote by hand. Without it the model sees every remaining conflict, generated files included. That is what a fork head gets, because the workflow empties `resolver-mjs` there, and what a repository that declares no rules gets. A generator that fails sends its file to the model the same way. A pre-pass that could not RUN at all refuses instead, because it re-derived nothing: a missing binary or module names itself in the command's own output.
 
 A conflict that no pass can settle stops the run and comments on the pull request. A binary file is one example, and a `-merge` file that no rule owns is another. This check runs before any model call, so an unresolvable conflict costs nothing.
 
@@ -28,7 +28,7 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@4f5669dc6818f30b5ad19e8ff0c74cc3462fd13a # v1.25.1
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@39a4a40eebc2b0e6920b14dc8ad077ace513d28f # v1.27.3
     with:
       pr: ${{ matrix.pr.number }}
       resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
@@ -61,9 +61,31 @@ Every input fails closed when empty. The workflow does less, rather than guessin
 - **`setup-command`** — no command prepares nothing. A repository whose checkout an agent cannot start in names its own repair here. A tracked symlink that dangles in CI is one such repository. The command runs on the merged tree just before the model. Whatever it changes is put back before the merge is bundled. A fork head runs none. It is the one command input a shell evaluates (`bash -eo pipefail -c`). `pre-pass-command` and `post-merge-check-command` are split into argv and run with no shell.
 - **`pre-pass-command`** — no command refuses to bundle a deferred generated file, rather than shipping bytes no build produces.
 - **`bot-actors`** — an empty value admits no bot.
-- **`post-merge-check-command`** — this input is the exception in one direction only. Empty runs no whole-tree check, so a merge that keeps both parents' definition of one name reaches the branch with nothing naming what it broke. Name your type-checker or import-check here — `bash .github/scripts/pyright-passes.sh`. A resolution that breaks the tree is then pushed with a comment naming what it broke, so the conflict is resolved once and the finding is fixed on a branch that no longer conflicts. The command runs in the `resolve` job, which holds no push credential. It must only REPORT: a command that stages a file is refused. Exit 1 to 125 judges the merged tree. Exit 126 and above is read as the shell's `never ran`, which blames this workflow's provisioning rather than your branch.
+- **`post-merge-check-command`** — this input is the exception in one direction only. Empty runs no whole-tree check, so a merge that keeps both parents' definition of one name reaches the branch with nothing naming what it broke. Name your type-checker or import-check here — `bash .github/scripts/pyright-passes.sh`. A resolution that breaks the tree is then pushed with a comment naming what it broke, so the conflict is resolved once and the finding is fixed on a branch that no longer conflicts. The command runs in the `resolve` job, which holds no push credential. It must only REPORT: a command that stages a file is refused. Exit 1 to 125 judges the merged tree, unless the command's own output shows an interpreter dying on a missing dependency of its own. Exit 126 and above, or that crash signature, is read as the shell's `never ran`, which blames this workflow's provisioning rather than your branch.
+- **`plumbing-notice-issue`** — empty posts nothing beyond the pull request's sticky comment. A refusal that blames this WORKFLOW's own pins, grants or tooling is not the pull request's defect, so that comment reaches whoever owns the branch, not whoever owns the plumbing, and the next run overwrites it. Name an issue number in the calling repository and such a refusal is also repeated there, as a comment. The calling repository's `resolve` job needs `issues: write` for the comment to post.
 - **`self-review`** — empty runs the review. The pre-push merge-delta self-review is on by default, so a repository that adopts this workflow never pushes a merge nothing reads. A model reads the merge commit while it is still local, fixes what it flags, and refuses the push on a finding it cannot fix. When every rung of your credential ladder is spent, the merge lands marked unverified and auto-merge stays off, so a human reads it. Keep it on even when CI of yours already reads the pushed delta: this pass fixes before the push, so it saves the review cycle your own reader would otherwise spend. Pass `self-review: false` only to make no pre-push model call at all. A repository that configures no model credential runs no review either way.
 - **`review-model`** — empty runs the review on its own default. This input is separate from `model` because that one lowers the per-file shards to save cost, while this pass judges those shards. Raise it when nothing of yours reads the pushed delta, since this pass is then the only read your merges get.
+
+## Label the conflicted pull requests
+
+The resolver acts on the `merge-conflict` label, and it ships the script that applies that label: `.github/resolver/label-merge-conflicts.sh`. Run that one rather than keeping a copy, so the label the resolver reads and the label a scan writes are always the same string — both read the name from `.github/resolver/lib/shared-names.json`.
+
+It syncs one pull request when `PR_NUMBER` is set, the pull requests based on one branch when `BASE_REF` is, and every open one otherwise. It only reads the API and edits labels; it never pushes to a branch.
+
+```yaml
+- uses: actions/checkout@v5 # the clone that carries the resolver
+  with:
+    repository: AlexanderMattTurner/agent-resolve-merge-conflicts
+    ref: v1.25.2 # pin the same commit your caller pins
+    path: resolver
+- env:
+    GH_TOKEN: ${{ github.token }}
+    REPO: ${{ github.repository }}
+    PR_NUMBER: ${{ github.event.pull_request.number }}
+  run: bash resolver/.github/resolver/label-merge-conflicts.sh
+```
+
+The job needs `pull-requests: write` and `issues: write`, because a pull-request label rides the issues API.
 
 ## Read the merge deltas after the push
 
@@ -176,7 +198,7 @@ A `uses:` ref may be a SHA, a tag or a branch. GitHub calls [the commit SHA the 
 **Pin the SHA and name the version beside it**, the way this repository's own caller does:
 
 ```yaml
-uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@4f5669dc6818f30b5ad19e8ff0c74cc3462fd13a # v1.25.1
+uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@39a4a40eebc2b0e6920b14dc8ad077ace513d28f # v1.27.3
 ```
 
 That line reads as a version and resolves as an immutable commit. It names the newest release: `.github/scripts/release-tag.sh` rewrites both copies in this README, and the caller's, in the commit after each release. Copy it as it stands.
