@@ -85,6 +85,16 @@ These run inside Claude Code sessions (local CLI or cloud), not in CI.
 | --------------- | ------------------------------------------------------------------------------------ |
 | `code-reviewer` | Read-only reviewer (Read/Grep/Glob, `model: opus`)—unbiased second opinion on a diff |
 
+### Plugins (`.claude/settings.json`)
+
+Enabled at project scope, so every session in this repo loads them—local and cloud alike. Each downloads what it needs on its own and fails open when it cannot.
+
+| Plugin                  | What it does                                                                         | Needs                                       |
+| ----------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------- |
+| `precis@precis`         | Injects a structural codebase overview at session start; `precis <dir>` zooms in     | Downloads its own binary                    |
+| `codex@codex-plugin-cc` | Delegates code review and tasks to Codex, so a non-Claude model reviews the diff     | `node`, plus `/codex:setup` for OpenAI auth |
+| `tldr@alignment-hive`   | Adds a one-sentence TL;DR after a reply over ~100 words; `/focus` collapses to those | Nothing                                     |
+
 ### GitHub Actions (`.github/workflows/`)
 
 | Workflow                           | What it does                                                                                                                                                                                                          |

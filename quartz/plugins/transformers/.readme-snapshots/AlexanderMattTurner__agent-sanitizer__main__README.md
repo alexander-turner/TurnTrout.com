@@ -1,18 +1,6 @@
 # `agent-sanitizer`
 
-**Cleans untrusted text before your agent reads it.** An attacker hides a payload where a person cannot see it but the model still reads it: invisible Unicode, ANSI escapes, human-hidden HTML, confusable glyphs, look-alike hosts, and exfil-shaped URLs.
-
-This library handles each channel on its own terms. It strips invisible characters and ANSI escapes by default, splices out hidden HTML when you opt in, and _reports_ exfil-shaped URLs and look-alike hosts rather than rewriting them — mangling a legitimate link is the worse failure. Every layer is a deterministic transform, so you can unit-test it with equality assertions. There is no classifier and no model call, so nothing rests on whether a prediction generalized.
-
-**As a library:**
-
-```sh
-npm install agent-sanitizer
-```
-
-**As a Claude Code plugin:**
-
-Enter one at a time:
+**Cleans untrusted text before your agent reads it.** An attacker hides a payload where a person cannot see it but the model still reads it: invisible Unicode, ANSI escapes, human-hidden HTML, confusable glyphs, look-alike hosts, and exfil-shaped URLs. This library handles each channel. Easy to use as a Claude Code plugin, and the plugin itself is recommended by [`alignment-hive`](https://github.com/crazytieguy/alignment-hive/)!
 
 ```
 /plugin marketplace add AlexanderMattTurner/agent-sanitizer
@@ -176,7 +164,12 @@ buy you:
 3. Look-alike glyphs in tool inputs are folded to ASCII, so a Cyrillic `а` can't
    walk a command past a deny rule.
 4. Tool output has invisible characters and terminal escapes stripped, hidden
-   HTML spliced out with a placeholder, and exfil-shaped URLs flagged.
+   HTML spliced out with a placeholder, and exfil-shaped URLs flagged. A hex
+   value one digest wide is exempt under a generic query or fragment parameter
+   name, because a commit or blob id in a link is ordinary — under a name that
+   already says credential it still flags, and a path segment never reaches the
+   exemption at all. `AGENT_SANITIZER_FLAG_DIGEST_VALUES=1` turns it off for a
+   consumer that reads such a value as a leak.
 5. With `AGENT_SANITIZER_SECRETS_ENABLED=1` set, secrets in tool output are
    redacted locally by `detect-secrets` — the engine ships with the plugin and
    provisions itself on first run, no further setup from you.
@@ -291,7 +284,7 @@ singleton, and two copies in one bundle double-fire the inlined CLIs.
 | `claude-hooks/scan-loaded-instructions` | InstructionsLoaded scan of each instruction file as Claude Code loads it                   |
 | `claude-hooks/lib/hook-io`              | Shared hook I/O: the lazy-module registry, the CLI slot, deadlines, the hookgate marker    |
 | `claude-hooks/lib/control-plane`        | Bridge to `agent-control-plane-core` and the shared judge-CLI transport                    |
-| `claude-hooks/lib/authored-content`     | Stego + terminal-control stripping of the fields the MODEL authors                         |
+| `claude-hooks/lib/authored-content`     | Stego + terminal-control stripping of the fields the MODEL authors (colour is kept)        |
 | `claude-hooks/lib/env-config`           | The env-bound secret vocabulary the Layer-4 pre-gate and the redactor client share         |
 | `claude-hooks/lib/invisible-alert`      | Cross-hook alert state for uncleanable invisible-char injection in instruction files       |
 | `claude-hooks/lib/redactor-client`      | Client for the long-lived `agent-secret-redactor-daemon` (Layer 4's transport)             |
