@@ -357,8 +357,13 @@ the extension bag's `trace` on
 receives the same `TraceEvent` names the default emits, and it **replaces** the
 default rather than running alongside it — the package channel goes silent, so
 there is one announcement to detect, not two. It may throw freely: each hook
-binds the sink it is given through `bestEffortTrace`, so an announcement can
-never be the thing that breaks a hook.
+binds the sink it is given through `hookTrace`, so an announcement can never be
+the thing that breaks a hook.
+
+That same binding charges whatever a host sink spends — a write to an unanswered
+socket, a subprocess — to the slow-hook notice's host-extension window. A hook
+past its budget then names the sink, instead of leaving the wait in the
+unattributed remainder and the sink's in-process CPU billed to the sanitizer.
 
 **A host's own cold-start marker can replace the derived one.** The hooks wait
 out an in-flight dependency install by polling a marker file whose path they
