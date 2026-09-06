@@ -28,7 +28,7 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@ba64c6434509316d57bbfa72884010904d91f850 # v1.31.3
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@26547867526c1fd3ca0289a700b1a964cffa4f45 # v1.34.2
     with:
       pr: ${{ matrix.pr.number }}
       resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
@@ -58,7 +58,7 @@ The `permissions:` block on the calling job sets a ceiling, not a grant. Your jo
 Every input fails closed when empty. The workflow does less, rather than guessing.
 
 - **`log-redactor`** — no redactor publishes no fan-out logs. The fan-out is the set of parallel model runs, one per conflict block, and those are its logs. One file with three conflict blocks therefore runs three times. A path that cannot be split, such as a modify/delete conflict, runs as one whole-file shard instead.
-- **`setup-command`** — no command prepares nothing. A repository whose checkout an agent cannot start in names its own repair here. A tracked symlink that dangles in CI is one such repository. The command runs on the merged tree just before the model. Whatever it changes is put back before the merge is bundled. A fork head runs none. It is the one command input a shell evaluates (`bash -eo pipefail -c`). `pre-pass-command` and `post-merge-check-command` are split into argv and run with no shell.
+- **`setup-command`** — no command prepares nothing. A repository whose checkout an agent cannot start in names its own repair here. A tracked symlink that dangles in CI is one such repository. The command runs on the merged tree just before the model, with every conflicted file holding one parent's content so a file it sources or executes never shows it a conflict marker. The markers go back afterwards, and whatever the command changes is put back before the merge is bundled. A fork head runs none. It is the one command input a shell evaluates (`bash -eo pipefail -c`). `pre-pass-command` and `post-merge-check-command` are split into argv and run with no shell.
 - **`pre-pass-command`** — no command refuses to bundle a deferred generated file, rather than shipping bytes no build produces.
 - **`bot-actors`** — an empty value admits no bot.
 - **`post-merge-check-command`** — this input is the exception in one direction only. Empty runs no whole-tree check, so a merge that keeps both parents' definition of one name reaches the branch with nothing naming what it broke. Name your type-checker or import-check here — `bash .github/scripts/pyright-passes.sh`. A resolution that breaks the tree is then pushed with a comment naming what it broke, so the conflict is resolved once and the finding is fixed on a branch that no longer conflicts. The command runs in the `resolve` job, which holds no push credential. It must only REPORT: a command that stages a file is refused. Exit 1 to 125 judges the merged tree, unless the command's own output shows an interpreter dying on a missing dependency of its own. Exit 126 and above, or that crash signature, is read as the shell's `never ran`, which blames this workflow's provisioning rather than your branch.
@@ -111,12 +111,17 @@ jobs:
       resolver-mjs: .github/scripts/resolve-generated.mjs
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-      # ... the six FALLBACK rungs, as for auto-resolve.yaml
+      # ... the six FALLBACK rungs, as for auto-resolve.yaml. Add
+      # FAR_ANTHROPIC_API_KEY to spend a metered key before them.
 ```
 
 It never checks out the pull request head. It reads the head's merge commits as git objects against your default branch, renders them, sanitizes the render, and hands the model data — the same posture as the resolver's own `resolve` job, minus the merge.
 
 **It posts no status that blocks a merge.** A gate is your policy, so the verdict comes back as outputs and you decide. `verdict-in-hand` says a read happened; `review-clean` says what it found, and is what rejects a flagged merge. Both answer `false` for a head nothing read, so a gate keyed on either fails closed. Note that GitHub names a called job's check run `<your job name> / Review the PR's merge-resolution deltas`, so match the suffix rather than the whole string.
+
+A gate that needs more than the verdict takes it from `head-sha` and `review-artifact`. `head-sha` is the commit the read describes, which is what your own status must name: the sha in the trigger payload froze at dispatch, and the job can finish half an hour later. `review-artifact` names an artifact holding the reviewer's own words (`merge-review.md`) and the merges it covered (`merge-delta.shas.txt`, written by the renderer and never by the model), so a `needs:` job can open a thread that quotes the finding.
+
+The range is the pull request's own commits: the workflow reads the branch it merges INTO as git objects, so a pull request onto a release branch, or onto another feature branch in a stack, is not reviewed over commits its parent already answered for.
 
 `review-model` on `auto-resolve.yaml` and `model` here are separate knobs for the same reason: the pre-push pass fixes and the post-push read decides, so lowering the cost of one must not lower the other.
 
@@ -198,7 +203,7 @@ A `uses:` ref may be a SHA, a tag or a branch. GitHub calls [the commit SHA the 
 **Pin the SHA and name the version beside it**, the way this repository's own caller does:
 
 ```yaml
-uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@ba64c6434509316d57bbfa72884010904d91f850 # v1.31.3
+uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@26547867526c1fd3ca0289a700b1a964cffa4f45 # v1.34.2
 ```
 
 That line reads as a version and resolves as an immutable commit. It names the newest release: `.github/scripts/release-tag.sh` rewrites both copies in this README, and the caller's, in the commit after each release. Copy it as it stands.
