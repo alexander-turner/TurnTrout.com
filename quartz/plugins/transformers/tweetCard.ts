@@ -63,7 +63,7 @@ export interface TweetSnapshot {
   snapshotAt: string
 }
 
-const XCANCEL_BASE = "https://xcancel.com"
+const X_BASE = "https://x.com"
 
 // X wordmark (the post source link) and the verified seal, inlined so the card
 // needs no extra network requests.
@@ -158,7 +158,7 @@ function externalAnchor(
   return h("a", props, children)
 }
 
-/** Linkify @mentions, #hashtags, and $cashtags within a plain-text run, pointing at xcancel. */
+/** Linkify @mentions, #hashtags, and $cashtags within a plain-text run, pointing at X. */
 function linkifyTokens(text: string): (Element | string)[] {
   const nodes: (Element | string)[] = []
   let lastIndex = 0
@@ -169,9 +169,7 @@ function linkifyTokens(text: string): (Element | string)[] {
     if (index > lastIndex) nodes.push(text.slice(lastIndex, index))
     const body = token.slice(1)
     const href =
-      token[0] === "@"
-        ? `${XCANCEL_BASE}/${body}`
-        : `${XCANCEL_BASE}/search?q=${encodeURIComponent(token)}`
+      token[0] === "@" ? `${X_BASE}/${body}` : `${X_BASE}/search?q=${encodeURIComponent(token)}`
     nodes.push(externalAnchor(href, [token], "tweet-entity"))
     lastIndex = index + token.length
   }
@@ -196,7 +194,7 @@ function withLineBreaks(nodes: (Element | string)[]): (Element | string)[] {
 /**
  * Turn a tweet's raw text into hast: `t.co` links become anchors to their
  * expanded targets (shown as the human-readable display URL), @mentions and
- * #hashtags link to xcancel, and newlines become `<br>`.
+ * #hashtags link to X, and newlines become `<br>`.
  */
 export function linkifyTweetText(text: string, urls: readonly TweetUrl[]): (Element | string)[] {
   let nodes: (Element | string)[] = [decodeHtmlEntities(text)]
@@ -346,7 +344,7 @@ function authorNameRow(author: TweetAuthor, profileUrl: string): Element {
  * as noise.
  */
 function quotedCard(quoted: QuotedTweet, outerDate: string): Element {
-  const profileUrl = `${XCANCEL_BASE}/${quoted.author.handle}`
+  const profileUrl = `${X_BASE}/${quoted.author.handle}`
   const header = h("div", { className: "tweet-quoted-header" }, [
     h("img", {
       className: "tweet-quoted-avatar",
@@ -378,7 +376,7 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
 
   // The avatar, name, and handle point at the author's profile; the X logo is
   // the permalink to the post.
-  const profileUrl = `${XCANCEL_BASE}/${author.handle}`
+  const profileUrl = `${X_BASE}/${author.handle}`
   const header = h("div", { className: "tweet-header" }, [
     h("span", { className: "tweet-avatar-wrap" }, [
       h("img", {
@@ -434,19 +432,19 @@ export function buildTweetCard(snapshot: TweetSnapshot, retweetedBy?: string): E
 }
 
 /** Fallback card for a tweet that resolved from neither a snapshot nor R2. */
-export function buildUnavailableCard(xcancelUrl: string): Element {
+export function buildUnavailableCard(url: string): Element {
   return h("article", { className: "tweet-card tweet-card-unavailable" }, [
     h("p", { className: "tweet-body" }, [
       "This post could not be embedded. ",
-      externalAnchor(xcancelUrl, ["View it on XCancel."], "tweet-entity"),
+      externalAnchor(url, ["View it on X."], "tweet-entity"),
     ]),
   ])
 }
 
-/** A slot in a tweet embed: a resolved snapshot, or just the xcancel URL to stub. */
+/** A slot in a tweet embed: a resolved snapshot, or just the post URL to stub. */
 export interface TweetSlot {
   snapshot?: TweetSnapshot
-  xcancelUrl: string
+  url: string
   retweetedBy?: string
 }
 
@@ -458,7 +456,7 @@ export function buildTweetEmbed(slots: readonly TweetSlot[]): Element {
   const cards = slots.map((slot) =>
     slot.snapshot
       ? buildTweetCard(slot.snapshot, slot.retweetedBy)
-      : buildUnavailableCard(slot.xcancelUrl),
+      : buildUnavailableCard(slot.url),
   )
   if (cards.length === 1) {
     return h("div", { className: "tweet-embed" }, cards)

@@ -286,7 +286,7 @@ def test_best_video_variant() -> None:
 def test_normalize() -> None:
     snapshot = ts.normalize(RAW_TWEET, "999")
     assert snapshot["id"] == "999"
-    assert snapshot["url"] == "https://xcancel.com/turntrout/status/999"
+    assert snapshot["url"] == "https://x.com/turntrout/status/999"
     assert snapshot["author"]["verified"] is True
     assert snapshot["author"]["avatarSrc"].endswith("_400x400.jpg")
     assert snapshot["snapshotAt"] == "2026-06-27T00:00:00+00:00"
@@ -355,7 +355,7 @@ def test_normalize_quoted_tweet() -> None:
     snapshot = ts.normalize(RAW_QUOTE_TWEET, "999")
     quoted = snapshot["quoted"]
     assert quoted["id"] == "888"
-    assert quoted["url"] == "https://xcancel.com/original/status/888"
+    assert quoted["url"] == "https://x.com/original/status/888"
     assert quoted["author"]["name"] == "Original"
     # No verified flag in the quoted user → not verified.
     assert quoted["author"]["verified"] is False

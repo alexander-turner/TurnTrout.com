@@ -70,8 +70,8 @@ TWEET_BLOCK_RE = re.compile(
     r"^```tweet[ \t]*\n(?P<body>.*?)\n```[ \t]*$",
     re.MULTILINE | re.DOTALL,
 )
-# Pull the numeric status id out of an x.com / twitter.com / xcancel.com URL,
-# or accept a bare id. Keep in sync with TWEET_ID_RE in tweetEmbed.ts.
+# Pull the numeric status id out of an x.com / twitter.com URL, or accept a
+# bare id. Keep in sync with TWEET_ID_RE in tweetEmbed.ts.
 TWEET_ID_RE = re.compile(r"(?:status(?:es)?/)?(?P<id>\d{5,25})")
 # Non-tweet directive lines inside a ``tweet`` block (a metadata header or an
 # opt-in stub). Keep in sync with RETWEETED_BY_RE / UNAVAILABLE_RE in tweetEmbed.ts.
@@ -344,7 +344,7 @@ def _normalize_quoted(quoted: dict) -> dict | None:
     entities = quoted.get("entities", {}) or {}
     return {
         "id": quoted_id,
-        "url": f"https://xcancel.com/{user['screen_name']}/status/{quoted_id}",
+        "url": f"https://x.com/{user['screen_name']}/status/{quoted_id}",
         "author": _build_author(user),
         "createdAt": quoted.get("created_at", ""),
         "text": _display_text(quoted, entities),
@@ -365,7 +365,7 @@ def normalize(raw: dict, tweet_id: str) -> dict:
 
     snapshot = {
         "id": tweet_id,
-        "url": f"https://xcancel.com/{handle}/status/{tweet_id}",
+        "url": f"https://x.com/{handle}/status/{tweet_id}",
         "author": _build_author(raw["user"]),
         "createdAt": raw.get("created_at", ""),
         "text": _display_text(raw, entities),
@@ -557,7 +557,7 @@ def process_all(
     Resolve every referenced tweet, returning the ids that resolved.
 
     Tweets that resolve from neither Twitter nor the CDN are logged and skipped
-    (the build renders them as xcancel stubs) so one dead tweet never fails the
+    (the build renders them as X-link stubs) so one dead tweet never fails the
     run.
     """
     session = script_utils.http_session()

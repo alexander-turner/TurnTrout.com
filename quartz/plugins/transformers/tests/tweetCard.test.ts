@@ -19,7 +19,7 @@ import {
 
 const baseSnapshot: TweetSnapshot = {
   id: "123",
-  url: "https://xcancel.com/turntrout/status/123",
+  url: "https://x.com/turntrout/status/123",
   author: {
     name: "Alex Turner",
     handle: "turntrout",
@@ -94,12 +94,12 @@ describe("linkifyTweetText", () => {
     expect(html).not.toContain("t.co/abc")
   })
 
-  it("links mentions, hashtags, and cashtags to xcancel", () => {
+  it("links mentions, hashtags, and cashtags to X", () => {
     const nodes = linkifyTweetText("@bob loves #ai and $TSLA", [])
     const html = nodes.map((n) => (typeof n === "string" ? n : render(n))).join("")
-    expect(html).toContain('href="https://xcancel.com/bob"')
-    expect(html).toContain("https://xcancel.com/search?q=%23ai")
-    expect(html).toContain("https://xcancel.com/search?q=%24TSLA")
+    expect(html).toContain('href="https://x.com/bob"')
+    expect(html).toContain("https://x.com/search?q=%23ai")
+    expect(html).toContain("https://x.com/search?q=%24TSLA")
   })
 
   it("decodes HTML entities before building text nodes", () => {
@@ -146,7 +146,7 @@ describe("linkifyTweetText", () => {
   it("linkifies a text that is only a mention", () => {
     const nodes = linkifyTweetText("@bob", [])
     expect(nodes).toHaveLength(1)
-    expect(render(nodes[0] as Element)).toContain("https://xcancel.com/bob")
+    expect(render(nodes[0] as Element)).toContain("https://x.com/bob")
   })
 
   it("marks body entity links no-favicon so the favicon pass skips them", () => {
@@ -174,11 +174,11 @@ describe("buildTweetCard", () => {
   it("links the name and handle to the profile, and the source to the post", () => {
     const html = render(buildTweetCard(baseSnapshot))
     // Name and handle point at the profile (no trailing /status/...).
-    expect(html).toContain('href="https://xcancel.com/turntrout"')
+    expect(html).toContain('href="https://x.com/turntrout"')
     expect(html).toContain('class="tweet-name-link no-favicon"')
     expect(html).toContain('class="tweet-handle no-favicon"')
     // The X-logo source link points at the post permalink.
-    expect(html).toContain('href="https://xcancel.com/turntrout/status/123"')
+    expect(html).toContain('href="https://x.com/turntrout/status/123"')
     // The avatar is a plain image, not a link.
     expect(html).toContain('<span class="tweet-avatar-wrap"><img')
   })
@@ -365,7 +365,7 @@ describe("buildTweetCard", () => {
 describe("quote tweets", () => {
   const quoted: TweetSnapshot["quoted"] = {
     id: "456",
-    url: "https://xcancel.com/boazbaraktcs/status/456",
+    url: "https://x.com/boazbaraktcs/status/456",
     author: {
       name: "Boaz Barak",
       handle: "boazbaraktcs",
@@ -383,11 +383,11 @@ describe("quote tweets", () => {
     expect(html).toContain("tweet-quoted")
     expect(html).toContain('data-tweet-id="456"')
     expect(html).toContain("Boaz Barak")
-    expect(html).toContain('href="https://xcancel.com/boazbaraktcs"')
+    expect(html).toContain('href="https://x.com/boazbaraktcs"')
     expect(html).toContain("the original take")
-    // The quoted avatar is self-hosted, linkified mentions point at xcancel.
+    // The quoted avatar is self-hosted, linkified mentions point at X.
     expect(html).toContain("tweet-quoted-avatar")
-    expect(html).toContain('href="https://xcancel.com/someone"')
+    expect(html).toContain('href="https://x.com/someone"')
     // The post date sits at the bottom of the quoted card (base is Jan 21, quote Jan 20).
     expect(html).toContain('<span class="tweet-quoted-date">January 20th, 2025</span>')
   })
@@ -495,18 +495,18 @@ describe("retweet context", () => {
 })
 
 describe("buildUnavailableCard", () => {
-  it("links to xcancel and is marked unavailable", () => {
-    const html = render(buildUnavailableCard("https://xcancel.com/turntrout/status/999"))
+  it("links to X and is marked unavailable", () => {
+    const html = render(buildUnavailableCard("https://x.com/turntrout/status/999"))
     expect(html).toContain("tweet-card-unavailable")
-    expect(html).toContain('href="https://xcancel.com/turntrout/status/999"')
-    expect(html).toContain("View it on XCancel")
+    expect(html).toContain('href="https://x.com/turntrout/status/999"')
+    expect(html).toContain("View it on X")
     expect(html).toContain("no-favicon")
   })
 })
 
 describe("buildTweetEmbed", () => {
   it("wraps a single resolved tweet without the thread class", () => {
-    const html = render(buildTweetEmbed([{ snapshot: baseSnapshot, xcancelUrl: baseSnapshot.url }]))
+    const html = render(buildTweetEmbed([{ snapshot: baseSnapshot, url: baseSnapshot.url }]))
     expect(html).toContain("tweet-embed")
     expect(html).not.toContain("tweet-thread")
   })
@@ -514,8 +514,8 @@ describe("buildTweetEmbed", () => {
   it("renders multiple tweets as a thread", () => {
     const html = render(
       buildTweetEmbed([
-        { snapshot: baseSnapshot, xcancelUrl: baseSnapshot.url },
-        { snapshot: { ...baseSnapshot, id: "124" }, xcancelUrl: baseSnapshot.url },
+        { snapshot: baseSnapshot, url: baseSnapshot.url },
+        { snapshot: { ...baseSnapshot, id: "124" }, url: baseSnapshot.url },
       ]),
     )
     expect(html).toContain("tweet-thread")
@@ -524,9 +524,7 @@ describe("buildTweetEmbed", () => {
   })
 
   it("stubs slots without a snapshot", () => {
-    const html = render(
-      buildTweetEmbed([{ xcancelUrl: "https://xcancel.com/turntrout/status/777" }]),
-    )
+    const html = render(buildTweetEmbed([{ url: "https://x.com/turntrout/status/777" }]))
     expect(html).toContain("tweet-card-unavailable")
     expect(html).toContain("status/777")
   })
@@ -534,7 +532,7 @@ describe("buildTweetEmbed", () => {
   it("passes a slot's retweetedBy through to the card", () => {
     const html = render(
       buildTweetEmbed([
-        { snapshot: baseSnapshot, xcancelUrl: baseSnapshot.url, retweetedBy: "Jeff Dean" },
+        { snapshot: baseSnapshot, url: baseSnapshot.url, retweetedBy: "Jeff Dean" },
       ]),
     )
     expect(html).toContain("Jeff Dean retweeted")

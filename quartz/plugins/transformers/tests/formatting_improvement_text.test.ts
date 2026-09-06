@@ -325,22 +325,8 @@ And some hyphens-to-be-ignored.`
         "    $$\\begin{pmatrix}\\text{1 if the agent is dead, 0 otherwise}\\\\ \\text{1 if the agent is alive, 0 otherwise}\\end{pmatrix}.$$  ",
         "    $$\\begin{pmatrix}\\text{1 if the agent is dead, 0 otherwise}\\\\ \\text{1 if the agent is alive, 0 otherwise}\\end{pmatrix}.$$  ",
       ],
-      ["https://x.com/turntrout/status/123", "https://xcancel.com/turntrout/status/123"],
-      ["http://twitter.com/turntrout/status/123", "https://xcancel.com/turntrout/status/123"],
-      [
-        "[tweet](https://twitter.com/turntrout/status/123)",
-        "[tweet](https://xcancel.com/turntrout/status/123)",
-      ],
-      [
-        "[tweet](https://www.x.com/turntrout/status/123)",
-        "[tweet](https://xcancel.com/turntrout/status/123)",
-      ],
-      ["[`x.com`](https://x.com)", "[`x.com`](https://xcancel.com/)"],
-      ["[link](https://x.com/)", "[link](https://xcancel.com/)"],
+      ["https://x.com/turntrout/status/123", "https://x.com/turntrout/status/123"],
       ["twitter.com", "twitter.com"],
-      // A longer host label that merely starts with `x.com` must be left alone.
-      ["https://x.company.com/path", "https://x.company.com/path"],
-      ["https://x.com.au/page", "https://x.com.au/page"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = formattingImprovement(input)
       expect(result).toBe(expected)

@@ -98,11 +98,11 @@ I'd followed the news and guessed that Sundar Pichai (Google's CEO) was more of 
 That's when I remembered reading *Jeff Dean* tweeting about how bad ICE was, retweeting Anne Frank quotes. Maybe I didn't even need 10 engineers. Maybe I just needed *one*.
 
 ```tweet
-https://xcancel.com/JeffDean/status/2015160545331306894
+https://x.com/JeffDean/status/2015160545331306894
 ```
 
 ```tweet
-https://xcancel.com/Larrydn22/status/2015477622969340248
+https://x.com/Larrydn22/status/2015477622969340248
 retweeted-by: Jeff Dean
 ```
 
@@ -389,9 +389,9 @@ The way I saw it was: I don't need to get Jeff to agree to quit over this. In a 
 Signers include: Google DeepMind (the organization), Demis Hassabis, Shane Legg (cofounder, [now Chief AGI Scientist](https://en.wikipedia.org/wiki/Shane_Legg)), Raia Hadsell ([VP of Research](https://raiahadsell.com/index.html)), Jay Yagnik ([VP and Engineering Fellow at Google, leading large parts of Google AI](https://research.google/people/author36197/?&type=google)) and 🥁🥁🥁 Jeff Dean:
 
 ```tweet
-https://xcancel.com/JeffDean/status/2026566490619879574
-https://xcancel.com/TopherSpiro/status/2026668689802547231
-https://xcancel.com/JeffDean/status/2026683499919610153
+https://x.com/JeffDean/status/2026566490619879574
+https://x.com/TopherSpiro/status/2026668689802547231
+https://x.com/JeffDean/status/2026683499919610153
 ```
 
 Figure: Jeff Dean freely reiterated his pledge and agreed that "AI for mass surveillance of Americans" is "the last thing \[he wants\]."
@@ -525,7 +525,7 @@ That weekend prior, I had heard rumblings. [Along with over 600 other employees]
 I found out at 11:45 PM via a Signal group. Google never announced the deal internally. What surprised me was not that Google signed, but that the deal paid the barest of lip service to ethical concerns: the "should not" language [is not binding](https://x.com/CharlieBull0ck/status/2049249853947945369).
 
 ```tweet
-https://xcancel.com/Turn_Trout/status/2049153749743264231
+https://x.com/Turn_Trout/status/2049153749743264231
 ```
 
 I went to the field's premier safety & ethics organization (IASEAI). I asked some of the most distinguished AI scientists (Bengio and Stuart). I built a coalition and a plan for Google's most outspoken executive (Jeff). I even cold-messaged the CEO of my company (Demis), whose lieutenants never evaluated the proposal. Besides Jeff, none took *any* visible action to stop the deal. And the deal contains no binding provisions, which is what I'd expect if Jeff never threatened to walk.
