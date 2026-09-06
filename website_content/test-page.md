@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-08-26
+date_updated: 2026-09-06
 createBibtex: true
 ---
 
@@ -532,27 +532,27 @@ Equation and table nested in a list item (gaps must not stack with `<p>` margins
 A single tweet, rendered from a self-hosted snapshot, with an optional retweet indicator:
 
 ```tweet
-https://xcancel.com/Turn_Trout/status/2064426233769742627
+https://x.com/Turn_Trout/status/2064426233769742627
 retweeted-by: Shrek
 ```
 
 A single image keeps its natural aspect ratio up to a height cap; one that exceeds the cap is cropped and fades out at the bottom edge of the card:
 
 ```tweet
-https://xcancel.com/TechEmails/status/2071254764558676130
+https://x.com/TechEmails/status/2071254764558676130
 ```
 
 A thread (one URL per line) renders as a connected stack:
 
 ```tweet
-https://xcancel.com/Turn_Trout/status/2055343603224879417
-https://xcancel.com/Turn_Trout/status/2055343603958878231
+https://x.com/Turn_Trout/status/2055343603224879417
+https://x.com/Turn_Trout/status/2055343603958878231
 ```
 
 A quote-tweet renders the quoted post as a nested card:
 
 ```tweet
-https://xcancel.com/ChrisMurphyCT/status/2071998353664000365
+https://x.com/ChrisMurphyCT/status/2071998353664000365
 ```
 
 # Images

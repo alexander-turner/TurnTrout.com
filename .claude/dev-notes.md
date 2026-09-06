@@ -367,7 +367,7 @@ cookie-free endpoint doesn't expose retweet or view counts, so those are omitted
 JSON snapshot from `quartz/plugins/transformers/.tweet_snapshots/<id>.json` and
 renders from that. A referenced tweet with no snapshot **fails the build** (so a
 forgotten capture can't silently ship a degraded card); prefix the line with
-`unavailable:` to opt a deleted-before-capture tweet into the xcancel-link stub.
+`unavailable:` to opt a deleted-before-capture tweet into the X-link stub.
 
 Snapshots are captured by `scripts/tweet_snapshot.py`, which fetches the post
 from X's cookie-free syndication endpoint, mirrors the avatar + photos/video to

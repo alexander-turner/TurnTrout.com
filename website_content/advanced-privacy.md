@@ -18,7 +18,7 @@ aliases:
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 date_published: 2025-11-06
-date_updated: 2026-08-15
+date_updated: 2026-09-06
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -413,11 +413,11 @@ After following the first guide, you already have [a good browser](/privacy-desp
 
 Subtitle: Time: 10 minutes.
 
-Even if you're using [a VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](/privacy-despite-authoritarianism#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content using a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, browsing [XCancel](https://xcancel.com/) instead of X:
+Even if you're using [a VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](/privacy-despite-authoritarianism#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content using a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, you could browse a privacy-respecting frontend instead of X directly, like XCancel used to let you do before it shut down:
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif|A screenshot of XCancel, a private front-end for X, displaying posts about machine learning. ]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif|A screenshot of XCancel, a since-shut-down private front-end for X, displaying posts about machine learning. ]]
 
-The downside is you usually can't interact with the site. You can usually just lurk. These sites can also be unreliable, so be ready to ask the extension to redirect you to the original site.
+The downside is you usually can't interact with the site. You can usually just lurk. These sites can also be unreliable and shut down entirely, so be ready to ask the extension to redirect you to the original site.
 
 - [ ] Install the [LibRedirect](https://libredirect.github.io/index.html) extension, which automatically redirects you to an open source frontend which respects your privacy.
 - [ ] In the settings, enable redirects for your favorite sites; you may need to mess with the defaults.

@@ -14,7 +14,7 @@ import {
   loadSnapshot,
   parseTweetReferences,
   replaceTweetBlocks,
-  toXcancelUrl,
+  toXUrl,
   tweetBlockBody,
   TweetEmbed,
 } from "../tweetEmbed"
@@ -28,7 +28,7 @@ const tweetBlock = (body: string): Element =>
 
 const snapshotObject = (id: string): Record<string, unknown> => ({
   id,
-  url: `https://xcancel.com/turntrout/status/${id}`,
+  url: `https://x.com/turntrout/status/${id}`,
   author: { name: "Alex", handle: "turntrout", verified: false, avatarSrc: "a.jpg" },
   createdAt: "2025-01-21T17:32:00.000Z",
   text: "hi",
@@ -64,7 +64,6 @@ describe("extractTweetId", () => {
     ["https://x.com/turntrout/status/123456", "123456"],
     ["https://twitter.com/u/statuses/987654", "987654"],
     ["123456789", "123456789"],
-    ["https://xcancel.com/u/status/111222333", "111222333"],
   ])("extracts %s", (input, expected) => {
     expect(extractTweetId(input)).toBe(expected)
   })
@@ -74,14 +73,13 @@ describe("extractTweetId", () => {
   })
 })
 
-describe("toXcancelUrl", () => {
+describe("toXUrl", () => {
   it.each([
-    ["https://x.com/u/status/1", "https://xcancel.com/u/status/1"],
-    ["https://www.twitter.com/u/status/1", "https://xcancel.com/u/status/1"],
-    ["https://xcancel.com/u/status/1", "https://xcancel.com/u/status/1"],
+    ["https://x.com/u/status/1", "https://x.com/u/status/1"],
+    ["https://www.twitter.com/u/status/1", "https://x.com/u/status/1"],
     ["1234567890", "1234567890"],
   ])("rewrites %s", (input, expected) => {
-    expect(toXcancelUrl(input)).toBe(expected)
+    expect(toXUrl(input)).toBe(expected)
   })
 })
 
@@ -91,8 +89,8 @@ describe("parseTweetReferences", () => {
       "https://x.com/u/status/10001\n\n  https://x.com/u/status/10002  \n",
     )
     expect(refs).toEqual([
-      { id: "10001", xcancelUrl: "https://xcancel.com/u/status/10001" },
-      { id: "10002", xcancelUrl: "https://xcancel.com/u/status/10002" },
+      { id: "10001", url: "https://x.com/u/status/10001" },
+      { id: "10002", url: "https://x.com/u/status/10002" },
     ])
   })
 
@@ -103,7 +101,7 @@ describe("parseTweetReferences", () => {
   it("attaches retweeted-by to the preceding tweet", () => {
     const refs = parseTweetReferences("https://x.com/u/status/10001\nretweeted-by:  Jeff Dean \n")
     expect(refs).toEqual([
-      { id: "10001", xcancelUrl: "https://xcancel.com/u/status/10001", retweetedBy: "Jeff Dean" },
+      { id: "10001", url: "https://x.com/u/status/10001", retweetedBy: "Jeff Dean" },
     ])
   })
 
@@ -113,9 +111,7 @@ describe("parseTweetReferences", () => {
 
   it("marks an `unavailable:`-prefixed line and parses its url", () => {
     const refs = parseTweetReferences("unavailable:  https://x.com/u/status/10001 \n")
-    expect(refs).toEqual([
-      { id: "10001", xcancelUrl: "https://xcancel.com/u/status/10001", unavailable: true },
-    ])
+    expect(refs).toEqual([{ id: "10001", url: "https://x.com/u/status/10001", unavailable: true }])
   })
 })
 

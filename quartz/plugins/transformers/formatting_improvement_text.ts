@@ -183,16 +183,10 @@ export function noteAdmonition(text: string): string {
 const subtitlePattern = /^(?<quote>(?:> *)*)(?<subtitle>Subtitle:[\S ]+\n)(?!\k<quote>\n)/gm
 const subtitleReplacement = "$<quote>$<subtitle>$<quote>\n"
 
-// Replace x.com and twitter.com links with xcancel.com. The `(?![\w.-])`
-// guard keeps `.com` from matching inside a longer host label such as
-// `x.company.com` or `x.com.au`.
-const xcancelHostReplacementRegex = /https?:\/\/(?:www\.)?(?:x|twitter)\.com(?![\w.-])\/?/gi
-
 const massTransforms: [RegExp | string, string][] = [
   [/^\$\$(?= *\S)/gm, "$$$$\n"], // Display mode math should be on a new line
   [/^(?! *>| +\S)(?<content>\S.*?)\$\$ *$/gm, "$<content>\n$$$$"],
   [subtitlePattern, subtitleReplacement],
-  [xcancelHostReplacementRegex, "https://xcancel.com/"],
   [/(?<=\| *)\nTable: /g, "\n\nTable: "],
   // Insert a blank line after a block-level HTML tag so the markdown parser
   // doesn't swallow following prose into the same HTML block. Avoid inside of code blocks.

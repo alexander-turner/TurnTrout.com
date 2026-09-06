@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-08-26
+date_updated: 2026-09-06
 no_dropcap: false
 createBibtex: true
 ---
@@ -113,10 +113,10 @@ I later describe my [@title-lower](#deployment-pipeline) in more detail.
 
 ## Embedding tweets
 
-I enable tracking-free embeds of tweets, rendered in my site's style. Each card renders from a tweet-info JSON which I host on my own CDN, so it leaks nothing to X and still displays even if the original tweet is deleted. I also point the links at [`xcancel.com`](https://xcancel.com) rather than `x.com`, as I [avoid X for ethical reasons.](/advanced-privacy#gradually-migrate-your-social-network-away-from-x)
+I enable tracking-free embeds of tweets, rendered in my site's style. Each card renders from a tweet-info JSON which I host on my own CDN, so it leaks nothing to X and still displays even if the original tweet is deleted.
 
 ```tweet
-https://xcancel.com/Turn_Trout/status/2064426233769742627
+https://x.com/Turn_Trout/status/2064426233769742627
 ```
 
 # Color scheme

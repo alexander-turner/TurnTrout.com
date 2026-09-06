@@ -28,7 +28,7 @@ const snapshotCdnUrl = (id: string): string => `${cdnBaseUrl}/static/tweets/${id
 
 // Keep in sync with TWEET_ID_RE in scripts/tweet_snapshot.py.
 const TWEET_ID_RE = /(?:status(?:es)?\/)?(\d{5,25})/
-const TWEET_HOST_RE = /^https?:\/\/(?:www\.)?(?:x|twitter|xcancel|nitter\.[^/]+)\.com/i
+const TWEET_HOST_RE = /^https?:\/\/(?:www\.)?(?:x|twitter)\.com/i
 
 /** Extract the numeric status id from a tweet URL or bare id. */
 export function extractTweetId(text: string): string | null {
@@ -36,18 +36,18 @@ export function extractTweetId(text: string): string | null {
   return match ? match[1] : null
 }
 
-/** Rewrite an x.com/twitter.com permalink to its xcancel.com equivalent. */
-export function toXcancelUrl(rawUrl: string): string {
+/** Rewrite an x.com/twitter.com permalink to its canonical x.com equivalent. */
+export function toXUrl(rawUrl: string): string {
   const trimmed = rawUrl.trim()
   if (TWEET_HOST_RE.test(trimmed)) {
-    return trimmed.replace(TWEET_HOST_RE, "https://xcancel.com")
+    return trimmed.replace(TWEET_HOST_RE, "https://x.com")
   }
   return trimmed
 }
 
 export interface TweetReference {
   id: string
-  xcancelUrl: string
+  url: string
   retweetedBy?: string
   /** Snapshot is intentionally absent (tweet deleted before capture); stub is OK. */
   unavailable?: boolean
@@ -83,7 +83,7 @@ export function parseTweetReferences(body: string): TweetReference[] {
     if (!id) {
       throw new Error(`tweetEmbed: no tweet id found in line ${JSON.stringify(line)}`)
     }
-    const ref: TweetReference = { id, xcancelUrl: toXcancelUrl(urlText) }
+    const ref: TweetReference = { id, url: toXUrl(urlText) }
     if (unavailable) ref.unavailable = true
     refs.push(ref)
   }
@@ -176,14 +176,14 @@ function resolveSlots(refs: readonly TweetReference[], dir: string): Promise<Twe
       const snapshot = await loadSnapshot(ref.id, dir)
       if (!snapshot && !ref.unavailable) {
         throw new Error(
-          `tweetEmbed: no snapshot for tweet ${ref.id} (${ref.xcancelUrl}) on disk or R2. ` +
+          `tweetEmbed: no snapshot for tweet ${ref.id} (${ref.url}) on disk or R2. ` +
             "Run `uv run python scripts/tweet_snapshot.py --write` to capture it and upload it to R2, or " +
             "prefix the line with `unavailable:` if the tweet is gone and can't be snapshotted.",
         )
       }
       return {
         snapshot: snapshot ?? undefined,
-        xcancelUrl: ref.xcancelUrl,
+        url: ref.url,
         retweetedBy: ref.retweetedBy,
       }
     }),
@@ -212,7 +212,7 @@ export async function replaceTweetBlocks(tree: Root, dir: string = snapshotDir):
  * Replaces ```tweet fenced blocks (one tweet URL per line) with self-hosted,
  * tracking-free tweet cards rendered from snapshots captured by
  * `scripts/tweet_snapshot.py`. Multiple URLs render as a connected thread;
- * tweets without a snapshot degrade to an xcancel link.
+ * tweets without a snapshot degrade to a link to the post on X.
  */
 export const TweetEmbed: QuartzTransformerPlugin = () => {
   return {
