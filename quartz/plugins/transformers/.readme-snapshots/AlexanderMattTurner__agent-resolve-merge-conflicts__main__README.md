@@ -28,7 +28,7 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@26547867526c1fd3ca0289a700b1a964cffa4f45 # v1.34.2
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@a480939b626d502dc7dd808a881ab141fc6de5ee # v1.34.10
     with:
       pr: ${{ matrix.pr.number }}
       resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
@@ -49,7 +49,9 @@ jobs:
       # in this repository for a block a consumer can copy verbatim.
 ```
 
-That job is half of an adoption. Copy `.github/workflows/auto-resolve-conflicts.yaml` from this repository as your starting caller: it owns the triggers, the `discover` job that decides which pull requests to hand over, and the `relay` job that re-fires a push or scheduled scan as a `workflow_dispatch`. This workflow owns everything after that.
+That job is half of an adoption. Copy `.github/workflows/auto-resolve-conflicts.yaml` from this repository as your starting caller: it owns the triggers and the `discover` job, which decides which pull requests to hand over and re-fires a push or scheduled scan as a `workflow_dispatch`. This workflow owns everything after that.
+
+Copy `.github/scripts/resolver-dir.sh` and `.github/scripts/resolver-ref.py` beside it. `discover` runs them on every scan to stage the resolver at the sha its own `uses:` line names, so a caller without them fails at its first step. Its `actions: write` scope is what re-fires the scan; a repository whose token policy caps at read gets a 403 there instead.
 
 The `permissions:` block on the calling job sets a ceiling, not a grant. Your job lists what it holds, and this workflow's own jobs each request at most that much. `resolve` narrows itself well below the ceiling; `land` needs the write scopes and takes them. GitHub lets a called workflow request only what the calling job already holds. A caller that grants less ends the whole run in `startup_failure` before any job starts — no red job, and no reported check for you to read.
 
@@ -203,7 +205,7 @@ A `uses:` ref may be a SHA, a tag or a branch. GitHub calls [the commit SHA the 
 **Pin the SHA and name the version beside it**, the way this repository's own caller does:
 
 ```yaml
-uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@26547867526c1fd3ca0289a700b1a964cffa4f45 # v1.34.2
+uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@a480939b626d502dc7dd808a881ab141fc6de5ee # v1.34.10
 ```
 
 That line reads as a version and resolves as an immutable commit. It names the newest release: `.github/scripts/release-tag.sh` rewrites both copies in this README, and the caller's, in the commit after each release. Copy it as it stands.
