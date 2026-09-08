@@ -86,6 +86,7 @@ onlyBuiltDependencies:
   - workerd
 
 allowBuilds:
+  "@turntrout/subfont@https://codeload.github.com/AlexanderMattTurner/subfont/tar.gz/9ef75626d6c4118dff0394996f072b96fa42d33e": true
   "@parcel/watcher": true
   esbuild: true
   puppeteer: true
