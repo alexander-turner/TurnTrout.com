@@ -196,7 +196,7 @@ jobs:
           project-name: turntrout
           branch: ${{ github.ref_name }}
 
-      # subfont is pinned to @turntrout/subfont@1.8.1 in package.json and
+      # subfont is pinned in package.json and
       # installed by setup-site's `pnpm install`, so we run it via
       # `pnpm exec` (in scripts/subfont.sh) — no separate global install.
       - name: Make script executable
