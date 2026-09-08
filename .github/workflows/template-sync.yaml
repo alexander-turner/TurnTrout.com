@@ -130,6 +130,15 @@ jobs:
           DELETED_FILES: ${{ steps.sync.outputs.deleted_files }}
         run: bash .github/scripts/show-sync-diff.sh
 
+      - name: Upload conflict report
+        if: steps.sync.outputs.has_conflicts == 'true'
+        id: conflict-report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: template-sync-conflicts
+          path: /tmp/conflict_report.md
+          if-no-files-found: error
+
       - name: Create Pull Request
         if: inputs.dry-run != 'true' && (steps.sync.outputs.has_changes == 'true' || steps.sync.outputs.has_conflicts == 'true' || steps.sync.outputs.has_deletions == 'true')
         id: create-pr
@@ -171,7 +180,7 @@ jobs:
 
             The following files need conflict resolution. Claude will resolve these automatically.
 
-            ' || '' }}${{ steps.sync.outputs.conflict_report }}
+            ' || '' }}${{ steps.conflict-report.outputs.artifact-url && format('[Download the full conflict report]({0}).', steps.conflict-report.outputs.artifact-url) || '' }}
 
             ---
             Please review the changes and merge if appropriate.

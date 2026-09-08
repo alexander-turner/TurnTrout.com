@@ -333,7 +333,6 @@ main() {
       echo "has_conflicts=true"
       echo "conflict_files=$conflicts"
     } >>"$GITHUB_OUTPUT"
-    emit_multiline_output "conflict_report" "$(cat "$CONFLICT_REPORT")"
     echo "Template updates available for: $conflicts" >.template-sync-conflicts
   else
     echo "has_conflicts=false" >>"$GITHUB_OUTPUT"
