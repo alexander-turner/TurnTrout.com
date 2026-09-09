@@ -18,7 +18,7 @@ aliases:
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 date_published: 2025-11-06
-date_updated: 2026-08-03
+date_updated: 2026-09-06
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -104,7 +104,7 @@ Complete this section whether you're on a new GrapheneOS installation or whether
 
 Obtainium is not as intuitive as the Play or App Store, but it's fine with a bit of practice. Here's what I figured out. You'll navigate two kinds of installations: simple installations and "complicated" installations.
 
-To download a "simple" app (like the [Transportr public transit scheduler](/privacy-despite-authoritarianism#make-magic-earth-your-map-of-choice)):
+To download a "simple" app (like the [Transportr public transit scheduler](/privacy-despite-authoritarianism#navigate-with-google-maps-in-incognito-mode)):
         1. Open the "Add app" tab in Obtainium.
         2. Search for the name of the app (e.g. "Transportr") using the field "Search (some sources only)".
         3. Select the search sources "GitHub", "GitLab", and "Forgejo".
@@ -115,13 +115,10 @@ To download a "simple" app (like the [Transportr public transit scheduler](/priv
 
 The Signal messaging app is a "complicated" installation. To download Signal, just go to [this set of crowdsourced app configurations](https://apps.obtainium.imranr.dev/) and click "add to Obtainium" --- other folks did the complicated work for you. :)
 
-2. [ ] Install AppVerifier (a "complicated" installation). AppVerifier helps you check that you're installing legit versions of apps. When you install an application through Obtainium, you can "share" the downloaded file with AppVerifier to check.
-
 > [!tip] Complicated installations from these guides
 > I recommend adding all of these configurations to your Obtainium so you can install them. Make sure to uninstall any existing versions first.
 >
 > - [ ] AnyType,
-> - [ ] AppVerifier,
 > - [ ] Aurora Store,
 > - [ ] Bitwarden,
 > - [ ] Brave,
@@ -136,9 +133,9 @@ The Signal messaging app is a "complicated" installation. To download Signal, ju
 
 The above list contained the [Aurora app store](https://auroraoss.com/). Aurora carries everything on the Google Play app store, but it's open source and downloads applications anonymously (even Google won't know). Not all apps are on Obtainium. When you want to download an app, first check if it's on Obtainium and then check Aurora.
 
-For GrapheneOS users, I recommend first installing Aurora, Bitwarden, and then ProtonVPN via Aurora. Once behind a VPN, the rest of your mobile installation activity will be more private.
+For GrapheneOS users, I recommend first installing Aurora and then ProtonVPN (using Aurora). Once behind a VPN, the rest of your mobile installation activity will be more private.
 
-- [ ] Even if you aren't setting up GrapheneOS, reinstall all of your apps which can be installed using Obtainium. By doing so, you download your apps directly from the developers, reducing the possibility of government-inserted vulnerabilities.
+2. [ ] Even if you aren't setting up GrapheneOS, reinstall all of your apps which can be installed using Obtainium. By doing so, you download your apps directly from the developers, reducing the possibility of government-inserted vulnerabilities.
 
 #### The rest of the switch to GrapheneOS
 
@@ -416,11 +413,11 @@ After following the first guide, you already have [a good browser](/privacy-desp
 
 Subtitle: Time: 10 minutes.
 
-Even if you're using [a VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](/privacy-despite-authoritarianism#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content using a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, browsing [XCancel](https://xcancel.com/) instead of X:
+Even if you're using [a VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](/privacy-despite-authoritarianism#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content using a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, you could browse a privacy-respecting frontend instead of X directly, like XCancel used to let you do before it shut down:
 
-![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif|A screenshot of XCancel, a private front-end for X, displaying posts about machine learning. ]]
+![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif|A screenshot of XCancel, a since-shut-down private front-end for X, displaying posts about machine learning. ]]
 
-The downside is you usually can't interact with the site. You can usually just lurk. These sites can also be unreliable, so be ready to ask the extension to redirect you to the original site.
+The downside is you usually can't interact with the site. You can usually just lurk. These sites can also be unreliable and shut down entirely, so be ready to ask the extension to redirect you to the original site.
 
 - [ ] Install the [LibRedirect](https://libredirect.github.io/index.html) extension, which automatically redirects you to an open source frontend which respects your privacy.
 - [ ] In the settings, enable redirects for your favorite sites; you may need to mess with the defaults.

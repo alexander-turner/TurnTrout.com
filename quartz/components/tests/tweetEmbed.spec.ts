@@ -7,13 +7,13 @@ test.beforeEach(async ({ page }) => {
 })
 
 test.describe("Tweet embeds", () => {
-  test("single tweet renders author, body, and an xcancel permalink", async ({ page }) => {
+  test("single tweet renders author, body, and an X permalink", async ({ page }) => {
     const card = page.locator(".tweet-embed:not(.tweet-thread) .tweet-card").first()
     await card.scrollIntoViewIfNeeded()
     await expect(card).toBeVisible()
     await expect(card.locator(".tweet-name")).toContainText("Alex Turner")
-    // The handle links to the author's xcancel profile (not the post).
-    await expect(card.locator("a.tweet-handle")).toHaveAttribute("href", /xcancel\.com\/[^/]+$/)
+    // The handle links to the author's X profile (not the post).
+    await expect(card.locator("a.tweet-handle")).toHaveAttribute("href", /x\.com\/[^/]+$/)
     // The date is plain text, not a link.
     await expect(card.locator("a.tweet-date")).toHaveCount(0)
     // No favicons are stamped on the card's links.

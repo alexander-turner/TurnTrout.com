@@ -176,10 +176,11 @@ describe("bindTitlesInTree", () => {
     expect(textOf(root)).toContain("@title")
   })
 
-  it("leaves the sentinel on an external/unresolvable link as literal text", () => {
+  it("throws on the sentinel on an external/unresolvable link", () => {
     const root = tree(boundAnchor({ href: "https://example.com" }))
-    bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")
-    expect(textOf(root)).toContain(">@title<")
+    expect(() => bindTitlesInTree(root, idx, "source" as FullSlug, "source.md")).toThrow(
+      /external or unresolvable href "https:\/\/example\.com"/,
+    )
   })
 
   it("ignores anchors without an href", () => {

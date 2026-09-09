@@ -41,7 +41,7 @@ date_published: 2020-02-22
 original_url: https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utility-preservation-empirical-results
 skip_import: true
 description: The AUP technique encourages low-impact behavior in both simple and complex environments.
-date_updated: 2026-07-22
+date_updated: 2026-08-26
 createBibtex: true
 ---
 
@@ -166,6 +166,7 @@ Stepwise inaction seems not to impose any perverse incentives.[^3] I think it's 
 I think AUP<sub>conceptual</sub> provides the concepts needed for a solution to impact measurement: penalize the agent for changing its power. But there are still some design choices to be made to make that happen.
 
 Here's what we've seen so far:
+
 Baseline
 : - Starting state: how were things originally?
   - Inaction: how would things have been had I never done anything?

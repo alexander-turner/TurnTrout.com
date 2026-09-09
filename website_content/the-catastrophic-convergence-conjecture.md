@@ -40,7 +40,7 @@ original_url: https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/8l3kkwg.jpg
 description: "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power."
-date_updated: 2026-08-03
+date_updated: 2026-08-19
 card_image_alt: 'The "Catastrophic Convergence Conjecture" is defined as: "Unaligned goals tend to have catastrophe-inducing optimal policies because of power-seeking incentives."'
 createBibtex: true
 ---
@@ -65,7 +65,7 @@ createBibtex: true
 
 ![Two robots on opposite sides of the world. Text reads: "It may take a while for power-seekers to come into conflict. But they will. They don't hate each other; they're just in each other's way. Consider classic hypothetical examples of alignment failures."](https://assets.turntrout.com/static/images/posts/j6Tcj9x.avif) ![Panels show a robot escaping a (cardboard) box, refusing shutdown by saying "I'm afraid I can't do that," and taking over the world with paperclips. Text: "In each case, the agent is trying to become more capable of achieving its goal. The AI doesn't hate us; we're just in its way."](https://assets.turntrout.com/static/images/posts/egyx3vb.avif) ![The "Catastrophic Convergence Conjecture" is defined as: "Unaligned goals tend to have catastrophe-inducing optimal policies because of power-seeking incentives."](https://assets.turntrout.com/static/images/posts/8l3kkwg.avif)
 
-## Overfitting the AU landscape
+# Overfitting the AU landscape
 
 When we act, and others act upon us, we aren’t just changing our ability to do things – we’re _shaping the local environment_ towards certain goals, and away from others.[^1] We’re fitting the world to our purposes.
 
@@ -73,7 +73,7 @@ What happens to the AU landscape[^2] if a paperclip maximizer takes over the wor
 
 ![A diagram of an AI consolidating power. A robot uses extendable claws to extract AU from vertical bars labeled "Human" and "Trout." The Human and Trout status bars are nearly empty, while the "AI" bar overflows.](https://assets.turntrout.com/static/images/posts/stCBNq6.avif)
 
-### Preferences implicit in the evolution of the AU landscape
+## Preferences implicit in the evolution of the AU landscape
 
 Shah et al.'s [_Preferences Implicit in the State of the World_](https://arxiv.org/pdf/1902.04198.pdf) leverages the insight that the world state contains information about what we value. That is, there are agents pushing the world in a certain "direction". If you wake up and see a bunch of vases everywhere, then vases are probably important and you shouldn't explode them.
 
@@ -97,7 +97,7 @@ Similarly, the world is being optimized to facilitate achievement of certain goa
 > [!info] Project
 > Work out an AU landscape-based alignment proposal.
 
-## Why can't everyone be king?
+# Why can't everyone be king?
 
 Consider two coexisting agents each rewarded for gaining power; let's call them Ogre and Giant. Their reward functions[^4] (over the partial-observability observations) are identical. Will they compete? If so, why?
 
@@ -109,7 +109,7 @@ Just because agents have _indexically_ identical payoffs doesn't mean they're co
 
 Most agents aren't pure power maximizers. But since the same resource competition usually applies, the reasoning still goes through.
 
-## Objective vs value-specific catastrophes
+# Objective vs value-specific catastrophes
 
 How useful is our definition of "catastrophe" with respect to humans? After all, literally anything could be a catastrophe for _some_ utility function.[^5]
 
@@ -128,7 +128,7 @@ Consider a psychologically traumatizing event which leaves humans uniquely unabl
 
 No. This event demonstrates the delicacy of _human psychology_. Notice also that our AUs for constructing red cubes, reliably looking at blue things, and surviving are _also_ ruined. Our power has been decreased.
 
-## Detailing the catastrophic convergence conjecture (CCC)
+# Detailing the catastrophic convergence conjecture (CCC)
 
 In general, the CCC follows from two sub-claims.
 
@@ -155,7 +155,7 @@ While there _exist_ agents which cause catastrophe for other reasons (e.g. an AI
 
 _Edit_: The initial version of this post talked about "outer alignment"; I changed this to just talk about _alignment_, because the outer/inner alignment distinction doesn't feel relevant here. What matters is how the AI's policy impacts us; what matters is [_impact alignment_](/non-obstruction-motivates-corrigibility).
 
-## Prior work
+# Prior work
 
 > [!quote] Jessica Taylor, [Pursuing convergent instrumental subgoals on the user's behalf doesn't always require good priors](https://www.alignmentforum.org/posts/5bd75cc58225bf06703752da/pursuing-convergent-instrumental-subgoals-on-the-user-s-behalf-doesn-t-always-require-good-priors)
 >

@@ -1,21 +1,6 @@
 # `agent-sanitizer`
 
-Most prompt-injection tools run a classifier _over_ the text and hope it
-generalizes. This library targets a narrower, verifiable claim: the
-specific byte-level channels—invisible Unicode, ANSI escapes, human-hidden
-HTML, confusable glyphs, exfil-shaped URLs—that let an attacker smuggle a
-payload the operator can't see but the model still reads. Every layer is a
-deterministic transform you can unit-test with equality assertions.
-
-**As a library:**
-
-```sh
-npm install agent-sanitizer
-```
-
-**As a Claude Code plugin:**
-
-Enter one at a time:
+**Cleans untrusted text before your agent reads it.** An attacker hides a payload where a person cannot see it but the model still reads it: invisible Unicode, ANSI escapes, human-hidden HTML, confusable glyphs, look-alike hosts, and exfil-shaped URLs. This library handles each channel. Easy to use as a Claude Code plugin, and the plugin itself is recommended by [`alignment-hive`](https://github.com/crazytieguy/alignment-hive/)!
 
 ```
 /plugin marketplace add AlexanderMattTurner/agent-sanitizer
@@ -27,9 +12,7 @@ Enter one at a time:
 
 Finally, navigate: `/plugin` → Marketplaces → `agent-sanitizer` → Enable auto-update.
 
-[What installing entails](#what-installing-entails) covers the footprint of each
-path and how a failure looks; [Using it with Claude
-Code](#using-it-with-claude-code) covers each hook and hand-wiring.
+[What installing entails](#what-installing-entails) covers the footprint of each path and how a failure looks; [Using it with Claude Code](#using-it-with-claude-code) covers each hook and hand-wiring.
 
 ## Quick start
 
@@ -45,6 +28,15 @@ const result = await sanitize(pageSource, { html: true });
 // Layer 3 alone: flag exfil-shaped URLs without splicing anything (for text
 // that must stay byte-faithful, e.g. a PR diff). Implied by `html: true`.
 const scanned = await sanitize(diffText, { exfilScan: true });
+
+// Layer 3 reads an exact-digest-length hex value under a generic parameter
+// name (`?v=<md5>`, an ETag, a commit id) as a fingerprint. `flagDigestValues`
+// reports it as payload instead — more false positives, no 16-to-64-byte
+// channel under a name the caller picks. For monitors, not for splicing.
+const strict = await sanitize(logText, {
+  exfilScan: true,
+  flagDigestValues: true,
+});
 ```
 
 `sanitize` never throws and never silently drops content—any change comes with
@@ -59,17 +51,18 @@ Split into subpaths so the heavy HTML dependency stays opt-in. **Seam** names
 the callback you inject for the agent-specific concern; `—` is a pure transform,
 `fs (direct)` does its own file I/O instead of taking one.
 
-| #   | Import          | Purpose                                                                                                                                                                                  | Seam                        |
-| --- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| 1   | `/invisible`    | Strip zero-width, bidi, variation-selector and tag chars + ANSI/SGR escapes. Preserves ZWNJ/ZWJ for Arabic/Indic/emoji. Zero deps.                                                       | —                           |
-| 2   | `/html`         | Splice out HTML comments and elements hidden via `display:none`, off-screen, white-on-white, `hidden`. Each splice leaves a keyed, round-trippable placeholder.                          | —                           |
-| 3   | `/html`         | Detect exfil-shaped URLs (payloads in query/path, embedded creds, `data:`/`javascript:`, off-origin redirects). Reports only.                                                            | —                           |
-| 4   | `/confusables`  | Fold look-alike glyphs in tool-call input (paths, commands) to ASCII, closing a cross-script deny-rule bypass. Gated per token, so non-Latin prose passes through unfolded.              | `scan`                      |
-| 5   | `/instructions` | Scan/auto-clean `CLAUDE.md`, `AGENTS.md`, `SKILL.md`, etc., decoding Unicode-tag + zero-width-binary payloads.                                                                           | `fs` (direct)               |
-| 6   | `/prompt`       | Classify a prompt pass / note / block on payload-capable invisible/ANSI content (inert escapes get the note).                                                                            | —                           |
-| 7   | `/output`       | Run Layers 1–4 over structured tool output, preserving shape. The Layer-5 slot takes a delete-only filter.                                                                               | `redact`, `filterInjection` |
-| 8   | `/rehydrate`    | Re-anchor a model Edit or whole-file Write composed from the _sanitized_ view back onto real bytes; gate MultiEdit on a verified view==disk; deny anything ambiguous or secret-exposing. | `io`                        |
-| —   | `/view-map`     | Pure offset/text machinery mapping a file's on-disk bytes ↔ the sanitized view (Layer-1 deletions, Layer-4 redactions). No I/O — consumed by `/rehydrate`.                               | —                           |
+| #   | Import          | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Seam                        |
+| --- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| 1   | `/invisible`    | Strip zero-width, bidi, variation-selector and tag chars + ANSI/SGR escapes. Preserves ZWNJ/ZWJ for Arabic/Indic/emoji. Zero deps.                                                                                                                                                                                                                                                                                                                                                                                                     | —                           |
+| 1   | `/layer1`       | Layer 1 in one call: the invisible-char and ANSI strips run to a FIXED POINT over each other (either removal can reconstitute what the other matches), then a residual control-introducer sweep closes it — not a two-step pipeline a caller can reproduce in a fixed order. `applyLayer1` leaves an unpaired UTF-16 surrogate in place; `applyLayer1WellFormed` also maps it to U+FFFD, which is the string `/output` shows a model — take that one when the result feeds a redactor, an offset calculation or a view map. Zero deps. | —                           |
+| 2   | `/html`         | Splice out HTML comments and elements hidden via `display:none`, off-screen, white-on-white, `hidden`. Each splice leaves a keyed, round-trippable placeholder.                                                                                                                                                                                                                                                                                                                                                                        | —                           |
+| 3   | `/html`         | Detect exfil-shaped URLs (payloads in query/path, embedded creds, `data:`/`javascript:`, off-origin redirects) and confusable HOSTS (`аpple.com`). Reports only — never rewrites.                                                                                                                                                                                                                                                                                                                                                      | —                           |
+| 4   | `/confusables`  | Fold look-alike glyphs in tool-call input (paths, commands) to ASCII, closing a cross-script deny-rule bypass. Gated per token, so non-Latin prose passes through unfolded.                                                                                                                                                                                                                                                                                                                                                            | `scan` (optional)           |
+| 5   | `/instructions` | Scan/auto-clean `CLAUDE.md`, `AGENTS.md`, `SKILL.md`, etc., decoding Unicode-tag + zero-width-binary payloads.                                                                                                                                                                                                                                                                                                                                                                                                                         | `fs` (direct)               |
+| 6   | `/prompt`       | Classify a prompt pass / note / block on payload-capable invisible/ANSI content (inert escapes get the note).                                                                                                                                                                                                                                                                                                                                                                                                                          | —                           |
+| 7   | `/output`       | Run Layers 1–4 over structured tool output, preserving shape. The Layer-5 slot takes a delete-only filter.                                                                                                                                                                                                                                                                                                                                                                                                                             | `redact`, `filterInjection` |
+| 8   | `/rehydrate`    | Re-anchor a model Edit or whole-file Write composed from the _sanitized_ view back onto real bytes; gate MultiEdit on a verified view==disk; deny anything ambiguous or secret-exposing.                                                                                                                                                                                                                                                                                                                                               | `io`                        |
+| —   | `/view-map`     | Pure offset/text machinery mapping a file's on-disk bytes ↔ the sanitized view (Layer-1 deletions, Layer-4 redactions). No I/O — consumed by `/rehydrate`.                                                                                                                                                                                                                                                                                                                                                                             | —                           |
 
 See [`THREAT-MODEL.md`](./THREAT-MODEL.md) for per-vector detail.
 
@@ -79,16 +72,17 @@ See [`THREAT-MODEL.md`](./THREAT-MODEL.md) for per-vector detail.
 contract—branch on these codes, not on `warnings` prose, which can be reworded
 without notice.
 
-| Code                  | Meaning                                                                                                 |
-| --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `cf-format`           | Unicode format chars (`Cf`): zero-width space/joiner, bidi overrides, tag chars                         |
-| `variation-selectors` | Variation selectors (U+FE00–FE0F, U+E0100–E01EF)                                                        |
-| `blank-fillers`       | Blank-rendering fillers not covered by `Cf` (Hangul fillers, Braille blank, zero-width combining marks) |
-| `ansi`                | ANSI/SGR escapes and other terminal control sequences                                                   |
-| `lone-surrogates`     | Unpaired UTF-16 surrogates                                                                              |
-| `html-comments`       | HTML comments (incl. bogus `<!…>`/`<?…?>` forms) spliced out by Layer 2, recoverable via `splices`      |
-| `hidden-html`         | Elements hidden via CSS/attribute (`display:none`, `hidden`, etc.) spliced out by Layer 2               |
-| `exfil-urls`          | Exfil-shaped URLs detected by Layer 3 (reported, not removed)                                           |
+| Code                  | Meaning                                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `cf-format`           | Unicode format chars (`Cf`): zero-width space/joiner, bidi overrides, tag chars                              |
+| `variation-selectors` | Variation selectors (U+FE00–FE0F, U+E0100–E01EF)                                                             |
+| `blank-fillers`       | Blank-rendering fillers not covered by `Cf` (Hangul fillers, Braille blank, zero-width combining marks)      |
+| `ansi`                | ANSI/SGR escapes and other terminal control sequences                                                        |
+| `lone-surrogates`     | Unpaired UTF-16 surrogates                                                                                   |
+| `html-comments`       | HTML comments (incl. bogus `<!…>`/`<?…?>` forms) spliced out by Layer 2, recoverable via `splices`           |
+| `hidden-html`         | Elements hidden via CSS/attribute (`display:none`, `hidden`, etc.) spliced out by Layer 2                    |
+| `exfil-urls`          | Exfil-shaped URLs detected by Layer 3 (reported, not removed)                                                |
+| `confusable-host`     | URL hosts that are look-alikes of an ASCII name (`аpple.com`), detected by Layer 3 (reported, not rewritten) |
 
 ### warnings vs notes
 
@@ -151,20 +145,31 @@ Per-vector detail in [`THREAT-MODEL.md`](./THREAT-MODEL.md).
 
 ## What installing entails
 
-Installing the plugin puts four hooks on every session, and this is what they
+Installing the plugin puts five hooks on every session, and this is what they
 buy you:
 
 1. Your `CLAUDE.md`, `AGENTS.md` and the context markdown under `.claude/` are
-   scanned at session start for hidden-Unicode payloads and auto-cleaned where
-   possible. Only the subdirectories Claude Code loads as context are walked, so
-   bulk data parked under `.claude/` (`worktrees/`, caches, transcripts) does not
-   slow startup.
+   scanned for hidden-Unicode payloads and auto-cleaned where possible. Session
+   start covers what Claude Code loads at launch — the project root's own
+   instruction files, the `CLAUDE.md` chain above it, and the root `.claude/`
+   context subdirectories (rules, skills, agents), never bulk data parked there
+   (`worktrees/`, caches, transcripts). Everything else Claude Code loads — a
+   subdirectory's `CLAUDE.md`, a path-scoped rule, an `@import`, your
+   user-global `~/.claude/CLAUDE.md` and global rules — is scanned from the
+   bytes the load event carries, at the moment it loads, so startup costs no
+   tree walk at all. Only files inside the project are rewritten: one shared
+   with every other project on the machine is reported, not edited.
 2. Prompts carrying payload-capable invisible or ANSI characters are blocked
    before they reach the model; pasted terminal color passes with a note.
 3. Look-alike glyphs in tool inputs are folded to ASCII, so a Cyrillic `а` can't
    walk a command past a deny rule.
 4. Tool output has invisible characters and terminal escapes stripped, hidden
-   HTML spliced out with a placeholder, and exfil-shaped URLs flagged.
+   HTML spliced out with a placeholder, and exfil-shaped URLs flagged. A hex
+   value one digest wide is exempt under a generic query or fragment parameter
+   name, because a commit or blob id in a link is ordinary — under a name that
+   already says credential it still flags, and a path segment never reaches the
+   exemption at all. `AGENT_SANITIZER_FLAG_DIGEST_VALUES=1` turns it off for a
+   consumer that reads such a value as a leak.
 5. With `AGENT_SANITIZER_SECRETS_ENABLED=1` set, secrets in tool output are
    redacted locally by `detect-secrets` — the engine ships with the plugin and
    provisions itself on first run, no further setup from you.
@@ -178,9 +183,13 @@ Failure is loud by design. Installed as Claude Code hooks the layers fail
 **open**: a hook that could not run lets the action through rather than halting
 your session on its own breakage — but it says so, in a warning the model and
 the transcript both carry. Set `AGENT_SANITIZER_FAIL_OPEN=0` and the same
-failures block instead: suppressed tool output
-(`[output sanitizer unavailable — original output suppressed]`), blocked
-prompts, permission asks whose reason names the cause. One carve-out to the
+failures block instead: blocked prompts, permission asks whose reason names the
+cause, and tool output withheld over two channels. The node hook substitutes
+`[output sanitizer unavailable — original output suppressed]`, which only
+withholds a string-shaped response; the shell arm in `plugin/scripts/safe-launch.sh`
+therefore also emits a top-level `decision`/`reason` pair, honored whatever
+shape the response had, telling the model that any output still visible above
+it is unsanitized. One carve-out to the
 open default, with secrets enabled: a write-shaped call carrying `[REDACTED…]` placeholder text asks
 instead of passing through when the hook itself is broken, since letting it
 through would overwrite the real secret with the placeholder. Either way, a plugin that
@@ -191,8 +200,9 @@ working one. Neither posture touches what a sanitizer that RAN decided (see
 
 ## Using it with Claude Code
 
-The plugin installed above puts four hooks on the tool stream: tool input, tool
-output, user prompts, and a session-start scan of the instruction files. It
+The plugin installed above puts five hooks on the tool stream: tool input, tool
+output, user prompts, a session-start scan of the instruction files that load at
+launch, and a per-file scan of every instruction file loaded after that. It
 needs only `python3` on PATH, for Layer 4 — the plugin ships the engine itself
 (see [What installing entails](#what-installing-entails)).
 
@@ -216,7 +226,7 @@ guessing if the marketplace was never added. To pull a release by hand instead:
 
 `plugin/README.md` has the managed-settings form for enabling it fleet-wide.
 
-To wire them yourself instead, one entry dispatches all four modes on `--hook=`:
+To wire them yourself instead, one entry dispatches every mode on `--hook=`:
 
 ```jsonc
 // settings.json — one entry per event; PreToolUse/PostToolUse also take "matcher": "*"
@@ -226,12 +236,17 @@ To wire them yourself instead, one entry dispatches all four modes on `--hook=`:
 }
 ```
 
-| Event              | `--hook=`              |
-| ------------------ | ---------------------- |
-| `UserPromptSubmit` | `sanitize-user-prompt` |
-| `PreToolUse`       | `pretooluse-sanitize`  |
-| `PostToolUse`      | `sanitize-output`      |
-| `SessionStart`     | `scan-invisible-chars` |
+| Event                | `--hook=`                  |
+| -------------------- | -------------------------- |
+| `UserPromptSubmit`   | `sanitize-user-prompt`     |
+| `PreToolUse`         | `pretooluse-sanitize`      |
+| `PostToolUse`        | `sanitize-output`          |
+| `SessionStart`       | `scan-invisible-chars`     |
+| `InstructionsLoaded` | `scan-loaded-instructions` |
+
+**Wire all five.** The instruction-file scan is split across two of them: `SessionStart` covers the files that load at launch, and `InstructionsLoaded` covers every one a subdirectory loads later. A host that wires the first without the second leaves a nested `CLAUDE.md` scanned by nothing, and the one-time PreToolUse coverage notice is the only thing that says so.
+
+`InstructionsLoaded` needs Claude Code **2.1.69 or newer** — 2.1.68 does not emit the event, so the hook never fires however you wire it. Check with `claude --version`.
 
 `require.resolve("agent-sanitizer/claude-hooks")` gives the path without
 hardcoding a layout. Importing the module rather than spawning it is a no-op.
@@ -259,22 +274,24 @@ singleton, and two copies in one bundle double-fire the inlined CLIs.
 
 <!-- exports-table: rows are asserted to equal package.json's ./claude-hooks* exports by test/claude-hooks-exports.test.mjs -->
 
-| Subpath                             | What it is                                                                                 |
-| ----------------------------------- | ------------------------------------------------------------------------------------------ |
-| `claude-hooks`                      | The `--hook=` CLI dispatcher all four hooks are spawned through                            |
-| `claude-hooks/pretooluse-sanitize`  | PreToolUse orchestrator: invisible-char gate, confusable folding, stego strip, rehydration |
-| `claude-hooks/sanitize-output`      | PostToolUse pipeline: Layers 1–4 over tool output, plus the host-extension bag             |
-| `claude-hooks/sanitize-user-prompt` | UserPromptSubmit verdict on payload-capable invisible/ANSI content                         |
-| `claude-hooks/scan-invisible-chars` | SessionStart scan of `CLAUDE.md` / `.claude/` markdown                                     |
-| `claude-hooks/lib/hook-io`          | Shared hook I/O: the lazy-module registry, the CLI slot, deadlines, the hookgate marker    |
-| `claude-hooks/lib/control-plane`    | Bridge to `agent-control-plane-core` and the shared judge-CLI transport                    |
-| `claude-hooks/lib/authored-content` | Stego + terminal-control stripping of the fields the MODEL authors                         |
-| `claude-hooks/lib/env-config`       | The env-bound secret vocabulary the Layer-4 pre-gate and the redactor client share         |
-| `claude-hooks/lib/invisible-alert`  | Cross-hook alert state for uncleanable invisible-char injection in instruction files       |
-| `claude-hooks/lib/redactor-client`  | Client for the long-lived `agent-secret-redactor-daemon` (Layer 4's transport)             |
-| `claude-hooks/lib/reveal`           | The Layer-2 sidecar that lets the model re-read what the HTML splice removed               |
-| `claude-hooks/lib/secret-annotate`  | The cheap deterministic Layer-4 pre-gate checks around the daemon call                     |
-| `claude-hooks/lib/trace`            | The opt-in structured trace channel every layer announces itself on                        |
+| Subpath                                 | What it is                                                                                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `claude-hooks`                          | The `--hook=` CLI dispatcher every hook is spawned through                                 |
+| `claude-hooks/pretooluse-sanitize`      | PreToolUse orchestrator: invisible-char gate, confusable folding, stego strip, rehydration |
+| `claude-hooks/sanitize-output`          | PostToolUse pipeline: Layers 1–4 over tool output, plus the host-extension bag             |
+| `claude-hooks/sanitize-user-prompt`     | UserPromptSubmit verdict on payload-capable invisible/ANSI content                         |
+| `claude-hooks/scan-invisible-chars`     | SessionStart scan of the instruction files that load at launch                             |
+| `claude-hooks/scan-loaded-instructions` | InstructionsLoaded scan of each instruction file as Claude Code loads it                   |
+| `claude-hooks/lib/hook-io`              | Shared hook I/O: the lazy-module registry, the CLI slot, deadlines, the hookgate marker    |
+| `claude-hooks/lib/control-plane`        | Bridge to `agent-control-plane-core` and the shared judge-CLI transport                    |
+| `claude-hooks/lib/authored-content`     | Stego + terminal-control stripping of the fields the MODEL authors (colour is kept)        |
+| `claude-hooks/lib/env-config`           | The env-bound secret vocabulary the Layer-4 pre-gate and the redactor client share         |
+| `claude-hooks/lib/invisible-alert`      | Cross-hook alert state for uncleanable invisible-char injection in instruction files       |
+| `claude-hooks/lib/redactor-client`      | Client for the long-lived `agent-secret-redactor-daemon` (Layer 4's transport)             |
+| `claude-hooks/lib/reveal`               | The Layer-2 sidecar that lets the model re-read what the HTML splice removed               |
+| `claude-hooks/lib/secret-annotate`      | The cheap deterministic Layer-4 pre-gate checks around the daemon call                     |
+| `claude-hooks/lib/trace`                | The opt-in structured trace channel every layer announces itself on                        |
+| `claude-hooks/lib/hook-timing`          | The shared slow-hook budget, its measured windows and the notice they compose              |
 
 Only `plugin-hooks` itself is unexported under its own name — it is reachable as
 the bare `claude-hooks` entry above.
@@ -334,13 +351,19 @@ await cliMain({ trace: (event, fields) => myChannel.emit(event, fields) });
 ```
 
 The sink rides each hook's options bag — `cliMain({trace})` on
-`scan-invisible-chars` and `pretooluse-sanitize`, the extension bag's `trace` on
+`scan-invisible-chars`, `scan-loaded-instructions` and `pretooluse-sanitize`,
+the extension bag's `trace` on
 `sanitize-output`, `main(read, write, {trace})` on `sanitize-user-prompt`. It
 receives the same `TraceEvent` names the default emits, and it **replaces** the
 default rather than running alongside it — the package channel goes silent, so
 there is one announcement to detect, not two. It may throw freely: each hook
-binds the sink it is given through `bestEffortTrace`, so an announcement can
-never be the thing that breaks a hook.
+binds the sink it is given through `hookTrace`, so an announcement can never be
+the thing that breaks a hook.
+
+That same binding charges whatever a host sink spends — a write to an unanswered
+socket, a subprocess — to the slow-hook notice's host-extension window. A hook
+past its budget then names the sink, instead of leaving the wait in the
+unattributed remainder and the sink's in-process CPU billed to the sanitizer.
 
 **A host's own cold-start marker can replace the derived one.** The hooks wait
 out an in-flight dependency install by polling a marker file whose path they
@@ -349,6 +372,17 @@ calls `configureHookgateMarker(path)` (from `lib/hook-io`) before importing any
 hook module, and every consumer waits on that path instead. `lib/control-plane`
 resolves the marker at module scope, so a call that lands after that import
 warns on stderr — it cannot steer the wait that already started.
+
+The marker's first line is the setup process's pid. A writer that also holds an
+exclusive `flock` on the marker file for the whole install says so by adding a
+second line reading `flock` (`SETUP_LOCK_DECLARATION`), and the hooks then judge
+liveness by the lock rather than the pid: the kernel releases an `flock` the
+instant its holder dies, so a killed setup is detected immediately instead of
+being read as alive for as long as a recycled pid keeps answering. A marker that
+declares nothing is judged by its pid. A writer must hold the lock BEFORE the
+declaring marker becomes visible: a marker that says `flock` while its writer
+has not yet locked reads as a free lock, so every waiter abandons an install
+that is still running.
 
 **A host's own remedy can replace the packaged one in every failure reason**
 (the fail-closed verdicts and the fail-open warning alike). Deep call sites (`lib/control-plane`'s missing-package throw) take no
@@ -385,7 +419,7 @@ doesn't render at all.
 
 |                               | `agent-sanitizer`                                                                                                                   | Semantic guard/classifier (Lakera, Prompt Guard, Rebuff, NeMo rails)                                       | PII redactor (Presidio)                                      |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| **What it catches**           | Payload-capable invisible chars, ANSI/SGR, hidden HTML, confusable glyphs, exfil-shaped URLs                                        | Malicious _intent_—jailbreaks, injected instructions, off-topic asks                                       | Names, emails, SSNs, and other PII spans                     |
+| **What it catches**           | Payload-capable invisible chars, ANSI/SGR, hidden HTML, confusable glyphs and look-alike hosts, exfil-shaped URLs                   | Malicious _intent_—jailbreaks, injected instructions, off-topic asks                                       | Names, emails, SSNs, and other PII spans                     |
 | **How it decides**            | Deterministic parsing/regex over real tokenizer output—no model call                                                                | ML/LLM classification—probabilistic, needs a threshold and retuning as attacks shift                       | NER + pattern matching                                       |
 | **Failure mode**              | Fails open on ambiguous input (see [`THREAT-MODEL.md`](./THREAT-MODEL.md)); false negative over false positive by design            | False positives silently mangle or block legitimate prompts; false negatives are invisible until exploited | Under/over-redaction depending on locale and entity coverage |
 | **Latency / infra**           | Pure JS, mostly zero-dep (`/html` lazy-loads ~200 ms once)                                                                          | Network round-trip to a hosted model, or a local model to host yourself                                    | Local, but heavier NLP pipeline                              |
@@ -402,10 +436,16 @@ for the hidden channel both are blind to.
 import { stripInvisibleWithReport } from "agent-sanitizer/invisible";
 const { cleaned, found } = stripInvisibleWithReport(text); // found: ["variation-selectors"]
 
-import { sanitizeHtml, detectExfil, checkExfilUrl } from "agent-sanitizer/html";
+import {
+  sanitizeHtml,
+  detectExfil,
+  checkExfilUrl,
+  detectConfusableHosts,
+} from "agent-sanitizer/html";
 sanitizeHtml(pageSource); // { text, removed, warned } | null — text may be unchanged if only reportable (not strippable) tags were found
 detectExfil(pageSource); // [{ isImage, reason, target }] or null
 checkExfilUrl(oneUrl); // reason string or null
+detectConfusableHosts(pageSource); // [{ severity, description }] or null
 ```
 
 The agent-pipeline entry points take plain arguments and inject their
@@ -413,11 +453,12 @@ agent-specific seam:
 
 ```js
 import { normalizeConfusables } from "agent-sanitizer/confusables";
+normalizeConfusables("Bash", { command: "/аpt update" }); // null, or { updatedInput, normalized }
 normalizeConfusables(
   "Bash",
   { command: "/аpt update" },
-  { scan: (t) => myHomoglyphEngine.scan(t) }, // -> { findings: [{ index, char, latinEquivalent }] }
-); // null, or { updatedInput, normalized }
+  { scan: (t) => myHomoglyphEngine.scan(t) }, // override the default namespace-guard engine
+);
 
 import { scanInstructionFiles, cleanFile } from "agent-sanitizer/instructions";
 const findings = scanInstructionFiles(["CLAUDE.md", "**/SKILL.md"], {

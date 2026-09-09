@@ -106,7 +106,13 @@ def test_verbose_output(
     test_file.parent.mkdir(parents=True, exist_ok=True)
     test_file.touch()
 
-    with patch("subprocess.run"), patch("shutil.move"):
+    with (
+        patch("subprocess.run") as mock_run,
+        patch("shutil.move"),
+    ):
+        mock_run.return_value = MagicMock(
+            returncode=3, stdout="", stderr="directory not found"
+        )
         r2_upload.upload_and_move(test_file, verbose=True, move_to_dir=tmp_path)
 
     captured = capsys.readouterr()
@@ -127,12 +133,17 @@ def test_upload_to_r2_success(mock_git_root: Path):
         patch("subprocess.run") as mock_run,
         patch("shutil.move"),
     ):
+        # lsf reports missing so the flow proceeds to the copyto call.
+        mock_run.return_value = MagicMock(
+            returncode=3, stdout="", stderr="directory not found"
+        )
         r2_upload.upload_and_move(test_file)
 
     # Check that subprocess.run was called twice
     assert mock_run.call_count == 2
-    # Check the first call (check_exists_on_r2)
-    assert mock_run.call_args_list[0][0][0][:2] == ["rclone", "ls"]
+    # Check the first call (check_exists_on_r2 uses `lsf` on the specific
+    # key path rather than listing the whole bucket).
+    assert mock_run.call_args_list[0][0][0][:2] == ["rclone", "lsf"]
     # Check the second call (upload)
     assert mock_run.call_args_list[1][0][0][:2] == ["rclone", "copyto"]
     assert mock_run.call_args_list[1][0][0][2] == str(test_file)
@@ -417,7 +428,13 @@ def test_preserve_path_structure(mock_git_root: Path, tmp_path: Path):
     deep_file.parent.mkdir(parents=True)
     deep_file.touch()
 
-    with patch("subprocess.run"), patch("shutil.move") as mock_move:
+    with (
+        patch("subprocess.run") as mock_run,
+        patch("shutil.move") as mock_move,
+    ):
+        mock_run.return_value = MagicMock(
+            returncode=3, stdout="", stderr="directory not found"
+        )
         r2_upload.upload_and_move(
             deep_file, move_to_dir=move_to_dir, references_dir=None
         )
@@ -455,7 +472,13 @@ def test_preserve_path_structure_with_replacement(
             content="![Test Image](quartz/static/images/test_static.jpg)",
         )
 
-        with patch("subprocess.run"), patch("shutil.move") as mock_move:
+        with (
+            patch("subprocess.run") as mock_run,
+            patch("shutil.move") as mock_move,
+        ):
+            mock_run.return_value = MagicMock(
+                returncode=3, stdout="", stderr="directory not found"
+            )
             r2_upload.upload_and_move(
                 static_file,
                 references_dir=content_dir,
@@ -485,20 +508,20 @@ def test_check_exists_on_r2_file_exists():
         patch("subprocess.run") as mock_run,
     ):
         mock_run.return_value = MagicMock(
-            returncode=0, stdout="        9 file.txt\n"
+            returncode=0, stdout="file.txt\n", stderr=""
         )
         result = r2_upload.check_exists_on_r2("r2:bucket/file.txt")
         assert result is True
         mock_run.assert_called_once_with(
-            ["rclone", "ls", "r2:bucket"],
+            ["rclone", "lsf", "--files-only", "r2:bucket/file.txt"],
             capture_output=True,
             text=True,
-            check=True,
+            check=False,
         )
 
 
-def test_check_exists_on_r2_substring_prefix_does_not_match():
-    """A key that is only a substring-prefix of a real object is not 'found'."""
+def test_check_exists_on_r2_prefix_directory_listing_ignored():
+    """A prefix-directory listing that omits our exact key is not a match."""
     with (
         patch(
             "scripts.r2_upload.script_utils.find_executable",
@@ -506,26 +529,13 @@ def test_check_exists_on_r2_substring_prefix_does_not_match():
         ),
         patch("subprocess.run") as mock_run,
     ):
+        # Rclone returned a listing (unlikely with an object-specific path,
+        # but if the path happens to name a prefix, only exact-basename
+        # hits count).
         mock_run.return_value = MagicMock(
-            returncode=0, stdout="       12 file.txt-backup\n"
+            returncode=0, stdout="file.txt-backup\nfile.txt.gz\n", stderr=""
         )
         result = r2_upload.check_exists_on_r2("r2:bucket/file.txt")
-        assert result is False
-
-
-def test_check_exists_on_r2_does_not_match_size_column():
-    """A key equal to the rclone size column is not mistaken for a path."""
-    with (
-        patch(
-            "scripts.r2_upload.script_utils.find_executable",
-            return_value="rclone",
-        ),
-        patch("subprocess.run") as mock_run,
-    ):
-        mock_run.return_value = MagicMock(
-            returncode=0, stdout="        9 file.txt\n"
-        )
-        result = r2_upload.check_exists_on_r2("r2:bucket/9")
         assert result is False
 
 
@@ -537,25 +547,99 @@ def test_check_exists_on_r2_file_not_exists():
         ),
         patch("subprocess.run") as mock_run,
     ):
-        mock_run.return_value = MagicMock(returncode=0, stdout="")
+        # Rclone exits 3 with a "directory not found" stderr when the
+        # queried key path is absent.
+        mock_run.return_value = MagicMock(
+            returncode=3, stdout="", stderr="directory not found\n"
+        )
         result = r2_upload.check_exists_on_r2("r2:bucket/nonexistent.txt")
         assert result is False
         mock_run.assert_called_once_with(
-            ["rclone", "ls", "r2:bucket"],
+            ["rclone", "lsf", "--files-only", "r2:bucket/nonexistent.txt"],
             capture_output=True,
             text=True,
-            check=True,
+            check=False,
         )
+
+
+def test_check_exists_on_r2_file_not_exists_via_stderr_signal():
+    """A non-zero exit whose stderr says "not found" is also a clean miss."""
+    with (
+        patch(
+            "scripts.r2_upload.script_utils.find_executable",
+            return_value="rclone",
+        ),
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_run.return_value = MagicMock(
+            returncode=1, stdout="", stderr="ERROR: not found: key.png\n"
+        )
+        assert r2_upload.check_exists_on_r2("r2:bucket/key.png") is False
+
+
+def test_check_exists_on_r2_returncode_0_no_match_is_missing():
+    """Exit 0 with empty stdout is treated as a missing object."""
+    with (
+        patch(
+            "scripts.r2_upload.script_utils.find_executable",
+            return_value="rclone",
+        ),
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        assert r2_upload.check_exists_on_r2("r2:bucket/nothing.png") is False
+
+
+def test_check_exists_on_r2_raises_on_unexpected_failure():
+    """A genuine subprocess failure surfaces as RuntimeError, not a miss."""
+    with (
+        patch(
+            "scripts.r2_upload.script_utils.find_executable",
+            return_value="rclone",
+        ),
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_run.return_value = MagicMock(
+            returncode=5,
+            stdout="",
+            stderr="AccessDenied: invalid credentials\n",
+        )
+        with pytest.raises(RuntimeError, match="Failed to check existence"):
+            r2_upload.check_exists_on_r2("r2:bucket/file.png")
 
 
 def test_check_exists_on_r2_verbose_output(capsys):
     with patch("subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(
-            returncode=0, stdout="        9 file.txt\n"
+            returncode=0, stdout="file.txt\n", stderr=""
         )
         r2_upload.check_exists_on_r2("r2:bucket/file.txt", verbose=True)
         captured = capsys.readouterr()
         assert "File found in R2: r2:bucket/file.txt" in captured.out
+
+
+def test_check_exists_on_r2_verbose_output_missing_returncode0(capsys):
+    """Verbose miss message fires for the returncode-0 empty-listing path."""
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(returncode=0, stdout="", stderr="")
+        r2_upload.check_exists_on_r2("r2:bucket/gone.png", verbose=True)
+        captured = capsys.readouterr()
+        assert (
+            "No existing file found in R2: r2:bucket/gone.png" in captured.out
+        )
+
+
+def test_check_exists_on_r2_verbose_output_missing_returncode3(capsys):
+    """Verbose miss message fires for the exit-3 not-found path."""
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=3, stdout="", stderr="directory not found"
+        )
+        r2_upload.check_exists_on_r2("r2:bucket/gone.png", verbose=True)
+        captured = capsys.readouterr()
+        assert (
+            "No existing file found in R2: r2:bucket/gone.png" in captured.out
+        )
 
     with patch("subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(returncode=0, stdout="")
@@ -683,6 +767,9 @@ def test_upload_svg_with_metadata(mock_git_root: Path):
     test_file.touch()
 
     with patch("subprocess.run") as mock_run, patch("shutil.move"):
+        mock_run.return_value = MagicMock(
+            returncode=3, stdout="", stderr="directory not found"
+        )
         r2_upload.upload_and_move(test_file, verbose=True)
 
         # Check that rclone was called with the correct metadata for SVG
@@ -711,6 +798,9 @@ def test_upload_vtt_with_metadata(mock_git_root: Path):
     test_file.touch()
 
     with patch("subprocess.run") as mock_run, patch("shutil.move"):
+        mock_run.return_value = MagicMock(
+            returncode=3, stdout="", stderr="directory not found"
+        )
         r2_upload.upload_and_move(test_file, verbose=True)
 
         mock_run.assert_any_call(
@@ -784,7 +874,10 @@ def test_upload_and_move_nonexistent_move_dir(
 
     nonexistent_dir = tmp_path / "nonexistent"
 
-    with patch("subprocess.run"):
+    with patch("subprocess.run") as mock_run:
+        mock_run.return_value = MagicMock(
+            returncode=3, stdout="", stderr="directory not found"
+        )
         r2_upload.upload_and_move(test_file, move_to_dir=nonexistent_dir)
 
     captured = capsys.readouterr()

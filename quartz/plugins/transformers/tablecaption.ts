@@ -1,7 +1,6 @@
 import type { Element, ElementContent } from "hast"
 import type { Parent } from "unist"
 
-import { fromHtml } from "hast-util-from-html"
 import { h } from "hastscript"
 
 import { createElementVisitorPlugin, isElementNode, isTextNode } from "./utils"
@@ -25,13 +24,14 @@ export function extractCaptionText(value: string): string {
 }
 
 /**
- * Creates a figcaption element from the caption text
+ * Creates a figcaption element from the caption text.
+ *
+ * The caption arrives as already-decoded text, so it becomes a text node
+ * verbatim: angle brackets and ampersands stay literal characters.
  */
 export function createFigcaption(captionText: string): Element[] {
-  const captionHtml = fromHtml(`<figcaption>${captionText}</figcaption>`, {
-    fragment: true,
-  })
-  return captionHtml.children as Element[]
+  const children: ElementContent[] = captionText ? [{ type: "text", value: captionText }] : []
+  return [h("figcaption", children)]
 }
 
 /** True if `element` is a `<table>` element. */
@@ -65,21 +65,21 @@ function processTableCaptionNode(
   }
 
   const captionText = extractCaptionText(firstChild.value)
-  const captionElements = createFigcaption(captionText)
+  const [figcaption] = createFigcaption(captionText)
 
   // Inline markup in the caption (e.g. `*emphasis*`, links) is already parsed
   // into sibling nodes at this rehype stage; createFigcaption only rebuilds the
   // leading text node, so carry the remaining siblings into the figcaption.
-  captionElements[0].children.push(...node.children.slice(1))
+  figcaption.children.push(...node.children.slice(1))
 
-  // Replace the paragraph with the figcaption elements
-  parent.children.splice(parentChildrenIndex, 1, ...captionElements)
+  // Replace the paragraph with the figcaption
+  parent.children.splice(parentChildrenIndex, 1, figcaption)
 
   // Find the preceding table and wrap it with a figure
   if (parentChildrenIndex > 0) {
     const prevElement = parent.children[parentChildrenIndex - 1]
     if (isTableElement(prevElement) && isElementNode(prevElement)) {
-      const figure = createTableFigure(prevElement, captionElements)
+      const figure = createTableFigure(prevElement, [figcaption])
       parent.children.splice(parentChildrenIndex - 1, 2, figure)
     }
   }

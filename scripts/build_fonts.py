@@ -620,24 +620,29 @@ def build_all(output_dir: Path) -> bool:
 
 def main() -> None:
     """Build fonts and optionally install them."""
-    output_dir = Path(tempfile.mkdtemp(prefix="build_fonts_"))
-    all_match = build_all(output_dir)
+    # ``--install`` copies each built file into ``_FONT_DIR`` before this
+    # function returns, so nothing downstream depends on the temp dir
+    # surviving. Wrap in a context manager so the build artifacts are cleaned
+    # up on every run — including the verify path that exits non-zero.
+    with tempfile.TemporaryDirectory(prefix="build_fonts_") as tmp:
+        output_dir = Path(tmp)
+        all_match = build_all(output_dir)
 
-    if all_match:
-        print("\nAll fonts are table-equivalent to committed versions.")
-    else:
-        print("\nSome tables differ (see details above).")
+        if all_match:
+            print("\nAll fonts are table-equivalent to committed versions.")
+        else:
+            print("\nSome tables differ (see details above).")
 
-    if "--install" in sys.argv:
-        for filename in _FONT_FILENAMES:
-            src = output_dir / filename
-            dst = _FONT_DIR / filename
-            shutil.copy2(src, dst)
-            print(f"Installed {dst}")
-    elif not all_match:
-        # Verify mode: signal drift so a CI invocation fails instead of
-        # silently passing on out-of-date committed fonts.
-        sys.exit(1)
+        if "--install" in sys.argv:
+            for filename in _FONT_FILENAMES:
+                src = output_dir / filename
+                dst = _FONT_DIR / filename
+                shutil.copy2(src, dst)
+                print(f"Installed {dst}")
+        elif not all_match:
+            # Verify mode: signal drift so a CI invocation fails instead of
+            # silently passing on out-of-date committed fonts.
+            sys.exit(1)
 
 
 if __name__ == "__main__":

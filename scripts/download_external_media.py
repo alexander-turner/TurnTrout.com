@@ -6,6 +6,7 @@ already on assets.turntrout.com), downloads them to the asset_staging directory,
 and updates the markdown references to point to the local staging directory.
 """
 
+import hashlib
 import os
 import re
 import shutil
@@ -47,23 +48,30 @@ MEDIA_EXTENSIONS = (
 EXCLUDED_DOMAIN = script_utils.CDN_HOSTNAME
 
 
-def download_media(url: str, target_dir: Path) -> bool:
+def download_media(
+    url: str, target_dir: Path, target_filename: str | None = None
+) -> bool:
     """
     Download media file from URL to target directory.
 
     Args:
         url: URL of the media file to download
         target_dir: Directory to save the downloaded file
+        target_filename: Optional override for the on-disk filename. Callers
+            that need collision-safe names (see ``disambiguate_filename``) pass
+            the already-disambiguated name here; otherwise the trailing path
+            component of the URL is used.
 
     Returns:
         True if download succeeded, False otherwise
     """
-    try:
-        filename = script_utils.extract_filename_from_url(url)
-    except ValueError:
-        print(f"Skipping URL with no filename: {url}", file=sys.stderr)
-        return False
-    target_path = target_dir / filename
+    if target_filename is None:
+        try:
+            target_filename = script_utils.extract_filename_from_url(url)
+        except ValueError:
+            print(f"Skipping URL with no filename: {url}", file=sys.stderr)
+            return False
+    target_path = target_dir / target_filename
 
     print(f"Downloading: {url} to {target_path}")
 
@@ -84,8 +92,38 @@ def download_media(url: str, target_dir: Path) -> bool:
         return False
 
 
-def replace_url_in_file(file_path: Path, old_url: str, new_url: str) -> None:
-    """Replace URL in a markdown file."""
+def disambiguate_filename(url: str, base_filename: str, taken: set[str]) -> str:
+    """
+    Return a filename not already in *taken*.
+
+    When two distinct URLs share a basename (e.g. two ``image.png`` files
+    hosted under different paths), the second one gets a URL-derived prefix
+    prepended so both downloads land as distinct files and each markdown
+    reference rewrites to its own local path.
+    """
+    if base_filename not in taken:
+        return base_filename
+    digest = hashlib.sha256(url.encode("utf-8")).hexdigest()
+    # Widen the prefix until the name is free, so `taken` always holds
+    # distinct on-disk names even if two colliding URLs share an 8-hex
+    # digest prefix.
+    for width in range(8, len(digest) + 1):
+        candidate = f"{digest[:width]}-{base_filename}"
+        if candidate not in taken:
+            return candidate
+    raise RuntimeError(
+        f"Could not disambiguate filename {base_filename!r} for {url}: "
+        f"every digest prefix width is already taken."
+    )
+
+
+def replace_urls_in_file(file_path: Path, url_map: dict[str, str]) -> None:
+    """
+    Replace every ``old_url`` in *url_map* with its ``new_url`` counterpart.
+
+    Reads and writes the markdown file at most once regardless of ``url_map``
+    size, so a corpus-wide rewrite is O(files), not O(urls x files).
+    """
     git_root = script_utils.get_git_root()
     content_dir = git_root / script_utils.CONTENT_DIR_NAME
     if not file_path.resolve().is_relative_to(content_dir):
@@ -94,9 +132,19 @@ def replace_url_in_file(file_path: Path, old_url: str, new_url: str) -> None:
             f"{script_utils.CONTENT_DIR_NAME} directory."
         )
 
-    script_utils.update_markdown_file(
-        file_path, lambda content: content.replace(old_url, new_url)
-    )
+    # Replace longest URLs first so that when one ``old_url`` is a substring
+    # of another, the longer one is rewritten before its substring's pass
+    # runs and cannot be corrupted. Sound because every ``new_url`` is an
+    # ``asset_staging/…`` path that can never contain an ``https://`` URL,
+    # so no replacement reintroduces another key's ``old_url``.
+    ordered = sorted(url_map.items(), key=lambda kv: len(kv[0]), reverse=True)
+
+    def apply(content: str) -> str:
+        for old_url, new_url in ordered:
+            content = content.replace(old_url, new_url)
+        return content
+
+    script_utils.update_markdown_file(file_path, apply)
 
 
 def find_external_media_urls(markdown_files: list[Path]) -> set[str]:
@@ -151,23 +199,31 @@ def main() -> None:
     asset_staging_dir = markdown_directory / "asset_staging"
     os.makedirs(asset_staging_dir, exist_ok=True)
 
-    # Download each media file and update references
-    successful_downloads = 0
-    for url in asset_urls:
-        if not download_media(url, asset_staging_dir):
-            continue
+    # Download every URL first, disambiguating any basename collisions, then
+    # apply all rewrites in a single pass per markdown file.
+    url_to_new_url: dict[str, str] = {}
+    taken_filenames: set[str] = set()
 
-        filename = script_utils.extract_filename_from_url(url)
+    for url in sorted(asset_urls):
+        try:
+            base_filename = script_utils.extract_filename_from_url(url)
+        except ValueError:
+            print(f"Skipping URL with no filename: {url}", file=sys.stderr)
+            continue
+        filename = disambiguate_filename(url, base_filename, taken_filenames)
+        if not download_media(url, asset_staging_dir, target_filename=filename):
+            continue
+        taken_filenames.add(filename)
         new_url = f"asset_staging/{filename}"
+        url_to_new_url[url] = new_url
         print(f"Downloaded to {new_url}")
 
+    if url_to_new_url:
         for file in markdown_files:
-            replace_url_in_file(file, url, new_url)
-
-        successful_downloads += 1
+            replace_urls_in_file(file, url_to_new_url)
 
     print(
-        f"Successfully downloaded {successful_downloads}/{len(asset_urls)} files to asset_staging."
+        f"Successfully downloaded {len(url_to_new_url)}/{len(asset_urls)} files to asset_staging."
     )
 
     open_cmd = shutil.which("open")

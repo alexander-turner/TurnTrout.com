@@ -86,8 +86,9 @@ const sentinelTextRegex = new RegExp(
  * resolved) and before AddFavicons (so the favicon is woven into the real
  * title, not the sentinel). Punctuation surrounding the sentinel inside the
  * anchor is preserved around the resolved title. Throws when a bound link
- * targets a missing page or heading—this surfaces drift when a page or
- * heading is renamed.
+ * targets a missing page or heading, or an external href—this surfaces drift
+ * when a page or heading is renamed, and catches sentinels that would
+ * otherwise render as literal "@title".
  */
 export function bindTitlesInTree(
   tree: Root,
@@ -114,8 +115,11 @@ export function bindTitlesInTree(
     } else if (href.startsWith("#")) {
       targetSlug = curSlug
     } else {
-      // Sentinel on an external or unresolvable link: leave it as literal text.
-      return
+      // Only an internal target has a title to bind, so a sentinel here can
+      // never resolve and would otherwise ship as literal "@title".
+      throw new Error(
+        `Title-bound link in ${source} points at external or unresolvable href "${href}".`,
+      )
     }
 
     const target = targetSlug ? index.get(targetSlug) : undefined

@@ -31,7 +31,7 @@ date_published: 2024-03-05
 original_url: https://www.lesswrong.com/posts/yQSmcfN4kA7rATHGK/many-arguments-for-ai-x-risk-are-wrong
 skip_import: true
 description: Arguments that AI will inevitably "scheme" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.
-date_updated: 2026-07-22
+date_updated: 2026-08-19
 ---
 
 > [!note] Author's note
@@ -50,7 +50,7 @@ The most important takeaway from this essay is that the (prominent) counting arg
 
 [^RFLO]: To stave off revisionism: Yes, I think that "scaling->doom" has historically been a real concern. No, people have not "always known" that the "real danger" was zero-sum self-play finetuning of foundation models and distillation of agentic-task-prompted autoGPT loops.
 
-## Tracing back historical arguments
+# Tracing back historical arguments
 
 In the next section, I'll discuss the counting argument. In this one, I want to demonstrate how often foundational alignment texts make crucial errors. For example:
 
@@ -77,7 +77,7 @@ Unsurprisingly, if you have a lot of people speculating for years using confused
 
 I think that's why some people take  "[scheming AIs](https://www.lesswrong.com/posts/yFofRxg7RRQYCcwFA/new-report-scheming-ais-will-ais-fake-alignment-during)" and "deceptive alignment" so seriously, even though some of the technical arguments are flatly unfounded.
 
-## Many arguments for doom are wrong
+# Many arguments for doom are wrong
 
 Let me start by saying what existential vectors I _am_ worried about:
 
@@ -102,7 +102,7 @@ Much of my position is summarized by my review of Yudkowsky's [AGI Ruin: A List 
 
 In this essay, I'll address some of the arguments for "deceptive alignment" or "AI scheming." And then I'm going to bullet-point a few other clusters of mistakes.
 
-## The counting argument for AI "scheming" provides \~0 evidence
+# The counting argument for AI "scheming" provides \~0 evidence
 
 > [!quote] Quote from a draft of [Counting arguments provide no evidence for AI doom](https://www.lesswrong.com/posts/YsFZF3K9tuzbfrLxo/counting-arguments-provide-no-evidence-for-ai-doom)
 > Most AI doom scenarios posit that future AIs will engage in **scheming**— planning to escape, gain power, and pursue ulterior motives while deceiving us into thinking they are aligned with our interests. The worry is that if a schemer escapes, it may seek world domination to ensure humans do not interfere with its plans, whatever they may be.
@@ -120,7 +120,7 @@ In this essay, I'll address some of the arguments for "deceptive alignment" or "
 >
 > We then diagnose the problem with both counting arguments: they are counting the wrong things.
 >
-> ### The counting argument for extreme overfitting
+> ## The counting argument for extreme overfitting
 >
 > The inference from "there are 'more' models with property X than without X" to "SGD likely produces a model with property X" clearly does not work in general. To see this, consider the structurally identical argument:
 >
@@ -145,7 +145,7 @@ So, you can't just "count" how many functions have property X and then conclude 
 This section doesn't prove that scheming is impossible, it just dismantles a common support for the claim. Other arguments are sometimes offered as evidence of intrinsic AI scheming, including "simplicity" arguments. Or instead of counting _functions_, we count _network parameterizations_.[^count]
 [^count]: [Some](https://arxiv.org/abs/2006.15191) [evidence](https://openreview.net/forum?id=QC10RmRbZy9) suggests that "measure in parameter-space" is a good way of approximating P(SGD finds the given function). This supports the idea that "counting arguments over parameterizations" are far more appropriate than "counting arguments over functions."
 
-### Recovering the counting argument?
+## Recovering the counting argument?
 
 I think a recovered argument will need to address (some close proxy of) "what volume of parameter-space leads to scheming vs not?", which is a much harder task than counting functions. You have to not just think about "what does this system do?", but "how many ways can this function be implemented?". (Don't forget to take into account the architecture's [internal symmetries!)](https://arxiv.org/pdf/2305.17017.pdf)
 
@@ -164,11 +164,11 @@ I lastly want to note that there is no reason that any particular argument need 
 >
 > I expect him to respond to this LessWrong post with some strongly worded comment about how I've simply "misunderstood" the "real" counting arguments. I invite him, or any other proponents, to lay out arguments they find more promising. I will be happy to consider any additional arguments which proponents consider to be stronger. Until such a time that the "actually valid" arguments are actually shared, I consider the case closed.
 
-### The counting argument doesn't count
+## The counting argument doesn't count
 
 Undo the update from the "counting argument", however, and the probability of scheming plummets substantially. If we aren't expecting scheming AIs, that transforms the threat model. We can rely more on experimental feedback loops on future AI; we don't have to get worst-case interpretability on future networks; it becomes far easier to just use the AIs as tools which do things we ask. That doesn't mean everything will be OK. But not having to handle scheming AI is a game changer.
 
-## Other clusters of mistakes
+# Other clusters of mistakes
 
 > [!failure] [Using English names to draw technical conclusions about the named concepts.](https://www.lesswrong.com/posts/yxWbbe9XcgLFCrwiL/dreams-of-ai-alignment-the-danger-of-suggestive-names)
 > For example, if I want to consider whether a policy will care about its reinforcement signal, possibly the _worst goddamn thing I could call that signal_ is "reward"! "Will the AI try to maximize reward?" _How is anyone going to think neutrally about that question, without making inappropriate inferences from "rewarding things are desirable"?_ For example, I think that people would care a lot less about "reward hacking" \[in terms of modifying the numerical value in the reward counter\] if RL's reinforcement signal hadn't ever been called "reward." (To be fair, this isn't the fault of the alignment field in particular. "Reward" is bad terminology from RL.)
@@ -192,7 +192,7 @@ For example, how much interpretability is nominally motivated by "being able to 
 
 I think it's reasonable to still regulate or standardize "IF we observe autonomous power-seeking, THEN we take decisive and specific countermeasures." I still think we should run evals and think of other ways to detect if pretrained models are scheming. But I don't think we should act or legislate as if that's some kind of probable outcome.
 
-## Conclusion
+# Conclusion
 
 Recent years have seen a healthy injection of empiricism and data-driven methodology. [I think that's awesome because there are so many interesting questions we're getting data on!](https://www.lesswrong.com/posts/j2W3zs7KTZXt2Wzah/how-do-you-feel-about-lesswrong-these-days-open-feedback?commentId=fqCY7PWdjKTMuZLui)
 

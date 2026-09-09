@@ -408,12 +408,54 @@ def check_unrendered_title_sentinel(soup: BeautifulSoup) -> list[str]:
     ``@title-lower``).
 
     A surviving sentinel means the build-time title binding never resolved,
-    leaking the raw token into the page instead of the target's title. The
-    sentinel is matched as a substring of any non-code text node—not just as
-    exact link text—because formatting passes can move punctuation into the
-    anchor around the sentinel or split it into sibling text nodes.
+    leaking the raw token into the page instead of the target's title. Anchor
+    text is matched as one joined string because the favicon pass lifts a
+    link's trailing characters into a ``nowrap-span``, so no single text node
+    holds the whole sentinel. Text outside anchors is matched per node, as a
+    substring, since formatting passes can leave punctuation beside it.
     Legitimate mentions of the sentinel live inside ``<code>`` elements, which
     ``should_skip`` excludes.
+    """
+    leaked: list[str] = []
+
+    def record(text: str) -> None:
+        match = _TITLE_SENTINEL_PATTERN.search(text)
+        if match:
+            _append_to_list(
+                leaked,
+                text,
+                prefix=f"Unrendered title sentinel {match.group(0)}: ",
+            )
+
+    for link in soup.find_all("a"):
+        if not should_skip(link):
+            record(link.get_text())
+
+    for element in soup.find_all(string=True):
+        if (
+            not element.strip()
+            or should_skip(element)
+            or element.find_parent("a") is not None
+        ):
+            continue
+        record(str(element))
+
+    return leaked
+
+
+_MARKDOWN_LINK_SYNTAX_PATTERN = re.compile(r"\]\(")
+
+
+def check_unrendered_markdown_link_syntax(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for visible text still containing literal ``](`` link syntax.
+
+    A surviving ``](`` means a markdown link failed to parse—often because
+    unescaped ``$`` signs elsewhere in the paragraph opened an inline-math
+    span that swallowed the link's own ``[...]`` and ``(...)`` parts—so the
+    raw syntax leaked into the rendered page instead of becoming an anchor.
+    Legitimate mentions live inside ``<code>`` elements, which ``should_skip``
+    excludes.
     """
     leaked: list[str] = []
     for element in soup.find_all(string=True):
@@ -421,12 +463,9 @@ def check_unrendered_title_sentinel(soup: BeautifulSoup) -> list[str]:
             continue
         if not element.strip() or should_skip(element):
             continue
-        match = _TITLE_SENTINEL_PATTERN.search(str(element))
-        if match:
+        if _MARKDOWN_LINK_SYNTAX_PATTERN.search(str(element)):
             _append_to_list(
-                leaked,
-                str(element),
-                prefix=f"Unrendered title sentinel {match.group(0)}: ",
+                leaked, str(element), prefix="Unrendered markdown link syntax: "
             )
     return leaked
 
@@ -736,6 +775,30 @@ def check_unrendered_subtitles(soup: BeautifulSoup) -> list[str]:
                 unrendered_subtitles, text, prefix="Unrendered subtitle: "
             )
     return unrendered_subtitles
+
+
+# An admonition title is a label, not a paragraph. The longest deliberate title
+# in `website_content/` renders at ~180 characters, so a title past this bound
+# means body text was absorbed into the title instead of becoming content.
+MAX_ADMONITION_TITLE_LENGTH = 200
+
+
+def check_overlong_admonition_titles(soup: BeautifulSoup) -> list[str]:
+    """Check for admonition titles long enough to signal absorbed body text."""
+    overlong_titles: list[str] = []
+    titles = _tags_only(soup.find_all("div", class_="admonition-title"))
+    for title in titles:
+        text = " ".join(strip_invisible_chars(title.get_text()).split())
+        if len(text) > MAX_ADMONITION_TITLE_LENGTH:
+            _append_to_list(
+                overlong_titles,
+                text,
+                prefix=(
+                    f"Admonition title too long ({len(text)} characters, "
+                    f"max {MAX_ADMONITION_TITLE_LENGTH}): "
+                ),
+            )
+    return overlong_titles
 
 
 # Check the existence of local files with these extensions
@@ -2306,6 +2369,9 @@ def check_file_for_issues(
         "localhost_links": check_localhost_links(soup),
         "invalid_internal_links": check_invalid_internal_links(soup),
         "unrendered_title_sentinel": check_unrendered_title_sentinel(soup),
+        "unrendered_markdown_link_syntax": check_unrendered_markdown_link_syntax(
+            soup
+        ),
         "invalid_anchors": check_invalid_anchors(soup, base_dir),
         "malformed_hrefs": check_malformed_hrefs(soup),
         "problematic_paragraphs": paragraphs_contain_canary_phrases(soup),
@@ -2314,6 +2380,7 @@ def check_file_for_issues(
         "missing_assets": check_asset_references(soup, file_path, base_dir),
         "problematic_katex": check_katex_elements_for_errors(soup),
         "unrendered_subtitles": check_unrendered_subtitles(soup),
+        "overlong_admonition_titles": check_overlong_admonition_titles(soup),
         "unrendered_footnotes": check_unrendered_footnotes(soup),
         "footnote_ref_not_in_sup": check_footnote_refs_in_sup(soup),
         "missing_critical_css": not check_critical_css(soup),

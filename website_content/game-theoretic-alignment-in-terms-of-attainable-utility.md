@@ -33,7 +33,7 @@ date_published: 2021-06-08
 original_url: https://www.lesswrong.com/posts/buaGz3aiqCotzjKie/game-theoretic-alignment-in-terms-of-attainable-utility
 skip_import: true
 description: A game-theoretic examination of how "aligned" agents are in a multi-player game, using an alignment metric based on social welfare functions.
-date_updated: 2026-06-28
+date_updated: 2026-08-26
 ---
 
 > [!thanks] Acknowledgements
@@ -171,6 +171,7 @@ This interpretation requires caveats. While the "limiting cases" for alignment a
 
 The Coordination inequality
 : is an equality IFF the action profile maximizes social welfare. The set of games for which all action profiles maximize welfare is precisely the constant-welfare games.
+
 The Alignment inequality
 : is an equality IFF there exists a unique [Pareto efficient](https://en.wikipedia.org/wiki/Pareto_efficiency) payoff profile. This payoff profile must be optimal for each player, otherwise some preferred profile would also be Pareto efficient. This class of games is (superficially) much broader than the common-payoff games, but both have unique Pareto efficient Nash Equilibria which can be thought of as "max attainable utility".
 

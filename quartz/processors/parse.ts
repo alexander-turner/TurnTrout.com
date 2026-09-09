@@ -21,6 +21,7 @@ import { createWinstonLogger } from "../util/log"
 import { type FilePath, QUARTZ, slugifyFilePath } from "../util/path"
 import { PerfTimer } from "../util/perf"
 import { trace } from "../util/trace"
+import { validateDescriptionLists } from "./descriptionLists"
 // @ts-expect-error: no types
 const remarkCaptions = (await import("remark-captions")).default
 
@@ -48,6 +49,7 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
           .flatMap((plugin) => plugin.markdownPlugins?.(ctx) ?? []),
       )
       .use(remarkDefinitionList)
+      .use(validateDescriptionLists)
       .use(remarkCaptions)
       .use(remarkCaptionsCodeFix)
       .use(remarkRehype, { allowDangerousHtml: true, handlers: defListHastHandlers })

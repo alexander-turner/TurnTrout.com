@@ -264,6 +264,17 @@ Failures inside the parallel group don’t short-circuit—every sibling finish
 
 Heavier checks (Jest, Playwright, built-site checks, link validation) run in CI.
 
+### Python lint without the hooks
+
+`pnpm check` covers TypeScript/SCSS only, and the pre-push pipeline needs `core.hooksPath` pointed at `.hooks`. Where the hooks aren’t wired up, run `python-lint.yaml`’s steps directly—the pinned ruff version matters, since formatting differs between releases:
+
+```bash
+uv run pyright
+uvx ruff@0.15.8 format --config pyproject.toml scripts/   # --check to only report
+uvx ruff@0.15.8 check --config pyproject.toml scripts/
+uv run pylint . --rcfile config/python/.pylintrc
+```
+
 ### Markdown lint escape hatches
 
 A few `source_file_checks.py` rules judge prose, so each honors an HTML-comment marker anywhere on the offending line. Give a reason after the colon:
@@ -356,7 +367,7 @@ cookie-free endpoint doesn't expose retweet or view counts, so those are omitted
 JSON snapshot from `quartz/plugins/transformers/.tweet_snapshots/<id>.json` and
 renders from that. A referenced tweet with no snapshot **fails the build** (so a
 forgotten capture can't silently ship a degraded card); prefix the line with
-`unavailable:` to opt a deleted-before-capture tweet into the xcancel-link stub.
+`unavailable:` to opt a deleted-before-capture tweet into the X-link stub.
 
 Snapshots are captured by `scripts/tweet_snapshot.py`, which fetches the post
 from X's cookie-free syndication endpoint, mirrors the avatar + photos/video to

@@ -335,6 +335,34 @@ describe("TableOfContents Plugin", () => {
       processor(mockTree, mockFile)
       expect(mockFile.data.toc).toHaveLength(2)
       expect(mockFile.data.toc?.[1]?.text).toBe("Footnotes")
+      // Shallowest heading is h1, so Footnotes shifts to top-level depth 0.
+      expect(mockFile.data.toc?.[1]?.depth).toBe(0)
+    })
+
+    it("keeps Footnotes at top-level depth when shallowest heading is h2", () => {
+      // Footnotes must land at the same shifted depth as the shallowest body
+      // heading so it renders as a top-level TOC entry; a negative depth would
+      // fall outside TableOfContents.buildNestedList's walk and be dropped.
+      const plugin = TableOfContents({ maxDepth: 3 })
+      const processor = (plugin.markdownPlugins?.({} as BuildCtx)?.[0] as () => ProcessorFunction)()
+
+      const mockFile: MockFile = { path: "test.md", data: { frontmatter: {} } }
+      const mockTree: Root = createRoot([
+        createHeading(2, [createText("Section")]),
+        createHeading(3, [createText("Subsection")]),
+        createFootnoteDefinition("1"),
+      ])
+
+      processor(mockTree, mockFile)
+
+      const toc = mockFile.data.toc
+      expect(toc).toHaveLength(3)
+      // Real headings shift by -2 (min depth is 2).
+      expect(toc?.[0]?.depth).toBe(0)
+      expect(toc?.[1]?.depth).toBe(1)
+      // Footnotes must land at 0 (top of TOC), not -1.
+      expect(toc?.[2]?.text).toBe("Footnotes")
+      expect(toc?.[2]?.depth).toBe(0)
     })
 
     it("respects maxDepth setting", () => {

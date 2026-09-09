@@ -7,7 +7,7 @@ import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { render } from "preact-render-to-string"
 import { quote } from "shell-quote"
-import { visit } from "unist-util-visit"
+import { EXIT, visit } from "unist-util-visit"
 
 import { Backlinks } from "../../components/Backlinks"
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
@@ -61,13 +61,22 @@ export const findElements = (tree: Root, predicate: (node: Element) => boolean):
 
 /**
  * Finds an element in the HAST tree by its ID attribute.
+ * Short-circuits at the first hit — only the first match is ever meaningful
+ * since HTML id attributes must be unique per document.
  * @param root - The root HAST node to search
  * @param id - The ID to search for
  * @returns The element with the matching ID, or null if not found
  */
 export const findElementById = (root: Root, id: string): Element | null => {
-  const matches = findElements(root, (node) => node.properties?.id === id)
-  return matches[0] ?? null
+  let match: Element | null = null
+  visit(root, "element", (node) => {
+    if (node.properties?.id === id) {
+      match = node
+      return EXIT
+    }
+    return undefined
+  })
+  return match
 }
 
 /**

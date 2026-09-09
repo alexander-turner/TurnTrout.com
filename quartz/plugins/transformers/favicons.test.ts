@@ -1020,6 +1020,29 @@ describe("AddFavicons plugin", () => {
     expect((divEl.children[0] as Element).children.length).toBe(0)
     expect((divEl.children[1] as Element).children.length).toBe(0)
   })
+
+  it("reads the counts file once regardless of how many trees it processes", async () => {
+    // `readFaviconCounts` is the sole `readFile` caller in this module, so a
+    // single read across many trees proves the counts are loaded per processor
+    // rather than re-parsed for every page in the build.
+    const readSpy = jest.spyOn(fs.promises, "readFile")
+    readSpy.mockClear()
+
+    const plugin = favicons.AddFavicons()
+    const transform = plugin.htmlPlugins(mockCtx)[0]()
+
+    const makeTree = () =>
+      ({
+        type: "root",
+        children: [h("div", [h("a", { href: "mailto:test@example.com" })])],
+      }) as unknown as import("hast").Root
+
+    await transform(makeTree())
+    await transform(makeTree())
+    await transform(makeTree())
+
+    expect(readSpy).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe("isHeading", () => {

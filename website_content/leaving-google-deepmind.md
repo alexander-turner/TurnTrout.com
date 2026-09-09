@@ -23,7 +23,7 @@ aliases:
   - leaving-google-deepmind
 no_dropcap_color: true
 date_published: 2026-07-15
-date_updated: 2026-08-12
+date_updated: 2026-09-06
 lw-posted-at: https://www.lesswrong.com/posts/iKm2FhpWkuuBojm82/why-i-left-google-deepmind
 ---
 
@@ -64,7 +64,7 @@ This essay tells the story of why I left Google DeepMind. It is also the story o
 >
 >  Sundar tried to keep him:
 >  > [!quote] [4 of Google’s Top AI Brains Are Leaving—and Launching Their Own AI Startup](https://www.wired.com/story/jeff-dean-google-discovery-loop-startup/)
->  > Dean says that Alphabet CEO Sundar Pichai tried over multiple meetings to get them to keep their badges. Ultimately the team decided that they wanted the fun–and the freedom–of doing a startup.
+>  > Dean says that Alphabet CEO Sundar Pichai tried over multiple meetings to get them to keep their badges. Ultimately the team decided that they wanted the fun—and the freedom—of doing a startup.
 >  
 >  While no public information indicates he left due to the Pentagon deal, I think it's good that Jeff left and thereby honored his 2018 pledge.
 >
@@ -98,11 +98,11 @@ I'd followed the news and guessed that Sundar Pichai (Google's CEO) was more of 
 That's when I remembered reading *Jeff Dean* tweeting about how bad ICE was, retweeting Anne Frank quotes. Maybe I didn't even need 10 engineers. Maybe I just needed *one*.
 
 ```tweet
-https://xcancel.com/JeffDean/status/2015160545331306894
+https://x.com/JeffDean/status/2015160545331306894
 ```
 
 ```tweet
-https://xcancel.com/Larrydn22/status/2015477622969340248
+https://x.com/Larrydn22/status/2015477622969340248
 retweeted-by: Jeff Dean
 ```
 
@@ -389,9 +389,9 @@ The way I saw it was: I don't need to get Jeff to agree to quit over this. In a 
 Signers include: Google DeepMind (the organization), Demis Hassabis, Shane Legg (cofounder, [now Chief AGI Scientist](https://en.wikipedia.org/wiki/Shane_Legg)), Raia Hadsell ([VP of Research](https://raiahadsell.com/index.html)), Jay Yagnik ([VP and Engineering Fellow at Google, leading large parts of Google AI](https://research.google/people/author36197/?&type=google)) and 🥁🥁🥁 Jeff Dean:
 
 ```tweet
-https://xcancel.com/JeffDean/status/2026566490619879574
-https://xcancel.com/TopherSpiro/status/2026668689802547231
-https://xcancel.com/JeffDean/status/2026683499919610153
+https://x.com/JeffDean/status/2026566490619879574
+https://x.com/TopherSpiro/status/2026668689802547231
+https://x.com/JeffDean/status/2026683499919610153
 ```
 
 Figure: Jeff Dean freely reiterated his pledge and agreed that "AI for mass surveillance of Americans" is "the last thing \[he wants\]."
@@ -525,7 +525,7 @@ That weekend prior, I had heard rumblings. [Along with over 600 other employees]
 I found out at 11:45 PM via a Signal group. Google never announced the deal internally. What surprised me was not that Google signed, but that the deal paid the barest of lip service to ethical concerns: the "should not" language [is not binding](https://x.com/CharlieBull0ck/status/2049249853947945369).
 
 ```tweet
-https://xcancel.com/Turn_Trout/status/2049153749743264231
+https://x.com/Turn_Trout/status/2049153749743264231
 ```
 
 I went to the field's premier safety & ethics organization (IASEAI). I asked some of the most distinguished AI scientists (Bengio and Stuart). I built a coalition and a plan for Google's most outspoken executive (Jeff). I even cold-messaged the CEO of my company (Demis), whose lieutenants never evaluated the proposal. Besides Jeff, none took *any* visible action to stop the deal. And the deal contains no binding provisions, which is what I'd expect if Jeff never threatened to walk.
@@ -645,7 +645,7 @@ What should a pledge-signer do? I see three honest options: explain publicly how
 >
 >  Sundar tried to keep him:
 >  > [!quote] [4 of Google’s Top AI Brains Are Leaving—and Launching Their Own AI Startup](https://www.wired.com/story/jeff-dean-google-discovery-loop-startup/)
->  > Dean says that Alphabet CEO Sundar Pichai tried over multiple meetings to get them to keep their badges. Ultimately the team decided that they wanted the fun–and the freedom–of doing a startup.
+>  > Dean says that Alphabet CEO Sundar Pichai tried over multiple meetings to get them to keep their badges. Ultimately the team decided that they wanted the fun—and the freedom—of doing a startup.
 >  
 >  While no public information indicates he left due to the Pentagon deal, I think it's good that Jeff left and thereby honored his 2018 pledge.
 >

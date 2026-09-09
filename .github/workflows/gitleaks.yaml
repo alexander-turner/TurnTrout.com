@@ -27,7 +27,7 @@ jobs:
       # that a stall trips quickly rather than one it can sit out; the retry
       # re-checkouts clean, so a partial fetch can't corrupt the workspace.
       - id: checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         timeout-minutes: 3
         continue-on-error: true
         with:
@@ -36,7 +36,7 @@ jobs:
 
       - id: checkout-retry
         if: steps.checkout.outcome == 'failure'
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         timeout-minutes: 3
         continue-on-error: true
         with:
@@ -45,7 +45,7 @@ jobs:
           clean: true
 
       - if: steps.checkout-retry.outcome == 'failure'
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         timeout-minutes: 3
         with:
           fetch-depth: 0

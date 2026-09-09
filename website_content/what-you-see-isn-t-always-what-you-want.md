@@ -31,7 +31,7 @@ date_published: 2019-09-13
 original_url: https://www.lesswrong.com/posts/AeHtdxHheMjHredaq/what-you-see-isn-t-always-what-you-want
 skip_import: true
 description: Markovian reward functions are underdefined. Aligning AI isn't about designing the "right" reward, but designing rewards compatible with how the world is.
-date_updated: 2026-06-26
+date_updated: 2026-08-19
 ---
 
 > [!failure] No longer endorsed. This isn't how reward functions work.
@@ -60,7 +60,7 @@ Under this view, alignment isn’t a property of reward functions: it’s a prop
 
 Yikes.
 
-## Qualifications
+# Qualifications
 
 The argument seems to hold for $n$\-step Markovian reward functions, if $n$ isn’t ridiculously large. If the input observation space is rich, then the problem probably relaxes. The problem isn't present in fully observable environments: by force of theorem (which presently assumes determinism and a finite state space), there exist Markovian reward functions whose only optimal policy is desirable.
 

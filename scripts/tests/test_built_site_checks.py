@@ -804,6 +804,72 @@ def test_check_unrendered_subtitles():
     ]
 
 
+_MAX_TITLE = built_site_checks.MAX_ADMONITION_TITLE_LENGTH
+
+
+def _admonition_html(*title_inners: str) -> str:
+    return "".join(
+        '<blockquote class="admonition quote">'
+        '<div class="admonition-title"><span class="admonition-title-inner">'
+        f'<span class="admonition-icon"></span>{inner}</span></div>'
+        "</blockquote>"
+        for inner in title_inners
+    )
+
+
+def _overlong_issue(rendered_title: str) -> str:
+    return (
+        f"Admonition title too long ({len(rendered_title)} characters, "
+        f"max {_MAX_TITLE}): {rendered_title[:100]}"
+    )
+
+
+# A body absorbed into the title by a lazy continuation line: the newline
+# between the linked title and the run-on prose collapses to a single space.
+_ABSORBED_BODY = "Body sentence. " * 20
+_ABSORBED_TITLE_HTML = (
+    f'<a href="https://example.com">Headline</a>\n{_ABSORBED_BODY}'
+)
+_ABSORBED_RENDERED = f"Headline {_ABSORBED_BODY.strip()}"
+
+
+@pytest.mark.parametrize(
+    "title_inners,expected",
+    [
+        pytest.param(["Short title"], [], id="short"),
+        pytest.param(["t" * _MAX_TITLE], [], id="at_limit"),
+        pytest.param(
+            ["t" * (_MAX_TITLE + 1)],
+            [_overlong_issue("t" * (_MAX_TITLE + 1))],
+            id="over_limit",
+        ),
+        pytest.param(
+            [_ABSORBED_TITLE_HTML],
+            [_overlong_issue(_ABSORBED_RENDERED)],
+            id="absorbed_body",
+        ),
+        pytest.param(
+            # Markup, the icon span, and word joiners carry no visible text, so
+            # a title that reads short stays under the bound.
+            [f"<em>{'t' * _MAX_TITLE}</em>{WORD_JOINER * 50}"],
+            [],
+            id="invisible_characters_do_not_inflate_measurement",
+        ),
+        pytest.param(
+            ["t" * (_MAX_TITLE + 5), "Fine", "u" * (_MAX_TITLE + 7)],
+            [
+                _overlong_issue("t" * (_MAX_TITLE + 5)),
+                _overlong_issue("u" * (_MAX_TITLE + 7)),
+            ],
+            id="every_overlong_admonition_reported",
+        ),
+    ],
+)
+def test_check_overlong_admonition_titles(title_inners, expected):
+    soup = BeautifulSoup(_admonition_html(*title_inners), "html.parser")
+    assert built_site_checks.check_overlong_admonition_titles(soup) == expected
+
+
 @requires_xmllint
 def test_check_valid_rss_file_with_xmllint(temp_site_root):
     """Test that check_rss_file_for_issues validates a correctly formatted RSS
@@ -2403,6 +2469,18 @@ def test_check_invalid_internal_links(html, expected_count):
         ('<a href="/page">“@title.”</a>', 1),
         # A leaked sentinel outside any anchor is also flagged.
         ("<p>Check out @title-lower today.</p>", 1),
+        # The favicon pass lifts the link's last characters into a
+        # `nowrap-span`, so the sentinel spans two text nodes.
+        (
+            '<a href="https://example.com">@t'
+            '<span class="nowrap-span">itle<svg class="favicon"/></span></a>',
+            1,
+        ),
+        (
+            '<a href="https://example.com">@title-l'
+            '<span class="nowrap-span">ower<svg class="favicon"/></span></a>',
+            1,
+        ),
         # Sentinel glued to letters/digits is prose, not a leak (mirrors the
         # transformer, which leaves such anchors untouched).
         ("<p>@titles and quote smallcaps</p>", 0),
@@ -2414,6 +2492,31 @@ def test_check_unrendered_title_sentinel(html, expected_count):
     """The check flags any non-code text still containing a sentinel."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unrendered_title_sentinel(soup)
+    assert len(result) == expected_count
+
+
+@pytest.mark.parametrize(
+    "html,expected_count",
+    [
+        # Normal prose and a properly rendered link.
+        ("<p>Normal prose with no issues.</p>", 0),
+        ('<p>See <a href="/x">the link</a> for more.</p>', 0),
+        # A failed markdown link leaks its raw syntax into text.
+        ("<p>Cost was $225 million, now requesting ]($54.6 billion.</p>", 1),
+        # Multiple leaks within one text node still count as one finding
+        # (mirrors check_unrendered_title_sentinel, which reports per node).
+        ("<p>First ](one) and second ](two) leaked.</p>", 1),
+        # Legitimate mentions in code must be ignored.
+        ("<p><code>[text](url)</code> is markdown link syntax.</p>", 0),
+        ("<pre>[text](url)</pre>", 0),
+        # A lone bracket or paren without the pair isn't a leak.
+        ("<p>A closing bracket] then an open paren( elsewhere.</p>", 0),
+    ],
+)
+def test_check_unrendered_markdown_link_syntax(html, expected_count):
+    """The check flags any non-code text still containing literal ']('."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_unrendered_markdown_link_syntax(soup)
     assert len(result) == expected_count
 
 

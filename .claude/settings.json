@@ -6,6 +6,7 @@
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
   },
   "permissions": {
+    "allow": ["Bash(git checkout --theirs *)", "mcp__Claude_Code_Remote"],
     "deny": ["Read(**/.env)", "Read(**/.env.*)", "Read(**/*.pem)", "Read(**/*.key)"]
   },
   "hooks": {

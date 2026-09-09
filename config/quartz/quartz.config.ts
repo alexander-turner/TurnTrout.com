@@ -30,6 +30,7 @@ import {
   PopulateContainers,
   PopulateExternalMarkdown,
   PrefixExternalReadmeIds,
+  ProseCharacterSubstitutions,
   RecentPostsPage,
   rehypeCustomSpoiler,
   rehypeCustomSubtitle,
@@ -52,7 +53,7 @@ import {
   WrapNakedElements,
 } from "../../quartz/plugins"
 import { QuartzConfig } from "../../quartz/util/ctx"
-import { GITHUB_README_SOURCES } from "./externalReadmes"
+import { EXTERNAL_README_SOURCES } from "./externalReadmes"
 
 const config: QuartzConfig = {
   configuration: {
@@ -74,10 +75,13 @@ const config: QuartzConfig = {
   },
   plugins: {
     transformers: [
+      // Before FrontMatter, which gathers the search index from the tree: the
+      // index should carry the characters the reader sees, not the source ones.
+      ProseCharacterSubstitutions(),
       FrontMatter(),
       PopulateExternalMarkdown({
         sources: {
-          ...GITHUB_README_SOURCES,
+          ...EXTERNAL_README_SOURCES,
           "lint-staged": {
             filePath: "package.json",
             jsonPath: "lint-staged",
