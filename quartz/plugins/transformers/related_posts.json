@@ -55,14 +55,14 @@
   ],
   "RL-textbook-review": [
     {
-      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
-      "permalink": "reward-is-not-the-optimization-target",
-      "title": "Reward is not the optimization target"
-    },
-    {
       "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
       "permalink": "attainable-utility-preservation-paper",
       "title": "Penalizing Impact via Attainable Utility Preservation"
+    },
+    {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
     },
     {
       "excerpt": "A proposed tweak to policy gradient algorithms may avoid mode collapse, but more research is needed to assess its practicality.",
@@ -92,19 +92,19 @@
       "title": "Many arguments for AI x-risk are wrong"
     },
     {
-      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
-      "permalink": "parametrically-retargetable-power-seeking",
-      "title": "Parametrically retargetable decision-makers tend to seek power"
-    },
-    {
       "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
       "permalink": "reward-is-not-the-optimization-target",
       "title": "Reward is not the optimization target"
     },
     {
-      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
-      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
-      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
+      "permalink": "parametrically-retargetable-power-seeking",
+      "title": "Parametrically retargetable decision-makers tend to seek power"
+    },
+    {
+      "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
+      "permalink": "announcing-rewrite-of-power-seeking-post",
+      "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
     }
   ],
   "a-certain-formalization-of-corrigibility-is-vnm-incoherent": [
@@ -239,14 +239,14 @@
       "title": "Seriously, what goes wrong with 'reward the agent when it makes you smile'?"
     },
     {
-      "excerpt": "Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.",
-      "permalink": "against-inner-outer-alignment",
-      "title": "Inner and outer alignment decompose one hard problem into two extremely hard problems"
-    },
-    {
       "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
       "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
       "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    },
+    {
+      "excerpt": "Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.",
+      "permalink": "against-inner-outer-alignment",
+      "title": "Inner and outer alignment decompose one hard problem into two extremely hard problems"
     }
   ],
   "against-shoggoth": [
@@ -278,14 +278,14 @@
       "title": "Many arguments for AI x-risk are wrong"
     },
     {
-      "excerpt": "AI takeover seems easier to pull off for an AI that we teach to wield killer robots.",
-      "permalink": "killer-robots-takeover",
-      "title": "Misaligned AIs could use killer robots to take over"
-    },
-    {
       "excerpt": "Instrumental and success-conditioned convergence both require AI psychology assumptions, so neither is just a \"fact about reality.\"",
       "permalink": "instrumental-convergence-requires-psychology-assumptions",
       "title": "No instrumental convergence without AI psychology"
+    },
+    {
+      "excerpt": "AI takeover seems easier to pull off for an AI that we teach to wield killer robots.",
+      "permalink": "killer-robots-takeover",
+      "title": "Misaligned AIs could use killer robots to take over"
     },
     {
       "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
@@ -349,14 +349,14 @@
       "title": "Don't align agents to evaluations of plans"
     },
     {
-      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
-      "permalink": "reward-is-not-the-optimization-target",
-      "title": "Reward is not the optimization target"
-    },
-    {
       "excerpt": "A shard theory analysis of value drift: what it is, how it happens, and how to avoid it, even without controlling your experiences.",
       "permalink": "understanding-and-avoiding-value-drift",
       "title": "Understanding and avoiding value drift"
+    },
+    {
+      "excerpt": "A review of Katja Grace's post questioning the \"value is fragile\" argument, arguing it sparked valuable but confused debate.",
+      "permalink": "review-of-but-exactly-how-complex-and-fragile",
+      "title": "Review of 'But exactly how complex and fragile?'"
     }
   ],
   "all-of-statistics-textbook-review": [
@@ -587,9 +587,9 @@
       "title": "Mistaken claims I've made"
     },
     {
-      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
-      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
-      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+      "excerpt": "A review of Katja Grace's post questioning the \"value is fragile\" argument, arguing it sparked valuable but confused debate.",
+      "permalink": "review-of-but-exactly-how-complex-and-fragile",
+      "title": "Review of 'But exactly how complex and fragile?'"
     }
   ],
   "avoiding-side-effects-in-complex-environments": [
@@ -863,9 +863,9 @@
       "title": "Many arguments for AI x-risk are wrong"
     },
     {
-      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
-      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
-      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
     },
     {
       "excerpt": "Four distinct concepts related to \"loss function\" in AI are often conflated, leading to ambiguity in the field of AI alignment.",
@@ -873,14 +873,14 @@
       "title": "Four usages of 'loss' in AI"
     },
     {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    },
+    {
       "excerpt": "RL researchers call trained policies \"agents\", biasing how we think about their behavior. I advocate for using the term \"policy\" instead.",
       "permalink": "RL-trains-policies-not-agents",
       "title": "Think carefully before calling RL policies  'agents'"
-    },
-    {
-      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
-      "permalink": "parametrically-retargetable-power-seeking",
-      "title": "Parametrically retargetable decision-makers tend to seek power"
     }
   ],
   "dangers-of-intrinsic-power-seeking": [
@@ -1017,14 +1017,14 @@
       "title": "My open source contributions"
     },
     {
-      "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
-      "permalink": "about",
-      "title": "About me"
-    },
-    {
       "excerpt": "Displaying the features of the website for use in visual regression testing.",
       "permalink": "test-page",
       "title": "Testing site features"
+    },
+    {
+      "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
+      "permalink": "about",
+      "title": "About me"
     },
     {
       "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
@@ -1051,19 +1051,19 @@
       "title": "Many arguments for AI x-risk are wrong"
     },
     {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
+    },
+    {
       "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
       "permalink": "dont-align-agents-to-evaluations-of-plans",
       "title": "Don't align agents to evaluations of plans"
-    },
-    {
-      "excerpt": "Common alignment ideas involve gaming the grader, not achieving the goal. Counterproductive, like building a toaster which both warms and cools the bread.",
-      "permalink": "dont-design-agents-which-exploit-adversarial-inputs",
-      "title": "Don't design agents which exploit adversarial inputs"
-    },
-    {
-      "excerpt": "Four distinct concepts related to \"loss function\" in AI are often conflated, leading to ambiguity in the field of AI alignment.",
-      "permalink": "four-usages-of-loss-in-ai",
-      "title": "Four usages of 'loss' in AI"
     }
   ],
   "distillation-robustifies-unlearning": [
@@ -1083,14 +1083,14 @@
       "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
     },
     {
-      "excerpt": "A proposal for a government regulation of AI: Developers must be able to accurately predict the model's output.",
-      "permalink": "ban-development-of-unpredictable-powerful-models",
-      "title": "Ban development of unpredictable powerful models?"
-    },
-    {
       "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
       "permalink": "consistency-training",
       "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
+    },
+    {
+      "excerpt": "When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.",
+      "permalink": "self-fulfilling-misalignment",
+      "title": "Self-fulfilling misalignment data might be poisoning our AI models"
     }
   ],
   "doctor-stone": [
@@ -1122,9 +1122,9 @@
       "title": "A shot at the diamond-alignment problem"
     },
     {
-      "excerpt": "A critical look at the idea of \"lethal\" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.",
-      "permalink": "disagreements-with-list-of-lethalities",
-      "title": "Some of my disagreements with List of Lethalities"
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
     }
   ],
   "dont-design-agents-which-exploit-adversarial-inputs": [
@@ -1423,6 +1423,11 @@
       "title": "Dreams of AI alignment: The danger of suggestive names"
     },
     {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
+    },
+    {
       "excerpt": "A critical look at the idea of \"lethal\" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.",
       "permalink": "disagreements-with-list-of-lethalities",
       "title": "Some of my disagreements with List of Lethalities"
@@ -1431,11 +1436,6 @@
       "excerpt": "Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.",
       "permalink": "dont-align-agents-to-evaluations-of-plans",
       "title": "Don't align agents to evaluations of plans"
-    },
-    {
-      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
-      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
-      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
     }
   ],
   "functional-analysis-textbook-review": [
@@ -2050,6 +2050,11 @@
       "title": "Mistaken claims I've made"
     },
     {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
+    },
+    {
       "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
       "permalink": "alignment-phd",
       "title": "Looking back on my alignment PhD"
@@ -2058,11 +2063,6 @@
       "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
       "permalink": "parametrically-retargetable-power-seeking",
       "title": "Parametrically retargetable decision-makers tend to seek power"
-    },
-    {
-      "excerpt": "Experts clash on the dangers of \"instrumental convergence\" in AI, but clear definitions and formal thought are sorely needed.",
-      "permalink": "review-of-debate-on-instrumental-convergence",
-      "title": "Review of 'Debate on Instrumental Convergence between LeCun, Russell, Bengio, Zador, and More'"
     }
   ],
   "killer-robots-takeover": [
@@ -2300,11 +2300,6 @@
       "title": "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
     },
     {
-      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
-      "permalink": "reward-is-not-the-optimization-target",
-      "title": "Reward is not the optimization target"
-    },
-    {
       "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
       "permalink": "announcing-rewrite-of-power-seeking-post",
       "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
@@ -2313,6 +2308,11 @@
       "excerpt": "Formal analysis showing that, for agents optimizing a reward function, corrigibility is rare and perhaps even incoherent.",
       "permalink": "a-certain-formalization-of-corrigibility-is-vnm-incoherent",
       "title": "A Certain Formalization of Corrigibility Is VNM-Incoherent"
+    },
+    {
+      "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
+      "permalink": "reward-is-not-the-optimization-target",
+      "title": "Reward is not the optimization target"
     },
     {
       "excerpt": "We challenge the assumption that output supervision preserves Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the CoTs.",
@@ -2449,14 +2449,14 @@
       "title": "About me"
     },
     {
-      "excerpt": "A command-line tool to harden datasets, helping prevent AI data contamination by deploying a protected download portal.",
-      "permalink": "dataset-protection",
-      "title": "We built a tool to protect your dataset from simple scrapers"
-    },
-    {
       "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
       "permalink": "date-me",
       "title": "I'm that \"other fish in the sea\""
+    },
+    {
+      "excerpt": "A command-line tool to harden datasets, helping prevent AI data contamination by deploying a protected download portal.",
+      "permalink": "dataset-protection",
+      "title": "We built a tool to protect your dataset from simple scrapers"
     }
   ],
   "ordinary-differential-equations-textbook-review": [
@@ -2578,14 +2578,14 @@
       "title": "Seeking Power is Often Convergently Instrumental in MDPs"
     },
     {
-      "excerpt": "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power.",
-      "permalink": "the-catastrophic-convergence-conjecture",
-      "title": "The Catastrophic Convergence Conjecture"
-    },
-    {
       "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
       "permalink": "excitement-about-impact-measures",
       "title": "Reasons for Excitement about Impact of Impact Measure Research"
+    },
+    {
+      "excerpt": "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power.",
+      "permalink": "the-catastrophic-convergence-conjecture",
+      "title": "The Catastrophic Convergence Conjecture"
     },
     {
       "excerpt": "Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.",
@@ -2764,14 +2764,14 @@
       "title": "Don't align agents to evaluations of plans"
     },
     {
-      "excerpt": "Markovian reward functions are underdefined. Aligning AI isn't about designing the \"right\" reward, but designing rewards compatible with how the world is.",
-      "permalink": "against-rewards-over-observations",
-      "title": "What You See Isn't Always What You Want"
-    },
-    {
       "excerpt": "Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.",
       "permalink": "shard-theory",
       "title": "The shard theory of human values"
+    },
+    {
+      "excerpt": "Markovian reward functions are underdefined. Aligning AI isn't about designing the \"right\" reward, but designing rewards compatible with how the world is.",
+      "permalink": "against-rewards-over-observations",
+      "title": "What You See Isn't Always What You Want"
     }
   ],
   "read-hpmor": [
@@ -2808,14 +2808,14 @@
       "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
     },
     {
-      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
-      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
-      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
-    },
-    {
       "excerpt": "When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.",
       "permalink": "self-fulfilling-misalignment",
       "title": "Self-fulfilling misalignment data might be poisoning our AI models"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
     },
     {
       "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
@@ -2989,14 +2989,14 @@
       "title": "Many arguments for AI x-risk are wrong"
     },
     {
-      "excerpt": "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts.",
-      "permalink": "recontextualization-mitigates-specification-gaming",
-      "title": "Recontextualization Mitigates Specification Gaming Without Modifying the Specification"
+      "excerpt": "A list of some of my major conceptual mistakes.",
+      "permalink": "mistakes",
+      "title": "Mistaken claims I've made"
     },
     {
-      "excerpt": "Four distinct concepts related to \"loss function\" in AI are often conflated, leading to ambiguity in the field of AI alignment.",
-      "permalink": "four-usages-of-loss-in-ai",
-      "title": "Four usages of 'loss' in AI"
+      "excerpt": "A critical look at the idea of \"lethal\" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.",
+      "permalink": "disagreements-with-list-of-lethalities",
+      "title": "Some of my disagreements with List of Lethalities"
     }
   ],
   "reward-is-not-the-optimization-target": [
@@ -3011,19 +3011,19 @@
       "title": "What You See Isn't Always What You Want"
     },
     {
-      "excerpt": "Values steer optimization, they are not optimized against. Values don't have to be robustly \"correct\", because they are not the thing being optimized.",
-      "permalink": "alignment-without-total-robustness",
-      "title": "Alignment allows 'non-robust' decision-influences and doesn't require robust grading"
-    },
-    {
       "excerpt": "AI alignment plagued by imprecise language. Ex: \"reward\" and \"shoggoth\" are suggestive words that obstruct clear thought.",
       "permalink": "danger-of-suggestive-terminology",
       "title": "Dreams of AI alignment: The danger of suggestive names"
     },
     {
-      "excerpt": "A deep dive into reinforcement learning, covering algorithms, exploration vs. exploitation, and the importance of safe AI development.",
-      "permalink": "RL-textbook-review",
-      "title": "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power.",
+      "permalink": "parametrically-retargetable-power-seeking",
+      "title": "Parametrically retargetable decision-makers tend to seek power"
     }
   ],
   "robustness-of-positive-values": [
