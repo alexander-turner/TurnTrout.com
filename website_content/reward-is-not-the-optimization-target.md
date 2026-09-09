@@ -38,7 +38,7 @@ date_published: 2022-07-25
 original_url: https://www.lesswrong.com/posts/pdaGN6pQyQarFHXF4/reward-is-not-the-optimization-target
 skip_import: "true"
 description: "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition."
-date_updated: 2026-08-03
+date_updated: 2026-09-09
 createBibtex: true
 ---
 
