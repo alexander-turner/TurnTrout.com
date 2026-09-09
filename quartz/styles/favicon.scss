@@ -47,23 +47,22 @@
   --favicon-base-size: calc(0.625em - var(--size-decrease));
   --favicon-size: var(--favicon-base-size);
 
-  // Left-gap model: constant visual gap = base + glyph nudge + bold nudge −
-  // icon ink inset. `--glyph-nudge` compensates glyphs whose ink overhangs
-  // their advance width (set via .close-text / .closer-text and their
-  // .code-close-text / .code-closer-text counterparts, assigned per
-  // charsToSpace/-Most in quartz/plugins/transformers/favicons.ts).
-  // `--favicon-bold-nudge` compensates faux-bold contexts, whose text-shadow
-  // paints every glyph's ink $faux-bold-offset further right; the faux-bold
-  // mixin (_faux-bold.scss) emits the shadow and the nudge together. It is
-  // consumed only through the var() fallback and must never be initialized on
-  // .favicon itself — the value has to inherit from the bold ancestor.
-  // `--left-inset` is the fraction of the icon box left of its first ink
-  // column (measured by scripts/notebooks/favicon_kerning_audit, capped at
-  // ~2px); subtracting it puts every icon's visual left edge the same
-  // distance from the text.
-  --glyph-nudge: 0em;
+  // Left-gap model: the transformer measures how much of the gap the
+  // neighbouring glyph's own right side bearing already supplies and writes the
+  // remainder here as `--glyph-gap` (faviconGapEm in
+  // quartz/plugins/transformers/favicons.ts), so every glyph in every face ends
+  // up the same distance from the icon. The fallback covers icons with no glyph
+  // beside them. `--favicon-bold-nudge` compensates faux-bold contexts, whose
+  // text-shadow paints every glyph's ink $faux-bold-offset further right; the
+  // faux-bold mixin (_faux-bold.scss) emits the shadow and the nudge together.
+  // It is consumed only through the var() fallback and must never be
+  // initialized on .favicon itself — the value has to inherit from the bold
+  // ancestor. `--left-inset` is the fraction of the icon box left of its first
+  // ink column (measured by scripts/notebooks/favicon_kerning_audit, capped at
+  // ~2px); subtracting it puts every icon's visual left edge the same distance
+  // from the text.
   --left-inset: 0;
-  --text-gap: calc(0.0625em + var(--glyph-nudge) + var(--favicon-bold-nudge, 0px));
+  --text-gap: calc(var(--glyph-gap, 0.1875em) + var(--favicon-bold-nudge, 0px));
 
   display: inline;
   width: var(--favicon-size);
@@ -74,43 +73,17 @@
   // Don't pollute copied text with favicon
   user-select: none;
 
-  &.close-text {
-    --glyph-nudge: 0.0625em;
-  }
-
-  &.closer-text {
-    --glyph-nudge: 0.125em;
-  }
-
-  // A favicon appended after inline code sits inside the <code>; the right gap
-  // keeps a trailing ")" / "]" from cramping. Monospace advances end in
-  // built-in right side bearing, so the last code glyph already clears the
-  // icon: the negative nudge returns that surplus. FiraCode centers each glyph
-  // in one fixed advance, so the surplus varies far more than in the
-  // proportional serif: the two classes below return a half and a whole step to
-  // the glyphs whose bearing falls short of the uniform correction (assigned
-  // per charsToSpace(Most)Code in quartz/plugins/transformers/favicons.ts).
   // The icon annotates a link inside a paragraph; inline code runs smaller than
   // the prose it sits in, so an em basis taken from the code face would shrink
   // the icon against the very line it shares. Dividing that basis back out
   // denominates the box, the gap and the rise in the surrounding text, which is
-  // the size the reader compares them to.
-  // The face still sits a step wider than the proportional faces: FiraCode
-  // centers each glyph in a fixed advance, so the icon meets a glyph whose ink
-  // stops short of where the advance ends.
+  // the size the reader compares them to. faviconGapEm rescales its measured
+  // gap into the same em so the distance the reader sees is unchanged.
   code & {
     font-size: calc(1em / var(--font-size-code-scale));
+
+    // Keeps a trailing ")" / "]" outside the code from cramping the icon.
     margin-right: 0.0625em;
-
-    --glyph-nudge: -0.0156em;
-
-    &.code-close-text {
-      --glyph-nudge: 0.0156em;
-    }
-
-    &.code-closer-text {
-      --glyph-nudge: 0.0469em;
-    }
   }
 }
 
