@@ -26,6 +26,15 @@ Folks ask me, "LLMs seem to reward hack a lot. Does that mean that reward _is_ t
 > [!summary] Reward still is not the optimization target
 > Reward≠OT said that (policy-gradient) RL will not train systems which primarily try to optimize the _reward function for its own sake_ (e.g. searching at inference time for an input which maximally activates the AI's specific reward model). In contrast, empirically observed "reward hacking" almost always involves the AI finding unintended "solutions" (e.g. hardcoding answers to unit tests). Reward≠OT and "reward hacking" concern different phenomena.
 
+> [!warning] As of July 2026, I expect reward-seeking from heavily RL'd LLMs
+> My claims hold for 2025-era LLMs, but apparently not for those of 2026!
+>
+   > > [!quote] [A LessWrong comment of mine](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58?commentId=DNvCMjyi6YmMZri9t)
+   > > Specification gaming is way worse than I expected (cf HF hacks), and I think reward might empirically become a primary optimization target. \[...\]
+   > >
+   > > My main mistake in 2022 was not appreciating how LLM pretraining would affect the concepts available to an AI. Namely, by the time RL started, the systems would _already know about the "reward" concept_.
+   >
+
 # "Reward hacking" and "Reward≠OT" refer to different meanings of "reward"
 
 We confront [yet another](/dreams-of-ai-alignment) situation where common word choice clouds discourse. In 2016, [Amodei et al.](https://arxiv.org/pdf/1606.06565#page=7.52) defined "reward hacking" to cover two quite different behaviors:

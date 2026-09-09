@@ -56,8 +56,23 @@ Therefore, _reward is not the optimization target_ in two senses:
 1. Deep reinforcement learning agents will not come to intrinsically and primarily value their reward signal; reward is not _the trained agent’s_ optimization target.
 2. Utility functions express the _relative goodness_ of outcomes. Reward _is not best understood_ as being a kind of utility function. Reward has the mechanistic effect of _chiseling cognition into the agent's network_. Therefore, properly understood, reward does not express relative goodness and _does not automatically describe the values of the trained AI_.
 
+> [!warning] As of July 2026, I expect reward-seeking from heavily RL'd LLMs
+>
+> > [!quote] [A LessWrong comment of mine](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58?commentId=DNvCMjyi6YmMZri9t)
+> > **Specification gaming is way worse than I expected (cf HF hacks), and I think reward might empirically become a primary optimization target** (not just a secondary priority for AI agents, [as I had hypothesized in 2022](https://turntrout.com/reward-is-not-the-optimization-target)).
+> >
+> > - I found [the Apollo paper](https://arxiv.org/abs/2607.18966) quite convincing on the reward point. The reward-seeking doesn't look like it's due to self-fulfilling misalignment (since before RL the systems weren't retargetable according to their beliefs about the reward model).
+> > - My main mistake in 2022 was not appreciating how LLM pretraining would affect the concepts available to an AI. Namely, by the time RL started, the systems would _already know about the "reward" concept_. In 2022, I had flagged "how does pretraining affect this reasoning" as a known unknown. (Flagging a known unknown doesn't stop it from blowing up your reasoning!)
+> > - Oops
+> >
+> > **Reward is still not** _**definitionally**_ **the optimization target.** The equations themselves still don't tell you "yes this will train something that seeks its reinforcement signal." (That'd prove too much, as some people don't seek their reinforcement signals despite knowing about them, although their "equations" are not the same as the equations of an AI's training process.) This theoretical point is the other half of [my 2022 piece](https://turntrout.com/reward-is-not-the-optimization-target) and I stand by it.
+> >
+> > Saying "systems are trained to get reward" is [still a mistake](https://www.lesswrong.com/posts/TWorNr22hhYegE4RT/models-don-t-get-reward) and [degrades precision](https://turntrout.com/RL-trains-policies-not-agents#reward-reinforcement) of thought because "reward" has overly delicious connotations. "Reinforcement" is usually a better term. Whether or not smart AI systems _empirically seek to make the reinforcement signal high_, we need to think clearly and evenly about the conditions that push towards / away from that outcome. (So I would instead say: "Reward is not _definitionally_ the optimization target.")
+>
+> This rolls back my confidence that "reward will not be the trained agent's optimization target" (claim 1). I stand by "reward chisels cognition" (claim 2) as a salve for confused thinking about RL.
+
 > [!thanks]
->This insight was made possible by many conversations with Quintin Pope, where he challenged my implicit assumptions about alignment. I’m not sure who came up with this particular idea.
+> This insight was made possible by many conversations with Quintin Pope, where he challenged my implicit assumptions about alignment. I’m not sure who came up with this particular idea.
 
 ETA 9/18/23: This post addresses the model-free policy gradient setting, including algorithms like PPO and REINFORCE.
 
