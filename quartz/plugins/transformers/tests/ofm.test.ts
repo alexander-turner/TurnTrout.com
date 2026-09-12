@@ -7,6 +7,7 @@ import { VFile } from "vfile"
 
 import type { BuildCtx } from "../../../util/ctx"
 
+import { SMALL_CAPS_CLASS } from "../../../components/constants"
 import { resetSlugger } from "../gfm"
 import {
   createYouTubeEmbed,
@@ -16,6 +17,7 @@ import {
   type OFMOptions,
   processWikilink,
 } from "../ofm"
+import { rehypeTagSmallcaps } from "../tagSmallcaps"
 
 jest.mock("fs")
 import fs from "fs"
@@ -108,7 +110,7 @@ describe("markdownPlugins", () => {
       name: "basic admonition",
       input: "> [!note] This is a admonition",
       expectedClass: "admonition note",
-      expectedContent: ['<div class="admonition-title">'],
+      expectedContent: ['<div class="admonition-title no-smallcaps">'],
       notExpectedContent: ['<div class="admonition-content">'],
     },
     {
@@ -140,44 +142,41 @@ describe("markdownPlugins", () => {
       expectedContent: ["data-admonition-fold"],
     },
     {
-      name: "quote with a title-cased plain-text title (skips small-caps)",
+      name: "quote with a title-cased plain-text title skips small-caps",
       input: "> [!quote] The Basic Reasons I Expect AGI Ruin",
       expectedClass: "admonition quote",
       expectedContent: ['<div class="admonition-title no-smallcaps">'],
     },
     {
-      name: "quote with a title-cased link title (skips small-caps)",
+      name: "quote with a title-cased link title skips small-caps",
       input:
         "> [!quote] [Seeking Power Is Often Robustly Instrumental in MDPs](https://example.com)",
       expectedClass: "admonition quote",
       expectedContent: ['<div class="admonition-title no-smallcaps">'],
     },
     {
-      name: "quote with a prose title keeps small-caps",
+      name: "quote with a prose title skips small-caps",
       input: "> [!quote] Does Proton VPN keep logs?",
       expectedClass: "admonition quote",
-      expectedContent: ['<div class="admonition-title">'],
-      notExpectedContent: ["no-smallcaps"],
+      expectedContent: ['<div class="admonition-title no-smallcaps">'],
     },
     {
-      name: "blank-titled admonition never gets no-smallcaps (empty text is not a title)",
+      name: "blank-titled admonition skips small-caps",
       input: "> [!quote]\n> Just body content.",
       expectedClass: "admonition quote",
-      expectedContent: ['<div class="admonition-title">'],
-      notExpectedContent: ["no-smallcaps"],
+      expectedContent: ['<div class="admonition-title no-smallcaps">'],
     },
     {
-      name: "non-quote admonition with a title-cased title also skips small-caps",
+      name: "non-quote admonition with a title-cased title skips small-caps",
       input: "> [!note] The CLOUD Act: A Dangerous Expansion of Police Snooping",
       expectedClass: "admonition note",
       expectedContent: ['<div class="admonition-title no-smallcaps">'],
     },
     {
-      name: "non-quote admonition with a prose title keeps small-caps",
+      name: "non-quote admonition with a prose title skips small-caps",
       input: "> [!warning] Watch out for the NASA launch schedule",
       expectedClass: "admonition warning",
-      expectedContent: ['<div class="admonition-title">'],
-      notExpectedContent: ["no-smallcaps"],
+      expectedContent: ['<div class="admonition-title no-smallcaps">'],
     },
     {
       name: "title link abutting an opening paren gets no inserted space",
@@ -203,6 +202,23 @@ describe("markdownPlugins", () => {
       assertContent(output, expectedContent, notExpectedContent)
     },
   )
+
+  it("leaves acronyms in an admonition title uppercase while small-capping the body", () => {
+    const processor = unified()
+      .use(remarkParse)
+      .use(markdownPlugins(defaultOptions))
+      .use(remarkRehype, { allowDangerousHtml: true })
+      .use(rehypeTagSmallcaps)
+      .use(rehypeStringify, { allowDangerousHtml: true })
+    const output = processor
+      .processSync(new VFile("> [!quote] Why we train heavily RL'd LLMs\n>\n> NASA agrees."))
+      .toString()
+
+    expect(output).toContain("RL'd LLMs")
+    expect(output).toContain(
+      `<abbr class="${SMALL_CAPS_CLASS}" data-original-text="NASA">Nasa</abbr>`,
+    )
+  })
 
   describe("body text under an admonition title", () => {
     // The full source path: textTransform forces the newline that separates the
