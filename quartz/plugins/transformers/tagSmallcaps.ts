@@ -11,6 +11,7 @@ import type { QuartzTransformerPlugin } from "../types"
 
 import {
   HEADING_TAGS,
+  KATEX_CLASS,
   NBSP,
   NO_SMALLCAPS_CLASS,
   WORK_TITLE_CLASS,
@@ -235,7 +236,7 @@ export const skipSmallcapsClasses: readonly string[] = [
   WORK_TITLE_CLASS,
   "no-formatting",
   "bad-handwriting",
-  "katex",
+  KATEX_CLASS,
 ]
 
 // skipcq: JS-0257
