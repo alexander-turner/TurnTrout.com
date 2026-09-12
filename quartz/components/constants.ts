@@ -181,6 +181,9 @@ export const FAVICON_CLASS = "favicon"
 export const NOWRAP_SPAN_CLASS = "nowrap-span"
 export const KATEX_CLASS = "katex"
 export const SMALL_CAPS_CLASS = "small-caps"
+// Opts a subtree out of small-caps treatment, so its acronyms render in full
+// caps.
+export const NO_SMALLCAPS_CLASS = "no-smallcaps"
 export const BACKLINK_HIGHLIGHT_CLASS = "backlink-highlight"
 export const BACKLINK_EXCERPT_CLASS = "backlink-excerpt"
 // Marks rendered title-like text (page titles, backlink titles, prev/next post

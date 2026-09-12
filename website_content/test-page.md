@@ -49,7 +49,7 @@ A resolved title gets the same typography as every other title surface, so its f
 
 # `@title`s and quote smallcaps
 
-Acronyms in a resolved `@title` fill and in title-cased `[!quote]` titles render as plain caps instead of smallcaps.
+Acronyms in a resolved `@title` fill and in admonition titles render as plain caps instead of smallcaps.
 
 > [!quote] [Seeking Power Is Often Robustly Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps)
 > A quote whose link title is a hand-written cited work: "MDPs" stays plain rather than small-capped.
@@ -61,7 +61,10 @@ Acronyms in a resolved `@title` fill and in title-cased `[!quote]` titles render
 > A plain-text title-cased quote title: "AGI" stays plain.
 
 > [!quote] Does Proton VPN keep logs?
-> A prose quote title: "VPN" is small-capped as usual.
+> A prose quote title: "VPN" stays plain, just like a title-cased one.
+
+> [!note] Why we train heavily RL'd LLMs
+> A prose admonition title with an acronym: "LLMs" stays plain, while NASA in the body is small-capped.
 
 In-text work titles behave the same way: a title-cased link like [Seeking Power is Often Convergently Instrumental in MDPs](/seeking-power-is-often-convergently-instrumental-in-mdps) and an italicized title like _Corrigibility Can Be VNM-Incoherent_ keep their acronyms as plain caps, while prose mentions of NASA, a lone italicized _LLM_, and sentence-cased links like [how the FBI does its work](/test-page) stay small-capped. <!-- lint-ignore title-bound-link: the literal link text is what the small-caps baseline exercises -->
 
