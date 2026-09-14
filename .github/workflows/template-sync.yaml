@@ -5,6 +5,8 @@ name: Sync from Template
 # No setup required - works out of the box.
 #
 # Features:
+# - Skips entirely in the template repository itself, and fails loud when
+#   TEMPLATE_SYNC_ORG points the sync at a fork of the running repo
 # - 3-way merges local customizations with template updates automatically
 # - Falls back to template version + Claude resolution when no merge base exists
 # - Detects new files, changed files, and deleted files from the template
@@ -22,71 +24,171 @@ name: Sync from Template
 # 2. Preserve local customizations while adopting new template features
 # 3. When in doubt, keep local changes - they exist for a reason
 # 4. Check for duplicate CI: if the target repo already has test/lint/format
-#    workflows, don't add the template's versions — exclude them via
-#    EXCLUDE_PATHS instead
+#    workflows, delete the template's versions. A file the sync delivered
+#    before and the adopter deleted is reported as declined, not restored, so
+#    the deletion holds on its own and needs no EXCLUDE_PATHS entry.
+# 5. A workflow that must never be introduced into a repo that has its own
+#    equivalent (the release flow) belongs in OPT_IN_PATHS.
+# 6. A file the template MOVED arrives at its new path while the old one stays
+#    local, because this sync reports deletions and never applies them. Delete
+#    the local copy and repoint whatever names it. The case that fails silently:
+#    each composite action now carries its own scripts and tests under
+#    .github/actions/<name>/, so a repo whose package.json still runs
+#    `node --test ".github/scripts/**/*.test.mjs"` tests the stale copy and
+#    reports green while the action runs the new one. package.json is outside
+#    SYNC_PATHS, so adding `.github/actions/**/*.test.mjs` there is the
+#    consumer's edit to make.
+# 7. That same move breaks an EXCLUDE_PATHS entry naming the OLD path: the entry
+#    matches nothing, and the file arrives at the new path. The sync reports
+#    every entry that names nothing in the template, so read the inert-entry
+#    section of the sync pull request body. Exclude a composite action as the
+#    DIRECTORY `.github/actions/<name>`, never as `<name>/action.yaml` alone,
+#    so the action's scripts are covered too.
+# 8. A file the adopter GENERATES and the TEMPLATE also owns belongs in
+#    EXCLUDE_PATHS; one the template does not own is never delivered, so an
+#    entry for it is inert per note 7. The sync line-merges, so the template's
+#    block lands beside the generated one and the generator reverts it on the
+#    next run — the same pull request reopens every week. In JSON that merge
+#    can also produce a DUPLICATE member name. RFC 8259 leaves
+#    that case to the parser: jq, Python and JavaScript each keep the LAST one,
+#    so the adopter's own block silently stops taking effect, while another
+#    parser may keep the first or refuse the file outright.
+# =============================================================================
+#
+# ROOT SCAFFOLDING A SYNCED WORKFLOW MAY ASSUME
+#
+# SYNC_PATHS delivers no root project file: package.json, .nvmrc, pyproject.toml,
+# uv.lock and .pre-commit-config.yaml all stay with the consumer. So a synced
+# workflow step that needs one must be gated on `hashFiles('<file>') != ''` and
+# skip when it is absent. Ungated, it hard-fails on every PR in a consumer that
+# never had that scaffolding — a shell-only dotfiles repo, say — and names
+# neither the template nor the missing file in the failure. Adding a workflow to
+# EXCLUDE_PATHS is the consumer's escape hatch, not the fix; gate the step here
+# instead, so a new consumer needs no escape hatch at all.
 # =============================================================================
 
 on:
   workflow_dispatch:
     inputs:
       dry-run:
+        # A `type: boolean` input arrives as a real boolean, so both this default
+        # and every condition that reads it below must be boolean too. Comparing
+        # it to the STRING 'true' silently never matches: GitHub casts across
+        # types to a number, and `true == 'true'` compares 1 with NaN. That made
+        # every "dry run" dispatch open a real pull request.
         description: "Show what would be synced without making changes"
         required: false
-        default: "false"
+        default: false
         type: boolean
   schedule:
     # Run weekly on Mondays at 9am UTC
     - cron: "0 9 * * 1"
 
 env:
-  TEMPLATE_REPO: "alexander-turner/claude-automation-template"
+  TEMPLATE_REPO: "${{ vars.TEMPLATE_SYNC_ORG || 'AlexanderMattTurner' }}/claude-automation-template"
   # Whole directories of core automation files that are always template-owned.
   # Every file under these paths propagates to downstream consumers; new files
   # added to the template auto-sync without anyone having to edit this list.
   # Downstream-added files in these directories are left alone (sync only
   # copies files that exist in the template).
-  SYNC_PATHS: ".claude .hooks .github/actions .github/scripts .github/workflows .github/prompts"
-  # Paths to exclude from syncing. Supports both whole directories (matching
-  # entries in SYNC_PATHS) and individual files within synced directories.
   #
-  # NOTE: If the target repo already has its own test/lint/format CI workflows,
-  # exclude the template's equivalents here to avoid duplicate CI jobs.
+  # An entry may also be a single FILE, which is how a synced file's DATA
+  # dependency travels when it lives outside every synced directory. A synced
+  # script that reads such a file arrives downstream without it and dies on the
+  # read, so each one a synced file names by a fixed path is listed here:
+  #   .github/tool-versions.sh                 <- .github/scripts/install-mergiraf.sh
+  #   .github/claude-cli-version               <- .github/scripts/install-claude-cli.sh
+  #   config/javascript/commitlint.config.js   <- .hooks/commit-msg
+  # A consumer that maintains its own richer copy of one of these (extra tools
+  # pinned for its own CI) keeps it by adding that path to EXCLUDE_PATHS.
+  SYNC_PATHS: ".claude .hooks .github/actions .github/scripts .github/workflows .github/prompts .github/tool-versions.sh .github/claude-cli-version config/javascript/commitlint.config.js"
+  # Paths to exclude from syncing. An entry names one file or one directory, and
+  # a directory entry covers every file under it.
+  #
+  # NOTE: An adopter that already has its own test/lint/format CI workflows can
+  # simply delete the template's equivalents; the sync declines to re-add a file
+  # it delivered before. Use this list for a file the sync has NEVER delivered,
+  # or to freeze one the adopter keeps but maintains itself.
   # Common candidates: .github/workflows/node-tests.yaml,
   # .github/workflows/lint.yaml, .github/workflows/format-check.yaml
   #
-  # VERSIONED-APP-ONLY: the release flow below only makes sense for a repo that
-  # is published to npm. auto-version.yaml runs on EVERY push to the default
-  # branch and, for a real (non-private) package, decides a Conventional-Commits
-  # semver bump and runs `pnpm publish` (OIDC provenance — no NPM_TOKEN). The
-  # template's own package.json sets "private": true, so version-bump.sh skips
-  # publishing there; a downstream repo opts in by dropping `private` and setting
-  # a real, publishable name. A repo that is not an npm package at all (e.g. a
-  # website like TurnTrout.com) should list these here to opt out entirely:
-  #   .github/workflows/auto-version.yaml
-  #   .github/scripts/version-bump.sh
-  #   .github/scripts/promote-changelog.mjs
-  #   .github/scripts/lib/retry.bash
-  # (CHANGELOG.md lives outside SYNC_PATHS and never syncs, so a versioned
-  # consumer must create it to bootstrap the flow.)
   # The security-vulnerability-scan workflow + prompt are intentionally NOT
   # propagated to downstream repos; each consumer owns its own security-scan
   # cadence and model pin, so the template stops overwriting them on sync.
+<<<<<<< local
   # sync-required-checks.yaml mutates branch protection via a RULESET_SYNC_TOKEN
   # secret this repo does not provision, so it fails on every push to main; this
   # repo opts out of the ruleset auto-sync entirely.
   EXCLUDE_PATHS: ".github/actions/setup-base-env .github/scripts/check-existing-security-pr.sh .github/scripts/check-symlinks.sh .github/scripts/fetch-security-report.sh .github/scripts/list-dependabot-prs.sh .github/scripts/script-configured.sh .github/workflows/dependabot-auto-merge.yaml .github/workflows/format-check.yaml .github/workflows/lint.yaml .github/workflows/node-tests.yaml .github/workflows/pre-commit.yaml .github/workflows/validate-config.yaml .github/workflows/auto-version.yaml .github/scripts/version-bump.sh .github/scripts/promote-changelog.mjs .github/scripts/lib/retry.bash .github/workflows/sync-required-checks.yaml"
+=======
+  # .github/scripts/auto-resolve is the retired shell resolver. A consumer that
+  # still carries it keeps its own copy rather than having sync delete it out
+  # from under a caller that has not converted yet.
+  EXCLUDE_PATHS: ".github/workflows/security-vulnerability-scan.yaml .github/prompts/security-vulnerability-scan.md .github/scripts/auto-resolve"
+  # Files the sync UPDATES but never INTRODUCES. Absent from the child repo they
+  # are skipped; present, they sync like anything else. This is the opt-in half
+  # of EXCLUDE_PATHS: opting in is creating the file once, opting out is deleting
+  # it (and it stays deleted — no EXCLUDE_PATHS entry needed).
+  #
+  # auto-version.yaml is the release flow's entry point: it runs on EVERY push to
+  # the default branch and, for a non-private package, decides a
+  # Conventional-Commits semver bump and runs `pnpm publish` (OIDC provenance —
+  # no NPM_TOKEN). Introducing it into a repo that already publishes gives that
+  # repo TWO publishers; because the concurrency groups differ they never
+  # serialize, so both compute the same version and one loses the race with an
+  # unrecognizable `npm error code E404 ... PUT` on an already-published version.
+  # Opt in by copying it from the template:
+  #   curl -fsSL https://raw.githubusercontent.com/AlexanderMattTurner/claude-automation-template/main/.github/workflows/auto-version.yaml \
+  #     -o .github/workflows/auto-version.yaml
+  # CHANGELOG.md lives outside SYNC_PATHS and never syncs, so a versioned
+  # consumer must also create it to bootstrap the flow.
+  #
+  # A consumer that KEEPS its own release workflow instead should give it the
+  # template's workflow name — "Auto version bump and publish" — or add its own
+  # name to the `workflows:` lists in ci-failure-notify.yaml and
+  # build-publish-notify.yaml, which bind by name, not filename. Otherwise its
+  # release failures notify nobody.
+  OPT_IN_PATHS: ".github/workflows/auto-version.yaml"
+>>>>>>> template
 
 concurrency:
   group: template-sync
   cancel-in-progress: false
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
-  sync:
+  # A repo cannot be its own upstream. This runs as a separate job because a
+  # job-level `if:` cannot read workflow `env`, and the alternative — repeating
+  # the guard on every step below — is a condition that a newly added step
+  # silently opts out of.
+  preflight:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      self_sync: ${{ steps.check.outputs.self_sync }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+
+      - name: Refuse to sync this repository from itself
+        id: check
+        env:
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || github.token }}
+        run: bash .github/scripts/template-sync-preflight.sh
+
+  sync:
+    needs: preflight
+    if: needs.preflight.outputs.self_sync != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     timeout-minutes: 30
     steps:
       - name: Checkout child repository
@@ -101,14 +203,22 @@ jobs:
         with:
           repository: ${{ env.TEMPLATE_REPO }}
           path: _template
-          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          # TEMPLATE_SYNC_TOKEN_ORG is optional — GITHUB_TOKEN has no cross-repo
+          # reach, so this checkout only works without the PAT when TEMPLATE_REPO
+          # is public (the default). A private template repo needs the org PAT.
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
           filter: blob:none
           persist-credentials: false
 
       - name: Check token workflow scope
         env:
-          TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          # Mirrors the checkout step above — validates whichever token is
+          # actually in play (PAT or the default token) for the 'workflow'
+          # scope this sync needs to push .github/workflows/ changes.
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
         # Run the child repo's own copy — never execute scripts directly from
         # the template checkout. Template script updates arrive via sync PRs
         # and go through human review before they can execute.
@@ -119,10 +229,11 @@ jobs:
         env:
           SYNC_PATHS: ${{ env.SYNC_PATHS }}
           EXCLUDE_PATHS: ${{ env.EXCLUDE_PATHS }}
+          OPT_IN_PATHS: ${{ env.OPT_IN_PATHS }}
         run: bash .github/scripts/template-sync.sh
 
       - name: Show diff (dry run)
-        if: inputs.dry-run == 'true' && steps.sync.outputs.has_changes == 'true'
+        if: inputs.dry-run == true && steps.sync.outputs.has_changes == 'true'
         env:
           HAS_CONFLICTS: ${{ steps.sync.outputs.has_conflicts }}
           HAS_DELETIONS: ${{ steps.sync.outputs.has_deletions }}
@@ -130,6 +241,7 @@ jobs:
           DELETED_FILES: ${{ steps.sync.outputs.deleted_files }}
         run: bash .github/scripts/show-sync-diff.sh
 
+<<<<<<< local
       - name: Upload conflict report
         if: steps.sync.outputs.has_conflicts == 'true'
         id: conflict-report
@@ -138,63 +250,152 @@ jobs:
           name: template-sync-conflicts
           path: /tmp/conflict_report.md
           if-no-files-found: error
+=======
+      # The body is a script, not an inline `format()` chain: a chain that long
+      # is invisible to shellcheck, cannot be tested, and grew a shape nobody
+      # could read a conditional out of. It runs BEFORE create-pull-request,
+      # because that action reads the body from a file.
+      # It runs a BASE_SHA copy for the same reason the marker gate does:
+      # `.github/scripts` is in SYNC_PATHS, so a sync can leave conflict markers
+      # in this very script, and bash dies on them before any PR exists to show
+      # them — no PR, so neither the resolver nor the marker gate can repair it.
+      - name: Render the pull request body
+        if: inputs.dry-run != true && (steps.sync.outputs.has_changes == 'true' || steps.sync.outputs.has_conflicts == 'true' || steps.sync.outputs.has_deletions == 'true')
+        id: pr-body
+        env:
+          TEMPLATE_REPO: ${{ env.TEMPLATE_REPO }}
+          TEMPLATE_SHA_SHORT: ${{ steps.sync.outputs.template_sha_short }}
+          CHANGED_FILES: ${{ steps.sync.outputs.changed_files }}
+          CHANGED_COUNT: ${{ steps.sync.outputs.changed_count }}
+          CHANGELOG: ${{ steps.sync.outputs.changelog }}
+          DOWNGRADE_REPORT: ${{ steps.sync.outputs.downgrade_report }}
+          AUTO_MERGED_FILES: ${{ steps.sync.outputs.auto_merged_files }}
+          DECLINED_FILES: ${{ steps.sync.outputs.declined_files }}
+          INERT_ENTRIES: ${{ steps.sync.outputs.inert_entries }}
+          DELETED_FILES: ${{ steps.sync.outputs.deleted_files }}
+          CONFLICT_REPORT: ${{ steps.sync.outputs.conflict_report }}
+          MARKERLESS_FILES: ${{ steps.sync.outputs.markerless_files }}
+          PR_BODY_PATH: ${{ runner.temp }}/template-sync-body.md
+          BASE_SHA: ${{ github.sha }}
+        run: |
+          set -o pipefail
+          body_dir="${RUNNER_TEMP}/pr-body-scripts"
+          mkdir -p "${body_dir}" # bare-mkdir-ok: the extraction below is the post-condition and fails loudly
+          timeout --kill-after=30 300 git archive "${BASE_SHA}" .github/scripts | tar -x -f - -C "${body_dir}"
+          bash "${body_dir}/.github/scripts/template-sync-pr-body.sh"
+>>>>>>> template
 
       - name: Create Pull Request
-        if: inputs.dry-run != 'true' && (steps.sync.outputs.has_changes == 'true' || steps.sync.outputs.has_conflicts == 'true' || steps.sync.outputs.has_deletions == 'true')
+        if: inputs.dry-run != true && (steps.sync.outputs.has_changes == 'true' || steps.sync.outputs.has_conflicts == 'true' || steps.sync.outputs.has_deletions == 'true')
         id: create-pr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
-          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          # A PR authored under GITHUB_TOKEN doesn't trigger other
+          # on:pull_request workflows (GitHub's recursion guard), so this sync PR
+          # needs TEMPLATE_SYNC_TOKEN_ORG to get real CI; falling back to
+          # GITHUB_TOKEN still opens the PR when the org PAT isn't configured,
+          # just without triggering downstream checks until a human comments/pushes.
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
           commit-message: "chore: sync from template repository (${{ steps.sync.outputs.template_sha_short }})"
           title: "chore: sync from template repository"
-          body: |
-            This PR syncs updates from the template repository.
-
-            **Template version:** `${{ steps.sync.outputs.template_sha_short }}`
-            **Updated paths:** ${{ steps.sync.outputs.changed_paths }}
-            **Template repository:** ${{ env.TEMPLATE_REPO }}
-
-            ${{ steps.sync.outputs.changelog && format('### Changelog since last sync
-
-            ```
-            {0}
-            ```
-
-            ', steps.sync.outputs.changelog) }}${{ steps.sync.outputs.auto_merged_files && format('### Auto-merged files
-
-            The following files were merged automatically (3-way merge, no conflicts):
-
-            `{0}`
-
-            ', steps.sync.outputs.auto_merged_files) || '' }}${{ steps.sync.outputs.has_deletions == 'true' && format('---
-
-            ## Files Removed from Template
-
-            The following files were **deleted in the template** but still exist locally. Consider removing them if they are no longer needed:
-
-            `{0}`
-
-            ', steps.sync.outputs.deleted_files) || '' }}${{ steps.sync.outputs.has_conflicts == 'true' && '---
-
-            ## Conflicts for Claude to Resolve
-
-            The following files need conflict resolution. Claude will resolve these automatically.
-
-            ' || '' }}${{ steps.conflict-report.outputs.artifact-url && format('[Download the full conflict report]({0}).', steps.conflict-report.outputs.artifact-url) || '' }}
-
-            ---
-            Please review the changes and merge if appropriate.
+          body-path: ${{ runner.temp }}/template-sync-body.md
           branch: template-sync
           delete-branch: true
-          labels: ${{ steps.sync.outputs.has_conflicts == 'true' && 'template-sync,needs-conflict-resolution' || 'template-sync' }}
+          labels: template-sync
 
-      - name: Request Claude to resolve conflicts
-        if: inputs.dry-run != 'true' && (steps.sync.outputs.has_conflicts == 'true' || steps.sync.outputs.has_deletions == 'true') && steps.create-pr.outputs.pull-request-number
+      # Resolve IN THIS RUN rather than posting an @claude comment and hoping a
+      # separate workflow gets to it. The PR then arrives readable instead of
+      # carrying raw markers, and the tier report below is what lets a clean
+      # sync merge itself.
+      #
+      # After create-pull-request the workspace is back on the base ref and the
+      # markers live on the sync branch, so switch to it before resolving.
+      - name: Install mergiraf (pinned, digest-verified)
+        if: inputs.dry-run != true && steps.sync.outputs.has_conflicts == 'true' && steps.create-pr.outputs.pull-request-number
+        run: bash .github/scripts/install-mergiraf.sh
+
+      - name: Resolve the sync conflicts
+        id: resolve
+        if: inputs.dry-run != true && steps.sync.outputs.has_conflicts == 'true' && steps.create-pr.outputs.pull-request-number
         env:
-          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || github.token }}
+          CONFLICT_FILES: ${{ steps.sync.outputs.conflict_files }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+          # token-fallback-ok: the dedicated CI token is preferred so a sync does not
+          # spend the operator's own account; CLAUDE_CODE_OAUTH_TOKEN is the same
+          # credential the ladder ends on, so the fallback costs nothing but order.
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK || secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          git fetch --no-tags origin "+refs/heads/template-sync:refs/remotes/origin/template-sync"
+          git checkout -B template-sync origin/template-sync
+          # Tier 2 of the conflict resolution is the resolver's own fan-out, which
+          # lives in its own repository now. Pinned by SHA to the same commit
+          # auto-resolve-conflicts.yaml calls, so both run one version of it.
+          resolver_dir="${RUNNER_TEMP}/template-sync-resolver"
+          git clone --no-tags --depth 1 \
+            "https://github.com/AlexanderMattTurner/agent-resolve-merge-conflicts.git" "${resolver_dir}"
+          git -C "${resolver_dir}" fetch --no-tags --depth 1 origin ca9a3fa872a9c06ade766de9bf69ff7b0329247f
+          git -C "${resolver_dir}" checkout --detach FETCH_HEAD
+          RESOLVER_DIR="${resolver_dir}/.github/resolver" \
+            bash .github/scripts/template-sync-resolve.sh
+
+<<<<<<< local
+            ' || '' }}${{ steps.conflict-report.outputs.artifact-url && format('[Download the full conflict report]({0}).', steps.conflict-report.outputs.artifact-url) || '' }}
+=======
+      - name: Push the resolutions
+        if: steps.resolve.outcome == 'success' && (steps.resolve.outputs.deterministic != '' || steps.resolve.outputs.by_model != '')
+        env:
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          GITHUB_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
+          DETERMINISTIC: ${{ steps.resolve.outputs.deterministic }}
+          BY_MODEL: ${{ steps.resolve.outputs.by_model }}
+        run: bash .github/scripts/template-sync-push.sh
+>>>>>>> template
+
+      # The markers reach the branch before either resolver tier runs, because
+      # create-pull-request commits the whole synced tree. So this is the step
+      # that holds the invariant: no file on `template-sync` carries a conflict
+      # marker. It runs even when a step above it failed, because a resolve step
+      # that died is exactly when the markers survive.
+      # It runs a BASE_SHA copy, not the workspace: `.github/scripts` is in
+      # SYNC_PATHS, so a sync can mark the gate's own file, and bash dies on it.
+      - name: Refuse conflict markers on the sync branch
+        if: ${{ !cancelled() && inputs.dry-run != true && steps.create-pr.outputs.pull-request-number }}
+        env:
+          BASE_SHA: ${{ github.sha }}
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          GITHUB_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
+        run: |
+          set -o pipefail
+          gate_dir="${RUNNER_TEMP}/marker-gate"
+          mkdir -p "${gate_dir}" # bare-mkdir-ok: the extraction below is the post-condition and fails loudly
+          timeout --kill-after=30 300 git archive "${BASE_SHA}" .github/scripts | tar -x -f - -C "${gate_dir}"
+          bash "${gate_dir}/.github/scripts/template-sync-marker-gate.sh"
+
+      # A sync merges itself only when NOTHING needed judgement. See the script
+      # for the full predicate; the two carve-outs are that a model-resolved file
+      # never qualifies, and neither does a change to the supervision surface.
+      # It runs a BASE_SHA copy for the same reason the gate does: the gate
+      # passing only proves the branch carries no conflict marker, never that
+      # this script or the predicate it reads still match the reviewed version.
+      - name: Enable auto-merge on a fully deterministic sync
+        if: inputs.dry-run != true && steps.create-pr.outputs.pull-request-number && vars.TEMPLATE_SYNC_AUTOMERGE != 'false'
+        env:
+          BASE_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
           HAS_CONFLICTS: ${{ steps.sync.outputs.has_conflicts }}
           HAS_DELETIONS: ${{ steps.sync.outputs.has_deletions }}
-          CONFLICT_FILES: ${{ steps.sync.outputs.conflict_files }}
-          DELETED_FILES: ${{ steps.sync.outputs.deleted_files }}
-          PR_NUM: ${{ steps.create-pr.outputs.pull-request-number }}
-        run: bash .github/scripts/request-claude-resolve.sh
+          HAS_DOWNGRADES: ${{ steps.sync.outputs.has_downgrades }}
+          ALL_DETERMINISTIC: ${{ steps.resolve.outputs.all_deterministic }}
+          CHANGED_PATHS: ${{ steps.sync.outputs.changed_paths }}
+        run: |
+          set -o pipefail
+          automerge_dir="${RUNNER_TEMP}/marker-gate-automerge"
+          mkdir -p "${automerge_dir}" # bare-mkdir-ok: the extraction below is the post-condition and fails loudly
+          timeout --kill-after=30 300 git archive "${BASE_SHA}" .github/scripts | tar -x -f - -C "${automerge_dir}"
+          bash "${automerge_dir}/.github/scripts/template-sync-automerge.sh"
