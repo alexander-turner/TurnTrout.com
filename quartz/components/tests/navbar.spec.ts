@@ -4,6 +4,7 @@ import { simpleConstants, urlBarScrollTolerance } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 import { expect, test } from "./fixtures"
 import {
+  clickTocTitle,
   gotoPage,
   isDesktopViewport,
   moveMouseToSafePosition,
@@ -468,9 +469,7 @@ test("Clicking TOC title scrolls to top", async ({ page }) => {
     { polling: WAIT_POLL_INTERVAL_MS },
   )
 
-  const tocTitle = page.locator("#toc-title button")
-  await expect(tocTitle).toBeVisible()
-  await tocTitle.click()
+  await clickTocTitle(page)
 
   await page.waitForFunction((tolerance) => window.scrollY < tolerance, urlBarScrollTolerance, {
     polling: WAIT_POLL_INTERVAL_MS,

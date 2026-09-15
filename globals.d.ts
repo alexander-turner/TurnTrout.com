@@ -18,6 +18,8 @@ declare global {
   }
   interface Window {
     __routerInitialized?: boolean
+    /** Set by toc.inline.ts once the TOC click handlers are attached for the current page. */
+    __tocHandlersReady?: boolean
     spaNavigate: (url: URL, opts?: SpaNavigateOptions) => Promise<void>
     addCleanup(fn: (...args: never[]) => void)
     tocObserver?: IntersectionObserver
