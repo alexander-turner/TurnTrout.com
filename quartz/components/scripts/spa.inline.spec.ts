@@ -20,6 +20,7 @@ import {
 } from "../constants"
 import { expect, test } from "../tests/fixtures"
 import {
+  clickTocTitle,
   getAllWithWait,
   gotoPage,
   isDesktopViewport,
@@ -269,9 +270,7 @@ test.describe("Scroll Behavior", () => {
     await page.waitForURL(`**/${testingPageSlug}#${finalAnchor}`)
     await waitForHistoryScrollNotEquals(page)
 
-    const tocTitle = page.locator("#toc-title button")
-    await expect(tocTitle).toBeVisible()
-    await tocTitle.click()
+    await clickTocTitle(page)
 
     // Verify the URL is no longer the anchor
     await page.waitForURL(`**/${testingPageSlug}`)
@@ -286,9 +285,7 @@ test.describe("Scroll Behavior", () => {
     // Wait for scroll to enter the history state
     await waitForHistoryScrollNotEquals(page)
 
-    const tocTitle = page.locator("#toc-title button")
-    await expect(tocTitle).toBeVisible()
-    await tocTitle.click()
+    await clickTocTitle(page)
 
     await waitForScroll(page, 0)
   })

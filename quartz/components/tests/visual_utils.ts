@@ -534,6 +534,22 @@ export async function openSearch(page: Page) {
   await expect(searchBar).toBeVisible({ timeout: 5_000 })
 }
 
+/** Click the TOC title button, which scrolls to the top and drops the URL hash.
+ *
+ *  The handler is attached asynchronously by `toc.inline.ts` on each `nav`
+ *  event, and a click that lands first is dropped. Gate on the flag that setup
+ *  sets at completion (`window.__tocHandlersReady`). */
+export async function clickTocTitle(page: Page): Promise<void> {
+  await page.waitForFunction(() => window.__tocHandlersReady === true, null, {
+    timeout: 15_000,
+    polling: WAIT_POLL_INTERVAL_MS,
+  })
+
+  const tocTitle = page.locator("#toc-title button")
+  await expect(tocTitle).toBeVisible()
+  await tocTitle.click()
+}
+
 export async function waitForSearchBar(page: Page): Promise<Locator> {
   // Ensure search is open (re-opens if DOM was reset by SPA navigation)
   await openSearch(page)

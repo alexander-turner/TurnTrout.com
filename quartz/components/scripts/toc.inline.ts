@@ -159,6 +159,10 @@ function setupTocActiveHighlighting(signal: AbortSignal): void {
 }
 
 document.addEventListener("nav", () => {
+  // Clicks landing before the listeners below are attached are dropped, so tests
+  // gate their clicks on this flag.
+  window.__tocHandlersReady = false
+
   tocAbortController?.abort()
   tocAbortController = new AbortController()
   const { signal } = tocAbortController
@@ -166,4 +170,6 @@ document.addEventListener("nav", () => {
   setupMobileTocClickDelegation(signal)
   setupTocTitleScrollToTop(signal)
   setupTocActiveHighlighting(signal)
+
+  window.__tocHandlersReady = true
 })
