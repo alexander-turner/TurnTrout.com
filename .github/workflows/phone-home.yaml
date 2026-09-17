@@ -9,7 +9,7 @@ on:
     types: [closed]
 
 env:
-  TEMPLATE_REPO: "alexander-turner/claude-automation-template"
+  TEMPLATE_REPO: "${{ vars.TEMPLATE_SYNC_ORG || 'AlexanderMattTurner' }}/claude-automation-template"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -23,6 +23,8 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: "8.30.1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -37,19 +39,39 @@ jobs:
             const run = require('./.github/scripts/phone-home-extract.js')
             await run({github, context, core})
 
+      - name: Restore cached gitleaks binary
+        id: gitleaks-cache
+        if: steps.extract.outputs.has_lessons == 'true'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /usr/local/bin/gitleaks
+          key: gitleaks-${{ runner.os }}-${{ env.GITLEAKS_VERSION }}
+
+      - name: Download gitleaks
+        if: steps.extract.outputs.has_lessons == 'true' && steps.gitleaks-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          curl --proto '=https' -fsSL --retry 6 --retry-all-errors --retry-delay 15 --connect-timeout 30 \
+            -o /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          tar xz -C /usr/local/bin -f /tmp/gitleaks.tar.gz gitleaks
+
       - name: Scan lessons for leaked secrets
         if: steps.extract.outputs.has_lessons == 'true'
-        env:
-          GITLEAKS_VERSION: "8.30.1"
         run: |
-          curl --proto '=https' -sSfL \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
-            | tar xz -C /usr/local/bin gitleaks
+          set -euo pipefail
+          chmod +x /usr/local/bin/gitleaks
           gitleaks detect --no-git -s /tmp/phone-home -v
 
       - name: Submit to template repo
         if: steps.extract.outputs.has_lessons == 'true'
         env:
+          # Opening an issue on TEMPLATE_REPO needs write access to a DIFFERENT
+          # repo than the one running this job, which GITHUB_TOKEN cannot reach
+          # unless TEMPLATE_REPO is public — so this only degrades gracefully
+          # when the target is the public template repo itself (running-repo ==
+          # target-repo); every other downstream repo needs TEMPLATE_SYNC_TOKEN.
+          # token-fallback-ok: designed graceful degradation, not an accident.
           GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
           PR_TITLE: ${{ steps.extract.outputs.pr_title }}
           PR_URL: ${{ steps.extract.outputs.pr_url }}

@@ -7,13 +7,13 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
-  gitleaks: # required-check: true
+  gitleaks:
     runs-on: ubuntu-latest
     # Three 3-minute checkout attempts fit inside this budget with room for
     # the scan itself.
@@ -34,6 +34,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+<<<<<<< local
       - id: checkout-retry
         if: steps.checkout.outcome == 'failure'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,8 +52,17 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           clean: true
+=======
+      - name: Restore cached gitleaks binary
+        id: gitleaks-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: gitleaks
+          key: gitleaks-${{ runner.os }}-${{ env.GITLEAKS_VERSION }}
+>>>>>>> template
 
       - name: Download pinned gitleaks
+        if: steps.gitleaks-cache.outputs.cache-hit != 'true'
         run: |
           curl -fsSL --retry 6 --retry-all-errors --retry-delay 15 --connect-timeout 30 \
             -O "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
@@ -62,3 +72,24 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: bash .github/scripts/gitleaks-scan.sh
+
+  # Stable Required check: runs even when `gitleaks` is cancelled/skipped, so a
+  # protected branch never gets stuck on a check that never reports.
+  gitleaks-passed: # required-check: true
+    if: always()
+    needs: [gitleaks]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          sparse-checkout: |
+            .github/actions/report-job-result
+          persist-credentials: false
+
+      - name: Report result
+        uses: ./.github/actions/report-job-result
+        with:
+          run: "true"
+          decide-result: "success"
+          result: ${{ needs.gitleaks.result }}

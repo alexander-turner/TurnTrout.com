@@ -10,6 +10,11 @@ name: Build/publish failure notify
 # their own publishers; the notify-ntfy composite action they call is shared
 # (synced from the template), so only this list is repo-specific.
 #
+# Binding is by workflow NAME, not filename. A repo that keeps its own release
+# workflow instead of the template's auto-version.yaml must either give it the
+# name below or add its own name here — otherwise its release failures notify
+# nobody, and the silence looks exactly like a healthy pipeline.
+#
 # The notification is a no-op unless the GH_NTFY_SUBJECT secret is set, so a repo
 # that has not opted in is unaffected. Set GH_NTFY_URL to target a self-hosted
 # ntfy server (defaults to https://ntfy.sh).
@@ -21,7 +26,12 @@ on: # zizmor: ignore[dangerous-triggers]
   workflow_run:
     types: [completed]
     workflows:
-      - Deploy to Cloudflare
+      - Auto version bump and publish
+      - Release canary
+    # Both watched workflows run only from the default branch (a push trigger
+    # scoped to it, or a manual dispatch conventionally run from it); narrowing
+    # here stops a completion on any other branch from creating a run at all.
+    branches: [main, master]
 
 concurrency:
   # Keyed per triggering workflow so notifications never queue behind each other;
@@ -36,7 +46,7 @@ jobs:
   notify:
     name: Notify on build/publish failure
     if: >-
-      github.event.workflow_run.conclusion == 'failure' &&
+      contains(fromJSON('["action_required", "failure", "startup_failure", "timed_out"]'), github.event.workflow_run.conclusion) &&
       github.event.workflow_run.event != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -44,7 +54,7 @@ jobs:
       # workflow_run workflows always execute from the default branch, so this
       # fetches exactly the vetted action; sparse + credential-less keeps it
       # to the notifier and nothing else.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           sparse-checkout: .github/actions/notify-ntfy
           persist-credentials: false
