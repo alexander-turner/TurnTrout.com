@@ -187,16 +187,35 @@ runs this daily and opens an auto-merged PR when content changed. When adding a
 new GitHub source, add it to `externalReadmes.ts`, run the script, and commit
 the new snapshot — a missing snapshot fails the build with instructions.
 
-## Favicon kerning audit
+## Favicon kerning
 
-Favicon spacing (`quartz/styles/favicon.scss` `$domain-left-insets`,
-`quartz/plugins/transformers/favicons.ts` `charsToSpace`/`charsToSpaceMost`) is
-derived from pixel measurements, not eyeballing. When adding a favicon or
-tuning spacing, run the pipeline in `scripts/notebooks/favicon_kerning_audit/`
-(see its README): it mines every real (glyph, favicon) pair from the built
-site, renders them with production CSS, measures ink-to-ink clearance, and
-emits a worst-first gallery. Target band for the horizontal ink gap is roughly
-1.5–4px at a 24px root font size.
+The left gap is computed per glyph, not bucketed: `faviconGapEm`
+(`quartz/plugins/transformers/favicons.ts`) subtracts the glyph's own right
+side bearing from `TARGET_GAP_EM` and writes the remainder onto the icon as an
+inline `--glyph-gap`, so every glyph in every face renders the same distance
+from the icon.
+
+The bearings live in `quartz/plugins/transformers/faviconGlyphBearings.ts`,
+which is **generated — do not hand-edit**. Regenerate it after changing a font,
+the icon's box model, or the set of glyphs measured:
+
+```bash
+pnpm build && npx serve public -l 8080     # a served site, for the real fonts and CSS
+node scripts/generate_favicon_bearings.mjs
+pnpm exec playwright test faviconInkGap    # the gate: gaps must land on the target
+```
+
+It measures in a browser rather than reading the font binaries, so the numbers
+come from the same face resolution and `smcp` shaping the reader gets. Where
+the eye disagrees with the band — serif "R" has the most measured clearance of
+any letter and still reads crowded — add an entry to `GAP_OVERRIDES_EM` with a
+comment saying what the eye saw.
+
+Icon _inset_ (`quartz/styles/favicon.scss` `$domain-left-insets`) is still a
+hand-maintained table. When adding a favicon, run the pipeline in
+`scripts/notebooks/favicon_kerning_audit/` (see its README): it mines every real
+(glyph, favicon) pair from the built site, renders them with production CSS,
+measures ink-to-ink clearance, and emits a worst-first gallery.
 
 ## Visual regression testing
 

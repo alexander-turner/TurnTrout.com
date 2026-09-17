@@ -1,14 +1,10 @@
 import type { Page } from "@playwright/test"
 
+import { faviconGlyphBearings as bearings } from "../../plugins/transformers/faviconGlyphBearings"
 import {
-  charsToSpace,
-  charsToSpaceCode,
-  charsToSpaceItalic,
-  charsToSpaceMost,
-  charsToSpaceMostCode,
-  charsToSpaceMostItalic,
   EMPTY_GLYPH_CONTEXT,
-  nudgeClassFor,
+  faviconGapEm,
+  TARGET_GAP_EM,
 } from "../../plugins/transformers/favicons"
 import { fauxBoldOffset } from "../../styles/variables"
 import { expect, test } from "./fixtures"
@@ -29,24 +25,13 @@ import { gotoPage } from "./visual_utils"
 // of the glyph in every context — which is what the size-invariance test below
 // asserts directly.
 //
-// Set membership itself is pinned exactly by `nudgeClassFor` unit tests in
-// favicons.test.ts; this spec catches rendering-level regressions (wrong font
-// served, margin model applied in the wrong context) rather than re-deriving
-// membership.
+// The gap the transformer computes is pinned arithmetically by faviconGapEm
+// unit tests in favicons.test.ts; this spec renders it and checks that the
+// glyph the reader sees really does end up TARGET_GAP_EM from the icon.
 const PROBE_CHARS: readonly string[] = [
-  ...new Set([
-    ...charsToSpace,
-    ...charsToSpaceMost,
-    ...charsToSpaceItalic,
-    ...charsToSpaceMostItalic,
-    ..."oenas",
-  ]),
+  ...new Set([...Object.keys(bearings.serif), ...Object.keys(bearings.italic)]),
 ]
-// The monospace sets are their own membership, so the code context probes them
-// rather than the proportional faces' chars.
-const CODE_PROBE_CHARS: readonly string[] = [
-  ...new Set([...charsToSpaceCode, ...charsToSpaceMostCode, ..."oenas"]),
-]
+const CODE_PROBE_CHARS: readonly string[] = [...Object.keys(bearings.code)]
 
 // The four shipped faces, each with its own metrics, plus the size contexts
 // that render the serif face at a different font size. Faces get per-face
@@ -79,25 +64,10 @@ const CONTEXTS: readonly ContextSpec[] = [
   },
 ]
 
-// margin-left = 0.0625em + nudge − inset·size, with a domainless icon
-// (inset 0). Every term is em, so the expectation is a plain em constant per
-// (context, nudge class) rather than a ratio: the classless base, two upward
-// steps in the proportional faces, and a face-level negative in code that the
-// two code classes return by a half step and a whole step. Code's negative is
-// deliberately shallower than its bearing surplus, so the face lands a step
-// wider than the proportional ones — see the reasoning in favicon.scss.
-const BASE_MARGIN_EM = 0.0625
-const CODE_FACE_NUDGE_EM = -0.0156
+// margin-left = --glyph-gap − inset·size, with a domainless icon (inset 0), so
+// the computed margin should reproduce the transformer's number exactly.
 /** `--font-size-code-scale`: inline code's size as a fraction of its prose. */
 const CODE_FACE_SCALE = 0.81
-const NUDGE_EM: Readonly<Record<string, number>> = {
-  "close-text": 0.0625,
-  "closer-text": 0.125,
-  // The face nudge returned by half a step and a whole step, rounded to the
-  // four decimals stylelint allows a length.
-  "code-close-text": 0.0156,
-  "code-closer-text": 0.0469,
-}
 
 // Crowding floors per class (deep overhangers accept tighter clearance, as in
 // the serif audit) and drift ceilings per context, in em of the probe's font
@@ -108,19 +78,12 @@ const NUDGE_EM: Readonly<Record<string, number>> = {
 // capital "L"'s arm sits below the band leaving only its stem, so every
 // ceiling is generous — the exact margin-ratio layer above is the regression
 // ratchet, not the band.
-const FLOOR_EM: Readonly<Record<string, number>> = {
-  null: -0.0125,
-  "close-text": -0.0375,
-  "closer-text": -0.075,
-  "code-close-text": -0.0125,
-  "code-closer-text": -0.0125,
-}
-const CEILING_EM: Readonly<Record<FaceName, number>> = {
-  serif: 0.32,
-  italic: 0.22,
-  smallCaps: 0.4,
-  code: 0.4,
-}
+// How far a rendered gap may sit from the target it was computed for. The
+// correction is derived from the same in-band measurement this spec re-takes,
+// so agreement should be near-exact; the slack absorbs rasterisation, not
+// modelling. A glyph whose correction hit a clamp cannot reach the target by
+// construction, so it is judged against the clamp instead.
+const GAP_TOLERANCE_EM = 0.012
 
 interface Measurement {
   key: string
@@ -131,6 +94,7 @@ interface Measurement {
   fromUnsupportedSmallCaps: boolean
   bandTopEm: number
   bandBottomEm: number
+  iconFontSizePx: number
 }
 
 /** A per-face threshold, refusing to silently pass a context that has none. */
@@ -140,23 +104,55 @@ function thresholdFor(table: Readonly<Record<FaceName, number>>, context: Contex
   return threshold
 }
 
+/** The bearing table each context's glyphs were measured in. */
+const FACE_OF_CONTEXT: Readonly<Record<string, string>> = {
+  serif: "serif",
+  italic: "italic",
+  smallCaps: "smallCaps",
+  code: "code",
+  h1: "serif",
+  subtitle: "serif",
+  tableCell: "serif",
+}
+
 interface Probe {
   key: string
   contextName: ContextName
   char: string
   wrapperHtml: [string, string]
-  nudgeClass: ReturnType<typeof nudgeClassFor>
+  gapEm: number
 }
 
-/** The probe's expected margin-left, in em of the text it sits beside. */
-function expectedMarginEm(probe: Probe): number {
+/**
+ * The bearing the table holds for a glyph in a context, or undefined where it
+ * holds none.
+ *
+ * A missing entry is the generator's verdict that the glyph cannot be measured
+ * in that face — no ink in the icon's band, or no shipped font covering it. The
+ * transformer answers with the flat fallback gap, so such a glyph has no target
+ * to be held to and no engine may judge its rendered gap. Only the exclusion
+ * travels between engines; the reason for it was decided once, where the table
+ * was generated.
+ */
+function bearingOf(contextName: ContextName, char: string): number | undefined {
+  const face = contextName === "code" ? "code" : (FACE_OF_CONTEXT[contextName] ?? "serif")
+  return (bearings as Record<string, Record<string, number>>)[face]?.[char]
+}
+
+/**
+ * The gap the glyph should end up showing, in em of the text beside it: the
+ * margin the transformer asked for plus whatever the glyph's own bearing
+ * contributes. Equal to the target for every glyph whose correction did not hit
+ * a clamp, which is what the sweep's spread ratchet then holds them to.
+ *
+ * The transformer's margin is denominated in the icon's own em, which inside
+ * code is the surrounding prose's rather than the code face's, so it is
+ * converted back to the glyph's em first.
+ */
+function expectedGapEm(probe: Probe): number {
   const inCode = probe.contextName === "code"
-  const faceNudge = inCode ? CODE_FACE_NUDGE_EM : 0
-  const em = BASE_MARGIN_EM + (probe.nudgeClass ? NUDGE_EM[probe.nudgeClass] : faceNudge)
-  // In code the icon takes its em from the surrounding prose rather than the
-  // code face, so every length on it — this margin included — buys the same
-  // pixels it would beside body text.
-  return inCode ? em / CODE_FACE_SCALE : em
+  const bearing = bearingOf(probe.contextName, probe.char) ?? 0
+  return (inCode ? probe.gapEm / CODE_FACE_SCALE : probe.gapEm) + bearing
 }
 
 function collectFailures(probes: readonly Probe[], measurements: readonly Measurement[]): string[] {
@@ -167,7 +163,7 @@ function collectFailures(probes: readonly Probe[], measurements: readonly Measur
       failures.push(`${probe.key}: no measurement`)
       continue
     }
-    const expectedMargin = expectedMarginEm(probe) * measured.fontSizePx
+    const expectedMargin = probe.gapEm * measured.iconFontSizePx
     if (Math.abs(measured.marginPx - expectedMargin) > 0.1) {
       failures.push(
         `${probe.key}: margin ${measured.marginPx.toFixed(2)}px != ${expectedMargin.toFixed(2)}px`,
@@ -179,16 +175,15 @@ function collectFailures(probes: readonly Probe[], measurements: readonly Measur
     // form instead of the small cap), measures a glyph the reader never sees.
     if (
       measured.gapPx !== null &&
+      bearingOf(probe.contextName, probe.char) !== undefined &&
       !measured.fromFallbackFace &&
       !measured.fromUnsupportedSmallCaps
     ) {
       const gapEm = measured.gapPx / measured.fontSizePx
-      const floor = FLOOR_EM[probe.nudgeClass ?? "null"]
-      const ceiling = thresholdFor(CEILING_EM, probe.contextName)
-      if (gapEm < floor || gapEm > ceiling) {
+      if (Math.abs(gapEm - expectedGapEm(probe)) > GAP_TOLERANCE_EM) {
         failures.push(
-          `${probe.key} (${probe.nudgeClass ?? "no class"}): ` +
-            `gap ${gapEm.toFixed(3)}em outside [${floor}, ${ceiling}]`,
+          `${probe.key}: gap ${gapEm.toFixed(3)}em != ` +
+            `${expectedGapEm(probe).toFixed(3)}em (target ${TARGET_GAP_EM})`,
         )
       }
     }
@@ -204,7 +199,7 @@ function buildProbes(contexts: readonly ContextSpec[], chars: readonly string[])
       contextName: ctx.name,
       char,
       wrapperHtml: ctx.wrapperHtml,
-      nudgeClass: nudgeClassFor(char, ctx.context),
+      gapEm: faviconGapEm(char, ctx.context),
     })),
   )
 }
@@ -270,18 +265,72 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
       return null
     }
 
-    // True when the requested family has no outline for `char`, so the
-    // canvas drew whichever face the platform substitutes. Such a glyph
-    // measures differently per OS. Detected by advance width: a substituted
-    // glyph matches what a nonexistent family produces, since both resolve
-    // through the same fallback chain.
-    const isFallbackGlyph = (style: CSSStyleDeclaration, char: string): boolean => {
-      applyFont(style)
-      const requested = ctx2d.measureText(char).width
-      applyFont(style, '"__no_such_family__"')
-      const substituted = ctx2d.measureText(char).width
-      return Math.abs(requested - substituted) < 0.01
+    // Advance width, opaque-pixel count and ink bounding box of `char` in
+    // `family`. Two faces that differ anywhere in the outline differ here,
+    // where an advance width alone collides whenever a substitute happens to
+    // be set on the same body.
+    const inkSignature = (style: CSSStyleDeclaration, char: string, family?: string): string => {
+      const baseline = 700
+      ctx2d.clearRect(0, 0, canvas.width, canvas.height)
+      applyFont(style, family)
+      ctx2d.textBaseline = "alphabetic"
+      ctx2d.fillText(char, PEN_X, baseline)
+      const advance = ctx2d.measureText(char).width
+      const left = PEN_X - CANVAS_FONT_PX / 2
+      const top = baseline - CANVAS_FONT_PX * 1.25
+      const width = Math.ceil(advance) + CANVAS_FONT_PX
+      const height = CANVAS_FONT_PX * 1.75
+      const { data } = ctx2d.getImageData(left, top, width, height)
+      let count = 0
+      let minX = width
+      let maxX = -1
+      let minY = height
+      let maxY = -1
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (data[(y * width + x) * 4 + 3] <= 40) continue
+          count += 1
+          minX = Math.min(minX, x)
+          maxX = Math.max(maxX, x)
+          minY = Math.min(minY, y)
+          maxY = Math.max(maxY, y)
+        }
+      }
+      return `${advance.toFixed(2)}|${count}|${minX},${maxX},${minY},${maxY}`
     }
+
+    // The families the site ships as @font-face, which render identically on
+    // every OS. Everything else in a font-family list — a system face like
+    // "Courier New", or a generic keyword — is whatever the platform installs.
+    const shippedFamilies = new Set(
+      [...(document.fonts as unknown as Iterable<FontFace>)].map((face) =>
+        face.family.replace(/^["']|["']$/g, ""),
+      ),
+    )
+
+    // The tail of `family` that no shipped font covers: the same list with
+    // every @font-face family removed.
+    const platformChainOf = (family: string): string =>
+      family
+        .split(",")
+        .map((name) => name.trim())
+        .filter((name) => !shippedFamilies.has(name.replace(/^["']|["']$/g, "")))
+        .join(", ") || '"__no_such_family__"'
+
+    // True when no font the site ships has an outline for `char`, so the canvas
+    // drew whichever face the platform substitutes. Such a glyph measures
+    // differently per OS and engine — FiraCode has no U+2032, so a prime inside
+    // `code` renders from DejaVu on Linux and Courier on macOS — and the sweep
+    // cannot judge it. Resolving `char` through the chain's platform tail alone
+    // yields the same fingerprint exactly when no shipped font contributed.
+    // Kept in step with scripts/generate_favicon_bearings.mjs, which must
+    // exclude exactly the same glyphs from the table this sweep checks.
+    const isFallbackGlyph = (style: CSSStyleDeclaration, char: string): boolean =>
+      inkSignature(style, char) === inkSignature(style, char, platformChainOf(style.fontFamily))
+
+    // True when the canvas painted no pixels anywhere for `char`.
+    const drawsNoInk = (style: CSSStyleDeclaration, char: string): boolean =>
+      inkSignature(style, char).split("|")[1] === "0"
 
     // Canvas-level `font-variant-caps` support differs per engine. Where it is
     // missing, a lowercase probe silently measures the lowercase glyph, which
@@ -289,7 +338,12 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
     // report those probes rather than judging them. A face with real `smcp`
     // gives the small-cap form a different advance from the lowercase one.
     const smallCapsUnsupported = (style: CSSStyleDeclaration, char: string): boolean => {
-      if (style.fontVariantCaps !== "small-caps" || !/[a-z]/.test(char)) return false
+      if (style.fontVariantCaps !== "small-caps") return false
+      // Some engines draw nothing at all for a glyph in a small-caps run,
+      // reporting a full-em advance over blank pixels. The page still shows
+      // the glyph, so the canvas is describing a rendering no reader gets.
+      if (drawsNoInk(style, char)) return true
+      if (!/[a-z]/.test(char)) return false
       applyFont(style)
       const smallCap = ctx2d.measureText(char).width
       ctx2d.fontVariantCaps = "normal"
@@ -306,11 +360,12 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
       fromUnsupportedSmallCaps: boolean
       bandTopEm: number
       bandBottomEm: number
+      iconFontSizePx: number
     }[] = []
     for (const probe of probeList) {
       host.innerHTML =
         `<p>${probe.wrapperHtml[0]}<span class="ink-probe">${probe.char}</span>` +
-        `<svg class="favicon${probe.nudgeClass ? ` ${probe.nudgeClass}` : ""}" aria-hidden="true"></svg>` +
+        `<svg class="favicon" style="--glyph-gap: ${probe.gapEm}em" aria-hidden="true"></svg>` +
         '<span class="baseline-probe" style="display:inline-block;width:0;height:0"></span>' +
         `${probe.wrapperHtml[1]}</p>`
       const probeSpan = host.querySelector<HTMLElement>(".ink-probe")
@@ -340,6 +395,7 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
         fromUnsupportedSmallCaps: smallCapsUnsupported(probeStyle, probe.char),
         bandTopEm,
         bandBottomEm,
+        iconFontSizePx: parseFloat(faviconStyle.fontSize),
       })
     }
     host.remove()
@@ -409,29 +465,20 @@ const MEMBERSHIP_CHARS: readonly string[] = [
   ...".,'\"",
 ]
 
-// The gap the model holds across the proportional faces, in em, which agree to
-// within 0.02em (serif 0.102, italic 0.082, smallCaps 0.100). Reported in
-// violation messages so a spread failure says what it is spreading around.
-// Code targets a step wider; it renders at 0.81em, so an equal em gap there is
-// a fifth fewer pixels beside a proportionally smaller icon.
-const TARGET_GAP_EM = 0.095
-
 // Ink must never reach the icon. `f` sets this in both proportional faces —
 // italic `f` clears by 0.004em, a tenth of a pixel at body size — so the floor
 // is the strongest statement that holds today, not a comfortable margin.
 const OVERLAP_FLOOR_EM = 0
 
-// A ratchet on how far each face's gaps spread, in em. The model claims one
-// constant gap, so the ideal is 0; these are today's measured spreads rounded
-// up by ~0.005em of rasterizer slack. Two-directional by construction: making
-// any glyph tighter *or* looser than its face's others widens the spread and
-// fails. Phases 2–3 shrink these toward a single global window; they must only
-// ever be lowered.
+// A ratchet on how far each face's gaps spread, in em. The model computes one
+// constant gap per glyph, so the ideal is 0 and what remains is the two glyphs
+// per face whose correction hit a clamp plus the serif override. These must
+// only ever be lowered.
 const MAX_SPREAD_EM: Readonly<Record<FaceName, number>> = {
-  serif: 0.21,
-  italic: 0.18,
-  smallCaps: 0.2,
-  code: 0.345,
+  serif: 0.07,
+  italic: 0.06,
+  smallCaps: 0.07,
+  code: 0.01,
 }
 
 interface GapSample {
@@ -451,6 +498,9 @@ function gapsByContext(
       continue
     }
     const context = measured.key.split("|")[0] as ContextName
+    // The table carries no bearing for this glyph, so the transformer gave it
+    // the flat fallback gap and it belongs to no face's distribution.
+    if (bearingOf(context, measured.key.slice(context.length + 1)) === undefined) continue
     const samples = byContext.get(context) ?? []
     samples.push({ key: measured.key, gapEm: measured.gapPx / measured.fontSizePx })
     byContext.set(context, samples)
@@ -631,6 +681,13 @@ test.describe("favicon ink gap", () => {
       .filter((m) => m.fromFallbackFace || m.fromUnsupportedSmallCaps)
       .map((m) => m.key)
     console.info(`Probes skipped (substitute face or no smcp support): ${skipped}`)
+    const untabled = measurements
+      .filter((m) => {
+        const context = m.key.split("|")[0] as ContextName
+        return bearingOf(context, m.key.slice(context.length + 1)) === undefined
+      })
+      .map((m) => m.key)
+    console.info(`Probes skipped (no bearing in the table): ${untabled}`)
     for (const [context, samples] of byContext) {
       const sample = measurements.find((m) => m.key.startsWith(`${context}|`))
       const sorted = [...samples].sort((a, b) => a.gapEm - b.gapEm)

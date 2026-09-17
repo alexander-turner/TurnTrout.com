@@ -438,6 +438,12 @@ test.describe("gotoPage", () => {
         gotoCalls.push({ url, waitUntil: opts?.waitUntil })
         return Promise.resolve(null)
       },
+      // gotoPage waits out an alias page's meta refresh after navigating. The
+      // stub serves no document, so the wait has nothing to poll and resolves
+      // immediately.
+      waitForFunction() {
+        return Promise.resolve(null)
+      },
     }
     return { page: stub as unknown as Parameters<typeof gotoPage>[0], gotoCalls }
   }

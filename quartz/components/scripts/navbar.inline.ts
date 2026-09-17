@@ -13,21 +13,33 @@ function getAutoplayEnabled(): boolean {
 }
 
 // WebKit's decode pipeline can accept a play() request, report no error, yet
-// never advance past HAVE_METADATA — the playhead stays frozen at 0. Re-issuing
-// play() unsticks it. After requesting playback, poll a few times and retry
-// until the playhead advances, stopping early if the user turns autoplay back
-// off so we never fight a deliberate pause.
+// never advance past HAVE_METADATA — the playhead stays frozen at 0. After
+// requesting playback, poll a few times and retry until the playhead advances.
+// `autoplayStorageKey` is written before any deliberate pause, so it is the
+// authoritative signal for whether the reader still wants playback; a paused
+// element while it reads true is the stall itself, not a user decision.
 const VIDEO_WATCHDOG_INTERVAL_MS = 500
 const VIDEO_WATCHDOG_MAX_RETRIES = 3
 
 function playVideoWithWatchdog(videoElement: HTMLVideoElement): void {
   const attempt = (retriesLeft: number): void => {
+    // A video parked below HAVE_CURRENT_DATA with an idle loader has no data to
+    // decode, and play() does not wake the loader — only load() asks for data.
+    // load() resets the element, so it must not run once the playhead holds a
+    // position: a restore from sessionStorage seeks before requesting playback.
+    if (
+      videoElement.currentTime === 0 &&
+      videoElement.readyState < HTMLMediaElement.HAVE_CURRENT_DATA &&
+      videoElement.networkState !== HTMLMediaElement.NETWORK_LOADING
+    ) {
+      videoElement.load()
+    }
     videoElement.play().catch((error: Error) => {
       console.debug("[playVideoWithWatchdog] Play failed:", error)
     })
     if (retriesLeft <= 0) return
     setTimeout(() => {
-      if (!getAutoplayEnabled() || videoElement.paused || videoElement.currentTime > 0) return
+      if (!getAutoplayEnabled() || videoElement.currentTime > 0) return
       attempt(retriesLeft - 1)
     }, VIDEO_WATCHDOG_INTERVAL_MS)
   }
