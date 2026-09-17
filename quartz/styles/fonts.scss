@@ -38,10 +38,15 @@
   }
 
   // Engine-default text rendering: fractional horizontal advances with
-  // vertically grid-fit (hinted) glyphs. Vertical grid-fitting keeps every
-  // glyph on a shared, stable baseline, which matters most for small prose on
-  // high-DPR mobile screens. Ligatures are enabled explicitly on the body,
-  // independent of this property.
+  // vertically grid-fit (hinted) glyphs. Vertical grid-fitting snaps each
+  // glyph's designed baseline overshoot away, so round letters land on the
+  // same pixel row as flat ones. EB Garamond draws a deep overshoot on the
+  // capitals — "G" reaches 49/2048 em below the baseline, six times the
+  // sinkage of "o" — which on a high-DPR phone is a visible drop of a device
+  // pixel or two once the flat-bottomed neighbors snap crisply to the grid.
+  // Every element inherits this: no size on the page is large enough for
+  // unhinted rasterization to stay baseline-stable. Ligatures are enabled
+  // explicitly on the body, independent of this property.
   text-rendering: auto;
 }
 
@@ -61,11 +66,6 @@ h6,
   margin-bottom: 1rem;
   font-weight: 500;
   line-height: 1.15;
-
-  // Display type is large enough that unhinted, linear-metric rasterization
-  // stays baseline-stable, and it preserves the face's drawn proportions at
-  // scale.
-  text-rendering: geometricprecision;
 }
 
 $heading-sizes: (
