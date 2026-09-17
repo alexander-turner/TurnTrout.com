@@ -88,7 +88,7 @@ Claude Code itself is pinned to a verified, known-good version (`@anthropic-ai/c
 
 1. Removes a machine-wide Claude Code policy file an older glovebox installed. The sandbox builds its own copy at every start, so nothing outside a sandboxed session needs one.
 2. Installs the runtime prerequisites it can package safely.
-3. Installs the Docker `sbx` sandbox runtime and CLI (logged in via `sbx login`).
+3. Installs the sandbox backend: the Docker `sbx` runtime and CLI (logged in via `sbx login`) by default, or the Kata Containers backend under `GLOVEBOX_VM_BACKEND=kata`.
 4. Links the `glovebox` and `claude-github-app` wrappers into `~/.local/bin/`. It writes no instructions into your own `~/.claude/CLAUDE.md`: a glovebox session gets its security brief from glovebox at startup, so a session you start yourself is untouched.
 5. Asks nothing about the AI monitor. It is experimental and off by default, so `glovebox doctor --fix` sets its API key and `glovebox setup-ntfy` turns on its phone alerts, if and when you turn the monitor on.
 
@@ -284,7 +284,7 @@ Researchers run experiments on remote GPU pods. Keep the agent in its own sandbo
 
 ### Apollo Watcher integration
 
-[Apollo Watcher](https://github.com/ApolloResearch/watcher) grades a Claude Code session from the host, streaming the transcript to its **Turn Review** and per-tool **Approvals** panels. But a `glovebox` session runs inside a network-isolated container the host Watcher can't see, so when `glovebox` detects a running Watcher it offers to route the sandboxed session to it. The live Watcher review reads the in-VM transcript — a live-observability source, not tamper-evident. The tamper-evident record is the host-side teardown archive, which the agent can't rewrite after the fact to hide a tool call (standalone Watcher doesn't guarantee this!).
+[Apollo Watcher](https://watcher.apolloresearch.ai) grades a Claude Code session from the host, streaming the transcript to its **Turn Review** and per-tool **Approvals** panels. But a `glovebox` session runs inside a network-isolated container the host Watcher can't see, so when `glovebox` detects a running Watcher it offers to route the sandboxed session to it. The live Watcher review reads the in-VM transcript — a live-observability source, not tamper-evident. The tamper-evident record is the host-side teardown archive, which the agent can't rewrite after the fact to hide a tool call (standalone Watcher doesn't guarantee this!).
 
 Two levels, settled at launch (interactively, or via the env var / flag):
 
