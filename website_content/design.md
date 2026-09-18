@@ -483,6 +483,17 @@ However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
 > }
 > ```
 
+### Opening on a quotation
+
+<figure class="float-right" style="margin-top: 2rem;">
+<div class="dropcap" data-first-letter="“W" style="font-size: var(--dropcap-font-size);">“W</div>
+<figcaption>The mark hangs off the left of the capital.</figcaption>
+</figure>
+
+Some posts begin inside someone else's words. A quotation mark left at body size next to a four-line capital looks like a stray speck, so I set the mark at dropcap size alongside the letter it introduces. EB Garamond makes this easy: the initials kern an opening quote to zero width, and the embellishment face draws the mark blank, so the ornament stays behind the letter alone.
+
+<span class="dropcap" data-first-letter="“W">“W</span>hoever wishes to foresee the future must consult the past.”
+
 ### Rare dropcap coloring
 
 Every time you navigate to a new page, there's a <span id="populate-dropcap-probability"></span> chance to get a random dropcap color. :)
