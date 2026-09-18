@@ -460,9 +460,16 @@ normalizeConfusables(
   { scan: (t) => myHomoglyphEngine.scan(t) }, // override the default namespace-guard engine
 );
 
-import { scanInstructionFiles, cleanFile } from "agent-sanitizer/instructions";
+import {
+  contextScanExclude,
+  scanInstructionFiles,
+  cleanFile,
+} from "agent-sanitizer/instructions";
 const findings = scanInstructionFiles(["CLAUDE.md", "**/SKILL.md"], {
   cwd: projectDir,
+  // Skip what git says is not this checkout's source: ignored directories and
+  // nested worktrees. Ignored FILES (CLAUDE.local.md) are still scanned.
+  exclude: contextScanExclude(projectDir),
 });
 for (const { file } of findings) cleanFile(`${projectDir}/${file}`);
 
@@ -542,6 +549,9 @@ verdicts through the bundled CLI, so no second implementation can drift. An `op`
 field selects the entry point (default `sanitize`); the self-contained ones —
 `sanitizeText`, `classifyPrompt`, `scanInstructionFiles`, `cleanFile` — are
 bridged, while entry points taking a JS callback have no wire form. Bridged
+`scanInstructionFiles` walks the whole-tree scope: it skips `node_modules`, the
+directories git ignores wholesale and any nested worktree, since a finding from
+one of those names a file the scanned checkout does not own. Bridged
 `sanitizeText` runs Layers 1–3 only: no secret redaction (Layer 4), no injection
 filtering (Layer 5), and—since the bridge never wires `sgrCarveOut`—Layer 1's
 findings are never downgraded, so `notes` carries only the Layer-2/3 tiers and

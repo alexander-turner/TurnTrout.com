@@ -17,7 +17,7 @@ After all, what's the chance that something bad happens?
 [![pytest](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FAlexanderMattTurner%2Fagent-glovebox%2Fbadges%2Fpytest-checks.json)](https://github.com/AlexanderMattTurner/agent-glovebox/actions/workflows/pytest-checks.yaml)
 [![CI](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FAlexanderMattTurner%2Fagent-glovebox%2Fbadges%2Fci.json)](https://github.com/AlexanderMattTurner/agent-glovebox/actions/workflows/ci.yaml)
 [![actionlint + zizmor + bash config](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FAlexanderMattTurner%2Fagent-glovebox%2Fbadges%2Flint-checks.json)](https://github.com/AlexanderMattTurner/agent-glovebox/actions/workflows/ci.yaml)
-[![isolation](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FAlexanderMattTurner%2Fagent-glovebox%2Fbadges%2Fsbx-live-checks.json)](https://github.com/AlexanderMattTurner/agent-glovebox/actions/workflows/sbx-live-checks.yaml)
+[![isolation](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FAlexanderMattTurner%2Fagent-glovebox%2Fbadges%2Fsbx-live-checks.json)](https://github.com/AlexanderMattTurner/agent-glovebox/actions/workflows/ci.yaml)
 
 <!-- END GENERATED: status badges -->
 
@@ -88,7 +88,7 @@ Claude Code itself is pinned to a verified, known-good version (`@anthropic-ai/c
 
 1. Removes a machine-wide Claude Code policy file an older glovebox installed. The sandbox builds its own copy at every start, so nothing outside a sandboxed session needs one.
 2. Installs the runtime prerequisites it can package safely.
-3. Installs the Docker `sbx` sandbox runtime and CLI (logged in via `sbx login`).
+3. Installs the sandbox backend: the Docker `sbx` runtime and CLI (logged in via `sbx login`) by default, or the Kata Containers backend under `GLOVEBOX_VM_BACKEND=kata`.
 4. Links the `glovebox` and `claude-github-app` wrappers into `~/.local/bin/`. It writes no instructions into your own `~/.claude/CLAUDE.md`: a glovebox session gets its security brief from glovebox at startup, so a session you start yourself is untouched.
 5. Asks nothing about the AI monitor. It is experimental and off by default, so `glovebox doctor --fix` sets its API key and `glovebox setup-ntfy` turns on its phone alerts, if and when you turn the monitor on.
 
@@ -97,7 +97,7 @@ Claude Code itself is pinned to a verified, known-good version (`@anthropic-ai/c
 ```bash
 glovebox uninstall          # remove glovebox
 glovebox uninstall --purge  # also remove built images, volumes and saved preferences
-glovebox uninstall --purge-sbx  # also remove the retired sbx sandbox runtime
+glovebox uninstall --purge-sbx  # also remove the sbx sandbox runtime
 ```
 
 Both run `setup.bash --uninstall` from the install, so `bash setup.bash --uninstall` from a checkout does the same — which is the route when the wrapper itself is broken. A `.deb`, `.rpm`, AUR or Homebrew install needs its own package removal afterwards, for the files the package manager owns.
@@ -238,7 +238,7 @@ On top of those walls sit **best-effort filters**. They raise the bar, but a det
 
 ### The monitor is experimental
 
-The monitor is a **work in progress and is OFF by default.** It still reports false positives: it stops safe tool calls and asks you to approve them, which is the opposite of what an unattended session needs. Turn it on for one launch with `--experimental-monitor`; it needs its own API key (see [`docs/configuration.md` § Monitor](docs/configuration.md#monitor)). Nothing else depends on its verdict. The microVM, the outgoing-traffic firewall, the deny rules, auto mode and the tamper-evident audit log all run whether the monitor is on or off. The host monitor process still starts on every sandbox launch, because the guest posts each tool result to it for the audit log; with the review off it costs no API key.
+The monitor is a **work in progress and is OFF by default.** It still reports false positives: it stops safe tool calls and asks you to approve them, which is the opposite of what an unattended session needs. Turn it on for one launch with `--experimental-monitor`, which puts the review on every tool call before it runs; it needs its own API key (see [`docs/configuration.md` § Monitor](docs/configuration.md#monitor)). Nothing else depends on its verdict. The microVM, the outgoing-traffic firewall, the deny rules, auto mode and the tamper-evident audit log all run whether the monitor is on or off. The host monitor process still starts on every sandbox launch, because the guest posts each tool result to it for the audit log; with the review off it costs no API key.
 
 Sessions are **ephemeral by default**: attackers can't lay landmines in the system state which are hard for monitors to spot. Claude's work is backed out fine, but the rest of the session state is lost. That'd normally be annoying (e.g. re-login to every service) but I did some fancy mitigations.
 
@@ -284,7 +284,7 @@ Researchers run experiments on remote GPU pods. Keep the agent in its own sandbo
 
 ### Apollo Watcher integration
 
-[Apollo Watcher](https://github.com/ApolloResearch/watcher) grades a Claude Code session from the host, streaming the transcript to its **Turn Review** and per-tool **Approvals** panels. But a `glovebox` session runs inside a network-isolated container the host Watcher can't see, so when `glovebox` detects a running Watcher it offers to route the sandboxed session to it. The live Watcher review reads the in-VM transcript — a live-observability source, not tamper-evident. The tamper-evident record is the host-side teardown archive, which the agent can't rewrite after the fact to hide a tool call (standalone Watcher doesn't guarantee this!).
+[Apollo Watcher](https://watcher.apolloresearch.ai) grades a Claude Code session from the host, streaming the transcript to its **Turn Review** and per-tool **Approvals** panels. But a `glovebox` session runs inside a network-isolated container the host Watcher can't see, so when `glovebox` detects a running Watcher it offers to route the sandboxed session to it. The live Watcher review reads the in-VM transcript — a live-observability source, not tamper-evident. The tamper-evident record is the host-side teardown archive, which the agent can't rewrite after the fact to hide a tool call (standalone Watcher doesn't guarantee this!).
 
 Two levels, settled at launch (interactively, or via the env var / flag):
 

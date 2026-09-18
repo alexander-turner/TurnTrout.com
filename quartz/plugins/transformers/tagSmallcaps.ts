@@ -9,7 +9,13 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { HEADING_TAGS, NBSP, WORK_TITLE_CLASS } from "../../components/constants"
+import {
+  HEADING_TAGS,
+  KATEX_CLASS,
+  NBSP,
+  NO_SMALLCAPS_CLASS,
+  WORK_TITLE_CLASS,
+} from "../../components/constants"
 import {
   addClass,
   gatherTextBeforeIndex,
@@ -226,11 +232,11 @@ const combinedRegex = new RegExp(
 
 // Predicate if we should skip smallcaps for a given node
 export const skipSmallcapsClasses: readonly string[] = [
-  "no-smallcaps",
+  NO_SMALLCAPS_CLASS,
   WORK_TITLE_CLASS,
   "no-formatting",
   "bad-handwriting",
-  "katex",
+  KATEX_CLASS,
 ]
 
 // skipcq: JS-0257

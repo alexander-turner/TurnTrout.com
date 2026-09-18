@@ -154,17 +154,6 @@ export function hammingDistance(a: string, b: string): number {
 }
 
 /**
- * True when `text` already reads as a title-cased work title rather than prose.
- * `titleCase` only recases letters, so comparing it to the original by Hamming
- * distance counts how many words the author cased differently from title case;
- * fewer than two flips means the author already wrote it as a title (e.g. a
- * cited article headline), where small-caps acronyms look out of place.
- */
-export function isEffectivelyTitleCased(text: string): boolean {
-  return hammingDistance(titleCase(text, { locale }), text) < 2
-}
-
-/**
  * True when inline text reads as the title of a work: a multi-word,
  * title-cased phrase with at least one lowercase letter. The lowercase
  * requirement keeps all-caps phrases (bare acronyms, "CC BY-SA")

@@ -9,7 +9,6 @@ import {
   hammingDistance,
   hasAncestor,
   hasClass,
-  isEffectivelyTitleCased,
   looksLikeWorkTitle,
   removeClass,
   type ReplaceFnResult,
@@ -709,25 +708,5 @@ describe("looksLikeWorkTitle", () => {
     "How the FBI does its work",
   ])("treats %j as prose", (text) => {
     expect(looksLikeWorkTitle(text)).toBe(false)
-  })
-})
-
-describe("isEffectivelyTitleCased", () => {
-  it.each([
-    // Already title-cased work titles (0–1 flips) → true.
-    "Seeking Power Is Often Robustly Instrumental in MDPs",
-    "The Basic Reasons I Expect AGI Ruin",
-    "ACLU",
-    "GPT-3",
-  ])("treats already title-cased %j as a title", (text) => {
-    expect(isEffectivelyTitleCased(text)).toBe(true)
-  })
-
-  it.each([
-    // Prose/sentence fragments (≥2 flips) → false.
-    "Does Proton VPN keep logs?",
-    "Top Scoring exponential DCT vector",
-  ])("treats prose %j as not a title", (text) => {
-    expect(isEffectivelyTitleCased(text)).toBe(false)
   })
 })

@@ -28,7 +28,7 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@a480939b626d502dc7dd808a881ab141fc6de5ee # v1.34.10
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@6772d17a1ba9aaf4284a7ad96e08b056b98bf6fc # v1.36.2
     with:
       pr: ${{ matrix.pr.number }}
       resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
@@ -163,6 +163,8 @@ A YAML or TOML conflict always goes to the model, never to the free structural p
 
 A merge that changes `.github/workflows/` needs the workflow-scoped `TEMPLATE_SYNC_TOKEN_ORG` PAT: GitHub refuses a workflow edit pushed with any other credential. Without that secret, such a merge is refused and the pull request gets the `auto-resolve-blocked` label. A labeled pull request is skipped until a human removes the label, so a broken grant stops the treadmill instead of buying the same failure on every scan.
 
+Both branches can move code across one part of a file. Git then lines up two different regions in one conflict block. No reading of that block alone says which side to keep, so the model gets each parent's whole file instead. A shard that still runs out of time on such a block marks the pull request declined on the first run. A repeat run reads the same block under the same budget, so nothing is left to buy.
+
 ## The trust model
 
 Two jobs, and the split IS the security boundary.
@@ -205,7 +207,7 @@ A `uses:` ref may be a SHA, a tag or a branch. GitHub calls [the commit SHA the 
 **Pin the SHA and name the version beside it**, the way this repository's own caller does:
 
 ```yaml
-uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@a480939b626d502dc7dd808a881ab141fc6de5ee # v1.34.10
+uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@6772d17a1ba9aaf4284a7ad96e08b056b98bf6fc # v1.36.2
 ```
 
 That line reads as a version and resolves as an immutable commit. It names the newest release: `.github/scripts/release-tag.sh` rewrites both copies in this README, and the caller's, in the commit after each release. Copy it as it stands.
