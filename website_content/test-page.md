@@ -638,9 +638,7 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 A [link with a → arrow](https://npmjs.com) should color the arrow like the rest of the link.
 
-An arrow drops onto its right operand's optical center when that operand is short: MP4 -> WEBM and 200 -> 2049 sit lower than Cats -> dogs. In a heading the figures are lining, so the arrow stays put:
-
-## From 200 -> 2049 in a heading
+An arrow drops onto its right operand's optical center when that operand is short: MP4 -> WEBM and 200 -> 2049 sit lower than Cats -> dogs. A work title uses lining figures, so _The 2001 -> 2010 Sequel_ keeps its arrow where it is.
 
 # Math
 

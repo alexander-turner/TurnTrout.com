@@ -18,6 +18,7 @@ import {
   HAIR_SPACE,
   LEFT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
+  LOWERED_ARROW_CLASS,
   NBSP,
   normalizeNbsp,
   RIGHT_DOUBLE_QUOTE,
@@ -32,7 +33,6 @@ import {
   identifyLinkNode,
   improveFormatting,
   lowerArrowsBeforeShortRuns,
-  LOWERED_ARROW_CLASS,
   LoweredArrows,
   lPRegex,
   massTransformText,
@@ -2557,72 +2557,122 @@ describe("HTMLFormattingImprovement plugin", () => {
       return normalizeNbsp(processor.processSync(input).toString())
     }
 
-    const lowered = (html: string): boolean => html.includes(`arrow ${LOWERED_ARROW_CLASS}"`)
-
-    it.each([
-      ["small-caps acronym", "<p>Savings from MP4 -> WEBM are large</p>"],
-      ["small-caps inside a link", '<p>Savings from MP4 -> <a href="x">WEBM</a> files</p>'],
-      ["oldstyle figures", "<p>Grew from 200 -> 2049 units</p>"],
-      ["a unicode arrow", "<p>Savings from MP4 → WEBM are large</p>"],
-      ["oldstyle figures after a unicode arrow", "<p>Grew from 200 → 2049 units</p>"],
-    ])("lowers an arrow before %s", (_label: string, input: string) => {
-      expect(lowered(runPipeline(input))).toBe(true)
-    })
-
-    it.each([
-      ["ordinary prose", "<p>Cats -> dogs are better</p>"],
-      ["a heading's lining figures", "<h2>Grew from 200 -> 2049 units</h2>"],
-      ["a work title's lining figures", '<p>Watched 1984 -> <a class="work-title">2001</a></p>'],
-      ["an ordinal's lining figures", '<p>Moved 2nd -> <span class="ordinal-num">21</span>st</p>'],
-      ["a version label", "<p>Upgraded from V1 -> V2 today</p>"],
-      ["a non-inline element", "<p>Rendered from LaTeX -> <code>200</code></p>"],
-      ["a currency symbol", "<p>Rose from $200 -> $2,049</p>"],
-    ])("leaves an arrow before %s alone", (_label: string, input: string) => {
-      expect(lowered(runPipeline(input))).toBe(false)
-    })
-
-    // The pass also runs over already-shaped HTML (transcluded pages, backlink
-    // excerpts), where an arrow can end its parent.
-    it.each([
-      ["ends its paragraph", '<p>Cats <span class="right-arrow">⭢</span></p>'],
-      ["is followed only by space", `<p>Cats <span class="right-arrow">⭢</span>${NBSP}</p>`],
-    ])("leaves an arrow that %s alone", (_label: string, input: string) => {
-      const out = rehype()
+    /** Runs the pass alone, over markup already shaped like the pipeline's. */
+    function runLowering(input: string): string {
+      return rehype()
         .data("settings", { fragment: true })
         .use(() => lowerArrowsBeforeShortRuns)
         .processSync(input)
         .toString()
-      expect(out).toBe(input)
+    }
+
+    const SC_MP4 = '<abbr class="small-caps" data-original-text="MP4">mp4</abbr>'
+    const SC_WEBM = '<abbr class="small-caps" data-original-text="WEBM">webm</abbr>'
+    const LOWERED = `<span class="right-arrow ${LOWERED_ARROW_CLASS}">⭢</span>`
+    const PLAIN = '<span class="right-arrow">⭢</span>'
+
+    it.each([
+      [
+        "small caps",
+        "<p>Savings from MP4 -> WEBM are large</p>",
+        `<p>Savings from ${SC_MP4} ${LOWERED} ${SC_WEBM} are large</p>`,
+      ],
+      [
+        "small caps inside a link",
+        '<p>Savings from MP4 -> <a href="x">WEBM</a> files</p>',
+        `<p>Savings from ${SC_MP4} ${LOWERED} <a href="x">${SC_WEBM}</a> files</p>`,
+      ],
+      [
+        "oldstyle figures",
+        "<p>Grew from 200 -> 2049 units</p>",
+        `<p>Grew from 200 ${LOWERED} 2049 units</p>`,
+      ],
+      [
+        // Headings render bare digits oldstyle, like body prose.
+        "oldstyle figures in a heading",
+        "<h2>Grew from 200 -> 2049 units</h2>",
+        `<h2>Grew from 200 ${LOWERED} 2049 units</h2>`,
+      ],
+      [
+        "small caps, reached by a unicode arrow",
+        "<p>Savings from MP4 → WEBM are large</p>",
+        `<p>Savings from ${SC_MP4} <span class="monospace-arrow ${LOWERED_ARROW_CLASS}">→</span> ${SC_WEBM} are large</p>`,
+      ],
+    ])("lowers an arrow before %s", (_label: string, input: string, expected: string) => {
+      expect(runPipeline(input)).toBe(expected)
     })
 
-    it("is idempotent", () => {
-      const once = runPipeline("<p>Savings from MP4 -> WEBM are large</p>")
-      const twice = normalizeNbsp(
-        rehype()
-          .data("settings", { fragment: true })
-          .use(() => lowerArrowsBeforeShortRuns)
-          .processSync(once)
-          .toString(),
-      )
-      expect(twice).toBe(once)
+    it.each([
+      ["ordinary prose", "<p>Cats -> dogs are better</p>", `<p>Cats ${PLAIN} dogs are better</p>`],
+      [
+        "a work title's lining figures",
+        '<p>Watched 1984 -> <a class="work-title">2001</a></p>',
+        `<p>Watched 1984 ${PLAIN} <a class="work-title">2001</a></p>`,
+      ],
+      [
+        "an admonition title's lining figures",
+        '<p>Note: <span class="admonition-title-inner">Grew from 200 -> 2049</span></p>',
+        `<p>Note: <span class="admonition-title-inner">Grew from 200 ${PLAIN} 2049</span></p>`,
+      ],
+      [
+        "an ordinal's lining figures",
+        '<p>Moved 2nd -> <span class="ordinal-num">21</span>st</p>',
+        `<p>Moved <span class="ordinal-num">2</span><sup class="ordinal-suffix">nd</sup> ${PLAIN} <span class="ordinal-num">21</span>st</p>`,
+      ],
+      [
+        "a version label",
+        "<p>Upgraded from V1 -> V2 today</p>",
+        `<p>Upgraded from <abbr class="small-caps version-num" data-original-text="V1">V1</abbr> ${PLAIN} <abbr class="small-caps version-num" data-original-text="V2">V2</abbr> today</p>`,
+      ],
+      [
+        // A full-height currency symbol opens the run, whatever its figures.
+        "a currency symbol",
+        "<p>Rose from $200 -> $2,049</p>",
+        `<p>Rose from $200 ${PLAIN} $2,049</p>`,
+      ],
+      [
+        "a non-inline element",
+        "<p>Rendered from LaTeX -> <code>200</code></p>",
+        `<p>Rendered from LaTeX ${PLAIN} <code>200</code></p>`,
+      ],
+    ])("leaves an arrow before %s alone", (_label: string, input: string, expected: string) => {
+      expect(runPipeline(input)).toBe(expected)
+    })
+
+    it.each([
+      ["ends its parent", `<p>Cats ${PLAIN}</p>`],
+      ["is followed only by space", `<p>Cats ${PLAIN}${NBSP}</p>`],
+      ["closes an inline element", `<p><em>Grew 200 ${PLAIN}</em> 2049</p>`],
+    ])("leaves an arrow that %s alone", (_label: string, input: string) => {
+      expect(runLowering(input)).toBe(input)
+    })
+
+    it.each([
+      ["a small-caps span", `<p>${PLAIN} <span class="small-caps">webm</span></p>`],
+      ["an empty inline element before the operand", `<p>${PLAIN} <em></em>2049</p>`],
+      ["a space opening the operand's own text node", `<p>${PLAIN}${NBSP}2049</p>`],
+    ])("lowers an arrow before %s", (_label: string, input: string) => {
+      expect(runLowering(input)).toBe(input.replace(PLAIN, LOWERED))
+    })
+
+    it.each([
+      ["<p>Savings from MP4 -> WEBM are large</p>"],
+      ["<p>Grew from 200 -> 2049 units</p>"],
+    ])("is idempotent for %s", (input: string) => {
+      const once = runPipeline(input)
+      expect(normalizeNbsp(runLowering(once))).toBe(once)
     })
 
     it("registers as a Quartz plugin", () => {
       const plugin = LoweredArrows()
       expect(plugin.name).toBe("loweredArrows")
-      const { htmlPlugins } = plugin
-      if (!htmlPlugins) {
-        throw new Error("htmlPlugins is undefined")
-      }
-      const mockCtx = {} as unknown
+      const htmlPlugins = plugin.htmlPlugins as NonNullable<typeof plugin.htmlPlugins>
       const processor = rehype().data("settings", { fragment: true })
-      for (const p of htmlPlugins(mockCtx as Parameters<typeof htmlPlugins>[0])) {
+      for (const p of htmlPlugins({} as Parameters<typeof htmlPlugins>[0])) {
         processor.use(p as never)
       }
-      const input = `<p><span class="right-arrow">⭢</span>${NBSP}<abbr class="small-caps">webm</abbr></p>`
-      expect(processor.processSync(input).toString()).toContain(
-        `class="right-arrow ${LOWERED_ARROW_CLASS}"`,
-      )
+      const input = `<p>${PLAIN}${NBSP}<abbr class="small-caps">webm</abbr></p>`
+      expect(processor.processSync(input).toString()).toBe(input.replace(PLAIN, LOWERED))
     })
   })
 })

@@ -28,8 +28,11 @@ import {
   HAIR_SPACE,
   LEFT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
+  LOWERED_ARROW_CLASS,
+  MONOSPACE_ARROW_CLASS,
   NBSP,
   NOWRAP_SPAN_CLASS,
+  RIGHT_ARROW_CLASS,
   RIGHT_SINGLE_QUOTE,
   SMALL_CAPS_CLASS,
   STRIP_BOUNDARY_TAGS,
@@ -645,7 +648,7 @@ export function formatArrows(tree: Root): void {
         }
       },
       () => false,
-      "span.right-arrow",
+      `span.${RIGHT_ARROW_CLASS}`,
     )
   })
 }
@@ -689,7 +692,7 @@ export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
     if (hasAncestor(parent as Element, isKatex, ancestors)) return
 
     // Check if any ancestor is already a monospace-arrow span (prevents double wrapping)
-    if (hasAncestor(parent as Element, (n) => hasClass(n, "monospace-arrow"), ancestors)) return
+    if (hasAncestor(parent as Element, (n) => hasClass(n, MONOSPACE_ARROW_CLASS), ancestors)) return
 
     replaceRegex(node as Text, index, parent, arrowRegex, (match: RegExpMatchArray) => {
       const fullMatch = match[0] ?? /* istanbul ignore next */ ""
@@ -711,36 +714,33 @@ export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
 
       return {
         before: needsSpaceBefore ? " " : "",
-        replacedMatch: h("span.monospace-arrow", arrow),
+        replacedMatch: h(`span.${MONOSPACE_ARROW_CLASS}`, arrow),
         after: needsNbspAfter ? NBSP : "",
       }
     })
   })
 }
 
-/** The arrow spans emitted by the two passes above. */
-const ARROW_CLASSES: readonly string[] = ["right-arrow", "monospace-arrow"]
-
-/**
- * Marks an arrow whose right operand is a short run — small caps or oldstyle
- * figures — so CSS can seat it on that run's optical center.
- */
-export const LOWERED_ARROW_CLASS = "lowered-arrow"
+const ARROW_CLASSES: readonly string[] = [RIGHT_ARROW_CLASS, MONOSPACE_ARROW_CLASS]
 
 /** Version labels keep lining figures and a cap-height "V" (see `.version-num`). */
 const VERSION_NUM_CLASS = "version-num"
 
 // The space (plain or NBSP) the arrow passes leave between an arrow and its
-// right operand, plus any word joiner a later pass glues in.
-const inklessText = new RegExp(`^[\\s${WORD_JOINER}]*$`, "u")
-
-const leadingDigit = /^\p{Nd}/u
+// right operand, whether it stands as its own text node or opens the operand's.
+const inklessText = /^\s*$/u
+const leadingDigit = /^\s*\p{Nd}/u
 
 /** Classes whose subtree restores lining figures over the body's oldstyle. */
-const liningFigureClasses: readonly string[] = [WORK_TITLE_CLASS, "ordinal-num", VERSION_NUM_CLASS]
+const liningFigureClasses: readonly string[] = [
+  WORK_TITLE_CLASS,
+  "admonition-title-inner",
+  "ordinal-num",
+  VERSION_NUM_CLASS,
+]
 
 function rendersLiningFigures(node: Element): boolean {
-  return isHeading(node) || liningFigureClasses.some((className) => hasClass(node, className))
+  return liningFigureClasses.some((className) => hasClass(node, className))
 }
 
 /** Inline elements an arrow's right operand can begin inside of. */
@@ -753,6 +753,12 @@ interface ArrowOperand {
   readonly chain: readonly Element[]
 }
 
+/**
+ * Finds the text an arrow points at, descending into inline wrappers. The
+ * search stays inside the arrow's own parent: an arrow that closes an inline
+ * element has no operand, since its neighbor across that boundary may be styled
+ * differently.
+ */
 function findArrowOperand(
   siblings: readonly RootContent[],
   startIndex: number,
@@ -765,7 +771,8 @@ function findArrowOperand(
       return { text: sibling, chain }
     }
     if (sibling.type !== "element" || !inlineDescentTags.has(sibling.tagName)) return undefined
-    return findArrowOperand(sibling.children, 0, [...chain, sibling])
+    const nested = findArrowOperand(sibling.children, 0, [...chain, sibling])
+    if (nested) return nested
   }
   return undefined
 }
@@ -773,9 +780,7 @@ function findArrowOperand(
 /**
  * Tags each arrow whose right operand is set in small caps or oldstyle figures
  * with {@link LOWERED_ARROW_CLASS}, so it can be dropped to that run's optical
- * center (see the class in SCSS). Runs *after* ``TagSmallcaps``: acronyms are
- * already wrapped in ``<abbr class="small-caps">`` by then, which is what marks
- * a run as short.
+ * center (see the class in SCSS).
  */
 export function lowerArrowsBeforeShortRuns(tree: Root): void {
   visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
@@ -1385,13 +1390,7 @@ export const SetDropcapLetter: QuartzTransformerPlugin = () => {
   }
 }
 
-/**
- * Quartz plugin running ``lowerArrowsBeforeShortRuns`` as a late pass.
- *
- * Separated from ``HTMLFormattingImprovement`` so it can run *after*
- * ``TagSmallcaps``, whose ``<abbr class="small-caps">`` wrappers are what mark
- * an arrow's right operand as a short run.
- */
+/** Quartz plugin running ``lowerArrowsBeforeShortRuns`` as a late pass. */
 export const LoweredArrows: QuartzTransformerPlugin = () => {
   return {
     name: "loweredArrows",

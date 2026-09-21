@@ -21,7 +21,7 @@ import {
   processSmallCaps,
   processTextWithArrows,
 } from "./component_utils"
-import { CAN_TRIGGER_POPOVER_CLASS } from "./constants"
+import { CAN_TRIGGER_POPOVER_CLASS, MONOSPACE_ARROW_CLASS } from "./constants"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import tocScript from "./scripts/toc.inline"
@@ -280,8 +280,10 @@ const handleSpan = (elt: Element): JSX.Element => {
     return <span className="number-prefix">{elt.children.map(elementToJsx)}</span>
   }
 
-  if (classNames.includes("monospace-arrow")) {
-    return <span className="monospace-arrow">{elt.children.map(elementToJsx)}</span>
+  // Keep every class: an arrow may also be tagged `.lowered-arrow`, and the TOC
+  // entry must sit like the heading it mirrors.
+  if (classNames.includes(MONOSPACE_ARROW_CLASS)) {
+    return <span className={classNames.join(" ")}>{elt.children.map(elementToJsx)}</span>
   }
 
   if (classNames.includes("inline-code")) {
