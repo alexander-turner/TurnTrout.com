@@ -746,6 +746,11 @@ function rendersLiningFigures(node: Element): boolean {
 /** Inline elements an arrow's right operand can begin inside of. */
 const inlineDescentTags: ReadonlySet<string> = new Set([...INLINE_PASSTHROUGH_TAGS, "abbr"])
 
+/**
+ * The run an arrow is seated against: the one to its right, whichever way the
+ * arrow points. A drop is about the height of the glyphs the arrow abuts, so a
+ * left-pointing arrow is decided by the same neighbor a right-pointing one is.
+ */
 interface ArrowOperand {
   /** The first ink-bearing text to the arrow's right. */
   readonly text: Text
@@ -754,8 +759,8 @@ interface ArrowOperand {
 }
 
 /**
- * Finds the text an arrow points at, descending into inline wrappers. Operands
- * are only matched within one inline context: the search neither leaves the
+ * Finds an arrow's {@link ArrowOperand}, descending into inline wrappers. The
+ * operand must share the arrow's inline context: the search neither leaves the
  * arrow's own parent nor crosses a boundary it cannot see through — a block
  * element, a KaTeX span (whose figures are the font's own), or an inline
  * element that holds markup but no text of its own.
@@ -787,7 +792,9 @@ function findArrowOperand(
 export function lowerArrowsBeforeShortRuns(tree: Parent): void {
   visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
     if (!arrowClasses.some((className) => hasClass(node, className))) return
-    const parent = ancestors[ancestors.length - 1] as Parent
+    // An arrow that is the tree's own root has no siblings to seat against.
+    const parent = ancestors[ancestors.length - 1]
+    if (!parent) return
     const operand = findArrowOperand(parent.children, parent.children.indexOf(node) + 1, [])
     if (!operand) return
 

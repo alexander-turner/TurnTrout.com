@@ -2598,6 +2598,13 @@ describe("HTMLFormattingImprovement plugin", () => {
         "<p>Savings from MP4 → WEBM are large</p>",
         `<p>Savings from ${SC_MP4} <span class="monospace-arrow ${LOWERED_ARROW_CLASS}">→</span> ${SC_WEBM} are large</p>`,
       ],
+      [
+        // The neighbor to the right decides, whichever way the arrow points: a
+        // drop is about the height of the glyphs the arrow abuts.
+        "small caps, reached by a left-pointing arrow",
+        "<p>Rebuilt Cats ← WEBM daily</p>",
+        `<p>Rebuilt Cats <span class="monospace-arrow ${LOWERED_ARROW_CLASS}">←</span> ${SC_WEBM} daily</p>`,
+      ],
     ])("lowers an arrow before %s", (_label: string, input: string, expected: string) => {
       expect(runPipeline(input)).toBe(expected)
     })
@@ -2618,6 +2625,13 @@ describe("HTMLFormattingImprovement plugin", () => {
         "an ordinal's lining figures",
         '<p>Moved 2nd -> <span class="ordinal-num">21</span>st</p>',
         `<p>Moved <span class="ordinal-num">2</span><sup class="ordinal-suffix">nd</sup> ${PLAIN} <span class="ordinal-num">21</span>st</p>`,
+      ],
+      [
+        // A left-pointing arrow reads the same neighbor, so its small-caps
+        // target on the *left* does not lower it.
+        "ordinary prose, reached by a left-pointing arrow",
+        "<p>Rebuilt WEBM ← Cats daily</p>",
+        `<p>Rebuilt ${SC_WEBM} <span class="monospace-arrow">←</span> Cats daily</p>`,
       ],
       [
         "a version label",
@@ -2669,6 +2683,14 @@ describe("HTMLFormattingImprovement plugin", () => {
       ["a space opening the operand's own text node", `<p>${PLAIN}${NBSP}2049</p>`],
     ])("lowers, run on its own, an arrow before %s", (_label: string, input: string) => {
       expect(runLowering(input)).toBe(input.replace(PLAIN, LOWERED))
+    })
+
+    // `processTocEntry` hands the pass an element, so the root can be an arrow.
+    it("leaves an arrow that is the tree's own root alone", () => {
+      const tree = h("span.right-arrow", "⭢")
+      lowerArrowsBeforeShortRuns(tree)
+
+      expect(hastToHtml(tree)).toBe('<span class="right-arrow">⭢</span>')
     })
 
     it.each([

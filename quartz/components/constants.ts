@@ -184,8 +184,8 @@ export const KATEX_CLASS = "katex"
 // monospace face, which draws them better.
 export const RIGHT_ARROW_CLASS = "right-arrow"
 export const MONOSPACE_ARROW_CLASS = "monospace-arrow"
-// Marks an arrow whose right operand is set in small caps or oldstyle figures,
-// so CSS can seat the arrow on that shorter run's optical center.
+// Marks an arrow with small caps or oldstyle figures to its right, so CSS can
+// seat the arrow on that shorter run's optical center.
 export const LOWERED_ARROW_CLASS = "lowered-arrow"
 export const SMALL_CAPS_CLASS = "small-caps"
 // Version labels ("v1.2") keep lining figures and a cap-height "V", so they
