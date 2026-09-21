@@ -731,16 +731,21 @@ const whitespaceOnlyText = /^\s*$/u
 // operand may open the operand's own text node rather than standing as one.
 const leadingDigit = /^\s*\p{Nd}/u
 
-/** Classes whose subtree restores lining figures over the body's oldstyle. */
-const liningFigureClasses: readonly string[] = [
+/**
+ * Classes whose subtree overrides the body's oldstyle figures with a
+ * full-height set: lining figures, or a stacked fraction whose numerator
+ * reaches above cap height.
+ */
+const tallFigureClasses: readonly string[] = [
   WORK_TITLE_CLASS,
   "admonition-title-inner",
   "ordinal-num",
   VERSION_NUM_CLASS,
+  "fraction",
 ]
 
-function rendersLiningFigures(node: Element): boolean {
-  return liningFigureClasses.some((className) => hasClass(node, className))
+function rendersTallFigures(node: Element): boolean {
+  return tallFigureClasses.some((className) => hasClass(node, className))
 }
 
 /** Inline elements an arrow's right operand can begin inside of. */
@@ -803,8 +808,8 @@ export function lowerArrowsBeforeShortRuns(tree: Parent): void {
     )
     const operandHasOldstyleFigures =
       leadingDigit.test(operand.text.value) &&
-      !hasAncestor(node, rendersLiningFigures, ancestors) &&
-      !operand.chain.some(rendersLiningFigures)
+      !hasAncestor(node, rendersTallFigures, ancestors) &&
+      !operand.chain.some(rendersTallFigures)
 
     if (operandIsSmallCaps || operandHasOldstyleFigures) addClass(node, LOWERED_ARROW_CLASS)
   })

@@ -2639,6 +2639,12 @@ describe("HTMLFormattingImprovement plugin", () => {
         `<p>Upgraded from <abbr class="small-caps version-num" data-original-text="V1">V1</abbr> ${PLAIN} <abbr class="small-caps version-num" data-original-text="V2">V2</abbr> today</p>`,
       ],
       [
+        // A stacked fraction's numerator reaches above cap height.
+        "a stacked fraction",
+        "<p>Cut 3/4 -> 1/2 today</p>",
+        `<p>Cut <span class="fraction">3/4</span> ${PLAIN} <span class="fraction">1/2</span> today</p>`,
+      ],
+      [
         // A full-height currency symbol opens the run, whatever its figures.
         "a currency symbol",
         "<p>Rose from $200 -> $2,049</p>",
