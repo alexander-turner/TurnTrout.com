@@ -31,6 +31,9 @@ import {
   HTMLFormattingImprovement,
   identifyLinkNode,
   improveFormatting,
+  lowerArrowsBeforeShortRuns,
+  LOWERED_ARROW_CLASS,
+  LoweredArrows,
   lPRegex,
   massTransformText,
   moveQuotesBeforeLink,
@@ -2539,6 +2542,87 @@ describe("HTMLFormattingImprovement plugin", () => {
       const expected = `<p><span class="monospace-arrow">→</span>${NBSP}next</p>`
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
+    })
+  })
+
+  describe("lowerArrowsBeforeShortRuns", () => {
+    // Mirrors the production order: the arrow passes run inside
+    // improveFormatting, TagSmallcaps wraps acronyms, and only then can an
+    // operand be recognized as a short run.
+    function runPipeline(input: string): string {
+      const processor = rehype().data("settings", { fragment: true })
+      processor.use(improveFormatting)
+      processor.use(rehypeTagSmallcaps)
+      processor.use(() => lowerArrowsBeforeShortRuns)
+      return normalizeNbsp(processor.processSync(input).toString())
+    }
+
+    const lowered = (html: string): boolean => html.includes(`arrow ${LOWERED_ARROW_CLASS}"`)
+
+    it.each([
+      ["small-caps acronym", "<p>Savings from MP4 -> WEBM are large</p>"],
+      ["small-caps inside a link", '<p>Savings from MP4 -> <a href="x">WEBM</a> files</p>'],
+      ["oldstyle figures", "<p>Grew from 200 -> 2049 units</p>"],
+      ["a unicode arrow", "<p>Savings from MP4 → WEBM are large</p>"],
+      ["oldstyle figures after a unicode arrow", "<p>Grew from 200 → 2049 units</p>"],
+    ])("lowers an arrow before %s", (_label: string, input: string) => {
+      expect(lowered(runPipeline(input))).toBe(true)
+    })
+
+    it.each([
+      ["ordinary prose", "<p>Cats -> dogs are better</p>"],
+      ["a heading's lining figures", "<h2>Grew from 200 -> 2049 units</h2>"],
+      ["a work title's lining figures", '<p>Watched 1984 -> <a class="work-title">2001</a></p>'],
+      ["an ordinal's lining figures", '<p>Moved 2nd -> <span class="ordinal-num">21</span>st</p>'],
+      ["a version label", "<p>Upgraded from V1 -> V2 today</p>"],
+      ["a non-inline element", "<p>Rendered from LaTeX -> <code>200</code></p>"],
+      ["a currency symbol", "<p>Rose from $200 -> $2,049</p>"],
+    ])("leaves an arrow before %s alone", (_label: string, input: string) => {
+      expect(lowered(runPipeline(input))).toBe(false)
+    })
+
+    // The pass also runs over already-shaped HTML (transcluded pages, backlink
+    // excerpts), where an arrow can end its parent.
+    it.each([
+      ["ends its paragraph", '<p>Cats <span class="right-arrow">⭢</span></p>'],
+      ["is followed only by space", `<p>Cats <span class="right-arrow">⭢</span>${NBSP}</p>`],
+    ])("leaves an arrow that %s alone", (_label: string, input: string) => {
+      const out = rehype()
+        .data("settings", { fragment: true })
+        .use(() => lowerArrowsBeforeShortRuns)
+        .processSync(input)
+        .toString()
+      expect(out).toBe(input)
+    })
+
+    it("is idempotent", () => {
+      const once = runPipeline("<p>Savings from MP4 -> WEBM are large</p>")
+      const twice = normalizeNbsp(
+        rehype()
+          .data("settings", { fragment: true })
+          .use(() => lowerArrowsBeforeShortRuns)
+          .processSync(once)
+          .toString(),
+      )
+      expect(twice).toBe(once)
+    })
+
+    it("registers as a Quartz plugin", () => {
+      const plugin = LoweredArrows()
+      expect(plugin.name).toBe("loweredArrows")
+      const { htmlPlugins } = plugin
+      if (!htmlPlugins) {
+        throw new Error("htmlPlugins is undefined")
+      }
+      const mockCtx = {} as unknown
+      const processor = rehype().data("settings", { fragment: true })
+      for (const p of htmlPlugins(mockCtx as Parameters<typeof htmlPlugins>[0])) {
+        processor.use(p as never)
+      }
+      const input = `<p><span class="right-arrow">⭢</span>${NBSP}<abbr class="small-caps">webm</abbr></p>`
+      expect(processor.processSync(input).toString()).toContain(
+        `class="right-arrow ${LOWERED_ARROW_CLASS}"`,
+      )
     })
   })
 })

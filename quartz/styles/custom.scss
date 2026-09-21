@@ -1075,6 +1075,16 @@ iframe {
   font-family: var(--font-monospace);
 }
 
+// Small caps and oldstyle figures sit lower than a full-height cap run, so an
+// arrow joining to one belongs on that shorter run's optical center. The
+// transformer tags which arrows qualify. Set in em so the drop tracks the font
+// size, and shifted with `position` so it stays out of the line box and leaves
+// the page's vertical rhythm untouched.
+.lowered-arrow {
+  position: relative;
+  top: 0.05em;
+}
+
 // Specific graph in design doc has too much whitespace in light
 :root[data-theme="light"] {
   .compression-ratio-graph {

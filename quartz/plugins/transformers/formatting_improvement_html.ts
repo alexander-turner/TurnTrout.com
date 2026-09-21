@@ -1,4 +1,4 @@
-import type { Element, ElementContent, Parent, Root, Text } from "hast"
+import type { Element, ElementContent, Parent, Root, RootContent, Text } from "hast"
 
 import { h } from "hastscript"
 import {
@@ -31,13 +31,16 @@ import {
   NBSP,
   NOWRAP_SPAN_CLASS,
   RIGHT_SINGLE_QUOTE,
+  SMALL_CAPS_CLASS,
   STRIP_BOUNDARY_TAGS,
   WORD_JOINER,
+  WORK_TITLE_CLASS,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { isHeading } from "./favicons"
 import { isGlyphAtom } from "./inlineAtomGlue"
 import {
+  addClass,
   type CharSpan,
   fractionRegex,
   hasAncestor,
@@ -715,6 +718,84 @@ export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
   })
 }
 
+/** The arrow spans emitted by the two passes above. */
+const ARROW_CLASSES: readonly string[] = ["right-arrow", "monospace-arrow"]
+
+/**
+ * Marks an arrow whose right operand is a short run — small caps or oldstyle
+ * figures — so CSS can seat it on that run's optical center.
+ */
+export const LOWERED_ARROW_CLASS = "lowered-arrow"
+
+/** Version labels keep lining figures and a cap-height "V" (see `.version-num`). */
+const VERSION_NUM_CLASS = "version-num"
+
+// The space (plain or NBSP) the arrow passes leave between an arrow and its
+// right operand, plus any word joiner a later pass glues in.
+const inklessText = new RegExp(`^[\\s${WORD_JOINER}]*$`, "u")
+
+const leadingDigit = /^\p{Nd}/u
+
+/** Classes whose subtree restores lining figures over the body's oldstyle. */
+const liningFigureClasses: readonly string[] = [WORK_TITLE_CLASS, "ordinal-num", VERSION_NUM_CLASS]
+
+function rendersLiningFigures(node: Element): boolean {
+  return isHeading(node) || liningFigureClasses.some((className) => hasClass(node, className))
+}
+
+/** Inline elements an arrow's right operand can begin inside of. */
+const inlineDescentTags: ReadonlySet<string> = new Set([...INLINE_PASSTHROUGH_TAGS, "abbr"])
+
+interface ArrowOperand {
+  /** The first ink-bearing text to the arrow's right. */
+  readonly text: Text
+  /** The inline elements descended through to reach {@link text}. */
+  readonly chain: readonly Element[]
+}
+
+function findArrowOperand(
+  siblings: readonly RootContent[],
+  startIndex: number,
+  chain: readonly Element[],
+): ArrowOperand | undefined {
+  for (let i = startIndex; i < siblings.length; i++) {
+    const sibling = siblings[i]
+    if (sibling.type === "text") {
+      if (inklessText.test(sibling.value)) continue
+      return { text: sibling, chain }
+    }
+    if (sibling.type !== "element" || !inlineDescentTags.has(sibling.tagName)) return undefined
+    return findArrowOperand(sibling.children, 0, [...chain, sibling])
+  }
+  return undefined
+}
+
+/**
+ * Tags each arrow whose right operand is set in small caps or oldstyle figures
+ * with {@link LOWERED_ARROW_CLASS}, so it can be dropped to that run's optical
+ * center (see the class in SCSS). Runs *after* ``TagSmallcaps``: acronyms are
+ * already wrapped in ``<abbr class="small-caps">`` by then, which is what marks
+ * a run as short.
+ */
+export function lowerArrowsBeforeShortRuns(tree: Root): void {
+  visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
+    if (!ARROW_CLASSES.some((className) => hasClass(node, className))) return
+    const parent = ancestors[ancestors.length - 1] as Parent
+    const operand = findArrowOperand(parent.children, parent.children.indexOf(node) + 1, [])
+    if (!operand) return
+
+    const isSmallCaps = operand.chain.some(
+      (element) => hasClass(element, SMALL_CAPS_CLASS) && !hasClass(element, VERSION_NUM_CLASS),
+    )
+    const isOldstyleFigure =
+      leadingDigit.test(operand.text.value) &&
+      !hasAncestor(node, rendersLiningFigures, ancestors) &&
+      !operand.chain.some(rendersLiningFigures)
+
+    if (isSmallCaps || isOldstyleFigure) addClass(node, LOWERED_ARROW_CLASS)
+  })
+}
+
 const ordinalSuffixRegex = /(?<![-−])(?<number>[\d,]+)(?<suffix>st|nd|rd|th)/gu
 
 // A day adjacent to a year (e.g. "26th, 2026") is a calendar date: tag its
@@ -1300,6 +1381,22 @@ export const SetDropcapLetter: QuartzTransformerPlugin = () => {
     name: "setDropcapLetter",
     htmlPlugins() {
       return [() => setFirstLetterAttribute]
+    },
+  }
+}
+
+/**
+ * Quartz plugin running ``lowerArrowsBeforeShortRuns`` as a late pass.
+ *
+ * Separated from ``HTMLFormattingImprovement`` so it can run *after*
+ * ``TagSmallcaps``, whose ``<abbr class="small-caps">`` wrappers are what mark
+ * an arrow's right operand as a short run.
+ */
+export const LoweredArrows: QuartzTransformerPlugin = () => {
+  return {
+    name: "loweredArrows",
+    htmlPlugins() {
+      return [() => lowerArrowsBeforeShortRuns]
     },
   }
 }

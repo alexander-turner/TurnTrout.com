@@ -10,6 +10,7 @@ export { AddFavicons } from "./favicons"
 export { FixFootnotes } from "./fixFootnotes"
 export {
   HTMLFormattingImprovement,
+  LoweredArrows,
   NonBreakingHyphens,
   SetDropcapLetter,
   StripInlineBoundaryWhitespace,
