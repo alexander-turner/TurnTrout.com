@@ -2635,6 +2635,17 @@ describe("HTMLFormattingImprovement plugin", () => {
         "<p>Rendered from LaTeX -> <code>200</code></p>",
         `<p>Rendered from LaTeX ${PLAIN} <code>200</code></p>`,
       ],
+      [
+        // KaTeX sets its own figures, which are lining.
+        "a KaTeX expression",
+        '<p>Rendered 200 -> <span class="katex">2</span> now</p>',
+        `<p>Rendered 200 ${PLAIN} <span class="katex">2</span> now</p>`,
+      ],
+      [
+        "a work title's lining figures, as marked up by the pipeline",
+        "<p>Watched <em>The 2001 -> 2010 Sequel</em> today</p>",
+        `<p>Watched <em class="work-title">The 2001 ${PLAIN} 2010 Sequel</em> today</p>`,
+      ],
     ])("leaves an arrow before %s alone", (_label: string, input: string, expected: string) => {
       expect(runPipeline(input)).toBe(expected)
     })
@@ -2643,6 +2654,11 @@ describe("HTMLFormattingImprovement plugin", () => {
       ["ends its parent", `<p>Cats ${PLAIN}</p>`],
       ["is followed only by space", `<p>Cats ${PLAIN}${NBSP}</p>`],
       ["closes an inline element", `<p><em>Grew 200 ${PLAIN}</em> 2049</p>`],
+      // The operand is whatever the arrow points at, not the next text anywhere.
+      [
+        "points into an inline element holding no text",
+        `<p>${PLAIN} <em><code>x</code></em>2049</p>`,
+      ],
     ])("leaves an arrow that %s alone", (_label: string, input: string) => {
       expect(runLowering(input)).toBe(input)
     })
@@ -2651,7 +2667,7 @@ describe("HTMLFormattingImprovement plugin", () => {
       ["a small-caps span", `<p>${PLAIN} <span class="small-caps">webm</span></p>`],
       ["an empty inline element before the operand", `<p>${PLAIN} <em></em>2049</p>`],
       ["a space opening the operand's own text node", `<p>${PLAIN}${NBSP}2049</p>`],
-    ])("lowers an arrow before %s", (_label: string, input: string) => {
+    ])("lowers, run on its own, an arrow before %s", (_label: string, input: string) => {
       expect(runLowering(input)).toBe(input.replace(PLAIN, LOWERED))
     })
 

@@ -169,12 +169,11 @@ const config: QuartzConfig = {
       rehypeCustomSpoiler(),
       TagSmallcaps(),
       AutoCode(),
-      // Both run after TagSmallcaps (and AutoCode), which wraps acronyms in
-      // <abbr>: an arrow's right operand is only recognizable as small caps
-      // once that wrapper exists, and a word joiner glued into "GPT-4" earlier
-      // would split the small-caps match.
+      // After TagSmallcaps, which wraps acronyms in <abbr>: an arrow's right
+      // operand is only recognizable as small caps once that wrapper exists.
       LoweredArrows(),
-      // Glues short hyphenated compounds so they don't wrap.
+      // Glues short hyphenated compounds so they don't wrap. After TagSmallcaps
+      // so a word joiner inside "GPT-4" can't split the small-caps match.
       NonBreakingHyphens(),
       AfterArticle(),
       RelatedPosts(),

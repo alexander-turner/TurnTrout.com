@@ -11,7 +11,10 @@ import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
 
-import { arrowsToWrap } from "../plugins/transformers/formatting_improvement_html"
+import {
+  arrowsToWrap,
+  lowerArrowsBeforeShortRuns,
+} from "../plugins/transformers/formatting_improvement_html"
 import { type TocEntry } from "../plugins/vfile"
 import { createWinstonLogger, getLogLevel } from "../util/log"
 import {
@@ -203,6 +206,9 @@ export function processTocEntry(entry: TocEntry): Parent {
     }
   })
 
+  // A ToC entry mirrors its heading, so its arrows take the same drop the
+  // article's do.
+  lowerArrowsBeforeShortRuns(parent)
   return parent
 }
 

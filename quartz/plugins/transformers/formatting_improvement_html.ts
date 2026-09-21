@@ -26,6 +26,7 @@ import type { ElementMaybeWithParent } from "./utils"
 import {
   charsToMoveIntoLinkFromRight,
   HAIR_SPACE,
+  KATEX_CLASS,
   LEFT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
   LOWERED_ARROW_CLASS,
@@ -36,6 +37,7 @@ import {
   RIGHT_SINGLE_QUOTE,
   SMALL_CAPS_CLASS,
   STRIP_BOUNDARY_TAGS,
+  VERSION_NUM_CLASS,
   WORD_JOINER,
   WORK_TITLE_CLASS,
 } from "../../components/constants"
@@ -721,14 +723,12 @@ export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
   })
 }
 
-const ARROW_CLASSES: readonly string[] = [RIGHT_ARROW_CLASS, MONOSPACE_ARROW_CLASS]
+const arrowClasses: readonly string[] = [RIGHT_ARROW_CLASS, MONOSPACE_ARROW_CLASS]
 
-/** Version labels keep lining figures and a cap-height "V" (see `.version-num`). */
-const VERSION_NUM_CLASS = "version-num"
-
-// The space (plain or NBSP) the arrow passes leave between an arrow and its
-// right operand, whether it stands as its own text node or opens the operand's.
-const inklessText = /^\s*$/u
+/** The whitespace-only nodes the arrow passes leave beside an arrow. */
+const whitespaceOnlyText = /^\s*$/u
+// Leading whitespace is tolerated: the space separating an arrow from its
+// operand may open the operand's own text node rather than standing as one.
 const leadingDigit = /^\s*\p{Nd}/u
 
 /** Classes whose subtree restores lining figures over the body's oldstyle. */
@@ -754,10 +754,11 @@ interface ArrowOperand {
 }
 
 /**
- * Finds the text an arrow points at, descending into inline wrappers. The
- * search stays inside the arrow's own parent: an arrow that closes an inline
- * element has no operand, since its neighbor across that boundary may be styled
- * differently.
+ * Finds the text an arrow points at, descending into inline wrappers. Operands
+ * are only matched within one inline context: the search neither leaves the
+ * arrow's own parent nor crosses a boundary it cannot see through — a block
+ * element, a KaTeX span (whose figures are the font's own), or an inline
+ * element that holds markup but no text of its own.
  */
 function findArrowOperand(
   siblings: readonly RootContent[],
@@ -767,12 +768,13 @@ function findArrowOperand(
   for (let i = startIndex; i < siblings.length; i++) {
     const sibling = siblings[i]
     if (sibling.type === "text") {
-      if (inklessText.test(sibling.value)) continue
+      if (whitespaceOnlyText.test(sibling.value)) continue
       return { text: sibling, chain }
     }
     if (sibling.type !== "element" || !inlineDescentTags.has(sibling.tagName)) return undefined
-    const nested = findArrowOperand(sibling.children, 0, [...chain, sibling])
-    if (nested) return nested
+    if (hasClass(sibling, KATEX_CLASS)) return undefined
+    if (sibling.children.length > 0)
+      return findArrowOperand(sibling.children, 0, [...chain, sibling])
   }
   return undefined
 }
@@ -782,22 +784,22 @@ function findArrowOperand(
  * with {@link LOWERED_ARROW_CLASS}, so it can be dropped to that run's optical
  * center (see the class in SCSS).
  */
-export function lowerArrowsBeforeShortRuns(tree: Root): void {
+export function lowerArrowsBeforeShortRuns(tree: Parent): void {
   visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
-    if (!ARROW_CLASSES.some((className) => hasClass(node, className))) return
+    if (!arrowClasses.some((className) => hasClass(node, className))) return
     const parent = ancestors[ancestors.length - 1] as Parent
     const operand = findArrowOperand(parent.children, parent.children.indexOf(node) + 1, [])
     if (!operand) return
 
-    const isSmallCaps = operand.chain.some(
+    const operandIsSmallCaps = operand.chain.some(
       (element) => hasClass(element, SMALL_CAPS_CLASS) && !hasClass(element, VERSION_NUM_CLASS),
     )
-    const isOldstyleFigure =
+    const operandHasOldstyleFigures =
       leadingDigit.test(operand.text.value) &&
       !hasAncestor(node, rendersLiningFigures, ancestors) &&
       !operand.chain.some(rendersLiningFigures)
 
-    if (isSmallCaps || isOldstyleFigure) addClass(node, LOWERED_ARROW_CLASS)
+    if (operandIsSmallCaps || operandHasOldstyleFigures) addClass(node, LOWERED_ARROW_CLASS)
   })
 }
 
@@ -1390,7 +1392,7 @@ export const SetDropcapLetter: QuartzTransformerPlugin = () => {
   }
 }
 
-/** Quartz plugin running ``lowerArrowsBeforeShortRuns`` as a late pass. */
+/** Quartz plugin running ``lowerArrowsBeforeShortRuns``. */
 export const LoweredArrows: QuartzTransformerPlugin = () => {
   return {
     name: "loweredArrows",
