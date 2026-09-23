@@ -11,8 +11,14 @@ PROJECT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 #######################################
 
 SETUP_WARNINGS=0
+# True right after a warning's trailing blank line, so back-to-back warnings
+# share one blank line.
+_prev_was_warning=false
 warn() {
+  [[ "$_prev_was_warning" == true ]] || echo >&2
   echo "WARNING: $1" >&2
+  echo >&2
+  _prev_was_warning=true
   SETUP_WARNINGS=$((SETUP_WARNINGS + 1))
 }
 is_root() { [[ "$(id -u)" = "0" ]]; }
@@ -78,17 +84,48 @@ vale_install_if_unpinned() {
   rm -f "$tarball"
 }
 
+# Install shfmt (shell formatter) from a pinned GitHub release, like vale
+# above. mvdan/sh publishes raw per-platform binaries named
+# shfmt_v<ver>_<os>_<arch>. This constant is the one shfmt pin in the repo.
+SHFMT_VERSION="3.14.1"
+shfmt_install_if_missing() {
+  command -v shfmt &>/dev/null && return 0
+  local os arch
+  case "$(uname -s)" in
+  Linux) os=linux ;;
+  Darwin) os=darwin ;;
+  *) warn "Unsupported OS for shfmt install: $(uname -s)" && return 0 ;;
+  esac
+  case "$(uname -m)" in
+  x86_64 | amd64) arch=amd64 ;;
+  aarch64 | arm64) arch=arm64 ;;
+  *) warn "Unsupported arch for shfmt install: $(uname -m)" && return 0 ;;
+  esac
+  local url
+  url="https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_${os}_${arch}"
+  mkdir -p "$HOME/.local/bin"
+  if curl --proto '=https' -fsSL "$url" -o "$HOME/.local/bin/shfmt" 2>/dev/null; then
+    chmod +x "$HOME/.local/bin/shfmt"
+  else
+    warn "Failed to download shfmt from $url"
+  fi
+}
+
 # Install a command via webi if missing
 # $1 = command name, $2 = optional webi package specifier (e.g. tool@version)
 # Hardened: HTTPS-only, shebang validation, version pinning via $2
 webi_install_if_missing() {
   local cmd="$1" pkg="${2:-$1}"
   if ! command -v "$cmd" &>/dev/null; then
-    local installer
+    local installer install_output
     installer=$(mktemp "${TMPDIR:-/tmp}/webi-${cmd}-XXXXXX.sh")
     if curl --proto '=https' -fsSL "https://webi.sh/$pkg" -o "$installer" 2>/dev/null; then
       if head -n 1 "$installer" | grep -q '^#!'; then
-        sh "$installer" >/dev/null 2>&1 || warn "Failed to install $cmd"
+        if ! install_output=$(sh "$installer" 2>&1); then
+          local last_line
+          last_line=$(echo "$install_output" | tail -n 1)
+          warn "Failed to install $cmd${last_line:+: $last_line}"
+        fi
       else
         warn "Installer for $cmd is not a shell script (missing shebang) — skipping"
       fi
@@ -146,7 +183,7 @@ fi
 #######################################
 
 # Install tools quietly — only warn on failure (versions pinned for supply-chain safety)
-webi_install_if_missing shfmt shfmt@3
+shfmt_install_if_missing
 webi_install_if_missing gh gh@2
 webi_install_if_missing jq jq@1.7
 # vale is required by the pre-push spellcheck/prose gate (it errors when the
@@ -186,12 +223,20 @@ fi
 # scripts/compress.py and convert_markdown_yaml.py hard-code the IM7
 # `magick` binary. Ubuntu's `imagemagick` apt package only ships the
 # legacy IM6 `convert`, so first try the official IM7 portable AppImage,
-# then fall back to a thin wrapper over IM6 `convert`.
+# then fall back to a thin wrapper over IM6 `convert`. The AppImage comes
+# from the GitHub release, which sandboxes can reach; upstream builds it for
+# x86_64 only. This constant is the one ImageMagick pin in the repo.
+IMAGEMAGICK_VERSION="7.1.2-31"
 if ! command -v magick &>/dev/null; then
   IM_DIR="$HOME/.local/imagemagick"
   mkdir -p "$IM_DIR"
   MAGICK_INSTALLED=false
-  if curl -fsSL https://imagemagick.org/archive/binaries/magick \
+  im_asset=""
+  case "$(uname -m)" in
+  x86_64 | amd64) im_asset="ImageMagick-${IMAGEMAGICK_VERSION}-gcc-x86_64.AppImage" ;;
+  esac
+  if [ -n "$im_asset" ] && curl -fsSL \
+    "https://github.com/ImageMagick/ImageMagick/releases/download/${IMAGEMAGICK_VERSION}/${im_asset}" \
     -o "$IM_DIR/magick.AppImage" 2>/dev/null; then
     chmod +x "$IM_DIR/magick.AppImage"
     if (cd "$IM_DIR" && "$IM_DIR/magick.AppImage" --appimage-extract >/dev/null 2>&1); then
@@ -211,7 +256,7 @@ exec convert "$@"
 WRAPPER
     chmod +x "$HOME/.local/bin/magick"
   elif [ "$MAGICK_INSTALLED" = false ]; then
-    warn "ImageMagick not available (neither IM7 AppImage nor IM6 convert)"
+    warn "ImageMagick not available (neither IM7 AppImage nor IM6 convert) — scripts/compress.py, convert_markdown_yaml.py, and their tests will fail"
   fi
 fi
 
@@ -219,12 +264,20 @@ fi
 # rclone (needed for R2 asset uploads in pre-push hook)
 #
 # Install via apt above (bundled with other system deps for atomicity).
-# Non-root sandboxes fall back to the official installer.
+# Non-root sessions use the official installer, which needs sudo, and only
+# when R2 creds make rclone useful.
 #######################################
 
-if ! command -v rclone &>/dev/null && ! is_root; then
-  curl -fsSL https://rclone.org/install.sh | sudo bash 2>/dev/null ||
-    warn "Failed to install rclone"
+if ! command -v rclone &>/dev/null && ! is_root &&
+  [ -n "${ACCESS_KEY_ID_TURNTROUT_MEDIA:-}" ] &&
+  [ -n "${SECRET_ACCESS_TURNTROUT_MEDIA:-}" ] &&
+  [ -n "${S3_ENDPOINT_ID_TURNTROUT_MEDIA:-}" ]; then
+  if sudo -n true 2>/dev/null; then
+    curl -fsSL https://rclone.org/install.sh | sudo bash 2>/dev/null ||
+      warn "Failed to install rclone"
+  else
+    warn "R2 creds are present but no sudo is available — rclone was not installed; R2 uploads will fail"
+  fi
 fi
 
 # Configure rclone R2 remote from environment variables
