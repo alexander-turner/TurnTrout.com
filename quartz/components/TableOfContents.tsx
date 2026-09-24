@@ -11,7 +11,10 @@ import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
 
-import { arrowsToWrap } from "../plugins/transformers/formatting_improvement_html"
+import {
+  arrowsToWrap,
+  lowerArrowsBeforeShortRuns,
+} from "../plugins/transformers/formatting_improvement_html"
 import { type TocEntry } from "../plugins/vfile"
 import { createWinstonLogger, getLogLevel } from "../util/log"
 import {
@@ -21,7 +24,7 @@ import {
   processSmallCaps,
   processTextWithArrows,
 } from "./component_utils"
-import { CAN_TRIGGER_POPOVER_CLASS } from "./constants"
+import { CAN_TRIGGER_POPOVER_CLASS, MONOSPACE_ARROW_CLASS } from "./constants"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import tocScript from "./scripts/toc.inline"
@@ -203,6 +206,9 @@ export function processTocEntry(entry: TocEntry): Parent {
     }
   })
 
+  // A ToC entry mirrors its heading, so its arrows take the same drop the
+  // article's do.
+  lowerArrowsBeforeShortRuns(parent)
   return parent
 }
 
@@ -280,8 +286,10 @@ const handleSpan = (elt: Element): JSX.Element => {
     return <span className="number-prefix">{elt.children.map(elementToJsx)}</span>
   }
 
-  if (classNames.includes("monospace-arrow")) {
-    return <span className="monospace-arrow">{elt.children.map(elementToJsx)}</span>
+  // Keep every class: an arrow may also be tagged `.lowered-arrow`, and the TOC
+  // entry must sit like the heading it mirrors.
+  if (classNames.includes(MONOSPACE_ARROW_CLASS)) {
+    return <span className={classNames.join(" ")}>{elt.children.map(elementToJsx)}</span>
   }
 
   if (classNames.includes("inline-code")) {

@@ -113,6 +113,20 @@ describe("processTocEntry", () => {
     })
   })
 
+  it.each([
+    ["MP4 → WEBM", ["monospace-arrow", "lowered-arrow"]],
+    ["Cats → dogs", ["monospace-arrow"]],
+  ])("drops the arrow in %s onto a short operand", (text: string, className: string[]) => {
+    const result = processTocEntry({ depth: 1, text, slug: "arrow-heading" })
+    const arrow = result.children.find(
+      (child) =>
+        child.type === "element" &&
+        ((child.properties?.className as string[]) ?? []).includes("monospace-arrow"),
+    )
+
+    expect(arrow).toMatchObject({ properties: { className } })
+  })
+
   it("should handle empty parts in text", () => {
     const entry: TocEntry = {
       depth: 1,
@@ -885,23 +899,18 @@ describe("elementToJsx", () => {
     expect(jsxElement.props.children[0]).toBe(codeText)
   })
 
-  it("should handle monospace arrows with proper styling", () => {
-    const arrowSymbol = "→"
-    const node = h("span", { className: ["monospace-arrow"] }, arrowSymbol)
-    const result = elementToJsx(node)
+  it.each([["monospace-arrow"], ["monospace-arrow lowered-arrow"]])(
+    "should render a %s span with every class",
+    (className: string) => {
+      const arrowSymbol = "→"
+      const node = h("span", { className: className.split(" ") }, arrowSymbol)
 
-    expect(result).toMatchObject({
-      type: "span",
-      props: {
-        className: "monospace-arrow",
-        children: [arrowSymbol],
-      },
-    })
-
-    // Verify arrow symbol is preserved
-    const jsxElement = expectJSXElement(result)
-    expect(jsxElement.props.children[0]).toBe(arrowSymbol)
-  })
+      expect(elementToJsx(node)).toMatchObject({
+        type: "span",
+        props: { className, children: [arrowSymbol] },
+      })
+    },
+  )
 
   it("should handle number prefix spans for TOC numbering", () => {
     const numberPrefix = "2.1: "

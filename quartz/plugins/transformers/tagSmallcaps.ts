@@ -14,6 +14,8 @@ import {
   KATEX_CLASS,
   NBSP,
   NO_SMALLCAPS_CLASS,
+  SMALL_CAPS_CLASS,
+  VERSION_NUM_CLASS,
   WORK_TITLE_CLASS,
 } from "../../components/constants"
 import {
@@ -431,7 +433,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
         return {
           before: "",
           replacedMatch: h(
-            "abbr.small-caps.version-num",
+            `abbr.${SMALL_CAPS_CLASS}.${VERSION_NUM_CLASS}`,
             { "data-original-text": matchText },
             matchText.toUpperCase(),
           ),
@@ -445,7 +447,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
       )
     },
     (nd: Text) => shouldSkipNode(nd, ancestors),
-    "abbr.small-caps",
+    `abbr.${SMALL_CAPS_CLASS}`,
   )
 }
 
@@ -495,7 +497,7 @@ interface BracketGap {
 export function spaceSmallcapsAfterOpenBracket(tree: Node): void {
   const ops: BracketGap[] = []
   visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
-    if (node.tagName !== "abbr" || !hasClass(node, "small-caps")) return
+    if (node.tagName !== "abbr" || !hasClass(node, SMALL_CAPS_CLASS)) return
     if (!SMALLCAPS_LEFT_OVERHANG_INITIALS.has(toString(node).charAt(0))) return
     const parent = ancestors[ancestors.length - 1]
     const index = parent.children.indexOf(node)

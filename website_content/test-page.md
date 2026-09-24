@@ -638,6 +638,8 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 A [link with a → arrow](https://npmjs.com) should color the arrow like the rest of the link.
 
+An arrow drops onto the optical center of the run to its right when that run is short: MP4 -> WEBM, 200 -> 2049, and Cats ← WEBM all sit lower than Cats -> dogs. A work title uses lining figures, so _The 2001 -> 2010 Sequel_ keeps its arrow where it is.
+
 # Math
 
 Inline math: $e^{i\pi} + 1 = 0$.

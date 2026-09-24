@@ -1068,6 +1068,17 @@ iframe {
 .right-arrow,
 .monospace-arrow {
   vertical-align: bottom;
+
+  // Small caps and oldstyle figures sit lower than a full-height cap run, so an
+  // arrow abutting one belongs on that shorter run's optical center; the
+  // transformer tags which arrows qualify. 0.05em is the gap between the
+  // arrow's ink center and a small-cap run's, checked against both faces an
+  // arrow can render in (the main text face and FiraCode). `position` keeps the
+  // drop out of the line box, so the page's vertical rhythm is untouched.
+  &.lowered-arrow {
+    position: relative;
+    top: 0.05em;
+  }
 }
 
 // EG ← looks better in FiraCode
