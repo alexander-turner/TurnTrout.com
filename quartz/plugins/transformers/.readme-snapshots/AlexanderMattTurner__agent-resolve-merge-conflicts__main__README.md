@@ -28,7 +28,7 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@8a623c39af691ddfa82625e12b95d71461ded3aa # v1.36.9
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@9c49cbcabe41857c2fda5465626a51642d77400f # v1.39.1
     with:
       pr: ${{ matrix.pr.number }}
       resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
@@ -59,6 +59,7 @@ The `permissions:` block on the calling job sets a ceiling, not a grant. Your jo
 
 Every input fails closed when empty. The workflow does less, rather than guessing.
 
+- **`base-sha`** — empty merges the tip of the pull request's base branch. Set it to a full 40-character commit id to merge that commit instead, such as the head of the pull request ahead in a merge queue. The pull request is then resolved only when that merge conflicts, and its branch carries that commit's history afterwards. The commit must be on a branch of your repository, so a commit only a fork carries is refused. A pinned run keeps its own attempt marks, so it never uses up the base-branch resolve of the same head. It dispatches no retry of its own, because a dispatch cannot name the commit.
 - **`log-redactor`** — no redactor publishes no fan-out logs. The fan-out is the set of parallel model runs, one per conflict block, and those are its logs. One file with three conflict blocks therefore runs three times. A path that cannot be split, such as a modify/delete conflict, runs as one whole-file shard instead.
 - **`setup-command`** — no command prepares nothing. A repository whose checkout an agent cannot start in names its own repair here. A tracked symlink that dangles in CI is one such repository. The command runs on the merged tree just before the model, with every conflicted file holding one parent's content so a file it sources or executes never shows it a conflict marker. The markers go back afterwards, and whatever the command changes is put back before the merge is bundled. A fork head runs none. It is the one command input a shell evaluates (`bash -eo pipefail -c`). `pre-pass-command` and `post-merge-check-command` are split into argv and run with no shell.
 - **`pre-pass-command`** — no command refuses to bundle a deferred generated file, rather than shipping bytes no build produces.
@@ -114,7 +115,7 @@ jobs:
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
       # ... the six FALLBACK rungs, as for auto-resolve.yaml. Add
-      # FAR_ANTHROPIC_API_KEY to spend a metered key before them.
+      # FAR_ANTHROPIC_API_KEY to spend a metered key once they all fail.
 ```
 
 It never checks out the pull request head. It reads the head's merge commits as git objects against your default branch, renders them, sanitizes the render, and hands the model data — the same posture as the resolver's own `resolve` job, minus the merge.
@@ -207,7 +208,7 @@ A `uses:` ref may be a SHA, a tag or a branch. GitHub calls [the commit SHA the 
 **Pin the SHA and name the version beside it**, the way this repository's own caller does:
 
 ```yaml
-uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@8a623c39af691ddfa82625e12b95d71461ded3aa # v1.36.9
+uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@9c49cbcabe41857c2fda5465626a51642d77400f # v1.39.1
 ```
 
 That line reads as a version and resolves as an immutable commit. It names the newest release: `.github/scripts/release-tag.sh` rewrites both copies in this README, and the caller's, in the commit after each release. Copy it as it stands.
