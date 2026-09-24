@@ -156,9 +156,16 @@ def check_favicons_missing(soup: BeautifulSoup) -> bool:
     return not soup.select("article p img.favicon, article p svg.favicon")
 
 
+#: Opening quotes a dropcap may set together with the letter they introduce.
+#: `RIGHT_SINGLE_QUOTE` covers elision ("’Twas").
+DROPCAP_LEADING_QUOTES: frozenset[str] = frozenset(
+    (LEFT_DOUBLE_QUOTE, LEFT_SINGLE_QUOTE, RIGHT_SINGLE_QUOTE)
+)
+
+
 def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
-    """Unless `data-use-dropcap="false"`, require `data-first-letter` to contain
-    an alphanumeric character."""
+    """Unless `data-use-dropcap="false"`, require `data-first-letter` to end in
+    an alphanumeric character, optionally preceded by an opening quote."""
     issues: list[str] = []
     for article in soup.find_all("article"):
         if article.get("data-use-dropcap") == "false":
@@ -169,13 +176,18 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
             continue
 
         first = p.get("data-first-letter", "")
-        if not isinstance(first, str) or len(first) != 1:
+        if not isinstance(first, str) or len(first) not in (1, 2):
             issues.append(
-                f"invalid data-first-letter length (expected 1): {first!r}"
+                f"invalid data-first-letter length (expected 1 or 2): {first!r}"
             )
             continue
-        if not first[0].isalnum():
+        if not first[-1].isalnum():
             issues.append(f"non-alphanumeric data-first-letter: {first!r}")
+            continue
+        if len(first) == 2 and first[0] not in DROPCAP_LEADING_QUOTES:
+            issues.append(
+                f"data-first-letter must lead with an opening quote: {first!r}"
+            )
 
     return issues
 
