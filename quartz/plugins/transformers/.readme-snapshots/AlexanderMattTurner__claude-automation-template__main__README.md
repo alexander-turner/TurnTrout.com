@@ -87,13 +87,12 @@ These run inside Claude Code sessions (local CLI or cloud), not in CI.
 
 ### Plugins (`.claude/settings.json`)
 
-Enabled at project scope, so every session in this repo loads them—local and cloud alike. Each downloads what it needs on its own and fails open when it cannot.
+Enabled at project scope, so every session in this repo loads them—local and cloud alike. Each downloads what it needs on its own and fails open when it cannot. Each marketplace is pinned to a release tag, because Claude Code clones the marketplace `ref` with `git clone --branch`, which accepts a branch or tag but not a commit SHA.
 
-| Plugin                  | What it does                                                                         | Needs                                       |
-| ----------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------- |
-| `precis@precis`         | Injects a structural codebase overview at session start; `precis <dir>` zooms in     | Downloads its own binary                    |
-| `codex@codex-plugin-cc` | Delegates code review and tasks to Codex, so a non-Claude model reviews the diff     | `node`, plus `/codex:setup` for OpenAI auth |
-| `tldr@alignment-hive`   | Adds a one-sentence TL;DR after a reply over ~100 words; `/focus` collapses to those | Nothing                                     |
+| Plugin                | What it does                                                                         | Needs                    |
+| --------------------- | ------------------------------------------------------------------------------------ | ------------------------ |
+| `precis@precis`       | Injects a structural codebase overview at session start; `precis <dir>` zooms in     | Downloads its own binary |
+| `tldr@alignment-hive` | Adds a one-sentence TL;DR after a reply over ~100 words; `/focus` collapses to those | Nothing                  |
 
 ### GitHub Actions (`.github/workflows/`)
 
