@@ -37,18 +37,18 @@ export interface FetchDeps {
 }
 
 /**
- * Fetches a source's raw content, retrying transient failures (network
+ * Fetches a GitHub API URL's body, retrying transient failures (network
  * errors, 5xx, 403/429 rate limits) with exponential backoff. A 404 (wrong
  * repo/ref/path) or 401 (bad token) is permanent, so it fails immediately.
  */
-export async function fetchReadme(
-  source: GitHubMarkdownSource,
-  { fetchFn = fetch, sleepFn = sleep, token = process.env.GITHUB_TOKEN }: FetchDeps = {},
+export async function fetchGitHub(
+  url: string,
+  accept: string,
+  { fetchFn = fetch, sleepFn = sleep, token = process.env.GITHUB_TOKEN }: FetchDeps,
 ): Promise<string> {
-  const url = apiUrl(source)
   const headers: Record<string, string> = {
-    accept: "application/vnd.github.raw+json",
-    "user-agent": "turntrout.com readme-snapshot refresh",
+    accept,
+    "user-agent": "turntrout.com snapshot refresh",
     "x-github-api-version": "2022-11-28",
   }
   if (token) {
@@ -80,6 +80,11 @@ export async function fetchReadme(
     return await response.text()
   }
   throw new Error(`Failed to fetch ${url} after ${MAX_ATTEMPTS} attempts`, { cause: lastError })
+}
+
+/** Fetches a source's raw README content through `fetchGitHub`. */
+export function fetchReadme(source: GitHubMarkdownSource, deps: FetchDeps = {}): Promise<string> {
+  return fetchGitHub(apiUrl(source), "application/vnd.github.raw+json", deps)
 }
 
 export interface RefreshResult {
