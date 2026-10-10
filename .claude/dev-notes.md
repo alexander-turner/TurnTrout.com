@@ -187,6 +187,14 @@ runs this daily and opens an auto-merged PR when content changed. When adding a
 new GitHub source, add it to `externalReadmes.ts`, run the script, and commit
 the new snapshot — a missing snapshot fails the build with instructions.
 
+`scripts/refresh_external_contributions.ts` refreshes
+`quartz/plugins/transformers/.external-contributions.json`: every PR and issue I opened on a
+repo I don't own, plus each repo's stars and owner type. Which items
+/open-source lists is decided at build time by `CONTRIBUTION_FILTER` in
+`config/quartz/externalContributions.ts`, so retuning it needs no refetch. In a
+sandbox whose network goes through a proxy, run the script as
+`NODE_USE_ENV_PROXY=1 node --import tsx scripts/refresh_external_contributions.ts`.
+
 ## Favicon kerning audit
 
 Favicon spacing (`quartz/styles/favicon.scss` `$domain-left-insets`,

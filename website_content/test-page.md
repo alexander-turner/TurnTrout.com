@@ -125,6 +125,15 @@ Admonition in a description list
   >
   > To be or not to be.
 
+A description list whose bullets are statuses, as on [the open source page](/open-source):
+
+<dl class="external-contributions no-formatting">
+<dt><a class="no-favicon" href="https://github.com/mermaid-js/mermaid"><code>mermaid-js/mermaid</code></a><span class="contribution-stars">★ 90,604</span></dt>
+<dd><ul class="contribution-list"><li><span class="contribution-status contribution-merged">Merged</span><a class="no-favicon" href="https://github.com/mermaid-js/mermaid/pull/7410">Bug/5741 fix duplicate svg element ids</a></li></ul></dd>
+<dt><a class="no-favicon" href="https://github.com/sigstore/cosign"><code>sigstore/cosign</code></a><span class="contribution-stars">★ 6,350</span></dt>
+<dd><ul class="contribution-list"><li><span class="contribution-status contribution-fixed">Fixed</span><a class="no-favicon" href="https://github.com/sigstore/cosign/issues/5154"><code>cosign verify</code> downloads every attestation bundle on an image, though it only checks signatures</a></li><li><span class="contribution-status contribution-open">Open</span><a class="no-favicon" href="https://github.com/sigstore/cosign/issues/5154">A second, still-open item whose title is long enough to wrap onto another line</a></li></ul></dd>
+</dl>
+
 # Admonition lists
 
 > [!info] List admonition

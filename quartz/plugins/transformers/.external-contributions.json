@@ -1,0 +1,1078 @@
+{
+  "items": [
+    {
+      "repo": "abtinkd/coursetracker",
+      "number": 8,
+      "title": "Add HTML page titles",
+      "url": "https://github.com/abtinkd/coursetracker/issues/8",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "abtinkd/coursetracker",
+      "number": 9,
+      "title": "Courseperformance improvements",
+      "url": "https://github.com/abtinkd/coursetracker/issues/9",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "abtinkd/coursetracker",
+      "number": 10,
+      "title": "Fortify text fields against script injection",
+      "url": "https://github.com/abtinkd/coursetracker/issues/10",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "abtinkd/coursetracker",
+      "number": 11,
+      "title": "Date range selection minimum date enforcement",
+      "url": "https://github.com/abtinkd/coursetracker/issues/11",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "abtinkd/coursetracker",
+      "number": 12,
+      "title": "Expand tests for courseperformance, timer",
+      "url": "https://github.com/abtinkd/coursetracker/issues/12",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "abtinkd/coursetracker",
+      "number": 13,
+      "title": "Upgrade to Django 2.x",
+      "url": "https://github.com/abtinkd/coursetracker/issues/13",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "abtinkd/coursetracker",
+      "number": 14,
+      "title": "Get rid of fixed PST",
+      "url": "https://github.com/abtinkd/coursetracker/issues/14",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "abtinkd/coursetracker",
+      "number": 15,
+      "title": "Fix django_tables2 sorting arrows",
+      "url": "https://github.com/abtinkd/coursetracker/issues/15",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "abtinkd/coursetracker",
+      "number": 16,
+      "title": "Clean up hidden files",
+      "url": "https://github.com/abtinkd/coursetracker/issues/16",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "abtinkd/coursetracker",
+      "number": 17,
+      "title": "Streamline site",
+      "url": "https://github.com/abtinkd/coursetracker/issues/17",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "abtinkd/coursetracker",
+      "number": 18,
+      "title": "Password recovery & email system",
+      "url": "https://github.com/abtinkd/coursetracker/issues/18",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "acon96/home-llm",
+      "number": 352,
+      "title": "Fix TTS streaming: forward supports_streaming from backend clients to conversation agent",
+      "url": "https://github.com/acon96/home-llm/pull/352",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "acon96/home-llm",
+      "number": 353,
+      "title": "Fix TTS streaming: include role in first streaming delta",
+      "url": "https://github.com/acon96/home-llm/pull/353",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "acon96/home-llm",
+      "number": 354,
+      "title": "Fix system prompt not injected when refresh_system_prompt is disabled",
+      "url": "https://github.com/acon96/home-llm/pull/354",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "ankidroid/Anki-Android",
+      "number": 18399,
+      "title": "Freezes when attempting to sync in airplane mode",
+      "url": "https://github.com/ankidroid/Anki-Android/issues/18399",
+      "isPr": false,
+      "status": "closed"
+    },
+    {
+      "repo": "anordal/shellharden",
+      "number": 69,
+      "title": "`--transform` emits `\"${var[@]}\"` for variables assigned as scalars",
+      "url": "https://github.com/anordal/shellharden/issues/69",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "anthropics/claude-code",
+      "number": 100346,
+      "title": "Sandbox network proxy truncates the tail of streaming responses (kubectl exec/cp lose up to ~50 KB with \"unexpected EOF\")",
+      "url": "https://github.com/anthropics/claude-code/issues/100346",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "cloud-hypervisor/cloud-hypervisor",
+      "number": 9022,
+      "title": "Hot-plugged virtio-pci device can take a guest BAR write before its device-tree node exists, so `move_bar` fails",
+      "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/issues/9022",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "DeepSourceCorp/cli",
+      "number": 247,
+      "title": "Filter issues by severity",
+      "url": "https://github.com/DeepSourceCorp/cli/issues/247",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "DeepSourceCorp/cli",
+      "number": 261,
+      "title": "List issues from a specific PR",
+      "url": "https://github.com/DeepSourceCorp/cli/issues/261",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "DeepSourceCorp/cli",
+      "number": 262,
+      "title": "Run analysis on local branch",
+      "url": "https://github.com/DeepSourceCorp/cli/issues/262",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "DeepSourceCorp/cli",
+      "number": 267,
+      "title": "feat: add --commit flag to issues list command",
+      "url": "https://github.com/DeepSourceCorp/cli/pull/267",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "dequelabs/axe-core",
+      "number": 5031,
+      "title": "Handle out-of-bounds grid points gracefully in color contrast",
+      "url": "https://github.com/dequelabs/axe-core/pull/5031",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "docker/sbx-releases",
+      "number": 351,
+      "title": "feat: VM memory snapshot/resume",
+      "url": "https://github.com/docker/sbx-releases/issues/351",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "docker/sbx-releases",
+      "number": 352,
+      "title": "Attaching to an existing sandbox has multi-second overhead the initial run doesn't",
+      "url": "https://github.com/docker/sbx-releases/issues/352",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "docker/sbx-releases",
+      "number": 374,
+      "title": "sandboxd hangs all endpoints while idle; stderr self-pipe full, main thread stuck in write()",
+      "url": "https://github.com/docker/sbx-releases/issues/374",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "docker/sbx-releases",
+      "number": 398,
+      "title": "`sbx` CLI has no client-side timeout: a stalled daemon hangs every command forever",
+      "url": "https://github.com/docker/sbx-releases/issues/398",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "docker/sbx-releases",
+      "number": 401,
+      "title": "Shim dies with `fatal error: concurrent map writes` under concurrent CLI use; credential refresh races and destroys the stored refresh token",
+      "url": "https://github.com/docker/sbx-releases/issues/401",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "docker/sbx-releases",
+      "number": 402,
+      "title": "`sbx diagnose` refreshes Hub credentials on every call",
+      "url": "https://github.com/docker/sbx-releases/issues/402",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "docker/sbx-releases",
+      "number": 406,
+      "title": "No way to refuse an interactive sign-in: a needed sign-in becomes a device-code prompt, never an error",
+      "url": "https://github.com/docker/sbx-releases/issues/406",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "docker/sbx-releases",
+      "number": 448,
+      "title": "Feature request: a guest host entry every resolver can see",
+      "url": "https://github.com/docker/sbx-releases/issues/448",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "docker/sbx-releases",
+      "number": 528,
+      "title": "`sbx create` re-authenticates to Docker Hub on every create, serializing concurrent creates",
+      "url": "https://github.com/docker/sbx-releases/issues/528",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "docker/sbx-releases",
+      "number": 529,
+      "title": "`sbx create` re-authenticates to Docker Hub on every create, serializing concurrent creates",
+      "url": "https://github.com/docker/sbx-releases/issues/529",
+      "isPr": false,
+      "status": "closed"
+    },
+    {
+      "repo": "EFForg/https-everywhere",
+      "number": 5718,
+      "title": "Can't install extension in Chrome",
+      "url": "https://github.com/EFForg/https-everywhere/issues/5718",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "IlanCosman/tide",
+      "number": 627,
+      "title": "Outdated fish path in `fish_prompt`",
+      "url": "https://github.com/IlanCosman/tide/issues/627",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "IlanCosman/tide",
+      "number": 631,
+      "title": "fix: avoid BrokenPipeError in _tide_item_python",
+      "url": "https://github.com/IlanCosman/tide/pull/631",
+      "isPr": true,
+      "status": "open"
+    },
+    {
+      "repo": "jbloomAus/DecisionTransformerInterpretability",
+      "number": 82,
+      "title": "\"Algebraic value editing\" raises exception",
+      "url": "https://github.com/jbloomAus/DecisionTransformerInterpretability/issues/82",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "jestjs/jest",
+      "number": 16006,
+      "title": "Add `--collect-only` flag to list tests without running them",
+      "url": "https://github.com/jestjs/jest/pull/16006",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "jestjs/jest",
+      "number": 16258,
+      "title": "feat(collect-tests): expand .each and report accurate per-status counts",
+      "url": "https://github.com/jestjs/jest/pull/16258",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "jestjs/jest",
+      "number": 16259,
+      "title": "feat(collect-tests): expand .each and report accurate per-status counts",
+      "url": "https://github.com/jestjs/jest/pull/16259",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "JinayJain/gpt-anywhere",
+      "number": 19,
+      "title": "Focus window on hotkey",
+      "url": "https://github.com/JinayJain/gpt-anywhere/issues/19",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "kata-containers/kata-containers",
+      "number": 13775,
+      "title": "runtime-rs: a sandbox with no network interface waits the full 5s rescan",
+      "url": "https://github.com/kata-containers/kata-containers/issues/13775",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "kata-containers/kata-containers",
+      "number": 13864,
+      "title": "runtime-rs: every CH raw disk is preallocated to its full size since #13292",
+      "url": "https://github.com/kata-containers/kata-containers/issues/13864",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "kata-containers/kata-containers",
+      "number": 13865,
+      "title": "runtime-rs: Stop mapping discard_unmap to the CH disk sparse flag",
+      "url": "https://github.com/kata-containers/kata-containers/pull/13865",
+      "isPr": true,
+      "status": "open"
+    },
+    {
+      "repo": "kata-containers/kata-containers",
+      "number": 13888,
+      "title": "agent: aarch64 PCI root bus is found only under a QEMU-shaped platform node",
+      "url": "https://github.com/kata-containers/kata-containers/issues/13888",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "kata-containers/kata-containers",
+      "number": 13889,
+      "title": "agent: hot-plugged block device never arrives in a guest with no ACPI",
+      "url": "https://github.com/kata-containers/kata-containers/issues/13889",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "kata-containers/kata-containers",
+      "number": 13890,
+      "title": "runtime-rs: CH guest memory is shared unconditionally, unlike the Go runtime",
+      "url": "https://github.com/kata-containers/kata-containers/issues/13890",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "kata-containers/kata-containers",
+      "number": 13897,
+      "title": "runtime-rs: cloud-hypervisor queue_size not set for guest swap disk (enable_guest_swap)",
+      "url": "https://github.com/kata-containers/kata-containers/issues/13897",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "kata-containers/kata-containers",
+      "number": 13913,
+      "title": "agent: a non-tty exec can hang until a detached child exits (`notify_waiters()` loses the exit wake-up)",
+      "url": "https://github.com/kata-containers/kata-containers/issues/13913",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "kata-containers/kata-containers",
+      "number": 13992,
+      "title": "runtime-rs + Cloud Hypervisor: what's missing for NVIDIA datacenter GPU passthrough (HGX H100/H200)",
+      "url": "https://github.com/kata-containers/kata-containers/issues/13992",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "kata-containers/kata-containers",
+      "number": 14003,
+      "title": "runtime-rs: ch: give each disk to its own rootless VMM user",
+      "url": "https://github.com/kata-containers/kata-containers/pull/14003",
+      "isPr": true,
+      "status": "open"
+    },
+    {
+      "repo": "KaTeX/KaTeX",
+      "number": 4162,
+      "title": "feat: add accessibility attributes to math elements",
+      "url": "https://github.com/KaTeX/KaTeX/pull/4162",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "KaTeX/KaTeX",
+      "number": 4164,
+      "title": "reduce DOM size: strip build-time classes, unwrap and omit empty spans",
+      "url": "https://github.com/KaTeX/KaTeX/pull/4164",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "KaTeX/KaTeX",
+      "number": 4171,
+      "title": "refactor(types): resolve most `as any` casts and `TODO(ts)` comments",
+      "url": "https://github.com/KaTeX/KaTeX/pull/4171",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "KaTeX/KaTeX",
+      "number": 4172,
+      "title": "feat(api): add stable public exports for defineFunction, defineSymbol…",
+      "url": "https://github.com/KaTeX/KaTeX/pull/4172",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "KaTeX/KaTeX",
+      "number": 4182,
+      "title": "feat(a11y): add `role=\"math\"` and `contrib/a11y-tabindex` for keyboard-accessible scrollable math",
+      "url": "https://github.com/KaTeX/KaTeX/pull/4182",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "KaTeX/KaTeX",
+      "number": 4183,
+      "title": "chore(a11y): warn when output \"html\" omits MathML accessibility",
+      "url": "https://github.com/KaTeX/KaTeX/pull/4183",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "linuxarena/auto_workflow",
+      "number": 76,
+      "title": "`default` container exits when a task setup runs `/app/restart.sh` during startup",
+      "url": "https://github.com/linuxarena/auto_workflow/issues/76",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "linuxarena/control-tower",
+      "number": 1217,
+      "title": "`s3-proxy` settles ready, stays running, and serves nothing on its published host port",
+      "url": "https://github.com/linuxarena/control-tower/issues/1217",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "number": 7410,
+      "title": "Bug/5741 fix duplicate svg element ids",
+      "url": "https://github.com/mermaid-js/mermaid/pull/7410",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "mermaid-js/mermaid",
+      "number": 7412,
+      "title": "chore: add Claude Code automation template configuration",
+      "url": "https://github.com/mermaid-js/mermaid/pull/7412",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "METR/hawk",
+      "number": 2043,
+      "title": "build(infra): bump Karpenter to 1.14.1",
+      "url": "https://github.com/METR/hawk/pull/2043",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "METR/hawk",
+      "number": 2065,
+      "title": "feat(infra): run sandboxes in glovebox Kata microVMs (opt-in)",
+      "url": "https://github.com/METR/hawk/pull/2065",
+      "isPr": true,
+      "status": "open"
+    },
+    {
+      "repo": "METR/hawk",
+      "number": 2069,
+      "title": "fix(infra): dev APIs offer gvisor only once stg has deployed it",
+      "url": "https://github.com/METR/hawk/pull/2069",
+      "isPr": true,
+      "status": "open"
+    },
+    {
+      "repo": "METR/hawk",
+      "number": 2091,
+      "title": "feat: run GPU sandboxes under gVisor",
+      "url": "https://github.com/METR/hawk/pull/2091",
+      "isPr": true,
+      "status": "open"
+    },
+    {
+      "repo": "METR/hawk",
+      "number": 2108,
+      "title": "fix(infra): make the API deploy wait for its ECS rollout",
+      "url": "https://github.com/METR/hawk/pull/2108",
+      "isPr": true,
+      "status": "open"
+    },
+    {
+      "repo": "METR/inspect_k8s_sandbox",
+      "number": 11,
+      "title": "feat(chart): mount the CoreDNS config without `subPath`",
+      "url": "https://github.com/METR/inspect_k8s_sandbox/pull/11",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "METR/inspect_k8s_sandbox",
+      "number": 12,
+      "title": "feat(chart): mount the CoreDNS config without `subPath`",
+      "url": "https://github.com/METR/inspect_k8s_sandbox/pull/12",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "METR/inspect_k8s_sandbox",
+      "number": 13,
+      "title": "feat(chart): let the agent-env chart run under Kata Containers",
+      "url": "https://github.com/METR/inspect_k8s_sandbox/pull/13",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "micromark/micromark-extension-gfm-autolink-literal",
+      "number": 13,
+      "title": "`previousUnbalanced` is O(n²) once any label stays unbalanced",
+      "url": "https://github.com/micromark/micromark-extension-gfm-autolink-literal/issues/13",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "mkusner/grammarVAE",
+      "number": 8,
+      "title": "Low accuracy",
+      "url": "https://github.com/mkusner/grammarVAE/issues/8",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "Munter/subfont",
+      "number": 174,
+      "title": "--inline-css produces \"not implemented\" error",
+      "url": "https://github.com/Munter/subfont/issues/174",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "Munter/subfont",
+      "number": 177,
+      "title": "perf: Fix O(n²) hot paths and add relation allowlist",
+      "url": "https://github.com/Munter/subfont/pull/177",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "Munter/subfont",
+      "number": 178,
+      "title": "Refactor subsetFonts into modular components and add worker pool",
+      "url": "https://github.com/Munter/subfont/pull/178",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "Munter/subfont",
+      "number": 179,
+      "title": "`@turntrout/subfont`, my hard fork with ~3.5x speedup",
+      "url": "https://github.com/Munter/subfont/issues/179",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "nikitabobko/AeroSpace",
+      "number": 262,
+      "title": "Tray icon not appearing",
+      "url": "https://github.com/nikitabobko/AeroSpace/issues/262",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "openai/gym",
+      "number": 636,
+      "title": "multiprocessing and monitor interaction",
+      "url": "https://github.com/openai/gym/issues/636",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "orbstack/orbstack",
+      "number": 2530,
+      "title": "Bind-mount ownership remap not applied under non-runc runtimes — gVisor (runsc) sees raw root:root",
+      "url": "https://github.com/orbstack/orbstack/issues/2530",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "pa11y/pa11y",
+      "number": 806,
+      "title": "(deleted)",
+      "url": "https://github.com/pa11y/pa11y/issues/806",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "pa11y/pa11y",
+      "number": 808,
+      "title": "feat: add `includeIncomplete=false` option to exclude axe-core incomplete results",
+      "url": "https://github.com/pa11y/pa11y/pull/808",
+      "isPr": true,
+      "status": "open"
+    },
+    {
+      "repo": "parcel-bundler/lightningcss",
+      "number": 1239,
+      "title": "Pseudo-element arg inside `:has()` / `:is()` / `:where()` is dropped, leaving an empty `()` and an invalid output selector",
+      "url": "https://github.com/parcel-bundler/lightningcss/issues/1239",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "PyCQA/docformatter",
+      "number": 366,
+      "title": "1.7.8 rewrites the contents of a non-docstring triple-quoted string, silently changing its value",
+      "url": "https://github.com/PyCQA/docformatter/issues/366",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "PyCQA/docformatter",
+      "number": 367,
+      "title": "1.7.8 crashes with a tokenize ValueError on a multi-line f-string inside parentheses",
+      "url": "https://github.com/PyCQA/docformatter/issues/367",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "PyCQA/docformatter",
+      "number": 368,
+      "title": "1.7.8 raises `NameError: name 'tomllib' is not defined` on Python 3.10",
+      "url": "https://github.com/PyCQA/docformatter/issues/368",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "remcohaszing/rehype-mermaid",
+      "number": 40,
+      "title": "Wrap rendered diagrams in `<div class=\"mermaid\">` container",
+      "url": "https://github.com/remcohaszing/rehype-mermaid/pull/40",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "Responsible-Dataset-Sharing/easy-dataset-share",
+      "number": 30,
+      "title": "Update WEB_HOSTING_GUIDE.md",
+      "url": "https://github.com/Responsible-Dataset-Sharing/easy-dataset-share/pull/30",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "Responsible-Dataset-Sharing/easy-dataset-share",
+      "number": 31,
+      "title": "Update create_turnstile_widget.py",
+      "url": "https://github.com/Responsible-Dataset-Sharing/easy-dataset-share/pull/31",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "Responsible-Dataset-Sharing/easy-dataset-share",
+      "number": 37,
+      "title": "Update README.md to clarify password-protection is available",
+      "url": "https://github.com/Responsible-Dataset-Sharing/easy-dataset-share/pull/37",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "Responsible-Dataset-Sharing/easy-dataset-share",
+      "number": 38,
+      "title": "`click` not included in deps",
+      "url": "https://github.com/Responsible-Dataset-Sharing/easy-dataset-share/issues/38",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "Responsible-Dataset-Sharing/easy-dataset-share",
+      "number": 39,
+      "title": "CLI tests failing",
+      "url": "https://github.com/Responsible-Dataset-Sharing/easy-dataset-share/issues/39",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "Responsible-Dataset-Sharing/easy-dataset-share",
+      "number": 40,
+      "title": "Support for md files, with testing",
+      "url": "https://github.com/Responsible-Dataset-Sharing/easy-dataset-share/pull/40",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "rishikanthc/Scriberr",
+      "number": 440,
+      "title": "refactor: deduplicate `TranscriptionConfigDialog` with shared form helpers",
+      "url": "https://github.com/rishikanthc/Scriberr/pull/440",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "runelite/runelite",
+      "number": 19996,
+      "title": "chatcommands: add royal titans and titans boss aliases",
+      "url": "https://github.com/runelite/runelite/pull/19996",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "sigstore/cosign",
+      "number": 5154,
+      "title": "`cosign verify` downloads every attestation bundle on an image, though it only checks signatures",
+      "url": "https://github.com/sigstore/cosign/issues/5154",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "starkdmi/BrightXDR",
+      "number": 10,
+      "title": "When laptop is closed, applies itself to external monitor",
+      "url": "https://github.com/starkdmi/BrightXDR/issues/10",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "stryker-mutator/stryker-js",
+      "number": 6148,
+      "title": "Populate `MutantResult.duration`",
+      "url": "https://github.com/stryker-mutator/stryker-js/issues/6148",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "stylelint-scss/stylelint-scss",
+      "number": 1195,
+      "title": "Update `dollar-variable-no-missing-interpolation` to check custom properties, allow `--fix`",
+      "url": "https://github.com/stylelint-scss/stylelint-scss/pull/1195",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "stylelint/stylelint",
+      "number": 8132,
+      "title": "--fix creates invalid CSS due to comments",
+      "url": "https://github.com/stylelint/stylelint/issues/8132",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "syntax-tree/hast-util-to-jsx-runtime",
+      "number": 8,
+      "title": "Check whether node.children is undefined",
+      "url": "https://github.com/syntax-tree/hast-util-to-jsx-runtime/pull/8",
+      "isPr": true,
+      "status": "closed"
+    },
+    {
+      "repo": "tailscale/tailscale",
+      "number": 21395,
+      "title": "macOS (Homebrew tailscaled): clearing an exit node deletes the physical default route",
+      "url": "https://github.com/tailscale/tailscale/issues/21395",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "TranslucentTB/TranslucentTB",
+      "number": 139,
+      "title": "Open at boot not working",
+      "url": "https://github.com/TranslucentTB/TranslucentTB/issues/139",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "UKGovernmentBEIS/inspect_ai",
+      "number": 5069,
+      "title": "`bash_session()` and `text_editor()` run as the tool server's uid (root), not the sandbox's exec user",
+      "url": "https://github.com/UKGovernmentBEIS/inspect_ai/issues/5069",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "UKGovernmentBEIS/inspect_ai",
+      "number": 5132,
+      "title": "Approvers see `text_editor` insert arguments the tool then rewrites",
+      "url": "https://github.com/UKGovernmentBEIS/inspect_ai/issues/5132",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "UKGovernmentBEIS/inspect_ai",
+      "number": 5133,
+      "title": "Approvers see `bash_session` keystrokes, not the command the shell runs",
+      "url": "https://github.com/UKGovernmentBEIS/inspect_ai/issues/5133",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "UKGovernmentBEIS/inspect_ai",
+      "number": 5135,
+      "title": "Four private symbols a third-party sandbox provider and approver have to read",
+      "url": "https://github.com/UKGovernmentBEIS/inspect_ai/issues/5135",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "UKGovernmentBEIS/inspect_ai",
+      "number": 5727,
+      "title": "A sample's compose file not named \"`compose.yaml`\" is silently dropped under a docker-compatible `--sandbox` provider",
+      "url": "https://github.com/UKGovernmentBEIS/inspect_ai/issues/5727",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "UKGovernmentBEIS/inspect_evals",
+      "number": 2628,
+      "title": "gdm_stealth: chat_with_manager is missing its @tool decorator",
+      "url": "https://github.com/UKGovernmentBEIS/inspect_evals/issues/2628",
+      "isPr": false,
+      "status": "fixed"
+    },
+    {
+      "repo": "UKGovernmentBEIS/inspect_k8s_sandbox",
+      "number": 267,
+      "title": "agent-env chart: CoreDNS setup relies on subPath mounts, which some runtimes don't support",
+      "url": "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox/issues/267",
+      "isPr": false,
+      "status": "open"
+    },
+    {
+      "repo": "UKGovernmentBEIS/inspect_k8s_sandbox",
+      "number": 269,
+      "title": "Let the agent-env chart run under Kata Containers",
+      "url": "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox/pull/269",
+      "isPr": true,
+      "status": "merged"
+    },
+    {
+      "repo": "UKGovernmentBEIS/inspect_k8s_sandbox",
+      "number": 270,
+      "title": "feat(chart): add priorityClassName for sandbox pods",
+      "url": "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox/pull/270",
+      "isPr": true,
+      "status": "open"
+    },
+    {
+      "repo": "zestedesavoir/zmarkdown",
+      "number": 513,
+      "title": "Remark-captions not rendering table caption",
+      "url": "https://github.com/zestedesavoir/zmarkdown/issues/513",
+      "isPr": false,
+      "status": "open"
+    }
+  ],
+  "repos": {
+    "abtinkd/coursetracker": {
+      "stars": 1,
+      "ownerType": "User"
+    },
+    "acon96/home-llm": {
+      "stars": 1455,
+      "ownerType": "User"
+    },
+    "ankidroid/Anki-Android": {
+      "stars": 11978,
+      "ownerType": "Organization"
+    },
+    "anordal/shellharden": {
+      "stars": 4808,
+      "ownerType": "User"
+    },
+    "anthropics/claude-code": {
+      "stars": 150036,
+      "ownerType": "Organization"
+    },
+    "cloud-hypervisor/cloud-hypervisor": {
+      "stars": 6311,
+      "ownerType": "Organization"
+    },
+    "DeepSourceCorp/cli": {
+      "stars": 52,
+      "ownerType": "Organization"
+    },
+    "dequelabs/axe-core": {
+      "stars": 7622,
+      "ownerType": "Organization"
+    },
+    "docker/sbx-releases": {
+      "stars": 438,
+      "ownerType": "Organization"
+    },
+    "EFForg/https-everywhere": {
+      "stars": 3355,
+      "ownerType": "Organization"
+    },
+    "IlanCosman/tide": {
+      "stars": 4280,
+      "ownerType": "User"
+    },
+    "jbloomAus/DecisionTransformerInterpretability": {
+      "stars": 90,
+      "ownerType": "User"
+    },
+    "jestjs/jest": {
+      "stars": 45553,
+      "ownerType": "Organization"
+    },
+    "JinayJain/gpt-anywhere": {
+      "stars": 179,
+      "ownerType": "User"
+    },
+    "kata-containers/kata-containers": {
+      "stars": 8914,
+      "ownerType": "Organization"
+    },
+    "KaTeX/KaTeX": {
+      "stars": 20439,
+      "ownerType": "Organization"
+    },
+    "linuxarena/auto_workflow": {
+      "stars": 0,
+      "ownerType": "Organization"
+    },
+    "linuxarena/control-tower": {
+      "stars": 36,
+      "ownerType": "Organization"
+    },
+    "mermaid-js/mermaid": {
+      "stars": 90604,
+      "ownerType": "Organization"
+    },
+    "METR/hawk": {
+      "stars": 90,
+      "ownerType": "Organization"
+    },
+    "METR/inspect_k8s_sandbox": {
+      "stars": 3,
+      "ownerType": "Organization"
+    },
+    "micromark/micromark-extension-gfm-autolink-literal": {
+      "stars": 9,
+      "ownerType": "Organization"
+    },
+    "mkusner/grammarVAE": {
+      "stars": 281,
+      "ownerType": "User"
+    },
+    "Munter/subfont": {
+      "stars": 1637,
+      "ownerType": "User"
+    },
+    "nikitabobko/AeroSpace": {
+      "stars": 23430,
+      "ownerType": "User"
+    },
+    "openai/gym": {
+      "stars": 37245,
+      "ownerType": "Organization"
+    },
+    "orbstack/orbstack": {
+      "stars": 9404,
+      "ownerType": "Organization"
+    },
+    "pa11y/pa11y": {
+      "stars": 4572,
+      "ownerType": "Organization"
+    },
+    "parcel-bundler/lightningcss": {
+      "stars": 7701,
+      "ownerType": "Organization"
+    },
+    "PyCQA/docformatter": {
+      "stars": 599,
+      "ownerType": "Organization"
+    },
+    "remcohaszing/rehype-mermaid": {
+      "stars": 194,
+      "ownerType": "User"
+    },
+    "Responsible-Dataset-Sharing/easy-dataset-share": {
+      "stars": 23,
+      "ownerType": "User"
+    },
+    "rishikanthc/Scriberr": {
+      "stars": 3091,
+      "ownerType": "User"
+    },
+    "runelite/runelite": {
+      "stars": 5479,
+      "ownerType": "Organization"
+    },
+    "sigstore/cosign": {
+      "stars": 6356,
+      "ownerType": "Organization"
+    },
+    "starkdmi/BrightXDR": {
+      "stars": 199,
+      "ownerType": "User"
+    },
+    "stryker-mutator/stryker-js": {
+      "stars": 3196,
+      "ownerType": "Organization"
+    },
+    "stylelint-scss/stylelint-scss": {
+      "stars": 879,
+      "ownerType": "Organization"
+    },
+    "stylelint/stylelint": {
+      "stars": 11529,
+      "ownerType": "Organization"
+    },
+    "syntax-tree/hast-util-to-jsx-runtime": {
+      "stars": 90,
+      "ownerType": "Organization"
+    },
+    "tailscale/tailscale": {
+      "stars": 37350,
+      "ownerType": "Organization"
+    },
+    "TranslucentTB/TranslucentTB": {
+      "stars": 20526,
+      "ownerType": "Organization"
+    },
+    "UKGovernmentBEIS/inspect_ai": {
+      "stars": 2973,
+      "ownerType": "Organization"
+    },
+    "UKGovernmentBEIS/inspect_evals": {
+      "stars": 697,
+      "ownerType": "Organization"
+    },
+    "UKGovernmentBEIS/inspect_k8s_sandbox": {
+      "stars": 42,
+      "ownerType": "Organization"
+    },
+    "zestedesavoir/zmarkdown": {
+      "stars": 237,
+      "ownerType": "Organization"
+    }
+  }
+}
