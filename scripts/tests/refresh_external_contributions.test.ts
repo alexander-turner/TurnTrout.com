@@ -68,7 +68,6 @@ describe("toContribution", () => {
       number: 7,
       title: "Title",
       url: "https://github.com/owner/repo/issues/1",
-      isPr: true,
       status: "merged",
     })
   })
@@ -181,7 +180,6 @@ describe("writeSnapshot", () => {
         number: 1,
         title: "T",
         url: "https://github.com/a/b/pull/1",
-        isPr: true,
         status: "merged" as const,
       },
     ],

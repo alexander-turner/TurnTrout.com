@@ -28,7 +28,6 @@ export interface Contribution {
   number: number
   title: string
   url: string
-  isPr: boolean
   status: ContributionStatus
 }
 

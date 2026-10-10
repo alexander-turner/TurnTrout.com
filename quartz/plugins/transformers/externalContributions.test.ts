@@ -19,7 +19,6 @@ function item(overrides: Partial<Contribution>): Contribution {
     number: 1,
     title: "A title",
     url: "https://github.com/big/repo/pull/1",
-    isPr: true,
     status: "merged",
     ...overrides,
   }
@@ -40,7 +39,7 @@ function snapshotJson(items: Contribution[]): string {
 describe("isShown", () => {
   it.each([
     ["merged PR on a starred repo", item({}), true],
-    ["fixed issue", item({ status: "fixed", isPr: false }), true],
+    ["fixed issue", item({ status: "fixed" }), true],
     ["open item", item({ status: "open" }), true],
     ["closed without merge or fix", item({ status: "closed" }), false],
     ["deleted issue", item({ title: "(deleted)", status: "fixed" }), false],
@@ -71,7 +70,7 @@ describe("titleNodes", () => {
 
 describe("renderList", () => {
   const items = [
-    item({ repo: "big/repo", number: 9, status: "fixed", isPr: false, title: "Issue" }),
+    item({ repo: "big/repo", number: 9, status: "fixed", title: "Issue" }),
     item({ repo: "big/repo", number: 7, status: "merged", title: "Later PR" }),
     item({ repo: "big/repo", number: 3, status: "merged", title: "Earlier PR" }),
     item({ repo: "huge/repo", number: 1, title: "Huge PR" }),
@@ -82,9 +81,11 @@ describe("renderList", () => {
     expect(html.indexOf("huge/repo")).toBeLessThan(html.indexOf("big/repo"))
   })
 
-  it("orders items by status, then number", () => {
-    const order = ["Earlier PR", "Later PR", "Issue"].map((title) => html.indexOf(title))
-    expect(order).toEqual([...order].sort((a, b) => a - b))
+  it("orders items by status, then number, within each repo", () => {
+    const titles = [...html.matchAll(/<li>.*?<a [^>]*>([^<]*)<\/a><\/li>/g)].map(
+      (match) => match[1],
+    )
+    expect(titles).toEqual(["Huge PR", "Earlier PR", "Later PR", "Issue"])
   })
 
   it("renders a repo heading with a monospace name, no favicon, and the star count", () => {
@@ -118,24 +119,20 @@ describe("renderList", () => {
 
 describe("renderContributions", () => {
   it("renders the summary, the shipped list, and open items in a collapsed goose admonition", () => {
-    const markdown = renderContributions(
-      snapshotJson([
-        item({ number: 1 }),
-        item({ number: 2, status: "fixed", isPr: false }),
-        item({ number: 3, status: "open", title: "Pending" }),
-        item({ number: 4, repo: "small/user" }),
-      ]),
-      FILTER,
-    )
+    const merged = item({ number: 1 })
+    const fixed = item({ number: 2, status: "fixed" })
+    const open = item({ number: 3, status: "open", title: "Pending" })
+    const items = [merged, fixed, open, item({ number: 4, repo: "small/user" })]
+    const snapshot = { items, repos: REPOS }
+    const markdown = renderContributions(JSON.stringify(snapshot), FILTER)
     const [summary, shipped, admonition] = markdown.split("\n\n")
     expect(summary).toBe(
       "This list refreshes daily from GitHub. So far, 1 pull request of mine merged " +
         "and 1 issue I reported got fixed, across 1 project.",
     )
-    expect(shipped).toMatch(/^<dl class="external-contributions no-formatting">.*<\/dl>$/)
-    expect(shipped).not.toContain("Pending")
-    expect(admonition).toMatch(
-      /^> \[!goose\]- In progress: 1 open item\n> <dl [^\n]*Pending[^\n]*<\/dl>$/,
+    expect(shipped).toBe(toHtml(renderList([merged, fixed], snapshot)))
+    expect(admonition).toBe(
+      `> [!goose]- In progress: 1 open item\n> ${toHtml(renderList([open], snapshot))}`,
     )
   })
 
@@ -144,8 +141,8 @@ describe("renderContributions", () => {
       snapshotJson([
         item({ number: 1 }),
         item({ number: 2 }),
-        item({ number: 3, repo: "huge/repo", status: "fixed", isPr: false }),
-        item({ number: 4, repo: "huge/repo", status: "fixed", isPr: false }),
+        item({ number: 3, repo: "huge/repo", status: "fixed" }),
+        item({ number: 4, repo: "huge/repo", status: "fixed" }),
       ]),
       FILTER,
     )

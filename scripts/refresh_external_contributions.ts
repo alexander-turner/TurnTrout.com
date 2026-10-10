@@ -68,7 +68,6 @@ export function toContribution(item: SearchItem): Contribution {
     number: item.number,
     title: item.title,
     url: item.html_url,
-    isPr: item.pull_request !== undefined,
     status: statusOf(item),
   }
 }
