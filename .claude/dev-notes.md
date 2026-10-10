@@ -187,8 +187,8 @@ runs this daily and opens an auto-merged PR when content changed. When adding a
 new GitHub source, add it to `externalReadmes.ts`, run the script, and commit
 the new snapshot — a missing snapshot fails the build with instructions.
 
-The same workflow refreshes `quartz/plugins/transformers/.external-contributions.json`
-(`scripts/refresh_external_contributions.ts`): every PR and issue I opened on a
+`scripts/refresh_external_contributions.ts` refreshes
+`quartz/plugins/transformers/.external-contributions.json`: every PR and issue I opened on a
 repo I don't own, plus each repo's stars and owner type. Which items
 /open-source lists is decided at build time by `CONTRIBUTION_FILTER` in
 `config/quartz/externalContributions.ts`, so retuning it needs no refetch. In a
