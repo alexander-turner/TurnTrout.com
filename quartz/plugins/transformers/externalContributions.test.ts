@@ -101,7 +101,7 @@ describe("renderList", () => {
     )
   })
 
-  it("marks the list so prose transforms skip third-party titles", () => {
+  it("marks the list so the HTML prose transforms skip its titles", () => {
     expect(html.startsWith('<dl class="external-contributions no-formatting">')).toBe(true)
   })
 

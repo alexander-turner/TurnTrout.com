@@ -9,6 +9,7 @@ import {
   buildSnapshot,
   fetchContributions,
   PER_PAGE,
+  SEARCH_RESULT_CAP,
   type SearchItem,
   searchQuery,
   statusOf,
@@ -40,7 +41,7 @@ function fakeFetch(routes: (url: string) => unknown) {
 
 describe("searchQuery", () => {
   it("excludes every own account", () => {
-    expect(searchQuery("me", ["me", "Me2"])).toBe("author:me -user:me -user:Me2")
+    expect(searchQuery("me", ["me", "Me2"])).toBe("is:public author:me -user:me -user:Me2")
   })
 })
 
@@ -74,25 +75,57 @@ describe("toContribution", () => {
 })
 
 describe("fetchContributions", () => {
+  const pageUrl = (page: number) =>
+    `https://api.github.com/search/issues?q=author%3Ame&sort=created&order=asc&per_page=${PER_PAGE}&page=${page}`
+  const fullPage = Array.from({ length: PER_PAGE }, (_, i) =>
+    searchItem({ number: i, html_url: `https://github.com/owner/repo/issues/${i}` }),
+  )
+
   it("follows pages until one comes back short", async () => {
-    const full = Array.from({ length: PER_PAGE }, (_, i) => searchItem({ number: i }))
     const { deps, urls } = fakeFetch((url) => ({
+      total_count: PER_PAGE + 1,
       incomplete_results: false,
-      items: url.endsWith("page=1") ? full : [searchItem({ number: 999 })],
+      items: url.endsWith("page=1")
+        ? fullPage
+        : [searchItem({ number: 999, html_url: "https://github.com/owner/repo/issues/999" })],
     }))
-    const items = await fetchContributions("author:me", deps)
-    expect(items).toHaveLength(PER_PAGE + 1)
-    expect(urls).toEqual([
-      `https://api.github.com/search/issues?q=author%3Ame&per_page=${PER_PAGE}&page=1`,
-      `https://api.github.com/search/issues?q=author%3Ame&per_page=${PER_PAGE}&page=2`,
-    ])
+    expect(await fetchContributions("author:me", deps)).toHaveLength(PER_PAGE + 1)
+    expect(urls).toEqual([pageUrl(1), pageUrl(2)])
   })
 
-  it("refuses incomplete search results", async () => {
-    const { deps } = fakeFetch(() => ({ incomplete_results: true, items: [] }))
-    await expect(fetchContributions("author:me", deps)).rejects.toThrow(
+  it("stops after the last full page when the total is an exact multiple", async () => {
+    const { deps, urls } = fakeFetch(() => ({
+      total_count: PER_PAGE,
+      incomplete_results: false,
+      items: fullPage,
+    }))
+    expect(await fetchContributions("author:me", deps)).toHaveLength(PER_PAGE)
+    expect(urls).toEqual([pageUrl(1)])
+  })
+
+  it("drops an item that a shifted page repeats", async () => {
+    const { deps } = fakeFetch((url) => ({
+      total_count: PER_PAGE + 1,
+      incomplete_results: false,
+      items: url.endsWith("page=1") ? fullPage : [fullPage[PER_PAGE - 1]],
+    }))
+    expect(await fetchContributions("author:me", deps)).toHaveLength(PER_PAGE)
+  })
+
+  it.each([
+    [
+      "incomplete search results",
+      { total_count: 1, incomplete_results: true },
       "incomplete search results for page 1",
-    )
+    ],
+    [
+      "more results than the search cap",
+      { total_count: SEARCH_RESULT_CAP + 1, incomplete_results: false },
+      `matched ${SEARCH_RESULT_CAP + 1} items`,
+    ],
+  ])("refuses %s", async (_name, page, message) => {
+    const { deps } = fakeFetch(() => ({ ...page, items: [] }))
+    await expect(fetchContributions("author:me", deps)).rejects.toThrow(message)
   })
 })
 
@@ -101,11 +134,24 @@ describe("buildSnapshot", () => {
     const { deps, urls } = fakeFetch((url) =>
       url.includes("/search/")
         ? {
+            total_count: 3,
             incomplete_results: false,
             items: [
-              searchItem({ repository_url: "https://api.github.com/repos/b/z", number: 2 }),
-              searchItem({ repository_url: "https://api.github.com/repos/a/y", number: 5 }),
-              searchItem({ repository_url: "https://api.github.com/repos/b/z", number: 1 }),
+              searchItem({
+                repository_url: "https://api.github.com/repos/b/z",
+                number: 2,
+                html_url: "u2",
+              }),
+              searchItem({
+                repository_url: "https://api.github.com/repos/a/y",
+                number: 5,
+                html_url: "u5",
+              }),
+              searchItem({
+                repository_url: "https://api.github.com/repos/b/z",
+                number: 1,
+                html_url: "u1",
+              }),
             ],
           }
         : { stargazers_count: url.endsWith("a/y") ? 10 : 20, owner: { type: "Organization" } },
@@ -128,18 +174,43 @@ describe("buildSnapshot", () => {
 })
 
 describe("writeSnapshot", () => {
-  it("writes a changed snapshot and leaves an identical one alone", () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "contributions-"))
-    const file = path.join(dir, "snapshot.json")
-    const snapshot = { items: [], repos: {} }
+  const renderable = {
+    items: [
+      {
+        repo: "a/b",
+        number: 1,
+        title: "T",
+        url: "https://github.com/a/b/pull/1",
+        isPr: true,
+        status: "merged" as const,
+      },
+    ],
+    repos: { "a/b": { stars: 500, ownerType: "User" } },
+  }
 
-    expect(writeSnapshot(snapshot, file)).toBe(true)
-    expect(fs.readFileSync(file, "utf-8")).toBe('{\n  "items": [],\n  "repos": {}\n}\n')
-    expect(writeSnapshot(snapshot, file)).toBe(false)
-    expect(
-      writeSnapshot({ items: [], repos: { "a/b": { stars: 1, ownerType: "User" } } }, file),
-    ).toBe(true)
-    fs.rmSync(dir, { recursive: true })
+  function tempFile(): string {
+    return path.join(fs.mkdtempSync(path.join(os.tmpdir(), "contributions-")), "snapshot.json")
+  }
+
+  it("writes a changed snapshot and leaves an identical one alone", () => {
+    const file = tempFile()
+    expect(writeSnapshot(renderable, file)).toBe(true)
+    expect(fs.readFileSync(file, "utf-8")).toBe(`${JSON.stringify(renderable, null, 2)}\n`)
+    expect(writeSnapshot(renderable, file)).toBe(false)
+    const starred = { ...renderable, repos: { "a/b": { stars: 501, ownerType: "User" } } }
+    expect(writeSnapshot(starred, file)).toBe(true)
+    fs.rmSync(path.dirname(file), { recursive: true })
+  })
+
+  it("refuses a snapshot the page cannot render and keeps the old file", () => {
+    const file = tempFile()
+    writeSnapshot(renderable, file)
+    const before = fs.readFileSync(file, "utf-8")
+    expect(() => writeSnapshot({ items: [], repos: {} }, file)).toThrow(
+      "No external contributions pass the filter",
+    )
+    expect(fs.readFileSync(file, "utf-8")).toBe(before)
+    fs.rmSync(path.dirname(file), { recursive: true })
   })
 })
 
