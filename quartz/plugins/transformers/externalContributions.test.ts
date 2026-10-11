@@ -63,6 +63,23 @@ describe("titleNodes", () => {
     ["only code", "`x`", "<code>x</code>"],
     ["escapes html", "a <b> & c", "a &#x3C;b> &#x26; c"],
     ["unpaired backtick", "a ` b", "a ` b"],
+    [
+      "bare identifier with trailing colon",
+      "gdm_stealth: chat_with_manager is missing",
+      "<code>gdm_stealth</code>: <code>chat_with_manager</code> is missing",
+    ],
+    [
+      "leading underscore",
+      "avoid error in _tide_item_python",
+      "avoid error in <code>_tide_item_python</code>",
+    ],
+    [
+      "identifier in parentheses",
+      "swap disk (enable_guest_swap)",
+      "swap disk (<code>enable_guest_swap</code>)",
+    ],
+    ["glob with asterisk", "match *.md files", "match <code>*.md</code> files"],
+    ["identifier beside backticks", "`a` and b_c", "<code>a</code> and <code>b_c</code>"],
   ])("%s", (_name, title, html) => {
     expect(toHtml(titleNodes(title))).toBe(html)
   })
