@@ -85,12 +85,38 @@ export function isShown(item: Contribution, meta: RepoMeta, filter: Contribution
   )
 }
 
-/** Splits a title on backtick spans, rendering each span as inline code. */
+const TRAILING_PUNCTUATION = new Set([".", ",", ":", ";", "!", "?", ")"])
+
+/**
+ * Renders each word holding `_` or `*` (an identifier a title left unquoted)
+ * as code. A leading `(` and trailing punctuation stay outside the code, so in
+ * `(enable_guest_swap),` only the identifier itself is marked.
+ */
+function textWithIdentifiers(text: string): ElementContent[] {
+  return text.split(/(\s+)/).flatMap((word): ElementContent[] => {
+    let start = 0
+    while (word[start] === "(") start++
+    let end = word.length
+    while (end > start && TRAILING_PUNCTUATION.has(word[end - 1])) end--
+    const core = word.slice(start, end)
+    if (!core.includes("_") && !core.includes("*")) {
+      return word === "" ? [] : [{ type: "text", value: word }]
+    }
+    const lead = word.slice(0, start)
+    const trail = word.slice(end)
+    return [
+      ...(lead ? [{ type: "text" as const, value: lead }] : []),
+      h("code", core),
+      ...(trail ? [{ type: "text" as const, value: trail }] : []),
+    ]
+  })
+}
+
+/** Renders a title's backtick spans and bare identifiers as inline code. */
 export function titleNodes(title: string): ElementContent[] {
-  // With one capture group, `split` puts the code spans at the odd indices.
   return title.split(/`([^`]+)`/).flatMap((part, index): ElementContent[] => {
     if (index % 2 === 1) return [h("code", part)]
-    return part === "" ? [] : [{ type: "text", value: part }]
+    return textWithIdentifiers(part)
   })
 }
 
