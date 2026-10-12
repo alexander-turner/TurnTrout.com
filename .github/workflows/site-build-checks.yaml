@@ -19,6 +19,7 @@ on:
       - "config/constants.json"
       - "config/stylelint/.variables-only-stylelintrc.json"
       - "scripts/built_site_checks.py"
+      - "scripts/check_external_links.py"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
@@ -62,6 +63,7 @@ jobs:
               - "config/stylelint/.variables-only-stylelintrc.json"
               - "scripts/built_site_checks.py"
               - "scripts/vnu_check.py"
+              - "scripts/check_external_links.py"
               - "config/vnu_allowlist.json"
               - "package.json"
               - "pnpm-lock.yaml"
@@ -154,26 +156,11 @@ jobs:
         run: uv run linkchecker http://localhost:8080 --threads 50
 
       # External links go out to the public internet (assets.turntrout.com,
-      # github.com). Cloudflare / GitHub can return transient 5xx, so wrap
-      # in retry-external. A persistent 4xx still fails after max-attempts.
-      #
-      # Crawl the running site so every page's external links are checked; the
-      # ignore-url allowlist keeps localhost (crawled) plus the two hosts we
-      # control, and drops all other external links. --check-extern is required
-      # for the allowlisted external URLs to be fetched rather than skipped.
-      - name: Check external links (with retries)
-        uses: ./.github/actions/retry-external
-        with:
-          command: |
-            uv run linkchecker http://localhost:8080 \
-              --config config/linkchecker/linkcheckerrc \
-              --ignore-url='!^(http://localhost:8080|https://assets\.turntrout\.com|https://github\.com/alexander-turner/TurnTrout\.com)' \
-              --check-extern \
-              --threads 30 \
-              --user-agent "linkchecker" \
-              --timeout 40
-          max-attempts: "3"
-          initial-delay-seconds: "10"
+      # github.com), which answer a few of the crawl's requests with a
+      # transient 5xx. The script re-checks just those URLs with backoff; any
+      # other failure, such as a 404, fails at once.
+      - name: Check external links
+        run: uv run python scripts/check_external_links.py
 
       - name: Stop server
         if: always()
