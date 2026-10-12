@@ -195,6 +195,10 @@ repo I don't own, plus each repo's stars and owner type. Which items
 sandbox whose network goes through a proxy, run the script as
 `NODE_USE_ENV_PROXY=1 node --import tsx scripts/refresh_external_contributions.ts`.
 
+To annotate a contribution with prose, add a `## owner/repo#number` section to
+`config/quartz/contributionAnnotations.md`; it renders as a `<dd>` under that item.
+An annotation naming no listed contribution fails the build and the snapshot refresh.
+
 ## Favicon kerning audit
 
 Favicon spacing (`quartz/styles/favicon.scss` `$domain-left-insets`,

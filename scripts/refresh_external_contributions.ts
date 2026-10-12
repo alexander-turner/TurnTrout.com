@@ -10,16 +10,15 @@
 import fs from "node:fs"
 
 import {
-  CONTRIBUTION_FILTER,
   CONTRIBUTIONS_AUTHOR,
   OWN_ACCOUNTS,
+  renderContributionsSection,
 } from "../config/quartz/externalContributions"
 import {
   type Contribution,
   CONTRIBUTIONS_SNAPSHOT_PATH,
   type ContributionsSnapshot,
   type ContributionStatus,
-  renderContributions,
   type RepoMeta,
 } from "../quartz/plugins/transformers/externalContributions"
 import { type FetchDeps, fetchGitHub } from "./refresh_readme_snapshots"
@@ -122,9 +121,13 @@ export async function buildSnapshot(deps: FetchDeps): Promise<ContributionsSnaps
  * It first renders the snapshot as the page will, so a snapshot that would
  * fail the build is refused and the last-known-good file stays in place.
  */
-export function writeSnapshot(snapshot: ContributionsSnapshot, snapshotPath: string): boolean {
+export function writeSnapshot(
+  snapshot: ContributionsSnapshot,
+  snapshotPath: string,
+  render: (snapshotJson: string) => string = renderContributionsSection,
+): boolean {
   const content = `${JSON.stringify(snapshot, null, 2)}\n`
-  renderContributions(content, CONTRIBUTION_FILTER)
+  render(content)
   if (fs.existsSync(snapshotPath) && fs.readFileSync(snapshotPath, "utf-8") === content) {
     return false
   }
