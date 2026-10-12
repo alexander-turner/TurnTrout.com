@@ -165,16 +165,12 @@ export function parseAnnotations(markdown: string): ReadonlyMap<string, string> 
   return annotations
 }
 
-/** Separates annotation markdown from the surrounding raw HTML so it parses as markdown. */
-function annotationLines(markdown: string): string[] {
-  return ['<dd class="contribution-annotation">', "", markdown, "", "</dd>"]
-}
-
 /**
  * Renders one description list: a `<dt>` per repo, then a `<dd>` holding a
- * nested list with a `<dt>` per contribution (its status pill and title) and,
- * when annotated, a `<dd>` of markdown prose. The result mixes raw HTML lines
- * with blank-line-separated markdown.
+ * list with an item per contribution: its status pill and title. An annotated
+ * contribution's item is itself a description list, its `<dt>` the row and its
+ * `<dd>` the annotation's markdown, set off from the surrounding raw HTML by
+ * blank lines so it parses as markdown.
  */
 export function renderList(
   items: readonly Contribution[],
@@ -188,20 +184,26 @@ export function renderList(
         h("span.contribution-stars", `★ ${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`),
       ]),
     ),
-    '<dd><dl class="contribution-list">',
+    '<dd><ul class="contribution-list">',
     ...group.flatMap((item) => {
+      const row = [
+        h(`span.contribution-status.contribution-${item.status}`, STATUS_LABEL[item.status]),
+        h("a.no-favicon", { href: item.url }, titleNodes(item.title)),
+      ]
       const annotation = annotations.get(contributionKey(item))
+      if (annotation === undefined) return [toHtml(h("li.contribution-row.no-formatting", row))]
       return [
-        toHtml(
-          h("dt.no-formatting", [
-            h(`span.contribution-status.contribution-${item.status}`, STATUS_LABEL[item.status]),
-            h("a.no-favicon", { href: item.url }, titleNodes(item.title)),
-          ]),
-        ),
-        ...(annotation === undefined ? [] : annotationLines(annotation)),
+        "<li><dl>",
+        toHtml(h("dt.contribution-row.no-formatting", row)),
+        '<dd class="contribution-annotation">',
+        "",
+        annotation,
+        "",
+        "</dd>",
+        "</dl></li>",
       ]
     }),
-    "</dl></dd>",
+    "</ul></dd>",
   ])
   return ['<dl class="external-contributions">', ...lines, "</dl>"].join("\n")
 }

@@ -1212,29 +1212,34 @@ dl.external-contributions {
     white-space: nowrap;
   }
 
-  dl.contribution-list {
-    margin: 0 0 calc(2 * $base-margin);
+  ul.contribution-list {
+    list-style: none;
+    padding-left: 0;
 
-    // A contribution row: its status pill, then its title.
-    & > dt {
-      --contribution-cap-height: 1cap;
-
-      display: grid;
-      grid-template-columns: $contribution-status-column 1fr;
-      column-gap: $contribution-column-gap;
-      align-items: baseline;
-      text-shadow: none;
+    & > li > dl {
+      margin: 0;
     }
+  }
 
-    // An annotation sits under its row's title, past the pill column; on
-    // mobile it reclaims that column's width.
-    & > dd {
-      margin: calc(0.5 * $base-margin) 0 $base-margin
-        calc($contribution-status-column + $contribution-column-gap);
+  // A contribution row: its status pill, then its title.
+  .contribution-row {
+    --contribution-cap-height: 1cap;
 
-      @media all and (max-width: $max-mobile-width) {
-        margin-left: 0;
-      }
+    display: grid;
+    grid-template-columns: $contribution-status-column 1fr;
+    column-gap: $contribution-column-gap;
+    align-items: baseline;
+    text-shadow: none;
+  }
+
+  // An annotation sits under its row's title, past the pill column; on
+  // mobile it reclaims that column's width.
+  .contribution-annotation {
+    margin: calc(0.5 * $base-margin) 0 $base-margin
+      calc($contribution-status-column + $contribution-column-gap);
+
+    @media all and (max-width: $max-mobile-width) {
+      margin-left: 0;
     }
   }
 

@@ -1,3 +1,5 @@
+import type { Element, Root } from "hast"
+
 import { describe, expect, it } from "@jest/globals"
 import { toHtml } from "hast-util-to-html"
 import rehypeRaw from "rehype-raw"
@@ -5,6 +7,7 @@ import rehypeStringify from "rehype-stringify"
 import remarkParse from "remark-parse"
 import remarkRehype from "remark-rehype"
 import { unified } from "unified"
+import { visit } from "unist-util-visit"
 
 import {
   type Contribution,
@@ -16,6 +19,7 @@ import {
   renderList,
   titleNodes,
 } from "./externalContributions"
+import { isValidDlStructure } from "./gfm"
 
 const FILTER: ContributionFilter = { minStars: 100, deniedRepos: new Set(["denied/repo"]) }
 
@@ -133,7 +137,7 @@ describe("renderList", () => {
   })
 
   it("orders items by status, then number, within each repo", () => {
-    const titles = [...html.matchAll(/<\/span><a [^>]*>([^<]*)<\/a><\/dt>/g)].map(
+    const titles = [...html.matchAll(/<\/span><a [^>]*>([^<]*)<\/a><\/li>/g)].map(
       (match) => match[1],
     )
     expect(titles).toEqual(["Huge PR", "Earlier PR", "Later PR", "Issue"])
@@ -148,25 +152,29 @@ describe("renderList", () => {
 
   it("renders each contribution as a row with its status pill before its linked title", () => {
     expect(html).toContain(
-      '<dt class="no-formatting"><span class="contribution-status contribution-fixed">Fixed</span>' +
-        '<a class="no-favicon" href="https://github.com/big/repo/pull/1">Issue</a></dt>',
+      '<li class="contribution-row no-formatting">' +
+        '<span class="contribution-status contribution-fixed">Fixed</span>' +
+        '<a class="no-favicon" href="https://github.com/big/repo/pull/1">Issue</a></li>',
     )
   })
 
-  it("nests each repo's contributions in their own description list", () => {
+  it("lists each repo's contributions under its heading", () => {
     expect(html.startsWith('<dl class="external-contributions">\n')).toBe(true)
-    expect(html.match(/<dd><dl class="contribution-list">/g)).toHaveLength(2)
-    expect(html.endsWith("</dl></dd>\n</dl>")).toBe(true)
+    expect(html.match(/<dd><ul class="contribution-list">/g)).toHaveLength(2)
+    expect(html.endsWith("</ul></dd>\n</dl>")).toBe(true)
   })
 
-  it("renders an annotation as markdown in a dd after its contribution", () => {
+  it("renders an annotated contribution as a description list of its row and markdown", () => {
     const annotated = renderList(
       items,
       { items, repos: REPOS },
       new Map([["big/repo#7", "Some *prose*."]]),
     )
     expect(annotated).toContain(
-      '>Later PR</a></dt>\n<dd class="contribution-annotation">\n\nSome *prose*.\n\n</dd>\n<dt',
+      '<li><dl>\n<dt class="contribution-row no-formatting">' +
+        '<span class="contribution-status contribution-merged">Merged</span>' +
+        '<a class="no-favicon" href="https://github.com/big/repo/pull/1">Later PR</a></dt>\n' +
+        '<dd class="contribution-annotation">\n\nSome *prose*.\n\n</dd>\n</dl></li>\n<li',
     )
   })
 
@@ -204,26 +212,43 @@ describe("renderContributions", () => {
     expect(quotedOpen).toContain(">\n> Why it matters.\n>\n")
   })
 
-  it("parses annotations as markdown inside the raw HTML, in and out of the blockquote", () => {
-    const items = [item({ number: 1 }), item({ number: 2, status: "open" })]
+  it("renders valid, markdown-parsed annotations in and out of the blockquote", () => {
+    const items = [
+      item({ number: 1 }),
+      item({ number: 2 }),
+      item({ number: 3, status: "open" }),
+      item({ number: 4, status: "open" }),
+    ]
     const annotations = new Map([
       ["big/repo#1", "Shipped *prose*."],
-      ["big/repo#2", "Pending *prose*."],
+      ["big/repo#3", "Pending *prose*."],
     ])
+    const invalidLists: string[] = []
     const html = String(
       unified()
         .use(remarkParse)
         .use(remarkRehype, { allowDangerousHtml: true })
         .use(rehypeRaw)
+        .use(() => (tree: Root) => {
+          visit(tree, "element", (node: Element) => {
+            if (node.tagName === "dl" && !isValidDlStructure(node.children)) {
+              invalidLists.push(toHtml(node))
+            }
+          })
+        })
         .use(rehypeStringify)
         .processSync(renderContributions(snapshotJson(items), FILTER, annotations)),
     )
+    expect(invalidLists).toEqual([])
     const annotation = (text: string) =>
       `<dd class="contribution-annotation">\n<p>${text} <em>prose</em>.</p>\n</dd>`
-    expect(html).toContain(annotation("Shipped"))
-    const [, blockquote] = html.split("<blockquote>")
+    const [shipped, blockquote] = html.split("<blockquote>")
+    expect(shipped).toContain(annotation("Shipped"))
     expect(blockquote).toContain(annotation("Pending"))
-    expect(blockquote).toContain('<dd><dl class="contribution-list">')
+    for (const section of [shipped, blockquote]) {
+      expect(section.match(/<li class="contribution-row no-formatting">/g)).toHaveLength(1)
+      expect(section.match(/<dt class="contribution-row no-formatting">/g)).toHaveLength(1)
+    }
   })
 
   it("pluralizes counts and omits the admonition when nothing is open", () => {
