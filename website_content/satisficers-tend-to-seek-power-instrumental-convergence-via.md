@@ -23,6 +23,7 @@ lw-is-linkpost: 'true'
 tags:
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases:
   - satisficers-tend-to-seek-power-instrumental-convergence-via
 lw-sequence-title: The Causes of Power-Seeking and Instrumental Convergence

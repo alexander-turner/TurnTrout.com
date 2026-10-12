@@ -26,6 +26,7 @@ authors:
 tags:
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases:
 lw-sequence-title: Reframing Impact
 lw-sequence-image-grid: sequencesgrid/wrl3ovxbyttoztdxwmjb

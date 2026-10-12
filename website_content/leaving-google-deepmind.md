@@ -7,6 +7,7 @@ tags:
   - deepmind
   - military
   - personal
+  - AI-governance
 description: I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.
 similar_posts:
   - red-line-framework

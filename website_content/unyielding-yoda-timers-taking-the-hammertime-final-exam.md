@@ -21,6 +21,7 @@ lw-latest-edit: 2018-04-03T02:38:48.327000Z
 lw-is-linkpost: 'false'
 tags:
   - rationality
+  - personal-growth
 aliases:
   - unyielding-yoda-timers-taking-the-hammertime-final-exam
 lw-reward-post-warning: 'false'

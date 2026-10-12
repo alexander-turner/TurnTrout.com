@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - personal
   - rationality
+  - personal-growth
 aliases:
   - on-being-robust
 lw-reward-post-warning: "false"

@@ -23,6 +23,7 @@ lw-is-linkpost: 'true'
 tags:
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases: 2019-review-rewrite-seeking-power-is-often-robustly
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'

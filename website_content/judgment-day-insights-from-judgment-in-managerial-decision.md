@@ -22,6 +22,8 @@ lw-is-linkpost: 'false'
 tags:
   - understanding-the-world
   - scholarship-and-learning
+  - textbook-insights
+  - decision-making-biases
 aliases:
   - judgment-day-insights-from-judgment-in-managerial-decision
 lw-sequence-title: Becoming Stronger

@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases:
   - instrumental-convergence-for-realistic-agent-objectives
 lw-sequence-title: The Causes of Power-Seeking and Instrumental Convergence

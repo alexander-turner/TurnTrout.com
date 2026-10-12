@@ -21,7 +21,6 @@ lw-latest-edit: 2018-03-07T06:19:22.923000Z
 lw-is-linkpost: 'false'
 tags:
   - rationality
-  - practical
 aliases:
   - how-to-dissolve-it
 lw-reward-post-warning: 'false'

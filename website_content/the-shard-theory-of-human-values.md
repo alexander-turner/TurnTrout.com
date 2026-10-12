@@ -28,6 +28,7 @@ tags:
   - AI
   - understanding-the-world
   - human-values
+  - decision-making-biases
 aliases:
   - the-shard-theory-of-human-values
   - shardtheory

@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - summaries
   - reinforcement-learning
+  - textbook-insights
 aliases:
   - making-a-difference-tempore-insights-from-reinforcement
 lw-sequence-title: Becoming Stronger

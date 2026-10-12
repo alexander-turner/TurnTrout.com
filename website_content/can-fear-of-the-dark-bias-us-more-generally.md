@@ -21,6 +21,7 @@ lw-latest-edit: 2019-12-22T22:11:52.198000Z
 lw-is-linkpost: "false"
 tags:
   - understanding-the-world
+  - decision-making-biases
 aliases:
   - can-fear-of-the-dark-bias-us-more-generally
 lw-reward-post-warning: "false"

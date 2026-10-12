@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases:
   - walkthrough-of-formalizing-convergent-instrumental-goals
 lw-reward-post-warning: 'false'

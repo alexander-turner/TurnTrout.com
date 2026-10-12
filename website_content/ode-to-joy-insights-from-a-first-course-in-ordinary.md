@@ -23,6 +23,7 @@ tags:
   - scholarship-and-learning
   - understanding-the-world
   - mathematics
+  - textbook-insights
 aliases:
   - ode-to-joy-insights-from-a-first-course-in-ordinary
 lw-sequence-title: Becoming Stronger

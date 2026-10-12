@@ -23,6 +23,7 @@ tags:
   - impact-regularization
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases:
   - the-catastrophic-convergence-conjecture
 lw-sequence-title: Reframing Impact

@@ -22,6 +22,7 @@ lw-latest-edit: 2018-03-21T05:24:26.289000Z
 lw-is-linkpost: "false"
 tags:
   - personal
+  - personal-growth
 aliases:
   - lightness-and-unease
 lw-sequence-title: Becoming Stronger

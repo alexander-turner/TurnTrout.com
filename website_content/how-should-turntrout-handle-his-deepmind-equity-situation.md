@@ -23,7 +23,6 @@ authors:
   - Oliver Habryka
   - Alex Turner
 tags:
-  - practical
   - deepmind
 aliases:
   - how-should-turntrout-handle-his-deepmind-equity-situation

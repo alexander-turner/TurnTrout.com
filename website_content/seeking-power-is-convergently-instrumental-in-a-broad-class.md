@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - instrumental-convergence
   - AI
+  - power-seeking
 aliases:
   - seeking-power-is-convergently-instrumental-in-a-broad-class
 lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence

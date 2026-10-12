@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - instrumental-convergence
   - AI
+  - power-seeking
 aliases:
   - "mdp-models-are-determined-by-the-agent-architecture-and-the"
 lw-sequence-title: "The Causes of Power-seeking and Instrumental Convergence"

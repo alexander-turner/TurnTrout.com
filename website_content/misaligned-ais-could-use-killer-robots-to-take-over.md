@@ -6,6 +6,7 @@ tags:
   - AI
   - existential-risk
   - military
+  - AI-governance
 description: AI takeover seems easier to pull off for an AI that we teach to wield killer robots.
 authors:
   - Omar Khursheed

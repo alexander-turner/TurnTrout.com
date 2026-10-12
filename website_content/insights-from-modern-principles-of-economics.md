@@ -21,6 +21,7 @@ lw-latest-edit: 2023-08-28T21:29:32.804000Z
 lw-is-linkpost: "false"
 tags:
   - understanding-the-world
+  - textbook-insights
 aliases:
   - insights-from-modern-principles-of-economics
 lw-sequence-title: Becoming Stronger

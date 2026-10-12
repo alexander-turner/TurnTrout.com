@@ -21,9 +21,9 @@ title: Emotionally Confronting Doom
 lw-latest-edit: 2022-04-17T17:24:53.405000Z
 lw-is-linkpost: "false"
 tags:
-  - practical
   - rationality
   - community
+  - personal-growth
 aliases:
   - emotionally-confronting-a-probably-doomed-world-against
 lw-reward-post-warning: "false"

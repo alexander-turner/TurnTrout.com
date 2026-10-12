@@ -23,6 +23,7 @@ lw-is-linkpost: "true"
 tags:
   - instrumental-convergence
   - AI
+  - power-seeking
 aliases:
   - environmental-structure-can-cause-instrumental-convergence
 lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence

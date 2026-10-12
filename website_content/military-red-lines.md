@@ -5,6 +5,7 @@ no_dropcap: false
 tags:
   - AI
   - military
+  - AI-governance
 description: Principled contract language for selling AI to governments, with transparency that preserves principles against pressure.
 authors:
   - Alex Turner

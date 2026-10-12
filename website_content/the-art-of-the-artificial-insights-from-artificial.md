@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - AI
   - scholarship-and-learning
+  - textbook-insights
 aliases:
   - the-art-of-the-artificial-insights-from-artificial
 lw-sequence-title: Becoming Stronger

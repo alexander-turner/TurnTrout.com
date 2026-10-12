@@ -23,6 +23,7 @@ tags:
   - instrumental-convergence
   - rationality
   - AI
+  - power-seeking
 aliases:
   - when-most-vnm-coherent-preference-orderings-have-convergent
 lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence

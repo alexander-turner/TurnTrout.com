@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - scholarship-and-learning
   - mathematics
+  - textbook-insights
 aliases:
   - the-first-rung-insights-from-linear-algebra-done-right
 lw-sequence-title: Becoming Stronger

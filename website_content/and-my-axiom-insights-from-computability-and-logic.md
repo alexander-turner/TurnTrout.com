@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - summaries
   - mathematics
+  - textbook-insights
 aliases:
   - and-my-axiom-insights-from-computability-and-logic
 lw-sequence-title: Becoming Stronger

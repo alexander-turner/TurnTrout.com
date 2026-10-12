@@ -21,6 +21,7 @@ lw-latest-edit: 2020-12-30T02:54:15.755000Z
 lw-is-linkpost: "false"
 tags:
   - rationality
+  - decision-making-biases
 aliases:
   - "collider-bias-as-a-cognitive-blindspot"
 lw-reward-post-warning: "false"

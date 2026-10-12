@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - instrumental-convergence
   - AI
+  - power-seeking
 aliases:
   - the-more-power-at-stake-the-stronger-instrumental
 lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence

@@ -20,9 +20,8 @@ title: "Swimming Upstream: A Case Study in Instrumental Rationality"
 lw-latest-edit: 2018-06-03T03:16:21.613000Z
 lw-is-linkpost: "false"
 tags:
-  - practical
-  - growth-stories
   - personal
+  - personal-growth
 aliases:
   - swimming-upstream-a-case-study-in-instrumental-rationality
 lw-sequence-title: Becoming Stronger

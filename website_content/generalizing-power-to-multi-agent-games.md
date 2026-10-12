@@ -26,6 +26,7 @@ tags:
   - understanding-the-world
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases:
   - generalizing-power-to-multi-agent-games
 sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence

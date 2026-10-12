@@ -23,6 +23,7 @@ lw-is-linkpost: 'true'
 tags:
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases:
   - parametrically-retargetable-decision-makers-tend-to-seek
 lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence

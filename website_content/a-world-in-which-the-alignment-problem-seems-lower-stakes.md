@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - instrumental-convergence
   - AI
+  - power-seeking
 aliases:
   - a-world-in-which-the-alignment-problem-seems-lower-stakes
 lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence

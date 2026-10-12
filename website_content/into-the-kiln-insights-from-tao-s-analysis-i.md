@@ -23,6 +23,7 @@ tags:
   - summaries
   - understanding-the-world
   - mathematics
+  - textbook-insights
 aliases:
   - into-the-kiln-insights-from-tao-s-analysis-i
 lw-sequence-title: Becoming Stronger

@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - scholarship-and-learning
   - mathematics
+  - textbook-insights
 aliases:
   - set-up-for-success-insights-from-naive-set-theory
 lw-sequence-title: Becoming Stronger

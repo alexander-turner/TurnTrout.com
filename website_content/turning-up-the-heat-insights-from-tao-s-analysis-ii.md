@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - summaries
   - mathematics
+  - textbook-insights
 aliases:
   - turning-up-the-heat-insights-from-tao-s-analysis-ii
 lw-sequence-title: Becoming Stronger

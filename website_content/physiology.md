@@ -5,6 +5,7 @@ no_dropcap: "false"
 tags:
   - understanding-the-world
   - summaries
+  - textbook-insights
 description: This book breaks down complex physiology into digestible parts, using charming visuals & clear explanations. You might be surprised how much you can learn!
 authors:
   - Alex Turner

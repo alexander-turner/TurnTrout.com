@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - AI
   - existential-risk
+  - AI-governance
 aliases:
   - ban-development-of-unpredictable-powerful-models
 lw-reward-post-warning: 'false'

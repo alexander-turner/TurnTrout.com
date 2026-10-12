@@ -23,6 +23,7 @@ tags:
   - summaries
   - scholarship-and-learning
   - mathematics
+  - textbook-insights
 aliases:
   - confounded-no-longer-insights-from-all-of-statistics
 lw-sequence-title: Becoming Stronger

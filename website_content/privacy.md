@@ -3,7 +3,6 @@ title: An opinionated guide to privacy despite authoritarianism
 permalink: privacy-despite-authoritarianism
 no_dropcap: false
 tags:
-  - practical
   - personal
   - open-source
   - understanding-the-world
@@ -579,7 +578,7 @@ Incognito mode stops Google Maps from tying your searches to your account. Open 
 - [ ] Delete your Maps location data from the cloud.
 
 > [!info] CoMaps is fully private
-> [CoMaps](https://www.comaps.app/) is a free, open-source, offline app built on [OpenStreetMap](https://www.openstreetmap.org/) data. 
+> [CoMaps](https://www.comaps.app/) is a free, open-source, offline app built on [OpenStreetMap](https://www.openstreetmap.org/) data.
 
 > [!warning] Incognito mode is a promise
 > As of July 2025, [your location "Timeline" is stored locally](https://blog.google/products-and-platforms/products/maps/updates-incognito-mode-and-your-timeline-maps/). I believe Google actually made this change because they later [told the Supreme Court that it can no longer answer geofence warrants](https://www.forbes.com/sites/larsdaniel/2026/04/28/google-geofence-warrants-are-dead-supreme-court-heard-last-one-monday/).

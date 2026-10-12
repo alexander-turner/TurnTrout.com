@@ -23,6 +23,7 @@ tags:
   - scholarship-and-learning
   - understanding-the-world
   - mathematics
+  - textbook-insights
 aliases:
   - insights-from-euclid-s-elements
 lw-sequence-title: Becoming Stronger

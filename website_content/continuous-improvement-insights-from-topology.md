@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - summaries
   - mathematics
+  - textbook-insights
 aliases:
   - continuous-improvement-insights-from-topology
 lw-sequence-title: Becoming Stronger

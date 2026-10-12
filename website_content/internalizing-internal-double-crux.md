@@ -21,8 +21,8 @@ lw-latest-edit: 2020-04-11T17:25:47.908000Z
 lw-is-linkpost: "false"
 tags:
   - rationality
-  - practical
   - personal
+  - personal-growth
 aliases:
   - internalizing-internal-double-crux
 lw-sequence-title: Becoming Stronger

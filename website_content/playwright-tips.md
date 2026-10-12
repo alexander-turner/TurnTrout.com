@@ -4,7 +4,6 @@ permalink: playwright-tips
 no_dropcap: false
 tags:
   - website
-  - practical
 description: Hard-won best practices for stable visual regression testing.
 authors:
   - Alex Turner

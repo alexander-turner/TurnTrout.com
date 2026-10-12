@@ -5,7 +5,6 @@ no_dropcap: false
 tags:
   - open-source
   - understanding-the-world
-  - practical
   - community
   - privacy
 description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
