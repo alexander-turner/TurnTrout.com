@@ -1189,3 +1189,47 @@ img-comparison-slider {
     outline: none;
   }
 }
+
+// External contributions on /open-source: each list item's bullet is its status pill.
+dl.external-contributions {
+  .contribution-stars {
+    color: var(--midground);
+    font-size: var(--font-size-minus-1);
+    margin-left: calc(0.5 * $base-margin);
+    white-space: nowrap;
+  }
+
+  ul.contribution-list {
+    list-style: none;
+    padding-left: 0;
+
+    & > li {
+      display: grid;
+      grid-template-columns: 4.5em 1fr;
+      column-gap: calc(0.75 * $base-margin);
+      align-items: baseline;
+    }
+  }
+
+  .contribution-status {
+    border: 1px solid currentcolor;
+    border-radius: 999px;
+    font-size: var(--font-size-minus-2);
+    letter-spacing: 0.06em;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .contribution-merged {
+    color: var(--purple);
+  }
+
+  .contribution-fixed {
+    color: var(--green);
+  }
+
+  .contribution-open {
+    color: var(--midground);
+  }
+}
