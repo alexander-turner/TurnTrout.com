@@ -254,8 +254,7 @@ export function renderContributions(
   if (open.length > 0) {
     parts.push(
       quoted(
-        `[!goose]- In progress: ${plural(open.length, "open item")}\n` +
-          renderList(open, snapshot, annotations),
+        `[!goose]- In progress: ${plural(open.length, "open item")}\n${renderList(open, snapshot, annotations)}`,
       ),
     )
   }
