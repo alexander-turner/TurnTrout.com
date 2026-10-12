@@ -17,7 +17,7 @@ aliases:
   - software
   - OSS
 date_published: 2025-10-28
-date_updated: 2026-08-25
+date_updated: 2026-10-12
 ---
 
 <span class="populate-markdown-punctilio"></span>
@@ -132,3 +132,7 @@ I contributed a rule to [stylelint-scss](https://github.com/stylelint-scss/style
 3. In this specific context, [browsers will not interpolate `$var`](https://sass-lang.com/documentation/style-rules/declarations/#custom-properties) which means the final CSS contains the literal "`$var`".
 
 To fix the problem, `$var` must be interpolated into `#{$var}`. My [`custom-property-no-missing-interpolation`](https://github.com/stylelint-scss/stylelint-scss/pull/1195) rule catches and automatically fixes this mistake.
+
+# Everything else, automatically
+
+<span class="populate-markdown-external-contributions"></span>
