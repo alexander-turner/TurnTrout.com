@@ -1190,12 +1190,22 @@ img-comparison-slider {
   }
 }
 
-// External contributions on /open-source: each list item's bullet is its status pill.
+// The title's cap height, typed as <length> so `1cap` resolves on the row and
+// the smaller status pill inherits the row's value, not its own.
+@property --contribution-cap-height {
+  syntax: "<length>";
+  // stylelint-disable-next-line length-zero-no-unit
+  initial-value: 0px;
+  inherits: true;
+}
+
+// External contributions on /open-source: each contribution's bullet is its status pill.
 dl.external-contributions {
   .contribution-stars {
     color: var(--midground);
     font-size: var(--font-size-minus-1);
     margin-left: calc(0.5 * $base-margin);
+    text-shadow: none;
     white-space: nowrap;
   }
 
@@ -1203,20 +1213,34 @@ dl.external-contributions {
     list-style: none;
     padding-left: 0;
 
-    & > li {
-      display: grid;
-      grid-template-columns: 4.5em 1fr;
-      column-gap: calc(0.75 * $base-margin);
-      align-items: baseline;
+    & > li > dl {
+      margin: 0;
     }
   }
 
+  // A contribution row: its status pill, inline before its title.
+  .contribution-row {
+    --contribution-cap-height: 1cap;
+
+    text-shadow: none;
+  }
+
+  // An annotation sits flush under its row.
+  .contribution-annotation {
+    margin: calc(0.5 * $base-margin) 0 $base-margin;
+  }
+
+  // Baseline-aligned with the title, then raised so the uppercase label's
+  // capitals center on the title's capitals.
   .contribution-status {
+    display: inline-block;
+    translate: 0 calc((1cap - var(--contribution-cap-height)) / 2);
+    margin-right: calc(0.75 * $base-margin);
+    padding: 0 calc(0.75 * $base-margin);
     border: 1px solid currentcolor;
     border-radius: 999px;
     font-size: var(--font-size-minus-2);
     letter-spacing: 0.06em;
-    text-align: center;
     text-transform: uppercase;
     white-space: nowrap;
   }

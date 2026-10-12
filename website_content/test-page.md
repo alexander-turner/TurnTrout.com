@@ -127,11 +127,23 @@ Admonition in a description list
 
 A description list whose bullets are statuses, as on [the open source page](/open-source):
 
-<dl class="external-contributions no-formatting">
-<dt><a class="no-favicon" href="https://github.com/mermaid-js/mermaid"><code>mermaid-js/mermaid</code></a><span class="contribution-stars">★ 90,604</span></dt>
-<dd><ul class="contribution-list"><li><span class="contribution-status contribution-merged">Merged</span><a class="no-favicon" href="https://github.com/mermaid-js/mermaid/pull/7410">Bug/5741 fix duplicate svg element ids</a></li></ul></dd>
-<dt><a class="no-favicon" href="https://github.com/sigstore/cosign"><code>sigstore/cosign</code></a><span class="contribution-stars">★ 6,350</span></dt>
-<dd><ul class="contribution-list"><li><span class="contribution-status contribution-fixed">Fixed</span><a class="no-favicon" href="https://github.com/sigstore/cosign/issues/5154"><code>cosign verify</code> downloads every attestation bundle on an image, though it only checks signatures</a></li><li><span class="contribution-status contribution-open">Open</span><a class="no-favicon" href="https://github.com/sigstore/cosign/issues">A second, still-open item whose title is long enough to wrap onto another line</a></li></ul></dd>
+<dl class="external-contributions">
+<dt class="no-formatting"><a class="no-favicon" href="https://github.com/mermaid-js/mermaid"><code>mermaid-js/mermaid</code></a><span class="contribution-stars">★90,604</span></dt>
+<dd><ul class="contribution-list">
+<li><dl>
+<dt class="contribution-row no-formatting"><span class="contribution-status contribution-merged">Merged</span><a class="no-favicon" href="https://github.com/mermaid-js/mermaid/pull/7410">Bug/5741 fix duplicate svg element ids</a></dt>
+<dd class="contribution-annotation">
+
+An annotation explaining why this pull request mattered, set under its title.
+
+</dd>
+</dl></li>
+</ul></dd>
+<dt class="no-formatting"><a class="no-favicon" href="https://github.com/sigstore/cosign"><code>sigstore/cosign</code></a><span class="contribution-stars">★6,350</span></dt>
+<dd><ul class="contribution-list">
+<li class="contribution-row no-formatting"><span class="contribution-status contribution-fixed">Fixed</span><a class="no-favicon" href="https://github.com/sigstore/cosign/issues/5154"><code>cosign verify</code> downloads every attestation bundle on an image, though it only checks signatures</a></li>
+<li class="contribution-row no-formatting"><span class="contribution-status contribution-open">Open</span><a class="no-favicon" href="https://github.com/sigstore/cosign/issues">A second, still-open item whose title is long enough to wrap onto another line</a></li>
+</ul></dd>
 </dl>
 
 # Admonition lists

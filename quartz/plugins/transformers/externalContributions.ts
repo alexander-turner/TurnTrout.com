@@ -4,7 +4,7 @@
  * build reads only the snapshot, never the network.
  */
 
-import type { Element, ElementContent } from "hast"
+import type { ElementContent } from "hast"
 
 import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
@@ -139,30 +139,81 @@ function groupByRepo(
     ])
 }
 
-/** Renders one description list: a `<dt>` per repo, then a `<dd>` list whose bullets are statuses. */
+/** Key an annotation heading uses for a contribution: `owner/repo#number`. */
+function contributionKey(item: Contribution): string {
+  return `${item.repo}#${item.number}`
+}
+
+/**
+ * Parses the annotations file: each `## owner/repo#number` heading starts the
+ * markdown annotating that contribution, running until the next heading.
+ */
+export function parseAnnotations(markdown: string): ReadonlyMap<string, string> {
+  // Splitting on a capturing pattern yields [preamble, key, body, key, body, ...].
+  const [preamble, ...sections] = markdown.split(/^## (\S+)[ \t]*$/m)
+  if (sections.length === 0 || preamble.trim() !== "") {
+    throw new Error("Contribution annotations must start with a `## owner/repo#number` heading")
+  }
+  const annotations = new Map<string, string>()
+  for (let index = 0; index < sections.length; index += 2) {
+    const key = sections[index]
+    const body = sections[index + 1].trim()
+    if (annotations.has(key)) throw new Error(`Duplicate contribution annotation for ${key}`)
+    if (body === "") throw new Error(`Contribution annotation for ${key} is empty`)
+    annotations.set(key, body)
+  }
+  return annotations
+}
+
+/**
+ * Renders one description list: a `<dt>` per repo, then a `<dd>` holding a
+ * list with an item per contribution: its status pill and title. An annotated
+ * contribution's item is itself a description list, its `<dt>` the row and its
+ * `<dd>` the annotation's markdown, set off from the surrounding raw HTML by
+ * blank lines so it parses as markdown.
+ */
 export function renderList(
   items: readonly Contribution[],
   snapshot: ContributionsSnapshot,
-): Element {
-  const entries = groupByRepo(items, snapshot).flatMap(([repo, group]) => [
-    h("dt", [
-      h("a.no-favicon", { href: `https://github.com/${repo}` }, h("code", repo)),
-      h("span.contribution-stars", `★ ${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`),
-    ]),
-    h(
-      "dd",
-      h(
-        "ul.contribution-list",
-        group.map((item) =>
-          h("li", [
-            h(`span.contribution-status.contribution-${item.status}`, STATUS_LABEL[item.status]),
-            h("a.no-favicon", { href: item.url }, titleNodes(item.title)),
-          ]),
-        ),
-      ),
+  annotations: ReadonlyMap<string, string>,
+): string {
+  const lines = groupByRepo(items, snapshot).flatMap(([repo, group]) => [
+    toHtml(
+      h("dt.no-formatting", [
+        h("a.no-favicon", { href: `https://github.com/${repo}` }, h("code", repo)),
+        h("span.contribution-stars", `★${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`),
+      ]),
     ),
+    '<dd><ul class="contribution-list">',
+    ...group.flatMap((item) => {
+      const row = [
+        h(`span.contribution-status.contribution-${item.status}`, STATUS_LABEL[item.status]),
+        h("a.no-favicon", { href: item.url }, titleNodes(item.title)),
+      ]
+      const annotation = annotations.get(contributionKey(item))
+      if (annotation === undefined) return [toHtml(h("li.contribution-row.no-formatting", row))]
+      return [
+        "<li><dl>",
+        toHtml(h("dt.contribution-row.no-formatting", row)),
+        '<dd class="contribution-annotation">',
+        "",
+        annotation,
+        "",
+        "</dd>",
+        "</dl></li>",
+      ]
+    }),
+    "</ul></dd>",
   ])
-  return h("dl.external-contributions.no-formatting", entries)
+  return ['<dl class="external-contributions">', ...lines, "</dl>"].join("\n")
+}
+
+/** Prefixes every line with `>`, so a multi-line block sits inside a blockquote. */
+function quoted(block: string): string {
+  return block
+    .split("\n")
+    .map((line) => (line === "" ? ">" : `> ${line}`))
+    .join("\n")
 }
 
 function plural(count: number, noun: string): string {
@@ -172,10 +223,13 @@ function plural(count: number, noun: string): string {
 /**
  * Renders the snapshot as markdown: a summary sentence, the list of shipped
  * work (merged PRs and fixed issues), and a collapsed goose admonition holding
- * open items. Each list is one line of HTML, so it can sit inside the
- * admonition's blockquote.
+ * open items. Every annotation must belong to a listed contribution.
  */
-export function renderContributions(snapshotJson: string, filter: ContributionFilter): string {
+export function renderContributions(
+  snapshotJson: string,
+  filter: ContributionFilter,
+  annotations: ReadonlyMap<string, string>,
+): string {
   const snapshot = JSON.parse(snapshotJson) as ContributionsSnapshot
   const shown = snapshot.items.filter((item) =>
     isShown(item, repoMeta(snapshot, item.repo), filter),
@@ -185,6 +239,11 @@ export function renderContributions(snapshotJson: string, filter: ContributionFi
   if (shipped.length === 0) {
     throw new Error("No external contributions pass the filter; the section would render empty")
   }
+  const shownKeys = new Set(shown.map(contributionKey))
+  const orphans = [...annotations.keys()].filter((key) => !shownKeys.has(key))
+  if (orphans.length > 0) {
+    throw new Error(`Contribution annotations match no listed contribution: ${orphans.join(", ")}`)
+  }
 
   const merged = shipped.filter((item) => item.status === "merged").length
   const projects = new Set(shipped.map((item) => item.repo)).size
@@ -193,11 +252,12 @@ export function renderContributions(snapshotJson: string, filter: ContributionFi
     `merged and ${plural(shipped.length - merged, "issue")} I reported got fixed, ` +
     `across ${plural(projects, "project")}.`
 
-  const parts = [summary, toHtml(renderList(shipped, snapshot))]
+  const parts = [summary, renderList(shipped, snapshot, annotations)]
   if (open.length > 0) {
     parts.push(
-      `> [!goose]- In progress: ${plural(open.length, "open item")}\n` +
-        `> ${toHtml(renderList(open, snapshot))}`,
+      quoted(
+        `[!goose]- In progress: ${plural(open.length, "open item")}\n${renderList(open, snapshot, annotations)}`,
+      ),
     )
   }
   return parts.join("\n\n")
