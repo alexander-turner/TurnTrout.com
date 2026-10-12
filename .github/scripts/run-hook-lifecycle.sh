@@ -38,6 +38,16 @@ if grep -q "syntax error" "$setup_log"; then
   exit 1
 fi
 
+# 1b. The POST-CONDITION of session-setup's mergiraf leg, not its exit status:
+#     the hook warns and carries on when the install fails, and a checkout with
+#     merge.mergiraf.driver unset line-merges every `merge=mergiraf` path in
+#     .gitattributes without saying so. This job is the one that runs the hook
+#     for real and installs mergiraf nowhere else, so it is the only place the
+#     regression can go red.
+echo "::group::merge-driver-probe.sh"
+.github/scripts/merge-driver-probe.sh
+echo "::endgroup::"
+
 # 2. Pre-commit hook. Stage any pending changes and run it. lint-staged only ever
 #    acts on changed files, so on a clean checkout there's nothing to format
 #    (repo-wide formatting is covered by the pre-commit and format-check
@@ -51,6 +61,14 @@ echo "::endgroup::"
 export CLAUDE_PROJECT_DIR="$repo_root"
 echo "::group::pre-push-check.sh"
 .claude/hooks/pre-push-check.sh
+echo "::endgroup::"
+
+# 4. Git pre-push hook. Feed it an empty ref list (a push with nothing to push)
+#    so the pushed-range pre-commit loop is a no-op and the leg verifies the
+#    hook itself — tool discovery, the workflow pin read, the symlink check —
+#    runs without error.
+echo "::group::pre-push"
+.hooks/pre-push origin "$(git remote get-url origin)" </dev/null
 echo "::endgroup::"
 
 echo "Hook lifecycle completed successfully."

@@ -9,7 +9,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -17,13 +17,13 @@ permissions:
 jobs:
   decide:
     permissions:
-      contents: read
-      pull-requests: read
+      contents: read # the reusable gate checks out the tree
+      pull-requests: read # its live draft re-read (decide_pr_is_draft_now)
+      actions: read # its memo shadow lists this workflow's past runs
     uses: ./.github/workflows/decide-reusable.yaml
     with:
-      filters: |
-        run:
-          - '.github/**'
+      # POSIX ERE, read by `grep -E` — no PCRE escapes (\d, \w, (?:…)).
+      paths-regex: '^\.github/'
 
   zizmor:
     needs: decide
@@ -46,6 +46,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Fail if any required job did not pass
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
-        run: exit 1
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          sparse-checkout: |
+            .github/actions/report-job-result
+          persist-credentials: false
+
+      - name: Report result
+        uses: ./.github/actions/report-job-result
+        with:
+          run: ${{ needs.decide.outputs.run }}
+          decide-result: ${{ needs.decide.result }}
+          result: ${{ needs.zizmor.result }}
