@@ -34,7 +34,7 @@ export interface LinkContext {
 }
 
 /** Longest excerpt we keep, in visible characters, before truncating around the citing link. */
-export const BACKLINK_EXCERPT_MAX_CHARS = 330
+export const BACKLINK_EXCERPT_MAX_CHARS = 160
 
 /**
  * Elision markers flagging where prose was trimmed. The space keeps the marker
