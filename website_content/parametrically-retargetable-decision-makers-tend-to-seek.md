@@ -23,6 +23,7 @@ lw-is-linkpost: 'true'
 tags:
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases:
   - parametrically-retargetable-decision-makers-tend-to-seek
 lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence
@@ -37,7 +38,7 @@ date_published: 2023-02-18
 original_url: https://www.lesswrong.com/posts/GY49CKBkEs3bEpteM/parametrically-retargetable-decision-makers-tend-to-seek
 skip_import: true
 description: "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power."
-date_updated: 2026-08-03
+date_updated: 2026-10-12
 createBibtex: true
 ---
 

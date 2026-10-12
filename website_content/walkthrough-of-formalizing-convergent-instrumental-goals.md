@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases:
   - walkthrough-of-formalizing-convergent-instrumental-goals
 lw-reward-post-warning: 'false'
@@ -30,7 +31,7 @@ date_published: 2018-02-26
 original_url: https://www.lesswrong.com/posts/KXMqckn9avvY4Zo9W/walkthrough-of-formalizing-convergent-instrumental-goals
 skip_import: true
 description: "Proof of instrumental convergence: Even if an AI's goals seem unrelated to humanity, it may still turn us into paperclips. "
-date_updated: 2026-06-28
+date_updated: 2026-10-12
 ---
 
 # Introduction

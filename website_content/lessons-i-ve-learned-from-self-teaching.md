@@ -21,8 +21,9 @@ lw-latest-edit: 2021-12-05T17:56:31.967000Z
 lw-is-linkpost: "false"
 tags:
   - scholarship-and-learning
-  - practical
   - rationality
+  - textbook-insights
+  - personal-growth
 aliases:
   - lessons-i-ve-learned-from-self-teaching
 lw-sequence-title: Becoming Stronger
@@ -40,7 +41,7 @@ original_url: https://www.lesswrong.com/posts/cumc876woKaZLmQs5/lessons-i-ve-lea
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/f1898ddbf0c93680004fcf0ad728e68bee7095161e0cdfbb.jpg
 description: "Lessons learned from years of self-teaching: use Anki, read multiple books concurrently, and don't be afraid of easier texts."
-date_updated: 2026-06-28
+date_updated: 2026-10-12
 card_image_alt: "Anki's \"Future Due\" graph, a bar chart showing the number of flashcard reviews scheduled over the next 3 months. The bars are highest in the immediate future, showing a high workload that drops off quickly over time. Text below states: \"Total: 830 reviews, Average: 9 reviews/day, Due tomorrow: 58 reviews.\""
 ---
 

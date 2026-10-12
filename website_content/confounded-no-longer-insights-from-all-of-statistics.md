@@ -23,6 +23,7 @@ tags:
   - summaries
   - scholarship-and-learning
   - mathematics
+  - textbook-insights
 aliases:
   - confounded-no-longer-insights-from-all-of-statistics
 lw-sequence-title: Becoming Stronger
@@ -39,7 +40,7 @@ date_published: 2018-05-03
 original_url: https://www.lesswrong.com/posts/NMfQFubXAQda4Y5fe/confounded-no-longer-insights-from-all-of-statistics
 skip_import: true
 description: A tour of fundamental statistical concepts, from basic probability to hypothesis testing and Bayesian inference.
-date_updated: 2026-06-28
+date_updated: 2026-10-12
 ---
 
 > [!quote]Larry Wasserman, _All of Statistics_

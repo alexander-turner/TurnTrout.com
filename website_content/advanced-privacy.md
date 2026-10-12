@@ -5,7 +5,6 @@ no_dropcap: false
 tags:
   - open-source
   - understanding-the-world
-  - practical
   - community
   - privacy
 description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
@@ -18,7 +17,7 @@ aliases:
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 date_published: 2025-11-06
-date_updated: 2026-09-06
+date_updated: 2026-10-12
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 

@@ -21,8 +21,8 @@ lw-latest-edit: 2020-04-11T17:25:47.908000Z
 lw-is-linkpost: "false"
 tags:
   - rationality
-  - practical
   - personal
+  - personal-growth
 aliases:
   - internalizing-internal-double-crux
 lw-sequence-title: Becoming Stronger
@@ -39,7 +39,7 @@ date_published: 2018-04-30
 original_url: https://www.lesswrong.com/posts/Z7Sk29PDYTooipXMS/internalizing-internal-double-crux
 skip_import: true
 description: "Overcoming self-doubt: How emotionally-charged internal dialogue helped resolve long-held anxieties and limiting beliefs."
-date_updated: 2026-04-20
+date_updated: 2026-10-12
 ---
 
 > [!quote]

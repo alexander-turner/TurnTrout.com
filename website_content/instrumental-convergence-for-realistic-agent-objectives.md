@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases:
   - instrumental-convergence-for-realistic-agent-objectives
 lw-sequence-title: The Causes of Power-Seeking and Instrumental Convergence
@@ -38,7 +39,7 @@ date_published: 2022-01-22
 original_url: https://www.lesswrong.com/posts/W22Btd7NmGuucFejc/instrumental-convergence-for-realistic-agent-objectives
 skip_import: true
 description: Realistic AI objectives aren't random utility functions. I explore instrumental convergence for objectives defined over features of the environment.
-date_updated: 2026-08-03
+date_updated: 2026-10-12
 ---
 
 ---

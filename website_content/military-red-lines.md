@@ -5,6 +5,7 @@ no_dropcap: false
 tags:
   - AI
   - military
+  - AI-governance
 description: Principled contract language for selling AI to governments, with transparency that preserves principles against pressure.
 authors:
   - Alex Turner
@@ -22,7 +23,7 @@ no_dropcap_color: true
 similar_posts:
   - why-i-left-google-deepmind
 date_published: 2026-07-15
-date_updated: 2026-08-12
+date_updated: 2026-10-12
 ---
 
 > [!note] Historical context-

@@ -6,9 +6,10 @@ tags:
   - AI
   - instrumental-convergence
   - shard-theory
+  - power-seeking
 original_url: https://www.lesswrong.com/posts/LWfYjZgXHN5GYtYpH/intrinsic-power-seeking-ai-might-seek-power-for-power-s-sake
 date_published: 2024-10-30
-date_updated: 2026-07-22
+date_updated: 2026-10-12
 ---
 
 The world will change. We will not forever be playing around with chatbots. Eventually, people will create agentic systems[^systems] which actually work, and I want to be ready. Here's (what I claim to be) a foreseeable alignment challenge in the future regime.

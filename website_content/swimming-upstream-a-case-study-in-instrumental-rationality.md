@@ -20,9 +20,8 @@ title: "Swimming Upstream: A Case Study in Instrumental Rationality"
 lw-latest-edit: 2018-06-03T03:16:21.613000Z
 lw-is-linkpost: "false"
 tags:
-  - practical
-  - growth-stories
   - personal
+  - personal-growth
 aliases:
   - swimming-upstream-a-case-study-in-instrumental-rationality
 lw-sequence-title: Becoming Stronger
@@ -39,7 +38,7 @@ date_published: 2018-06-03
 original_url: https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
 skip_import: "true"
 description: "I dove headfirst into AI safety, even at the risk of my PhD. This is how. "
-date_updated: 2026-07-02
+date_updated: 2026-10-12
 ---
 
 > [!success]

@@ -7,6 +7,7 @@ tags:
   - deepmind
   - military
   - personal
+  - AI-governance
 description: I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.
 similar_posts:
   - red-line-framework
@@ -23,7 +24,7 @@ aliases:
   - leaving-google-deepmind
 no_dropcap_color: true
 date_published: 2026-07-15
-date_updated: 2026-09-18
+date_updated: 2026-10-12
 lw-posted-at: https://www.lesswrong.com/posts/iKm2FhpWkuuBojm82/why-i-left-google-deepmind
 ---
 

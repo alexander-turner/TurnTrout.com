@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - summaries
   - mathematics
+  - textbook-insights
 aliases:
   - and-my-axiom-insights-from-computability-and-logic
 lw-sequence-title: Becoming Stronger
@@ -38,7 +39,7 @@ date_published: 2019-01-16
 original_url: https://www.lesswrong.com/posts/n8neHaCubKG3HDWhT/and-my-axiom-insights-from-computability-and-logic
 skip_import: true
 description: Turing computability and the surprising limits of what formal systems can express.
-date_updated: 2026-06-28
+date_updated: 2026-10-12
 ---
 
 Max Tegmark's _[Our Mathematical Universe](https://www.amazon.com/Our-Mathematical-Universe-Ultimate-Reality/dp/0307599809)_ briefly touches on a captivating, beautiful mystery:

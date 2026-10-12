@@ -23,6 +23,7 @@ tags:
   - instrumental-convergence
   - rationality
   - AI
+  - power-seeking
 aliases:
   - when-most-vnm-coherent-preference-orderings-have-convergent
 lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence
@@ -39,7 +40,7 @@ date_published: 2021-08-09
 original_url: https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
 skip_import: true
 description: VNM-coherent preference orderings have the same statistical incentives as utility functions, often leading to power-seeking behavior.
-date_updated: 2026-04-20
+date_updated: 2026-10-12
 ---
 
 This post explains a formal link between "what kinds of instrumental convergence exists?" and "what does VNM-coherence tell us about goal-directedness?". It turns out that VNM coherent preference orderings have the **same** statistical incentives as utility functions; most such orderings will incentivize power-seeking in the settings covered by [the power-seeking theorems](/posts#the-causes-of-power-seeking-and-instrumental-convergence).

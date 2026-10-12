@@ -23,7 +23,6 @@ authors:
   - Oliver Habryka
   - Alex Turner
 tags:
-  - practical
   - deepmind
 aliases:
   - how-should-turntrout-handle-his-deepmind-equity-situation
@@ -34,7 +33,7 @@ original_url: https://www.lesswrong.com/posts/Be3ertyJfwDdQucdd/how-should-turnt
 no_dropcap: true
 skip_import: true
 description: Considering how to ethically manage AI equity when my goal is to reduce AI risk, not maximize profit.
-date_updated: 2026-07-15
+date_updated: 2026-10-12
 ---
 
 > [!note]

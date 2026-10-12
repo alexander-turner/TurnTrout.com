@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - instrumental-convergence
   - AI
+  - power-seeking
 aliases:
   - seeking-power-is-convergently-instrumental-in-a-broad-class
 lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence
@@ -38,7 +39,7 @@ date_published: 2021-08-08
 original_url: https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
 skip_import: true
 description: "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions. "
-date_updated: 2026-08-03
+date_updated: 2026-10-12
 ---
 
  

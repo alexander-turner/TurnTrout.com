@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - instrumental-convergence
   - AI
+  - power-seeking
 aliases:
   - the-more-power-at-stake-the-stronger-instrumental
 lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence
@@ -39,7 +40,7 @@ original_url: https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-a
 skip_import: true
 card_image:
 description: Instrumental convergence strengthens proportional to the ratio of an agent's control if it survives to its control if it dies.
-date_updated: 2026-08-03
+date_updated: 2026-10-12
 ---
 
 _[@title](/environmental-structure-can-cause-instrumental-convergence)_ explains how power-seeking incentives can arise because there are simply many more ways for power-seeking to be optimal, than for it not to be optimal. Colloquially, there are lots of ways for "get money and take over the world" to be part of an optimal policy, but relatively few ways for "die immediately" to be optimal. (And here, each "way something can be optimal" is a reward function which makes that thing optimal.)

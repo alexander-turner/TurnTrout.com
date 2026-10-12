@@ -6,6 +6,7 @@ tags:
   - AI
   - existential-risk
   - military
+  - AI-governance
 description: AI takeover seems easier to pull off for an AI that we teach to wield killer robots.
 authors:
   - Omar Khursheed
@@ -23,7 +24,7 @@ similar_posts:
   - why-i-left-google-deepmind
 original_url: https://www.lesswrong.com/posts/9jKhqmFjMzdAvHANr/misaligned-ais-could-use-killer-robots-to-take-over
 date_published: 2026-08-11
-date_updated: 2026-08-13
+date_updated: 2026-10-12
 createBibtex: true
 ---
 

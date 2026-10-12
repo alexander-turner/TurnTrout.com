@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - summaries
   - reinforcement-learning
+  - textbook-insights
 aliases:
   - making-a-difference-tempore-insights-from-reinforcement
 lw-sequence-title: Becoming Stronger
@@ -39,7 +40,7 @@ original_url: https://www.lesswrong.com/posts/BGv98aKicyT8eH4AY/making-a-differe
 no_dropcap: "true"
 skip_import: true
 description: "A deep dive into reinforcement learning, covering algorithms, exploration vs. exploitation, and the importance of safe AI development."
-date_updated: 2026-06-28
+date_updated: 2026-10-12
 ---
 
 > [!quote] Reinforcement Learning: An Introduction

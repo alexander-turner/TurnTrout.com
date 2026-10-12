@@ -21,6 +21,7 @@ lw-latest-edit: 2023-08-28T21:29:32.804000Z
 lw-is-linkpost: "false"
 tags:
   - understanding-the-world
+  - textbook-insights
 aliases:
   - insights-from-modern-principles-of-economics
 lw-sequence-title: Becoming Stronger
@@ -38,7 +39,7 @@ original_url: https://www.lesswrong.com/posts/hRa5c5GaMNkNGtnXq/insights-from-mo
 skip_import: true
 card_image:
 description: Textbook insights on economic policy, price gouging, and the surprising efficiency of competitive markets.
-date_updated: 2026-07-15
+date_updated: 2026-10-12
 card_image_alt:
 ---
 

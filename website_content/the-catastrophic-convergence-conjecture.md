@@ -23,6 +23,7 @@ tags:
   - impact-regularization
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases:
   - the-catastrophic-convergence-conjecture
 lw-sequence-title: Reframing Impact
@@ -40,7 +41,7 @@ original_url: https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/8l3kkwg.jpg
 description: "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power."
-date_updated: 2026-08-19
+date_updated: 2026-10-12
 card_image_alt: 'The "Catastrophic Convergence Conjecture" is defined as: "Unaligned goals tend to have catastrophe-inducing optimal policies because of power-seeking incentives."'
 createBibtex: true
 ---

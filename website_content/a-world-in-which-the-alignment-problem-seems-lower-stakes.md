@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - instrumental-convergence
   - AI
+  - power-seeking
 aliases:
   - a-world-in-which-the-alignment-problem-seems-lower-stakes
 lw-sequence-title: The Causes of Power-seeking and Instrumental Convergence
@@ -38,7 +39,7 @@ date_published: 2021-07-08
 original_url: https://www.lesswrong.com/posts/sunXMY5WyDcrHsNRr/a-world-in-which-the-alignment-problem-seems-lower-stakes
 skip_import: true
 description: "This post explores a hypothetical scenario where the AI alignment problem seems lower-stakes due to a unique universe structure. "
-date_updated: 2026-08-03
+date_updated: 2026-10-12
 ---
 
 The danger from power-seeking is not _intrinsic_ to the alignment problem. This danger also depends on [the structure of the agent's environment](/environmental-structure-can-cause-instrumental-convergence).

@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - personal
   - rationality
+  - personal-growth
 aliases:
   - "pretense"
 lw-reward-post-warning: "false"
@@ -30,7 +31,7 @@ date_published: 2018-07-29
 original_url: https://www.lesswrong.com/posts/FPrt6esZvAKRX2vmQ/pretense
 skip_import: true
 description: Reflections on self-deception and the fleeting nature of genuine connection.
-date_updated: 2026-06-26
+date_updated: 2026-10-12
 ---
 
 There's a kind of yearning, to be _that_ person who can do _those_ things. This yearning is self-actualization, yet corrupted. I often feel pulled in this way. I find myself wanting to be a certain person _now_, to be producing and being and feeling that way _now_, and I catch myself acting, speaking, signaling as if I were there _now_. As if I could make people happy by tiling the universe with smiley-faces.

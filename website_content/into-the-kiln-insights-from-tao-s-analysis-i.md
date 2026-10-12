@@ -23,6 +23,7 @@ tags:
   - summaries
   - understanding-the-world
   - mathematics
+  - textbook-insights
 aliases:
   - into-the-kiln-insights-from-tao-s-analysis-i
 lw-sequence-title: Becoming Stronger
@@ -39,7 +40,7 @@ date_published: 2018-06-01
 original_url: https://www.lesswrong.com/posts/cuZxipMFup5uJdeAp/into-the-kiln-insights-from-tao-s-analysis-i
 skip_import: true
 description: Tao's "Analysis I" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.
-date_updated: 2026-08-03
+date_updated: 2026-10-12
 ---
 
 As a young boy, mathematics captivated me. In elementary school, I'd happily while away entire weekends working through the next grade's math book. I was impatient. In middle school, I'd lazily estimate angles of incidence that would result if I shot lasers from my eyes, tracing their trajectories within the classroom and out down the hallway. I was restless.

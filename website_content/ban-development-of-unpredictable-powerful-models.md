@@ -22,6 +22,7 @@ lw-is-linkpost: 'false'
 tags:
   - AI
   - existential-risk
+  - AI-governance
 aliases:
   - ban-development-of-unpredictable-powerful-models
 lw-reward-post-warning: 'false'
@@ -30,7 +31,7 @@ date_published: 2023-06-20
 original_url: https://www.lesswrong.com/posts/8CvkNa6FKSrK4Nj83/ban-development-of-unpredictable-powerful-models
 skip_import: true
 description: "A proposal for a government regulation of AI: Developers must be able to accurately predict the model's output. "
-date_updated: 2026-08-19
+date_updated: 2026-10-12
 ---
 
 > [!warning]

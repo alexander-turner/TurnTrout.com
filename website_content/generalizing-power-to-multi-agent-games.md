@@ -26,6 +26,7 @@ tags:
   - understanding-the-world
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases:
   - generalizing-power-to-multi-agent-games
 sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence
@@ -40,7 +41,7 @@ date_published: 2021-03-22
 original_url: https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
 skip_import: true
 description: Formalizing "power" in multi-agent games, showing that increased agent capabilities can lead to power scarcity and increased competition for resources.
-date_updated: 2026-08-03
+date_updated: 2026-10-12
 ---
 
 > [!thanks] Acknowledgments

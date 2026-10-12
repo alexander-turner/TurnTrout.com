@@ -20,10 +20,10 @@ title: Looking back on my alignment PhD
 lw-latest-edit: 2023-08-10T01:35:59.613000Z
 lw-is-linkpost: "false"
 tags:
-  - growth-stories
   - AI
   - rationality
   - personal
+  - personal-growth
 aliases:
   - looking-back-on-my-alignment-phd
   - phd
@@ -43,7 +43,7 @@ date_published: 2022-06-30
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/6ddc0291a1961469101cbd7d8516c7ffa43d6b6711dc7c36.jpg
 description: The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.
-date_updated: 2026-07-22
+date_updated: 2026-10-12
 next-post-slug: insights-from-physiology
 next-post-title: Insights from "The Manga Guide to Physiology"
 card_image_alt: 'The front of a dissertation entitled: "On Avoiding Power-Seeking By Artificial Intelligence".'

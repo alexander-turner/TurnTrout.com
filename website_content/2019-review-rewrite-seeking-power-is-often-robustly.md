@@ -23,6 +23,7 @@ lw-is-linkpost: 'true'
 tags:
   - AI
   - instrumental-convergence
+  - power-seeking
 aliases: 2019-review-rewrite-seeking-power-is-often-robustly
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
@@ -30,7 +31,7 @@ date_published: 2020-12-23
 original_url: https://www.lesswrong.com/posts/mxXcPzpgGx4f8eK7v/2019-review-rewrite-seeking-power-is-often-robustly
 skip_import: true
 description: Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.
-date_updated: 2026-06-28
+date_updated: 2026-10-12
 ---
 
 For the 2019 LessWrong review, I've rewritten my post [_Seeking Power is Often Robustly Instrumental in MDPs_](/seeking-power-is-often-convergently-instrumental-in-mdps). The post explains the key insights of [my theorems on power-seeking and instrumental convergence / robust instrumentality](https://arxiv.org/abs/1912.01683). The new version is more substantial, more nuanced, and better motivated - without sacrificing the broad accessibility or the cute drawings of the original.

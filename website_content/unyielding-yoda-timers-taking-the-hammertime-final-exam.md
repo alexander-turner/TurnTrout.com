@@ -21,6 +21,7 @@ lw-latest-edit: 2018-04-03T02:38:48.327000Z
 lw-is-linkpost: 'false'
 tags:
   - rationality
+  - personal-growth
 aliases:
   - unyielding-yoda-timers-taking-the-hammertime-final-exam
 lw-reward-post-warning: 'false'
@@ -30,7 +31,7 @@ original_url: https://www.lesswrong.com/posts/pYg6RRBvkcMcsMYLq/unyielding-yoda-
 no_dropcap: true
 skip_import: true
 description: Three short essays written against the clock on instrumental rationality, confusion identification, and emotion propagation.
-date_updated: 2026-06-28
+date_updated: 2026-10-12
 ---
 
 > [!quote] [The Hammertime Final Exam](https://www.lesswrong.com/posts/Q7MsMshzbzhEs729s/hammertime-final-exam)

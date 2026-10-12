@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - AI
   - scholarship-and-learning
+  - textbook-insights
 aliases:
   - the-art-of-the-artificial-insights-from-artificial
 lw-sequence-title: Becoming Stronger
@@ -38,7 +39,7 @@ date_published: 2018-03-25
 original_url: https://www.lesswrong.com/posts/usEZRkMPJBr534vto/the-art-of-the-artificial-insights-from-artificial
 skip_import: true
 description: My review of "Artificial Intelligence, A Modern Approach" & how I read hundreds of pages in 3 days.
-date_updated: 2026-06-28
+date_updated: 2026-10-12
 ---
 
     

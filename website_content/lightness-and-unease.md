@@ -22,6 +22,7 @@ lw-latest-edit: 2018-03-21T05:24:26.289000Z
 lw-is-linkpost: "false"
 tags:
   - personal
+  - personal-growth
 aliases:
   - lightness-and-unease
 lw-sequence-title: Becoming Stronger
@@ -38,7 +39,7 @@ date_published: 2018-03-21
 original_url: https://www.lesswrong.com/posts/EvKWNRkJgLosgRDSa/lightness-and-unease
 skip_import: true
 description: A personal reflection on finding the rationalist community and the joy and anxiety of pursuing AI alignment.
-date_updated: 2026-06-28
+date_updated: 2026-10-12
 ---
 
 # Light

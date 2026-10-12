@@ -22,6 +22,7 @@ lw-is-linkpost: "false"
 tags:
   - personal
   - rationality
+  - personal-growth
 aliases:
   - on-being-robust
 lw-reward-post-warning: "false"
@@ -30,7 +31,7 @@ date_published: 2020-01-10
 original_url: https://www.lesswrong.com/posts/eX2aobNp5uCdcpsiK/on-being-robust
 skip_import: true
 description: "How to avoid feeling like a fraud: build good habits and stop cutting corners."
-date_updated: 2026-06-27
+date_updated: 2026-10-12
 ---
 
 > [!thanks]
