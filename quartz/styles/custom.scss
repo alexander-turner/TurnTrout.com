@@ -1190,28 +1190,58 @@ img-comparison-slider {
   }
 }
 
-// External contributions on /open-source: each list item's bullet is its status pill.
+// The title's cap height, typed as <length> so `1cap` resolves on the row and
+// the smaller status pill inherits the row's value, not its own.
+@property --contribution-cap-height {
+  syntax: "<length>";
+  // stylelint-disable-next-line length-zero-no-unit
+  initial-value: 0px;
+  inherits: true;
+}
+
+$contribution-status-column: 4.5em;
+$contribution-column-gap: calc(0.75 * $base-margin);
+
+// External contributions on /open-source: each contribution's bullet is its status pill.
 dl.external-contributions {
   .contribution-stars {
     color: var(--midground);
     font-size: var(--font-size-minus-1);
     margin-left: calc(0.5 * $base-margin);
+    text-shadow: none;
     white-space: nowrap;
   }
 
-  ul.contribution-list {
-    list-style: none;
-    padding-left: 0;
+  dl.contribution-list {
+    margin: 0 0 calc(2 * $base-margin);
 
-    & > li {
+    // A contribution row: its status pill, then its title.
+    & > dt {
+      --contribution-cap-height: 1cap;
+
       display: grid;
-      grid-template-columns: 4.5em 1fr;
-      column-gap: calc(0.75 * $base-margin);
+      grid-template-columns: $contribution-status-column 1fr;
+      column-gap: $contribution-column-gap;
       align-items: baseline;
+      text-shadow: none;
+    }
+
+    // An annotation sits under its row's title, past the pill column; on
+    // mobile it reclaims that column's width.
+    & > dd {
+      margin: calc(0.5 * $base-margin) 0 $base-margin
+        calc($contribution-status-column + $contribution-column-gap);
+
+      @media all and (max-width: $max-mobile-width) {
+        margin-left: 0;
+      }
     }
   }
 
+  // Baseline-aligned with the title's first line, then raised so the
+  // uppercase label's capitals center on the title's capitals.
   .contribution-status {
+    translate: 0 calc((1cap - var(--contribution-cap-height)) / 2);
     border: 1px solid currentcolor;
     border-radius: 999px;
     font-size: var(--font-size-minus-2);

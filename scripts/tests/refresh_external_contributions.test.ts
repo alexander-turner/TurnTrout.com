@@ -3,8 +3,14 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 
-import { EXTERNAL_CONTRIBUTIONS_SOURCE } from "../../config/quartz/externalContributions"
-import { CONTRIBUTIONS_SNAPSHOT_PATH } from "../../quartz/plugins/transformers/externalContributions"
+import {
+  CONTRIBUTION_FILTER,
+  EXTERNAL_CONTRIBUTIONS_SOURCE,
+} from "../../config/quartz/externalContributions"
+import {
+  CONTRIBUTIONS_SNAPSHOT_PATH,
+  renderContributions,
+} from "../../quartz/plugins/transformers/externalContributions"
 import {
   buildSnapshot,
   fetchContributions,
@@ -186,25 +192,36 @@ describe("writeSnapshot", () => {
     repos: { "a/b": { stars: 500, ownerType: "User" } },
   }
 
+  // The page's real annotations name contributions this fixture lacks.
+  const render = (snapshotJson: string): string =>
+    renderContributions(snapshotJson, CONTRIBUTION_FILTER, new Map())
+
   function tempFile(): string {
     return path.join(fs.mkdtempSync(path.join(os.tmpdir(), "contributions-")), "snapshot.json")
   }
 
   it("writes a changed snapshot and leaves an identical one alone", () => {
     const file = tempFile()
-    expect(writeSnapshot(renderable, file)).toBe(true)
+    expect(writeSnapshot(renderable, file, render)).toBe(true)
     expect(fs.readFileSync(file, "utf-8")).toBe(`${JSON.stringify(renderable, null, 2)}\n`)
-    expect(writeSnapshot(renderable, file)).toBe(false)
+    expect(writeSnapshot(renderable, file, render)).toBe(false)
     const starred = { ...renderable, repos: { "a/b": { stars: 501, ownerType: "User" } } }
-    expect(writeSnapshot(starred, file)).toBe(true)
+    expect(writeSnapshot(starred, file, render)).toBe(true)
+    fs.rmSync(path.dirname(file), { recursive: true })
+  })
+
+  it("validates against the page's annotations by default", () => {
+    const file = tempFile()
+    expect(() => writeSnapshot(renderable, file)).toThrow("match no listed contribution")
+    expect(fs.existsSync(file)).toBe(false)
     fs.rmSync(path.dirname(file), { recursive: true })
   })
 
   it("refuses a snapshot the page cannot render and keeps the old file", () => {
     const file = tempFile()
-    writeSnapshot(renderable, file)
+    writeSnapshot(renderable, file, render)
     const before = fs.readFileSync(file, "utf-8")
-    expect(() => writeSnapshot({ items: [], repos: {} }, file)).toThrow(
+    expect(() => writeSnapshot({ items: [], repos: {} }, file, render)).toThrow(
       "No external contributions pass the filter",
     )
     expect(fs.readFileSync(file, "utf-8")).toBe(before)
@@ -217,6 +234,7 @@ describe("committed snapshot", () => {
     const { transform } = EXTERNAL_CONTRIBUTIONS_SOURCE
     const rendered = transform?.(fs.readFileSync(CONTRIBUTIONS_SNAPSHOT_PATH, "utf-8"))
     expect(rendered).toMatch(/^This list refreshes daily from GitHub\./)
-    expect(rendered).toContain('<dl class="external-contributions no-formatting">')
+    expect(rendered).toContain('<dl class="external-contributions">')
+    expect(rendered).toContain('<dd class="contribution-annotation">')
   })
 })
