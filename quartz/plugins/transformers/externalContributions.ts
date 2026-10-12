@@ -181,7 +181,7 @@ export function renderList(
     toHtml(
       h("dt.no-formatting", [
         h("a.no-favicon", { href: `https://github.com/${repo}` }, h("code", repo)),
-        h("span.contribution-stars", `★ ${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`),
+        h("span.contribution-stars", `★${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`),
       ]),
     ),
     '<dd><ul class="contribution-list">',

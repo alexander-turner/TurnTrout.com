@@ -1199,9 +1199,6 @@ img-comparison-slider {
   inherits: true;
 }
 
-$contribution-status-column: 4.5em;
-$contribution-column-gap: calc(0.75 * $base-margin);
-
 // External contributions on /open-source: each contribution's bullet is its status pill.
 dl.external-contributions {
   .contribution-stars {
@@ -1221,37 +1218,29 @@ dl.external-contributions {
     }
   }
 
-  // A contribution row: its status pill, then its title.
+  // A contribution row: its status pill, inline before its title.
   .contribution-row {
     --contribution-cap-height: 1cap;
 
-    display: grid;
-    grid-template-columns: $contribution-status-column 1fr;
-    column-gap: $contribution-column-gap;
-    align-items: baseline;
     text-shadow: none;
   }
 
-  // An annotation sits under its row's title, past the pill column; on
-  // mobile it reclaims that column's width.
+  // An annotation sits flush under its row.
   .contribution-annotation {
-    margin: calc(0.5 * $base-margin) 0 $base-margin
-      calc($contribution-status-column + $contribution-column-gap);
-
-    @media all and (max-width: $max-mobile-width) {
-      margin-left: 0;
-    }
+    margin: calc(0.5 * $base-margin) 0 $base-margin;
   }
 
-  // Baseline-aligned with the title's first line, then raised so the
-  // uppercase label's capitals center on the title's capitals.
+  // Baseline-aligned with the title, then raised so the uppercase label's
+  // capitals center on the title's capitals.
   .contribution-status {
+    display: inline-block;
     translate: 0 calc((1cap - var(--contribution-cap-height)) / 2);
+    margin-right: calc(0.75 * $base-margin);
+    padding: 0 calc(0.75 * $base-margin);
     border: 1px solid currentcolor;
     border-radius: 999px;
     font-size: var(--font-size-minus-2);
     letter-spacing: 0.06em;
-    text-align: center;
     text-transform: uppercase;
     white-space: nowrap;
   }

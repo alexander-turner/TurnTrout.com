@@ -146,7 +146,7 @@ describe("renderList", () => {
   it("renders a repo heading with a monospace name, no favicon, and the star count", () => {
     expect(html).toContain(
       '<dt class="no-formatting"><a class="no-favicon" href="https://github.com/huge/repo">' +
-        '<code>huge/repo</code></a><span class="contribution-stars">★ 90,571</span></dt>',
+        '<code>huge/repo</code></a><span class="contribution-stars">★90,571</span></dt>',
     )
   })
 
