@@ -2,10 +2,11 @@
 Check the served site's external links, re-checking only transient failures.
 
 A crawl of the site fetches several hundred GitHub URLs, and GitHub answers a
-few of them with a 5xx on most runs. Re-running the whole crawl would draw a
-fresh handful of 5xx responses each time, so instead the URLs that failed with a
-5xx are re-checked on their own, with backoff, until they pass or the attempts
-run out. Any other failure (a 404, a DNS error) fails immediately.
+few of them with a 5xx (or times out) on most runs. Re-running the whole crawl
+would draw a fresh handful of such errors each time, so instead the failed URLs
+are re-checked on their own, with backoff, until they pass or the attempts run
+out. The crawl only fetches hosts we control, so the one failure a re-check
+cannot clear, a 4xx such as a 404, fails immediately.
 """
 
 import argparse
@@ -37,8 +38,9 @@ COMMON_ARGS: tuple[str, ...] = (
     "40",
 )
 
-# linkchecker's CSV `result` column starts with the HTTP status code.
-_TRANSIENT_RESULT = re.compile(r"^5\d\d\b")
+# linkchecker's CSV `result` column starts with the HTTP status code for an
+# HTTP error, or names the exception (a timeout, a dropped connection).
+_CLIENT_ERROR_RESULT = re.compile(r"^4\d\d\b")
 
 
 class LinkFailure(NamedTuple):
@@ -50,8 +52,8 @@ class LinkFailure(NamedTuple):
 
     @property
     def transient(self) -> bool:
-        """Whether the server reported a 5xx, which a re-check may clear."""
-        return bool(_TRANSIENT_RESULT.match(self.result))
+        """Whether a re-check may clear the failure: anything but a 4xx."""
+        return not _CLIENT_ERROR_RESULT.match(self.result)
 
 
 def read_failures(csv_path: Path) -> list[LinkFailure]:
@@ -75,7 +77,8 @@ def run_linkchecker(args: Sequence[str], csv_path: Path) -> list[LinkFailure]:
     Run linkchecker with a CSV report and return the links it found invalid.
 
     Raises:
-        RuntimeError: if linkchecker exits non-zero without reporting a failure.
+        RuntimeError: if linkchecker hit an internal error (exit 2), or failed
+            (exit 1) on printed warnings without reporting an invalid link.
     """
     command = [
         "linkchecker",
@@ -86,10 +89,12 @@ def run_linkchecker(args: Sequence[str], csv_path: Path) -> list[LinkFailure]:
     ]
     returncode = subprocess.run(command, check=False).returncode
     failures = read_failures(csv_path)
-    if returncode != 0 and not failures:
+    if returncode not in (0, 1):
         raise RuntimeError(
-            f"linkchecker exited with {returncode} but reported no invalid links"
+            f"linkchecker hit an internal error (exit {returncode})"
         )
+    if returncode == 1 and not failures:
+        raise RuntimeError("linkchecker failed on the warnings printed above")
     return failures
 
 
@@ -125,10 +130,10 @@ def check_external_links(
         permanent = [failure for failure in failures if not failure.transient]
         if permanent or not failures:
             break
-        report(failures, f"Re-checking {len(failures)} URL(s) in {delay:g}s:")
+        urls = dict.fromkeys(failure.url for failure in failures)
+        report(failures, f"Re-checking {len(urls)} URL(s) in {delay:g}s:")
         sleep(delay)
         delay *= 2
-        urls = dict.fromkeys(failure.url for failure in failures)
         failures = [
             failure._replace(parent=parents.get(failure.url, failure.parent))
             for failure in run_linkchecker(

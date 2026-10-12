@@ -1,5 +1,10 @@
 import { describe, expect, it } from "@jest/globals"
 import { toHtml } from "hast-util-to-html"
+import rehypeRaw from "rehype-raw"
+import rehypeStringify from "rehype-stringify"
+import remarkParse from "remark-parse"
+import remarkRehype from "remark-rehype"
+import { unified } from "unified"
 
 import {
   type Contribution,
@@ -197,6 +202,28 @@ describe("renderContributions", () => {
         `${shipped}\n\n> [!goose]- In progress: 1 open item\n${quotedOpen}`,
     )
     expect(quotedOpen).toContain(">\n> Why it matters.\n>\n")
+  })
+
+  it("parses annotations as markdown inside the raw HTML, in and out of the blockquote", () => {
+    const items = [item({ number: 1 }), item({ number: 2, status: "open" })]
+    const annotations = new Map([
+      ["big/repo#1", "Shipped *prose*."],
+      ["big/repo#2", "Pending *prose*."],
+    ])
+    const html = String(
+      unified()
+        .use(remarkParse)
+        .use(remarkRehype, { allowDangerousHtml: true })
+        .use(rehypeRaw)
+        .use(rehypeStringify)
+        .processSync(renderContributions(snapshotJson(items), FILTER, annotations)),
+    )
+    const annotation = (text: string) =>
+      `<dd class="contribution-annotation">\n<p>${text} <em>prose</em>.</p>\n</dd>`
+    expect(html).toContain(annotation("Shipped"))
+    const [, blockquote] = html.split("<blockquote>")
+    expect(blockquote).toContain(annotation("Pending"))
+    expect(blockquote).toContain('<dd><dl class="contribution-list">')
   })
 
   it("pluralizes counts and omits the admonition when nothing is open", () => {
