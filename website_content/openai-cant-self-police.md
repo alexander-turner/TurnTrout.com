@@ -47,8 +47,11 @@ If you retaliate against a person who provides law enforcement with truthful inf
 
 # About the authors
 
-**Alex Turner** is an independent AI alignment researcher. His [PhD research](https://arxiv.org/abs/2206.11831) showed why advanced AI systems might seek power. He was a research scientist at Google DeepMind until 2026, when [he resigned after Google signed an “all lawful use” AI agreement with the Pentagon](/why-i-left-google-deepmind).
+Alex Turner
+: An independent AI alignment researcher. His [PhD research](https://arxiv.org/abs/2206.11831) showed why advanced AI systems might seek power. He was a research scientist at Google DeepMind until 2026, when [he resigned after Google signed an “all lawful use” AI agreement with the Pentagon](/why-i-left-google-deepmind).
 
-**Amber Scorah** is the founder of [Back Channel](http://backchan.us), an initiative that helps AI workers speak out and turn their concerns into meaningful action. She has spent years leading whistleblower support organizations and working with employees, lawyers, and advocacy groups to bring important public-interest information to light.
+Amber Scorah
+: The founder of [Back Channel](http://backchan.us), an initiative that helps AI workers speak out and turn their concerns into meaningful action. She has spent years leading whistleblower support organizations and working with employees, lawyers, and advocacy groups to bring important public-interest information to light.
 
-**Karl Koch** is the founder of [The AI Whistleblower Initiative](http://aiwi.org), an independent non-profit working to strengthen the position of employees in frontier AI companies through connections to support, education, and policy work. He is an ex-startup founder and has been involved in AI safety since 2016.
+Karl Koch
+: The founder of [The AI Whistleblower Initiative](http://aiwi.org), an independent non-profit working to strengthen the position of employees in frontier AI companies through connections to support, education, and policy work. He is an ex-startup founder and has been involved in AI safety since 2016.

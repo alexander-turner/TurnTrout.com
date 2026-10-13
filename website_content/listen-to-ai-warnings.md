@@ -29,11 +29,7 @@ This July, OpenAI’s AI swarm of [700 agents](https://metr.org/blog/2026-08-26-
 
 Before ChatGPT existed, I defended my PhD dissertation called “[On Avoiding Power-Seeking by Artificial Intelligence](https://arxiv.org/abs/2206.11831).” I then worked for years at Google DeepMind, which paid me to help ensure that future superintelligent AIs will want to help us. I tried to hold the company to its ethical commitments against supplying AI for military use. When Google broke those commitments, I resigned at significant financial cost so that I could [publicly document](/why-i-left-google-deepmind) Google’s broken promises.
 
-<!-- vale off -->
-
-There are good reasons to develop AI and to believe we can solve these alignment problems. But there also are powerful interests in keeping the public out of the way. I’m speaking out again because the public has the right to know about the risks and the right to hear them straight.
-
-<!-- vale on -->
+We have good reasons to develop AI and to believe we can solve these alignment problems. But there also are powerful interests in keeping the public out of the way. I’m speaking out again because the public has the right to know about the risks and the right to hear them straight.
 
 Humanity doesn’t build and understand these systems the way we build and understand bridges, beam by visible beam. Rather, we grow them. Nobody knows how to reliably instill a designer’s priorities into a new model. Severe misalignment is always possible. Today’s AIs appear to occasionally lie or cheat, even when they know better.
 
@@ -55,4 +51,4 @@ The shape of the solution is simple: stop companies from allowing AI to self-imp
 
 Halfway measures, like transparency or voluntary commitments, are not good enough. I watched voluntary commitments fail inside Google.
 
-On September 12th, [Anthropic](https://darioamodei.com/post/we-must-pace-the-frontier), [Google DeepMind](https://x.com/demishassabis/status/2098909516582490602), [xAI](https://x.com/elonmusk/status/2098789109980332057), and [OpenAI](https://x.com/sama/status/2098811563415150910) advocated for pacing AI development. They cannot slow down alone. I urge you to demand that your government produce a serious AI safety agreement that provides enough time and confidence to safeguard the world and all her peoples.
+On September 12th, [Anthropic](https://darioamodei.com/post/we-must-pace-the-frontier), [Google DeepMind](https://x.com/demishassabis/status/2098909516582490602), [xAI](https://x.com/elonmusk/status/2098789109980332057), and [OpenAI](https://x.com/sama/status/2098811563415150910) advocated for pacing AI development. They claim they cannot slow down alone. I urge you to demand that your government produce a serious AI safety agreement that provides enough time and confidence to safeguard the world and all her peoples.
