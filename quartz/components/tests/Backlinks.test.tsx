@@ -100,6 +100,21 @@ describe("getBacklinkFiles", () => {
     const allFiles = [currentFile, linkingFile]
     expect(getBacklinkFileData(allFiles, currentFile)).toEqual([linkingFile])
   })
+
+  it("excludes linking files that set hide_from_backlinks", () => {
+    const currentFile = createFileData({ slug: "target" as FullSlug })
+    const hiddenFile = createFileData({
+      slug: "hidden" as FullSlug,
+      frontmatter: { title: "Hidden", hide_from_backlinks: true },
+      links: ["target" as SimpleSlug],
+    })
+    const linkingFile = createFileData({
+      slug: "source" as FullSlug,
+      links: ["target" as SimpleSlug],
+    })
+    const allFiles = [currentFile, hiddenFile, linkingFile]
+    expect(getBacklinkFileData(allFiles, currentFile)).toEqual([linkingFile])
+  })
 })
 
 describe("Backlinks", () => {

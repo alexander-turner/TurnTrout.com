@@ -76,7 +76,8 @@ const BacklinksList = ({
 /**
  * @param allFiles - The list of all files in the site
  * @param currentFile - The file that we are getting backlinks for
- * @returns A list of quartz plugin data for the files that link to the current file
+ * @returns A list of quartz plugin data for the files that link to the current file,
+ *   excluding files whose frontmatter sets `hide_from_backlinks`
  */
 export const getBacklinkFileData = (
   allFiles: QuartzPluginData[],
@@ -84,6 +85,7 @@ export const getBacklinkFileData = (
 ): QuartzPluginData[] => {
   const slug = simplifySlug(currentFile.slug as FullSlug)
   return allFiles.filter((otherFile) => {
+    if (otherFile.frontmatter?.hide_from_backlinks) return false
     const otherFileSlug = simplifySlug(otherFile.slug as FullSlug)
     return (
       otherFile.links?.some((link: SimpleSlug) => {

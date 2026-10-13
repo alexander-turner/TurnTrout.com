@@ -3,7 +3,7 @@ export const navigation = {
   navigateTo: /* istanbul ignore next */ (url: URL) => location.assign(url),
 }
 
-/** Slug patterns to exclude from random selection (non-post pages). */
+/** Slugs to exclude from random selection (non-post or personal pages). */
 export const EXCLUDED_SLUG_PREFIXES = ["tags/"]
 export const EXCLUDED_SLUGS = new Set([
   "index",
@@ -12,6 +12,7 @@ export const EXCLUDED_SLUGS = new Set([
   "research",
   "open-source",
   "design",
+  "date-me",
   "404",
 ])
 

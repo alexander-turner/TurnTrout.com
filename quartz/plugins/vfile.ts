@@ -30,6 +30,8 @@ export interface FrontmatterData {
   date_published?: string | Date
   date_updated?: string | Date
   hide_metadata?: boolean
+  /** Keep this page out of other pages' "Links to this page" lists. */
+  hide_from_backlinks?: boolean
   hide_reading_time?: boolean
   original_url?: string
   "lw-sequence-title"?: string

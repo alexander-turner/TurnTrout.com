@@ -4,6 +4,7 @@ title: I'm that "other fish in the sea"
 authors:
   - Alex
 hideSubscriptionLinks: true
+hide_from_backlinks: true
 similar_posts_allowlist:
   - about
   - launch
