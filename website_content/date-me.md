@@ -4,7 +4,9 @@ title: I'm that "other fish in the sea"
 authors:
   - Alex
 hideSubscriptionLinks: true
-exclude_from_similar_posts: true
+similar_posts_allowlist:
+  - about
+  - launch
 card_image: https://assets.turntrout.com/static/images/card_images/anime_sunset.jpg
 description: My dating doc, sharing who I am and who I'm looking for. Is it you? 💘
 date_published: 2024-10-27

@@ -88,28 +88,34 @@ class Article:
     ``None`` when the
     frontmatter field is absent; ``()`` explicitly suppresses the block.
     """
-    exclude_from_similar_posts: bool = False
-    """Whether to keep this article out of other articles' auto-computed
-    neighbors (it can still be listed via an explicit ``similar_posts``)."""
-
-
-def _normalize_override(value: object) -> tuple[str, ...] | None:
+    allowlist: tuple[str, ...] | None = None
     """
-    Normalize a ``similar_posts`` frontmatter value into a permalink tuple.
+    ``similar_posts_allowlist`` permalinks (slashes stripped): the only articles
+    whose auto-computed neighbors may include this one.
+
+    ``None`` when the frontmatter field is absent (no restriction); ``()``
+    keeps the article out of every auto-computed block. Explicit
+    ``similar_posts`` overrides are unaffected.
+    """
+
+
+def _normalize_permalinks(
+    value: object, field: str = "similar_posts"
+) -> tuple[str, ...] | None:
+    """
+    Normalize a permalink-list frontmatter value (e.g. ``similar_posts``).
 
     ``None`` when the field is absent. A present value must be a list of
     strings; each is coerced with ``str(x).strip("/")`` and empties are
-    dropped. An empty list yields ``()`` (an explicit way to suppress the
-    block). Anything else raises ``ValueError``.
+    dropped. An empty list yields ``()``. Anything else raises
+    ``ValueError`` naming ``field``.
     """
     if value is None:
         return None
     if not isinstance(value, list) or not all(
         isinstance(item, str) for item in value
     ):
-        raise ValueError(
-            f"similar_posts must be a list of strings, got {value!r}"
-        )
+        raise ValueError(f"{field} must be a list of strings, got {value!r}")
     return tuple(
         stripped for item in value if (stripped := str(item).strip("/"))
     )
@@ -152,11 +158,11 @@ def gather_articles(content_dir: Path = CONTENT_DIR) -> tuple[Article, ...]:
                 excerpt=excerpt,
                 embed_input=embed_input,
                 text_hash=text_hash(embed_input),
-                override=_normalize_override(front.get("similar_posts")),
-                exclude_from_similar_posts=front.get(
-                    "exclude_from_similar_posts"
-                )
-                is True,
+                override=_normalize_permalinks(front.get("similar_posts")),
+                allowlist=_normalize_permalinks(
+                    front.get("similar_posts_allowlist"),
+                    "similar_posts_allowlist",
+                ),
             )
         )
     return tuple(articles)
@@ -283,14 +289,18 @@ def _rank_neighbors(
     ``ordered_articles`` is indexed the same way as ``row``. The single best
     neighbor is always kept; the rest (positions 2..``top_n``) are kept only
     while their score is ``>= min_score``, so weak filler is dropped while every
-    covered article still renders a block. Articles flagged
-    ``exclude_from_similar_posts`` are never picked.
+    covered article still renders a block. A candidate with an ``allowlist``
+    that omits this article is never picked.
     """
+    self_permalink = ordered_articles[self_idx].permalink
     neighbors: list[Neighbor] = []
     for j in np.argsort(-np.asarray(row), kind="stable"):
         j_idx = int(j)
         other = ordered_articles[j_idx]
-        if j_idx == self_idx or other.exclude_from_similar_posts:
+        if j_idx == self_idx or (
+            other.allowlist is not None
+            and self_permalink not in other.allowlist
+        ):
             continue
         score = round(float(row[j_idx]), 6)
         # Sorted descending, so once a non-first neighbor falls below the

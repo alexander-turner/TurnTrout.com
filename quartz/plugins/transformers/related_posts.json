@@ -163,6 +163,11 @@
   ],
   "about": [
     {
+      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
+      "permalink": "date-me",
+      "title": "I'm that \"other fish in the sea\""
+    },
+    {
       "excerpt": "Celebrating the launch of the website after months of work.",
       "permalink": "launch",
       "title": "Site launch: Come relax by The Pond!"
@@ -2068,6 +2073,11 @@
     }
   ],
   "launch": [
+    {
+      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
+      "permalink": "date-me",
+      "title": "I'm that \"other fish in the sea\""
+    },
     {
       "excerpt": "Showing off and explaining this site's beauty.",
       "permalink": "design",
