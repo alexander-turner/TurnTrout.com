@@ -88,6 +88,9 @@ class Article:
     ``None`` when the
     frontmatter field is absent; ``()`` explicitly suppresses the block.
     """
+    exclude_from_similar_posts: bool = False
+    """Whether to keep this article out of other articles' auto-computed
+    neighbors (it can still be listed via an explicit ``similar_posts``)."""
 
 
 def _normalize_override(value: object) -> tuple[str, ...] | None:
@@ -150,6 +153,10 @@ def gather_articles(content_dir: Path = CONTENT_DIR) -> tuple[Article, ...]:
                 embed_input=embed_input,
                 text_hash=text_hash(embed_input),
                 override=_normalize_override(front.get("similar_posts")),
+                exclude_from_similar_posts=front.get(
+                    "exclude_from_similar_posts"
+                )
+                is True,
             )
         )
     return tuple(articles)
@@ -276,19 +283,20 @@ def _rank_neighbors(
     ``ordered_articles`` is indexed the same way as ``row``. The single best
     neighbor is always kept; the rest (positions 2..``top_n``) are kept only
     while their score is ``>= min_score``, so weak filler is dropped while every
-    covered article still renders a block.
+    covered article still renders a block. Articles flagged
+    ``exclude_from_similar_posts`` are never picked.
     """
     neighbors: list[Neighbor] = []
     for j in np.argsort(-np.asarray(row), kind="stable"):
         j_idx = int(j)
-        if j_idx == self_idx:
+        other = ordered_articles[j_idx]
+        if j_idx == self_idx or other.exclude_from_similar_posts:
             continue
         score = round(float(row[j_idx]), 6)
         # Sorted descending, so once a non-first neighbor falls below the
         # floor every later one does too.
         if neighbors and score < min_score:
             break
-        other = ordered_articles[j_idx]
         neighbors.append(
             Neighbor(
                 permalink=other.permalink,

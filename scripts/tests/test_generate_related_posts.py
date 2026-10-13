@@ -32,6 +32,7 @@ def _write_md(
     hide_metadata: bool = False,
     body: str = "Body text.",
     similar_posts: list[str] | None = None,
+    exclude_from_similar_posts: bool = False,
 ) -> Path:
     lines = ["---"]
     if title is not None:
@@ -47,6 +48,8 @@ def _write_md(
     if similar_posts is not None:
         lines.append("similar_posts:")
         lines.extend(f"  - {p}" for p in similar_posts)
+    if exclude_from_similar_posts:
+        lines.append("exclude_from_similar_posts: true")
     lines.append("---")
     lines.append("")
     lines.append(body)
@@ -135,6 +138,12 @@ class TestGatherArticles:
         _write_md(tmp_path, "x.md")
         (article,) = grp.gather_articles(tmp_path)
         assert article.override is None
+
+    @pytest.mark.parametrize("flag", [True, False])
+    def test_captures_exclude_flag(self, tmp_path: Path, flag: bool) -> None:
+        _write_md(tmp_path, "x.md", exclude_from_similar_posts=flag)
+        (article,) = grp.gather_articles(tmp_path)
+        assert article.exclude_from_similar_posts is flag
 
 
 # --- _normalize_override -----------------------------------------------------
@@ -326,13 +335,14 @@ class TestEmbedTexts:
 # --- compute_neighbors -------------------------------------------------------
 
 
-def _article(permalink: str) -> grp.Article:
+def _article(permalink: str, *, excluded: bool = False) -> grp.Article:
     return grp.Article(
         permalink=permalink,
         title=permalink.title(),
         excerpt=f"about {permalink}",
         embed_input="x",
         text_hash="h",
+        exclude_from_similar_posts=excluded,
     )
 
 
@@ -357,6 +367,19 @@ class TestComputeNeighbors:
         # Only "a" has article metadata, so "b" is dropped entirely.
         result = grp.compute_neighbors(embeddings, {"a": _article("a")})
         assert result == {"a": []}
+
+    def test_excluded_article_is_never_a_neighbor(self) -> None:
+        embeddings = {"a": [1.0, 0.0], "b": [0.99, 0.14], "c": [0.9, 0.4]}
+        articles = {
+            "a": _article("a"),
+            "b": _article("b", excluded=True),
+            "c": _article("c"),
+        }
+        result = grp.compute_neighbors(embeddings, articles, top_n=5)
+        assert [n["permalink"] for n in result["a"]] == ["c"]
+        assert [n["permalink"] for n in result["c"]] == ["a"]
+        # The excluded article still gets its own neighbors.
+        assert [n["permalink"] for n in result["b"]] == ["a", "c"]
 
     def test_zero_vector_does_not_crash(self) -> None:
         # A zero vector (norm 0) must not divide-by-zero; it still ranks.
