@@ -308,6 +308,7 @@ Aram
 Arbital
 arcanum
 Archimedean
+architected
 Arditi
 arg
 Argmax
@@ -341,6 +342,7 @@ ASR
 Assadi
 associational
 AST
+Astra
 ASTs
 asungus
 ATF
@@ -411,6 +413,7 @@ Bader
 Baggins
 Bai
 bajillion
+Balesni
 Balrog
 bandaid
 bandaids
@@ -548,6 +551,7 @@ Brin
 Bringhurst's
 broadcastable
 Broca's
+Brockman
 brown-grey
 bruce-wayne-and-the-cost-of-inaction
 brungus
@@ -1307,6 +1311,7 @@ GPT-4.1-mini
 GPT-4o
 GPT-4o-mini
 GPT-5
+GPT-6
 GPT-generated
 GPT-Hawking's
 GPT-J
@@ -1330,6 +1335,7 @@ granularly
 GrapheneOS
 GrapheneOS.
 GraphIQL
+Grassley's
 grayscale
 greedifies
 Greenblatt
@@ -1581,6 +1587,7 @@ Jailbreaking
 jailbreaking
 jailbroke
 jailbroken
+Jakub
 jankier
 Jaynes
 JB
@@ -1660,6 +1667,7 @@ L2-norm
 labeler
 labelling
 labmates
+Labour
 LADR
 Lahav
 LAMA-ConceptNet
@@ -1679,9 +1687,9 @@ ldots
 Leahy
 learnings
 learnt
+LeCun
 Lede
 lede
-LeCun
 leftarrow
 Leftrightarrow
 leftrightarrow
@@ -1885,6 +1893,7 @@ micromorph
 midbrain
 midwest
 Mihaylov
+Mikita
 Mikolov
 Milgram
 Militaries
@@ -2199,6 +2208,7 @@ oſtentatiouſly
 O₂
 P2
 Pac-Man
+Pachocki
 Palantir
 Palform
 Pangolin
@@ -2720,6 +2730,7 @@ Schneier
 schoolers
 sci-fi
 Scooby
+Scorah
 screenshotting
 Scrollable
 scrollable
@@ -3056,6 +3067,7 @@ tokenized
 tokenizer
 tokenizes
 Tolkienesque
+Tomek
 toolbelt
 toolkits
 toolset
@@ -3073,8 +3085,8 @@ Transclude
 transclude
 transcluded
 Transclusion
-Transclusions
 transclusion
+Transclusions
 transclusions
 transcoders
 Transcoding
@@ -3180,6 +3192,7 @@ uninterpretable
 unintuitive
 unironically
 unishment
+Unmonitorable
 unnaturality
 unoptimized
 unpatched
@@ -3315,7 +3328,10 @@ Wentworth
 WhatsApp
 whistleblow
 Whistleblower
+whistleblower
+whistleblowers
 whitebox
+whitepaper
 whitespace
 Wi-Fi
 Wichers

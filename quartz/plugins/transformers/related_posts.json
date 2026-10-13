@@ -2153,6 +2153,23 @@
       "title": "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
     }
   ],
+  "listen-to-ai-warnings": [
+    {
+      "excerpt": "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.",
+      "permalink": "why-i-left-google-deepmind",
+      "title": "Why I left Google DeepMind"
+    },
+    {
+      "excerpt": "AI takeover seems easier to pull off for an AI that we teach to wield killer robots.",
+      "permalink": "killer-robots-takeover",
+      "title": "Misaligned AIs could use killer robots to take over"
+    },
+    {
+      "excerpt": "Op-ed in Fortune: OpenAI promised to share information with independent evaluators, then fired safety researchers for sharing information with evaluators.",
+      "permalink": "openai-cant-self-police",
+      "title": "OpenAI can't self-police because it fires the people raising the alarm"
+    }
+  ],
   "llama2-steering-vectors": [
     {
       "excerpt": "Activation additions: steering language models by adding a bias to the forward pass. Surprisingly broad control, small impact on off-target capabilities.",
@@ -2447,6 +2464,18 @@
       "excerpt": "A command-line tool to harden datasets, helping prevent AI data contamination by deploying a protected download portal.",
       "permalink": "dataset-protection",
       "title": "We built a tool to protect your dataset from simple scrapers"
+    }
+  ],
+  "openai-cant-self-police": [
+    {
+      "excerpt": "Op-ed in The Guardian: AI could escape our control. Voluntary commitments failed at Google, so governments must restrain the race to superintelligence.",
+      "permalink": "listen-to-ai-warnings",
+      "title": "I worked at Google DeepMind. You should listen to the warnings about AI."
+    },
+    {
+      "excerpt": "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.",
+      "permalink": "why-i-left-google-deepmind",
+      "title": "Why I left Google DeepMind"
     }
   ],
   "ordinary-differential-equations-textbook-review": [
