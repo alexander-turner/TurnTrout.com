@@ -1025,11 +1025,6 @@
       "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
       "permalink": "about",
       "title": "About me"
-    },
-    {
-      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
-      "permalink": "date-me",
-      "title": "I'm that \"other fish in the sea\""
     }
   ],
   "digital-minimalism": [
@@ -2449,11 +2444,6 @@
       "title": "About me"
     },
     {
-      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
-      "permalink": "date-me",
-      "title": "I'm that \"other fish in the sea\""
-    },
-    {
       "excerpt": "A command-line tool to harden datasets, helping prevent AI data contamination by deploying a protected download portal.",
       "permalink": "dataset-protection",
       "title": "We built a tool to protect your dataset from simple scrapers"
@@ -3333,11 +3323,6 @@
       "excerpt": "The mistakes made, the lessons learned, and the drive to solve a hilariously neglected super-problem.",
       "permalink": "alignment-phd",
       "title": "Looking back on my alignment PhD"
-    },
-    {
-      "excerpt": "My dating doc, sharing who I am and who I'm looking for. Is it you? 💘",
-      "permalink": "date-me",
-      "title": "I'm that \"other fish in the sea\""
     },
     {
       "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",

@@ -4,10 +4,13 @@ title: I'm that "other fish in the sea"
 authors:
   - Alex
 hideSubscriptionLinks: true
+similar_posts_allowlist:
+  - about
+  - launch
 card_image: https://assets.turntrout.com/static/images/card_images/anime_sunset.jpg
 description: My dating doc, sharing who I am and who I'm looking for. Is it you? 💘
 date_published: 2024-10-27
-date_updated: 2026-08-09
+date_updated: 2026-10-13
 tags:
   - personal
 card_image_alt: An anime rendition of a beautiful orange sunset over the Bay skyline. A man and woman enjoy a picnic.

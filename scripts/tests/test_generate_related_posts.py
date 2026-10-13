@@ -32,6 +32,7 @@ def _write_md(
     hide_metadata: bool = False,
     body: str = "Body text.",
     similar_posts: list[str] | None = None,
+    similar_posts_allowlist: list[str] | None = None,
 ) -> Path:
     lines = ["---"]
     if title is not None:
@@ -47,6 +48,9 @@ def _write_md(
     if similar_posts is not None:
         lines.append("similar_posts:")
         lines.extend(f"  - {p}" for p in similar_posts)
+    if similar_posts_allowlist is not None:
+        lines.append("similar_posts_allowlist:")
+        lines.extend(f"  - {p}" for p in similar_posts_allowlist)
     lines.append("---")
     lines.append("")
     lines.append(body)
@@ -136,8 +140,30 @@ class TestGatherArticles:
         (article,) = grp.gather_articles(tmp_path)
         assert article.override is None
 
+    @pytest.mark.parametrize(
+        ("allowlist", "expected"), [(None, None), (["/a/", "b"], ("a", "b"))]
+    )
+    def test_captures_allowlist(
+        self,
+        tmp_path: Path,
+        allowlist: list[str] | None,
+        expected: tuple[str, ...] | None,
+    ) -> None:
+        _write_md(tmp_path, "x.md", similar_posts_allowlist=allowlist)
+        (article,) = grp.gather_articles(tmp_path)
+        assert article.allowlist == expected
 
-# --- _normalize_override -----------------------------------------------------
+    def test_bad_allowlist_names_its_field(self, tmp_path: Path) -> None:
+        (tmp_path / "x.md").write_text(
+            "---\ntitle: T\npermalink: p\ndescription: D\n"
+            "similar_posts_allowlist: a\n---\n\nBody.",
+            encoding="utf-8",
+        )
+        with pytest.raises(ValueError, match="similar_posts_allowlist must"):
+            grp.gather_articles(tmp_path)
+
+
+# --- _normalize_permalinks ---------------------------------------------------
 
 
 class TestNormalizeOverride:
@@ -153,12 +179,12 @@ class TestNormalizeOverride:
     def test_normalizes(
         self, value: object, expected: tuple[str, ...] | None
     ) -> None:
-        assert grp._normalize_override(value) == expected
+        assert grp._normalize_permalinks(value) == expected
 
     @pytest.mark.parametrize("value", ["a", {"a": 1}, ["a", 2], [None]])
     def test_rejects_non_list_of_strings(self, value: object) -> None:
         with pytest.raises(ValueError, match="list of strings"):
-            grp._normalize_override(value)
+            grp._normalize_permalinks(value)
 
 
 # --- resolve_override --------------------------------------------------------
@@ -326,13 +352,16 @@ class TestEmbedTexts:
 # --- compute_neighbors -------------------------------------------------------
 
 
-def _article(permalink: str) -> grp.Article:
+def _article(
+    permalink: str, *, allowlist: tuple[str, ...] | None = None
+) -> grp.Article:
     return grp.Article(
         permalink=permalink,
         title=permalink.title(),
         excerpt=f"about {permalink}",
         embed_input="x",
         text_hash="h",
+        allowlist=allowlist,
     )
 
 
@@ -357,6 +386,26 @@ class TestComputeNeighbors:
         # Only "a" has article metadata, so "b" is dropped entirely.
         result = grp.compute_neighbors(embeddings, {"a": _article("a")})
         assert result == {"a": []}
+
+    @pytest.mark.parametrize(
+        ("allowlist", "a_neighbors"),
+        [((), ["c"]), (("a",), ["b", "c"])],
+    )
+    def test_allowlist_limits_where_article_is_a_neighbor(
+        self, allowlist: tuple[str, ...], a_neighbors: list[str]
+    ) -> None:
+        embeddings = {"a": [1.0, 0.0], "b": [0.99, 0.14], "c": [0.9, 0.4]}
+        articles = {
+            "a": _article("a"),
+            "b": _article("b", allowlist=allowlist),
+            "c": _article("c"),
+        }
+        result = grp.compute_neighbors(embeddings, articles, top_n=5)
+        assert [n["permalink"] for n in result["a"]] == a_neighbors
+        # "c" is not on the allowlist either way.
+        assert [n["permalink"] for n in result["c"]] == ["a"]
+        # The restricted article still gets its own neighbors.
+        assert [n["permalink"] for n in result["b"]] == ["a", "c"]
 
     def test_zero_vector_does_not_crash(self) -> None:
         # A zero vector (norm 0) must not divide-by-zero; it still ranks.
