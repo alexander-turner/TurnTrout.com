@@ -83,6 +83,7 @@ without notice.
 | `hidden-html`         | Elements hidden via CSS/attribute (`display:none`, `hidden`, etc.) spliced out by Layer 2                    |
 | `exfil-urls`          | Exfil-shaped URLs detected by Layer 3 (reported, not removed)                                                |
 | `confusable-host`     | URL hosts that are look-alikes of an ASCII name (`аpple.com`), detected by Layer 3 (reported, not rewritten) |
+| `unscannable`         | Input nested too deeply for Layer 3 to scan; any URL in it is unvetted (reported as a warning)               |
 
 ### warnings vs notes
 
@@ -471,7 +472,9 @@ const findings = scanInstructionFiles(["CLAUDE.md", "**/SKILL.md"], {
   // nested worktrees. Ignored FILES (CLAUDE.local.md) are still scanned.
   exclude: contextScanExclude(projectDir),
 });
-for (const { file } of findings) cleanFile(`${projectDir}/${file}`);
+// `root` is required: a rewrite whose realpath leaves it throws instead.
+for (const { file } of findings)
+  cleanFile(`${projectDir}/${file}`, { root: projectDir });
 
 import { classifyPrompt } from "agent-sanitizer/prompt";
 classifyPrompt(submittedPrompt); // { action: "pass" | "note" | "block", reason? }
