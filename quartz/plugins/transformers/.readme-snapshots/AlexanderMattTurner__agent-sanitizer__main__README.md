@@ -227,6 +227,11 @@ guessing if the marketplace was never added. To pull a release by hand instead:
 
 `plugin/README.md` has the managed-settings form for enabling it fleet-wide.
 
+The plugin installs from this repository's `plugin-dist` branch, which CI
+builds from each release tag; `main` carries the sources only, so a checkout
+runs `pnpm install` (and `pnpm build:redactor` for the zipapp) to get a
+runnable `plugin/`.
+
 To wire them yourself instead, one entry dispatches every mode on `--hook=`:
 
 ```jsonc
