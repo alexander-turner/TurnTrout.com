@@ -166,6 +166,11 @@ export function parseAnnotations(markdown: string): ReadonlyMap<string, string> 
   return annotations
 }
 
+/** Lowercases a repo name and joins its parts with `-`, for use in an `id`. */
+function repoSlug(repo: string): string {
+  return repo.toLowerCase().replaceAll(/[^a-z0-9_]+/g, "-")
+}
+
 /** Indents every non-blank line of a block so it continues a list item. */
 function indented(block: string): string {
   return block
@@ -179,12 +184,15 @@ function indented(block: string): string {
  * with its star count linked to the repo, then a list with an item per
  * contribution, its status pill as the bullet. Each item's row is a one-line
  * HTML block, so its title never parses as markdown; an annotation follows as
- * the item's own markdown.
+ * the item's own markdown. With `idPrefix`, each heading carries an explicit
+ * `id` of that prefix plus the repo, so a repo listed twice on the page keeps
+ * unique heading ids.
  */
 export function renderList(
   items: readonly Contribution[],
   snapshot: ContributionsSnapshot,
   annotations: ReadonlyMap<string, string>,
+  idPrefix?: string,
 ): string {
   return groupByRepo(items, snapshot)
     .map(([repo, group]) => {
@@ -205,8 +213,12 @@ export function renderList(
         const annotation = annotations.get(contributionKey(item))
         return annotation === undefined ? [`- ${row}`] : [`- ${row}`, "", indented(annotation), ""]
       })
+      const heading =
+        idPrefix === undefined
+          ? `## \`${repo}\``
+          : toHtml(h("h2", { id: `${idPrefix}${repoSlug(repo)}` }, h("code", repo)))
       return [
-        `## \`${repo}\``,
+        heading,
         "",
         `Subtitle: ${stars}`,
         "",
@@ -260,7 +272,7 @@ export function renderContributions(
   if (open.length > 0) {
     parts.push(
       asAdmonition(
-        renderList(open, snapshot, annotations),
+        renderList(open, snapshot, annotations, "in-progress-"),
         `[!goose]- In progress: ${plural(open.length, "open item")}`,
       ),
     )

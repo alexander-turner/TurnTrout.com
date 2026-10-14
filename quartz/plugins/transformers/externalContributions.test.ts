@@ -172,6 +172,14 @@ describe("renderList", () => {
     expect(annotated).toContain("Later PR</a></div>\n\n  Some *prose*.\n\n  1. A step\n\n- <div")
   })
 
+  it("gives each heading an explicit id under an id prefix", () => {
+    const prefixed = [item({ repo: "Big.Org/Re_po" })]
+    const repos = { "Big.Org/Re_po": { stars: 10, ownerType: "Organization" } }
+    expect(renderList(prefixed, { items: prefixed, repos }, NO_ANNOTATIONS, "open-")).toMatch(
+      /^<h2 id="open-big-org-re_po"><code>Big\.Org\/Re_po<\/code><\/h2>\n\nSubtitle: /,
+    )
+  })
+
   it("orders same-star repos by name", () => {
     const tied = [item({ repo: "b/repo" }), item({ repo: "a/repo" })]
     const repos = {
@@ -198,7 +206,7 @@ describe("renderContributions", () => {
         "and 1 issue I reported got fixed, across 1 project.\n\n" +
         `${shipped}\n\n` +
         "> [!goose]- In progress: 1 open item\n" +
-        "> ## `big/repo`\n>\n" +
+        '> <h2 id="in-progress-big-repo"><code>big/repo</code></h2>\n>\n' +
         '> Subtitle: <a class="no-favicon" href="https://github.com/big/repo">★5,000</a>\n>\n' +
         '> <div class="contribution-list">\n>\n' +
         '> - <div class="contribution-row no-formatting">' +
@@ -228,6 +236,10 @@ describe("renderContributions", () => {
         .use(rehypeStringify)
         .processSync(renderContributions(snapshotJson(items), FILTER, annotations)),
     )
+    expect([...html.matchAll(/<h2 id="([^"]*)"/g)].map((match) => match[1])).toEqual([
+      "big-repo",
+      "in-progress-big-repo",
+    ])
     const [shipped, blockquote] = html.split("<blockquote>")
     expect(shipped).toContain(
       ">Fix <code>*a*</code> in [b](c)</a></div>\n<p>Shipped <em>prose</em>:</p>\n<ol>\n<li>A step</li>\n</ol>\n</li>",
