@@ -1190,8 +1190,8 @@ img-comparison-slider {
   }
 }
 
-// The title's cap height, typed as <length> so `1cap` resolves on the row and
-// the smaller status pill inherits the row's value, not its own.
+// The title's cap height, typed as <length> so `1cap` resolves on the list
+// item and the smaller status pill inherits the item's value, not its own.
 @property --contribution-cap-height {
   syntax: "<length>";
   // stylelint-disable-next-line length-zero-no-unit
@@ -1199,48 +1199,54 @@ img-comparison-slider {
   inherits: true;
 }
 
-// External contributions on /open-source: each contribution's bullet is its status pill.
-dl.external-contributions {
-  .contribution-stars {
-    color: var(--midground);
-    font-size: var(--font-size-minus-1);
-    margin-left: calc(0.5 * $base-margin);
-    text-shadow: none;
-    white-space: nowrap;
-  }
+// The pill's width, typed as <length> so `em` resolves in the list's font
+// size, not the pill's smaller one.
+@property --contribution-bullet-width {
+  syntax: "<length>";
+  // stylelint-disable-next-line length-zero-no-unit
+  initial-value: 0px;
+  inherits: true;
+}
 
-  ul.contribution-list {
+$contribution-bullet-gap: calc(0.75 * $base-margin);
+
+// External contributions on /open-source: each contribution's bullet is its
+// status pill, hanging in the list's indent.
+.contribution-list {
+  & > ul {
+    --contribution-bullet-width: 4.5em;
+
     list-style: none;
-    padding-left: 0;
+    padding-left: calc(var(--contribution-bullet-width) + #{$contribution-bullet-gap});
 
-    & > li > dl {
-      margin: 0;
+    & > li {
+      --contribution-cap-height: 1cap;
     }
-  }
 
-  // A contribution row: its status pill, inline before its title.
-  .contribution-row {
-    --contribution-cap-height: 1cap;
+    // An annotation tucks under its title and sets off the next item.
+    & > li > .contribution-row + * {
+      margin-top: calc(0.5 * $base-margin);
+    }
 
-    text-shadow: none;
-  }
-
-  // An annotation sits flush under its row.
-  .contribution-annotation {
-    margin: calc(0.5 * $base-margin) 0 $base-margin;
+    & > li:not(:last-child) > :last-child:not(.contribution-row) {
+      margin-bottom: calc(2 * $base-margin);
+    }
   }
 
   // Baseline-aligned with the title, then raised so the uppercase label's
   // capitals center on the title's capitals.
   .contribution-status {
     display: inline-block;
+    box-sizing: border-box;
+    width: var(--contribution-bullet-width);
     translate: 0 calc((1cap - var(--contribution-cap-height)) / 2);
-    margin-right: calc(0.75 * $base-margin);
-    padding: 0 calc(0.75 * $base-margin);
+    margin-left: calc(-1 * (var(--contribution-bullet-width) + #{$contribution-bullet-gap}));
+    margin-right: $contribution-bullet-gap;
     border: 1px solid currentcolor;
     border-radius: 999px;
     font-size: var(--font-size-minus-2);
     letter-spacing: 0.06em;
+    text-align: center;
     text-transform: uppercase;
     white-space: nowrap;
   }

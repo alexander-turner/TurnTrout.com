@@ -165,47 +165,53 @@ export function parseAnnotations(markdown: string): ReadonlyMap<string, string> 
   return annotations
 }
 
+/** Indents every non-blank line of a block so it continues a list item. */
+function indented(block: string): string {
+  return block
+    .split("\n")
+    .map((line) => (line === "" ? "" : `  ${line}`))
+    .join("\n")
+}
+
 /**
- * Renders one description list: a `<dt>` per repo, then a `<dd>` holding a
- * list with an item per contribution: its status pill and title. An annotated
- * contribution's item is itself a description list, its `<dt>` the row and its
- * `<dd>` the annotation's markdown, set off from the surrounding raw HTML by
- * blank lines so it parses as markdown.
+ * Renders the contributions as markdown: a `##` heading per repo with its star
+ * count as a subtitle, then a list with an item per contribution, its status
+ * pill as the bullet. Each item's row is a one-line HTML block, so its title
+ * never parses as markdown; an annotation follows as the item's own markdown.
  */
 export function renderList(
   items: readonly Contribution[],
   snapshot: ContributionsSnapshot,
   annotations: ReadonlyMap<string, string>,
 ): string {
-  const lines = groupByRepo(items, snapshot).flatMap(([repo, group]) => [
-    toHtml(
-      h("dt.no-formatting", [
+  return groupByRepo(items, snapshot)
+    .map(([repo, group]) => {
+      const heading = toHtml(
         h("a.no-favicon", { href: `https://github.com/${repo}` }, h("code", repo)),
-        h("span.contribution-stars", `★${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`),
-      ]),
-    ),
-    '<dd><ul class="contribution-list">',
-    ...group.flatMap((item) => {
-      const row = [
-        h(`span.contribution-status.contribution-${item.status}`, STATUS_LABEL[item.status]),
-        h("a.no-favicon", { href: item.url }, titleNodes(item.title)),
-      ]
-      const annotation = annotations.get(contributionKey(item))
-      if (annotation === undefined) return [toHtml(h("li.contribution-row.no-formatting", row))]
+      )
+      const entries = group.flatMap((item) => {
+        const row = toHtml(
+          h("div.contribution-row.no-formatting", [
+            h(`span.contribution-status.contribution-${item.status}`, STATUS_LABEL[item.status]),
+            h("a.no-favicon", { href: item.url }, titleNodes(item.title)),
+          ]),
+        )
+        const annotation = annotations.get(contributionKey(item))
+        return annotation === undefined ? [`- ${row}`] : [`- ${row}`, "", indented(annotation), ""]
+      })
       return [
-        "<li><dl>",
-        toHtml(h("dt.contribution-row.no-formatting", row)),
-        '<dd class="contribution-annotation">',
+        `## ${heading}`,
         "",
-        annotation,
+        `Subtitle: ★${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`,
         "",
-        "</dd>",
-        "</dl></li>",
-      ]
-    }),
-    "</ul></dd>",
-  ])
-  return ['<dl class="external-contributions">', ...lines, "</dl>"].join("\n")
+        '<div class="contribution-list">',
+        "",
+        ...entries,
+        "",
+        "</div>",
+      ].join("\n")
+    })
+    .join("\n\n")
 }
 
 /** Prefixes every line with `>`, so a multi-line block sits inside a blockquote. */

@@ -234,7 +234,7 @@ describe("committed snapshot", () => {
     const { transform } = EXTERNAL_CONTRIBUTIONS_SOURCE
     const rendered = transform?.(fs.readFileSync(CONTRIBUTIONS_SNAPSHOT_PATH, "utf-8"))
     expect(rendered).toMatch(/^This list refreshes daily from GitHub\./)
-    expect(rendered).toContain('<dl class="external-contributions">')
-    expect(rendered).toContain('<dd class="contribution-annotation">')
+    expect(rendered).toContain('<div class="contribution-list">')
+    expect(rendered).toContain("\n\n  The issue had been reported repeatedly")
   })
 })

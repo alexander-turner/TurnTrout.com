@@ -1,5 +1,3 @@
-import type { Element, Root } from "hast"
-
 import { describe, expect, it } from "@jest/globals"
 import { toHtml } from "hast-util-to-html"
 import rehypeRaw from "rehype-raw"
@@ -7,7 +5,6 @@ import rehypeStringify from "rehype-stringify"
 import remarkParse from "remark-parse"
 import remarkRehype from "remark-rehype"
 import { unified } from "unified"
-import { visit } from "unist-util-visit"
 
 import {
   type Contribution,
@@ -19,7 +16,6 @@ import {
   renderList,
   titleNodes,
 } from "./externalContributions"
-import { isValidDlStructure } from "./gfm"
 
 const FILTER: ContributionFilter = { minStars: 100, deniedRepos: new Set(["denied/repo"]) }
 
@@ -137,45 +133,40 @@ describe("renderList", () => {
   })
 
   it("orders items by status, then number, within each repo", () => {
-    const titles = [...html.matchAll(/<\/span><a [^>]*>([^<]*)<\/a><\/li>/g)].map(
+    const titles = [...html.matchAll(/<\/span><a [^>]*>([^<]*)<\/a><\/div>/g)].map(
       (match) => match[1],
     )
     expect(titles).toEqual(["Huge PR", "Earlier PR", "Later PR", "Issue"])
   })
 
-  it("renders a repo heading with a monospace name, no favicon, and the star count", () => {
+  it("renders a repo heading with a monospace name, no favicon, and the stars as a subtitle", () => {
     expect(html).toContain(
-      '<dt class="no-formatting"><a class="no-favicon" href="https://github.com/huge/repo">' +
-        '<code>huge/repo</code></a><span class="contribution-stars">★90,571</span></dt>',
+      '## <a class="no-favicon" href="https://github.com/huge/repo"><code>huge/repo</code></a>' +
+        "\n\nSubtitle: ★90,571\n\n",
     )
   })
 
-  it("renders each contribution as a row with its status pill before its linked title", () => {
+  it("renders each contribution as a list item: its status pill, then its linked title", () => {
     expect(html).toContain(
-      '<li class="contribution-row no-formatting">' +
+      '- <div class="contribution-row no-formatting">' +
         '<span class="contribution-status contribution-fixed">Fixed</span>' +
-        '<a class="no-favicon" href="https://github.com/big/repo/pull/1">Issue</a></li>',
+        '<a class="no-favicon" href="https://github.com/big/repo/pull/1">Issue</a></div>',
     )
   })
 
-  it("lists each repo's contributions under its heading", () => {
-    expect(html.startsWith('<dl class="external-contributions">\n')).toBe(true)
-    expect(html.match(/<dd><ul class="contribution-list">/g)).toHaveLength(2)
-    expect(html.endsWith("</ul></dd>\n</dl>")).toBe(true)
+  it("wraps each repo's list so its pills can serve as bullets", () => {
+    expect(html.match(/<div class="contribution-list">\n\n- /g)).toHaveLength(2)
+    expect(html.match(/^## /gm)).toHaveLength(2)
+    expect(html.endsWith("\n\n</div>")).toBe(true)
   })
 
-  it("renders an annotated contribution as a description list of its row and markdown", () => {
+  it("indents an annotation's markdown under its list item", () => {
     const annotated = renderList(
       items,
       { items, repos: REPOS },
-      new Map([["big/repo#7", "Some *prose*."]]),
+      new Map([["big/repo#7", "Some *prose*.\n\n1. A step"]]),
     )
-    expect(annotated).toContain(
-      '<li><dl>\n<dt class="contribution-row no-formatting">' +
-        '<span class="contribution-status contribution-merged">Merged</span>' +
-        '<a class="no-favicon" href="https://github.com/big/repo/pull/1">Later PR</a></dt>\n' +
-        '<dd class="contribution-annotation">\n\nSome *prose*.\n\n</dd>\n</dl></li>\n<li',
-    )
+    expect(annotated).toContain("Later PR</a></div>\n\n  Some *prose*.\n\n  1. A step\n\n- <div")
   })
 
   it("orders same-star repos by name", () => {
@@ -209,12 +200,12 @@ describe("renderContributions", () => {
         "and 1 issue I reported got fixed, across 1 project.\n\n" +
         `${shipped}\n\n> [!goose]- In progress: 1 open item\n${quotedOpen}`,
     )
-    expect(quotedOpen).toContain(">\n> Why it matters.\n>\n")
+    expect(quotedOpen).toContain(">\n>   Why it matters.\n>\n")
   })
 
-  it("renders valid, markdown-parsed annotations in and out of the blockquote", () => {
+  it("parses as headings and lists whose titles stay literal, in and out of the blockquote", () => {
     const items = [
-      item({ number: 1 }),
+      item({ number: 1, title: "Fix *a* in [b](c)" }),
       item({ number: 2 }),
       item({ number: 3, status: "open" }),
       item({ number: 4, status: "open" }),
@@ -223,31 +214,23 @@ describe("renderContributions", () => {
       ["big/repo#1", "Shipped *prose*."],
       ["big/repo#3", "Pending *prose*."],
     ])
-    const invalidLists: string[] = []
     const html = String(
       unified()
         .use(remarkParse)
         .use(remarkRehype, { allowDangerousHtml: true })
         .use(rehypeRaw)
-        .use(() => (tree: Root) => {
-          visit(tree, "element", (node: Element) => {
-            if (node.tagName === "dl" && !isValidDlStructure(node.children)) {
-              invalidLists.push(toHtml(node))
-            }
-          })
-        })
         .use(rehypeStringify)
         .processSync(renderContributions(snapshotJson(items), FILTER, annotations)),
     )
-    expect(invalidLists).toEqual([])
-    const annotation = (text: string) =>
-      `<dd class="contribution-annotation">\n<p>${text} <em>prose</em>.</p>\n</dd>`
     const [shipped, blockquote] = html.split("<blockquote>")
-    expect(shipped).toContain(annotation("Shipped"))
-    expect(blockquote).toContain(annotation("Pending"))
+    expect(shipped).toContain(
+      ">Fix <code>*a*</code> in [b](c)</a></div>\n<p>Shipped <em>prose</em>.</p>",
+    )
+    expect(blockquote).toContain("</a></div>\n<p>Pending <em>prose</em>.</p>")
     for (const section of [shipped, blockquote]) {
-      expect(section.match(/<li class="contribution-row no-formatting">/g)).toHaveLength(1)
-      expect(section.match(/<dt class="contribution-row no-formatting">/g)).toHaveLength(1)
+      expect(section).toContain('<h2><a class="no-favicon" href="https://github.com/big/repo">')
+      expect(section).toContain("<p>Subtitle: ★5,000</p>")
+      expect(section.match(/<li>\n<div class="contribution-row no-formatting">/g)).toHaveLength(2)
     }
   })
 
