@@ -547,7 +547,11 @@ export async function clickTocTitle(page: Page): Promise<void> {
 
   const tocTitle = page.locator("#toc-title button")
   await expect(tocTitle).toBeVisible()
-  await tocTitle.click()
+  // The title lives in the right sidebar, which smooth-scrolls itself to follow
+  // the active heading, so a coordinate click can land where the title was.
+  // Dispatching on the element exercises the same click handler with no
+  // dependence on the sidebar's scroll position.
+  await tocTitle.dispatchEvent("click")
 }
 
 export async function waitForSearchBar(page: Page): Promise<Locator> {

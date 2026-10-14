@@ -196,7 +196,7 @@ sandbox whose network goes through a proxy, run the script as
 `NODE_USE_ENV_PROXY=1 node --import tsx scripts/refresh_external_contributions.ts`.
 
 To annotate a contribution with prose, add a `## owner/repo#number` section to
-`config/quartz/contributionAnnotations.md`; it renders as a `<dd>` under that item.
+`config/quartz/contributionAnnotations.md`; it renders as markdown inside that item's list entry.
 An annotation naming no listed contribution fails the build and the snapshot refresh.
 
 ## Favicon kerning audit

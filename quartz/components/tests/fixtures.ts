@@ -50,6 +50,13 @@ const TRANSPARENT_PNG = Buffer.from(
 )
 const MINIMAL_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>'
 
+// The CDN sends this on every response. Without it, a no-cors fetch (WebKit's
+// preload scanner fetching a <picture> <source>) caches an opaque response
+// that a later crossorigin="anonymous" <img> of the same URL can't use.
+const CDN_RESPONSE_HEADERS: Readonly<Record<string, string>> = {
+  "Access-Control-Allow-Origin": "*",
+}
+
 const rasterImagePattern = /\.(?:avif|webp|png|jpe?g|gif|ico)$/i
 const audioVideoPattern = /\.(?:mp4|webm|mov|mp3|m4a|ogg)$/i
 
@@ -68,9 +75,17 @@ export async function routeCdnAssetStubs(target: Page | BrowserContext): Promise
     async (route) => {
       const { pathname } = new URL(route.request().url())
       if (rasterImagePattern.test(pathname)) {
-        await route.fulfill({ body: TRANSPARENT_PNG, contentType: "image/png" })
+        await route.fulfill({
+          body: TRANSPARENT_PNG,
+          contentType: "image/png",
+          headers: CDN_RESPONSE_HEADERS,
+        })
       } else if (pathname.toLowerCase().endsWith(".svg")) {
-        await route.fulfill({ body: MINIMAL_SVG, contentType: "image/svg+xml" })
+        await route.fulfill({
+          body: MINIMAL_SVG,
+          contentType: "image/svg+xml",
+          headers: CDN_RESPONSE_HEADERS,
+        })
       } else if (audioVideoPattern.test(pathname)) {
         await route.fulfill({ status: 204, body: "" })
       } else {
@@ -129,7 +144,11 @@ export async function routePinnedCdnAssets(
       const { localPath, withinPinDir } = pinnedPathFor(pathname)
       const contentType = CONTENT_TYPE_BY_EXTENSION[extname(localPath).toLowerCase()]
       if (contentType && withinPinDir && existsSync(localPath)) {
-        await route.fulfill({ body: readFileSync(localPath), contentType })
+        await route.fulfill({
+          body: readFileSync(localPath),
+          contentType,
+          headers: CDN_RESPONSE_HEADERS,
+        })
       } else if (PIN_REFRESH && contentType && withinPinDir) {
         await downloadAndServe(route, localPath)
       } else {

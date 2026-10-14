@@ -11,6 +11,7 @@ import { h } from "hastscript"
 import path from "path"
 
 import { findGitRoot } from "../../util/log"
+import { asAdmonition } from "./populateExternalMarkdown"
 
 /** Committed snapshot of my external contributions, anchored to the git root. */
 export const CONTRIBUTIONS_SNAPSHOT_PATH = path.join(
@@ -165,55 +166,63 @@ export function parseAnnotations(markdown: string): ReadonlyMap<string, string> 
   return annotations
 }
 
+/** Lowercases a repo name and joins its parts with `-`, for use in an `id`. */
+function repoSlug(repo: string): string {
+  return repo.toLowerCase().replaceAll(/[^a-z0-9_]+/g, "-")
+}
+
+/** Indents every non-blank line of a block so it continues a list item. */
+function indented(block: string): string {
+  return block
+    .split("\n")
+    .map((line) => (line === "" ? "" : `  ${line}`))
+    .join("\n")
+}
+
 /**
- * Renders one description list: a `<dt>` per repo, then a `<dd>` holding a
- * list with an item per contribution: its status pill and title. An annotated
- * contribution's item is itself a description list, its `<dt>` the row and its
- * `<dd>` the annotation's markdown, set off from the surrounding raw HTML by
- * blank lines so it parses as markdown.
+ * Renders the contributions as markdown: a `##` heading per repo, a subtitle
+ * with its star count, then a list with an item per contribution, its status
+ * pill as the bullet. Each item's row is a one-line HTML block, so its title
+ * never parses as markdown; an annotation follows as the item's own markdown. With `idPrefix`, each heading carries an explicit
+ * `id` of that prefix plus the repo, so a repo listed twice on the page keeps
+ * unique heading ids.
  */
 export function renderList(
   items: readonly Contribution[],
   snapshot: ContributionsSnapshot,
   annotations: ReadonlyMap<string, string>,
+  idPrefix?: string,
 ): string {
-  const lines = groupByRepo(items, snapshot).flatMap(([repo, group]) => [
-    toHtml(
-      h("dt.no-formatting", [
-        h("a.no-favicon", { href: `https://github.com/${repo}` }, h("code", repo)),
-        h("span.contribution-stars", `★${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`),
-      ]),
-    ),
-    '<dd><ul class="contribution-list">',
-    ...group.flatMap((item) => {
-      const row = [
-        h(`span.contribution-status.contribution-${item.status}`, STATUS_LABEL[item.status]),
-        h("a.no-favicon", { href: item.url }, titleNodes(item.title)),
-      ]
-      const annotation = annotations.get(contributionKey(item))
-      if (annotation === undefined) return [toHtml(h("li.contribution-row.no-formatting", row))]
+  return groupByRepo(items, snapshot)
+    .map(([repo, group]) => {
+      const stars = `★ ${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`
+      const entries = group.flatMap((item) => {
+        const row = toHtml(
+          h("div.contribution-row.no-formatting", [
+            h(`span.contribution-status.contribution-${item.status}`, STATUS_LABEL[item.status]),
+            h("a", { href: item.url }, titleNodes(item.title)),
+          ]),
+        )
+        const annotation = annotations.get(contributionKey(item))
+        return annotation === undefined ? [`- ${row}`] : [`- ${row}`, "", indented(annotation), ""]
+      })
+      const heading =
+        idPrefix === undefined
+          ? `## \`${repo}\``
+          : toHtml(h("h2", { id: `${idPrefix}${repoSlug(repo)}` }, h("code", repo)))
       return [
-        "<li><dl>",
-        toHtml(h("dt.contribution-row.no-formatting", row)),
-        '<dd class="contribution-annotation">',
+        heading,
         "",
-        annotation,
+        `Subtitle: ${stars}`,
         "",
-        "</dd>",
-        "</dl></li>",
-      ]
-    }),
-    "</ul></dd>",
-  ])
-  return ['<dl class="external-contributions">', ...lines, "</dl>"].join("\n")
-}
-
-/** Prefixes every line with `>`, so a multi-line block sits inside a blockquote. */
-function quoted(block: string): string {
-  return block
-    .split("\n")
-    .map((line) => (line === "" ? ">" : `> ${line}`))
-    .join("\n")
+        '<div class="contribution-list">',
+        "",
+        ...entries,
+        "",
+        "</div>",
+      ].join("\n")
+    })
+    .join("\n\n")
 }
 
 function plural(count: number, noun: string): string {
@@ -255,8 +264,9 @@ export function renderContributions(
   const parts = [summary, renderList(shipped, snapshot, annotations)]
   if (open.length > 0) {
     parts.push(
-      quoted(
-        `[!goose]- In progress: ${plural(open.length, "open item")}\n${renderList(open, snapshot, annotations)}`,
+      asAdmonition(
+        renderList(open, snapshot, annotations, "in-progress-"),
+        `[!goose]- In progress: ${plural(open.length, "open item")}`,
       ),
     )
   }

@@ -2,7 +2,7 @@
 
 My site [uses Mermaid diagrams](/design#mermaid-diagrams) for compact, searchable, and dynamically styled graphics. However, [the `a11y` accessibility checker](/design#accessibility) revealed a "bigly" problem. When a page contains multiple diagrams, some element IDs collide (like those for arrowhead markers and node containers). Thus, calling `url(#arrowhead)` in the third diagram might bind to a marker defined in the first. Arrowheads vanish, click handlers fire on the wrong diagram, and CSS styles corrupt.
 
-The issue had been reported repeatedly since 2020 ([#1,318](https://github.com/mermaid-js/mermaid/issues/1318), [#3,267](https://github.com/mermaid-js/mermaid/issues/3267), [#3,433](https://github.com/mermaid-js/mermaid/issues/3433), [#4,346](https://github.com/mermaid-js/mermaid/issues/4346)) with no comprehensive fix in sight. In February 2026, I aimed Claude Code at this problem. This PR prefixed every element ID with its diagram's unique SVG container ID, making collisions impossible. I also ensured that all future diagram types generate unique IDs across diagrams.
+The issue had been reported repeatedly since 2020 ([#1,318](https://github.com/mermaid-js/mermaid/issues/1318), [#3,267](https://github.com/mermaid-js/mermaid/issues/3267), [#3,433](https://github.com/mermaid-js/mermaid/issues/3433), [#4,346](https://github.com/mermaid-js/mermaid/issues/4346)) with no comprehensive fix in sight. In February 2026, I aimed Claude Code at this problem. This PR prefixed every element ID with its diagram's unique SVG container ID, making collisions impossible. I also ensured that all future diagram types generate unique IDs.
 
 ## jestjs/jest#16006
 

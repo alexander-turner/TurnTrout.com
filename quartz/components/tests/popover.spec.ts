@@ -34,14 +34,19 @@ type TestFixtures = {
 // `linkHref.replace("./", "")` paths in this file behave as before.
 export const DUMMY_LINK_FIXTURE_HREF = "./popover-fixture#anchor-target"
 
+/** Point the loaded test page's dummy link at the popover fixture. */
+async function repointDummyLink(page: Page): Promise<Locator> {
+  const dummyLink = page.locator("a#first-link-test-page")
+  await expect(dummyLink).toBeVisible()
+  await dummyLink.evaluate((el, href) => {
+    ;(el as HTMLAnchorElement).setAttribute("href", href)
+  }, DUMMY_LINK_FIXTURE_HREF)
+  return dummyLink
+}
+
 const test = base.extend<TestFixtures>({
   dummyLink: async ({ page }, use) => {
-    const dummyLink = page.locator("a#first-link-test-page")
-    await expect(dummyLink).toBeVisible()
-    await dummyLink.evaluate((el, href) => {
-      ;(el as HTMLAnchorElement).setAttribute("href", href)
-    }, DUMMY_LINK_FIXTURE_HREF)
-    await use(dummyLink) // skipcq: JS-0820 — `use` is a Playwright fixture callback, not a React hook
+    await use(await repointDummyLink(page)) // skipcq: JS-0820 — `use` is a Playwright fixture callback, not a React hook
   },
 })
 
@@ -942,33 +947,34 @@ base.describe("ToC hover previews on mobile", () => {
 test.describe("Popover checkbox state preservation", () => {
   const baseSelector = "h1 + ol #checkbox-0"
 
+  // The checkbox is checked on the small popover fixture, not the test page:
+  // the popover renders its whole target page, and laying out the test page
+  // inside one can block the main thread past the visibility assertion.
   test.beforeEach(async ({ page }) => {
-    // Check a checkbox on the test page
-    const mainPageCheckbox = page.locator(baseSelector).first()
-    await mainPageCheckbox.scrollIntoViewIfNeeded()
+    await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
+    const fixtureCheckbox = page.locator(baseSelector).first()
+    await fixtureCheckbox.scrollIntoViewIfNeeded()
 
-    const initialChecked = await isElementChecked(mainPageCheckbox)
+    const initialChecked = await isElementChecked(fixtureCheckbox)
     expect(initialChecked).toBe(false)
 
-    await mainPageCheckbox.click()
-    const checkedAfterClick = await isElementChecked(mainPageCheckbox)
+    await fixtureCheckbox.click()
+    const checkedAfterClick = await isElementChecked(fixtureCheckbox)
     expect(checkedAfterClick).toBe(true)
   })
 
   test("Popover preserves checkbox state", async ({ page }) => {
-    await gotoPage(page, "http://localhost:8080/design")
+    await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
     await waitForPopoverListeners(page)
 
-    const testPageLink = page.locator('a[href*="test-page"]').last()
-    await testPageLink.scrollIntoViewIfNeeded()
-    await expect(testPageLink).toBeVisible()
+    const fixtureLink = await repointDummyLink(page)
 
     // `nav` clears the moved-since-navigation flag that gates popovers, so the
     // pointer must make a real move; starting it away from the link also keeps
     // `hover()` from being a no-op.
     await moveMouseToSafePosition(page)
-    await testPageLink.hover()
+    await fixtureLink.hover()
 
     const popover = page.locator(".popover")
     await expect(popover).toBeVisible()

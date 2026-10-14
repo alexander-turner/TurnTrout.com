@@ -1,3 +1,5 @@
+import type { Page } from "@playwright/test"
+
 import { invertInDarkModeClass } from "../constants"
 import { expect, test } from "./fixtures"
 import { gotoPage } from "./visual_utils"
@@ -10,19 +12,19 @@ const TARGET_URL = "http://localhost:8080/avoiding-side-effects-in-complex-envir
 const EXPECTED_IMAGE_COUNT = 13
 const INVERTED_SUFFIX = "-inverted"
 
-// This spec asserts on the real dark-mode <picture> variant swap, which
-// depends on the browser resolving and decoding the actual CDN image
-// variants (img.complete / naturalWidth / currentSrc). Stubbed bytes break
-// that pipeline, so it needs real assets.
-test.use({ stubCdnAssets: false })
+// The swap only acts on decoded images (img.complete && naturalWidth > 0).
+// The fixture's stubbed CDN bytes are a decodable 1x1 PNG, which satisfies
+// that gate without depending on the live CDN serving every image. Routed
+// requests bypass the HTTP cache, so every <source> srcset rewrite re-fetches
+// its image; tests decode only after the theme sync they start from.
 
-test("dark→light theme toggle swaps invert-labeled imgs between original and inverted", async ({
-  page,
-}) => {
-  await gotoPage(page, TARGET_URL, "load")
-
-  // Lazy-loaded images stay undecoded until scrolled into view; force-
-  // decode so the JS-driven src swap has something to act on.
+/**
+ * Force-load every invert img and wait until one decode pass resolves for all
+ * of them. Lazy images stay undecoded until scrolled into view, and the load
+ * handler may swap an img's src mid-decode (rejecting that decode), so a pass
+ * that saw a swap is followed by another. A broken image fails loudly.
+ */
+async function decodeInvertImages(page: Page): Promise<void> {
   await page.evaluate(
     async ({ selector, expected }) => {
       const imgs = Array.from(document.querySelectorAll<HTMLImageElement>(selector))
@@ -32,10 +34,26 @@ test("dark→light theme toggle swaps invert-labeled imgs between original and i
       for (const img of imgs) {
         img.loading = "eager"
       }
-      await Promise.all(imgs.map((img) => img.decode().catch(() => undefined)))
+      for (;;) {
+        const results = await Promise.allSettled(imgs.map((img) => img.decode()))
+        if (results.every((r) => r.status === "fulfilled")) return
+        const broken = imgs.find((img) => img.complete && img.naturalWidth === 0)
+        if (broken) throw new Error(`invert img failed to load: ${broken.src}`)
+      }
     },
     { selector: `img.${invertInDarkModeClass}`, expected: EXPECTED_IMAGE_COUNT },
   )
+}
+
+test("dark→light theme toggle swaps invert-labeled imgs between original and inverted", async ({
+  page,
+}) => {
+  await gotoPage(page, TARGET_URL, "load")
+  await page.evaluate(async () => {
+    document.documentElement.setAttribute("data-theme", "light")
+    await new Promise((r) => setTimeout(r, 0))
+  })
+  await decodeInvertImages(page)
 
   // Every invert img is wrapped in <picture> by the transformer. Verify
   // that markup invariant directly — without it, the swap has nothing to
@@ -46,19 +64,14 @@ test("dark→light theme toggle swaps invert-labeled imgs between original and i
   }, `img.${invertInDarkModeClass}`)
   expect(wrapped).toBe(true)
 
-  // Force light → dark and confirm every img.src is rewritten to the
-  // inverted variant. Then revert to light and confirm src returns
-  // to its original value. We don't wait for `data-invert-processed`
-  // because that marker fires on `load`, and the inverted variants
-  // may 404 on the preview deploy before R2 backfill — the marker
-  // would never land, but the swap itself still happens. The yield
-  // after each theme change lets the data-theme MutationObserver
-  // (which dispatches the sync src-swap) run before we sample.
+  // Toggle dark and confirm every img.src is rewritten to the inverted
+  // variant. Then revert to light and confirm src returns to its original
+  // value. The src swap runs synchronously in the data-theme
+  // MutationObserver, so the yield after each theme change is enough;
+  // `data-invert-processed` only lands on the later `load`.
   const result = await page.evaluate(
     async ({ selector, suffix }) => {
       const yieldNow = () => new Promise((r) => setTimeout(r, 0))
-      document.documentElement.setAttribute("data-theme", "light")
-      await yieldNow()
       const imgs = Array.from(document.querySelectorAll<HTMLImageElement>(selector))
       const originalSrcs = imgs.map((img) => img.src)
 
@@ -86,20 +99,7 @@ test("system-dark + manual-light: <source> srcset overridden so browser serves o
 }) => {
   await page.emulateMedia({ colorScheme: "dark" })
   await gotoPage(page, TARGET_URL, "load")
-
-  await page.evaluate(
-    async ({ selector, expected }) => {
-      const imgs = Array.from(document.querySelectorAll<HTMLImageElement>(selector))
-      if (imgs.length < expected) {
-        throw new Error(`expected at least ${expected} invert imgs, found ${imgs.length}`)
-      }
-      for (const img of imgs) {
-        img.loading = "eager"
-      }
-      await Promise.all(imgs.map((img) => img.decode().catch(() => undefined)))
-    },
-    { selector: `img.${invertInDarkModeClass}`, expected: EXPECTED_IMAGE_COUNT },
-  )
+  await decodeInvertImages(page)
 
   const result = await page.evaluate(
     async ({ selector, suffix }) => {

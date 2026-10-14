@@ -336,6 +336,32 @@ test.describe("Collapsible admonition state persistence", () => {
     expect(await gapToSubtitle(collapsible)).toBeCloseTo(await gapToSubtitle(plain), 0)
   })
 
+  for (const [kind, selector, referenceText] of [
+    ["open collapsible", ".admonition.is-collapsible", "starts off open"],
+    ["non-collapsible", ".admonition:not(.is-collapsible)", "have appropriate"],
+  ] as const) {
+    test(`a subtitle below the first child leaves the ${kind} title's spacing alone`, async ({
+      page,
+    }) => {
+      const gapToFirstChild = (admonition: import("@playwright/test").Locator) =>
+        admonition.evaluate((el) => {
+          const title = el.querySelector(".admonition-title-inner") as HTMLElement
+          const first = el.querySelector(".admonition-content > :first-child") as HTMLElement
+          return first.getBoundingClientRect().top - title.getBoundingClientRect().bottom
+        })
+
+      const withLaterSubtitle = page.locator(selector).filter({ hasText: "with a later subtitle" })
+      await expect(withLaterSubtitle).toBeVisible()
+      const reference = page.locator(selector).filter({ hasText: referenceText })
+      await expect(reference).toBeVisible()
+
+      expect(await gapToFirstChild(withLaterSubtitle)).toBeCloseTo(
+        await gapToFirstChild(reference),
+        0,
+      )
+    })
+  }
+
   test("clicking content does not close open collapsible", async ({ page }) => {
     // Target the specific "[!info]+ This collapsible admonition starts off open" admonition
     const openCollapsible = page

@@ -17,10 +17,8 @@ aliases:
   - software
   - OSS
 date_published: 2025-10-28
-date_updated: 2026-10-12
+date_updated: 2026-10-14
 ---
-
-<span class="populate-markdown-punctilio"></span>
 
 # This website
 
@@ -39,6 +37,8 @@ cd "$SITE_DIR"
 yes | pnpm install --frozen-lockfile
 pnpm dev
 ```
+
+<span class="populate-markdown-punctilio"></span>
 
 # Automatic alt text generation
 
