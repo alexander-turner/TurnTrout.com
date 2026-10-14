@@ -102,7 +102,7 @@ A list whose bullets are statuses, as on [the open source page](/open-source):
 
 ## `sigstore/cosign`
 
-Subtitle: ★6,350
+Subtitle: ★ 6,350
 
 <div class="contribution-list">
 

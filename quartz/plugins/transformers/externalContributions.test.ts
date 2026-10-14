@@ -143,7 +143,7 @@ describe("renderList", () => {
   })
 
   it("renders a monospace repo heading with its unlinked stars as a subtitle", () => {
-    expect(html).toContain("## `huge/repo`\n\nSubtitle: ★90,571\n\n")
+    expect(html).toContain("## `huge/repo`\n\nSubtitle: ★ 90,571\n\n")
   })
 
   it("renders each contribution as a list item: its status pill, then its linked title", () => {
@@ -204,7 +204,7 @@ describe("renderContributions", () => {
         `${shipped}\n\n` +
         "> [!goose]- In progress: 1 open item\n" +
         '> <h2 id="in-progress-big-repo"><code>big/repo</code></h2>\n>\n' +
-        "> Subtitle: ★5,000\n>\n" +
+        "> Subtitle: ★ 5,000\n>\n" +
         '> <div class="contribution-list">\n>\n' +
         '> - <div class="contribution-row no-formatting">' +
         '<span class="contribution-status contribution-open">Open</span>' +
@@ -248,7 +248,7 @@ describe("renderContributions", () => {
       const heading = section.match(/<h2[^>]*>(.*?)<\/h2>/s)?.[1] ?? ""
       expect(heading.match(/<a /g)).toHaveLength(1)
       expect(heading).toContain("<code>big/repo</code>")
-      expect(section).toContain("<p>Subtitle: ★5,000</p>")
+      expect(section).toContain("<p>Subtitle: ★ 5,000</p>")
       expect(section.match(/<li>\n<div class="contribution-row no-formatting">/g)).toHaveLength(2)
     }
   })

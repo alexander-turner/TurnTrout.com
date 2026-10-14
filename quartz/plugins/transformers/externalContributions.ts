@@ -195,7 +195,7 @@ export function renderList(
 ): string {
   return groupByRepo(items, snapshot)
     .map(([repo, group]) => {
-      const stars = `★${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`
+      const stars = `★ ${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`
       const entries = group.flatMap((item) => {
         const row = toHtml(
           h("div.contribution-row.no-formatting", [
