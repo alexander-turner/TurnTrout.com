@@ -100,9 +100,9 @@ This sentence is a baseline-scoping probe: it sits in the Lists section, so only
 
 A list whose bullets are statuses, as on [the open source page](/open-source):
 
-## <a class="no-favicon" href="https://github.com/sigstore/cosign"><code>sigstore/cosign</code></a>
+## `sigstore/cosign`
 
-Subtitle: ★6,350
+Subtitle: <a class="no-favicon" href="https://github.com/sigstore/cosign">★6,350</a>
 
 <div class="contribution-list">
 

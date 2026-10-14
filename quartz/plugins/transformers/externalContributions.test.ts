@@ -6,6 +6,8 @@ import remarkParse from "remark-parse"
 import remarkRehype from "remark-rehype"
 import { unified } from "unified"
 
+import type { BuildCtx } from "../../util/ctx"
+
 import {
   type Contribution,
   type ContributionFilter,
@@ -16,6 +18,7 @@ import {
   renderList,
   titleNodes,
 } from "./externalContributions"
+import { GitHubFlavoredMarkdown } from "./gfm"
 
 const FILTER: ContributionFilter = { minStars: 100, deniedRepos: new Set(["denied/repo"]) }
 
@@ -139,10 +142,10 @@ describe("renderList", () => {
     expect(titles).toEqual(["Huge PR", "Earlier PR", "Later PR", "Issue"])
   })
 
-  it("renders a repo heading with a monospace name, no favicon, and the stars as a subtitle", () => {
+  it("renders a monospace repo heading with its stars, linked to the repo, as a subtitle", () => {
     expect(html).toContain(
-      '## <a class="no-favicon" href="https://github.com/huge/repo"><code>huge/repo</code></a>' +
-        "\n\nSubtitle: ★90,571\n\n",
+      "## `huge/repo`\n\nSubtitle: " +
+        '<a class="no-favicon" href="https://github.com/huge/repo">★90,571</a>\n\n',
     )
   })
 
@@ -190,20 +193,22 @@ describe("renderContributions", () => {
     const annotations = new Map([["big/repo#3", "Why it matters."]])
     const markdown = renderContributions(JSON.stringify(snapshot), FILTER, annotations)
     const shipped = renderList([merged, fixed], snapshot, annotations)
-    const openList = renderList([open], snapshot, annotations)
-    const quotedOpen = openList
-      .split("\n")
-      .map((line) => (line === "" ? ">" : `> ${line}`))
-      .join("\n")
     expect(markdown).toBe(
       "This list refreshes daily from GitHub. So far, 1 pull request of mine merged " +
         "and 1 issue I reported got fixed, across 1 project.\n\n" +
-        `${shipped}\n\n> [!goose]- In progress: 1 open item\n${quotedOpen}`,
+        `${shipped}\n\n` +
+        "> [!goose]- In progress: 1 open item\n" +
+        "> ## `big/repo`\n>\n" +
+        '> Subtitle: <a class="no-favicon" href="https://github.com/big/repo">★5,000</a>\n>\n' +
+        '> <div class="contribution-list">\n>\n' +
+        '> - <div class="contribution-row no-formatting">' +
+        '<span class="contribution-status contribution-open">Open</span>' +
+        '<a class="no-favicon" href="https://github.com/big/repo/pull/1">Pending</a></div>\n>\n' +
+        ">   Why it matters.\n>\n>\n> </div>",
     )
-    expect(quotedOpen).toContain(">\n>   Why it matters.\n>\n")
   })
 
-  it("parses as headings and lists whose titles stay literal, in and out of the blockquote", () => {
+  it("parses into linkable headings and lists whose titles stay literal, in and out of the blockquote", () => {
     const items = [
       item({ number: 1, title: "Fix *a* in [b](c)" }),
       item({ number: 2 }),
@@ -211,25 +216,32 @@ describe("renderContributions", () => {
       item({ number: 4, status: "open" }),
     ]
     const annotations = new Map([
-      ["big/repo#1", "Shipped *prose*."],
-      ["big/repo#3", "Pending *prose*."],
+      ["big/repo#1", "Shipped *prose*:\n\n1. A step"],
+      ["big/repo#3", "Pending *prose*:\n\n- A point"],
     ])
     const html = String(
       unified()
         .use(remarkParse)
         .use(remarkRehype, { allowDangerousHtml: true })
         .use(rehypeRaw)
+        .use(GitHubFlavoredMarkdown().htmlPlugins?.({} as BuildCtx) ?? [])
         .use(rehypeStringify)
         .processSync(renderContributions(snapshotJson(items), FILTER, annotations)),
     )
     const [shipped, blockquote] = html.split("<blockquote>")
     expect(shipped).toContain(
-      ">Fix <code>*a*</code> in [b](c)</a></div>\n<p>Shipped <em>prose</em>.</p>",
+      ">Fix <code>*a*</code> in [b](c)</a></div>\n<p>Shipped <em>prose</em>:</p>\n<ol>\n<li>A step</li>\n</ol>\n</li>",
     )
-    expect(blockquote).toContain("</a></div>\n<p>Pending <em>prose</em>.</p>")
+    expect(blockquote).toContain(
+      "</a></div>\n<p>Pending <em>prose</em>:</p>\n<ul>\n<li>A point</li>\n</ul>\n</li>",
+    )
     for (const section of [shipped, blockquote]) {
-      expect(section).toContain('<h2><a class="no-favicon" href="https://github.com/big/repo">')
-      expect(section).toContain("<p>Subtitle: ★5,000</p>")
+      const heading = section.match(/<h2[^>]*>(.*?)<\/h2>/s)?.[1] ?? ""
+      expect(heading.match(/<a /g)).toHaveLength(1)
+      expect(heading).toContain("<code>big/repo</code>")
+      expect(section).toContain(
+        '<p>Subtitle: <a class="no-favicon" href="https://github.com/big/repo">',
+      )
       expect(section.match(/<li>\n<div class="contribution-row no-formatting">/g)).toHaveLength(2)
     }
   })

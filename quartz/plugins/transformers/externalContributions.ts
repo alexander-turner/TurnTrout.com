@@ -11,6 +11,7 @@ import { h } from "hastscript"
 import path from "path"
 
 import { findGitRoot } from "../../util/log"
+import { asAdmonition } from "./populateExternalMarkdown"
 
 /** Committed snapshot of my external contributions, anchored to the git root. */
 export const CONTRIBUTIONS_SNAPSHOT_PATH = path.join(
@@ -174,10 +175,11 @@ function indented(block: string): string {
 }
 
 /**
- * Renders the contributions as markdown: a `##` heading per repo with its star
- * count as a subtitle, then a list with an item per contribution, its status
- * pill as the bullet. Each item's row is a one-line HTML block, so its title
- * never parses as markdown; an annotation follows as the item's own markdown.
+ * Renders the contributions as markdown: a `##` heading per repo, a subtitle
+ * with its star count linked to the repo, then a list with an item per
+ * contribution, its status pill as the bullet. Each item's row is a one-line
+ * HTML block, so its title never parses as markdown; an annotation follows as
+ * the item's own markdown.
  */
 export function renderList(
   items: readonly Contribution[],
@@ -186,8 +188,12 @@ export function renderList(
 ): string {
   return groupByRepo(items, snapshot)
     .map(([repo, group]) => {
-      const heading = toHtml(
-        h("a.no-favicon", { href: `https://github.com/${repo}` }, h("code", repo)),
+      const stars = toHtml(
+        h(
+          "a.no-favicon",
+          { href: `https://github.com/${repo}` },
+          `★${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`,
+        ),
       )
       const entries = group.flatMap((item) => {
         const row = toHtml(
@@ -200,9 +206,9 @@ export function renderList(
         return annotation === undefined ? [`- ${row}`] : [`- ${row}`, "", indented(annotation), ""]
       })
       return [
-        `## ${heading}`,
+        `## \`${repo}\``,
         "",
-        `Subtitle: ★${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`,
+        `Subtitle: ${stars}`,
         "",
         '<div class="contribution-list">',
         "",
@@ -212,14 +218,6 @@ export function renderList(
       ].join("\n")
     })
     .join("\n\n")
-}
-
-/** Prefixes every line with `>`, so a multi-line block sits inside a blockquote. */
-function quoted(block: string): string {
-  return block
-    .split("\n")
-    .map((line) => (line === "" ? ">" : `> ${line}`))
-    .join("\n")
 }
 
 function plural(count: number, noun: string): string {
@@ -261,8 +259,9 @@ export function renderContributions(
   const parts = [summary, renderList(shipped, snapshot, annotations)]
   if (open.length > 0) {
     parts.push(
-      quoted(
-        `[!goose]- In progress: ${plural(open.length, "open item")}\n${renderList(open, snapshot, annotations)}`,
+      asAdmonition(
+        renderList(open, snapshot, annotations),
+        `[!goose]- In progress: ${plural(open.length, "open item")}`,
       ),
     )
   }

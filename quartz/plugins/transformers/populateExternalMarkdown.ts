@@ -235,16 +235,21 @@ export function wrapExternalReadme(content: string, slug: string): string {
 }
 
 /**
- * Renders markdown as a `[!quote]` admonition by prefixing every line with `> `,
- * matching the quote callouts used elsewhere on the site. Blank lines become a
- * bare `>` so the blockquote stays contiguous.
+ * Renders markdown as an admonition under `header` (e.g. `[!quote] Title`) by
+ * prefixing every line with `> `. Blank lines become a bare `>` so the
+ * blockquote stays contiguous.
  */
-export function asQuoteAdmonition(content: string, title: string): string {
+export function asAdmonition(content: string, header: string): string {
   const quoted = content
     .split("\n")
     .map((line) => (line.length > 0 ? `> ${line}` : ">"))
     .join("\n")
-  return `> [!quote] ${title}\n${quoted}`
+  return `> ${header}\n${quoted}`
+}
+
+/** Renders markdown as a `[!quote]` admonition, matching the quote callouts used elsewhere on the site. */
+export function asQuoteAdmonition(content: string, title: string): string {
+  return asAdmonition(content, `[!quote] ${title}`)
 }
 
 /** Options controlling how a GitHub README is rendered when embedded. */
