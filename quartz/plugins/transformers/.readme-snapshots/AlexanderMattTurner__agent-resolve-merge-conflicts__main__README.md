@@ -28,7 +28,7 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@9036bd7e81176c746216f8574f57ff43caeb7728 # v1.42.0
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@972803426fa2e53883c67d2f556186c682711810 # v1.43.0
     with:
       pr: ${{ matrix.pr.number }}
       resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
@@ -150,6 +150,8 @@ The scheduled scan runs every 5 minutes and costs a few `gh` API calls. It reach
 
 The three inputs above need three files in your own repository. `config/auto-resolve-regen-rules.json` lists each rule: the `sources` that change, the `command` or `generator` that re-derives, and the `owns` paths it writes. `.github/scripts/resolve-generated.mjs` reads that file and runs the rules. `scripts/lib_marked_region.py` handles a file that is only PARTLY generated, through `BEGIN GENERATED:`/`END GENERATED:` markers.
 
+A file your release workflow writes, such as a checksum manifest, gets a rule with `releasedBy` in place of a command. When the resolver runs on a conflicted pull request from this repository, it never merges such a file. If the pull request deleted it, the deletion wins. If both sides changed it, the merge takes the base's copy. If the base deleted it while the pull request changed it, or either side renamed it, a human decides. Set `deletionWins: true` on a `command` or `generator` rule to keep a pull request's deletion of that rule's output the same way, once your ignore rules cover the output; an output nothing ignores is one the generator writes again, so the generator decides it. A fork's pull request runs none of this, because its job runs no resolver. A pull request git can merge cleanly never reaches the resolver at all, so a check of the file's contents in your own CI is what catches a line-merged manifest there. A resolver that fails on `--owned --deletion-wins` stops the run.
+
 Copy all three from this repository and replace the rules with your own. This repository ships two: `uv lock` for `uv.lock`, and `pnpm install --lockfile-only` for `pnpm-lock.yaml`.
 
 ## Hook toolchain pins
@@ -208,7 +210,7 @@ A `uses:` ref may be a SHA, a tag or a branch. GitHub calls [the commit SHA the 
 **Pin the SHA and name the version beside it**, the way this repository's own caller does:
 
 ```yaml
-uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@9036bd7e81176c746216f8574f57ff43caeb7728 # v1.42.0
+uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@972803426fa2e53883c67d2f556186c682711810 # v1.43.0
 ```
 
 That line reads as a version and resolves as an immutable commit. It names the newest release: `.github/scripts/release-tag.sh` rewrites both copies in this README, and the caller's, in the commit after each release. Copy it as it stands.
