@@ -20,8 +20,6 @@ date_published: 2025-10-28
 date_updated: 2026-10-12
 ---
 
-<span class="populate-markdown-punctilio"></span>
-
 # This website
 
 Subtitle: I've made <span class="populate-commit-count"></span> commits. That's over halfway to being over 9,000!
@@ -39,6 +37,8 @@ cd "$SITE_DIR"
 yes | pnpm install --frozen-lockfile
 pnpm dev
 ```
+
+<span class="populate-markdown-punctilio"></span>
 
 # Automatic alt text generation
 
