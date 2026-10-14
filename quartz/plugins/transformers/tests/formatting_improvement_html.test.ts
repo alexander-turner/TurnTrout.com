@@ -18,6 +18,7 @@ import {
   HAIR_SPACE,
   LEFT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
+  LOWERED_ARROW_CLASS,
   NBSP,
   normalizeNbsp,
   RIGHT_DOUBLE_QUOTE,
@@ -31,6 +32,8 @@ import {
   HTMLFormattingImprovement,
   identifyLinkNode,
   improveFormatting,
+  lowerArrowsBeforeShortRuns,
+  LoweredArrows,
   lPRegex,
   massTransformText,
   moveQuotesBeforeLink,
@@ -2539,6 +2542,181 @@ describe("HTMLFormattingImprovement plugin", () => {
       const expected = `<p><span class="monospace-arrow">→</span>${NBSP}next</p>`
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(processedHtml).toBe(expected)
+    })
+  })
+
+  describe("lowerArrowsBeforeShortRuns", () => {
+    // Mirrors the production order: the arrow passes run inside
+    // improveFormatting, TagSmallcaps wraps acronyms, and only then can an
+    // operand be recognized as a short run.
+    function runPipeline(input: string): string {
+      const processor = rehype().data("settings", { fragment: true })
+      processor.use(improveFormatting)
+      processor.use(rehypeTagSmallcaps)
+      processor.use(() => lowerArrowsBeforeShortRuns)
+      return normalizeNbsp(processor.processSync(input).toString())
+    }
+
+    /** Runs the pass alone, over markup already shaped like the pipeline's. */
+    function runLowering(input: string): string {
+      return rehype()
+        .data("settings", { fragment: true })
+        .use(() => lowerArrowsBeforeShortRuns)
+        .processSync(input)
+        .toString()
+    }
+
+    const SC_MP4 = '<abbr class="small-caps" data-original-text="MP4">mp4</abbr>'
+    const SC_WEBM = '<abbr class="small-caps" data-original-text="WEBM">webm</abbr>'
+    const LOWERED = `<span class="right-arrow ${LOWERED_ARROW_CLASS}">⭢</span>`
+    const PLAIN = '<span class="right-arrow">⭢</span>'
+
+    it.each([
+      [
+        "small caps",
+        "<p>Savings from MP4 -> WEBM are large</p>",
+        `<p>Savings from ${SC_MP4} ${LOWERED} ${SC_WEBM} are large</p>`,
+      ],
+      [
+        "small caps inside a link",
+        '<p>Savings from MP4 -> <a href="x">WEBM</a> files</p>',
+        `<p>Savings from ${SC_MP4} ${LOWERED} <a href="x">${SC_WEBM}</a> files</p>`,
+      ],
+      [
+        "oldstyle figures",
+        "<p>Grew from 200 -> 2049 units</p>",
+        `<p>Grew from 200 ${LOWERED} 2049 units</p>`,
+      ],
+      [
+        // Headings render bare digits oldstyle, like body prose.
+        "oldstyle figures in a heading",
+        "<h2>Grew from 200 -> 2049 units</h2>",
+        `<h2>Grew from 200 ${LOWERED} 2049 units</h2>`,
+      ],
+      [
+        "small caps, reached by a unicode arrow",
+        "<p>Savings from MP4 → WEBM are large</p>",
+        `<p>Savings from ${SC_MP4} <span class="monospace-arrow ${LOWERED_ARROW_CLASS}">→</span> ${SC_WEBM} are large</p>`,
+      ],
+      [
+        // The neighbor to the right decides, whichever way the arrow points: a
+        // drop is about the height of the glyphs the arrow abuts.
+        "small caps, reached by a left-pointing arrow",
+        "<p>Rebuilt Cats ← WEBM daily</p>",
+        `<p>Rebuilt Cats <span class="monospace-arrow ${LOWERED_ARROW_CLASS}">←</span> ${SC_WEBM} daily</p>`,
+      ],
+    ])("lowers an arrow before %s", (_label: string, input: string, expected: string) => {
+      expect(runPipeline(input)).toBe(expected)
+    })
+
+    it.each([
+      ["ordinary prose", "<p>Cats -> dogs are better</p>", `<p>Cats ${PLAIN} dogs are better</p>`],
+      [
+        "a work title's lining figures",
+        '<p>Watched 1984 -> <a class="work-title">2001</a></p>',
+        `<p>Watched 1984 ${PLAIN} <a class="work-title">2001</a></p>`,
+      ],
+      [
+        "an admonition title's lining figures",
+        '<p>Note: <span class="admonition-title-inner">Grew from 200 -> 2049</span></p>',
+        `<p>Note: <span class="admonition-title-inner">Grew from 200 ${PLAIN} 2049</span></p>`,
+      ],
+      [
+        "an ordinal's lining figures",
+        '<p>Moved 2nd -> <span class="ordinal-num">21</span>st</p>',
+        `<p>Moved <span class="ordinal-num">2</span><sup class="ordinal-suffix">nd</sup> ${PLAIN} <span class="ordinal-num">21</span>st</p>`,
+      ],
+      [
+        // A left-pointing arrow reads the same neighbor, so its small-caps
+        // target on the *left* does not lower it.
+        "ordinary prose, reached by a left-pointing arrow",
+        "<p>Rebuilt WEBM ← Cats daily</p>",
+        `<p>Rebuilt ${SC_WEBM} <span class="monospace-arrow">←</span> Cats daily</p>`,
+      ],
+      [
+        "a version label",
+        "<p>Upgraded from V1 -> V2 today</p>",
+        `<p>Upgraded from <abbr class="small-caps version-num" data-original-text="V1">V1</abbr> ${PLAIN} <abbr class="small-caps version-num" data-original-text="V2">V2</abbr> today</p>`,
+      ],
+      [
+        // A stacked fraction's numerator reaches above cap height.
+        "a stacked fraction",
+        "<p>Cut 3/4 -> 1/2 today</p>",
+        `<p>Cut <span class="fraction">3/4</span> ${PLAIN} <span class="fraction">1/2</span> today</p>`,
+      ],
+      [
+        // A full-height currency symbol opens the run, whatever its figures.
+        "a currency symbol",
+        "<p>Rose from $200 -> $2,049</p>",
+        `<p>Rose from $200 ${PLAIN} $2,049</p>`,
+      ],
+      [
+        "a non-inline element",
+        "<p>Rendered from LaTeX -> <code>200</code></p>",
+        `<p>Rendered from LaTeX ${PLAIN} <code>200</code></p>`,
+      ],
+      [
+        // KaTeX sets its own figures, which are lining.
+        "a KaTeX expression",
+        '<p>Rendered 200 -> <span class="katex">2</span> now</p>',
+        `<p>Rendered 200 ${PLAIN} <span class="katex">2</span> now</p>`,
+      ],
+      [
+        "a work title's lining figures, as marked up by the pipeline",
+        "<p>Watched <em>The 2001 -> 2010 Sequel</em> today</p>",
+        `<p>Watched <em class="work-title">The 2001 ${PLAIN} 2010 Sequel</em> today</p>`,
+      ],
+    ])("leaves an arrow before %s alone", (_label: string, input: string, expected: string) => {
+      expect(runPipeline(input)).toBe(expected)
+    })
+
+    it.each([
+      ["ends its parent", `<p>Cats ${PLAIN}</p>`],
+      ["is followed only by space", `<p>Cats ${PLAIN}${NBSP}</p>`],
+      ["closes an inline element", `<p><em>Grew 200 ${PLAIN}</em> 2049</p>`],
+      // The operand is whatever the arrow points at, not the next text anywhere.
+      [
+        "points into an inline element holding no text",
+        `<p>${PLAIN} <em><code>x</code></em>2049</p>`,
+      ],
+    ])("leaves an arrow that %s alone", (_label: string, input: string) => {
+      expect(runLowering(input)).toBe(input)
+    })
+
+    it.each([
+      ["a small-caps span", `<p>${PLAIN} <span class="small-caps">webm</span></p>`],
+      ["an empty inline element before the operand", `<p>${PLAIN} <em></em>2049</p>`],
+      ["a space opening the operand's own text node", `<p>${PLAIN}${NBSP}2049</p>`],
+    ])("lowers, run on its own, an arrow before %s", (_label: string, input: string) => {
+      expect(runLowering(input)).toBe(input.replace(PLAIN, LOWERED))
+    })
+
+    // `processTocEntry` hands the pass an element, so the root can be an arrow.
+    it("leaves an arrow that is the tree's own root alone", () => {
+      const tree = h("span.right-arrow", "⭢")
+      lowerArrowsBeforeShortRuns(tree)
+
+      expect(hastToHtml(tree)).toBe('<span class="right-arrow">⭢</span>')
+    })
+
+    it.each([
+      ["<p>Savings from MP4 -> WEBM are large</p>"],
+      ["<p>Grew from 200 -> 2049 units</p>"],
+    ])("is idempotent for %s", (input: string) => {
+      const once = runPipeline(input)
+      expect(normalizeNbsp(runLowering(once))).toBe(once)
+    })
+
+    it("registers as a Quartz plugin", () => {
+      const plugin = LoweredArrows()
+      expect(plugin.name).toBe("loweredArrows")
+      const htmlPlugins = plugin.htmlPlugins as NonNullable<typeof plugin.htmlPlugins>
+      const processor = rehype().data("settings", { fragment: true })
+      for (const p of htmlPlugins({} as Parameters<typeof htmlPlugins>[0])) {
+        processor.use(p as never)
+      }
+      const input = `<p>${PLAIN}${NBSP}<abbr class="small-caps">webm</abbr></p>`
+      expect(processor.processSync(input).toString()).toBe(input.replace(PLAIN, LOWERED))
     })
   })
 })

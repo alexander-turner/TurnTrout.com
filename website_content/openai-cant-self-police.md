@@ -21,6 +21,7 @@ similar_posts:
 original_url: https://www.lesswrong.com/posts/sSHbioPoHWtm4zuti/openai-can-t-self-police-because-it-fires-the-people-raising
 lw-linkpost-url: https://fortune.com/2026/10/12/openai-whistleblowers-ai-safety-keep-firing-sam-altman/
 date_published: 2026-10-12
+date_updated: 2026-10-14
 ---
 
 Giving independent evaluators “employee-like access” is “a great idea”, OpenAI CEO Sam Altman [said](https://x.com/sama/status/2098811563415150910) on September 12th. Two weeks later, OpenAI president Greg Brockman signed the [*White House Accord on Super Intelligence*](https://iapp.org/news/a/white-house-major-ai-developers-reach-morally-binding-safety-commitments) which outlined the administration’s answer to growing fears about AI: the companies would police themselves. One of the accord’s four commitments, which President Trump called “[morally binding](https://www.politico.com/news/2026/09/29/ai-execs-morally-binding-constitution-01097855),” was for companies to partner with an independent external auditor or evaluator.

@@ -12,7 +12,13 @@ import { visitParents } from "unist-util-visit-parents"
 import { applyTextTransforms } from "../plugins/transformers/formatting_improvement_html"
 import { replaceSCInNode } from "../plugins/transformers/tagSmallcaps"
 import { processTree as processTwemojiTree } from "../plugins/transformers/twemoji"
-import { EMOJI_CLASS, locale, TWEMOJI_INTRINSIC_DIMENSION, WORK_TITLE_CLASS } from "./constants"
+import {
+  EMOJI_CLASS,
+  locale,
+  MONOSPACE_ARROW_CLASS,
+  TWEMOJI_INTRINSIC_DIMENSION,
+  WORK_TITLE_CLASS,
+} from "./constants"
 
 export function formatTitle(title: string): string {
   // Replace single quotes with double quotes for consistency
@@ -209,7 +215,7 @@ export function processTextWithArrows(text: string, parent: Parent): void {
   const arrowSpan: Element = {
     type: "element",
     tagName: "span",
-    properties: { className: ["monospace-arrow"] },
+    properties: { className: [MONOSPACE_ARROW_CLASS] },
     children: [{ type: "text", value: text }],
   }
   parent.children.push(arrowSpan)

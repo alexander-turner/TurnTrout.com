@@ -21,6 +21,7 @@ similar_posts:
 original_url: https://www.lesswrong.com/posts/YGTWfyZb9oE5EQPu6/op-ed-i-worked-at-google-deepmind-you-should-listen-to-the
 lw-linkpost-url: https://www.theguardian.com/technology/2026/sep/14/google-deepmind-ai-warnings
 date_published: 2026-09-14
+date_updated: 2026-10-14
 ---
 
 Major AI lab CEOs recently advocated for pacing AI development. They are right to be concerned: the field runs an extremely dangerous race towards superintelligent AI. We can and should demand that our governments protect us from the catastrophe of out-of-control AI.

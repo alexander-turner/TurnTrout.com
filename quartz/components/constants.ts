@@ -180,7 +180,17 @@ export const FAVICON_CLASS = "favicon"
 // inline box opens on its own edges.
 export const NOWRAP_SPAN_CLASS = "nowrap-span"
 export const KATEX_CLASS = "katex"
+// Arrows written as "->" keep the main face; Unicode arrows render in the
+// monospace face, which draws them better.
+export const RIGHT_ARROW_CLASS = "right-arrow"
+export const MONOSPACE_ARROW_CLASS = "monospace-arrow"
+// Marks an arrow with small caps or oldstyle figures to its right, so CSS can
+// seat the arrow on that shorter run's optical center.
+export const LOWERED_ARROW_CLASS = "lowered-arrow"
 export const SMALL_CAPS_CLASS = "small-caps"
+// Version labels ("v1.2") keep lining figures and a cap-height "V", so they
+// stand as tall as the surrounding caps despite being small-capped.
+export const VERSION_NUM_CLASS = "version-num"
 // Opts a subtree out of small-caps treatment, so its acronyms render in full
 // caps.
 export const NO_SMALLCAPS_CLASS = "no-smallcaps"

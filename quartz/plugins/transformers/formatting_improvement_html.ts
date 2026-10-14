@@ -1,4 +1,4 @@
-import type { Element, ElementContent, Parent, Root, Text } from "hast"
+import type { Element, ElementContent, Parent, Root, RootContent, Text } from "hast"
 
 import { h } from "hastscript"
 import {
@@ -26,18 +26,26 @@ import type { ElementMaybeWithParent } from "./utils"
 import {
   charsToMoveIntoLinkFromRight,
   HAIR_SPACE,
+  KATEX_CLASS,
   LEFT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
+  LOWERED_ARROW_CLASS,
+  MONOSPACE_ARROW_CLASS,
   NBSP,
   NOWRAP_SPAN_CLASS,
+  RIGHT_ARROW_CLASS,
   RIGHT_SINGLE_QUOTE,
+  SMALL_CAPS_CLASS,
   STRIP_BOUNDARY_TAGS,
+  VERSION_NUM_CLASS,
   WORD_JOINER,
+  WORK_TITLE_CLASS,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { isHeading } from "./favicons"
 import { isGlyphAtom } from "./inlineAtomGlue"
 import {
+  addClass,
   type CharSpan,
   fractionRegex,
   hasAncestor,
@@ -642,7 +650,7 @@ export function formatArrows(tree: Root): void {
         }
       },
       () => false,
-      "span.right-arrow",
+      `span.${RIGHT_ARROW_CLASS}`,
     )
   })
 }
@@ -686,7 +694,7 @@ export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
     if (hasAncestor(parent as Element, isKatex, ancestors)) return
 
     // Check if any ancestor is already a monospace-arrow span (prevents double wrapping)
-    if (hasAncestor(parent as Element, (n) => hasClass(n, "monospace-arrow"), ancestors)) return
+    if (hasAncestor(parent as Element, (n) => hasClass(n, MONOSPACE_ARROW_CLASS), ancestors)) return
 
     replaceRegex(node as Text, index, parent, arrowRegex, (match: RegExpMatchArray) => {
       const fullMatch = match[0] ?? /* istanbul ignore next */ ""
@@ -708,10 +716,102 @@ export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
 
       return {
         before: needsSpaceBefore ? " " : "",
-        replacedMatch: h("span.monospace-arrow", arrow),
+        replacedMatch: h(`span.${MONOSPACE_ARROW_CLASS}`, arrow),
         after: needsNbspAfter ? NBSP : "",
       }
     })
+  })
+}
+
+const arrowClasses: readonly string[] = [RIGHT_ARROW_CLASS, MONOSPACE_ARROW_CLASS]
+
+/** The whitespace-only nodes the arrow passes leave beside an arrow. */
+const whitespaceOnlyText = /^\s*$/u
+// Leading whitespace is tolerated: the space separating an arrow from its
+// operand may open the operand's own text node rather than standing as one.
+const leadingDigit = /^\s*\p{Nd}/u
+
+/**
+ * Classes whose subtree overrides the body's oldstyle figures with a
+ * full-height set: lining figures, or a stacked fraction whose numerator
+ * reaches above cap height.
+ */
+const tallFigureClasses: readonly string[] = [
+  WORK_TITLE_CLASS,
+  "admonition-title-inner",
+  "ordinal-num",
+  VERSION_NUM_CLASS,
+  "fraction",
+]
+
+function rendersTallFigures(node: Element): boolean {
+  return tallFigureClasses.some((className) => hasClass(node, className))
+}
+
+/** Inline elements an arrow's right operand can begin inside of. */
+const inlineDescentTags: ReadonlySet<string> = new Set([...INLINE_PASSTHROUGH_TAGS, "abbr"])
+
+/**
+ * The run an arrow is seated against: the one to its right, whichever way the
+ * arrow points. A drop is about the height of the glyphs the arrow abuts, so a
+ * left-pointing arrow is decided by the same neighbor a right-pointing one is.
+ */
+interface ArrowOperand {
+  /** The first ink-bearing text to the arrow's right. */
+  readonly text: Text
+  /** The inline elements descended through to reach {@link text}. */
+  readonly chain: readonly Element[]
+}
+
+/**
+ * Finds an arrow's {@link ArrowOperand}, descending into inline wrappers. The
+ * operand must share the arrow's inline context: the search neither leaves the
+ * arrow's own parent nor crosses a boundary it cannot see through — a block
+ * element, a KaTeX span (whose figures are the font's own), or an inline
+ * element that holds markup but no text of its own.
+ */
+function findArrowOperand(
+  siblings: readonly RootContent[],
+  startIndex: number,
+  chain: readonly Element[],
+): ArrowOperand | undefined {
+  for (let i = startIndex; i < siblings.length; i++) {
+    const sibling = siblings[i]
+    if (sibling.type === "text") {
+      if (whitespaceOnlyText.test(sibling.value)) continue
+      return { text: sibling, chain }
+    }
+    if (sibling.type !== "element" || !inlineDescentTags.has(sibling.tagName)) return undefined
+    if (hasClass(sibling, KATEX_CLASS)) return undefined
+    if (sibling.children.length > 0)
+      return findArrowOperand(sibling.children, 0, [...chain, sibling])
+  }
+  return undefined
+}
+
+/**
+ * Tags each arrow whose right operand is set in small caps or oldstyle figures
+ * with {@link LOWERED_ARROW_CLASS}, so it can be dropped to that run's optical
+ * center (see the class in SCSS).
+ */
+export function lowerArrowsBeforeShortRuns(tree: Parent): void {
+  visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
+    if (!arrowClasses.some((className) => hasClass(node, className))) return
+    // An arrow that is the tree's own root has no siblings to seat against.
+    const parent = ancestors[ancestors.length - 1]
+    if (!parent) return
+    const operand = findArrowOperand(parent.children, parent.children.indexOf(node) + 1, [])
+    if (!operand) return
+
+    const operandIsSmallCaps = operand.chain.some(
+      (element) => hasClass(element, SMALL_CAPS_CLASS) && !hasClass(element, VERSION_NUM_CLASS),
+    )
+    const operandHasOldstyleFigures =
+      leadingDigit.test(operand.text.value) &&
+      !hasAncestor(node, rendersTallFigures, ancestors) &&
+      !operand.chain.some(rendersTallFigures)
+
+    if (operandIsSmallCaps || operandHasOldstyleFigures) addClass(node, LOWERED_ARROW_CLASS)
   })
 }
 
@@ -1300,6 +1400,16 @@ export const SetDropcapLetter: QuartzTransformerPlugin = () => {
     name: "setDropcapLetter",
     htmlPlugins() {
       return [() => setFirstLetterAttribute]
+    },
+  }
+}
+
+/** Quartz plugin running ``lowerArrowsBeforeShortRuns``. */
+export const LoweredArrows: QuartzTransformerPlugin = () => {
+  return {
+    name: "loweredArrows",
+    htmlPlugins() {
+      return [() => lowerArrowsBeforeShortRuns]
     },
   }
 }
