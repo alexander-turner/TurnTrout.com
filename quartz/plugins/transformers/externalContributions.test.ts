@@ -142,18 +142,15 @@ describe("renderList", () => {
     expect(titles).toEqual(["Huge PR", "Earlier PR", "Later PR", "Issue"])
   })
 
-  it("renders a monospace repo heading with its stars, linked to the repo, as a subtitle", () => {
-    expect(html).toContain(
-      "## `huge/repo`\n\nSubtitle: " +
-        '<a class="no-favicon" href="https://github.com/huge/repo">★90,571</a>\n\n',
-    )
+  it("renders a monospace repo heading with its unlinked stars as a subtitle", () => {
+    expect(html).toContain("## `huge/repo`\n\nSubtitle: ★90,571\n\n")
   })
 
   it("renders each contribution as a list item: its status pill, then its linked title", () => {
     expect(html).toContain(
       '- <div class="contribution-row no-formatting">' +
         '<span class="contribution-status contribution-fixed">Fixed</span>' +
-        '<a class="no-favicon" href="https://github.com/big/repo/pull/1">Issue</a></div>',
+        '<a href="https://github.com/big/repo/pull/1">Issue</a></div>',
     )
   })
 
@@ -207,11 +204,11 @@ describe("renderContributions", () => {
         `${shipped}\n\n` +
         "> [!goose]- In progress: 1 open item\n" +
         '> <h2 id="in-progress-big-repo"><code>big/repo</code></h2>\n>\n' +
-        '> Subtitle: <a class="no-favicon" href="https://github.com/big/repo">★5,000</a>\n>\n' +
+        "> Subtitle: ★5,000\n>\n" +
         '> <div class="contribution-list">\n>\n' +
         '> - <div class="contribution-row no-formatting">' +
         '<span class="contribution-status contribution-open">Open</span>' +
-        '<a class="no-favicon" href="https://github.com/big/repo/pull/1">Pending</a></div>\n>\n' +
+        '<a href="https://github.com/big/repo/pull/1">Pending</a></div>\n>\n' +
         ">   Why it matters.\n>\n>\n> </div>",
     )
   })
@@ -251,9 +248,7 @@ describe("renderContributions", () => {
       const heading = section.match(/<h2[^>]*>(.*?)<\/h2>/s)?.[1] ?? ""
       expect(heading.match(/<a /g)).toHaveLength(1)
       expect(heading).toContain("<code>big/repo</code>")
-      expect(section).toContain(
-        '<p>Subtitle: <a class="no-favicon" href="https://github.com/big/repo">',
-      )
+      expect(section).toContain("<p>Subtitle: ★5,000</p>")
       expect(section.match(/<li>\n<div class="contribution-row no-formatting">/g)).toHaveLength(2)
     }
   })

@@ -181,10 +181,9 @@ function indented(block: string): string {
 
 /**
  * Renders the contributions as markdown: a `##` heading per repo, a subtitle
- * with its star count linked to the repo, then a list with an item per
- * contribution, its status pill as the bullet. Each item's row is a one-line
- * HTML block, so its title never parses as markdown; an annotation follows as
- * the item's own markdown. With `idPrefix`, each heading carries an explicit
+ * with its star count, then a list with an item per contribution, its status
+ * pill as the bullet. Each item's row is a one-line HTML block, so its title
+ * never parses as markdown; an annotation follows as the item's own markdown. With `idPrefix`, each heading carries an explicit
  * `id` of that prefix plus the repo, so a repo listed twice on the page keeps
  * unique heading ids.
  */
@@ -196,18 +195,12 @@ export function renderList(
 ): string {
   return groupByRepo(items, snapshot)
     .map(([repo, group]) => {
-      const stars = toHtml(
-        h(
-          "a.no-favicon",
-          { href: `https://github.com/${repo}` },
-          `★${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`,
-        ),
-      )
+      const stars = `★${repoMeta(snapshot, repo).stars.toLocaleString("en-US")}`
       const entries = group.flatMap((item) => {
         const row = toHtml(
           h("div.contribution-row.no-formatting", [
             h(`span.contribution-status.contribution-${item.status}`, STATUS_LABEL[item.status]),
-            h("a.no-favicon", { href: item.url }, titleNodes(item.title)),
+            h("a", { href: item.url }, titleNodes(item.title)),
           ]),
         )
         const annotation = annotations.get(contributionKey(item))

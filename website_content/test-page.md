@@ -102,16 +102,16 @@ A list whose bullets are statuses, as on [the open source page](/open-source):
 
 ## `sigstore/cosign`
 
-Subtitle: <a class="no-favicon" href="https://github.com/sigstore/cosign">★6,350</a>
+Subtitle: ★6,350
 
 <div class="contribution-list">
 
-- <div class="contribution-row no-formatting"><span class="contribution-status contribution-merged">Merged</span><a class="no-favicon" href="https://github.com/sigstore/cosign/pulls">Only download the attestation bundles that <code>cosign verify</code> checks</a></div>
+- <div class="contribution-row no-formatting"><span class="contribution-status contribution-merged">Merged</span><a href="https://github.com/sigstore/cosign/pulls">Only download the attestation bundles that <code>cosign verify</code> checks</a></div>
 
   An annotation explaining why this pull request mattered, set under its title.
 
-- <div class="contribution-row no-formatting"><span class="contribution-status contribution-fixed">Fixed</span><a class="no-favicon" href="https://github.com/sigstore/cosign/issues/5154"><code>cosign verify</code> downloads every attestation bundle on an image, though it only checks signatures</a></div>
-- <div class="contribution-row no-formatting"><span class="contribution-status contribution-open">Open</span><a class="no-favicon" href="https://github.com/sigstore/cosign/issues">A still-open item whose title is long enough to wrap onto another line</a></div>
+- <div class="contribution-row no-formatting"><span class="contribution-status contribution-fixed">Fixed</span><a href="https://github.com/sigstore/cosign/issues/5154"><code>cosign verify</code> downloads every attestation bundle on an image, though it only checks signatures</a></div>
+- <div class="contribution-row no-formatting"><span class="contribution-status contribution-open">Open</span><a href="https://github.com/sigstore/cosign/issues">A still-open item whose title is long enough to wrap onto another line</a></div>
 
 </div>
 
