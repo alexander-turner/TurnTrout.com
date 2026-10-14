@@ -14,6 +14,13 @@ html {
   // paragraph-level line-break optimization; headings and highlighted code
   // lines opt back out with `text-wrap: auto` below.
   text-wrap: pretty;
+
+  // Elastic overscroll translates the whole scrolling layer, sticky sidebars
+  // included, so the sidebars must not bounce at either end of the page.
+  // Mobile keeps the native overscroll for pull-to-refresh.
+  @media all and (min-width: $min-desktop-width) {
+    overscroll-behavior-y: none;
+  }
 }
 
 .skip-to-content {

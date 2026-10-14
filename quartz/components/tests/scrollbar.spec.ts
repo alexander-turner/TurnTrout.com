@@ -175,3 +175,23 @@ test.describe("Sidebar scrollbar (touch device at desktop width)", () => {
     }
   })
 })
+
+test.describe("Page overscroll", () => {
+  useTestPage()
+
+  function getRootOverscrollY(page: Page): Promise<string> {
+    return page.evaluate(() => getComputedStyle(document.documentElement).overscrollBehaviorY)
+  }
+
+  test("desktop disables elastic overscroll so the sticky sidebars stay put", async ({ page }) => {
+    test.skip(!isDesktopViewport(page), "Sticky sidebars are desktop-only")
+
+    expect(await getRootOverscrollY(page)).toBe("none")
+  })
+
+  test("mobile keeps native overscroll", async ({ page }) => {
+    test.skip(isDesktopViewport(page), "Mobile-only assertion")
+
+    expect(await getRootOverscrollY(page)).toBe("auto")
+  })
+})
