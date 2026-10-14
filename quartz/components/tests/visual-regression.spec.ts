@@ -405,6 +405,22 @@ test.describe("Unique content around the site", () => {
       }
     })
   }
+
+  test("Combined quote-and-letter dropcap (screenshot)", async ({ page }, testInfo) => {
+    await gotoPage(page, "http://localhost:8080/quote-dropcap-fixture")
+    // The dropcap composites two font faces; wait so its metrics are settled.
+    await page.evaluate(() => document.fonts.ready)
+
+    // Shoot the whole article: the quote hangs outside the paragraph's box, so
+    // an element shot of the paragraph alone would clip the thing under test.
+    const article = page.locator('article[data-use-dropcap="true"]').first()
+    await article.scrollIntoViewIfNeeded()
+    await expect(article).toBeVisible()
+
+    await takeRegressionScreenshot(page, testInfo, "quote-letter-dropcap", {
+      elementToScreenshot: article,
+    })
+  })
 })
 
 test.describe("Table of contents", () => {
