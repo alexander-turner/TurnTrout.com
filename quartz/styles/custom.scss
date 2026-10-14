@@ -438,7 +438,7 @@ h4:has(+ .subtitle),
 h5:has(+ .subtitle),
 h6:has(+ .subtitle),
 p:has(+ .subtitle),
-.admonition-title:not(.is-collapsed *):has(+ .admonition-content > .subtitle) {
+.admonition-title:not(.is-collapsed *):has(+ .admonition-content > .subtitle:first-child) {
   margin-bottom: 0;
 }
 

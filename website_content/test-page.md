@@ -306,6 +306,16 @@ A plain section transclusion would include this text; the lede transclusion does
 >
 > Displayed content. {#test-open-subtitle}
 
+> [!info]+ An open collapsible admonition with a later subtitle
+> Displayed content.
+>
+> Subtitle: A subtitle further down leaves the title's spacing alone.
+
+> [!note] A non-collapsible admonition with a later subtitle
+> Displayed content.
+>
+> Subtitle: A subtitle further down leaves the title's spacing alone.
+
 > [!quote] Admonition with tags
 > <br/>
 > <em>Hi!</em>
