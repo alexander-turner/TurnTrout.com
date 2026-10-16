@@ -5,9 +5,11 @@ import { fromHtml } from "hast-util-from-html"
 import { toString } from "hast-util-to-string"
 import { h } from "hastscript"
 import katex from "katex"
+import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
 import { glueRelations, Latex } from "./latex"
+import { hasClass } from "./utils"
 
 describe("Latex plugin", () => {
   const plugin = Latex()
@@ -31,20 +33,18 @@ describe("Latex plugin", () => {
     assertFn()
   })
 
+  function runTransform(tree: Root): VFile {
+    // The second plugin is the post-KaTeX transform factory
+    const factory = (plugin.htmlPlugins?.(mockCtx) ?? [])[1] as () => (
+      tree: Root,
+      file: VFile,
+    ) => void
+    const file = new VFile("")
+    factory()(tree, file)
+    return file
+  }
+
   describe("katex-display a11y transform", () => {
-    function getA11yTransform() {
-      const plugins = plugin.htmlPlugins?.(mockCtx) ?? []
-      // The second plugin is the a11y transform factory
-      const factory = plugins[1] as () => (tree: Root, file: VFile) => void
-      return factory()
-    }
-
-    function runTransform(tree: Root): VFile {
-      const file = new VFile("")
-      getA11yTransform()(tree, file)
-      return file
-    }
-
     it("adds tabindex and role to .katex-display elements", () => {
       const tree = h(null, [h("span.katex-display", [h("span.katex", "x^2")])]) as unknown as Root
       runTransform(tree)
@@ -83,46 +83,58 @@ describe("Latex plugin", () => {
   })
 
   describe("glueRelations", () => {
-    function baseTexts(tex: string): string[] {
-      const tree = fromHtml(katex.renderToString(tex, { output: "html" }), { fragment: true })
-      const katexSpan = tree.children[0] as Element
-      const katexHtml = katexSpan.children[0] as Element
-      glueRelations(katexHtml)
-      return katexHtml.children.map((child) => toString(child))
+    function render(tex: string, displayMode = false): Root {
+      return fromHtml(katex.renderToString(tex, { output: "html", displayMode }), {
+        fragment: true,
+      })
+    }
+
+    function findKatexHtml(tree: Root): Element {
+      const found: Element[] = []
+      visit(tree, "element", (node: Element) => {
+        if (hasClass(node, "katex-html")) found.push(node)
+      })
+      expect(found).toHaveLength(1)
+      return found[0]
+    }
+
+    function baseTexts(tree: Root): string[] {
+      return findKatexHtml(tree).children.map((child) => toString(child))
     }
 
     it.each([
       ["a relation to its right operand", String.raw`\alpha \in \{0.2, 0.4\}`, ["α∈{0.2,0.4}"]],
-      ["a chain of relations", "a = b \\leq c", ["a=b≤c"]],
+      ["a chain of relations", String.raw`a = b \leq c`, ["a=b≤c"]],
+      ["a colored relation", String.raw`a \color{red}{=} b`, ["a=b"]],
+      ["a negated relation", String.raw`a \notin b`, ["a∈/b"]],
+      ["a leading relation", "= b", ["=b"]],
       ["nothing after a binary operator", "a + b", ["a+", "b"]],
       ["only the relation side of a mixed formula", "a + b = c + d", ["a+", "b=c+", "d"]],
+      ["nothing at an explicit allowbreak", String.raw`a = \allowbreak b`, ["a=", "b"]],
+      ["nothing across a newline", String.raw`a = b \\ c = d`, ["a=b", "", "c=d"]],
+      ["nothing after a trailing relation", "a =", ["a="]],
       ["nothing in a formula without operators", "x", ["x"]],
     ])("glues %s", (_name, tex, expected) => {
-      expect(baseTexts(tex)).toEqual(expected)
+      const tree = render(tex)
+      glueRelations(findKatexHtml(tree))
+      expect(baseTexts(tree)).toEqual(expected)
     })
 
-    it("leaves a trailing relation alone", () => {
-      expect(baseTexts("a =")).toEqual(["a="])
-    })
-
-    it("runs inside the plugin's KaTeX pass", () => {
-      const tree = fromHtml(katex.renderToString("a = b", { output: "html" }), { fragment: true })
-      const factory = (plugin.htmlPlugins?.(mockCtx) ?? [])[1] as () => (
-        tree: Root,
-        file: VFile,
-      ) => void
-      factory()(tree, new VFile(""))
-      const katexHtml = (tree.children[0] as Element).children[0] as Element
-      expect(katexHtml.children).toHaveLength(1)
+    it.each([
+      ["glues inline math", false, ["a=b"]],
+      ["leaves display math as emitted", true, ["a=", "b"]],
+    ])("plugin pass %s", (_name, displayMode, expected) => {
+      const tree = render("a = b", displayMode)
+      runTransform(tree)
+      expect(baseTexts(tree)).toEqual(expected)
     })
 
     it("skips non-base siblings such as equation tags", () => {
-      const katexHtml = h("span.katex-html", [
-        h("span.base", [h("span.mrel", "=")]),
-        h("span.tag", "(1)"),
-      ])
+      const base = h("span.base", [h("span.mrel", "=")])
+      const tag = h("span.tag", "(1)")
+      const katexHtml = h("span.katex-html", [base, tag])
       glueRelations(katexHtml)
-      expect(katexHtml.children).toHaveLength(2)
+      expect(katexHtml.children).toEqual([base, tag])
     })
   })
 })
