@@ -982,7 +982,7 @@ No wrapping needed here.
 A citation whose first token is longer than the line, in a block long enough for two-digit line numbers:
 
 ```bibtex
-@misc{Azarbal2025RecontextualizationMitigatesSpecificationGaming,
+@misc{TestPage2026AnOverflowingCitationKeyThatMustWrapInPlaceOnItsRow,
   author = "Ariana Azarbal and Victor Gillioz and Alex Cloud and Alex Turner",
   title = "Recontextualization Mitigates Specification Gaming Without Modifying the Specification",
   year = 2025,
