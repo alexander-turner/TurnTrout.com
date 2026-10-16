@@ -1,10 +1,13 @@
-import type { Root } from "hast"
+import type { Element, Root } from "hast"
 
 import { describe, expect, it } from "@jest/globals"
+import { fromHtml } from "hast-util-from-html"
+import { toString } from "hast-util-to-string"
 import { h } from "hastscript"
+import katex from "katex"
 import { VFile } from "vfile"
 
-import { Latex } from "./latex"
+import { glueRelations, Latex } from "./latex"
 
 describe("Latex plugin", () => {
   const plugin = Latex()
@@ -76,6 +79,50 @@ describe("Latex plugin", () => {
     ])("does not set file.data.usesKatex for %s", (_name, tree) => {
       const file = runTransform(tree as unknown as Root)
       expect(file.data.usesKatex).toBeUndefined()
+    })
+  })
+
+  describe("glueRelations", () => {
+    function baseTexts(tex: string): string[] {
+      const tree = fromHtml(katex.renderToString(tex, { output: "html" }), { fragment: true })
+      const katexSpan = tree.children[0] as Element
+      const katexHtml = katexSpan.children[0] as Element
+      glueRelations(katexHtml)
+      return katexHtml.children.map((child) => toString(child))
+    }
+
+    it.each([
+      ["a relation to its right operand", String.raw`\alpha \in \{0.2, 0.4\}`, ["α∈{0.2,0.4}"]],
+      ["a chain of relations", "a = b \\leq c", ["a=b≤c"]],
+      ["nothing after a binary operator", "a + b", ["a+", "b"]],
+      ["only the relation side of a mixed formula", "a + b = c + d", ["a+", "b=c+", "d"]],
+      ["nothing in a formula without operators", "x", ["x"]],
+    ])("glues %s", (_name, tex, expected) => {
+      expect(baseTexts(tex)).toEqual(expected)
+    })
+
+    it("leaves a trailing relation alone", () => {
+      expect(baseTexts("a =")).toEqual(["a="])
+    })
+
+    it("runs inside the plugin's KaTeX pass", () => {
+      const tree = fromHtml(katex.renderToString("a = b", { output: "html" }), { fragment: true })
+      const factory = (plugin.htmlPlugins?.(mockCtx) ?? [])[1] as () => (
+        tree: Root,
+        file: VFile,
+      ) => void
+      factory()(tree, new VFile(""))
+      const katexHtml = (tree.children[0] as Element).children[0] as Element
+      expect(katexHtml.children).toHaveLength(1)
+    })
+
+    it("skips non-base siblings such as equation tags", () => {
+      const katexHtml = h("span.katex-html", [
+        h("span.base", [h("span.mrel", "=")]),
+        h("span.tag", "(1)"),
+      ])
+      glueRelations(katexHtml)
+      expect(katexHtml.children).toHaveLength(2)
     })
   })
 })

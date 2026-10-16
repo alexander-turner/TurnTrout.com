@@ -1,4 +1,4 @@
-import type { Element, Root } from "hast"
+import type { Element, ElementContent, Root } from "hast"
 
 import rehypeKatex from "rehype-katex"
 import remarkMath from "remark-math"
@@ -6,6 +6,8 @@ import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
 import type { QuartzTransformerPlugin } from "../types"
+
+import { hasClass } from "./utils"
 
 const macros = {
   "\\abs": "\\left|#1\\right|",
@@ -39,6 +41,39 @@ const macros = {
   "꙳": "$\\star$",
 }
 
+function isBase(node: ElementContent | undefined): node is Element {
+  return node?.type === "element" && hasClass(node, "base")
+}
+
+/** True when the last visible atom of a KaTeX `.base` is a relation such as `=` or `\in`. */
+function endsWithRelation(base: Element): boolean {
+  const atoms = base.children.filter(
+    (child): child is Element => child.type === "element" && !hasClass(child, "mspace"),
+  )
+  const last = atoms.at(-1)
+  return last !== undefined && hasClass(last, "mrel")
+}
+
+/**
+ * KaTeX ends a `.base` inline-block after each top-level relation, and the
+ * browser may wrap between adjacent inline-blocks. Merging the following
+ * `.base` into the relation's binds a relation to its right operand like a
+ * non-breaking space, so `α ∈ {0.2, 0.4}` never strands `α ∈` at a line end.
+ * Breaks after binary operators stay available for long formulas.
+ */
+export function glueRelations(katexHtml: Element): void {
+  const merged: ElementContent[] = []
+  for (const child of katexHtml.children) {
+    const previous = merged.at(-1)
+    if (isBase(previous) && isBase(child) && endsWithRelation(previous)) {
+      previous.children.push(...child.children)
+    } else {
+      merged.push(child)
+    }
+  }
+  katexHtml.children = merged
+}
+
 export const Latex: QuartzTransformerPlugin = () => {
   return {
     name: "Latex",
@@ -64,6 +99,9 @@ export const Latex: QuartzTransformerPlugin = () => {
               // Flag the page so `<Head>` loads the katex stylesheet, which is
               // render-blocking and otherwise wasted on math-free pages.
               file.data.usesKatex = true
+            }
+            if (classes.includes("katex-html")) {
+              glueRelations(node)
             }
             if (classes.includes("katex-display")) {
               node.properties.tabIndex = 0
