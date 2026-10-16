@@ -23,7 +23,7 @@ test.describe("code block line numbers", () => {
           const longToken = "Azarbal2025RecontextualizationMitigatesSpecificationGaming"
           const rows = [`<span data-line=""><span id="cln-first">@misc{${longToken},</span></span>`]
           for (let i = 1; i < lineCount; i++) {
-            rows.push(`<span data-line=""><span class="cln-short">  year = 2025,</span></span>`)
+            rows.push('<span data-line=""><span class="cln-short">  year = 2025,</span></span>')
           }
           figure.innerHTML =
             `<pre><code data-line-numbers="" data-line-numbers-max-digits="${maxDigits}">` +
