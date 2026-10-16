@@ -455,16 +455,16 @@ pre {
     }
 
     & > [data-line] {
-      padding: 0 1rem;
+      --line-number-width: calc(2 * #{$base-margin});
+
       margin-right: $base-margin;
       position: relative;
 
-      // Want wrapped lines to indent and align with code content
-      // First line: padding-left + text-indent = 0, so content starts at left edge
-      // Wrapped lines: start at padding-left (after line number area)
-      // Line number area: margin-left(8) + width(16) + padding-right(8) + margin-right(8) = 40px
-      text-indent: calc(-5 * $base-margin);
-      padding-left: calc(5 * $base-margin);
+      // The line number sits absolutely in the gutter rather than inline, so
+      // it is never a break opportunity: a long first token wraps in place
+      // instead of dropping below its number. Wrapped lines share the
+      // gutter-width indent.
+      padding-left: calc(var(--line-number-width) + 3 * $base-margin);
       padding-right: calc(2 * $base-margin);
 
       // Must stay `auto`, not `pretty`: `overflow-wrap: anywhere` makes every
@@ -487,7 +487,7 @@ pre {
         position: absolute;
         top: 0;
         bottom: 0;
-        left: calc(4 * $base-margin);
+        left: calc(var(--line-number-width) + 2 * $base-margin);
         width: 1px;
         background-color: var(--midground-fainter);
         pointer-events: none;
@@ -496,23 +496,20 @@ pre {
       &::before {
         content: counter(line);
         counter-increment: line;
-        width: calc(2 * $base-margin);
-        display: inline-block;
+        position: absolute;
+        top: 0;
+        left: $base-margin;
+        width: var(--line-number-width);
         text-align: right;
-
-        // Split between padding and margin for separator
-        margin-left: calc(1 * $base-margin);
-        padding-right: calc(1 * $base-margin);
-        margin-right: calc(1 * $base-margin);
       }
     }
 
-    &[data-line-numbers-max-digits="2"] > [data-line]::before {
-      width: 2rem;
+    &[data-line-numbers-max-digits="2"] > [data-line] {
+      --line-number-width: 2rem;
     }
 
-    &[data-line-numbers-max-digits="3"] > [data-line]::before {
-      width: 3rem;
+    &[data-line-numbers-max-digits="3"] > [data-line] {
+      --line-number-width: 3rem;
     }
   }
 }
