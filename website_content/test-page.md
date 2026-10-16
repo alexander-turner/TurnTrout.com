@@ -979,6 +979,23 @@ Each line fits easily on screen.
 No wrapping needed here.
 ```
 
+A citation whose first token is longer than the line, in a block long enough for two-digit line numbers:
+
+```bibtex
+@misc{Azarbal2025RecontextualizationMitigatesSpecificationGaming,
+  author = "Ariana Azarbal and Victor Gillioz and Alex Cloud and Alex Turner",
+  title = "Recontextualization Mitigates Specification Gaming Without Modifying the Specification",
+  year = 2025,
+  month = oct,
+  howpublished = "Blog post",
+  note = "Accessed 2026-10-16",
+  keywords = "reward hacking, specification gaming",
+  language = "english",
+  publisher = "turntrout.com",
+  url = "https://turntrout.com/recontextualization-mitigates-specification-gaming"
+}
+```
+
 # Formatting
 
 - Normal
