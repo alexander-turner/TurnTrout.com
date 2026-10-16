@@ -2,7 +2,7 @@ import type { Element, ElementContent, Root } from "hast"
 
 import rehypeKatex from "rehype-katex"
 import remarkMath from "remark-math"
-import { SKIP, visit } from "unist-util-visit"
+import { CONTINUE, SKIP, visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
 import type { QuartzTransformerPlugin } from "../types"
@@ -97,7 +97,7 @@ export const Latex: QuartzTransformerPlugin = () => {
           // display math never wraps, so it is left as KaTeX emitted it.
           visit(tree, "element", (node: Element) => {
             const classes = node.properties?.className
-            if (!Array.isArray(classes)) return
+            if (!Array.isArray(classes)) return CONTINUE
             if (classes.includes("katex") || classes.includes("katex-display")) {
               // Flag the page so `<Head>` loads the katex stylesheet, which is
               // render-blocking and otherwise wasted on math-free pages.
@@ -111,7 +111,7 @@ export const Latex: QuartzTransformerPlugin = () => {
             if (classes.includes("katex-html")) {
               glueRelations(node)
             }
-            return undefined
+            return CONTINUE
           })
         },
       ]
