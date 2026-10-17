@@ -41,3 +41,22 @@ test("inline math never breaks after a relation", async ({ page }) => {
 
   expect(lines).toEqual({ afterBinaryOperator: false, afterRelation: true })
 })
+
+// The test page's relation-wrap demo is sized so "We swept α ∈" would fit on
+// its first line; the set must still open the second line beside `∈`.
+test("the relation-wrap demo keeps the relation beside its operand", async ({ page }) => {
+  await gotoPage(page, "http://localhost:8080/test-page")
+
+  const demo = page.locator("#relation-wrap-demo")
+  const tops = await demo.evaluate((element) => {
+    const top = (selector: string): number => {
+      const target = element.querySelector(selector)
+      if (!target) throw new Error(`missing ${selector} in the demo`)
+      return target.getBoundingClientRect().top
+    }
+    return { relation: top(".katex-html .mrel"), set: top(".katex-html .mopen") }
+  })
+  const fontSize = await demo.evaluate((element) => parseFloat(getComputedStyle(element).fontSize))
+
+  expect(Math.abs(tops.set - tops.relation)).toBeLessThan(fontSize / 2)
+})
