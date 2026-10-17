@@ -24,15 +24,19 @@ const SPACE = /\s/u
 // Characters that continue an operator begun by `=` (`==`, `=>`).
 const CONTINUES_EQUALS: ReadonlySet<string> = new Set(["=", ">"])
 
-const isSegmentChar = (char: string | undefined): boolean =>
-  char !== undefined && char !== "/" && !SPACE.test(char)
+// Characters that make up a path segment; markup like `</tag>` has none
+// before its slash.
+const PATH_CHAR = /[\p{L}\p{N}_.~-]/u
+
+const isPathChar = (char: string | undefined): boolean => char !== undefined && PATH_CHAR.test(char)
 
 /**
  * After a slash joining two path segments: `owner/repo`, `src/utils.ts`. A
- * slash that opens the path or follows another (`https://`) keeps its segment.
+ * slash that opens the path, follows another (`https://`), or closes a tag
+ * (`</analysis>`) keeps its segment.
  */
 export const breaksAfterPathSlash: BreakRule = (text, index) =>
-  text[index - 1] === "/" && isSegmentChar(text[index - 2]) && isSegmentChar(text[index])
+  text[index - 1] === "/" && isPathChar(text[index - 2]) && isPathChar(text[index])
 
 // A member access: `self.latent_size`, `x).float()`, `.jsonc`, but not `1.5`.
 const BEFORE_MEMBER = /[\p{L}\p{N}_)\]]/u

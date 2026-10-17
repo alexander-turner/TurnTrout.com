@@ -24,6 +24,8 @@ describe("breaksAfterPathSlash", () => {
     ["/leading", "/leading"],
     ["trailing/", "trailing/"],
     ["a / b", "a / b"],
+    ["</analysis>", "</analysis>"],
+    ["<br/>", "<br/>"],
   ])("%s → %s", (text, expected) => {
     expect(marked(breaksAfterPathSlash, text)).toBe(expected)
   })

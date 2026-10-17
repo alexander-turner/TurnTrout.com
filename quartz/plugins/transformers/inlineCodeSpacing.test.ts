@@ -98,10 +98,13 @@ describe("InlineCodeSpacing", () => {
       expect(out).toBe(`<p>se<span class="code-gap-after">e</span> <code>${expected}</code></p>`)
     })
 
-    it.each(["/shard-theory", "a / b", "and/"])("keeps %s atomic", async (code) => {
-      const out = await processHtmlWithPlugin(`<p>see <code>${code}</code></p>`)
-      expect(out).toContain(`<code class="inline-code-atomic">${code}</code>`)
-    })
+    it.each(["/shard-theory", "a / b", "and/", "&#x3C;/analysis>"])(
+      "keeps %s atomic",
+      async (code) => {
+        const out = await processHtmlWithPlugin(`<p>see <code>${code}</code></p>`)
+        expect(out).toContain(`<code class="inline-code-atomic">${code}</code>`)
+      },
+    )
   })
 
   describe("does not give closing punctuation a gap", () => {
