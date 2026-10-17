@@ -180,6 +180,10 @@ export const FAVICON_CLASS = "favicon"
 // inline box opens on its own edges.
 export const NOWRAP_SPAN_CLASS = "nowrap-span"
 export const KATEX_CLASS = "katex"
+// Wraps a glyph whose ink overhangs its advance width ("f", "Q") so CSS can
+// open the word space before a crowded mark.
+export const OVERHANG_KERN_F_CLASS = "overhang-kern-f"
+export const OVERHANG_KERN_Q_CLASS = "overhang-kern-q"
 // Arrows written as "->" keep the main face; Unicode arrows render in the
 // monospace face, which draws them better.
 export const RIGHT_ARROW_CLASS = "right-arrow"

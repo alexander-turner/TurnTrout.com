@@ -1,6 +1,7 @@
 import type { Element, Parent, Root, Text } from "hast"
 
 import fs from "fs"
+import { toString } from "hast-util-to-string"
 import mime from "mime-types"
 import pRetry from "p-retry"
 import { visit } from "unist-util-visit"
@@ -12,6 +13,8 @@ import {
   cdnBaseUrl,
   defaultPath,
   HEADING_TAGS,
+  OVERHANG_KERN_F_CLASS,
+  OVERHANG_KERN_Q_CLASS,
   simpleConstants,
   specialFaviconPaths,
 } from "../../components/constants"
@@ -404,6 +407,29 @@ export function nudgeClassFor(
 // separately), so its membership differs from the generic inline-wrapper set.
 export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "ins", "abbr"]
 
+const overhangKernClasses: readonly string[] = [OVERHANG_KERN_F_CLASS, OVERHANG_KERN_Q_CLASS]
+
+/**
+ * Returns an overhang-kern span ending ``node`` to plain text. The span's margin
+ * spaces the glyph from a mark after the link, but the favicon now sits between
+ * them, and the icon's own nudge class spaces it from the glyph. As text, the
+ * glyph can be spliced into the favicon's nowrap span.
+ */
+function unwrapTrailingOverhangKern(node: Element): void {
+  const last = node.children.at(-1)
+  if (last?.type !== "element" || !overhangKernClasses.some((name) => hasClass(last, name))) {
+    return
+  }
+  const glyph = toString(last)
+  const previous = node.children.at(-2)
+  if (previous?.type === "text") {
+    previous.value += glyph
+    node.children.pop()
+  } else {
+    node.children[node.children.length - 1] = { type: "text", value: glyph }
+  }
+}
+
 /**
  * Splices the last few characters from a text node and wraps them
  * with the favicon in a nowrap span, preventing line-break orphaning.
@@ -413,6 +439,7 @@ export function maybeSpliceText(
   imgNodeToAppend: FaviconNode,
   context: GlyphContext = EMPTY_GLYPH_CONTEXT,
 ): Element | null {
+  unwrapTrailingOverhangKern(node)
   const isEmpty = (child: Element | Text) => child.type === "text" && child.value?.trim() === ""
   const lastChild = node.children.findLast(
     (child) => child.type === "element" || !isEmpty(child as Element | Text),

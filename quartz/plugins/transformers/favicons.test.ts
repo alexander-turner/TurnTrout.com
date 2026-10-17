@@ -1143,6 +1143,26 @@ describe("maybeSpliceText edge cases", () => {
     expect(span).toMatchObject(faviconSpanNode)
     expect(span.children[0]).toEqual({ type: "text", value: "plan" })
   })
+
+  it.each([
+    [
+      "after text",
+      ["hangs off o", h("span", { class: "overhang-kern-f" }, ["f"])],
+      ["hangs of"],
+      "f of",
+    ],
+    ["as the only child", [h("span", { class: "overhang-kern-q" }, ["Q"])], [], "Q"],
+  ])(
+    "returns a trailing overhang-kern glyph to text and glues it (%s)",
+    (_name, children, before, glued) => {
+      const node = h("a", {}, children)
+      favicons.insertFavicon(imgPath, node)
+      const span = node.children.at(-1) as Element
+      expect(span).toMatchObject(faviconSpanNode)
+      expect(span.children[0]).toEqual({ type: "text", value: glued })
+      expect(node.children.slice(0, -1)).toEqual(before.map((value) => ({ type: "text", value })))
+    },
+  )
 })
 
 describe("favicon must be inside nowrap-span", () => {
