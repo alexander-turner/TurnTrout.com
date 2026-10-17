@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-10-14
+date_updated: 2026-10-17
 createBibtex: true
 ---
 
@@ -687,6 +687,16 @@ Post-math text. The following equations should display properly:
 $$\nabla \cdot \mathbf{E}  =\frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \mathbf{B}  =0 \qquad \nabla \times \mathbf{E}  =-\frac{\partial \mathbf{B}}{\partial t} \qquad \nabla \times \mathbf{B}  =\mu_0\left(\mathbf{J}+\varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}\right)$$
 
 [Flipped integer](/flip-integers) number: ↗142.2.
+
+## Relation wrapping
+
+Inline math never breaks a line right after a relation like $\in$ or $=$. The column below is deliberately narrow, so the whole formula moves to the second line instead of leaving "$\alpha \in$" stranded at the end of the first:
+
+<div id="relation-wrap-demo" style="width: 10rem; border: 2px var(--midground) solid; border-radius: 5px; padding: 0.5rem;">
+
+We swept $\alpha \in \{0.2, 0.4, 0.6, 0.8\}$ and kept the best.
+
+</div>
 
 # Link features
 
