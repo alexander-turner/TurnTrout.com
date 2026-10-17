@@ -12,6 +12,14 @@
   .katex {
     white-space: normal;
   }
+
+  // Chromium governs the break after an inline-block by its parent's
+  // `white-space`, so the last `.base`'s trailing edge takes the `normal` above
+  // and sheds the punctuation. Displayed inline, the last `.base` has no box
+  // edge to break at, and its own `nowrap` keeps its content whole.
+  .katex-html > .base:last-child {
+    display: inline;
+  }
 }
 
 // Groups a favicon-ending link with its trailing footnote reference so the

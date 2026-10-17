@@ -67,4 +67,52 @@ test.describe("inline atom glue", () => {
     expect(measured.gluedQuote).toBe(false)
     expect(measured.gluedComma).toBe(false)
   })
+
+  // The test page's `$e^{i\pi} + 1 = 0$.` glues its period to the math. In a
+  // paragraph exactly as wide as the math, the period doesn't fit beside it: the
+  // line must break inside the math rather than at its trailing edge.
+  test("keeps punctuation glued to inline math at the math's trailing edge", async ({ page }) => {
+    await gotoPage(page, "http://localhost:8080/test-page")
+
+    const periodBesideLastOperand = await page.evaluate(() => {
+      const source = Array.from(document.querySelectorAll("article p .nowrap-span")).find(
+        (span) => span.querySelector(".katex .mrel") && span.textContent?.endsWith("."),
+      )
+      const article = source?.closest("article")
+      if (!source || !article)
+        throw new Error("no glued inline math with a relation on the test page")
+
+      const place = (width: string) => {
+        const probe = document.createElement("p")
+        probe.style.cssText = `width:${width};max-width:${width};margin:0`
+        const clone = source.cloneNode(true) as HTMLElement
+        probe.appendChild(clone)
+        article.appendChild(probe)
+        const katex = clone.querySelector(".katex")
+        const period = Array.from(clone.childNodes).find((node) => node.nodeType === Node.TEXT_NODE)
+        if (!katex || !period) throw new Error("missing fixture elements")
+        return { probe, katex, period }
+      }
+
+      const natural = place("max-content")
+      const mathWidth =
+        natural.katex.getBoundingClientRect().right - natural.probe.getBoundingClientRect().left
+      natural.probe.remove()
+
+      const { probe, katex, period } = place(`${mathWidth}px`)
+      // Rows compare by vertical midpoint: the operand's box and the period's
+      // glyph box differ in height but share a row's center.
+      const middleOf = (rect: DOMRect) => (rect.top + rect.bottom) / 2
+      const operands = katex.querySelectorAll(".katex-html > .base > .mord")
+      const lastOperand = middleOf(operands[operands.length - 1].getBoundingClientRect())
+      const range = document.createRange()
+      range.selectNodeContents(period)
+      const halfFont = parseFloat(getComputedStyle(probe).fontSize) / 2
+      const result = Math.abs(middleOf(range.getBoundingClientRect()) - lastOperand) < halfFont
+      probe.remove()
+      return result
+    })
+
+    expect(periodBesideLastOperand).toBe(true)
+  })
 })
