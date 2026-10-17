@@ -318,7 +318,7 @@ After pushing to main:
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewports), ~33 parallel shards
 - macOS WebKit runs Desktop Safari only—Playwright 1.58+ crashes on mobile device emulation on ARM64
 - Visual regression with Playwright snapshots (R2 baselines)
-- Lighthouse for layout shift
+- Lighthouse for layout shift. Every `.github/lighthouse-*.json` sets `chromeFlags` to disable `SpareRendererForSitePerProcess`: on Chrome 154+ the pre-started spare renderer races trace startup, dropping the page’s `navigationStart` event and failing ~10% of runs with `NO_NAVSTART`. Chrome honors only the last `--disable-features` switch, so the flag repeats chrome-launcher’s default disabled-feature list (including `RenderDocument`) before appending ours—keep it in sync when bumping the Lighthouse action.
 - DeepSource static analysis. Use the `deepsource` CLI with `--commit`, `--pr`, or `--default-branch`. **Never** WebFetch DeepSource URLs—the web UI is auth-walled and returns no useful content.
 
 ### How CI runs
