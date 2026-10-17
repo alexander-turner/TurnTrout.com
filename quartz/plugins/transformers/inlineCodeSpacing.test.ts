@@ -76,7 +76,7 @@ describe("InlineCodeSpacing", () => {
     })
 
     it("leaves a long code breakable (no atomic class)", async () => {
-      const long = "alexander-turner/claude-automation-template"
+      const long = "alexander-turner-claude-automation-template"
       const out = await processHtmlWithPlugin(`<p>see <code>${long}</code></p>`)
       expect(out).not.toContain("inline-code-atomic")
       expect(out).toBe(`<p>se<span class="code-gap-after">e</span> <code>${long}</code></p>`)
@@ -85,6 +85,22 @@ describe("InlineCodeSpacing", () => {
     it("does not mark block code inside <pre>", async () => {
       const out = await processHtmlWithPlugin("<pre><code>grep</code></pre>")
       expect(out).not.toContain("inline-code-atomic")
+    })
+  })
+
+  describe("lets a path break after its inner slashes", () => {
+    it.each([
+      ["owner/repo", "owner/<wbr>repo"],
+      ["config/lint/.markdownlint.jsonc", "config/<wbr>lint/<wbr>.markdownlint.jsonc"],
+      ["https://github.com/a", "https://github.com/<wbr>a"],
+    ])("breaks %s after its slashes instead of marking it atomic", async (path, expected) => {
+      const out = await processHtmlWithPlugin(`<p>see <code>${path}</code></p>`)
+      expect(out).toBe(`<p>se<span class="code-gap-after">e</span> <code>${expected}</code></p>`)
+    })
+
+    it.each(["/shard-theory", "a / b", "and/"])("keeps %s atomic", async (code) => {
+      const out = await processHtmlWithPlugin(`<p>see <code>${code}</code></p>`)
+      expect(out).toContain(`<code class="inline-code-atomic">${code}</code>`)
     })
   })
 
