@@ -23,7 +23,7 @@ Then add the Tier 1 aggregate to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.6.2 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.7.0 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       - id: check-tier1 # every honesty + identity + security check
 ```
@@ -70,6 +70,11 @@ These checks find code whose failure reports success.
 | `check-gh-slurp-jq`               | `gh` rejects `--slurp` with `--jq`, and `--slurp` without `--paginate`, while parsing arguments — so the call has never worked. Opt out with `# allow-gh-slurp-jq: <reason>`.                                                                                         | `gh api --slurp --jq .`                                          |
 | `check-container-job-shell`       | A step in a `container:` job with no shell runs as `sh -e`, but the lints read it as bash. Bash syntax passes the lints and breaks on the runner. Opt out with `# shell-default-ok: <reason>`.                                                                        | `container: ubuntu` with `- run: opts=(a b)`                     |
 | `check-truncating-pr-json`        | `gh pr view --json files` asks for `files(first: 100)` with no cursor. Past 100 files GitHub returns 100, `gh` exits 0, and nothing says the list is short.                                                                                                           | `gh pr view --json files` on a 300-file PR                       |
+| `trace-ci` (`vacuous-on-failure`) | make does not stop when a `$(shell …)` call fails. It uses the empty output, so the check runs over nothing and passes.                                                                                                                                               | `pre-commit run --files $(shell git ls-files)`                   |
+| `trace-ci` (`lost-status-*`)      | make runs each recipe line with `/bin/sh -c`, which has no errexit and no pipefail. In `a; b`, `a \| b` or a loop, CI sees only the last status.                                                                                                                      | `pytest; echo done` in a recipe                                  |
+| `trace-ci` (`ignored-error`)      | make ignores the exit status of a recipe line that starts with `-`.                                                                                                                                                                                                   | `-pytest` in a recipe                                            |
+| `trace-ci` (`uncovered`)          | A `Makefile` has a `check` goal that no CI step reaches, so its checks never run.                                                                                                                                                                                     | `sub/Makefile` that no job calls                                 |
+| `trace-ci` (`untraced`)           | CI runs a `make` that the tool cannot follow, so nothing checked its commands.                                                                                                                                                                                        | `docker run img make check`                                      |
 
 ### Identity (Tier 1, default-on)
 
@@ -196,7 +201,7 @@ Start here enables Tier 1 through one aggregate id. This section is the full men
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.6.2 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.7.0 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       # ── Tier 1 · honesty, identity and security (default-on) ──
       # One id, so a Tier 1 check added in a later release runs as soon as you
@@ -267,6 +272,7 @@ Add each `- id:` on its own if you want it:
 - `check-lockstep-pins` is config-driven. It hard-errors without the per-repo `--pair` arguments that an aggregate cannot supply.
 - `check-env-symmetry` scans the whole tree and needs a per-project `--prefix` argument that an aggregate cannot supply.
 - `check-bash32-portability` judges every file it gets, so it needs your `files:` naming the scripts that run on macOS. `grep -P`, `sort -V` or `${v,,}` pass on Linux and abort on BSD tools or bash 3.2. Opt out with `# bash32-portability-ok: <reason>`.
+- `trace-ci` is a console script, not a hook. It follows each `make` that a CircleCI or GitHub Actions step runs. It runs the content lints of this pack on the recipe commands, and it reports the `trace-ci` rows above. Run `trace-ci` in a clean checkout that you trust as much as `make`: a dry run still runs each `$(shell …)` call. Accept a finding with `# trace-ci-ok: <reason>` in a comment on its line or the line above.
 
 You may mix an aggregate with individual ids. The named check then simply runs twice.
 
@@ -279,7 +285,7 @@ Select on either axis with `check-select`. It takes `--select` (repeatable, unio
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.6.2
+    rev: v1.7.0
     hooks:
       - id: check-select
         args: [--select, "tag:security", --select, "tag:secrets"]
@@ -332,7 +338,7 @@ One check in a tier can need tighter file scoping than the rest. For example, `c
 
 ```yaml
 - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-  rev: v1.6.2
+  rev: v1.7.0
   hooks:
     - id: check-tier1
       args: [--skip, check_exit_suppression] # drop it from the aggregate...
