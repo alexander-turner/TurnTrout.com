@@ -13,10 +13,8 @@ test("a page listing wraps between tags, never inside one", async ({ page }) => 
     listing.className = "page-listing"
     listing.style.width = "200px"
     const tags = ["governance", "deepmind", "military", "personal", "AI"]
-    listing.innerHTML =
-      '<ul class="tags">' +
-      tags.map((tag) => `<li><a class="internal tag-link" href="#">${tag}</a></li>`).join("") +
-      "</ul>"
+    const items = tags.map((tag) => `<li><a class="internal tag-link" href="#">${tag}</a></li>`)
+    listing.innerHTML = `<ul class="tags">${items.join("")}</ul>`
     article.appendChild(listing)
 
     const links = Array.from(listing.querySelectorAll("a"))

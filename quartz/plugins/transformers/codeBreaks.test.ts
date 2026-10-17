@@ -54,7 +54,7 @@ describe("insertCodeBreaks", () => {
     ])
     expect(insertCodeBreaks(line, breaksInCodeBlock)).toBe(2)
     expect(toHtml(line)).toBe(
-      '<span data-line=""><span>x</span><span>=</span>' + "<span><wbr>self<wbr>.size</span></span>",
+      '<span data-line=""><span>x</span><span>=</span><span><wbr>self<wbr>.size</span></span>',
     )
   })
 
