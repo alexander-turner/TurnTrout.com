@@ -15,7 +15,7 @@ interface Fixture {
 }
 
 /** Lays out ``html`` at the fixture's width and returns the row element's text by row. */
-async function rowsOf(page: Page, fixture: Fixture): Promise<string[]> {
+function rowsOf(page: Page, fixture: Fixture): Promise<string[]> {
   return page.evaluate(({ html, sized, measured, fraction, rowsOf: rowElement }) => {
     const article = document.querySelector("article") ?? document.body
     const host = document.createElement("div")
