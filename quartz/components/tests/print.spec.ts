@@ -4,6 +4,7 @@ import {
   gotoPage,
   setTheme,
   takeRegressionScreenshot,
+  waitForFontsReady,
 } from "./visual_utils"
 
 // Visual regression tests don't need assertions
@@ -39,7 +40,7 @@ test("Print mode renders identically in light and dark themes", async ({ page })
   // Both captures compare byte-for-byte, so the webfont swap must complete
   // before the first one; captureStableScreenshot then absorbs any other
   // late repaints on each side of the comparison.
-  await page.evaluate(() => document.fonts.ready)
+  await waitForFontsReady(page)
 
   await setTheme(page, "light")
   await page.emulateMedia({ media: "print" })

@@ -23,6 +23,7 @@ import {
   setTheme,
   takeRegressionScreenshot,
   WAIT_POLL_INTERVAL_MS,
+  waitForFontsReady,
   waitForTransitionEnd,
 } from "./visual_utils"
 
@@ -349,7 +350,7 @@ test.describe("Unique content around the site", () => {
       await expect(signature).toBeVisible()
       // The name renders in the serif face; wait for fonts so its metrics are
       // settled before the shot.
-      await page.evaluate(() => document.fonts.ready)
+      await waitForFontsReady(page)
 
       await takeRegressionScreenshot(page, testInfo, `gdm-signature-${theme}`, {
         elementToScreenshot: signature,
@@ -383,7 +384,7 @@ test.describe("Unique content around the site", () => {
       await gotoPage(page, "http://localhost:8080/cheese-network-architecture-fixture")
       await setTheme(page, theme)
       // Fonts drive Mermaid label metrics; wait so the layout is stable.
-      await page.evaluate(() => document.fonts.ready)
+      await waitForFontsReady(page)
 
       const diagrams = page.locator('svg[id*="mermaid"]')
       await expect(diagrams).toHaveCount(2)
@@ -1455,7 +1456,7 @@ test("First paragraph is the same before and after clicking on a heading", async
 
   // The captures compare byte-for-byte, so the webfont swap must complete
   // before the first one and each capture must be a stable frame.
-  await page.evaluate(() => document.fonts.ready)
+  await waitForFontsReady(page)
   const screenshotBefore = await captureStableScreenshot(
     () => firstParagraph.screenshot(),
     "first-paragraph-before-anchor-nav",
