@@ -314,13 +314,18 @@ export async function waitForImagesInElement(
   )
 }
 
-async function waitForVisualStability(page: Page, scope?: Locator): Promise<void> {
+/** Waits for `document.fonts.ready`, bounded by FONTS_READY_TIMEOUT_MS. */
+export async function waitForFontsReady(page: Page): Promise<void> {
   await page.evaluate(async (timeoutMs) => {
     await Promise.race([
       document.fonts.ready,
       new Promise((resolve) => setTimeout(resolve, timeoutMs)),
     ])
   }, FONTS_READY_TIMEOUT_MS)
+}
+
+async function waitForVisualStability(page: Page, scope?: Locator): Promise<void> {
+  await waitForFontsReady(page)
   if (scope) {
     await waitForImagesInElement(scope)
   } else {
