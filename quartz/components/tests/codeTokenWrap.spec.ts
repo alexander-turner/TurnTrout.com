@@ -38,7 +38,10 @@ function rowsOf(page: Page, fixture: Fixture): Promise<string[]> {
     box.style.boxSizing = "border-box"
     box.style.width = `${chrome + natural * fraction}px`
 
-    const rows = new Map<number, string>()
+    // Glyph boxes differ between fonts, so a character starts a new row only
+    // when its midpoint lies below every box on the current row.
+    const rows: string[] = []
+    let rowBottom = -Infinity
     const walker = document.createTreeWalker(rowSource, NodeFilter.SHOW_TEXT)
     for (
       let node = walker.nextNode() as Text | null;
@@ -51,12 +54,17 @@ function rowsOf(page: Page, fixture: Fixture): Promise<string[]> {
         range.setEnd(node, i + 1)
         const rect = range.getClientRects()[0]
         if (!rect || rect.width === 0) continue
-        const row = Math.round((rect.top + rect.bottom) / 8)
-        rows.set(row, (rows.get(row) ?? "") + node.data[i])
+        if ((rect.top + rect.bottom) / 2 > rowBottom) {
+          rows.push("")
+          rowBottom = rect.bottom
+        } else {
+          rowBottom = Math.max(rowBottom, rect.bottom)
+        }
+        rows[rows.length - 1] += node.data[i]
       }
     }
     host.remove()
-    return [...rows.values()]
+    return rows
   }, fixture)
 }
 
