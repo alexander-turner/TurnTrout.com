@@ -16,6 +16,8 @@ export const {
   faviconBasePath,
   minFaviconCount,
   maxAtomicInlineCodeLength,
+  maxWholeCodeTokenLength,
+  maxWholeCodeTokenLengthWide,
   googleSubdomainAllowlist,
   faviconCountAllowlist,
   faviconSubstringBlocklist,

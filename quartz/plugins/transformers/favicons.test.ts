@@ -1148,18 +1148,22 @@ describe("maybeSpliceText edge cases", () => {
     [
       "after text",
       ["hangs off o", h("span", { class: "overhang-kern-f" }, ["f"])],
-      ["hangs of"],
-      "f of",
+      ["hangs o"],
+      "ff o",
     ],
-    ["as the only child", [h("span", { class: "overhang-kern-q" }, ["Q"])], [], "Q"],
+    ["as the only child", [h("span", { class: "overhang-kern-q" }, ["Q"])], [], null],
   ])(
-    "returns a trailing overhang-kern glyph to text and glues it (%s)",
-    (_name, children, before, glued) => {
+    "glues a trailing overhang-kern span with its class intact (%s)",
+    (_name, children, before, splicedText) => {
       const node = h("a", {}, children)
       favicons.insertFavicon(imgPath, node)
       const span = node.children.at(-1) as Element
-      expect(span).toMatchObject(faviconSpanNode)
-      expect(span.children[0]).toEqual({ type: "text", value: glued })
+      expect(hasClass(span, "nowrap-span")).toBe(true)
+      const [kern, favicon] = span.children.slice(-2) as Element[]
+      expect(kern.properties.className).toEqual((children.at(-1) as Element).properties.className)
+      expect(favicon.properties.class).toBe("favicon")
+      const spliced = splicedText === null ? [] : [{ type: "text", value: splicedText }]
+      expect(span.children.slice(0, -2)).toEqual(spliced)
       expect(node.children.slice(0, -1)).toEqual(before.map((value) => ({ type: "text", value })))
     },
   )

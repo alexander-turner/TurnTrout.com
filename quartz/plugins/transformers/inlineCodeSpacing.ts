@@ -107,9 +107,9 @@ function isItalicized(ancestors: readonly Parent[]): boolean {
 
 /**
  * Rehype plugin for inline `<code>` (block code inside `<pre>` is untouched):
- *   - lets a path (`owner/repo`) break after its inner slashes, and marks any
- *     other short code `inline-code-atomic` so it wraps whole instead of
- *     breaking at an internal hyphen;
+ *   - lets a path (`owner/repo`) break after its inner slashes and marks it
+ *     `inline-code-path`; marks any other short code `inline-code-atomic` so it
+ *     wraps whole instead of breaking at an internal hyphen;
  *   - wraps the last character of the word a code's monospace glyph would crowd
  *     in a `code-gap-after` span, which carries the gap in CSS. Adds no gap when
  *     the code is italicized (its leaning glyphs open the space themselves),
@@ -123,8 +123,9 @@ export const rehypeInlineCodeSpacing: Plugin = () => {
     visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
       if (node.tagName !== "code" || isInPre(ancestors)) return
       // A path breaks after its slashes instead, so it is never atomic.
-      const breaksAtSlash = insertCodeBreaks(node, breaksAfterPathSlash) > 0
-      if (!breaksAtSlash && textLength(node) <= ATOMIC_CODE_MAX_LENGTH) {
+      if (insertCodeBreaks(node, breaksAfterPathSlash) > 0) {
+        addClass(node, "inline-code-path")
+      } else if (textLength(node) <= ATOMIC_CODE_MAX_LENGTH) {
         addClass(node, "inline-code-atomic")
       }
       if (isItalicized(ancestors)) return

@@ -20,6 +20,15 @@
   .katex-html > .base:last-child {
     display: inline;
   }
+
+  // A line may break before math only at a box edge. When the math's only
+  // `.base` is its last, the rule above leaves its start without one, so the
+  // line breaks inside earlier math instead; this empty inline-block restores
+  // the edge.
+  .katex::before {
+    content: "";
+    display: inline-block;
+  }
 }
 
 // Groups a favicon-ending link with its trailing footnote reference so the

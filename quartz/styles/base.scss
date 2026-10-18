@@ -481,6 +481,21 @@ pre {
         border-left: 3px solid var(--blue);
       }
 
+      // A token with break points inside (see CodeBlockBreaks) moves to the
+      // next row whole when it fits there, and breaks at its seams only when
+      // wider than a row. A longer token rarely fits a narrow screen's row, so
+      // there it stays inline and breaks at its seams in place.
+      & .code-token {
+        display: inline-block;
+        max-width: 100%;
+      }
+
+      & .code-token-wide {
+        @media all and (max-width: $mobile-breakpoint) {
+          display: inline;
+        }
+      }
+
       // Vertical separator line that extends full height (including wrapped lines)
       &::after {
         content: "";

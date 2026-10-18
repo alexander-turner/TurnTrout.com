@@ -93,9 +93,11 @@ describe("InlineCodeSpacing", () => {
       ["owner/repo", "owner/<wbr>repo"],
       ["config/lint/.markdownlint.jsonc", "config/<wbr>lint/<wbr>.markdownlint.jsonc"],
       ["https://github.com/a", "https://github.com/<wbr>a"],
-    ])("breaks %s after its slashes instead of marking it atomic", async (path, expected) => {
+    ])("breaks %s after its slashes and marks it a path", async (path, expected) => {
       const out = await processHtmlWithPlugin(`<p>see <code>${path}</code></p>`)
-      expect(out).toBe(`<p>se<span class="code-gap-after">e</span> <code>${expected}</code></p>`)
+      expect(out).toBe(
+        `<p>se<span class="code-gap-after">e</span> <code class="inline-code-path">${expected}</code></p>`,
+      )
     })
 
     it.each(["/shard-theory", "a / b", "and/", "&#x3C;/analysis>"])(

@@ -4,6 +4,8 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
+import { maxWholeCodeTokenLength, maxWholeCodeTokenLengthWide } from "../../components/constants"
+
 /**
  * @module CodeBreaks
  *
@@ -15,6 +17,11 @@ import type { QuartzTransformerPlugin } from "../types"
  * `onc` on its own row. A `<wbr>` at the token's seams gives the line breaker a
  * readable place to break first, and adds nothing to the text a reader selects,
  * copies, or searches.
+ *
+ * The line breaker takes the last opportunity that fits, so a `<wbr>` inside
+ * the next token would win over the space before it. Each such token is
+ * therefore an inline-block: it moves to the next row whole when it fits there,
+ * and breaks at its seams only when wider than a row.
  */
 
 /** Decides whether a line may break before `text[index]`. */
@@ -104,6 +111,113 @@ export function insertCodeBreaks(container: Element, rule: BreakRule): number {
   return inserted
 }
 
+interface Leaf {
+  node: ElementContent
+  // The elements between the line and this leaf, outermost first.
+  chain: readonly Element[]
+}
+
+function leavesOf(node: Element, chain: readonly Element[] = []): Leaf[] {
+  return node.children.flatMap((child) =>
+    child.type === "element" && child.children.length > 0
+      ? leavesOf(child, [...chain, child])
+      : [{ node: child, chain }],
+  )
+}
+
+/** Rebuilds leaves under copies of their elements, sharing a copy between neighbors. */
+function rebuild(leaves: readonly Leaf[], depth = 0): ElementContent[] {
+  const nodes: ElementContent[] = []
+  let i = 0
+  while (i < leaves.length) {
+    const wrapper = leaves[i].chain.at(depth)
+    if (wrapper === undefined) {
+      nodes.push(leaves[i].node)
+      i++
+      continue
+    }
+    let end = i
+    while (end < leaves.length && leaves[end].chain.at(depth) === wrapper) end++
+    nodes.push({
+      ...wrapper,
+      properties: structuredClone(wrapper.properties),
+      children: rebuild(leaves.slice(i, end), depth + 1),
+    })
+    i = end
+  }
+  return nodes
+}
+
+interface Run {
+  space: boolean
+  leaves: Leaf[]
+}
+
+/** Splits leaves into alternating whitespace and token runs. */
+function runsOf(leaves: readonly Leaf[]): Run[] {
+  const runs: Run[] = []
+  for (const leaf of leaves) {
+    const parts =
+      leaf.node.type === "text"
+        ? (leaf.node.value.match(/\s+|\S+/gu) ?? []).map((value) => ({
+            node: { type: "text", value } as Text,
+            space: SPACE.test(value),
+          }))
+        : [{ node: leaf.node, space: false }]
+    for (const { node, space } of parts) {
+      const last = runs.at(-1)
+      if (last?.space === space) last.leaves.push({ node, chain: leaf.chain })
+      else runs.push({ space, leaves: [{ node, chain: leaf.chain }] })
+    }
+  }
+  return runs
+}
+
+const isWbr = (node: ElementContent): boolean => node.type === "element" && node.tagName === "wbr"
+
+/**
+ * Classes for a token run that should move to the next row whole, or null to
+ * leave it inline. The line's first token stays inline, since moving it would
+ * strand the line's indentation on a row of its own; so does a token too long
+ * to fit a row.
+ */
+function tokenClasses(run: Run, isFirstToken: boolean): string[] | null {
+  if (run.space || isFirstToken || !run.leaves.some(({ node }) => isWbr(node))) return null
+  const length = run.leaves.reduce(
+    (sum, { node }) => sum + (node.type === "text" ? node.value.length : 0),
+    0,
+  )
+  if (length > maxWholeCodeTokenLengthWide) return null
+  return length > maxWholeCodeTokenLength ? ["code-token", "code-token-wide"] : ["code-token"]
+}
+
+/** Wraps each of ``line``'s tokens that holds a `<wbr>` in a `code-token` span. */
+export function wrapCodeTokens(line: Element): void {
+  const runs = runsOf(leavesOf(line))
+  const firstToken = runs.find((run) => !run.space)
+  const classes = runs.map((run) => tokenClasses(run, run === firstToken))
+  if (classes.every((className) => className === null)) return
+
+  const children: ElementContent[] = []
+  let pending: Leaf[] = []
+  runs.forEach((run, i) => {
+    const className = classes[i]
+    if (className === null) {
+      pending.push(...run.leaves)
+      return
+    }
+    children.push(...rebuild(pending), {
+      type: "element",
+      tagName: "span",
+      properties: { className },
+      children: rebuild(run.leaves),
+    })
+    pending = []
+  })
+  children.push(...rebuild(pending))
+  line.children = children
+}
+
 /** Rehype pass giving each code-block line its break opportunities. */
 export function rehypeCodeBlockBreaks(tree: Root): void {
   visitParents(tree, "element", (node: Element, ancestors) => {
@@ -111,7 +225,7 @@ export function rehypeCodeBlockBreaks(tree: Root): void {
     const inPre = ancestors.some(
       (ancestor) => ancestor.type === "element" && (ancestor as Element).tagName === "pre",
     )
-    if (inPre) insertCodeBreaks(node, breaksInCodeBlock)
+    if (inPre && insertCodeBreaks(node, breaksInCodeBlock) > 0) wrapCodeTokens(node)
   })
 }
 

@@ -1,7 +1,6 @@
 import type { Element, Parent, Root, Text } from "hast"
 
 import fs from "fs"
-import { toString } from "hast-util-to-string"
 import mime from "mime-types"
 import pRetry from "p-retry"
 import { visit } from "unist-util-visit"
@@ -410,24 +409,23 @@ export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "in
 const overhangKernClasses: readonly string[] = [OVERHANG_KERN_F_CLASS, OVERHANG_KERN_Q_CLASS]
 
 /**
- * Returns an overhang-kern span ending ``node`` to plain text. The span's margin
- * spaces the glyph from a mark after the link, but the favicon now sits between
- * them, and the icon's own nudge class spaces it from the glyph. As text, the
- * glyph can be spliced into the favicon's nowrap span.
+ * Glues an overhang-kern span ending ``node`` into the favicon's nowrap span.
+ * The span keeps its class, so its margin still clears the glyph's overhang
+ * from the icon.
  */
-function unwrapTrailingOverhangKern(node: Element): void {
+function glueTrailingOverhangKern(node: Element, favicon: FaviconNode): Element | null {
   const last = node.children.at(-1)
   if (last?.type !== "element" || !overhangKernClasses.some((name) => hasClass(last, name))) {
-    return
+    return null
   }
-  const glyph = toString(last)
-  const previous = node.children.at(-2)
-  if (previous?.type === "text") {
-    previous.value += glyph
-    node.children.pop()
-  } else {
-    node.children[node.children.length - 1] = { type: "text", value: glyph }
-  }
+  node.children.pop()
+  const previous = node.children.at(-1)
+  const span =
+    previous?.type === "text"
+      ? spliceAndWrapLastChars(previous, node, last)
+      : createNowrapSpan([last])
+  span.children.push(favicon)
+  return span
 }
 
 /**
@@ -439,7 +437,8 @@ export function maybeSpliceText(
   imgNodeToAppend: FaviconNode,
   context: GlyphContext = EMPTY_GLYPH_CONTEXT,
 ): Element | null {
-  unwrapTrailingOverhangKern(node)
+  const kerned = glueTrailingOverhangKern(node, imgNodeToAppend)
+  if (kerned) return kerned
   const isEmpty = (child: Element | Text) => child.type === "text" && child.value?.trim() === ""
   const lastChild = node.children.findLast(
     (child) => child.type === "element" || !isEmpty(child as Element | Text),

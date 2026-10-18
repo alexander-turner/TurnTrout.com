@@ -115,4 +115,43 @@ test.describe("inline atom glue", () => {
 
     expect(periodBesideLastOperand).toBe(true)
   })
+
+  // Math whose only `.base` is its last must still allow a break before it;
+  // otherwise the line breaks inside the preceding math to make room.
+  test("breaks before single-base math rather than inside earlier math", async ({ page }) => {
+    await gotoPage(page, "http://localhost:8080/test-page")
+
+    const earlierMathOnOneRow = await page.evaluate(() => {
+      const source = Array.from(document.querySelectorAll("article p .nowrap-span")).find(
+        (span) => span.querySelectorAll(".katex-html > .base").length > 1,
+      )
+      const article = source?.closest("article")
+      if (!source || !article) throw new Error("no glued multi-base inline math on the test page")
+
+      const earlier = source.cloneNode(true) as HTMLElement
+      const single = source.cloneNode(true) as HTMLElement
+      const singleBases = single.querySelectorAll(".katex-html > .base")
+      singleBases.forEach((base, i) => i < singleBases.length - 1 && base.remove())
+
+      const probe = document.createElement("p")
+      probe.style.cssText = "width:max-content;margin:0"
+      probe.append("If ", earlier, " then ")
+      article.appendChild(probe)
+      // Room for everything up to "then", but not for the single-base math too.
+      const width = probe.getBoundingClientRect().width + 2
+      probe.append(single)
+      probe.style.width = `${width}px`
+
+      // Rows compare by vertical midpoint, as above.
+      const middleOf = (rect: DOMRect) => (rect.top + rect.bottom) / 2
+      const operands = earlier.querySelectorAll(".katex-html > .base > .mord")
+      const first = middleOf(operands[0].getBoundingClientRect())
+      const last = middleOf(operands[operands.length - 1].getBoundingClientRect())
+      const halfFont = parseFloat(getComputedStyle(probe).fontSize) / 2
+      probe.remove()
+      return Math.abs(first - last) < halfFont
+    })
+
+    expect(earlierMathOnOneRow).toBe(true)
+  })
 })
