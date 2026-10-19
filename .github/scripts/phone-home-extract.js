@@ -6,6 +6,29 @@ const fs = require("fs");
 const MIN_CONTENT_LENGTH = 10;
 const PHONE_HOME_DIR = "/tmp/phone-home";
 
+// A PR with no template-worthy lesson should OMIT the section entirely, but
+// authors routinely leave a prose disclaimer ("None applicable to an unrelated
+// project", "None generalizable beyond this repo") instead. That text clears
+// the length gates and files a worthless issue on the template. Treat a section
+// whose first meaningful line is such a negative declaration as "no lessons".
+// `none of …` is excluded so a genuine lesson that opens that way still lands.
+const NEGATIVE_DECLARATION =
+  /^(?:none(?!\s+of)|nothing|n\/?a|not applicable|no (?:lessons?|generaliz\w*|template|broadly|applicable|insights?))\b/i;
+
+/** @param {string} text */
+function isNegativeDeclaration(text) {
+  const firstLine = text
+    .split("\n")
+    .map((line) =>
+      line
+        .replace(/^[\s\-*>]+/, "")
+        .replace(/\*/g, "")
+        .trim(),
+    )
+    .find((line) => line.length > 0);
+  return firstLine ? NEGATIVE_DECLARATION.test(firstLine) : false;
+}
+
 /**
  * Extract "Lessons Learned" from a merged PR body, filter noise, and write
  * the cleaned text to a temp file for gitleaks scanning.
@@ -35,7 +58,7 @@ module.exports = async ({ context, core }) => {
   // terminating lookahead is deliberately wider (#{2,6}) so ANY following
   // heading ends the section. Don't widen the opening anchor to match.
   const lessonsMatch = prBody.match(
-    /(?:^|\n)#{2,3} Lessons Learned[ \t]*\n([\s\S]*?)(?=\n#{2,6} |\n---|\s*$)/i,
+    /(?:^|\n)#{2,3} Lessons Learned[ \t]*\n(?<body>[\s\S]*?)(?=\n#{2,6} |\n---|$)/i,
   );
   if (!lessonsMatch) {
     console.log(
@@ -44,7 +67,7 @@ module.exports = async ({ context, core }) => {
     return;
   }
 
-  const lessons = lessonsMatch[1].trim();
+  const lessons = lessonsMatch.groups.body.trim();
   if (!lessons || lessons.length < MIN_CONTENT_LENGTH) {
     console.log("Lessons section is empty or too short, skipping");
     return;
@@ -57,9 +80,12 @@ module.exports = async ({ context, core }) => {
     .replace(/<!--[\s\S]*?-->/g, "")
     .split("\n")
     .filter((line) => !line.trim().match(/^<[^>]*>$/))
-    .filter(
-      (line) => !line.trim().match(/^https:\/\/claude\.ai\/code\/session_/),
-    )
+    // Drop AI-attribution footers — session links, "Generated with Claude
+    // Code" lines, and co-author trailers — so they never reach the issue
+    // body (the repo bans such links in PRs; they are pure noise here).
+    .filter((line) => !/claude\.(?:ai|com)/i.test(line))
+    .filter((line) => !/^\s*🤖/.test(line))
+    .filter((line) => !/^\s*co-authored-by:/i.test(line))
     .filter((line) => !line.trim().match(/^```/))
     .join("\n")
     .trim();
@@ -70,9 +96,18 @@ module.exports = async ({ context, core }) => {
     return;
   }
 
-  const stripped = filtered.replace(/\*\*(What|Where|Why)\*\*:\s*/g, "").trim();
+  const stripped = filtered
+    .replace(/\*\*(?:What|Where|Why)\*\*:\s*/g, "")
+    .trim();
   if (!stripped || stripped.length < MIN_CONTENT_LENGTH) {
     console.log("Lessons section only contains template skeleton, skipping");
+    return;
+  }
+
+  if (isNegativeDeclaration(stripped)) {
+    console.log(
+      "Lessons section only declares there is nothing to share, skipping",
+    );
     return;
   }
 
