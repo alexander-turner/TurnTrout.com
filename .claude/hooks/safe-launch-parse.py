@@ -6,8 +6,8 @@ whether the in-flight tool call is a self-repair edit on a hook file.
 
 Reads the PreToolUse JSON from stdin and prints two lines: tool_name,
 then the absolute file path (or an empty line if none). On any parse
-failure, exits 0 with empty output so safe-launch falls through to the
-fail-safe "ask" default.
+failure, or if the parsed JSON is not an object, exits 0 with empty
+output so safe-launch falls through to the fail-safe "ask" default.
 """
 
 import json
@@ -33,6 +33,8 @@ def main() -> int:
     try:
         data = json.load(sys.stdin)
     except ValueError:
+        return 0
+    if not isinstance(data, dict):
         return 0
     name = data.get("tool_name", "") or ""
     tool_input = data.get("tool_input", {}) or {}
