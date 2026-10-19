@@ -134,6 +134,27 @@
       "status": "open"
     },
     {
+      "repo": "cloud-hypervisor/cloud-hypervisor",
+      "number": 9119,
+      "title": "vmm: Narrow Landlock write access for read-only disks",
+      "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/pull/9119",
+      "status": "open"
+    },
+    {
+      "repo": "cloud-hypervisor/cloud-hypervisor",
+      "number": 9120,
+      "title": "main: Accept --landlock without a VM payload",
+      "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/pull/9120",
+      "status": "closed"
+    },
+    {
+      "repo": "cloud-hypervisor/cloud-hypervisor",
+      "number": 9121,
+      "title": "main: Accept --landlock without a VM payload",
+      "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/pull/9121",
+      "status": "open"
+    },
+    {
       "repo": "DeepSourceCorp/cli",
       "number": 247,
       "title": "Filter issues by severity",
@@ -365,6 +386,13 @@
       "status": "closed"
     },
     {
+      "repo": "kata-containers/kata-containers",
+      "number": 14081,
+      "title": "runtime-rs: confine Cloud Hypervisor with Landlock from vm.create",
+      "url": "https://github.com/kata-containers/kata-containers/pull/14081",
+      "status": "open"
+    },
+    {
       "repo": "KaTeX/KaTeX",
       "number": 4162,
       "title": "feat: add accessibility attributes to math elements",
@@ -425,41 +453,62 @@
       "number": 5,
       "title": "Per-VM AppArmor confinement for QEMU processes (security_driver = \"none\")?",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/issues/5",
-      "status": "open"
+      "status": "fixed"
     },
     {
       "repo": "meridianlabs-ai/inspect_ranges",
       "number": 6,
       "title": "Automate the defender→agent conformance checks from agent-containment.md",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/issues/6",
-      "status": "open"
+      "status": "fixed"
     },
     {
       "repo": "meridianlabs-ai/inspect_ranges",
       "number": 7,
       "title": "evidence capture: run tcpdump packet-buffered (-U) so the active chunk is current",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/7",
-      "status": "open"
+      "status": "merged"
     },
     {
       "repo": "meridianlabs-ai/inspect_ranges",
       "number": 8,
       "title": "render: turn off q35 legacy devices that no configuration names",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/8",
-      "status": "open"
+      "status": "merged"
     },
     {
       "repo": "meridianlabs-ai/inspect_ranges",
       "number": 9,
       "title": "range container: no IPv6 and no multicast snooping on the segment bridges",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/9",
-      "status": "open"
+      "status": "merged"
     },
     {
       "repo": "meridianlabs-ai/inspect_ranges",
       "number": 10,
       "title": "provider: cloud-hypervisor VMM, default for the agent box",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/10",
+      "status": "closed"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 11,
+      "title": "up: tie cloud-hypervisor socket wait to readiness timeout",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/11",
+      "status": "open"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 12,
+      "title": "down: tear down cloud-hypervisor vsock dir from the owner record",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/12",
+      "status": "open"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 13,
+      "title": "tests: validate example ranges from both shipped locations",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/13",
       "status": "open"
     },
     {
@@ -882,23 +931,23 @@
       "ownerType": "User"
     },
     "acon96/home-llm": {
-      "stars": 1468,
+      "stars": 1469,
       "ownerType": "User"
     },
     "ankidroid/Anki-Android": {
-      "stars": 12040,
+      "stars": 12050,
       "ownerType": "Organization"
     },
     "anordal/shellharden": {
-      "stars": 4807,
+      "stars": 4808,
       "ownerType": "User"
     },
     "anthropics/claude-code": {
-      "stars": 152207,
+      "stars": 152451,
       "ownerType": "Organization"
     },
     "cloud-hypervisor/cloud-hypervisor": {
-      "stars": 6387,
+      "stars": 6395,
       "ownerType": "Organization"
     },
     "DeepSourceCorp/cli": {
@@ -906,11 +955,11 @@
       "ownerType": "Organization"
     },
     "dequelabs/axe-core": {
-      "stars": 7662,
+      "stars": 7670,
       "ownerType": "Organization"
     },
     "docker/sbx-releases": {
-      "stars": 458,
+      "stars": 459,
       "ownerType": "Organization"
     },
     "EFForg/https-everywhere": {
@@ -918,7 +967,7 @@
       "ownerType": "Organization"
     },
     "IlanCosman/tide": {
-      "stars": 4282,
+      "stars": 4285,
       "ownerType": "User"
     },
     "jbloomAus/DecisionTransformerInterpretability": {
@@ -926,7 +975,7 @@
       "ownerType": "User"
     },
     "jestjs/jest": {
-      "stars": 45486,
+      "stars": 45488,
       "ownerType": "Organization"
     },
     "JinayJain/gpt-anywhere": {
@@ -934,7 +983,7 @@
       "ownerType": "User"
     },
     "kata-containers/kata-containers": {
-      "stars": 8960,
+      "stars": 8969,
       "ownerType": "Organization"
     },
     "KaTeX/KaTeX": {
@@ -954,11 +1003,11 @@
       "ownerType": "Organization"
     },
     "mermaid-js/mermaid": {
-      "stars": 90727,
+      "stars": 90752,
       "ownerType": "Organization"
     },
     "METR/hawk": {
-      "stars": 94,
+      "stars": 96,
       "ownerType": "Organization"
     },
     "METR/inspect_k8s_sandbox": {
@@ -978,23 +1027,23 @@
       "ownerType": "User"
     },
     "nikitabobko/AeroSpace": {
-      "stars": 23540,
+      "stars": 23553,
       "ownerType": "User"
     },
     "openai/gym": {
-      "stars": 37240,
+      "stars": 37239,
       "ownerType": "Organization"
     },
     "orbstack/orbstack": {
-      "stars": 9445,
+      "stars": 9455,
       "ownerType": "Organization"
     },
     "pa11y/pa11y": {
-      "stars": 4577,
+      "stars": 4578,
       "ownerType": "Organization"
     },
     "parcel-bundler/lightningcss": {
-      "stars": 7710,
+      "stars": 7711,
       "ownerType": "Organization"
     },
     "PyCQA/docformatter": {
@@ -1014,11 +1063,11 @@
       "ownerType": "User"
     },
     "runelite/runelite": {
-      "stars": 5494,
+      "stars": 5495,
       "ownerType": "Organization"
     },
     "sigstore/cosign": {
-      "stars": 6370,
+      "stars": 6372,
       "ownerType": "Organization"
     },
     "starkdmi/BrightXDR": {
@@ -1026,15 +1075,15 @@
       "ownerType": "User"
     },
     "stryker-mutator/stryker-js": {
-      "stars": 3237,
+      "stars": 3247,
       "ownerType": "Organization"
     },
     "stylelint-scss/stylelint-scss": {
-      "stars": 880,
+      "stars": 879,
       "ownerType": "Organization"
     },
     "stylelint/stylelint": {
-      "stars": 11537,
+      "stars": 11536,
       "ownerType": "Organization"
     },
     "syntax-tree/hast-util-to-jsx-runtime": {
@@ -1042,15 +1091,15 @@
       "ownerType": "Organization"
     },
     "tailscale/tailscale": {
-      "stars": 37706,
+      "stars": 37755,
       "ownerType": "Organization"
     },
     "TranslucentTB/TranslucentTB": {
-      "stars": 20571,
+      "stars": 20588,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_ai": {
-      "stars": 3033,
+      "stars": 3043,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_evals": {
