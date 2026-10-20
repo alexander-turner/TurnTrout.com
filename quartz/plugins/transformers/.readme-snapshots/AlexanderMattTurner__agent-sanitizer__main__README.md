@@ -250,7 +250,7 @@ To wire them yourself instead, one entry dispatches every mode on `--hook=`:
 | `SessionStart`       | `scan-invisible-chars`     |
 | `InstructionsLoaded` | `scan-loaded-instructions` |
 
-**Wire all five.** The instruction-file scan is split across two of them: `SessionStart` covers the files that load at launch, and `InstructionsLoaded` covers every one a subdirectory loads later. A host that wires the first without the second leaves a nested `CLAUDE.md` scanned by nothing, and the one-time PreToolUse coverage notice is the only thing that says so.
+**Wire all five.** The instruction-file scan is split across two of them: `SessionStart` covers the files that load at launch, and `InstructionsLoaded` covers every one a subdirectory loads later. A host that wires the first without the second leaves a nested `CLAUDE.md` scanned by nothing. The one-time PreToolUse coverage notice says so, but only when a file announced at launch went unscanned: a project whose only `CLAUDE.md` files sit in subdirectories gets no notice.
 
 `InstructionsLoaded` needs Claude Code **2.1.69 or newer** — 2.1.68 does not emit the event, so the hook never fires however you wire it. Check with `claude --version`.
 
