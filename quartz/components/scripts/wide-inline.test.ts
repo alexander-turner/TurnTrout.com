@@ -4,7 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import { WIDE_INLINE_CLASS } from "../constants"
-import { markWideInlines, observeWideInlines } from "./wide-inline"
+import { markWideInlines, markWideInlinesOnResize } from "./wide-inline"
 
 const rectAt = (middle: number) => ({ top: middle - 5, bottom: middle + 5 }) as DOMRect
 
@@ -85,33 +85,29 @@ describe("markWideInlines", () => {
   })
 })
 
-describe("observeWideInlines", () => {
-  let callback: ResizeObserverCallback
-  const observe = jest.fn()
+describe("markWideInlinesOnResize", () => {
+  const resizeTo = (width: number) => {
+    Object.defineProperty(window, "innerWidth", { value: width, configurable: true })
+    window.dispatchEvent(new Event("resize"))
+  }
 
-  beforeEach(() => {
-    globalThis.ResizeObserver = jest.fn((cb: ResizeObserverCallback) => {
-      callback = cb
-      return { observe, disconnect: jest.fn(), unobserve: jest.fn() }
-    }) as unknown as typeof ResizeObserver
-  })
+  beforeEach(() => resizeTo(1024))
 
-  const resize = (width: number) =>
-    callback([{ contentRect: { width } } as ResizeObserverEntry], {} as ResizeObserver)
-
-  it("re-marks the boxes only when the container's width changes", () => {
+  it("marks the boxes, then re-marks them only when the viewport's width changes", () => {
     const html = buildMath([10, 40])
-    observeWideInlines(document.body)
-    expect(observe).toHaveBeenCalledWith(document.body)
-
-    resize(300)
+    const stop = markWideInlinesOnResize(document.body)
     expect(html.classList.contains(WIDE_INLINE_CLASS)).toBe(true)
 
     html.classList.remove(WIDE_INLINE_CLASS)
-    resize(300)
+    resizeTo(1024)
     expect(html.classList.contains(WIDE_INLINE_CLASS)).toBe(false)
 
-    resize(600)
+    resizeTo(500)
     expect(html.classList.contains(WIDE_INLINE_CLASS)).toBe(true)
+
+    stop()
+    html.classList.remove(WIDE_INLINE_CLASS)
+    resizeTo(400)
+    expect(html.classList.contains(WIDE_INLINE_CLASS)).toBe(false)
   })
 })

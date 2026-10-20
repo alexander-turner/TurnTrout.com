@@ -1,10 +1,10 @@
-import { markWideInlines, observeWideInlines } from "./wide-inline"
+import { markWideInlines, markWideInlinesOnResize } from "./wide-inline"
 
-let observer: ResizeObserver | null = null
+let stopMarking: (() => void) | null = null
 
 document.addEventListener("nav", () => {
-  observer?.disconnect()
-  observer = observeWideInlines(document.body)
+  stopMarking?.()
+  stopMarking = markWideInlinesOnResize(document.body)
 })
 
 // Web fonts change the boxes' widths once they load.

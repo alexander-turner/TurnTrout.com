@@ -43,17 +43,19 @@ export function markWideInlines(container: ParentNode): void {
 }
 
 /**
- * Re-marks the boxes in `container` whenever its width changes. Marking changes
- * only the container's height, so it doesn't retrigger the observer.
+ * Marks the boxes in `container`, then re-marks them whenever the viewport's
+ * width changes.
+ *
+ * @returns A function that stops the re-marking.
  */
-export function observeWideInlines(container: HTMLElement): ResizeObserver {
-  let width: number | null = null
-  const observer = new ResizeObserver((entries) => {
-    const newWidth = entries[entries.length - 1].contentRect.width
-    if (newWidth === width) return
-    width = newWidth
+export function markWideInlinesOnResize(container: ParentNode): () => void {
+  let width = window.innerWidth
+  const onResize = () => {
+    if (window.innerWidth === width) return
+    width = window.innerWidth
     markWideInlines(container)
-  })
-  observer.observe(container)
-  return observer
+  }
+  markWideInlines(container)
+  window.addEventListener("resize", onResize)
+  return () => window.removeEventListener("resize", onResize)
 }
