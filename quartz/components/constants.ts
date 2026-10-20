@@ -187,10 +187,14 @@ export const INLINE_CODE_PATH_CLASS = "inline-code-path"
 // Marks inline math or an inline code path wider than its line, at runtime
 // (`wide-inline.ts`). Such a box is displayed inline so it wraps like text.
 export const WIDE_INLINE_CLASS = "wide-inline"
-// Wraps a glyph whose ink overhangs its advance width ("f", "Q") so CSS can
-// open the word space before a crowded mark.
-export const OVERHANG_KERN_F_CLASS = "overhang-kern-f"
-export const OVERHANG_KERN_Q_CLASS = "overhang-kern-q"
+// Glyphs whose ink reaches past their own advance width, mapped to the class
+// that pulls a following mark back out to where an ordinary letter would place
+// it. Against EB Garamond's typical right side bearing (~45 units of its 2048
+// em), "f" falls 307 units short and "Q" 244.
+export const OVERHANG_KERN_CLASSES: ReadonlyMap<string, string> = new Map([
+  ["f", "overhang-kern-f"],
+  ["Q", "overhang-kern-q"],
+])
 // Arrows written as "->" keep the main face; Unicode arrows render in the
 // monospace face, which draws them better.
 export const RIGHT_ARROW_CLASS = "right-arrow"

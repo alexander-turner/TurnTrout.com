@@ -7,13 +7,9 @@
 .nowrap-span {
   white-space: nowrap;
 
-  // The `.katex` box keeps `nowrap`, so its trailing edge never offers a break
-  // and trailing punctuation stays beside the math, which wraps internally.
-  .katex-html {
-    white-space: normal;
-  }
-
-  // A glued code path keeps its own break opportunities after its slashes.
+  // Glued math and code paths keep their inner break opportunities. Their box
+  // edges stay in `nowrap` context, so adjacent punctuation stays beside them.
+  .katex-html,
   .inline-code-path {
     white-space: normal;
   }

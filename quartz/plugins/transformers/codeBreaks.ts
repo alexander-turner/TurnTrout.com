@@ -49,46 +49,25 @@ export const breaksAfterPathSlash: BreakRule = (text, index) =>
 const BEFORE_MEMBER = /[\p{L}\p{N}_)\]]/u
 const MEMBER_START = /[\p{L}_]/u
 
-const IDENTIFIER_CHAR = /[\p{L}\p{N}_]/u
-const LOWER = /\p{Ll}/u
-const UPPER = /\p{Lu}/u
-const ALPHANUMERIC = /[\p{L}\p{N}]/u
-const DIGIT = /\p{N}/u
-
-const matches = (pattern: RegExp, char: string | undefined): boolean =>
-  char !== undefined && pattern.test(char)
-
-/** Length of the identifier (`[\p{L}\p{N}_]` run) spanning `text[index]`. */
-function identifierLength(text: string, index: number): number {
-  let [start, end] = [index, index]
-  while (matches(IDENTIFIER_CHAR, text[start - 1])) start--
-  while (matches(IDENTIFIER_CHAR, text[end])) end++
-  return end - start
-}
+// Between two words of an identifier: `Inner|Outer`, `HTML|Parser`,
+// `Turner|2022|Against`, `max_|token`. Sticky, so its lookbehinds read the
+// text before `lastIndex`.
+const WORD_SEAM =
+  /(?<=\p{Ll})(?=\p{Lu})|(?<=\p{Lu})(?=\p{Lu}\p{Ll})|(?<=\p{L})(?=\p{N})|(?<=\p{N})(?=\p{L})|(?<=[\p{L}\p{N}]_)(?=[\p{L}\p{N}])/uy
+const IDENTIFIER_TAIL = /[\p{L}\p{N}_]*$/u
+const IDENTIFIER_END = /[^\p{L}\p{N}_]|$/u
 
 /**
- * Between two words of an identifier: `Inner|Outer`, `HTML|Parser`,
- * `Turner|2022|Against`, `max_|token`.
- */
-function isWordSeam(text: string, index: number): boolean {
-  const [before, prev, next, after] = [-2, -1, 0, 1].map((offset) => text[index + offset])
-  if (prev === "_") return next !== "_" && matches(ALPHANUMERIC, before)
-  if (next === "_") return false
-  if (matches(DIGIT, prev) !== matches(DIGIT, next)) return true
-  return (
-    matches(UPPER, next) &&
-    (matches(LOWER, prev) || (matches(UPPER, prev) && matches(LOWER, after)))
-  )
-}
-
-/**
- * Inside an identifier longer than `maxWholeCodeTokenLength`, between two of
- * its words. A shorter identifier stays whole.
+ * Between two words of an identifier longer than `maxWholeCodeTokenLength`. A
+ * shorter identifier stays whole.
  */
 export const breaksInLongIdentifier: BreakRule = (text, index) => {
-  const [prev, next] = [text[index - 1], text[index]]
-  if (!matches(IDENTIFIER_CHAR, prev) || !matches(IDENTIFIER_CHAR, next)) return false
-  return isWordSeam(text, index) && identifierLength(text, index) > maxWholeCodeTokenLength
+  WORD_SEAM.lastIndex = index
+  if (!WORD_SEAM.test(text)) return false
+  const before = text.slice(0, index)
+  const length =
+    before.length - before.search(IDENTIFIER_TAIL) + text.slice(index).search(IDENTIFIER_END)
+  return length > maxWholeCodeTokenLength
 }
 
 /**
@@ -108,16 +87,6 @@ export const breaksInCodeBlock: BreakRule = (text, index) => {
 
 const wbr = (): Element => ({ type: "element", tagName: "wbr", properties: {}, children: [] })
 
-/** Text nodes under ``node`` in document order, with their parents. */
-function textNodesOf(node: Element): { parent: Element; text: Text }[] {
-  const found: { parent: Element; text: Text }[] = []
-  for (const child of node.children) {
-    if (child.type === "text") found.push({ parent: node, text: child })
-    else if (child.type === "element") found.push(...textNodesOf(child))
-  }
-  return found
-}
-
 /**
  * Insert a `<wbr>` at each boundary inside ``container`` where ``rule`` allows a
  * break. The rule reads the container's whole text, since syntax highlighting
@@ -127,7 +96,9 @@ function textNodesOf(node: Element): { parent: Element; text: Text }[] {
  * @returns The number of `<wbr>` elements inserted.
  */
 export function insertCodeBreaks(container: Element, rule: BreakRule): number {
-  const nodes = textNodesOf(container)
+  const nodes = leavesOf(container).flatMap(({ node, chain }) =>
+    node.type === "text" ? [{ parent: chain.at(-1) ?? container, text: node }] : [],
+  )
   const text = nodes.map(({ text }) => text.value).join("")
   let inserted = 0
   let start = 0

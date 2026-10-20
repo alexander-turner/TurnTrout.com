@@ -91,22 +91,10 @@ const trailingGlueChars: ReadonlySet<string> = new Set([
 // opens it.
 const leadingGlueChars: ReadonlySet<string> = new Set(['"', "'", ...OPENING_PUNCTUATION])
 
-/** Length of the trailing run of `value` that may not end a line. */
-function countTrailingOpeners(value: string): number {
-  let count = 0
-  while (count < value.length && leadingGlueChars.has(value[value.length - 1 - count])) {
-    count += 1
-  }
-  return count
-}
-
-/** Length of the leading run of `value` that may not begin a line. */
-function countLeadingGlue(value: string): number {
-  let count = 0
-  while (count < value.length && trailingGlueChars.has(value[count])) {
-    count += 1
-  }
-  return count
+/** Length of the run of `chars` that starts `values`. */
+function countRun(chars: ReadonlySet<string>, values: readonly string[]): number {
+  const end = values.findIndex((char) => !chars.has(char))
+  return end === -1 ? values.length : end
 }
 
 // Gluing splits on graphemes, not code units: `slice(-1)` would cut an astral
@@ -140,6 +128,22 @@ function asNowrapSpan(
 }
 
 /**
+ * Replaces the end of `prev`, the last of `glued`, from `cut` on with a nowrap
+ * span gluing `tail` to `node`.
+ */
+function glueTail(
+  glued: (Text | Element)[],
+  prev: Text,
+  cut: number,
+  tail: string,
+  node: Text | Element,
+): void {
+  prev.value = prev.value.slice(0, cut)
+  if (prev.value === "") glued.pop()
+  glued.push(createNowrapSpan([{ type: "text", value: tail }, node]))
+}
+
+/**
  * Glues every inline atom in `nodes` to the neighbors that may not sit alone at
  * a line edge: the immediately-preceding grapheme (whitespace becomes an NBSP)
  * and any run of closing punctuation that follows. Math and code paths take
@@ -163,13 +167,9 @@ export function glueNodeSequence(nodes: (Text | Element)[]): (Text | Element)[] 
     const prev = glued[glued.length - 1]
 
     if (isWideAtom(node) && prev?.type === "text") {
-      const openers = countTrailingOpeners(prev.value)
-      if (openers > 0) {
-        const cut = prev.value.length - openers
-        const opening = prev.value.slice(cut)
-        prev.value = prev.value.slice(0, cut)
-        if (prev.value === "") glued.pop()
-        glued.push(createNowrapSpan([{ type: "text", value: opening }, node]))
+      const cut = prev.value.length - countRun(leadingGlueChars, [...prev.value].reverse())
+      if (cut < prev.value.length) {
+        glueTail(glued, prev, cut, prev.value.slice(cut), node)
         continue
       }
     }
@@ -180,16 +180,13 @@ export function glueNodeSequence(nodes: (Text | Element)[]): (Text | Element)[] 
       // word; leave it breakable. Glue only to real preceding text.
       if (value.trim() !== "") {
         const { head, last } = splitLastGrapheme(value)
-        ;(prev as Text).value = head
-        if (head === "") glued.pop()
-        const glyph = /^\s+$/u.test(last) ? NBSP : last
-        glued.push(createNowrapSpan([{ type: "text", value: glyph }, node]))
+        glueTail(glued, prev as Text, head.length, /^\s+$/u.test(last) ? NBSP : last, node)
         continue
       }
     }
 
     if (node.type === "text") {
-      const glueLength = countLeadingGlue(node.value)
+      const glueLength = countRun(trailingGlueChars, [...node.value])
       const span = glueLength > 0 ? asNowrapSpan(prev, glued) : undefined
       if (span) {
         span.children.push({ type: "text", value: node.value.slice(0, glueLength) } as Text)

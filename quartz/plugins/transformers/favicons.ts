@@ -12,8 +12,7 @@ import {
   cdnBaseUrl,
   defaultPath,
   HEADING_TAGS,
-  OVERHANG_KERN_F_CLASS,
-  OVERHANG_KERN_Q_CLASS,
+  OVERHANG_KERN_CLASSES,
   simpleConstants,
   specialFaviconPaths,
 } from "../../components/constants"
@@ -406,7 +405,7 @@ export function nudgeClassFor(
 // separately), so its membership differs from the generic inline-wrapper set.
 export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "ins", "abbr"]
 
-const overhangKernClasses: readonly string[] = [OVERHANG_KERN_F_CLASS, OVERHANG_KERN_Q_CLASS]
+const overhangKernClasses: readonly string[] = [...OVERHANG_KERN_CLASSES.values()]
 
 /**
  * Glues an overhang-kern span ending ``node`` into the favicon's nowrap span.

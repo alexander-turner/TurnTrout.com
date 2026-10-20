@@ -35,11 +35,8 @@ export function markWideInlines(container: ParentNode): void {
   const boxes = Array.from(container.querySelectorAll(BOX_SELECTOR))
   // Measure every box as an inline-block. Reads follow all writes, so the
   // whole pass costs one layout.
-  for (const box of boxes) {
-    if (box.classList.contains(WIDE_INLINE_CLASS)) box.classList.remove(WIDE_INLINE_CLASS)
-  }
-  const wide = boxes.filter(wrapsInside)
-  for (const box of wide) box.classList.add(WIDE_INLINE_CLASS)
+  for (const box of boxes) box.classList.remove(WIDE_INLINE_CLASS)
+  for (const box of boxes.filter(wrapsInside)) box.classList.add(WIDE_INLINE_CLASS)
 }
 
 /**
