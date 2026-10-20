@@ -36,7 +36,7 @@ Our mentees now fill impactful roles.
 1. Lisa Thiergart (MATS 3.0) moved on to being a research lead at MIRI and is now CEO of the SL5 Task Force.
 2. Alex Cloud (MATS 6.0) went from mentee to co-mentor in one round and also secured a job at Anthropic. Lead author on the [Subliminal Learning](https://arxiv.org/abs/2507.14805) paper.
 3. Jacob Goldman-Wetzler (MATS 6.0) also accepted an offer from Anthropic!
-4. Luke Marks accepted work with Redwood Research after MATS 8.0.
+4. Luke Marks accepted work with Redwood Research after MATS 8.0 and is now an AI Program Associate at Longview Philanthropy.
 5. And several mentees have gone on to the Anthropic Fellows program.
 
 We likewise have a strong track record in [research outputs](https://turntrout.com/tags/mats-program), including:
