@@ -7,27 +7,14 @@
 .nowrap-span {
   white-space: nowrap;
 
-  // Inline math breaks only between its `.base` spans. The box holds trailing
-  // punctuation to the math's right edge; the math wraps internally.
-  .katex {
-    white-space: normal;
-  }
-
-  // Chromium governs the break after an inline-block by its parent's
-  // `white-space`, so the last `.base`'s trailing edge takes the `normal` above
-  // and sheds the punctuation. Displayed inline, the last `.base` has no box
-  // edge to break at, and its own `nowrap` keeps its content whole.
-  .katex-html > .base:last-child {
-    display: inline;
-  }
-
-  // A line may break before math only at a box edge. When the math's only
-  // `.base` is its last, the rule above leaves its start without one, so the
-  // line breaks inside earlier math instead; this empty inline-block restores
-  // the edge.
-  .katex::before {
-    content: "";
+  // Inline math is one box that moves whole to the next line when it doesn't
+  // fit, and wraps between its `.base` spans only when it is wider than a line.
+  // The box's trailing edge sits in `nowrap` context, so trailing punctuation
+  // stays beside the math.
+  .katex-html {
     display: inline-block;
+    max-width: 100%;
+    white-space: normal;
   }
 }
 
