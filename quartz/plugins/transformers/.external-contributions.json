@@ -134,6 +134,27 @@
       "status": "open"
     },
     {
+      "repo": "cloud-hypervisor/cloud-hypervisor",
+      "number": 9119,
+      "title": "vmm: Narrow Landlock write access for read-only disks",
+      "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/pull/9119",
+      "status": "open"
+    },
+    {
+      "repo": "cloud-hypervisor/cloud-hypervisor",
+      "number": 9120,
+      "title": "main: Accept --landlock without a VM payload",
+      "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/pull/9120",
+      "status": "closed"
+    },
+    {
+      "repo": "cloud-hypervisor/cloud-hypervisor",
+      "number": 9121,
+      "title": "main: Accept --landlock without a VM payload",
+      "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/pull/9121",
+      "status": "open"
+    },
+    {
       "repo": "DeepSourceCorp/cli",
       "number": 247,
       "title": "Filter issues by severity",
@@ -365,6 +386,13 @@
       "status": "closed"
     },
     {
+      "repo": "kata-containers/kata-containers",
+      "number": 14081,
+      "title": "runtime-rs: confine Cloud Hypervisor with Landlock from vm.create",
+      "url": "https://github.com/kata-containers/kata-containers/pull/14081",
+      "status": "open"
+    },
+    {
       "repo": "KaTeX/KaTeX",
       "number": 4162,
       "title": "feat: add accessibility attributes to math elements",
@@ -421,6 +449,76 @@
       "status": "fixed"
     },
     {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 5,
+      "title": "Per-VM AppArmor confinement for QEMU processes (security_driver = \"none\")?",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/issues/5",
+      "status": "fixed"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 6,
+      "title": "Automate the defender→agent conformance checks from agent-containment.md",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/issues/6",
+      "status": "fixed"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 7,
+      "title": "evidence capture: run tcpdump packet-buffered (-U) so the active chunk is current",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/7",
+      "status": "merged"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 8,
+      "title": "render: turn off q35 legacy devices that no configuration names",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/8",
+      "status": "merged"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 9,
+      "title": "range container: no IPv6 and no multicast snooping on the segment bridges",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/9",
+      "status": "merged"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 10,
+      "title": "provider: cloud-hypervisor VMM, default for the agent box",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/10",
+      "status": "closed"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 11,
+      "title": "up: tie cloud-hypervisor socket wait to readiness timeout",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/11",
+      "status": "open"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 12,
+      "title": "down: tear down cloud-hypervisor vsock dir from the owner record",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/12",
+      "status": "open"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 13,
+      "title": "tests: validate example ranges from both shipped locations",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/13",
+      "status": "open"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 15,
+      "title": "RFC: opt-in provider: glovebox (externally-provided agent box)",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/15",
+      "status": "open"
+    },
+    {
       "repo": "mermaid-js/mermaid",
       "number": 7410,
       "title": "Bug/5741 fix duplicate svg element ids",
@@ -446,7 +544,7 @@
       "number": 2065,
       "title": "feat(infra): add an opt-in glovebox Kata node pool",
       "url": "https://github.com/METR/hawk/pull/2065",
-      "status": "open"
+      "status": "merged"
     },
     {
       "repo": "METR/hawk",
@@ -495,6 +593,13 @@
       "number": 2153,
       "title": "fix(infra): opt-in wait for every ECS rollout",
       "url": "https://github.com/METR/hawk/pull/2153",
+      "status": "open"
+    },
+    {
+      "repo": "METR/hawk",
+      "number": 2326,
+      "title": "fix(infra): narrow kata-peer reach, reserve the glovebox pool name",
+      "url": "https://github.com/METR/hawk/pull/2326",
       "status": "open"
     },
     {
@@ -775,7 +880,7 @@
       "number": 5727,
       "title": "A sample's compose file not named \"`compose.yaml`\" is silently dropped under a docker-compatible `--sandbox` provider",
       "url": "https://github.com/UKGovernmentBEIS/inspect_ai/issues/5727",
-      "status": "open"
+      "status": "fixed"
     },
     {
       "repo": "UKGovernmentBEIS/inspect_evals",
@@ -840,23 +945,23 @@
       "ownerType": "User"
     },
     "acon96/home-llm": {
-      "stars": 1466,
+      "stars": 1473,
       "ownerType": "User"
     },
     "ankidroid/Anki-Android": {
-      "stars": 12033,
+      "stars": 12059,
       "ownerType": "Organization"
     },
     "anordal/shellharden": {
-      "stars": 4807,
+      "stars": 4809,
       "ownerType": "User"
     },
     "anthropics/claude-code": {
-      "stars": 151362,
+      "stars": 152883,
       "ownerType": "Organization"
     },
     "cloud-hypervisor/cloud-hypervisor": {
-      "stars": 6385,
+      "stars": 6404,
       "ownerType": "Organization"
     },
     "DeepSourceCorp/cli": {
@@ -864,11 +969,11 @@
       "ownerType": "Organization"
     },
     "dequelabs/axe-core": {
-      "stars": 7659,
+      "stars": 7674,
       "ownerType": "Organization"
     },
     "docker/sbx-releases": {
-      "stars": 455,
+      "stars": 462,
       "ownerType": "Organization"
     },
     "EFForg/https-everywhere": {
@@ -876,7 +981,7 @@
       "ownerType": "Organization"
     },
     "IlanCosman/tide": {
-      "stars": 4280,
+      "stars": 4285,
       "ownerType": "User"
     },
     "jbloomAus/DecisionTransformerInterpretability": {
@@ -884,7 +989,7 @@
       "ownerType": "User"
     },
     "jestjs/jest": {
-      "stars": 45486,
+      "stars": 45492,
       "ownerType": "Organization"
     },
     "JinayJain/gpt-anywhere": {
@@ -892,11 +997,11 @@
       "ownerType": "User"
     },
     "kata-containers/kata-containers": {
-      "stars": 8957,
+      "stars": 8973,
       "ownerType": "Organization"
     },
     "KaTeX/KaTeX": {
-      "stars": 20457,
+      "stars": 20464,
       "ownerType": "Organization"
     },
     "linuxarena/auto_workflow": {
@@ -907,12 +1012,16 @@
       "stars": 37,
       "ownerType": "Organization"
     },
+    "meridianlabs-ai/inspect_ranges": {
+      "stars": 0,
+      "ownerType": "Organization"
+    },
     "mermaid-js/mermaid": {
-      "stars": 90718,
+      "stars": 90770,
       "ownerType": "Organization"
     },
     "METR/hawk": {
-      "stars": 94,
+      "stars": 96,
       "ownerType": "Organization"
     },
     "METR/inspect_k8s_sandbox": {
@@ -932,23 +1041,23 @@
       "ownerType": "User"
     },
     "nikitabobko/AeroSpace": {
-      "stars": 23521,
+      "stars": 23560,
       "ownerType": "User"
     },
     "openai/gym": {
-      "stars": 37242,
+      "stars": 37239,
       "ownerType": "Organization"
     },
     "orbstack/orbstack": {
-      "stars": 9438,
+      "stars": 9458,
       "ownerType": "Organization"
     },
     "pa11y/pa11y": {
-      "stars": 4578,
+      "stars": 4579,
       "ownerType": "Organization"
     },
     "parcel-bundler/lightningcss": {
-      "stars": 7709,
+      "stars": 7712,
       "ownerType": "Organization"
     },
     "PyCQA/docformatter": {
@@ -964,15 +1073,15 @@
       "ownerType": "User"
     },
     "rishikanthc/Scriberr": {
-      "stars": 3104,
+      "stars": 3108,
       "ownerType": "User"
     },
     "runelite/runelite": {
-      "stars": 5494,
+      "stars": 5497,
       "ownerType": "Organization"
     },
     "sigstore/cosign": {
-      "stars": 6369,
+      "stars": 6374,
       "ownerType": "Organization"
     },
     "starkdmi/BrightXDR": {
@@ -980,7 +1089,7 @@
       "ownerType": "User"
     },
     "stryker-mutator/stryker-js": {
-      "stars": 3235,
+      "stars": 3255,
       "ownerType": "Organization"
     },
     "stylelint-scss/stylelint-scss": {
@@ -996,15 +1105,15 @@
       "ownerType": "Organization"
     },
     "tailscale/tailscale": {
-      "stars": 37669,
+      "stars": 37815,
       "ownerType": "Organization"
     },
     "TranslucentTB/TranslucentTB": {
-      "stars": 20561,
+      "stars": 20598,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_ai": {
-      "stars": 3024,
+      "stars": 3050,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_evals": {

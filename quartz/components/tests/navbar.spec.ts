@@ -49,7 +49,7 @@ function isPaused(video: Locator): Promise<boolean> {
 // is requested: the file is fully downloaded but currentTime never advances and
 // no error surfaces. Re-issuing play() unsticks it, so playback is awaited in
 // bounded windows with a play() retry between them. The full retry budget
-// (attempts × timeout) must leave room for the seek and post-navigation waits
+// (attempts × timeout) must leave room for the pause-point and post-navigation waits
 // inside the tightest caller's test timeout (60s in the refresh test).
 const VIDEO_PLAYBACK_ATTEMPT_TIMEOUT_MS = 10_000
 const VIDEO_PLAYBACK_MAX_ATTEMPTS = 3
@@ -126,69 +126,46 @@ async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
   })
 }
 
-const fixedTimestamp = 2.5
+// Playhead position the timestamp tests pause at. It must sit well past the
+// 0.5s tolerance of getTimestampAfterNavigation, so a restore that leaves the
+// playhead at 0 cannot pass.
+const minPreservedTimestamp = 1.5
+
 /**
- * Prepares a video at a known timestamp for tests that verify timestamp preservation.
- * Ensures the video is playing and sets it to a fixed timestamp, pauses it, then validates the
- * timestamp was set correctly within tolerance.
+ * Prepares a paused video at a known non-zero timestamp for tests that verify
+ * timestamp preservation. Playback, not a seek, carries the playhead to the
+ * pause point: WebKit on macOS CI can leave a seek on the playing video
+ * pending indefinitely, with no `seeked` event even when the target is
+ * buffered.
  *
  * @param videoElements - The video element locators
- * @returns The actual timestamp after setting (for comparison in tests)
+ * @returns The timestamp the video is paused at (for comparison in tests)
  */
 async function setupVideoForTimestampTest(videoElements: VideoElements): Promise<number> {
   await ensureVideoPlaying(videoElements)
 
   const { video, autoplayToggle } = videoElements
 
-  // WebKit fires `seeked` even when it clamps an out-of-buffer-range seek back
-  // to 0, so seeking to fixedTimestamp before the CDN has buffered that far
-  // silently "succeeds" at the wrong position. Wait until the target is
-  // actually buffered so the seek below lands where requested.
   await video.page().waitForFunction(
-    ([id, target]) => {
+    ([id, minTimestamp]) => {
       const videoElement = document.querySelector<HTMLVideoElement>(`#${id}`)
-      if (!videoElement) return false
-      const { buffered } = videoElement
-      for (let i = 0; i < buffered.length; i++) {
-        if (buffered.start(i) <= target && target <= buffered.end(i)) return true
-      }
-      return false
+      return videoElement !== null && videoElement.currentTime >= minTimestamp
     },
-    [pondVideoId, fixedTimestamp] as const,
-    { timeout: 15_000, polling: WAIT_POLL_INTERVAL_MS },
+    [pondVideoId, minPreservedTimestamp] as const,
+    { timeout: VIDEO_PLAYBACK_ATTEMPT_TIMEOUT_MS, polling: WAIT_POLL_INTERVAL_MS },
   )
 
-  // Set currentTime and wait for seeked event (which fires when seeking completes)
-  await video.evaluate((videoElement: HTMLVideoElement, timestamp: number) => {
-    return new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error(`Seek to ${timestamp} timed out`))
-      }, 15_000)
-
-      videoElement.addEventListener(
-        "seeked",
-        () => {
-          clearTimeout(timeout)
-          videoElement.pause()
-          // Trigger timeupdate to ensure sessionStorage is saved
-          videoElement.dispatchEvent(new Event("timeupdate"))
-          resolve()
-        },
-        { once: true },
-      )
-
-      videoElement.currentTime = timestamp
-    })
-  }, fixedTimestamp)
+  await video.evaluate((videoElement: HTMLVideoElement) => {
+    videoElement.pause()
+    // Trigger timeupdate to ensure sessionStorage is saved
+    videoElement.dispatchEvent(new Event("timeupdate"))
+  })
 
   await autoplayToggle.click()
   await expect(isPaused(video)).resolves.toBe(true)
 
   const timestamp = await getCurrentTime(video)
-  // We verify PRESERVATION of the timestamp, not that the seek reached exactly
-  // fixedTimestamp. Safari CI buffers minimally so the seek may land early;
-  // any non-zero position confirms the seek was applied.
-  expect(timestamp).toBeGreaterThan(0)
+  expect(timestamp).toBeGreaterThanOrEqual(minPreservedTimestamp)
 
   return timestamp
 }

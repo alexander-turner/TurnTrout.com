@@ -4,6 +4,7 @@
       "numberOfRuns": 5,
       "maxRetries": 3,
       "settings": {
+        "chromeFlags": "--disable-features=Translate,OptimizationHints,MediaRouter,DialMediaRouteProvider,CalculateNativeWinOcclusion,InterestFeedContentSuggestions,CertificateTransparencyComponentUpdater,AutofillServerCommunication,PrivacySandboxSettings4,RenderDocument,SpareRendererForSitePerProcess",
         "throttling": {
           "cpuSlowdownMultiplier": 1,
           "rttMs": 40,
