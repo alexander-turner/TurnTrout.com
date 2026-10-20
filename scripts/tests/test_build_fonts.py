@@ -37,6 +37,7 @@ from ..build_fonts import (
     _get_f_glyphs,
     _glyph_overhang,
     _harmonize_brackets,
+    _match_baseline_overshoot,
     _space_glyph_names,
     _spacing_glyph_names,
     build_all,
@@ -147,6 +148,52 @@ class TestHarmonizeBrackets:
         for name in _BRACE_GLYPHS + _SQUARE_BRACKET_GLYPHS:
             glyph = font["glyf"][name]
             assert glyph.yMax == expected_paren_y_max, f"{name} yMax"
+
+
+_G_VARIANTS_08: tuple[str, ...] = (
+    "G",
+    "Gcircumflex",
+    "Gbreve",
+    "Gdotaccent",
+    "Gcaron",
+    "uni0122",
+    "uni01E4",
+    "uni01F4",
+    "uni1E20",
+)
+
+
+class TestMatchBaselineOvershoot:
+    @pytest.mark.parametrize("name", _G_VARIANTS_08)
+    def test_g_variants_overshoot_like_o_08pt(
+        self, upstream_08: TTFont, name: str
+    ) -> None:
+        glyf = upstream_08["glyf"]
+        assert glyf["G"].yMin < glyf["O"].yMin
+        _match_baseline_overshoot(upstream_08, "G", "O")
+        body_y_min = min(
+            y for _, y in glyf[name].coordinates if y > glyf["O"].yMin - 50
+        )
+        assert body_y_min == glyf["O"].yMin
+
+    def test_moves_only_below_baseline_body_points(
+        self, upstream_08: TTFont
+    ) -> None:
+        cedilla_g = upstream_08["glyf"]["uni0122"]
+        before = list(cedilla_g.coordinates)
+        _match_baseline_overshoot(upstream_08, "G", "O")
+        changed = [
+            (b, a) for b, a in zip(before, cedilla_g.coordinates) if b != a
+        ]
+        assert changed
+        assert all(b[0] == a[0] and b[1] < a[1] <= 0 for b, a in changed)
+        assert cedilla_g.yMin == min(y for _, y in before)
+
+    def test_noop_when_already_shallow_12pt(self, upstream_12: TTFont) -> None:
+        glyf = upstream_12["glyf"]
+        before = list(glyf["G"].coordinates)
+        _match_baseline_overshoot(upstream_12, "G", "O")
+        assert list(glyf["G"].coordinates) == before
 
 
 class TestKerning:
