@@ -19,7 +19,7 @@ aliases:
   - mentorship
 original_url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/apply-for-alignment-mentorship-from-turntrout-and-alex-cloud
 date_published: 2025-12-23
-date_updated: 2026-08-03
+date_updated: 2026-10-20
 lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
 
@@ -33,7 +33,7 @@ Figure: Team Shard in MATS 6.0 during the summer of '24. From left: [Evžen Wyit
 
 Our mentees now fill impactful roles.
 
-1. Lisa Thiergart (MATS 3.0) moved on to being a research lead at MIRI and is now a senior director at the SL5 task force.
+1. Lisa Thiergart (MATS 3.0) moved on to being a research lead at MIRI and is now CEO of the SL5 Task Force.
 2. Alex Cloud (MATS 6.0) went from mentee to co-mentor in one round and also secured a job at Anthropic. Lead author on the [Subliminal Learning](https://arxiv.org/abs/2507.14805) paper.
 3. Jacob Goldman-Wetzler (MATS 6.0) also accepted an offer from Anthropic!
 4. Luke Marks accepted work with Redwood Research after MATS 8.0.
