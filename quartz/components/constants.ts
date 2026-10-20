@@ -182,6 +182,11 @@ export const FAVICON_CLASS = "favicon"
 // inline box opens on its own edges.
 export const NOWRAP_SPAN_CLASS = "nowrap-span"
 export const KATEX_CLASS = "katex"
+// An inline code path (`owner/repo`), which breaks only after its inner slashes.
+export const INLINE_CODE_PATH_CLASS = "inline-code-path"
+// Marks inline math or an inline code path wider than its line, at runtime
+// (`wide-inline.ts`). Such a box is displayed inline so it wraps like text.
+export const WIDE_INLINE_CLASS = "wide-inline"
 // Wraps a glyph whose ink overhangs its advance width ("f", "Q") so CSS can
 // open the word space before a crowded mark.
 export const OVERHANG_KERN_F_CLASS = "overhang-kern-f"

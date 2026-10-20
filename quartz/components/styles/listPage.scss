@@ -82,6 +82,9 @@ a.tag-link {
     padding-left: 0;
     list-style: none;
 
+    // Balanced rows keep a short last tag off a row of its own.
+    text-wrap: balance;
+
     & li {
       display: inline;
     }

@@ -24,6 +24,7 @@ const emoji = () => h("img", { className: ["emoji"], alt: "😀" })
 const favicon = () => h("svg", { className: ["favicon"], "data-domain": "example_com" })
 const sprite = () => h("img", { className: ["inline-img"], alt: "chevron sprite" })
 const katex = () => h("span", { className: ["katex"] }, ["x"])
+const codePath = () => h("code", { className: ["inline-code-path"] }, ["owner/repo"])
 const text = (value: string): Text => ({ type: "text", value })
 const glueSpan = (...children: (Text | Element)[]): Element => ({
   type: "element",
@@ -152,6 +153,35 @@ describe("glueNodeSequence", () => {
       glueSpan(katex(), text('"')),
       text(" loudly"),
     ])
+  })
+
+  it.each([
+    ["inline math", katex],
+    ["a code path", codePath],
+  ])("glues the opening and closing punctuation around %s", (_name, atom) => {
+    expect(glueNodeSequence([text("See ("), atom(), text(") now")])).toEqual([
+      text("See "),
+      glueSpan(text("("), atom(), text(")")),
+      text(" now"),
+    ])
+  })
+
+  it("glues a run of openers and drops the emptied text node", () => {
+    expect(glueNodeSequence([text(`(${LEFT_DOUBLE_QUOTE}`), katex()])).toEqual([
+      glueSpan(text(`(${LEFT_DOUBLE_QUOTE}`), katex()),
+    ])
+  })
+
+  it.each([
+    ["a word", "Let "],
+    ["a word with no space", "Let"],
+  ])("leaves %s before inline math unglued", (_name, before) => {
+    expect(glueNodeSequence([text(before), katex()])).toEqual([text(before), katex()])
+  })
+
+  it("leaves other inline code alone", () => {
+    const nodes = [text("("), h("code", ["x"]), text(")")]
+    expect(glueNodeSequence(nodes)).toEqual(nodes)
   })
 
   it("pulls a run of nested closing quotes and drops the emptied text node", () => {

@@ -1,11 +1,12 @@
 import type { Element, ElementContent, Root, Text } from "hast"
 
-import { CLOSING_BRACKETS, TERMINAL_PUNCTUATION } from "punctilio"
+import { CLOSING_BRACKETS, OPENING_PUNCTUATION, TERMINAL_PUNCTUATION } from "punctilio"
 import { SKIP, visit } from "unist-util-visit"
 
 import {
   EMOJI_CLASS,
   FAVICON_CLASS,
+  INLINE_CODE_PATH_CLASS,
   INLINE_IMG_CLASS,
   KATEX_CLASS,
   locale,
@@ -48,13 +49,22 @@ export function isNowrapSpan(node: ElementContent | undefined): boolean {
 }
 
 /**
- * True for anything that can adopt following punctuation. KaTeX renders inline
- * math as an inline-block with the same box-edge break, but its width is
- * unbounded, so it takes a trailing mark without ever adopting a preceding word.
+ * True for inline math or an inline code path. Each renders as an inline-block
+ * with the same box-edge breaks as an image, but its width is unbounded, so it
+ * adopts adjacent punctuation without ever adopting a preceding word.
  */
+function isWideAtom(node: Text | Element | undefined): boolean {
+  if (node?.type !== "element") return false
+  return (
+    hasClass(node, KATEX_CLASS) ||
+    (node.tagName === "code" && hasClass(node, INLINE_CODE_PATH_CLASS))
+  )
+}
+
+/** True for anything that can adopt following punctuation. */
 function acceptsTrailingGlue(node: Text | Element | undefined): boolean {
   if (node?.type !== "element") return false
-  return isNowrapSpan(node) || isGlyphAtom(node) || hasClass(node, KATEX_CLASS)
+  return isNowrapSpan(node) || isGlyphAtom(node) || isWideAtom(node)
 }
 
 // Closing punctuation: marks that belong to the word before them and so must
@@ -75,6 +85,20 @@ const trailingGlueChars: ReadonlySet<string> = new Set([
   ...TERMINAL_PUNCTUATION,
   ...CLOSING_BRACKETS,
 ])
+
+// Opening punctuation binds to the text after it, so it may not end a line.
+// Straight quotes reach this pass uncurled, and one directly before an atom
+// opens it.
+const leadingGlueChars: ReadonlySet<string> = new Set(['"', "'", ...OPENING_PUNCTUATION])
+
+/** Length of the trailing run of `value` that may not end a line. */
+function countTrailingOpeners(value: string): number {
+  let count = 0
+  while (count < value.length && leadingGlueChars.has(value[value.length - 1 - count])) {
+    count += 1
+  }
+  return count
+}
 
 /** Length of the leading run of `value` that may not begin a line. */
 function countLeadingGlue(value: string): number {
@@ -118,8 +142,9 @@ function asNowrapSpan(
 /**
  * Glues every inline atom in `nodes` to the neighbors that may not sit alone at
  * a line edge: the immediately-preceding grapheme (whitespace becomes an NBSP)
- * and any run of closing punctuation that follows. Each glued run shares one
- * nowrap span.
+ * and any run of closing punctuation that follows. Math and code paths take
+ * only the run of opening punctuation directly before them. Each glued run
+ * shares one nowrap span.
  *
  * An atom preceded only by whitespace — the start of its run, or straight after
  * another element — keeps its left break opportunity, so emoji sequences still
@@ -136,6 +161,18 @@ export function glueNodeSequence(nodes: (Text | Element)[]): (Text | Element)[] 
   const glued: (Text | Element)[] = []
   for (const node of nodes) {
     const prev = glued[glued.length - 1]
+
+    if (isWideAtom(node) && prev?.type === "text") {
+      const openers = countTrailingOpeners(prev.value)
+      if (openers > 0) {
+        const cut = prev.value.length - openers
+        const opening = prev.value.slice(cut)
+        prev.value = prev.value.slice(0, cut)
+        if (prev.value === "") glued.pop()
+        glued.push(createNowrapSpan([{ type: "text", value: opening }, node]))
+        continue
+      }
+    }
 
     if (isGlyphAtom(node)) {
       const value = prev?.type === "text" ? prev.value : ""

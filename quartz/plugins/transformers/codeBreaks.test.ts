@@ -7,6 +7,7 @@ import { h } from "hastscript"
 import {
   breaksAfterPathSlash,
   breaksInCodeBlock,
+  breaksInLongIdentifier,
   CodeBlockBreaks,
   insertCodeBreaks,
   rehypeCodeBlockBreaks,
@@ -43,8 +44,27 @@ describe("breaksInCodeBlock", () => {
     ["1.5", "1.5"],
     ["a..b", "a..b"],
     ["a.", "a."],
+    [
+      "@misc{Turner2022AgainstInnerOuterAlignment,",
+      "@misc{Turner|2022|Against|Inner|Outer|Alignment,",
+    ],
   ])("%s → %s", (text, expected) => {
     expect(marked(breaksInCodeBlock, text)).toBe(expected)
+  })
+})
+
+describe("breaksInLongIdentifier", () => {
+  it.each([
+    ["camelCaseIdentifierLongerThanThirty", "camel|Case|Identifier|Longer|Than|Thirty"],
+    ["parseHTMLDocumentFromTheNetworkStream", "parse|HTML|Document|From|The|Network|Stream"],
+    ["MAX_NUMBER_OF_TOKENS_IN_A_LONG_CONTEXT", "MAX_|NUMBER_|OF_|TOKENS_|IN_|A_|LONG_|CONTEXT"],
+    ["__dunder_method_with_a_very_long_name__", "__dunder_|method_|with_|a_|very_|long_|name__"],
+    ["ALLCAPSIDENTIFIERWITHOUTANYSEAMSINIT", "ALLCAPSIDENTIFIERWITHOUTANYSEAMSINIT"],
+    ["shortCamelCase", "shortCamelCase"],
+    ["shortCamelCase-butHyphenatedIntoALongerRun", "shortCamelCase-butHyphenatedIntoALongerRun"],
+    ["layer12_attention_head7_value_projection", "layer|12_|attention_|head|7_|value_|projection"],
+  ])("%s → %s", (text, expected) => {
+    expect(marked(breaksInLongIdentifier, text)).toBe(expected)
   })
 })
 

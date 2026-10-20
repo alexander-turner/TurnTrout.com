@@ -7,14 +7,24 @@
 .nowrap-span {
   white-space: nowrap;
 
-  // Inline math is one box that moves whole to the next line when it doesn't
-  // fit, and wraps between its `.base` spans only when it is wider than a line.
-  // The box's trailing edge sits in `nowrap` context, so trailing punctuation
-  // stays beside the math.
+  // The `.katex` box keeps `nowrap`, so its trailing edge never offers a break
+  // and trailing punctuation stays beside the math, which wraps internally.
   .katex-html {
-    display: inline-block;
-    max-width: 100%;
     white-space: normal;
+  }
+
+  // A glued code path keeps its own break opportunities after its slashes.
+  .inline-code-path {
+    white-space: normal;
+  }
+
+  // Wide math is displayed inline. Chromium governs the break after an
+  // inline-block by its parent's `white-space`, so the last `.base`'s trailing
+  // edge takes the `normal` above and sheds the punctuation. Displayed inline,
+  // the last `.base` has no box edge to break at, and its own `nowrap` keeps its
+  // content whole.
+  .wide-inline > .base:last-child {
+    display: inline;
   }
 }
 

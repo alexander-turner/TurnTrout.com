@@ -49,9 +49,51 @@ export const breaksAfterPathSlash: BreakRule = (text, index) =>
 const BEFORE_MEMBER = /[\p{L}\p{N}_)\]]/u
 const MEMBER_START = /[\p{L}_]/u
 
+const IDENTIFIER_CHAR = /[\p{L}\p{N}_]/u
+const LOWER = /\p{Ll}/u
+const UPPER = /\p{Lu}/u
+const ALPHANUMERIC = /[\p{L}\p{N}]/u
+const DIGIT = /\p{N}/u
+
+const matches = (pattern: RegExp, char: string | undefined): boolean =>
+  char !== undefined && pattern.test(char)
+
+/** Length of the identifier (`[\p{L}\p{N}_]` run) spanning `text[index]`. */
+function identifierLength(text: string, index: number): number {
+  let [start, end] = [index, index]
+  while (matches(IDENTIFIER_CHAR, text[start - 1])) start--
+  while (matches(IDENTIFIER_CHAR, text[end])) end++
+  return end - start
+}
+
 /**
- * After a separator joining two segments (`/`, `=`, `,`, `(`), or before a
- * member-access dot.
+ * Between two words of an identifier: `Inner|Outer`, `HTML|Parser`,
+ * `Turner|2022|Against`, `max_|token`.
+ */
+function isWordSeam(text: string, index: number): boolean {
+  const [before, prev, next, after] = [-2, -1, 0, 1].map((offset) => text[index + offset])
+  if (prev === "_") return next !== "_" && matches(ALPHANUMERIC, before)
+  if (next === "_") return false
+  if (matches(DIGIT, prev) !== matches(DIGIT, next)) return true
+  return (
+    matches(UPPER, next) &&
+    (matches(LOWER, prev) || (matches(UPPER, prev) && matches(LOWER, after)))
+  )
+}
+
+/**
+ * Inside an identifier longer than `maxWholeCodeTokenLength`, between two of
+ * its words. A shorter identifier stays whole.
+ */
+export const breaksInLongIdentifier: BreakRule = (text, index) => {
+  const [prev, next] = [text[index - 1], text[index]]
+  if (!matches(IDENTIFIER_CHAR, prev) || !matches(IDENTIFIER_CHAR, next)) return false
+  return isWordSeam(text, index) && identifierLength(text, index) > maxWholeCodeTokenLength
+}
+
+/**
+ * After a separator joining two segments (`/`, `=`, `,`, `(`), before a
+ * member-access dot, or between the words of a long identifier.
  */
 export const breaksInCodeBlock: BreakRule = (text, index) => {
   const [prev, next] = [text[index - 1], text[index]]
@@ -60,7 +102,8 @@ export const breaksInCodeBlock: BreakRule = (text, index) => {
   if (prev === "=") return !CONTINUES_EQUALS.has(next)
   if (prev === "(") return next !== ")"
   if (prev === ",") return true
-  return next === "." && BEFORE_MEMBER.test(prev) && MEMBER_START.test(text[index + 1] ?? "")
+  if (next === ".") return BEFORE_MEMBER.test(prev) && MEMBER_START.test(text[index + 1] ?? "")
+  return breaksInLongIdentifier(text, index)
 }
 
 const wbr = (): Element => ({ type: "element", tagName: "wbr", properties: {}, children: [] })

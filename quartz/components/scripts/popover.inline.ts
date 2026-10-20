@@ -10,6 +10,7 @@ import {
   trapFocusInPopover,
 } from "./popover_helpers"
 import { wrapScrollables } from "./scroll-indicator-utils"
+import { observeWideInlines } from "./wide-inline"
 
 // After SPA navigation, Safari fires spurious mouseenter events because the
 // DOM morphs under a stationary cursor. We suppress these by tracking whether
@@ -93,6 +94,8 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
 
   // Wrap any scrollable tables/katex in the popover with fade indicators
   const popoverObservers = wrapScrollables(popoverElement)
+  // Popovers are narrower than the article, so their wide boxes are measured anew.
+  popoverObservers.push(observeWideInlines(popoverElement))
 
   const updatePosition = () => {
     setPopoverPosition(popoverElement, this)

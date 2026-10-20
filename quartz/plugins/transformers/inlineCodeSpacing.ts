@@ -5,7 +5,7 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { maxAtomicInlineCodeLength } from "../../components/constants"
+import { INLINE_CODE_PATH_CLASS, maxAtomicInlineCodeLength } from "../../components/constants"
 import { breaksAfterPathSlash, insertCodeBreaks } from "./codeBreaks"
 import { addClass, INLINE_PASSTHROUGH_TAGS, ITALIC_TAGS, wrapCharsInSpan } from "./utils"
 
@@ -124,7 +124,7 @@ export const rehypeInlineCodeSpacing: Plugin = () => {
       if (node.tagName !== "code" || isInPre(ancestors)) return
       // A path breaks after its slashes instead, so it is never atomic.
       if (insertCodeBreaks(node, breaksAfterPathSlash) > 0) {
-        addClass(node, "inline-code-path")
+        addClass(node, INLINE_CODE_PATH_CLASS)
       } else if (textLength(node) <= ATOMIC_CODE_MAX_LENGTH) {
         addClass(node, "inline-code-atomic")
       }
