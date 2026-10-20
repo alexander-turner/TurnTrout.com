@@ -269,11 +269,6 @@ def _contour_spans(glyph: Any) -> tuple[tuple[int, int], ...]:
     return tuple(zip(starts, glyph.endPtsOfContours))
 
 
-def _contour_y_band(glyph: Any, start: int, end: int) -> tuple[int, int]:
-    ys = [glyph.coordinates[i][1] for i in range(start, end + 1)]
-    return min(ys), max(ys)
-
-
 def _scale_below_baseline(
     glyph: Any, start: int, end: int, scale_y: float
 ) -> None:
@@ -307,10 +302,14 @@ def _match_baseline_overshoot(font: TTFont, base: str, reference: str) -> None:
         glyph = glyf_table[name]
         if glyph.numberOfContours <= 0:
             continue
+        touched = False
         for start, end in _contour_spans(glyph):
-            if _contour_y_band(glyph, start, end) == body_band:
+            ys = [y for _, y in glyph.coordinates[start : end + 1]]
+            if (min(ys), max(ys)) == body_band:
                 _scale_below_baseline(glyph, start, end, scale_y)
-        glyph.recalcBounds(glyf_table)
+                touched = True
+        if touched:
+            glyph.recalcBounds(glyf_table)
 
 
 def _register_kern_feature(gpos: Any, lookup_index: int) -> None:
