@@ -70,9 +70,6 @@ This guide will help you protect your communications and information so you can 
 
 Let's get started.
 
-> [!info]  Conflict of interest disclaimer
-> When I wrote the original version of this article, my day job was AI alignment research at [Google DeepMind](https://deepmind.google/). [I have since left](/why-i-left-google-deepmind).
-
 # What should I read?
 
 This guide is long. Don't try to complete it all at once. My website has long-lasting checkbox functionality. As you complete items, check them off to remember your place in the guide.
