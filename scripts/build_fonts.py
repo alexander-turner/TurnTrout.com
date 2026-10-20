@@ -1,10 +1,12 @@
 """
 Build modified EBGaramond fonts from upstream originals.
 
-Applies two modifications to EBGaramond08-Regular and EBGaramond12-Regular:
+Applies three modifications to EBGaramond08-Regular and EBGaramond12-Regular:
 1. Bracket/brace harmonization: affine-maps Y coordinates of bracketleft,
    bracketright, braceleft, braceright so their yMin/yMax match parenleft.
-2. GPOS kerning: adds a PairPos Format 1 lookup to the kern feature
+2. Baseline overshoot: compresses the below-baseline ink of "G" and its
+   variants so it overshoots no deeper than "O".
+3. GPOS kerning: adds a PairPos Format 1 lookup to the kern feature
    for f-variant glyphs x punctuation, open-punct x descender letters,
    close-punct x comma/semicolon (tightened to undo a wide left sidebearing),
    and quote x bracket (loosened so a curly quote's ink clears an adjacent
@@ -87,6 +89,12 @@ _BASE_KERN: Final[dict[str, int]] = {
 }
 
 _KERN_OFFSET: Final[int] = 80
+
+# The 08 master draws "G" overshooting the baseline by 49/2048 em, twice "O"'s
+# 25. Rasterizers that leave the unhinted face ungridded (Android Chrome) set
+# that extra depth as a visible 1–2 device-pixel drop at body sizes, so the G
+# sits below the rest of its word. The 12 master's G already matches its O.
+_BASELINE_OVERSHOOT_MATCHES: Final[tuple[tuple[str, str], ...]] = (("G", "O"),)
 
 _OPEN_PUNCT_GLYPHS: Final[tuple[str, ...]] = (
     "parenleft",
@@ -252,6 +260,57 @@ def _harmonize_brackets(font: TTFont) -> None:
     for name in _SQUARE_BRACKET_GLYPHS:
         original_y_min = glyf_table[name].yMin
         _affine_map_glyph_y(font, name, original_y_min, paren.yMax)
+
+
+def _contour_spans(glyph: Any) -> tuple[tuple[int, int], ...]:
+    """Inclusive (start, end) point indices of each contour in a simple
+    glyph."""
+    starts = (0, *(end + 1 for end in glyph.endPtsOfContours[:-1]))
+    return tuple(zip(starts, glyph.endPtsOfContours))
+
+
+def _contour_y_band(glyph: Any, start: int, end: int) -> tuple[int, int]:
+    ys = [glyph.coordinates[i][1] for i in range(start, end + 1)]
+    return min(ys), max(ys)
+
+
+def _scale_below_baseline(
+    glyph: Any, start: int, end: int, scale_y: float
+) -> None:
+    coords = glyph.coordinates
+    for i in range(start, end + 1):
+        x, y = coords[i]
+        if y < 0:
+            coords[i] = (x, round(y * scale_y))
+
+
+def _match_baseline_overshoot(font: TTFont, base: str, reference: str) -> None:
+    """
+    Raise ``base``'s below-baseline ink so its overshoot matches
+    ``reference``'s.
+
+    Every contour sharing the base outline's vertical band (accented and
+    stroked variants are decomposed copies of it) is compressed below the
+    baseline only, so the glyph above y=0 and any detached marks such as a
+    cedilla keep their shape. A no-op when ``base`` already overshoots no
+    deeper than ``reference``.
+    """
+    glyf_table = font["glyf"]
+    base_glyph = glyf_table[base]
+    target_y_min = glyf_table[reference].yMin
+    if base_glyph.yMin >= target_y_min:
+        return
+
+    body_band = (base_glyph.yMin, base_glyph.yMax)
+    scale_y = target_y_min / base_glyph.yMin
+    for name in font.getGlyphOrder():
+        glyph = glyf_table[name]
+        if glyph.numberOfContours <= 0:
+            continue
+        for start, end in _contour_spans(glyph):
+            if _contour_y_band(glyph, start, end) == body_band:
+                _scale_below_baseline(glyph, start, end, scale_y)
+        glyph.recalcBounds(glyf_table)
 
 
 def _register_kern_feature(gpos: Any, lookup_index: int) -> None:
@@ -561,6 +620,8 @@ def _build_font(
     font = TTFont(upstream_path)
     try:
         _harmonize_brackets(font)
+        for base, reference in _BASELINE_OVERSHOOT_MATCHES:
+            _match_baseline_overshoot(font, base, reference)
         _add_kerning(font, _get_f_glyphs(font))
         font.save(output_path)
     finally:
