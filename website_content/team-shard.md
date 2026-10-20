@@ -33,7 +33,7 @@ Figure: Team Shard in MATS 6.0 during the summer of '24. From left: [Evžen Wyit
 
 Our mentees now fill impactful roles.
 
-1. Lisa Thiergart (MATS 3.0) moved on to being a research lead at MIRI and is now a senior director at the SL5 task force.
+1. Lisa Thiergart (MATS 3.0) moved on to being a research lead at MIRI and is now CEO of the SL5 Task Force.
 2. Alex Cloud (MATS 6.0) went from mentee to co-mentor in one round and also secured a job at Anthropic. Lead author on the [Subliminal Learning](https://arxiv.org/abs/2507.14805) paper.
 3. Jacob Goldman-Wetzler (MATS 6.0) also accepted an offer from Anthropic!
 4. Luke Marks accepted work with Redwood Research after MATS 8.0.
