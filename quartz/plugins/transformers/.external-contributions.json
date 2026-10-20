@@ -512,6 +512,13 @@
       "status": "open"
     },
     {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 15,
+      "title": "RFC: opt-in provider: glovebox (externally-provided agent box)",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/15",
+      "status": "open"
+    },
+    {
       "repo": "mermaid-js/mermaid",
       "number": 7410,
       "title": "Bug/5741 fix duplicate svg element ids",
@@ -537,7 +544,7 @@
       "number": 2065,
       "title": "feat(infra): add an opt-in glovebox Kata node pool",
       "url": "https://github.com/METR/hawk/pull/2065",
-      "status": "open"
+      "status": "merged"
     },
     {
       "repo": "METR/hawk",
@@ -586,6 +593,13 @@
       "number": 2153,
       "title": "fix(infra): opt-in wait for every ECS rollout",
       "url": "https://github.com/METR/hawk/pull/2153",
+      "status": "open"
+    },
+    {
+      "repo": "METR/hawk",
+      "number": 2326,
+      "title": "fix(infra): narrow kata-peer reach, reserve the glovebox pool name",
+      "url": "https://github.com/METR/hawk/pull/2326",
       "status": "open"
     },
     {
@@ -866,7 +880,7 @@
       "number": 5727,
       "title": "A sample's compose file not named \"`compose.yaml`\" is silently dropped under a docker-compatible `--sandbox` provider",
       "url": "https://github.com/UKGovernmentBEIS/inspect_ai/issues/5727",
-      "status": "open"
+      "status": "fixed"
     },
     {
       "repo": "UKGovernmentBEIS/inspect_evals",
@@ -931,23 +945,23 @@
       "ownerType": "User"
     },
     "acon96/home-llm": {
-      "stars": 1469,
+      "stars": 1473,
       "ownerType": "User"
     },
     "ankidroid/Anki-Android": {
-      "stars": 12050,
+      "stars": 12059,
       "ownerType": "Organization"
     },
     "anordal/shellharden": {
-      "stars": 4808,
+      "stars": 4809,
       "ownerType": "User"
     },
     "anthropics/claude-code": {
-      "stars": 152451,
+      "stars": 152883,
       "ownerType": "Organization"
     },
     "cloud-hypervisor/cloud-hypervisor": {
-      "stars": 6395,
+      "stars": 6404,
       "ownerType": "Organization"
     },
     "DeepSourceCorp/cli": {
@@ -955,11 +969,11 @@
       "ownerType": "Organization"
     },
     "dequelabs/axe-core": {
-      "stars": 7670,
+      "stars": 7674,
       "ownerType": "Organization"
     },
     "docker/sbx-releases": {
-      "stars": 459,
+      "stars": 462,
       "ownerType": "Organization"
     },
     "EFForg/https-everywhere": {
@@ -975,7 +989,7 @@
       "ownerType": "User"
     },
     "jestjs/jest": {
-      "stars": 45488,
+      "stars": 45492,
       "ownerType": "Organization"
     },
     "JinayJain/gpt-anywhere": {
@@ -983,11 +997,11 @@
       "ownerType": "User"
     },
     "kata-containers/kata-containers": {
-      "stars": 8969,
+      "stars": 8973,
       "ownerType": "Organization"
     },
     "KaTeX/KaTeX": {
-      "stars": 20461,
+      "stars": 20464,
       "ownerType": "Organization"
     },
     "linuxarena/auto_workflow": {
@@ -1003,7 +1017,7 @@
       "ownerType": "Organization"
     },
     "mermaid-js/mermaid": {
-      "stars": 90752,
+      "stars": 90770,
       "ownerType": "Organization"
     },
     "METR/hawk": {
@@ -1027,7 +1041,7 @@
       "ownerType": "User"
     },
     "nikitabobko/AeroSpace": {
-      "stars": 23553,
+      "stars": 23560,
       "ownerType": "User"
     },
     "openai/gym": {
@@ -1035,15 +1049,15 @@
       "ownerType": "Organization"
     },
     "orbstack/orbstack": {
-      "stars": 9455,
+      "stars": 9458,
       "ownerType": "Organization"
     },
     "pa11y/pa11y": {
-      "stars": 4578,
+      "stars": 4579,
       "ownerType": "Organization"
     },
     "parcel-bundler/lightningcss": {
-      "stars": 7711,
+      "stars": 7712,
       "ownerType": "Organization"
     },
     "PyCQA/docformatter": {
@@ -1059,15 +1073,15 @@
       "ownerType": "User"
     },
     "rishikanthc/Scriberr": {
-      "stars": 3104,
+      "stars": 3108,
       "ownerType": "User"
     },
     "runelite/runelite": {
-      "stars": 5495,
+      "stars": 5497,
       "ownerType": "Organization"
     },
     "sigstore/cosign": {
-      "stars": 6372,
+      "stars": 6374,
       "ownerType": "Organization"
     },
     "starkdmi/BrightXDR": {
@@ -1075,7 +1089,7 @@
       "ownerType": "User"
     },
     "stryker-mutator/stryker-js": {
-      "stars": 3247,
+      "stars": 3255,
       "ownerType": "Organization"
     },
     "stylelint-scss/stylelint-scss": {
@@ -1083,7 +1097,7 @@
       "ownerType": "Organization"
     },
     "stylelint/stylelint": {
-      "stars": 11536,
+      "stars": 11537,
       "ownerType": "Organization"
     },
     "syntax-tree/hast-util-to-jsx-runtime": {
@@ -1091,15 +1105,15 @@
       "ownerType": "Organization"
     },
     "tailscale/tailscale": {
-      "stars": 37755,
+      "stars": 37815,
       "ownerType": "Organization"
     },
     "TranslucentTB/TranslucentTB": {
-      "stars": 20588,
+      "stars": 20598,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_ai": {
-      "stars": 3043,
+      "stars": 3050,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_evals": {
