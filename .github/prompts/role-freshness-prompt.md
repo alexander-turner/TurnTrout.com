@@ -26,10 +26,10 @@ Out of scope—**never edit these**:
 - YAML frontmatter.
 
 Start with `website_content/team-shard.md` and `website_content/about-me.md`,
-then use Grep across `website_content/*.md` for present-tense role phrasing
-(the patterns above, plus organization names such as Anthropic, Google
-DeepMind, OpenAI, MIRI, Redwood Research, METR, Apollo Research, UK AISI, FAR,
-and SL5) to find any other current-role claims.
+then use Grep across `website_content/*.md` for the present-tense role
+phrasing above to find any other current-role claims. Organization names
+(Anthropic, OpenAI, MIRI, …) appear in hundreds of historical mentions, so use
+them only to narrow those hits, never as standalone search terms.
 
 ## Verifying
 
