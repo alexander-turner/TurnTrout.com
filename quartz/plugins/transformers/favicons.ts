@@ -535,6 +535,27 @@ function shouldSkipFavicon(node: Element, href: string): boolean {
 }
 
 /**
+ * Strips the directory and extension from a favicon path or URL, leaving the
+ * sanitized domain (e.g. ".../open_spotify_com.svg" -> "open_spotify_com").
+ */
+function faviconBasename(faviconPath: string): string {
+  return faviconPath.slice(faviconPath.lastIndexOf("/") + 1).replace(/\.(?:svg|ico)$/, "")
+}
+
+/**
+ * Whether the favicon's domain is an allowlist entry or a subdomain of one.
+ * Matching happens at `_` boundaries, so "x_com" covers "x_com" and "api_x_com"
+ * but not "fox_com".
+ */
+function isAllowlistedFavicon(imgPath: string): boolean {
+  const name = faviconBasename(imgPath)
+  return faviconCountAllowlistComputed.some((entry) => {
+    const entryName = faviconBasename(entry)
+    return name === entryName || name.endsWith(`_${entryName}`)
+  })
+}
+
+/**
  * Checks if a favicon should be included based on count threshold, allowlist, and blocklist.
  *
  * A favicon is included if:
@@ -553,8 +574,7 @@ export function shouldIncludeFavicon(
 
   const normalizedCountKey = normalizePathForCounting(countKey)
   const count = faviconCounts.get(normalizedCountKey) || 0
-  const isAllowlisted = faviconCountAllowlistComputed.some((entry) => imgPath.includes(entry))
-  return isAllowlisted || count >= minFaviconCount
+  return isAllowlistedFavicon(imgPath) || count >= minFaviconCount
 }
 
 export function normalizeUrl(href: string): string {
