@@ -1,13 +1,18 @@
 """Tests for the EBGaramond font build pipeline."""
 
+import io
+import unicodedata
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 import pytest
 from fontTools.ttLib import TTFont  # type: ignore[import-untyped]
 
 from .. import build_fonts
 from ..build_fonts import (
+    _AUTOHINT_LATIN_SCRIPTS,
+    _AUTOHINT_ONLY_FILENAMES,
+    _AUTOHINT_STYLE_FEATURES,
     _BASE_KERN,
     _BRACE_GLYPHS,
     _CAP_DESCENDER_GLYPHS,
@@ -17,6 +22,7 @@ from ..build_fonts import (
     _CLOSE_QUOTE_GLYPHS,
     _DESCENDER_GLYPHS,
     _FONT_DIR,
+    _FONT_FILENAMES,
     _KERN_OFFSET,
     _OPEN_CAP_DESCENDER_KERN,
     _OPEN_DESCENDER_KERN,
@@ -34,9 +40,12 @@ from ..build_fonts import (
     _affine_map_glyph_y,
     _banded_ink_xmax,
     _collect_space_clearance_groups,
+    _fold_gsub_scripts_into_default,
     _get_f_glyphs,
     _glyph_overhang,
     _harmonize_brackets,
+    _match_baseline_overshoot,
+    _merge_style_decompositions,
     _space_glyph_names,
     _spacing_glyph_names,
     build_all,
@@ -51,6 +60,27 @@ def upstream_08() -> TTFont:
 @pytest.fixture()
 def upstream_12() -> TTFont:
     return TTFont(_UPSTREAM_DIR / "EBGaramond12-Regular.woff2")
+
+
+@pytest.fixture()
+def upstream_italic_08() -> TTFont:
+    return TTFont(_UPSTREAM_DIR / "EBGaramond08-Italic-parens.woff2")
+
+
+@pytest.fixture()
+def upstream_italic_12() -> TTFont:
+    return TTFont(_UPSTREAM_DIR / "EBGaramond12-Italic-parens.woff2")
+
+
+_ALL_FONT_FIXTURES: Final[tuple[str, ...]] = (
+    "upstream_08",
+    "upstream_12",
+    "upstream_italic_08",
+    "upstream_italic_12",
+)
+_ALL_FILENAMES: Final[tuple[str, ...]] = (
+    _FONT_FILENAMES + _AUTOHINT_ONLY_FILENAMES
+)
 
 
 class TestGetFGlyphs:
@@ -147,6 +177,70 @@ class TestHarmonizeBrackets:
         for name in _BRACE_GLYPHS + _SQUARE_BRACKET_GLYPHS:
             glyph = font["glyf"][name]
             assert glyph.yMax == expected_paren_y_max, f"{name} yMax"
+
+
+_G_VARIANTS_08: Final[frozenset[str]] = frozenset(
+    {
+        "G",
+        "Gcircumflex",
+        "Gbreve",
+        "Gdotaccent",
+        "Gcaron",
+        "uni0122",
+        "uni01E4",
+        "uni01F4",
+        "uni1E20",
+    }
+)
+
+
+def _glyph_coords(font: TTFont) -> dict[str, list[tuple[int, int]]]:
+    glyf = font["glyf"]
+    return {
+        name: list(glyf[name].coordinates)
+        for name in font.getGlyphOrder()
+        if glyf[name].numberOfContours > 0
+    }
+
+
+class TestMatchBaselineOvershoot:
+    @pytest.mark.parametrize(
+        "font_fixture,expected_changed",
+        [("upstream_08", _G_VARIANTS_08), ("upstream_12", frozenset())],
+        ids=["08pt", "12pt"],
+    )
+    def test_changes_exactly_the_g_variants(
+        self,
+        font_fixture: str,
+        expected_changed: frozenset[str],
+        request: pytest.FixtureRequest,
+    ) -> None:
+        font: TTFont = request.getfixturevalue(font_fixture)
+        before = _glyph_coords(font)
+        _match_baseline_overshoot(font, "G", "O")
+        after = _glyph_coords(font)
+        assert {n for n in before if before[n] != after[n]} == expected_changed
+
+    @pytest.mark.parametrize("name", sorted(_G_VARIANTS_08 - {"uni0122"}))
+    def test_g_variants_overshoot_like_o_08pt(
+        self, upstream_08: TTFont, name: str
+    ) -> None:
+        glyf = upstream_08["glyf"]
+        _match_baseline_overshoot(upstream_08, "G", "O")
+        assert glyf[name].yMin == glyf["O"].yMin
+
+    def test_moves_only_below_baseline_body_points(
+        self, upstream_08: TTFont
+    ) -> None:
+        cedilla_g = upstream_08["glyf"]["uni0122"]
+        before = list(cedilla_g.coordinates)
+        _match_baseline_overshoot(upstream_08, "G", "O")
+        changed = [
+            (b, a) for b, a in zip(before, cedilla_g.coordinates) if b != a
+        ]
+        assert changed
+        assert all(b[0] == a[0] and b[1] < a[1] <= 0 for b, a in changed)
+        assert cedilla_g.yMin == min(y for _, y in before)
 
 
 class TestKerning:
@@ -573,6 +667,184 @@ class TestSpaceOverhangClearance:
                 assert gids == sorted(gids)
 
 
+def _table_xml(font: TTFont, tag: str) -> str:
+    buffer = io.StringIO()
+    font.saveXML(buffer, tables=[tag])
+    return buffer.getvalue()
+
+
+def _gsub_lookup_outputs(gsub: Any, index: int) -> set[str]:
+    """Glyphs a GSUB lookup can output, following contextual lookups."""
+    lookup = gsub.LookupList.Lookup[index]
+    outputs: set[str] = set()
+    for subtable in lookup.SubTable:
+        if lookup.LookupType == 1:
+            outputs |= set(subtable.mapping.values())
+        elif lookup.LookupType == 2:
+            outputs |= {g for seq in subtable.mapping.values() for g in seq}
+        else:
+            for record in getattr(subtable, "SubstLookupRecord", None) or ():
+                outputs |= _gsub_lookup_outputs(gsub, record.LookupListIndex)
+    return outputs
+
+
+def _gsub_mapping(gsub: Any, index: int) -> dict[str, Any]:
+    mapping: dict[str, Any] = {}
+    for subtable in gsub.LookupList.Lookup[index].SubTable:
+        mapping.update(subtable.mapping)
+    return mapping
+
+
+def _feature_lookups(gsub: Any, tag: str) -> list[int]:
+    (indices,) = {
+        tuple(rec.Feature.LookupListIndex)
+        for rec in gsub.FeatureList.FeatureRecord
+        if rec.FeatureTag == tag
+    }
+    return list(indices)
+
+
+class TestMergeStyleDecompositions:
+    @pytest.mark.parametrize("font_fixture", _ALL_FONT_FIXTURES)
+    def test_style_features_output_no_encoded_letters(
+        self, font_fixture: str, request: pytest.FixtureRequest
+    ) -> None:
+        font: TTFont = request.getfixturevalue(font_fixture)
+        _merge_style_decompositions(font)
+
+        gsub = font["GSUB"].table
+        encoded_letters = {
+            name
+            for codepoint, name in font.getBestCmap().items()
+            if unicodedata.category(chr(codepoint)).startswith("L")
+        }
+        for rec in gsub.FeatureList.FeatureRecord:
+            if rec.FeatureTag not in _AUTOHINT_STYLE_FEATURES:
+                continue
+            for index in rec.Feature.LookupListIndex:
+                leaked = _gsub_lookup_outputs(gsub, index) & encoded_letters
+                assert not leaked, f"{rec.FeatureTag}: {sorted(leaked)[:5]}"
+
+    def test_lowercase_accent_maps_straight_to_small_caps(
+        self, upstream_08: TTFont
+    ) -> None:
+        _merge_style_decompositions(upstream_08)
+        gsub = upstream_08["GSUB"].table
+        (merged,) = [
+            _gsub_mapping(gsub, i)
+            for i in _feature_lookups(gsub, "smcp")
+            if gsub.LookupList.Lookup[i].LookupType == 2
+        ]
+        assert merged["eacute"] == ["e.sc", "acutecomb.sc"]
+        assert merged["e"] == ["e.sc"]
+        assert "Eacute" not in merged
+
+    def test_leaves_fonts_without_decompositions_alone(
+        self, upstream_12: TTFont
+    ) -> None:
+        before = _table_xml(upstream_12, "GSUB")
+        _merge_style_decompositions(upstream_12)
+        assert _table_xml(upstream_12, "GSUB") == before
+
+    @staticmethod
+    def _smcp_single(font: TTFont) -> int:
+        gsub = font["GSUB"].table
+        (index,) = [
+            i
+            for i in _feature_lookups(gsub, "smcp")
+            if gsub.LookupList.Lookup[i].LookupType == 1
+        ]
+        return index
+
+    def test_rejects_shared_single_substitution(
+        self, upstream_08: TTFont
+    ) -> None:
+        gsub = upstream_08["GSUB"].table
+        single = self._smcp_single(upstream_08)
+        for rec in gsub.FeatureList.FeatureRecord:
+            if rec.FeatureTag == "liga":
+                rec.Feature.LookupListIndex.append(single)
+        with pytest.raises(ValueError, match="shared"):
+            _merge_style_decompositions(upstream_08)
+
+    def test_rejects_flagged_lookups(self, upstream_08: TTFont) -> None:
+        single = self._smcp_single(upstream_08)
+        upstream_08["GSUB"].table.LookupList.Lookup[single].LookupFlag = 8
+        with pytest.raises(ValueError, match="skip glyph classes"):
+            _merge_style_decompositions(upstream_08)
+
+    def test_rejects_missing_single_substitution(
+        self, upstream_08: TTFont
+    ) -> None:
+        gsub = upstream_08["GSUB"].table
+        single = self._smcp_single(upstream_08)
+        for rec in gsub.FeatureList.FeatureRecord:
+            if rec.FeatureTag == "smcp":
+                rec.Feature.LookupListIndex.remove(single)
+        with pytest.raises(ValueError, match="expected one decomposition"):
+            _merge_style_decompositions(upstream_08)
+
+
+def _gsub_scripts(font: TTFont) -> dict[str, Any]:
+    return {
+        rec.ScriptTag: rec.Script
+        for rec in font["GSUB"].table.ScriptList.ScriptRecord
+    }
+
+
+class TestFoldGsubScriptsIntoDefault:
+    @pytest.mark.parametrize("font_fixture", _ALL_FONT_FIXTURES)
+    def test_keeps_only_latin_scripts(
+        self, font_fixture: str, request: pytest.FixtureRequest
+    ) -> None:
+        font: TTFont = request.getfixturevalue(font_fixture)
+        gpos_before = _table_xml(font, "GPOS")
+        _fold_gsub_scripts_into_default(font)
+
+        assert set(_gsub_scripts(font)) == _AUTOHINT_LATIN_SCRIPTS
+        assert _table_xml(font, "GPOS") == gpos_before
+
+    def test_moves_language_systems_under_dflt(
+        self, upstream_08: TTFont
+    ) -> None:
+        cyrillic = _gsub_scripts(upstream_08)["cyrl"]
+        moved = {
+            rec.LangSysTag: list(rec.LangSys.FeatureIndex)
+            for rec in cyrillic.LangSysRecord
+        }
+        assert moved
+
+        _fold_gsub_scripts_into_default(upstream_08)
+        default = _gsub_scripts(upstream_08)["DFLT"]
+        tags = [rec.LangSysTag for rec in default.LangSysRecord]
+        assert tags == sorted(tags)
+        assert default.LangSysCount == len(tags)
+        for rec in default.LangSysRecord:
+            assert list(rec.LangSys.FeatureIndex) == moved[rec.LangSysTag]
+
+    def test_rejects_script_shaping_differently(
+        self, upstream_08: TTFont
+    ) -> None:
+        _gsub_scripts(upstream_08)["grek"].DefaultLangSys.FeatureIndex.pop()
+        with pytest.raises(ValueError, match="shapes differently"):
+            _fold_gsub_scripts_into_default(upstream_08)
+
+    def test_rejects_script_without_default_language(
+        self, upstream_08: TTFont
+    ) -> None:
+        _gsub_scripts(upstream_08)["grek"].DefaultLangSys = None
+        with pytest.raises(ValueError, match="shapes differently"):
+            _fold_gsub_scripts_into_default(upstream_08)
+
+    def test_rejects_colliding_language_systems(
+        self, upstream_08: TTFont
+    ) -> None:
+        scripts = _gsub_scripts(upstream_08)
+        scripts["DFLT"].LangSysRecord = list(scripts["cyrl"].LangSysRecord)
+        with pytest.raises(ValueError, match="both define"):
+            _fold_gsub_scripts_into_default(upstream_08)
+
+
 class TestTableEquivalence:
     """Verify built fonts are table-equivalent to committed fonts."""
 
@@ -581,17 +853,14 @@ class TestTableEquivalence:
     def _table_tags(self, font: TTFont) -> frozenset[str]:
         return frozenset(font.keys()) - self._SKIP_TABLES
 
-    @pytest.mark.parametrize(
-        "filename",
-        [
-            "EBGaramond08-Regular.woff2",
-            "EBGaramond12-Regular.woff2",
-        ],
-        ids=["08pt", "12pt"],
-    )
+    @pytest.mark.parametrize("filename", _ALL_FILENAMES)
     def test_all_tables_match(self, tmp_path: Path, filename: str) -> None:
         output = tmp_path / filename
-        build_fonts._build_font(_UPSTREAM_DIR / filename, output)
+        build_fonts._build_font(
+            _UPSTREAM_DIR / filename,
+            output,
+            autohint_only=filename in _AUTOHINT_ONLY_FILENAMES,
+        )
 
         built = TTFont(output)
         committed = TTFont(_FONT_DIR / filename)
@@ -603,10 +872,10 @@ class TestTableEquivalence:
 
 
 class TestBuildAll:
-    def test_builds_both_fonts(self, tmp_path: Path) -> None:
+    def test_builds_every_font(self, tmp_path: Path) -> None:
         build_all(tmp_path)
-        assert (tmp_path / "EBGaramond08-Regular.woff2").exists()
-        assert (tmp_path / "EBGaramond12-Regular.woff2").exists()
+        for filename in _ALL_FILENAMES:
+            assert (tmp_path / filename).exists()
 
     def test_missing_upstream_raises(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -750,7 +1019,7 @@ class TestMainTempCleanup:
 
         def fake_build_all(output_dir: Path) -> bool:
             captured["output_dir"] = output_dir
-            for filename in build_fonts._FONT_FILENAMES:
+            for filename in _ALL_FILENAMES:
                 (output_dir / filename).write_bytes(b"font-bytes")
             return True
 
@@ -763,7 +1032,7 @@ class TestMainTempCleanup:
 
         build_fonts.main()
 
-        for filename in build_fonts._FONT_FILENAMES:
+        for filename in _ALL_FILENAMES:
             assert (install_dir / filename).read_bytes() == b"font-bytes"
         # Cleanup fires on the install path too — "every run".
         assert captured["output_dir"].exists() is False

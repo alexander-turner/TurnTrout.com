@@ -25,9 +25,9 @@ card_image_alt: A panoramic view of the Grinnell College campus on a sunny autum
 > [!info] Notes from a talk originally given at my alma mater
 > I went to [Grinnell College](https://grinnell.edu) for my undergraduate degree. For the 2025 reunion event, I agreed to speak on a panel about AI. I like the talk I gave because I think it's a good "101" intro to AI risk, aimed at educated laypeople.
 
-I work at Google DeepMind [on the science of aligning artificial intelligence with human interests](/research). I [completed a PhD in this field in 2022](/alignment-phd) and then I did my postdoc at UC Berkeley. I’ll discuss some of the ways in which AI might go wrong.
+I worked at Google DeepMind [on the science of aligning artificial intelligence with human interests](/research). I [completed a PhD in this field in 2022](/alignment-phd) and then I did my postdoc at UC Berkeley. I’ll discuss some of the ways in which AI might go wrong.
 
-> [!warning] I'm only speaking for myself, not for my employer.
+> [!warning] I'm only speaking for myself, not for my former employer.
 
 # The romance and peril of AI
 
@@ -105,7 +105,7 @@ My gut feeling is that humanity faces at least a 10% chance of extinction due to
 
 So why am I still concerned? You might think: "If these risks are real, surely the smart people building AI systems are working on them, right?"
 
-The answer is yes – and no. Many researchers and companies are genuinely trying to build safe AI. Google DeepMind, where I work, has entire teams dedicated to AI safety. But:
+The answer is yes – and no. Many researchers and companies are genuinely trying to build safe AI. Google DeepMind, where I worked, has entire teams dedicated to AI safety. But:
 
 Superintelligent systems don’t exist yet so we can’t experiment on them
 : Our safety techniques work today, but will they keep working on truly superintelligent systems? We won’t know until we have those systems. By then, it might be too late to course-correct.
