@@ -111,6 +111,14 @@ ol,
   margin-right: auto;
 } // Override minified katex styles
 
+// Inline math moves whole to the next line when it doesn't fit on the current
+// one. Math wider than its line is marked `.wide-inline` at runtime and wraps
+// between its `.base` spans like text (`wide-inline.ts`).
+:not(.katex-display) > .katex > .katex-html:not(.wide-inline) {
+  display: inline-block;
+  max-width: 100%;
+}
+
 strong {
   font-weight: $semi-bold-weight;
 }
@@ -479,6 +487,21 @@ pre {
 
       &[data-highlighted-line] {
         border-left: 3px solid var(--blue);
+      }
+
+      // A token with break points inside (see CodeBlockBreaks) moves to the
+      // next row whole when it fits there, and breaks at its seams only when
+      // wider than a row. A longer token rarely fits a narrow screen's row, so
+      // there it stays inline and breaks at its seams in place.
+      & .code-token {
+        display: inline-block;
+        max-width: 100%;
+      }
+
+      & .code-token-wide {
+        @media all and (max-width: $mobile-breakpoint) {
+          display: inline;
+        }
       }
 
       // Vertical separator line that extends full height (including wrapped lines)

@@ -698,6 +698,16 @@ We swept $\alpha \in \{0.2, 0.4, 0.6, 0.8\}$ and kept the best.
 
 </div>
 
+## Wide inline math
+
+Inline math moves to the next line whole when it doesn't fit on the current one. A formula wider than its line wraps between its terms instead, and its punctuation and the text after it continue on its last line:
+
+<div id="wide-math-demo" style="width: 12rem; border: 2px var(--midground) solid; border-radius: 5px; padding: 0.5rem;">
+
+So $\sum_{i=1}^n x_i \leq \sum_{i=1}^n y_i + n \epsilon \leq \sum_{i=1}^n z_i + 2 n \epsilon$, as claimed.
+
+</div>
+
 # Link features
 
 ## Internal links
