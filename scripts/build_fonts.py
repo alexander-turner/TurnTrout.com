@@ -398,7 +398,7 @@ def _find_style_decomposition(
 
 def _multiple_subst_lookup(mapping: dict[str, list[str]]) -> Any:
     # otTables builds these classes dynamically, so neither static tool sees them.
-    subtable = otTables.MultipleSubst()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
+    subtable = otTables.MultipleSubst()  # pylint: disable=no-member
     subtable.Format = 1
     subtable.mapping = mapping
     lookup = otTables.Lookup()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
@@ -431,7 +431,7 @@ def _merge_style_decompositions(font: TTFont) -> None:
     class_defs = font["GDEF"].table.GlyphClassDef.classDefs
     encoded_bases = {
         name
-        for name in font.getBestCmap().values()
+        for name in (font.getBestCmap() or {}).values()
         if class_defs.get(name) != _GDEF_MARK_CLASS
     }
 
