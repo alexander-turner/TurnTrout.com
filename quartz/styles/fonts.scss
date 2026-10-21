@@ -129,14 +129,18 @@ $fonts-dir: "/static/styles/fonts";
   font-family: "EBGaramondInitialsF1";
   src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF1.woff2") format("woff2");
   font-display: block;
-  -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; // Used in ::before, so subfont doesn't find automatically
+
+  // Used in ::before, so subfont doesn't find these automatically. The quotes
+  // are blank in this face, which keeps the embellishment registered with the
+  // letter of a quoted opening.
+  -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ“‘’";
 }
 
 @font-face {
   font-family: "EBGaramondInitialsF2";
   src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF2.woff2") format("woff2");
   font-display: block;
-  -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ“‘’";
 }
 
 $italic-fonts: (
@@ -436,13 +440,34 @@ code {
   white-space: nowrap;
 }
 
+// A dropcap may open on a quotation ("“W"). The Initials faces kern the mark
+// to zero advance so it hangs to the left of the cap it introduces, and they
+// draw it blank on the embellishment layer — so the two layers stay registered
+// and only the left edge needs room. These are the marks' own advances:
+// 266/1000 em for the double mark, 169/1000 for the single ones.
+@mixin quoted-dropcap-inset {
+  --dropcap-quote-width: 0em;
+
+  &[data-first-letter^="“"] {
+    --dropcap-quote-width: 0.266em;
+  }
+
+  &[data-first-letter^="‘"],
+  &[data-first-letter^="’"] {
+    --dropcap-quote-width: 0.169em;
+  }
+}
+
 // For usage in the middle of a paragraph
 .dropcap {
+  @include quoted-dropcap-inset;
+
   display: inline-block;
   font-family: var(--font-dropcap-foreground);
   color: var(--foreground);
   position: relative;
   text-transform: uppercase;
+  padding-left: var(--dropcap-quote-width);
   margin-right: 0.05rem;
   cursor: text;
 
@@ -464,6 +489,8 @@ code {
 }
 
 article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
+  @include quoted-dropcap-inset;
+
   --dropcap-vertical-offset: #{$dropcap-vertical-offset};
   --dropcap-font-size: #{$dropcap-font-size};
   --before-color: var(--random-dropcap-color, var(--midground-faint));
@@ -476,14 +503,22 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   cursor: text;
 
   // Float spacer: controls text wrapping with fixed width, preventing CLS
-  // when dropcap fonts load (::first-letter doesn't support width)
+  // when dropcap fonts load (::first-letter doesn't support width). The left
+  // pad holds the hanging quote of a quoted opening inside the text block:
+  // `#center-content` clips horizontal overflow, so a mark set outside the
+  // paragraph's content edge would be invisible.
   &::before {
     content: attr(data-first-letter);
     text-transform: uppercase;
     float: left;
+
+    // Two glyphs in a box sized for one, and a break after an opening quote is
+    // a legal break.
+    white-space: nowrap;
     width: var(--dropcap-font-size);
     font-size: var(--dropcap-font-size);
     line-height: 1;
+    padding-left: var(--dropcap-quote-width);
     padding-right: $dropcap-padding-right;
     padding-top: var(--dropcap-vertical-offset);
     font-family: var(--font-dropcap-background);
@@ -493,7 +528,9 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
 
   &::first-letter {
     // Pull back to overlap ::before; text wrapping is controlled by ::before's fixed width
-    margin-left: calc(-1 * var(--dropcap-font-size) - #{$dropcap-padding-right});
+    margin-left: calc(
+      -1 * var(--dropcap-font-size) - var(--dropcap-quote-width) - #{$dropcap-padding-right}
+    );
     padding-top: var(--dropcap-vertical-offset);
     text-transform: uppercase;
     font-style: normal !important;
@@ -503,6 +540,7 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
     color: var(--foreground);
     font-size: var(--dropcap-font-size);
     line-height: 1;
+    padding-left: var(--dropcap-quote-width);
     padding-right: $dropcap-padding-right;
     font-family: var(--font-dropcap-foreground);
     font-weight: 500 !important;
