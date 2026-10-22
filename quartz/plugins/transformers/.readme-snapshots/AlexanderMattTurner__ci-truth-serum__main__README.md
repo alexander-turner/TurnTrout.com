@@ -23,7 +23,7 @@ Then add the Tier 1 aggregate to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.7.1 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.7.2 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       - id: check-tier1 # every honesty + identity + security check
 ```
@@ -201,7 +201,7 @@ Start here enables Tier 1 through one aggregate id. This section is the full men
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.7.1 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.7.2 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       # ── Tier 1 · honesty, identity and security (default-on) ──
       # One id, so a Tier 1 check added in a later release runs as soon as you
@@ -285,7 +285,7 @@ Select on either axis with `check-select`. It takes `--select` (repeatable, unio
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.7.1
+    rev: v1.7.2
     hooks:
       - id: check-select
         args: [--select, "tag:security", --select, "tag:secrets"]
@@ -338,7 +338,7 @@ One check in a tier can need tighter file scoping than the rest. For example, `c
 
 ```yaml
 - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-  rev: v1.7.1
+  rev: v1.7.2
   hooks:
     - id: check-tier1
       args: [--skip, check_exit_suppression] # drop it from the aggregate...
@@ -386,11 +386,11 @@ sync-required-checks --repo owner/name --check
 GH_TOKEN=<token-with-administration:write> sync-required-checks --repo owner/name
 ```
 
-The mutation path needs a token in `GH_TOKEN` or `GITHUB_TOKEN` with `administration: write`. It reads the marker from the same scoped lines that the lint classifies, so the gate and the apply step can never disagree. Pass `--ruleset-id` if the repo has more than one branch ruleset.
+The mutation path needs a token in `GH_TOKEN` or `GITHUB_TOKEN` with `administration: write`. It reads the marker from the same scoped lines that the lint classifies, so the gate and the apply step can never disagree. The tool uses the branch ruleset in force on the default branch, and refuses a ruleset that guards only another branch. If several are in force there, it uses the one that requires status checks. Pass `--ruleset-id` if that still leaves more than one.
 
 ### Apply: keep a merge queue able to merge
 
-`sync-merge-queue` reads the merge queue rule of the same branch ruleset. A merge queue stops merging when two of its parameters change, and nothing turns red: GitHub builds each group, watches every check pass, and merges none of them. The script repairs those two parameters and leaves every other parameter as a human set it.
+`sync-merge-queue` finds its branch ruleset the same way, but when several are in force on the default branch it uses the one that carries the merge queue rule. A merge queue stops merging when two of its parameters change, and nothing turns red: GitHub builds each group, watches every check pass, and merges none of them. The script repairs those two parameters and leaves every other parameter as a human set it.
 
 - `grouping_strategy` is pinned to `ALLGREEN`. Under `HEADGREEN` an entry merges on another entry's build, so an untested change reaches the branch. Pass `--allow-headgreen` for a repo whose checks re-test the whole group.
 - `max_entries_to_merge` and `max_entries_to_build` must be above zero. A zero lets a group hold no entry at merge time. The repair writes `1`, and any positive size survives.
