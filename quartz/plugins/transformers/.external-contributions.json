@@ -236,7 +236,7 @@
       "number": 406,
       "title": "No way to refuse an interactive sign-in: a needed sign-in becomes a device-code prompt, never an error",
       "url": "https://github.com/docker/sbx-releases/issues/406",
-      "status": "open"
+      "status": "fixed"
     },
     {
       "repo": "docker/sbx-releases",
@@ -945,11 +945,11 @@
       "ownerType": "User"
     },
     "acon96/home-llm": {
-      "stars": 1473,
+      "stars": 1474,
       "ownerType": "User"
     },
     "ankidroid/Anki-Android": {
-      "stars": 12077,
+      "stars": 12082,
       "ownerType": "Organization"
     },
     "anordal/shellharden": {
@@ -957,11 +957,11 @@
       "ownerType": "User"
     },
     "anthropics/claude-code": {
-      "stars": 152857,
+      "stars": 152979,
       "ownerType": "Organization"
     },
     "cloud-hypervisor/cloud-hypervisor": {
-      "stars": 6415,
+      "stars": 6420,
       "ownerType": "Organization"
     },
     "DeepSourceCorp/cli": {
@@ -969,11 +969,11 @@
       "ownerType": "Organization"
     },
     "dequelabs/axe-core": {
-      "stars": 7685,
+      "stars": 7695,
       "ownerType": "Organization"
     },
     "docker/sbx-releases": {
-      "stars": 467,
+      "stars": 469,
       "ownerType": "Organization"
     },
     "EFForg/https-everywhere": {
@@ -981,7 +981,7 @@
       "ownerType": "Organization"
     },
     "IlanCosman/tide": {
-      "stars": 4287,
+      "stars": 4286,
       "ownerType": "User"
     },
     "jbloomAus/DecisionTransformerInterpretability": {
@@ -989,7 +989,7 @@
       "ownerType": "User"
     },
     "jestjs/jest": {
-      "stars": 45470,
+      "stars": 45471,
       "ownerType": "Organization"
     },
     "JinayJain/gpt-anywhere": {
@@ -997,11 +997,11 @@
       "ownerType": "User"
     },
     "kata-containers/kata-containers": {
-      "stars": 8993,
+      "stars": 8997,
       "ownerType": "Organization"
     },
     "KaTeX/KaTeX": {
-      "stars": 20466,
+      "stars": 20467,
       "ownerType": "Organization"
     },
     "linuxarena/auto_workflow": {
@@ -1017,7 +1017,7 @@
       "ownerType": "Organization"
     },
     "mermaid-js/mermaid": {
-      "stars": 90818,
+      "stars": 90827,
       "ownerType": "Organization"
     },
     "METR/hawk": {
@@ -1041,23 +1041,23 @@
       "ownerType": "User"
     },
     "nikitabobko/AeroSpace": {
-      "stars": 23588,
+      "stars": 23608,
       "ownerType": "User"
     },
     "openai/gym": {
-      "stars": 37237,
+      "stars": 37235,
       "ownerType": "Organization"
     },
     "orbstack/orbstack": {
-      "stars": 9460,
+      "stars": 9464,
       "ownerType": "Organization"
     },
     "pa11y/pa11y": {
-      "stars": 4580,
+      "stars": 4582,
       "ownerType": "Organization"
     },
     "parcel-bundler/lightningcss": {
-      "stars": 7713,
+      "stars": 7714,
       "ownerType": "Organization"
     },
     "PyCQA/docformatter": {
@@ -1065,7 +1065,7 @@
       "ownerType": "Organization"
     },
     "remcohaszing/rehype-mermaid": {
-      "stars": 195,
+      "stars": 194,
       "ownerType": "User"
     },
     "Responsible-Dataset-Sharing/easy-dataset-share": {
@@ -1073,15 +1073,15 @@
       "ownerType": "User"
     },
     "rishikanthc/Scriberr": {
-      "stars": 3112,
+      "stars": 3113,
       "ownerType": "User"
     },
     "runelite/runelite": {
-      "stars": 5498,
+      "stars": 5500,
       "ownerType": "Organization"
     },
     "sigstore/cosign": {
-      "stars": 6376,
+      "stars": 6377,
       "ownerType": "Organization"
     },
     "starkdmi/BrightXDR": {
@@ -1089,7 +1089,7 @@
       "ownerType": "User"
     },
     "stryker-mutator/stryker-js": {
-      "stars": 3266,
+      "stars": 3270,
       "ownerType": "Organization"
     },
     "stylelint-scss/stylelint-scss": {
@@ -1105,15 +1105,15 @@
       "ownerType": "Organization"
     },
     "tailscale/tailscale": {
-      "stars": 37931,
+      "stars": 37992,
       "ownerType": "Organization"
     },
     "TranslucentTB/TranslucentTB": {
-      "stars": 20611,
+      "stars": 20616,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_ai": {
-      "stars": 3062,
+      "stars": 3070,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_evals": {
