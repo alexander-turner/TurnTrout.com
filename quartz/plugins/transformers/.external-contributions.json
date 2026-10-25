@@ -131,7 +131,7 @@
       "number": 9022,
       "title": "Hot-plugged virtio-pci device can take a guest BAR write before its device-tree node exists, so `move_bar` fails",
       "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/issues/9022",
-      "status": "open"
+      "status": "fixed"
     },
     {
       "repo": "cloud-hypervisor/cloud-hypervisor",
@@ -945,11 +945,11 @@
       "ownerType": "User"
     },
     "acon96/home-llm": {
-      "stars": 1475,
+      "stars": 1474,
       "ownerType": "User"
     },
     "ankidroid/Anki-Android": {
-      "stars": 12089,
+      "stars": 12093,
       "ownerType": "Organization"
     },
     "anordal/shellharden": {
@@ -957,11 +957,11 @@
       "ownerType": "User"
     },
     "anthropics/claude-code": {
-      "stars": 153233,
+      "stars": 153339,
       "ownerType": "Organization"
     },
     "cloud-hypervisor/cloud-hypervisor": {
-      "stars": 6423,
+      "stars": 6429,
       "ownerType": "Organization"
     },
     "DeepSourceCorp/cli": {
@@ -969,11 +969,11 @@
       "ownerType": "Organization"
     },
     "dequelabs/axe-core": {
-      "stars": 7697,
+      "stars": 7704,
       "ownerType": "Organization"
     },
     "docker/sbx-releases": {
-      "stars": 470,
+      "stars": 473,
       "ownerType": "Organization"
     },
     "EFForg/https-everywhere": {
@@ -981,7 +981,7 @@
       "ownerType": "Organization"
     },
     "IlanCosman/tide": {
-      "stars": 4288,
+      "stars": 4296,
       "ownerType": "User"
     },
     "jbloomAus/DecisionTransformerInterpretability": {
@@ -989,7 +989,7 @@
       "ownerType": "User"
     },
     "jestjs/jest": {
-      "stars": 45468,
+      "stars": 45471,
       "ownerType": "Organization"
     },
     "JinayJain/gpt-anywhere": {
@@ -997,11 +997,11 @@
       "ownerType": "User"
     },
     "kata-containers/kata-containers": {
-      "stars": 9001,
+      "stars": 9013,
       "ownerType": "Organization"
     },
     "KaTeX/KaTeX": {
-      "stars": 20470,
+      "stars": 20471,
       "ownerType": "Organization"
     },
     "linuxarena/auto_workflow": {
@@ -1009,7 +1009,7 @@
       "ownerType": "Organization"
     },
     "linuxarena/control-tower": {
-      "stars": 38,
+      "stars": 39,
       "ownerType": "Organization"
     },
     "meridianlabs-ai/inspect_ranges": {
@@ -1017,11 +1017,11 @@
       "ownerType": "Organization"
     },
     "mermaid-js/mermaid": {
-      "stars": 90838,
+      "stars": 90851,
       "ownerType": "Organization"
     },
     "METR/hawk": {
-      "stars": 96,
+      "stars": 97,
       "ownerType": "Organization"
     },
     "METR/inspect_k8s_sandbox": {
@@ -1041,15 +1041,15 @@
       "ownerType": "User"
     },
     "nikitabobko/AeroSpace": {
-      "stars": 23613,
+      "stars": 23625,
       "ownerType": "User"
     },
     "openai/gym": {
-      "stars": 37234,
+      "stars": 37236,
       "ownerType": "Organization"
     },
     "orbstack/orbstack": {
-      "stars": 9467,
+      "stars": 9470,
       "ownerType": "Organization"
     },
     "pa11y/pa11y": {
@@ -1057,7 +1057,7 @@
       "ownerType": "Organization"
     },
     "parcel-bundler/lightningcss": {
-      "stars": 7714,
+      "stars": 7716,
       "ownerType": "Organization"
     },
     "PyCQA/docformatter": {
@@ -1077,11 +1077,11 @@
       "ownerType": "User"
     },
     "runelite/runelite": {
-      "stars": 5502,
+      "stars": 5503,
       "ownerType": "Organization"
     },
     "sigstore/cosign": {
-      "stars": 6381,
+      "stars": 6384,
       "ownerType": "Organization"
     },
     "starkdmi/BrightXDR": {
@@ -1089,7 +1089,7 @@
       "ownerType": "User"
     },
     "stryker-mutator/stryker-js": {
-      "stars": 3271,
+      "stars": 3276,
       "ownerType": "Organization"
     },
     "stylelint-scss/stylelint-scss": {
@@ -1097,7 +1097,7 @@
       "ownerType": "Organization"
     },
     "stylelint/stylelint": {
-      "stars": 11537,
+      "stars": 11539,
       "ownerType": "Organization"
     },
     "syntax-tree/hast-util-to-jsx-runtime": {
@@ -1105,19 +1105,19 @@
       "ownerType": "Organization"
     },
     "tailscale/tailscale": {
-      "stars": 38021,
+      "stars": 38050,
       "ownerType": "Organization"
     },
     "TranslucentTB/TranslucentTB": {
-      "stars": 20623,
+      "stars": 20638,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_ai": {
-      "stars": 3080,
+      "stars": 3088,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_evals": {
-      "stars": 713,
+      "stars": 716,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_k8s_sandbox": {
