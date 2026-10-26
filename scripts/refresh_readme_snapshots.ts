@@ -36,6 +36,9 @@ export interface FetchDeps {
   token?: string
 }
 
+/** A GitHub API URL that answered 404. */
+export class NotFoundError extends Error {}
+
 /**
  * Fetches a GitHub API URL's body, retrying transient failures (network
  * errors, 5xx, 403/429 rate limits) with exponential backoff. A 404 (wrong
@@ -68,7 +71,7 @@ export async function fetchGitHub(
       continue
     }
     if (response.status === 404) {
-      throw new Error(`${url} returned 404 — check the owner/repo/ref/path configuration`)
+      throw new NotFoundError(`${url} returned 404 — check the owner/repo/ref/path configuration`)
     }
     if (response.status === 401) {
       throw new Error(`${url} returned 401 — the GITHUB_TOKEN is invalid or expired`)

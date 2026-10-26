@@ -38,13 +38,21 @@ function searchItem(overrides: Partial<SearchItem>): SearchItem {
   }
 }
 
+/** A route's answer that makes the fake `fetch` respond 404. */
+const NOT_FOUND = Symbol("not found")
+
 /** A `fetch` that answers each URL from a table and records every URL it served. */
 function fakeFetch(routes: (url: string) => unknown) {
   const urls: string[] = []
   const fetchFn = jest.fn((input: string | URL | Request) => {
     const url = String(input)
     urls.push(url)
-    return Promise.resolve(new Response(JSON.stringify(routes(url)), { status: 200 }))
+    const body = routes(url)
+    return Promise.resolve(
+      body === NOT_FOUND
+        ? new Response("", { status: 404 })
+        : new Response(JSON.stringify(body), { status: 200 }),
+    )
   }) as unknown as typeof fetch
   return { fetchFn, urls, deps: { fetchFn, sleepFn: () => Promise.resolve(), token: "" } }
 }
@@ -150,19 +158,26 @@ describe("subjectOf", () => {
 
 const API = "https://api.github.com/repos/owner/repo"
 
-function commit(sha: string, message: string, email = "me@example.com"): CommitItem {
-  return { sha, commit: { message, author: { email } } }
+function commit(
+  sha: string,
+  message: string,
+  { email = "me@example.com", date = "2026-01-01T00:00:00Z", parents = 1 } = {},
+): CommitItem {
+  return { sha, commit: { message, author: { email, date } }, parents: Array(parents).fill({}) }
+}
+
+interface Referenced {
+  url: string
+  status: string | typeof NOT_FOUND
+  commit: CommitItem | typeof NOT_FOUND
 }
 
 /** GitHub as seen by `landedAsCopy`: each endpoint answers from the given state. */
 function fakeRepo({
   prCommits = [commit("pr1", "Fix the bug")],
   authored = [] as CommitItem[],
-  referenced = [] as { url: string; status: string; commit: CommitItem }[],
-  pulls = {} as Record<
-    string,
-    { number: number; user: { login: string }; merged_at: string | null }[]
-  >,
+  referenced = [] as Referenced[],
+  pulls = {} as Record<string, { user: { login: string } | null; merged_at: string | null }[]>,
 }) {
   return fakeFetch((url) => {
     const path = url.replace(API, "").replace(/[?&]per_page=\d+&page=\d+$/, "")
@@ -171,13 +186,13 @@ function fakeRepo({
     if (path === "/issues/7/timeline") {
       return [
         { event: "commented" },
-        ...referenced.map(({ url }) => ({ event: "referenced", commit_url: url })),
+        ...referenced.map(({ url: commitUrl }) => ({ event: "referenced", commit_url: commitUrl })),
       ]
     }
     const compared = referenced.find(
-      ({ url }) => path === `/compare/main...${url.split("/").pop()}`,
+      ({ url: commitUrl }) => path === `/compare/main...${commitUrl.split("/").pop()}`,
     )
-    if (compared) return { status: compared.status }
+    if (compared) return compared.status === NOT_FOUND ? NOT_FOUND : { status: compared.status }
     const fetched = referenced.find(({ url: commitUrl }) => url === commitUrl)
     if (fetched) return fetched.commit
     const associated = /^\/commits\/(\w+)\/pulls$/.exec(path)
@@ -186,19 +201,30 @@ function fakeRepo({
   })
 }
 
+/** A same-repo commit that mentions PR 7. */
+function mention(
+  sha: string,
+  message: string,
+  status: Referenced["status"] = "behind",
+): Referenced {
+  return { url: `${API}/commits/${sha}`, status, commit: commit(sha, message) }
+}
+
 describe("landedAsCopy", () => {
   const pr = searchItem({
     number: 7,
     title: "Fix the bug in full",
     pull_request: { merged_at: null },
   })
+  const twoCommits = [commit("pr1", "Fix the bug"), commit("pr2", "Update README.md")]
+  const mergedBy = (login: string) => [{ user: { login }, merged_at: "2026-02-01" }]
 
   it.each<[string, Parameters<typeof fakeRepo>[0], boolean]>([
     [
-      "a maintainer's cherry-pick of a PR commit",
+      "a maintainer's cherry-pick of the PR commit",
       {
         authored: [commit("pick", "Fix the bug\n\n(cherry picked from commit pr1)")],
-        pulls: { pick: [{ number: 9, user: { login: "maintainer" }, merged_at: "2026-02-01" }] },
+        pulls: { pick: mergedBy("maintainer") },
       },
       true,
     ],
@@ -208,24 +234,43 @@ describe("landedAsCopy", () => {
       true,
     ],
     [
-      "a direct push that rewrote the author but mentions the PR",
+      "a copy of every PR commit, ignoring the PR's merge commits",
       {
-        referenced: [
-          {
-            url: `${API}/commits/push`,
-            status: "behind",
-            commit: commit("push", "Fix the bug\n\nBased on PR #7", "other@example.com"),
-          },
-        ],
+        prCommits: [...twoCommits, commit("merge", "Merge branch 'main'", { parents: 2 })],
+        authored: [commit("a", "Fix the bug"), commit("b", "Update README.md")],
       },
       true,
     ],
     [
+      "a copy of only the PR's generic commit",
+      { prCommits: twoCommits, authored: [commit("b", "Update README.md")] },
+      false,
+    ],
+    ["a PR with only merge commits", { prCommits: [commit("m", "Merge", { parents: 2 })] }, false],
+    [
       "the author's own merged resubmission",
       {
         authored: [commit("resub", "Fix the bug in full (#8)")],
-        pulls: { resub: [{ number: 8, user: { login: "me" }, merged_at: "2026-02-01" }] },
+        pulls: { resub: mergedBy("me") },
       },
+      false,
+    ],
+    [
+      "a copy beside the closed PR itself and a deleted user's merged PR",
+      {
+        authored: [commit("copy", "Fix the bug")],
+        pulls: {
+          copy: [
+            { user: { login: "me" }, merged_at: null },
+            { user: null, merged_at: "2026-02-01" },
+          ],
+        },
+      },
+      true,
+    ],
+    [
+      "a resubmission from another own account",
+      { authored: [commit("resub", "Fix the bug")], pulls: { resub: mergedBy("ME2") } },
       false,
     ],
     [
@@ -234,12 +279,35 @@ describe("landedAsCopy", () => {
       false,
     ],
     [
-      "a mentioning commit that never reached the default branch",
-      {
-        referenced: [
-          { url: `${API}/commits/side`, status: "diverged", commit: commit("side", "Fix the bug") },
-        ],
-      },
+      "a mentioning commit behind the default branch",
+      { referenced: [mention("push", "Fix the bug")] },
+      true,
+    ],
+    [
+      "a mentioning commit at the default branch's tip",
+      { referenced: [mention("push", "Fix the bug", "identical")] },
+      true,
+    ],
+    ...(["diverged", "ahead"] as const).map(
+      (status): [string, Parameters<typeof fakeRepo>[0], boolean] => [
+        `a mentioning commit ${status} of the default branch`,
+        { referenced: [mention("side", "Fix the bug", status)] },
+        false,
+      ],
+    ),
+    [
+      "a mentioning commit with another subject",
+      { referenced: [mention("revert", "Revert the bug fix")] },
+      false,
+    ],
+    [
+      "a garbage-collected mentioning commit",
+      { referenced: [{ url: `${API}/commits/gone`, status: "behind", commit: NOT_FOUND }] },
+      false,
+    ],
+    [
+      "a mentioning commit the compare cannot reach",
+      { referenced: [mention("orphan", "Fix the bug", NOT_FOUND)] },
       false,
     ],
     [
@@ -256,30 +324,54 @@ describe("landedAsCopy", () => {
       false,
     ],
   ])("%s", async (_name, state, landed) => {
-    expect(await landedAsCopy(pr, "main", "me", fakeRepo(state).deps)).toBe(landed)
+    expect(await landedAsCopy(pr, "main", ["me", "Me2"], fakeRepo(state).deps)).toBe(landed)
   })
 
-  it("queries the default branch for each PR commit author since the PR opened", async () => {
+  it("queries each PR commit author since the earliest PR commit", async () => {
     const { deps, urls } = fakeRepo({
-      prCommits: [commit("a", "One"), commit("b", "Two"), commit("c", "Three", "bot@example.com")],
+      prCommits: [
+        commit("a", "One", { date: "2026-03-01T00:00:00Z" }),
+        commit("b", "Two", { date: "2026-02-01T00:00:00-08:00" }),
+        commit("c", "Three", { email: "bot@example.com" }),
+      ],
     })
-    await landedAsCopy(pr, "main", "me", deps)
+    await landedAsCopy(pr, "main", ["me"], deps)
     expect(urls.filter((url) => url.startsWith(`${API}/commits?`))).toEqual(
       ["me%40example.com", "bot%40example.com"].map(
         (email) =>
-          `${API}/commits?sha=main&author=${email}&since=2026-01-01T00:00:00Z&per_page=${PER_PAGE}&page=1`,
+          `${API}/commits?sha=main&author=${email}&since=2026-01-01T00:00:00.000Z&per_page=${PER_PAGE}&page=1`,
       ),
     )
   })
 
+  it("checks a commit found by author and by mention once", async () => {
+    const { deps, urls } = fakeRepo({
+      authored: [commit("both", "Fix the bug")],
+      referenced: [mention("both", "Fix the bug")],
+    })
+    expect(await landedAsCopy(pr, "main", ["me"], deps)).toBe(true)
+    expect(urls.filter((url) => url.includes("/commits/both/pulls"))).toHaveLength(1)
+  })
+
   it("follows every page of a list endpoint", async () => {
     const fullPage = Array.from({ length: PER_PAGE }, (_, i) => commit(`c${i}`, `Commit ${i}`))
-    const { deps, urls } = fakeFetch((url) => {
-      if (url.includes("/pulls/7/commits")) return url.endsWith("page=1") ? fullPage : []
-      return []
-    })
-    expect(await landedAsCopy(pr, "main", "me", deps)).toBe(false)
+    const { deps, urls } = fakeFetch((url) =>
+      url.includes("/pulls/7/commits") && url.endsWith("page=1") ? fullPage : [],
+    )
+    expect(await landedAsCopy(pr, "main", ["me"], deps)).toBe(false)
     expect(urls.filter((url) => url.includes("/pulls/7/commits"))).toHaveLength(2)
+  })
+
+  it("propagates an error other than a 404", async () => {
+    const { deps } = fakeRepo({ referenced: [mention("x", "Fix the bug")] })
+    const failing = jest.fn((input: string | URL | Request) =>
+      String(input).includes("/compare/")
+        ? Promise.resolve(new Response("", { status: 401 }))
+        : (deps.fetchFn as (input: string | URL | Request) => Promise<Response>)(input),
+    ) as unknown as typeof fetch
+    await expect(landedAsCopy(pr, "main", ["me"], { ...deps, fetchFn: failing })).rejects.toThrow(
+      "returned 401",
+    )
   })
 })
 

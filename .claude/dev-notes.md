@@ -190,10 +190,9 @@ the new snapshot — a missing snapshot fails the build with instructions.
 The same workflow runs `scripts/refresh_external_contributions.ts`, which refreshes
 `quartz/plugins/transformers/.external-contributions.json`: every PR and issue I opened on a
 repo I don't own, plus each repo's stars and owner type. A closed PR counts as merged
-when a maintainer landed its work through their own commits: a default-branch commit,
-by one of the PR's commit authors or mentioning the PR, whose subject matches the PR
-title or one of its commit subjects, and which is not from another merged PR of mine.
-Which items
+when a maintainer landed its work through their own commits: the default branch carries
+the PR's title or every one of its commit subjects, in commits by the PR's commit authors
+or commits that mention the PR, and not from another merged PR of mine. Which items
 /open-source lists is decided at build time by `CONTRIBUTION_FILTER` in
 `config/quartz/externalContributions.ts`, so retuning it needs no refetch. In a
 sandbox whose network goes through a proxy, run the script as
