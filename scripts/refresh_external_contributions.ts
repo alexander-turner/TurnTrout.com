@@ -22,9 +22,8 @@ import {
   type ContributionStatus,
   type RepoMeta,
 } from "../quartz/plugins/transformers/externalContributions"
-import { type FetchDeps, fetchGitHub, NotFoundError } from "./refresh_readme_snapshots"
+import { type GitHub, gitHubClient, ifFound } from "./github_client"
 
-const JSON_ACCEPT = "application/vnd.github+json"
 export const PER_PAGE = 100
 /** GitHub's search API returns at most this many results for one query. */
 export const SEARCH_RESULT_CAP = 1000
@@ -35,16 +34,15 @@ export interface SearchItem {
   number: number
   title: string
   html_url: string
-  created_at: string
-  state: "open" | "closed"
+  state: string
   state_reason?: string | null
-  pull_request?: { merged_at: string | null }
+  pull_request?: { merged_at?: string | null }
 }
 
-interface SearchPage {
-  total_count: number
-  incomplete_results: boolean
-  items: SearchItem[]
+/** The fields of a REST commit that the copy check reads; git records an author on every commit. */
+interface Commit {
+  sha: string
+  commit: { message: string; author: { email: string; date: string } }
 }
 
 /** Search query for items the author opened on public repos they do not own. */
@@ -84,74 +82,25 @@ export function toContribution(item: SearchItem): Contribution {
  * page means GitHub timed out, and a result set past the search cap cannot be
  * fetched whole, so both fail.
  */
-export async function fetchSearchItems(query: string, deps: FetchDeps): Promise<SearchItem[]> {
+export async function fetchSearchItems(query: string, github: GitHub): Promise<SearchItem[]> {
   const items = new Map<string, SearchItem>()
-  for (let page = 1; ; page++) {
-    const url = `https://api.github.com/search/issues?q=${encodeURIComponent(query)}&sort=created&order=asc&per_page=${PER_PAGE}&page=${page}`
-    const body = JSON.parse(await fetchGitHub(url, JSON_ACCEPT, deps)) as SearchPage
-    if (body.incomplete_results) {
-      throw new Error(`GitHub returned incomplete search results for page ${page}`)
-    }
-    if (body.total_count > SEARCH_RESULT_CAP) {
+  const pages = github.paginate.iterator(github.rest.search.issuesAndPullRequests, {
+    q: query,
+    sort: "created",
+    order: "asc",
+    per_page: PER_PAGE,
+  })
+  for await (const { data } of pages) {
+    const page = data as typeof data & { incomplete_results: boolean; total_count: number }
+    if (page.incomplete_results) throw new Error("GitHub returned incomplete search results")
+    if (page.total_count > SEARCH_RESULT_CAP) {
       throw new Error(
-        `The search matched ${body.total_count} items, past GitHub's cap of ${SEARCH_RESULT_CAP}`,
+        `The search matched ${page.total_count} items, past GitHub's cap of ${SEARCH_RESULT_CAP}`,
       )
     }
-    for (const item of body.items) items.set(item.html_url, item)
-    if (body.items.length < PER_PAGE || page * PER_PAGE >= body.total_count) {
-      return [...items.values()]
-    }
+    for (const item of page) items.set(item.html_url, item)
   }
-}
-
-interface RepoInfo {
-  meta: RepoMeta
-  defaultBranch: string
-}
-
-export async function fetchRepo(repo: string, deps: FetchDeps): Promise<RepoInfo> {
-  const body = JSON.parse(
-    await fetchGitHub(`https://api.github.com/repos/${repo}`, JSON_ACCEPT, deps),
-  ) as { stargazers_count: number; owner: { type: string }; default_branch: string }
-  return {
-    meta: { stars: body.stargazers_count, ownerType: body.owner.type },
-    defaultBranch: body.default_branch,
-  }
-}
-
-/** The fields of a REST commit object that the copy check reads. */
-export interface CommitItem {
-  sha: string
-  commit: { message: string; author: { email: string; date: string } }
-  parents: readonly unknown[]
-}
-
-/** A pull request GitHub associates with a commit. */
-interface AssociatedPull {
-  user: { login: string } | null
-  merged_at: string | null
-}
-
-/** Fetches every page of a REST list endpoint. */
-async function fetchAllPages<T>(url: string, deps: FetchDeps): Promise<T[]> {
-  const separator = url.includes("?") ? "&" : "?"
-  const items: T[] = []
-  for (let page = 1; ; page++) {
-    const pageUrl = `${url}${separator}per_page=${PER_PAGE}&page=${page}`
-    const body = JSON.parse(await fetchGitHub(pageUrl, JSON_ACCEPT, deps)) as T[]
-    items.push(...body)
-    if (body.length < PER_PAGE) return items
-  }
-}
-
-/** Parses a GitHub API URL's JSON body, or returns undefined when it answers 404. */
-async function fetchJsonIfFound<T>(url: string, deps: FetchDeps): Promise<T | undefined> {
-  try {
-    return JSON.parse(await fetchGitHub(url, JSON_ACCEPT, deps)) as T
-  } catch (error) {
-    if (error instanceof NotFoundError) return undefined
-    throw error
-  }
+  return [...items.values()]
 }
 
 /** A commit message's first line, without the ` (#123)` suffix a squash merge appends. */
@@ -163,7 +112,7 @@ export function subjectOf(message: string): string {
 }
 
 /** A commit's subject and author date, which a cherry-pick or rebase keeps. */
-function authorshipKey(commit: CommitItem): string {
+function authorshipKey(commit: Commit): string {
   return `${subjectOf(commit.commit.message)}\n${Date.parse(commit.commit.author.date)}`
 }
 
@@ -175,41 +124,48 @@ function authorshipKey(commit: CommitItem): string {
  * its subject is in `subjects`.
  */
 async function candidateCommits(
+  repo: { owner: string; repo: string },
   pr: SearchItem,
-  api: string,
   defaultBranch: string,
-  prCommits: readonly CommitItem[],
+  prCommits: readonly Commit[],
   subjects: ReadonlySet<string>,
-  deps: FetchDeps,
-): Promise<CommitItem[]> {
-  const candidates = new Map<string, CommitItem>()
+  github: GitHub,
+): Promise<Commit[]> {
+  const candidates = new Map<string, Commit>()
   const authorships = new Set(prCommits.map(authorshipKey))
-  const since = new Date(
-    Math.min(...prCommits.map((commit) => Date.parse(commit.commit.author.date))),
-  ).toISOString()
-  for (const email of new Set(prCommits.map((commit) => commit.commit.author.email))) {
-    const query = `sha=${encodeURIComponent(defaultBranch)}&author=${encodeURIComponent(email)}&since=${since}`
-    for (const commit of await fetchAllPages<CommitItem>(`${api}/commits?${query}`, deps)) {
+  const authors = prCommits.map((commit) => commit.commit.author)
+  const since = new Date(Math.min(...authors.map((author) => Date.parse(author.date))))
+  for (const email of new Set(authors.map((author) => author.email))) {
+    const authored = await github.paginate(github.rest.repos.listCommits, {
+      ...repo,
+      sha: defaultBranch,
+      author: email,
+      since: since.toISOString(),
+      per_page: PER_PAGE,
+    })
+    for (const commit of authored as Commit[]) {
       if (authorships.has(authorshipKey(commit))) candidates.set(commit.sha, commit)
     }
   }
-  const timeline = await fetchAllPages<{ event: string; commit_url?: string | null }>(
-    `${api}/issues/${pr.number}/timeline`,
-    deps,
-  )
+  const timeline = await github.paginate(github.rest.issues.listEventsForTimeline, {
+    ...repo,
+    issue_number: pr.number,
+    per_page: PER_PAGE,
+  })
+  const repoApi = `https://api.github.com/repos/${repo.owner}/${repo.repo}/`
   for (const event of timeline) {
     // A commit in a fork also references the pull request, but never lands here.
-    if (event.event !== "referenced" || !event.commit_url?.startsWith(`${api}/commits/`)) continue
-    // A commit on a deleted branch can be garbage-collected, so it answers 404.
-    const commit = await fetchJsonIfFound<CommitItem>(event.commit_url, deps)
+    if (event.event !== "referenced" || !("commit_url" in event)) continue
+    if (!event.commit_id || !event.commit_url?.startsWith(repoApi)) continue
+    // A commit on a deleted branch can be garbage-collected, so it may no longer exist.
+    const found = await ifFound(github.rest.repos.getCommit({ ...repo, ref: event.commit_id }))
+    const commit = found?.data as Commit | undefined
     if (!commit || !subjects.has(subjectOf(commit.commit.message))) continue
-    const comparison = await fetchJsonIfFound<{ status: string }>(
-      `${api}/compare/${defaultBranch}...${commit.sha}`,
-      deps,
+    const comparison = await ifFound(
+      github.rest.repos.compareCommits({ ...repo, base: defaultBranch, head: commit.sha }),
     )
-    if (comparison?.status === "behind" || comparison?.status === "identical") {
-      candidates.set(commit.sha, commit)
-    }
+    const status = comparison?.data.status
+    if (status === "behind" || status === "identical") candidates.set(commit.sha, commit)
   }
   return [...candidates.values()]
 }
@@ -220,36 +176,46 @@ async function candidateCommits(
  * own pull request or pushing it directly. Either a landed commit that
  * mentions the pull request carries its title, as a squash does, or every
  * subject of its non-merge commits landed; one generic subject such as
- * "Update README.md" alone never counts. A commit from a merged pull request by one of `ownAccounts` is a
- * resubmission the snapshot already lists, so it does not count.
+ * "Update README.md" alone never counts. A commit from a merged pull request
+ * by one of `ownAccounts` is a resubmission the snapshot already lists, so it
+ * does not count.
  */
 export async function landedAsCopy(
   pr: SearchItem,
   defaultBranch: string,
   ownAccounts: readonly string[],
-  deps: FetchDeps,
+  github: GitHub,
 ): Promise<boolean> {
-  const api = `https://api.github.com/repos/${repoOf(pr)}`
+  const [owner, name] = repoOf(pr).split("/")
+  const repo = { owner, repo: name }
   const prCommits = (
-    await fetchAllPages<CommitItem>(`${api}/pulls/${pr.number}/commits`, deps)
-  ).filter((commit) => commit.parents.length === 1)
+    await github.paginate(github.rest.pulls.listCommits, {
+      ...repo,
+      pull_number: pr.number,
+      per_page: PER_PAGE,
+    })
+  ).filter((commit) => commit.parents.length === 1) as Commit[]
   if (prCommits.length === 0) return false
   const title = subjectOf(pr.title)
   const commitSubjects = new Set(prCommits.map((commit) => subjectOf(commit.commit.message)))
   const own = new Set(ownAccounts.map((account) => account.toLowerCase()))
   const landed = new Set<string>()
   const candidates = await candidateCommits(
+    repo,
     pr,
-    api,
     defaultBranch,
     prCommits,
     new Set([title, ...commitSubjects]),
-    deps,
+    github,
   )
   for (const candidate of candidates) {
-    const pulls = await fetchAllPages<AssociatedPull>(`${api}/commits/${candidate.sha}/pulls`, deps)
+    const pulls = await github.paginate(github.rest.repos.listPullRequestsAssociatedWithCommit, {
+      ...repo,
+      commit_sha: candidate.sha,
+      per_page: PER_PAGE,
+    })
     const resubmitted = pulls.some(
-      (pull) => pull.merged_at !== null && own.has(pull.user?.login.toLowerCase() ?? ""),
+      (pull) => pull.merged_at && own.has(pull.user?.login.toLowerCase() ?? ""),
     )
     if (!resubmitted) landed.add(subjectOf(candidate.commit.message))
   }
@@ -257,20 +223,21 @@ export async function landedAsCopy(
 }
 
 /** Builds a snapshot sorted by repo and number, so an unchanged world serializes identically. */
-export async function buildSnapshot(deps: FetchDeps): Promise<ContributionsSnapshot> {
-  const found = await fetchSearchItems(searchQuery(CONTRIBUTIONS_AUTHOR, OWN_ACCOUNTS), deps)
+export async function buildSnapshot(github: GitHub): Promise<ContributionsSnapshot> {
+  const found = await fetchSearchItems(searchQuery(CONTRIBUTIONS_AUTHOR, OWN_ACCOUNTS), github)
   const repoNames = [...new Set(found.map(repoOf))].sort((a, b) => a.localeCompare(b))
   const items: Contribution[] = []
   const repos: Record<string, RepoMeta> = {}
-  for (const repo of repoNames) {
-    const { meta, defaultBranch } = await fetchRepo(repo, deps)
-    repos[repo] = meta
-    for (const item of found.filter((candidate) => repoOf(candidate) === repo)) {
+  for (const repoName of repoNames) {
+    const [owner, repo] = repoName.split("/")
+    const { data } = await github.rest.repos.get({ owner, repo })
+    repos[repoName] = { stars: data.stargazers_count, ownerType: data.owner.type }
+    for (const item of found.filter((candidate) => repoOf(candidate) === repoName)) {
       const contribution = toContribution(item)
       const landed =
         contribution.status === "closed" &&
         item.pull_request !== undefined &&
-        (await landedAsCopy(item, defaultBranch, OWN_ACCOUNTS, deps))
+        (await landedAsCopy(item, data.default_branch, OWN_ACCOUNTS, github))
       items.push(landed ? { ...contribution, status: "merged" } : contribution)
     }
   }
@@ -299,7 +266,7 @@ export function writeSnapshot(
 
 // istanbul ignore next - CLI entrypoint
 async function main(): Promise<void> {
-  const snapshot = await buildSnapshot({})
+  const snapshot = await buildSnapshot(gitHubClient())
   const wrote = writeSnapshot(snapshot, CONTRIBUTIONS_SNAPSHOT_PATH)
   console.log(
     `${wrote ? "✓ wrote" : "= unchanged"} ${CONTRIBUTIONS_SNAPSHOT_PATH} (${snapshot.items.length} items)`,
