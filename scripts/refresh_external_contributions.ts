@@ -162,11 +162,17 @@ export function subjectOf(message: string): string {
     .trim()
 }
 
+/** A commit's subject and author date, which a cherry-pick or rebase keeps. */
+function authorshipKey(commit: CommitItem): string {
+  return `${subjectOf(commit.commit.message)}\n${Date.parse(commit.commit.author.date)}`
+}
+
 /**
- * Default-branch commits that may carry a closed pull request's work: those
- * by one of its commit authors since its first commit, and those whose
- * message mentions it (GitHub records each as a `referenced` timeline event).
- * Only commits whose subject is in `subjects` are kept.
+ * Default-branch commits that may carry a closed pull request's work. A commit
+ * by one of its commit authors counts when its subject and author date equal
+ * a PR commit's, so another PR with the same subject never matches. A commit
+ * whose message mentions the PR (a `referenced` timeline event) counts when
+ * its subject is in `subjects`.
  */
 async function candidateCommits(
   pr: SearchItem,
@@ -177,17 +183,14 @@ async function candidateCommits(
   deps: FetchDeps,
 ): Promise<CommitItem[]> {
   const candidates = new Map<string, CommitItem>()
-  const keep = (commit: CommitItem) => {
-    if (subjects.has(subjectOf(commit.commit.message))) candidates.set(commit.sha, commit)
-  }
-  // A cherry-pick keeps its author date, so the window opens at the first PR commit.
+  const authorships = new Set(prCommits.map(authorshipKey))
   const since = new Date(
     Math.min(...prCommits.map((commit) => Date.parse(commit.commit.author.date))),
   ).toISOString()
   for (const email of new Set(prCommits.map((commit) => commit.commit.author.email))) {
     const query = `sha=${encodeURIComponent(defaultBranch)}&author=${encodeURIComponent(email)}&since=${since}`
     for (const commit of await fetchAllPages<CommitItem>(`${api}/commits?${query}`, deps)) {
-      keep(commit)
+      if (authorships.has(authorshipKey(commit))) candidates.set(commit.sha, commit)
     }
   }
   const timeline = await fetchAllPages<{ event: string; commit_url?: string | null }>(
@@ -204,7 +207,9 @@ async function candidateCommits(
       `${api}/compare/${defaultBranch}...${commit.sha}`,
       deps,
     )
-    if (comparison?.status === "behind" || comparison?.status === "identical") keep(commit)
+    if (comparison?.status === "behind" || comparison?.status === "identical") {
+      candidates.set(commit.sha, commit)
+    }
   }
   return [...candidates.values()]
 }
@@ -212,10 +217,10 @@ async function candidateCommits(
 /**
  * True when a maintainer landed a closed, unmerged pull request's work on the
  * default branch through their own commits, by cherry-picking it into their
- * own pull request or pushing it directly. Either a landed commit carries the
- * pull request's title, as a squash does, or every subject of its non-merge
- * commits landed; one generic subject such as "Update README.md" alone never
- * counts. A commit from a merged pull request by one of `ownAccounts` is a
+ * own pull request or pushing it directly. Either a landed commit that
+ * mentions the pull request carries its title, as a squash does, or every
+ * subject of its non-merge commits landed; one generic subject such as
+ * "Update README.md" alone never counts. A commit from a merged pull request by one of `ownAccounts` is a
  * resubmission the snapshot already lists, so it does not count.
  */
 export async function landedAsCopy(

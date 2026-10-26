@@ -229,9 +229,19 @@ describe("landedAsCopy", () => {
       true,
     ],
     [
-      "a squash commit titled like the PR",
-      { authored: [commit("squash", "Fix the bug in full (#9)")] },
+      "a squash commit that mentions the PR and carries its title",
+      { referenced: [mention("squash", "Fix the bug in full (#9)\n\nCloses #7")] },
       true,
+    ],
+    [
+      "an authored commit titled like the PR",
+      { authored: [commit("squash", "Fix the bug in full (#9)")] },
+      false,
+    ],
+    [
+      "a cherry-pick of another PR's commit with the same subject",
+      { authored: [commit("pick", "Fix the bug", { date: "2026-01-05T00:00:00Z" })] },
+      false,
     ],
     [
       "a copy of every PR commit, ignoring the PR's merge commits",
@@ -250,7 +260,7 @@ describe("landedAsCopy", () => {
     [
       "the author's own merged resubmission",
       {
-        authored: [commit("resub", "Fix the bug in full (#8)")],
+        referenced: [mention("resub", "Fix the bug in full (#8)\n\nSupersedes #7")],
         pulls: { resub: mergedBy("me") },
       },
       false,
