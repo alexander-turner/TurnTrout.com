@@ -115,7 +115,7 @@ Design & art
 : While I don't draw anymore, I've really gone through phases here! For example, in order to communicate research insights which were dear to me, I wrote and illustrated a series of blog posts called [@title](/reframing-impact):
 : ![The title card for the series. A cute robot plays around with blocks.](https://assets.turntrout.com/Attachments/reframingImpact.avif)
 : ![A recreation of the iconic](https://assets.turntrout.com/Attachments/balrog.avif)
-: ![I hand-illustrated Bag End from the Shire, with the help of a reference.](https://assets.turntrout.com/Attachments/hobbitImpactHouse.avif)
+: ![I hand-illustrated Bag End from the Shire, with the help of a reference.](https://assets.turntrout.com/static/images/cropped_towards.avif){.fade-image-border}
 
 Writing
 :
