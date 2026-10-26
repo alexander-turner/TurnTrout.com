@@ -40,7 +40,7 @@ date_published: 2021-11-18
 original_url: https://www.lesswrong.com/posts/nZY8Np759HYFawdjH/satisficers-tend-to-seek-power-instrumental-convergence-via
 skip_import: true
 description: Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.
-date_updated: 2026-10-12
+date_updated: 2026-10-26
 ---
 
 Why exactly should smart agents tend to usurp their creators? Previous results only apply to optimal agents tending to stay alive and preserve their future options. I extend the power-seeking theorems to apply to many kinds of policy-selection procedures, ranging from planning agents which choose plans with expected utility closest to a randomly generated number, to satisficers, to policies trained by some reinforcement learning algorithms. The key property is not agent optimality—as previously supposed—but is instead the _retargetability of the policy-selection procedure_. These results hint at which kinds of agent cognition and of agent-producing processes are dangerous by default.
@@ -79,7 +79,7 @@ I want to step back. What I call "the power-seeking theorems", they aren't reall
 
 For example, suppose our cute robot Frank must choose one of several kinds of fruit.
 
-![A cartoon robot with a concerned expression stands in a grassy field by a small waterfall which feeds a pond. The robot contemplates a choice. To its right are three crates of fruit: cherries, apples, and bananas. To the robot's left, a chalkboard displays the formula E_\{R ~ D\}[V^*_R(s,y)]. A goose and two goslings float in the pond near the fruit.](https://assets.turntrout.com/static/images/posts/6b6db28b0164d8da5c2d911acdd347785b7d43fb7dca780a.avif)
+![A cartoon robot with a concerned expression stands in a grassy field by a small waterfall which feeds a pond. The robot contemplates a choice. To its right are three crates of fruit: cherries, apples, and bananas. To the robot's left, a chalkboard displays the formula E_\{R ~ D\}[V^*_R(s,y)]. A goose and two goslings float in the pond near the fruit.](https://assets.turntrout.com/static/images/posts/6b6db28b0164d8da5c2d911acdd347785b7d43fb7dca780a.avif){.fade-image-border}
 <br/>Figure: 🍒 vs 🍎 vs 🍌
 
 So far, I proved something like "if the agent has a utility function over fruits, then for at least 2/3 of possible utility functions it could have, it'll be optimal to choose something from \{🍌,🍎\}." This statement is true because for every way 🍒 could be strictly optimal, you can make a new utility function that permutes the 🍒 and 🍎 reward, and another new one that permutes the 🍌 and 🍒 reward. So for every "I like 🍒 strictly more" utility function, there's at least two permuted variants which strictly prefer 🍎 or 🍌. Superficially, it seems like this argument relies on optimal decision-making.
