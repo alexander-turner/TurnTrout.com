@@ -1,4 +1,4 @@
-import { describe, expect, it, jest } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
@@ -13,10 +13,9 @@ import {
 } from "../../quartz/plugins/transformers/externalContributions"
 import {
   buildSnapshot,
-  type CommitItem,
   fetchSearchItems,
+  gitAuthor,
   landedAsCopy,
-  PER_PAGE,
   SEARCH_RESULT_CAP,
   type SearchItem,
   searchQuery,
@@ -25,6 +24,7 @@ import {
   toContribution,
   writeSnapshot,
 } from "../refresh_external_contributions"
+import { fakeGitHub, Reply } from "./fakeGitHub"
 
 function searchItem(overrides: Partial<SearchItem>): SearchItem {
   return {
@@ -32,30 +32,14 @@ function searchItem(overrides: Partial<SearchItem>): SearchItem {
     number: 1,
     title: "Title",
     html_url: "https://github.com/owner/repo/issues/1",
-    created_at: "2026-01-01T00:00:00Z",
     state: "closed",
     ...overrides,
   }
 }
 
-/** A route's answer that makes the fake `fetch` respond 404. */
-const NOT_FOUND = Symbol("not found")
-
-/** A `fetch` that answers each URL from a table and records every URL it served. */
-function fakeFetch(routes: (url: string) => unknown) {
-  const urls: string[] = []
-  const fetchFn = jest.fn((input: string | URL | Request) => {
-    const url = String(input)
-    urls.push(url)
-    const body = routes(url)
-    return Promise.resolve(
-      body === NOT_FOUND
-        ? new Response("", { status: 404 })
-        : new Response(JSON.stringify(body), { status: 200 }),
-    )
-  }) as unknown as typeof fetch
-  return { fetchFn, urls, deps: { fetchFn, sleepFn: () => Promise.resolve(), token: "" } }
-}
+/** A JSON answer whose `link` header points at the next page. */
+const pageWithNext = (body: unknown, next: string) =>
+  new Reply(200, body, { link: `<${next}>; rel="next"` })
 
 describe("searchQuery", () => {
   it("excludes every own account", () => {
@@ -92,48 +76,35 @@ describe("toContribution", () => {
 })
 
 describe("fetchSearchItems", () => {
-  const pageUrl = (page: number) =>
-    `https://api.github.com/search/issues?q=author%3Ame&sort=created&order=asc&per_page=${PER_PAGE}&page=${page}`
-  const fullPage = Array.from({ length: PER_PAGE }, (_, i) =>
-    searchItem({ number: i, html_url: `https://github.com/owner/repo/issues/${i}` }),
-  )
+  const items = (from: number, count: number) =>
+    Array.from({ length: count }, (_, i) =>
+      searchItem({
+        number: from + i,
+        html_url: `https://github.com/owner/repo/issues/${from + i}`,
+      }),
+    )
+  const page2 = "https://api.github.com/search/issues?q=author%3Ame&page=2"
+  const search = (pages: Record<string, unknown>) =>
+    fakeGitHub((url) => (url.searchParams.get("page") === "2" ? pages.second : pages.first))
 
-  it("follows pages until one comes back short", async () => {
-    const { deps, urls } = fakeFetch((url) => ({
-      total_count: PER_PAGE + 1,
-      incomplete_results: false,
-      items: url.endsWith("page=1")
-        ? fullPage
-        : [searchItem({ number: 999, html_url: "https://github.com/owner/repo/issues/999" })],
-    }))
-    expect(await fetchSearchItems("author:me", deps)).toHaveLength(PER_PAGE + 1)
-    expect(urls).toEqual([pageUrl(1), pageUrl(2)])
-  })
-
-  it("stops after the last full page when the total is an exact multiple", async () => {
-    const { deps, urls } = fakeFetch(() => ({
-      total_count: PER_PAGE,
-      incomplete_results: false,
-      items: fullPage,
-    }))
-    expect(await fetchSearchItems("author:me", deps)).toHaveLength(PER_PAGE)
-    expect(urls).toEqual([pageUrl(1)])
-  })
-
-  it("drops an item that a shifted page repeats", async () => {
-    const { deps } = fakeFetch((url) => ({
-      total_count: PER_PAGE + 1,
-      incomplete_results: false,
-      items: url.endsWith("page=1") ? fullPage : [fullPage[PER_PAGE - 1]],
-    }))
-    expect(await fetchSearchItems("author:me", deps)).toHaveLength(PER_PAGE)
+  it("follows each next page, sorted by creation date, and drops a repeated item", async () => {
+    const { github, urls } = search({
+      first: pageWithNext({ total_count: 4, incomplete_results: false, items: items(1, 3) }, page2),
+      second: { total_count: 4, incomplete_results: false, items: items(3, 2) },
+    })
+    const found = await fetchSearchItems("author:me", github)
+    expect(found.map((item) => item.number)).toEqual([1, 2, 3, 4])
+    expect(urls).toEqual([
+      "https://api.github.com/search/issues?q=author%3Ame&sort=created&order=asc&per_page=100",
+      page2,
+    ])
   })
 
   it.each([
     [
       "incomplete search results",
       { total_count: 1, incomplete_results: true },
-      "incomplete search results for page 1",
+      "incomplete search results",
     ],
     [
       "more results than the search cap",
@@ -141,8 +112,8 @@ describe("fetchSearchItems", () => {
       `matched ${SEARCH_RESULT_CAP + 1} items`,
     ],
   ])("refuses %s", async (_name, page, message) => {
-    const { deps } = fakeFetch(() => ({ ...page, items: [] }))
-    await expect(fetchSearchItems("author:me", deps)).rejects.toThrow(message)
+    const { github } = search({ first: { ...page, items: [] } })
+    await expect(fetchSearchItems("author:me", github)).rejects.toThrow(message)
   })
 })
 
@@ -156,48 +127,72 @@ describe("subjectOf", () => {
   })
 })
 
-const API = "https://api.github.com/repos/owner/repo"
+const API = "/repos/owner/repo"
+
+describe("gitAuthor", () => {
+  it("reads the email and author date", () => {
+    expect(gitAuthor(commit("a", "One", { date: "2026-01-01T00:00:00Z" }))).toEqual({
+      email: "me@example.com",
+      date: Date.parse("2026-01-01T00:00:00Z"),
+    })
+  })
+
+  it.each([null, { email: "me@example.com" }, { date: "2026-01-01T00:00:00Z" }])(
+    "refuses a commit whose author is %j",
+    (author) => {
+      expect(() => gitAuthor({ sha: "x", commit: { message: "m", author } })).toThrow(
+        "no author for commit x",
+      )
+    },
+  )
+})
 
 function commit(
   sha: string,
   message: string,
   { email = "me@example.com", date = "2026-01-01T00:00:00Z", parents = 1 } = {},
-): CommitItem {
+) {
   return { sha, commit: { message, author: { email, date } }, parents: Array(parents).fill({}) }
 }
 
+/** A commit whose message mentions PR 7, and how GitHub answers for it. */
 interface Referenced {
   url: string
-  status: string | typeof NOT_FOUND
-  commit: CommitItem | typeof NOT_FOUND
+  status: string | Reply
+  commit: ReturnType<typeof commit> | Reply
 }
+
+type Pull = { user: { login: string } | null; merged_at: string | null }
 
 /** GitHub as seen by `landedAsCopy`: each endpoint answers from the given state. */
 function fakeRepo({
   prCommits = [commit("pr1", "Fix the bug")],
-  authored = [] as CommitItem[],
+  authored = [] as ReturnType<typeof commit>[],
   referenced = [] as Referenced[],
-  pulls = {} as Record<string, { user: { login: string } | null; merged_at: string | null }[]>,
+  pulls = {} as Record<string, Pull[]>,
 }) {
-  return fakeFetch((url) => {
-    const path = url.replace(API, "").replace(/[?&]per_page=\d+&page=\d+$/, "")
-    if (path === "/pulls/7/commits") return prCommits
-    if (path.startsWith("/commits?")) return authored
-    if (path === "/issues/7/timeline") {
+  return fakeGitHub(({ pathname }) => {
+    const sha = (url: string) => url.split("/").pop()
+    if (pathname === `${API}/pulls/7/commits`) return prCommits
+    if (pathname === `${API}/commits`) return authored
+    if (pathname === `${API}/issues/7/timeline`) {
       return [
         { event: "commented" },
-        ...referenced.map(({ url: commitUrl }) => ({ event: "referenced", commit_url: commitUrl })),
+        ...referenced.map(({ url }) => ({
+          event: "referenced",
+          commit_id: sha(url),
+          commit_url: `https://api.github.com${url}`,
+        })),
       ]
     }
-    const compared = referenced.find(
-      ({ url: commitUrl }) => path === `/compare/main...${commitUrl.split("/").pop()}`,
-    )
-    if (compared) return compared.status === NOT_FOUND ? NOT_FOUND : { status: compared.status }
-    const fetched = referenced.find(({ url: commitUrl }) => url === commitUrl)
+    const compared = referenced.find(({ url }) => pathname === `${API}/compare/main...${sha(url)}`)
+    if (compared)
+      return compared.status instanceof Reply ? compared.status : { status: compared.status }
+    const fetched = referenced.find(({ url }) => pathname === url)
     if (fetched) return fetched.commit
-    const associated = /^\/commits\/(\w+)\/pulls$/.exec(path)
+    const associated = new RegExp(`^${API}/commits/(\\w+)/pulls$`).exec(pathname)
     if (associated) return pulls[associated[1]] ?? []
-    throw new Error(`Unexpected URL ${url}`)
+    throw new Error(`Unexpected request ${pathname}`)
   })
 }
 
@@ -312,12 +307,12 @@ describe("landedAsCopy", () => {
     ],
     [
       "a garbage-collected mentioning commit",
-      { referenced: [{ url: `${API}/commits/gone`, status: "behind", commit: NOT_FOUND }] },
+      { referenced: [{ url: `${API}/commits/gone`, status: "behind", commit: new Reply(422) }] },
       false,
     ],
     [
       "a mentioning commit the compare cannot reach",
-      { referenced: [mention("orphan", "Fix the bug", NOT_FOUND)] },
+      { referenced: [mention("orphan", "Fix the bug", new Reply(404))] },
       false,
     ],
     [
@@ -325,7 +320,7 @@ describe("landedAsCopy", () => {
       {
         referenced: [
           {
-            url: "https://api.github.com/repos/fork/repo/commits/fork",
+            url: "/repos/fork/repo/commits/fork",
             status: "identical",
             commit: commit("fork", "Fix the bug"),
           },
@@ -334,61 +329,59 @@ describe("landedAsCopy", () => {
       false,
     ],
   ])("%s", async (_name, state, landed) => {
-    expect(await landedAsCopy(pr, "main", ["me", "Me2"], fakeRepo(state).deps)).toBe(landed)
+    expect(await landedAsCopy(pr, "main", ["me", "Me2"], fakeRepo(state).github)).toBe(landed)
   })
 
-  it("queries each PR commit author since the earliest PR commit", async () => {
-    const { deps, urls } = fakeRepo({
+  it("queries each PR commit author on the default branch since the earliest PR commit", async () => {
+    const { github, urls } = fakeRepo({
       prCommits: [
         commit("a", "One", { date: "2026-03-01T00:00:00Z" }),
         commit("b", "Two", { date: "2026-02-01T00:00:00-08:00" }),
         commit("c", "Three", { email: "bot@example.com" }),
       ],
     })
-    await landedAsCopy(pr, "main", ["me"], deps)
-    expect(urls.filter((url) => url.startsWith(`${API}/commits?`))).toEqual(
-      ["me%40example.com", "bot%40example.com"].map(
-        (email) =>
-          `${API}/commits?sha=main&author=${email}&since=2026-01-01T00:00:00.000Z&per_page=${PER_PAGE}&page=1`,
-      ),
-    )
+    await landedAsCopy(pr, "main", ["me"], github)
+    const queries = urls
+      .map((url) => new URL(url))
+      .filter(({ pathname }) => pathname === `${API}/commits`)
+      .map(({ searchParams }) => ["sha", "author", "since"].map((key) => searchParams.get(key)))
+    expect(queries).toEqual([
+      ["main", "me@example.com", "2026-01-01T00:00:00.000Z"],
+      ["main", "bot@example.com", "2026-01-01T00:00:00.000Z"],
+    ])
   })
 
   it("checks a commit found by author and by mention once", async () => {
-    const { deps, urls } = fakeRepo({
+    const { github, urls } = fakeRepo({
       authored: [commit("both", "Fix the bug")],
       referenced: [mention("both", "Fix the bug")],
     })
-    expect(await landedAsCopy(pr, "main", ["me"], deps)).toBe(true)
+    expect(await landedAsCopy(pr, "main", ["me"], github)).toBe(true)
     expect(urls.filter((url) => url.includes("/commits/both/pulls"))).toHaveLength(1)
   })
 
-  it("follows every page of a list endpoint", async () => {
-    const fullPage = Array.from({ length: PER_PAGE }, (_, i) => commit(`c${i}`, `Commit ${i}`))
-    const { deps, urls } = fakeFetch((url) =>
-      url.includes("/pulls/7/commits") && url.endsWith("page=1") ? fullPage : [],
-    )
-    expect(await landedAsCopy(pr, "main", ["me"], deps)).toBe(false)
-    expect(urls.filter((url) => url.includes("/pulls/7/commits"))).toHaveLength(2)
+  it("reads every page of the PR's commits", async () => {
+    const page2 = `https://api.github.com${API}/pulls/7/commits?page=2`
+    const { github, urls } = fakeGitHub(({ pathname, searchParams }) => {
+      if (pathname !== `${API}/pulls/7/commits`) return []
+      return searchParams.get("page") === "2"
+        ? [commit("b", "Two")]
+        : pageWithNext([commit("a", "One")], page2)
+    })
+    expect(await landedAsCopy(pr, "main", ["me"], github)).toBe(false)
+    expect(urls).toContain(page2)
   })
 
   it("propagates an error other than a 404", async () => {
-    const { deps } = fakeRepo({ referenced: [mention("x", "Fix the bug")] })
-    const failing = jest.fn((input: string | URL | Request) =>
-      String(input).includes("/compare/")
-        ? Promise.resolve(new Response("", { status: 401 }))
-        : (deps.fetchFn as (input: string | URL | Request) => Promise<Response>)(input),
-    ) as unknown as typeof fetch
-    await expect(landedAsCopy(pr, "main", ["me"], { ...deps, fetchFn: failing })).rejects.toThrow(
-      "returned 401",
-    )
+    const { github } = fakeRepo({ referenced: [mention("x", "Fix the bug", new Reply(401))] })
+    await expect(landedAsCopy(pr, "main", ["me"], github)).rejects.toMatchObject({ status: 401 })
   })
 })
 
 describe("buildSnapshot", () => {
   it("sorts items by repo and number and fetches each repo's metadata once", async () => {
-    const { deps, urls } = fakeFetch((url) =>
-      url.includes("/search/")
+    const { github, urls } = fakeGitHub(({ pathname }) =>
+      pathname.startsWith("/search/")
         ? {
             total_count: 3,
             incomplete_results: false,
@@ -411,12 +404,12 @@ describe("buildSnapshot", () => {
             ],
           }
         : {
-            stargazers_count: url.endsWith("a/y") ? 10 : 20,
+            stargazers_count: pathname.endsWith("a/y") ? 10 : 20,
             owner: { type: "Organization" },
             default_branch: "main",
           },
     )
-    const snapshot = await buildSnapshot(deps)
+    const snapshot = await buildSnapshot(github)
     expect(snapshot.items.map((item) => `${item.repo}#${item.number}`)).toEqual([
       "a/y#5",
       "b/z#1",
@@ -440,23 +433,23 @@ describe("buildSnapshot", () => {
         html_url: `https://github.com/owner/repo/pull/${number}`,
         pull_request: { merged_at: null },
       })
-    const { deps, urls } = fakeFetch((url) => {
-      if (url.includes("/search/")) {
+    const { github, urls } = fakeGitHub(({ pathname }) => {
+      if (pathname.startsWith("/search/")) {
         return {
           total_count: 3,
           incomplete_results: false,
           items: [closedPr(1, "Landed"), closedPr(2, "Dropped"), searchItem({ number: 3 })],
         }
       }
-      if (url === API) {
+      if (pathname === API) {
         return { stargazers_count: 5, owner: { type: "User" }, default_branch: "develop" }
       }
-      if (url.includes("/pulls/1/commits")) return [commit("pr1", "Landed")]
-      if (url.includes("/pulls/2/commits")) return [commit("pr2", "Dropped")]
-      if (url.includes("/commits?sha=")) return [commit("copy", "Landed")]
+      if (pathname === `${API}/pulls/1/commits`) return [commit("pr1", "Landed")]
+      if (pathname === `${API}/pulls/2/commits`) return [commit("pr2", "Dropped")]
+      if (pathname === `${API}/commits`) return [commit("copy", "Landed")]
       return []
     })
-    const snapshot = await buildSnapshot(deps)
+    const snapshot = await buildSnapshot(github)
     expect(snapshot.items.map((item) => [item.number, item.status])).toEqual([
       [1, "merged"],
       [2, "closed"],
