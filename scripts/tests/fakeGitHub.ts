@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals"
 
-import { gitHubClient, type GitHubOptions } from "../github_client"
+import { gitHubClient, RETRY } from "../github_client"
 
 /** A route's answer with a status or headers other than a plain 200. */
 export class Reply {
@@ -14,10 +14,9 @@ export class Reply {
 /**
  * A GitHub client whose requests `route` answers instead of the network: a
  * string as text, a `Reply` as given, anything else as JSON. Records every URL
- * it served. Retries run without delay and rate limiting is off unless
- * `options` turn it back on.
+ * it served. Retries run without delay.
  */
-export function fakeGitHub(route: (url: URL) => unknown, options: GitHubOptions = {}) {
+export function fakeGitHub(route: (url: URL) => unknown) {
   const urls: string[] = []
   const fetch = jest.fn((input: string | URL | Request) => {
     const url = new URL(String(input))
@@ -33,11 +32,6 @@ export function fakeGitHub(route: (url: URL) => unknown, options: GitHubOptions 
     Object.defineProperty(response, "url", { value: url.toString() })
     return Promise.resolve(response)
   })
-  const github = gitHubClient({
-    request: { fetch },
-    retry: { retryAfterBaseValue: 0 },
-    throttle: { enabled: false },
-    ...options,
-  })
+  const github = gitHubClient({ request: { fetch }, retry: { ...RETRY, retryAfterBaseValue: 0 } })
   return { github, urls, fetch }
 }

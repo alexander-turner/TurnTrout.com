@@ -39,10 +39,10 @@ export interface SearchItem {
   pull_request?: { merged_at?: string | null }
 }
 
-/** The fields of a REST commit object that the copy check reads. */
+/** The fields of a REST commit that the copy check reads; git records an author on every commit. */
 interface Commit {
   sha: string
-  commit: { message: string; author: { email?: string; date?: string } | null }
+  commit: { message: string; author: { email: string; date: string } }
 }
 
 /** Search query for items the author opened on public repos they do not own. */
@@ -111,17 +111,9 @@ export function subjectOf(message: string): string {
     .trim()
 }
 
-/** A commit's git author, which the API types as optional but git always records. */
-export function gitAuthor({ sha, commit }: Commit) {
-  if (!commit.author?.email || !commit.author.date) {
-    throw new Error(`GitHub reported no author for commit ${sha}`)
-  }
-  return { email: commit.author.email, date: Date.parse(commit.author.date) }
-}
-
 /** A commit's subject and author date, which a cherry-pick or rebase keeps. */
 function authorshipKey(commit: Commit): string {
-  return `${subjectOf(commit.commit.message)}\n${gitAuthor(commit).date}`
+  return `${subjectOf(commit.commit.message)}\n${Date.parse(commit.commit.author.date)}`
 }
 
 /**
@@ -141,17 +133,17 @@ async function candidateCommits(
 ): Promise<Commit[]> {
   const candidates = new Map<string, Commit>()
   const authorships = new Set(prCommits.map(authorshipKey))
-  const authors = prCommits.map(gitAuthor)
-  const since = new Date(Math.min(...authors.map((author) => author.date))).toISOString()
+  const authors = prCommits.map((commit) => commit.commit.author)
+  const since = new Date(Math.min(...authors.map((author) => Date.parse(author.date))))
   for (const email of new Set(authors.map((author) => author.email))) {
     const authored = await github.paginate(github.rest.repos.listCommits, {
       ...repo,
       sha: defaultBranch,
       author: email,
-      since,
+      since: since.toISOString(),
       per_page: PER_PAGE,
     })
-    for (const commit of authored) {
+    for (const commit of authored as Commit[]) {
       if (authorships.has(authorshipKey(commit))) candidates.set(commit.sha, commit)
     }
   }
@@ -166,13 +158,14 @@ async function candidateCommits(
     if (event.event !== "referenced" || !("commit_url" in event)) continue
     if (!event.commit_id || !event.commit_url?.startsWith(repoApi)) continue
     // A commit on a deleted branch can be garbage-collected, so it may no longer exist.
-    const commit = await ifFound(github.rest.repos.getCommit({ ...repo, ref: event.commit_id }))
-    if (!commit || !subjects.has(subjectOf(commit.data.commit.message))) continue
+    const found = await ifFound(github.rest.repos.getCommit({ ...repo, ref: event.commit_id }))
+    const commit = found?.data as Commit | undefined
+    if (!commit || !subjects.has(subjectOf(commit.commit.message))) continue
     const comparison = await ifFound(
-      github.rest.repos.compareCommits({ ...repo, base: defaultBranch, head: commit.data.sha }),
+      github.rest.repos.compareCommits({ ...repo, base: defaultBranch, head: commit.sha }),
     )
     const status = comparison?.data.status
-    if (status === "behind" || status === "identical") candidates.set(commit.data.sha, commit.data)
+    if (status === "behind" || status === "identical") candidates.set(commit.sha, commit)
   }
   return [...candidates.values()]
 }
@@ -201,7 +194,7 @@ export async function landedAsCopy(
       pull_number: pr.number,
       per_page: PER_PAGE,
     })
-  ).filter((commit) => commit.parents.length === 1)
+  ).filter((commit) => commit.parents.length === 1) as Commit[]
   if (prCommits.length === 0) return false
   const title = subjectOf(pr.title)
   const commitSubjects = new Set(prCommits.map((commit) => subjectOf(commit.commit.message)))

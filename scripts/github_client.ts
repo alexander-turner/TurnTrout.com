@@ -1,48 +1,36 @@
 /**
  * The GitHub REST client the snapshot refresh scripts share. It retries
- * network errors and 5xx answers with backoff, waits out a rate limit a few
- * times, and fails at once on a permanent error such as a 404 or a bad token.
+ * network errors, 5xx answers and rate limits (403 and 429) with backoff, and
+ * fails at once on a permanent error such as a 404 or a bad token.
  */
 import { retry } from "@octokit/plugin-retry"
-import { throttling } from "@octokit/plugin-throttling"
 import { RequestError } from "@octokit/request-error"
 import { Octokit } from "@octokit/rest"
 
-const GitHubWithPlugins = Octokit.plugin(retry, throttling)
-export type GitHub = InstanceType<typeof GitHubWithPlugins>
-export type GitHubOptions = NonNullable<ConstructorParameters<typeof GitHubWithPlugins>[0]>
+const GitHubWithRetry = Octokit.plugin(retry)
+export type GitHub = InstanceType<typeof GitHubWithRetry>
+type GitHubOptions = NonNullable<ConstructorParameters<typeof GitHubWithRetry>[0]>
 
-/** Rate-limit waits one request may take before it fails. */
-export const RATE_LIMIT_RETRIES = 2
-
-const retryUnderLimit = (_after: number, _options: unknown, _octokit: unknown, count: number) =>
-  count < RATE_LIMIT_RETRIES
-
-/** How the client handles GitHub's primary and secondary rate limits. */
-export const THROTTLE = { onRateLimit: retryUnderLimit, onSecondaryRateLimit: retryUnderLimit }
+/** The plugin's default permanent statuses, less 403, which GitHub uses for rate limits. */
+export const RETRY = { doNotRetry: [400, 401, 404, 410, 422, 451] }
 
 /** A client authenticated with `GITHUB_TOKEN` when set; `options` override the defaults. */
 export function gitHubClient(options: GitHubOptions = {}): GitHub {
-  return new GitHubWithPlugins({
+  return new GitHubWithRetry({
     auth: process.env.GITHUB_TOKEN,
     userAgent: "turntrout.com snapshot refresh",
-    throttle: THROTTLE,
+    retry: RETRY,
     ...options,
   })
 }
-
-/**
- * Statuses GitHub answers for an object that does not exist: 404, or 422 when
- * a commit lookup names a SHA the repo does not hold.
- */
-const MISSING_STATUSES: ReadonlySet<number> = new Set([404, 422])
 
 /** Awaits a GitHub request, or returns undefined when its object does not exist. */
 export async function ifFound<T>(request: Promise<T>): Promise<T | undefined> {
   try {
     return await request
   } catch (error) {
-    if (error instanceof RequestError && MISSING_STATUSES.has(error.status)) return undefined
+    // A commit lookup answers 422, not 404, for a SHA the repo does not hold.
+    if (error instanceof RequestError && [404, 422].includes(error.status)) return undefined
     throw error
   }
 }

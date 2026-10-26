@@ -14,7 +14,6 @@ import {
 import {
   buildSnapshot,
   fetchSearchItems,
-  gitAuthor,
   landedAsCopy,
   SEARCH_RESULT_CAP,
   type SearchItem,
@@ -128,24 +127,6 @@ describe("subjectOf", () => {
 })
 
 const API = "/repos/owner/repo"
-
-describe("gitAuthor", () => {
-  it("reads the email and author date", () => {
-    expect(gitAuthor(commit("a", "One", { date: "2026-01-01T00:00:00Z" }))).toEqual({
-      email: "me@example.com",
-      date: Date.parse("2026-01-01T00:00:00Z"),
-    })
-  })
-
-  it.each([null, { email: "me@example.com" }, { date: "2026-01-01T00:00:00Z" }])(
-    "refuses a commit whose author is %j",
-    (author) => {
-      expect(() => gitAuthor({ sha: "x", commit: { message: "m", author } })).toThrow(
-        "no author for commit x",
-      )
-    },
-  )
-})
 
 function commit(
   sha: string,
