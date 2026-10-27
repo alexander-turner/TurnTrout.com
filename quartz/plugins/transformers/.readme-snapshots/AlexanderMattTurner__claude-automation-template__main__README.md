@@ -106,7 +106,8 @@ Enabled at project scope, so every session in this repo loads them—local and c
 | `pr-meta-privileged.yaml`          | The privileged half of PR meta (write-token jobs, e.g. cancelling superseded runs)                                                                                                                                    |
 | `pr-review-advisory.yaml`          | Computes advisory review guidance (split advice, line breakdown) for each PR                                                                                                                                          |
 | `pr-review-advisory-comment.yaml`  | Posts the advisory review guidance as a PR comment                                                                                                                                                                    |
-| `template-sync.yaml`               | Daily sync from template repo with 3-way merge and conflict detection                                                                                                                                                 |
+| `template-sync.yaml`               | Weekly sync from the template repo; calls `template-sync-reusable.yaml`                                                                                                                                               |
+| `template-sync-reusable.yaml`      | The sync job: 3-way merge, conflict resolution and the sync PR, with scripts from the template                                                                                                                        |
 | `phone-home.yaml`                  | Propagates "Lessons Learned" from merged PRs back to the template                                                                                                                                                     |
 | `security-vulnerability-scan.yaml` | Weekly security sweep—collects alerts, opens a rollup fix PR                                                                                                                                                          |
 | `node-tests.yaml`                  | Runs `pnpm test` (skips gracefully if unconfigured) <!-- allow-graceful: exits 0 with a "not configured" message when no test script exists -->                                                                       |
@@ -142,7 +143,7 @@ Each PR-gating workflow (`format-check`, `lint`, `node-tests`, `pre-commit`, `va
 
 > **Self-publish guard:** `version-bump.sh` exits early when `package.json` has `"private": true` (the template's own default), so the template never publishes itself. A consumer **opts in** by dropping `private` and setting a real, publishable `name`.
 >
-> **The sync never introduces this workflow.** `.github/workflows/auto-version.yaml` is listed in `OPT_IN_PATHS` in `template-sync.yaml`: template-sync only _updates_ a copy that already exists. Adopt it by copying the file in once (and creating `CHANGELOG.md`, which lives outside the synced paths); opt back out by deleting it—it stays deleted, with no `EXCLUDE_PATHS` entry needed. This is the guard against a repo that already publishes ending up with **two** publishers: their concurrency groups differ, so they never serialize, both compute the same semver bump, and the loser dies on `npm error code E404 … PUT`—a message that names neither the duplicate nor the workflow that beat it.
+> **The sync never introduces this workflow.** `.github/workflows/auto-version.yaml` is listed in `opt-in-paths` in `template-sync.yaml`: template-sync only _updates_ a copy that already exists. Adopt it by copying the file in once (and creating `CHANGELOG.md`, which lives outside the synced paths); opt back out by deleting it—it stays deleted, with no `exclude-paths` entry needed. This is the guard against a repo that already publishes ending up with **two** publishers: their concurrency groups differ, so they never serialize, both compute the same semver bump, and the loser dies on `npm error code E404 … PUT`—a message that names neither the duplicate nor the workflow that beat it.
 >
 > **Keeping your own release workflow?** Give it the template's workflow `name:`—`Auto version bump and publish`—or add your own name to the `workflows:` lists in `ci-failure-notify.yaml` and `build-publish-notify.yaml`. Those bind by workflow **name**, not filename, so otherwise your release failures notify nobody.
 >
@@ -194,7 +195,7 @@ GitHub Actions (CI)                                             ▼
         ├── validate-config.yaml  → .claude/ and .hooks/ validation
         │
         ├── claude.yaml           → @claude mentions in issues/PRs
-        ├── template-sync.yaml    → daily template updates (9am UTC)
+        ├── template-sync.yaml    → weekly template updates (Monday 9am UTC)
         ├── phone-home.yaml       → sends Lessons Learned back to template
         ├── security-*.yaml       → weekly vulnerability sweep + fix PR
         └── dependabot-*.yaml     → auto-merge minor/patch dependency bumps
@@ -202,7 +203,9 @@ GitHub Actions (CI)                                             ▼
 
 ## Automatic Updates
 
-Template improvements sync daily at 9am UTC via `template-sync.yaml`. You can also trigger manually from **Actions > Sync from Template**.
+Template improvements sync every Monday at 9am UTC via `template-sync.yaml`. You can also trigger manually from **Actions > Sync from Template**.
+
+`template-sync.yaml` holds no sync logic. It calls `template-sync-reusable.yaml` in the template repository at `@main`, and that workflow runs every script from a checkout of the template at `template-ref`. So your repository always runs the current sync tooling of the template. An old local copy of the sync scripts cannot break the sync that replaces it. To review each tooling change before it runs, pin a commit SHA on the `uses:` line and pass the same SHA as `template-ref`. The template scripts run with your `TEMPLATE_SYNC_TOKEN_ORG` and Claude tokens. So whoever can push to that ref controls what those tokens do in your repository. To tune the sync, edit `exclude-paths` and `opt-in-paths` in the `with:` block of `template-sync.yaml`. A fork that hosts its own template sets the `TEMPLATE_SYNC_ORG` repository variable and also edits the owner on the `uses:` line, because a `uses:` line cannot read a variable.
 
 Changes arrive as a PR for you to review. The sync uses a 3-way merge that preserves local customizations in synced files—if there’s a conflict, Claude is asked to resolve it while keeping your project-specific changes intact.
 
