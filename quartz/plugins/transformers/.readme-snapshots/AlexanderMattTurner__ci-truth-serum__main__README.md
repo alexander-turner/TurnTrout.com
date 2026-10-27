@@ -23,7 +23,7 @@ Then add the Tier 1 aggregate to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.7.2 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.8.0 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       - id: check-tier1 # every honesty + identity + security check
 ```
@@ -109,7 +109,7 @@ These checks assume one CI architecture. Enable them only if you follow it. Two 
 | `check-required-reporter`          | A new reporter is green but nobody added it to branch protection, so it gates nothing. Reads the `# required-check:` markers. A required matrix job that can skip fails too: its per-combination check names never report, so the branch blocks forever with nothing red. Opt out with `# matrix-context-ok: <reason>`. A required job whose registered context holds a non-matrix `${{ }}` — in the `name:` or in a matrix value — fails too: the sync registers text that no run reports. So does a `name:` that references an axis its matrix never defines: the sync then requires nothing. | a reporter with no `# required-check:` marker                           |
 | `check-required-event-closure`     | A job that a required check `needs` skips on an event the check gates, so the check reports green with none of its work done. Also a required check whose workflow skips `merge_group` in a repo whose other gates fire on it.                                                                                                                                                                                                                                                                                                                                                                  | a `decide` job that skips in the merge queue                            |
 | `check-job-timeout`                | A job with no `timeout-minutes` inherits GitHub's 360-minute default, so a hung step can hold a runner for six hours. Opt out with `# allow-no-timeout: <reason>`.                                                                                                                                                                                                                                                                                                                                                                                                                              | a job with no `timeout-minutes:`                                        |
-| `check-uncached-download`          | A job refetches a version-pinned tool every run. The bytes cannot change, so it is pure waste, and a slow registry pushes the job past its timeout into a one-line “cancelled”. Measured: a shard spent 7.9 of its 15 minutes in one `npm install -g`. Opt out with `# cache-exempt: <reason>`.                                                                                                                                                                                                                                                                                                 | `curl -O .../v2.12.0/tool` with no `actions/cache`                      |
+| `check-uncached-download`          | A job refetches a pinned tool every run. The bytes cannot change, so it is pure waste, and a slow registry pushes the job past its timeout into a one-line “cancelled”. Measured: a shard spent 7.9 of its 15 minutes in one `npm install -g`. The check follows the repo scripts that a step runs, and it reads a digest check as a pin. A cache counts only when its key names the pin or its path holds the download. Opt out with `# cache-exempt: <reason>`.                                                                                                                               | `curl -O .../v2.12.0/tool` with no `actions/cache`                      |
 | `check-inline-run-length`          | A long inline `run:` block ships unchecked, because shellcheck and shfmt read standalone `.sh` files.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | a 60-line `run:` block                                                  |
 | `check-concurrency`                | A `concurrency:` block without `cancel-in-progress` defaults to `false`, so a new push queues behind a stale run.                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | `concurrency:` with no `cancel-in-progress:`                            |
 | `check-static-concurrency`         | A workflow-level `concurrency.group` with no per-ref key lets another branch cancel this branch's pending run before any job starts, so the reporter never fires and the check waits forever.                                                                                                                                                                                                                                                                                                                                                                                                   | `group: build` on a required check                                      |
@@ -194,14 +194,14 @@ These checks are about shell scripts, Python, tests, and docs rather than CI rep
 
 ## Usage
 
-Start here enables Tier 1 through one aggregate id. This section is the full menu: every check by name, the tag selectors, and the three checks that sit outside every tier.
+Start here enables Tier 1 through one aggregate id. This section is the full menu: every check by name, the tag selectors, and the four checks that sit outside every tier.
 
 ### Enable specific checks
 
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.7.2 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.8.0 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       # ── Tier 1 · honesty, identity and security (default-on) ──
       # One id, so a Tier 1 check added in a later release runs as soon as you
@@ -285,7 +285,7 @@ Select on either axis with `check-select`. It takes `--select` (repeatable, unio
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.7.2
+    rev: v1.8.0
     hooks:
       - id: check-select
         args: [--select, "tag:security", --select, "tag:secrets"]
@@ -330,7 +330,7 @@ The tag vocabulary is closed. These are the values:
 
 A tag is not a file type. The files a check reads come from its own `types:`, so there is no `shell` or `python` tag to restate them.
 
-The three checks that sit in no aggregate carry no tag either, so no selector reaches them. `check-absolute-symlinks`, `check-lockstep-pins`, and `check-env-symmetry` stay standalone ids.
+The four checks that sit in no aggregate carry no tag either, so no selector reaches them. `check-absolute-symlinks`, `check-lockstep-pins`, `check-env-symmetry`, and `check-bash32-portability` stay standalone ids.
 
 ### Scope one check to specific paths
 
@@ -338,7 +338,7 @@ One check in a tier can need tighter file scoping than the rest. For example, `c
 
 ```yaml
 - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-  rev: v1.7.2
+  rev: v1.8.0
   hooks:
     - id: check-tier1
       args: [--skip, check_exit_suppression] # drop it from the aggregate...
