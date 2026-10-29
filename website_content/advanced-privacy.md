@@ -37,7 +37,7 @@ Don't try to do everything at once. As in the first article, even a few hours ca
 |        **Long-term strategic shifts** |                 Ongoing                  |                  Variable                  | Builds personal and communal resilience against surveillance.                               |
 
 > [!info]  I'm only speaking for myself
-> My day job is AI alignment research at [Google DeepMind](https://deepmind.google/). I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
+> I'm only expressing my own views. This guide synthesizes research from security experts and represents my personal practices.
 >
 # New concepts
 
@@ -73,9 +73,6 @@ If you are at high risk (e.g. as an immigrant), educate yourself ([ACLU](https:/
 Subtitle: Cost: \$0 if you already have a Google Pixel phone; \$550 if you run the setup yourself; \$850 if you buy a phone with GrapheneOS pre-installed. Time: 6 hours.
 
 Here's the deal: [iOS fundamentally breaks all mobile VPNs, meaning ISPs and the government will be able to track you](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025). 'Tis a shame, because [iOS is quite strong on privacy and minimizing telemetry](https://www.scss.tcd.ie/doug.leith/apple_google.pdf). Android does better but still can leak your identity in rare cases. If you want to _both_ use a smartphone _and_ reliably avoid mass surveillance, you should switch to GrapheneOS.
-
-> [!info] Reminder that I work at Google DeepMind
-> Though I don't think my employment much influenced my recommendations. Before I learned about [the VPN fiasco](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025), I was ready to recommend iOS for people at lower risk.
 
 I recommend [GrapheneOS](https://grapheneos.org/) installed on a Google Pixel phone (yes, it has to be a Pixel). GrapheneOS seems like the most private mobile OS available.   Many people praise the operating system for its speed, battery life, and strong customizability.
  ![[https://assets.turntrout.com/static/images/posts/privacy-20251021184025.avif|A user asks "But you trust @GrapheneOS right?". Edward Snowden replies "I use GrapheneOS every day."]]
