@@ -848,6 +848,13 @@
       "status": "fixed"
     },
     {
+      "repo": "tree-sitter/tree-sitter-bash",
+      "number": 365,
+      "title": "Two variable assignments on one line merge into the command on the next line",
+      "url": "https://github.com/tree-sitter/tree-sitter-bash/issues/365",
+      "status": "open"
+    },
+    {
       "repo": "UKGovernmentBEIS/inspect_ai",
       "number": 5069,
       "title": "`bash_session()` and `text_editor()` run as the tool server's uid (root), not the sandbox's exec user",
@@ -908,7 +915,7 @@
       "number": 270,
       "title": "feat(chart): add priorityClassName for sandbox pods",
       "url": "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox/pull/270",
-      "status": "open"
+      "status": "merged"
     },
     {
       "repo": "UKGovernmentBEIS/inspect_k8s_sandbox",
@@ -929,7 +936,7 @@
       "number": 274,
       "title": "fix: let init containers take env and volumeMounts",
       "url": "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox/pull/274",
-      "status": "open"
+      "status": "merged"
     },
     {
       "repo": "zestedesavoir/zmarkdown",
@@ -945,11 +952,11 @@
       "ownerType": "User"
     },
     "acon96/home-llm": {
-      "stars": 1479,
+      "stars": 1480,
       "ownerType": "User"
     },
     "ankidroid/Anki-Android": {
-      "stars": 12116,
+      "stars": 12125,
       "ownerType": "Organization"
     },
     "anordal/shellharden": {
@@ -957,11 +964,11 @@
       "ownerType": "User"
     },
     "anthropics/claude-code": {
-      "stars": 153832,
+      "stars": 153929,
       "ownerType": "Organization"
     },
     "cloud-hypervisor/cloud-hypervisor": {
-      "stars": 6441,
+      "stars": 6444,
       "ownerType": "Organization"
     },
     "DeepSourceCorp/cli": {
@@ -969,11 +976,11 @@
       "ownerType": "Organization"
     },
     "dequelabs/axe-core": {
-      "stars": 7728,
+      "stars": 7732,
       "ownerType": "Organization"
     },
     "docker/sbx-releases": {
-      "stars": 484,
+      "stars": 485,
       "ownerType": "Organization"
     },
     "EFForg/https-everywhere": {
@@ -981,7 +988,7 @@
       "ownerType": "Organization"
     },
     "IlanCosman/tide": {
-      "stars": 4304,
+      "stars": 4305,
       "ownerType": "User"
     },
     "jbloomAus/DecisionTransformerInterpretability": {
@@ -989,7 +996,7 @@
       "ownerType": "User"
     },
     "jestjs/jest": {
-      "stars": 45470,
+      "stars": 45467,
       "ownerType": "Organization"
     },
     "JinayJain/gpt-anywhere": {
@@ -997,7 +1004,7 @@
       "ownerType": "User"
     },
     "kata-containers/kata-containers": {
-      "stars": 9045,
+      "stars": 9057,
       "ownerType": "Organization"
     },
     "KaTeX/KaTeX": {
@@ -1017,11 +1024,11 @@
       "ownerType": "Organization"
     },
     "mermaid-js/mermaid": {
-      "stars": 90920,
+      "stars": 90930,
       "ownerType": "Organization"
     },
     "METR/hawk": {
-      "stars": 98,
+      "stars": 101,
       "ownerType": "Organization"
     },
     "METR/inspect_k8s_sandbox": {
@@ -1037,19 +1044,19 @@
       "ownerType": "User"
     },
     "Munter/subfont": {
-      "stars": 1636,
+      "stars": 1637,
       "ownerType": "User"
     },
     "nikitabobko/AeroSpace": {
-      "stars": 23680,
+      "stars": 23691,
       "ownerType": "User"
     },
     "openai/gym": {
-      "stars": 37233,
+      "stars": 37232,
       "ownerType": "Organization"
     },
     "orbstack/orbstack": {
-      "stars": 9485,
+      "stars": 9490,
       "ownerType": "Organization"
     },
     "pa11y/pa11y": {
@@ -1073,15 +1080,15 @@
       "ownerType": "User"
     },
     "rishikanthc/Scriberr": {
-      "stars": 3122,
+      "stars": 3125,
       "ownerType": "User"
     },
     "runelite/runelite": {
-      "stars": 5513,
+      "stars": 5515,
       "ownerType": "Organization"
     },
     "sigstore/cosign": {
-      "stars": 6397,
+      "stars": 6401,
       "ownerType": "Organization"
     },
     "starkdmi/BrightXDR": {
@@ -1089,7 +1096,7 @@
       "ownerType": "User"
     },
     "stryker-mutator/stryker-js": {
-      "stars": 3295,
+      "stars": 3302,
       "ownerType": "Organization"
     },
     "stylelint-scss/stylelint-scss": {
@@ -1105,19 +1112,23 @@
       "ownerType": "Organization"
     },
     "tailscale/tailscale": {
-      "stars": 38295,
+      "stars": 38347,
       "ownerType": "Organization"
     },
     "TranslucentTB/TranslucentTB": {
-      "stars": 20679,
+      "stars": 20684,
+      "ownerType": "Organization"
+    },
+    "tree-sitter/tree-sitter-bash": {
+      "stars": 334,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_ai": {
-      "stars": 3128,
+      "stars": 3139,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_evals": {
-      "stars": 722,
+      "stars": 725,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_k8s_sandbox": {

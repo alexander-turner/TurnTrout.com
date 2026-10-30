@@ -28,7 +28,7 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@a5ce1f1e9a635962806895d4e69c03d931433cb1 # v1.44.0
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@d355f7ef2d73945806f82878775868881693c0be # v1.45.0
     with:
       pr: ${{ matrix.pr.number }}
       resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
@@ -71,6 +71,7 @@ Every input fails closed when empty. The workflow does less, rather than guessin
 
 ### The inputs with a default, and the dispatch your caller must accept
 
+- **`resolve-draft-prs`** — `false`. Set it `true` to resolve a conflicted draft pull request like a ready one: the same age window applies, and a consent label exempts nothing. The default skips every draft, whatever its branch or labels, so approving drafts buys no paid resolve each time the base moves. Pass the same value to the labeler script as `RESOLVE_DRAFT_PRS`, so it dispatches a draft too.
 - **`catch-up`** — `false`. Set it `true` to resolve a pull request whose head an earlier run already attempted, or whose last activity is outside the age window. It costs one paid resolve.
 - **`after-race`** — `false`. The workflow sets it on the retry it dispatches when a push made its resolution stale. That retry dispatches no further retry. A person never sets it.
 - **`derived-attributes`** — empty declares none. Name the gitattributes your repository sets on a file whose one correct content is what the merged tree fixes, such as a ratchet baseline. The self-review then keeps every hunk of such a file and asks for a check of the whole file.
@@ -99,8 +100,11 @@ It syncs one pull request when `PR_NUMBER` is set, the pull requests based on on
     GH_TOKEN: ${{ github.token }}
     REPO: ${{ github.repository }}
     PR_NUMBER: ${{ github.event.pull_request.number }}
+    READY_FOR_REVIEW: ${{ github.event.action == 'ready_for_review' }}
   run: bash resolver/.github/resolver/label-merge-conflicts.sh
 ```
+
+Unless `RESOLVE_DRAFT_PRS: 'true'` is set (the `resolve-draft-prs` input), the resolver never takes a draft. A draft keeps the label, and the scan dispatches it once it is ready. Add `ready_for_review` to your caller's `pull_request` or `pull_request_target` types and pass `READY_FOR_REVIEW`, so a draft that turns ready is dispatched at once instead of at the next scan. A consent label on a draft does not change this. Pass `CONSENT_LABELED: 'true'` on a `labeled` event for a ready pull request, to dispatch one that already carries the label.
 
 The job needs `pull-requests: write` and `issues: write`, because a pull-request label rides the issues API.
 
@@ -226,7 +230,7 @@ A `uses:` ref may be a SHA, a tag or a branch. GitHub calls [the commit SHA the 
 **Pin the SHA and name the version beside it**, the way this repository's own caller does:
 
 ```yaml
-uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@a5ce1f1e9a635962806895d4e69c03d931433cb1 # v1.44.0
+uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@d355f7ef2d73945806f82878775868881693c0be # v1.45.0
 ```
 
 That line reads as a version and resolves as an immutable commit. It names the newest release: `.github/scripts/release-tag.sh` rewrites both copies in this README, and the caller's, in the commit after each release. Copy it as it stands.
