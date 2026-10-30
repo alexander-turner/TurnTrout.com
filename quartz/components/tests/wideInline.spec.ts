@@ -65,6 +65,50 @@ test.describe("wide inline math", () => {
     await expect(math).not.toHaveClass(/wide-inline/)
   })
 
+  // `$x$’s` glues the apostrophe to the math, and the word runs on past the
+  // glue. At each width from the run's own width to the whole sentence's, the
+  // run either fits beside the leading text or moves down whole.
+  test("keeps a possessive's apostrophe beside its formula", async ({ page }) => {
+    const splitWidths = await page.evaluate(() => {
+      const widthOf = (element: Element) => element.getBoundingClientRect().width
+      const formula = Array.from(document.querySelectorAll("article p > .katex"))
+        .filter((katex) => widthOf(katex) > 0)
+        .sort((a, b) => widthOf(a) - widthOf(b))[0]
+      const article = document.querySelector("article")
+      if (!formula || !article) throw new Error("missing inline math")
+      const sentence = (leading: string, width: string) => {
+        const paragraph = document.createElement("p")
+        const glued = document.createElement("span")
+        glued.className = "nowrap-span"
+        glued.append(formula.cloneNode(true), "’")
+        paragraph.append(leading, glued, "s initialization.")
+        paragraph.style.width = width
+        article.append(paragraph)
+        return { paragraph, glued }
+      }
+      const naturalWidth = (leading: string) => {
+        const { paragraph } = sentence(leading, "max-content")
+        const width = Math.ceil(widthOf(paragraph))
+        paragraph.remove()
+        return width
+      }
+
+      const splits: number[] = []
+      const leading = "constant shifts of "
+      for (let width = naturalWidth(""); width <= naturalWidth(leading); width++) {
+        // A fresh paragraph per width: WebKit's relayout of a narrowed line can
+        // differ from a first layout at the same width.
+        const { paragraph, glued } = sentence(leading, `${width}px`)
+        const rows = Array.from(glued.getClientRects()).filter((rect) => rect.width > 0)
+        if (new Set(rows.map((rect) => Math.round(rect.top))).size > 1) splits.push(width)
+        paragraph.remove()
+      }
+      return splits
+    })
+
+    expect(splitWidths).toEqual([])
+  })
+
   // Each glued code path in turn gets a column one pixel wider than the path:
   // the path fits a line, but not with the punctuation and favicon glued to it.
   test("wraps each glued code path whose glue would overrun its line", async ({ page }) => {

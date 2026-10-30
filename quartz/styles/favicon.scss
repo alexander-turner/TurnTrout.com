@@ -25,6 +25,15 @@
   .wide-inline > .base:last-child {
     display: inline;
   }
+
+  // WebKit governs the break before an inline-block the same way, so the first
+  // `.base` sheds opening punctuation onto the line above. Firefox keeps no
+  // break after an inline first `.base`, so the rule is WebKit's alone.
+  @supports (-webkit-hyphens: none) {
+    .wide-inline > .base:first-child {
+      display: inline;
+    }
+  }
 }
 
 // Groups a favicon-ending link with its trailing footnote reference so the

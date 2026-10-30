@@ -113,7 +113,10 @@ ol,
 
 // Inline math moves whole to the next line when it doesn't fit on the current
 // one. Math wider than its line is marked `.wide-inline` at runtime and wraps
-// between its `.base` spans like text (`wide-inline.ts`).
+// between its `.base` spans like text (`wide-inline.ts`). The `.katex` wrapper
+// is an inline-block too: WebKit breaks after an inline-block that ends an
+// inline parent, which would shed the glued punctuation after it (`$x$’s`).
+:not(.katex-display) > .katex:has(> .katex-html:not(.wide-inline)),
 :not(.katex-display) > .katex > .katex-html:not(.wide-inline) {
   display: inline-block;
   max-width: 100%;
