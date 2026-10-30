@@ -111,6 +111,12 @@ export function splitLastGrapheme(value: string): { head: string; last: string }
   return { head: value.slice(0, lastIndex), last: value.slice(lastIndex) }
 }
 
+/** True for a nowrap span that opens with closing punctuation, as a favicon's span can. */
+function opensWithTrailingGlue(node: Text | Element): node is Element {
+  const first = isNowrapSpan(node) ? (node as Element).children[0] : undefined
+  return first?.type === "text" && countRun(trailingGlueChars, [...first.value]) > 0
+}
+
 /**
  * Returns the nowrap span holding `node`, promoting a bare atom into one and
  * replacing it at the tail of `siblings`. Returns undefined when `node` is not
@@ -192,6 +198,17 @@ export function glueNodeSequence(nodes: (Text | Element)[]): (Text | Element)[] 
         span.children.push({ type: "text", value: node.value.slice(0, glueLength) } as Text)
         node.value = node.value.slice(glueLength)
         if (node.value === "") continue
+      }
+    }
+
+    // The favicon pass wraps a link's last characters with its icon, so a
+    // link ending in a code path holds the path and then a span opening with
+    // the path's punctuation. The span's contents join the path's glue.
+    if (opensWithTrailingGlue(node)) {
+      const span = asNowrapSpan(prev, glued)
+      if (span) {
+        span.children.push(...node.children)
+        continue
       }
     }
 

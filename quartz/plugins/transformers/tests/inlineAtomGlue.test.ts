@@ -166,6 +166,23 @@ describe("glueNodeSequence", () => {
     ])
   })
 
+  it.each([
+    ["inline math", katex],
+    ["a code path", codePath],
+  ])("merges a favicon span opening with punctuation into the glue of %s", (_name, atom) => {
+    expect(glueNodeSequence([atom(), glueSpan(text("."), favicon())])).toEqual([
+      glueSpan(atom(), text("."), favicon()),
+    ])
+  })
+
+  it.each([
+    ["text", [text("word"), glueSpan(text("."), favicon())]],
+    ["a span opening with a letter", [codePath(), glueSpan(text("s"), favicon())]],
+    ["a span opening with an element", [codePath(), glueSpan(favicon())]],
+  ])("leaves a favicon span after %s alone", (_name, nodes) => {
+    expect(glueNodeSequence(nodes)).toEqual(nodes)
+  })
+
   it("glues a run of openers and drops the emptied text node", () => {
     expect(glueNodeSequence([text(`(${LEFT_DOUBLE_QUOTE}`), katex()])).toEqual([
       glueSpan(text(`(${LEFT_DOUBLE_QUOTE}`), katex()),
