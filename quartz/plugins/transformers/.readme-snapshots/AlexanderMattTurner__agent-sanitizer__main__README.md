@@ -138,9 +138,10 @@ composed against the redacted view are re-anchored onto the real bytes, and
 placeholders in new content resolve back to the real secrets — disk → tool
 input only, never into the model's view. Anything ambiguous is denied rather
 than guessed, the redactor's own map is verified against the file before any
-splice, and a write that would persist placeholder text over a real secret
-asks instead of passing through even when the hook's own machinery fails
-mid-session. The whole layer is opt-in — its denies and asks are friction, so it
+splice, and a write that would persist placeholder text over a real secret is
+refused once, even when the hook's own machinery fails mid-session, and proceeds
+with a warning when re-issued. The whole layer is opt-in — its denies and asks
+are friction, so it
 engages only when asked for: set `AGENT_SANITIZER_SECRETS_ENABLED=1` in the
 environment Claude Code runs the hooks with; unset, no redactor runs and no
 placeholders exist.
@@ -193,9 +194,10 @@ withholds a string-shaped response; the shell arm in `plugin/scripts/safe-launch
 therefore also emits a top-level `decision`/`reason` pair, honored whatever
 shape the response had, telling the model that any output still visible above
 it is unsanitized. One carve-out to the
-open default, with secrets enabled: a write-shaped call carrying `[REDACTED…]` placeholder text asks
-instead of passing through when the hook itself is broken, since letting it
-through would overwrite the real secret with the placeholder. Either way, a plugin that
+open default, with secrets enabled: a write-shaped call carrying `[REDACTED…]`
+placeholder text is refused once when the hook itself is broken, since letting
+it through would overwrite the real secret with the placeholder; the exact
+re-issue proceeds with a warning. Either way, a plugin that
 never loaded at all is invisible — Claude Code reads a crashed hook as "no
 objection" — so confirm with `/plugin` rather than reading a quiet session as a
 working one. Neither posture touches what a sanitizer that RAN decided (see
