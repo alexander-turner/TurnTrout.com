@@ -13,6 +13,8 @@
   "faviconBasePath": "https://assets.turntrout.com/static/images/external-favicons",
   "minFaviconCount": 6,
   "maxAtomicInlineCodeLength": 30,
+  "maxWholeCodeTokenLength": 30,
+  "maxWholeCodeTokenLengthWide": 50,
   "googleSubdomainAllowlist": ["scholar", "play", "docs", "drive", "mail", "colab.research"],
   "faviconCountAllowlist": [
     "apple_com",

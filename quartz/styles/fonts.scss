@@ -436,6 +436,21 @@ code {
   white-space: nowrap;
 }
 
+// In running text, a path moves to the next line whole when it fits there. A
+// path wider than its line is marked `.wide-inline` at runtime and breaks after
+// its slashes like text (`wide-inline.ts`). A heading or admonition title wraps
+// it in place instead: there the path is usually the whole title, and moving it
+// whole would strand what precedes it.
+.inline-code-path {
+  display: inline-block;
+  max-width: 100%;
+
+  &.wide-inline,
+  :is(h1, h2, h3, h4, h5, h6, .admonition-title) & {
+    display: inline;
+  }
+}
+
 // For usage in the middle of a paragraph
 .dropcap {
   display: inline-block;
