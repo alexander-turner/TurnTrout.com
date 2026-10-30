@@ -9,7 +9,10 @@
 
   // Glued math and code paths keep their inner break opportunities. Their box
   // edges stay in `nowrap` context, so adjacent punctuation stays beside them.
-  .katex-html,
+  // Math with a single `.base` has no inner opportunity, and in `normal` context
+  // Chromium breaks after it when it overflows the line, stranding the
+  // punctuation below.
+  .katex-html:has(> .base + .base),
   .inline-code-path {
     white-space: normal;
   }
