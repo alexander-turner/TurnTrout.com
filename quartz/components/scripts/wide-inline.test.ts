@@ -3,7 +3,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
-import { WIDE_INLINE_CLASS } from "../constants"
+import { NOWRAP_SPAN_CLASS, WIDE_INLINE_CLASS } from "../constants"
 import { markWideInlines, markWideInlinesOnResize } from "./wide-inline"
 
 const rectAt = (middle: number) => ({ top: middle - 5, bottom: middle + 5 }) as DOMRect
@@ -27,12 +27,12 @@ function buildMath(middles: readonly number[], parent: HTMLElement = document.bo
 }
 
 /** An inline code path whose text lays out in fragments at the given midpoints. */
-function buildPath(middles: readonly number[]): HTMLElement {
+function buildPath(middles: readonly number[], parent: HTMLElement = document.body): HTMLElement {
   const code = document.createElement("code")
   code.className = "inline-code-path"
   code.style.fontSize = "20px"
   code.textContent = "owner/repo"
-  document.body.appendChild(code)
+  parent.appendChild(code)
   // jsdom lays nothing out, so the range reports the fragments directly.
   const range = {
     selectNodeContents: jest.fn(),
@@ -64,6 +64,52 @@ describe("markWideInlines", () => {
     ["text on two rows", [10, 40], true],
   ])("with %s, marks a code path wide: %s", (_label, middles, wide) => {
     const code = buildPath(middles)
+    markWideInlines(document.body)
+    expect(code.classList.contains(WIDE_INLINE_CLASS)).toBe(wide)
+  })
+
+  /**
+   * A one-row code path glued to a period, in a paragraph whose content ends
+   * 10px inside its 100px border box, with the glued span laid out in `rows`.
+   */
+  function buildGluedPath(rows: readonly Partial<DOMRect>[]): HTMLElement {
+    const paragraph = document.createElement("p")
+    paragraph.style.paddingRight = "6px"
+    paragraph.style.borderRight = "4px solid"
+    jest.spyOn(paragraph, "getBoundingClientRect").mockReturnValue({ right: 100 } as DOMRect)
+    const glued = document.createElement("span")
+    glued.className = NOWRAP_SPAN_CLASS
+    // jsdom applies no user-agent display, so the span declares its own.
+    glued.style.display = "inline"
+    jest.spyOn(glued, "getClientRects").mockReturnValue(rows as unknown as DOMRectList)
+    const link = document.createElement("a")
+    glued.append(link, ".")
+    paragraph.appendChild(glued)
+    document.body.appendChild(paragraph)
+    return buildPath([10], link)
+  }
+
+  it.each([
+    ["inside the column", [{ right: 90, width: 50 }], false],
+    ["past the column's content edge", [{ right: 91, width: 50 }], true],
+    [
+      "broken across two rows",
+      [
+        { right: 80, width: 50 },
+        { right: 20, width: 10 },
+      ],
+      true,
+    ],
+    [
+      "after an empty fragment",
+      [
+        { right: 60, width: 0 },
+        { right: 50, width: 50 },
+      ],
+      false,
+    ],
+  ])("with its glued period %s, marks a code path wide: %s", (_label, rows, wide) => {
+    const code = buildGluedPath(rows)
     markWideInlines(document.body)
     expect(code.classList.contains(WIDE_INLINE_CLASS)).toBe(wide)
   })

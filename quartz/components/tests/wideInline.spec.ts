@@ -64,4 +64,76 @@ test.describe("wide inline math", () => {
 
     await expect(math).not.toHaveClass(/wide-inline/)
   })
+
+  // Each glued code path in turn gets a column one pixel wider than the path:
+  // the path fits a line, but not with the punctuation and favicon glued to it.
+  test("wraps each glued code path whose glue would overrun its line", async ({ page }) => {
+    const paths = page.locator("article .nowrap-span .inline-code-path:has(wbr)")
+    const count = await paths.count()
+    expect(count).toBeGreaterThan(0)
+    const [width, height] = await page.evaluate(() => [window.innerWidth, window.innerHeight])
+
+    const misplaced: string[] = []
+    for (let i = 0; i < count; i++) {
+      const path = paths.nth(i)
+      await path.evaluate((element) => {
+        let column = element.closest(".nowrap-span")
+        if (!column) throw new Error("missing glue")
+        while (
+          column.parentElement &&
+          ["contents", "inline"].includes(getComputedStyle(column).display)
+        ) {
+          column = column.parentElement
+        }
+        element.classList.remove("wide-inline")
+        const style = (column as HTMLElement).style
+        style.boxSizing = "content-box"
+        style.width = `${element.getBoundingClientRect().width + 1}px`
+        column.setAttribute("data-test-column", "")
+      })
+      // Resizing re-marks the paths against their new columns. Successive
+      // widths differ, so each resize changes the width the marking sees.
+      await page.setViewportSize({ width: width - 1 - (i % 2), height })
+      await expect(path).toHaveClass(/wide-inline/)
+
+      const problems = await path.evaluate((element) => {
+        const column = document.querySelector("[data-test-column]") as HTMLElement
+        const glued = element.closest(".nowrap-span")
+        if (!glued) throw new Error("missing glue")
+        const style = getComputedStyle(column)
+        const columnEnd =
+          column.getBoundingClientRect().right -
+          parseFloat(style.paddingRight) -
+          parseFloat(style.borderRightWidth)
+        const middleOf = (rect: DOMRect) => (rect.top + rect.bottom) / 2
+        const pathRows = Array.from(element.getClientRects())
+        const firstRow = pathRows[0]
+        const lastRow = pathRows[pathRows.length - 1]
+        const glueRect = (before: boolean) => {
+          const range = document.createRange()
+          range.selectNodeContents(glued)
+          if (before) range.setEndBefore(element)
+          else range.setStartAfter(element)
+          return Array.from(range.getClientRects()).filter((rect) => rect.width > 0)
+        }
+        const leading = glueRect(true).at(-1)
+        const trailing = glueRect(false)[0]
+        const offRow = (rect: DOMRect | undefined, row: DOMRect) =>
+          rect !== undefined && Math.abs(middleOf(rect) - middleOf(row)) > row.height / 2
+        const result = [
+          offRow(leading, firstRow) && "leading glue off the path's first row",
+          offRow(trailing, lastRow) && "trailing glue off the path's last row",
+          Array.from(glued.getClientRects()).some((row) => row.right > columnEnd + 1) &&
+            "glue past the column",
+        ].filter((problem): problem is string => typeof problem === "string")
+
+        column.removeAttribute("data-test-column")
+        column.style.removeProperty("width")
+        column.style.removeProperty("box-sizing")
+        return result.map((problem) => `${glued.textContent?.slice(-24)}: ${problem}`)
+      })
+      misplaced.push(...problems)
+    }
+    expect(misplaced).toEqual([])
+  })
 })
