@@ -52,12 +52,10 @@ td {
 }
 
 // A cell sizes to its longest word, so a narrow column never splits a word
-// mid-way; hyphenation shortens the longest words where the browser supports
-// it. A table wider than its container scrolls inside `.table-container`.
+// mid-way. A table wider than its container scrolls inside `.table-container`.
 table td,
 table td :is(a, li, ol) {
   overflow-wrap: break-word;
-  hyphens: auto;
 }
 
 // The first column of a table should be right-aligned
