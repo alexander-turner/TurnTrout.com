@@ -2,7 +2,6 @@ import { describe, expect, it } from "@jest/globals"
 
 import {
   alignValueToSource,
-  sourceEditsForNode,
   textNodeEdits,
   transformMarkdownSource,
 } from "./punctilio-demo-markdown"
@@ -18,6 +17,15 @@ describe("transformMarkdownSource", () => {
     ["tables", "| a | b |\n|---|:-:|\n| x | y |\n", "| a | b |\n|---|:-:|\n| x | y |\n"],
     ["thematic breaks", "a\n\n***\n\nb\n", "a\n\n***\n\nb\n"],
     ["inline code", 'Use `"raw"` here', 'Use `"raw"` here'],
+    [
+      "position-less autolink literal paragraphs",
+      '"hi" a\\_b@example.com',
+      '"hi" a\\_b@example.com',
+    ],
+    ["angle autolinks", "<https://x.com/a...b>", "<https://x.com/a...b>"],
+    ["autolinks with references", "<https://a.com/?x&amp;y...>", "<https://a.com/?x&amp;y...>"],
+    ["shortcut references", "[foo--bar]\n\n[foo--bar]: /u", "[foo--bar]\n\n[foo--bar]: /u"],
+    ["collapsed references", "[foo--bar][]\n\n[foo--bar]: /u", "[foo--bar][]\n\n[foo--bar]: /u"],
   ])("preserves %s verbatim", (_label, input, expected) => {
     expect(transformMarkdownSource(input, config)).toBe(expected)
   })
@@ -30,31 +38,19 @@ describe("transformMarkdownSource", () => {
     ["list item text", '- "one" -- two\n* x', "- “one”—two\n* x"],
     ["table cell", '| "a" |\n|---|\n| b... |\n', "| “a” |\n|---|\n| b… |\n"],
     ["quote spanning emphasis", '"*hi*"', "“*hi*”"],
+    [
+      "literal autolink beside prose",
+      'see https://x.com/2020-2021 "q"',
+      "see https://x.com/2020-2021 “q”",
+    ],
+    ["full reference label", "[a--b][r]\n\n[r]: /u", "[a—b][r]\n\n[r]: /u"],
+    ["inline link text", "[x--y](http://u--v)", "[x—y](http://u--v)"],
+    ["escaped > after blockquote marker", "> a\n> \\>= b", "> a\n> ≥ b"],
+    ["nested containers", '> - "a\n>   b"', "> - “a\n>   b”"],
+    ["CRLF line endings", '"a"\r\n"b"', "“a”\r\n“b”"],
+    ["astral characters", '"😀 x"', "“😀 x”"],
   ])("transforms %s", (_label, input, expected) => {
     expect(transformMarkdownSource(input, config)).toBe(expected)
-  })
-})
-
-describe("sourceEditsForNode", () => {
-  it("locates edits via the node's offsets", () => {
-    const node = {
-      type: "text" as const,
-      value: "“a”",
-      position: {
-        start: { line: 1, column: 3, offset: 2 },
-        end: { line: 1, column: 6, offset: 5 },
-      },
-    }
-    expect(sourceEditsForNode('x "a" y', node, '"a"')).toEqual([
-      { start: 2, end: 3, text: "“" },
-      { start: 4, end: 5, text: "”" },
-    ])
-  })
-
-  it("throws when the node lacks source offsets", () => {
-    expect(() => sourceEditsForNode("a", { type: "text", value: "b" }, "a")).toThrow(
-      /missing source offsets/,
-    )
   })
 })
 
@@ -65,6 +61,8 @@ describe("alignValueToSource", () => {
     ["&amp;b", "&b", [0, 5], [5, 6]],
     ["a\n> b", "a\nb", [0, 1, 4], [1, 2, 5]],
     ["\\a", "\\a", [0, 1], [1, 2]],
+    ["a\n> > b", "a\nb", [0, 1, 6], [1, 2, 7]],
+    ["a\n    >b", "a\n>b", [0, 1, 6, 7], [1, 2, 7, 8]],
     ["&bogus;", "&bogus;", [0, 1, 2, 3, 4, 5, 6], [1, 2, 3, 4, 5, 6, 7]],
   ])("aligns %j to %j", (source, value, starts, ends) => {
     expect(alignValueToSource(source, value)).toEqual({ starts, ends })
@@ -83,5 +81,9 @@ describe("textNodeEdits", () => {
     ["insertion at end", "ab", "abX", [{ start: 12, end: 12, text: "X" }]],
   ])("produces a %s edit", (_label, original, transformed, expected) => {
     expect(textNodeEdits(original, 10, original, transformed)).toEqual(expected)
+  })
+
+  it("removes the next line's container prefix along with a line break", () => {
+    expect(textNodeEdits("a\n> b", 10, "a\nb", "ab")).toEqual([{ start: 11, end: 14, text: "" }])
   })
 })

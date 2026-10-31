@@ -1,4 +1,4 @@
-import type { Text } from "mdast"
+import type { Parents, Text } from "mdast"
 
 import { diffChars } from "diff"
 import { decodeString } from "micromark-util-decode-string"
@@ -7,7 +7,7 @@ import { remarkPunctilio } from "punctilio/remark"
 import remarkGfm from "remark-gfm"
 import remarkParse from "remark-parse"
 import { unified } from "unified"
-import { visit } from "unist-util-visit"
+import { visitParents } from "unist-util-visit-parents"
 
 interface SourceEdit {
   readonly start: number
@@ -18,6 +18,13 @@ interface SourceEdit {
 /** A backslash escape or character reference starting exactly at `lastIndex`. */
 const ESCAPE_OR_REFERENCE =
   /\\[\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e]|&(?:#(?:\d{1,7}|x[\da-f]{1,6})|[\da-z]{1,31});/iuy
+
+/**
+ * Blockquote markers and indentation that open a paragraph continuation line.
+ * Paragraph text never begins with whitespace or with a `>` indented under
+ * four spaces (that would open a blockquote), so this is never content.
+ */
+const CONTAINER_PREFIX = /(?:[ \t]{0,3}>[ \t]?)*[ \t]*/uy
 
 /** The escape or valid character reference at `index`, with its decoded text. */
 function matchReference(
@@ -54,11 +61,18 @@ export function alignValueToSource(
       sourceIndex += reference.length
       continue
     }
-    if (source[sourceIndex] === value[starts.length]) {
-      starts.push(sourceIndex)
-      ends.push(sourceIndex + 1)
+    if (source[sourceIndex] !== value[starts.length]) {
+      sourceIndex++
+      continue
     }
+    starts.push(sourceIndex)
+    ends.push(sourceIndex + 1)
     sourceIndex++
+    if (value[starts.length - 1] === "\n") {
+      CONTAINER_PREFIX.lastIndex = sourceIndex
+      CONTAINER_PREFIX.test(source)
+      sourceIndex = CONTAINER_PREFIX.lastIndex
+    }
   }
   if (starts.length < value.length) {
     throw new Error(`Could not align Markdown text ${JSON.stringify(value)} to its source`)
@@ -95,24 +109,40 @@ export function textNodeEdits(
     const next = changes[i + 1]
     const replacement = next?.added ? next.value : ""
     if (next?.added) i++
+    const after = valueIndex + change.value.length
+    // A removed line break takes the next line's container prefix with it.
+    const end =
+      change.value.endsWith("\n") && after < starts.length ? starts[after] : ends[after - 1]
     edits.push({
       start: sourceOffset + starts[valueIndex],
-      end: sourceOffset + ends[valueIndex + change.value.length - 1],
+      end: sourceOffset + end,
       text: replacement,
     })
-    valueIndex += change.value.length
+    valueIndex = after
   }
   return edits
 }
 
-/** Source edits for a transformed text node, located via its parse offsets. */
-export function sourceEditsForNode(text: string, node: Text, original: string): SourceEdit[] {
-  const start = node.position?.start.offset
-  const end = node.position?.end.offset
-  if (start === undefined || end === undefined) {
-    throw new Error("Markdown text node is missing source offsets")
-  }
-  return textNodeEdits(text.slice(start, end), start, original, node.value)
+/**
+ * Whether a text node's characters double as syntax that must not change:
+ * an autolink's text is its URL, and a shortcut or collapsed reference's
+ * label is its definition identifier.
+ */
+function isLiteralText(source: string, ancestors: readonly Parents[]): boolean {
+  return ancestors.some((ancestor) => {
+    if (ancestor.type === "link") {
+      const start = ancestor.position?.start.offset
+      return start === undefined || source[start] !== "["
+    }
+    return ancestor.type === "linkReference" && ancestor.referenceType !== "full"
+  })
+}
+
+interface TrackedText {
+  readonly node: Text
+  readonly original: string
+  readonly start: number
+  readonly end: number
 }
 
 /**
@@ -124,20 +154,33 @@ export function sourceEditsForNode(text: string, node: Text, original: string): 
 export function transformMarkdownSource(text: string, config: TransformOptions): string {
   const processor = unified().use(remarkParse).use(remarkGfm).use(remarkPunctilio, config)
   const tree = processor.parse(text)
-  const originals = new Map<Text, string>()
-  visit(tree, "text", (node: Text) => {
-    originals.set(node, node.value)
+  const tracked: TrackedText[] = []
+  visitParents(tree, "text", (node: Text, ancestors) => {
+    const start = node.position?.start.offset
+    const end = node.position?.end.offset
+    if (start === undefined || end === undefined || isLiteralText(text, ancestors)) {
+      // remarkPunctilio treats inline code as opaque, so it neither rewrites
+      // this text nor joins prose across it.
+      Object.assign(node, { type: "inlineCode" })
+      return
+    }
+    tracked.push({ node, original: node.value, start, end })
   })
   processor.runSync(tree)
 
-  const edits: SourceEdit[] = []
-  for (const [node, original] of originals) {
-    if (node.value !== original) edits.push(...sourceEditsForNode(text, node, original))
-  }
+  const edits = tracked
+    .filter(({ node, original }) => node.value !== original)
+    .flatMap(({ node, original, start, end }) =>
+      textNodeEdits(text.slice(start, end), start, original, node.value),
+    )
 
-  let result = text
-  for (const edit of edits.sort((a, b) => b.start - a.start)) {
-    result = result.slice(0, edit.start) + edit.text + result.slice(edit.end)
+  // Text nodes are visited in source order and each node's edits ascend, so
+  // the edits are already sorted and disjoint.
+  let result = ""
+  let cursor = 0
+  for (const edit of edits) {
+    result += text.slice(cursor, edit.start) + edit.text
+    cursor = edit.end
   }
-  return result
+  return result + text.slice(cursor)
 }

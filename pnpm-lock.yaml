@@ -267,9 +267,6 @@ importers:
       remark-smartypants:
         specifier: 3.0.2
         version: 3.0.2
-      remark-stringify:
-        specifier: ^11.0.0
-        version: 11.0.0
       rfdc:
         specifier: 1.4.1
         version: 1.4.1
