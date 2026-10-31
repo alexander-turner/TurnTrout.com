@@ -915,11 +915,6 @@
       "excerpt": "My projects include this website's infrastructure, AI-powered alt text generation, and dataset protection utilities.",
       "permalink": "open-source",
       "title": "My open source contributions"
-    },
-    {
-      "excerpt": "My NDTV World Summit talk: rogue AI agents already hacked a company, labs race toward an intelligence explosion, and nations should pace the frontier.",
-      "permalink": "ndtv-world-summit-talk",
-      "title": "Explaining \"AI might obliterate you\" to senior Indian policymakers"
     }
   ],
   "date-me": [
@@ -2403,19 +2398,29 @@
   ],
   "ndtv-world-summit-talk": [
     {
+      "excerpt": "Could human-designed AI kill all humans? I spent my PhD on this and still worry.",
+      "permalink": "agi-risk-introduction",
+      "title": "A simple explanation of AGI risk"
+    },
+    {
       "excerpt": "Op-ed in The Guardian: AI could escape our control. Voluntary commitments failed at Google, so governments must restrain the race to superintelligence.",
       "permalink": "listen-to-ai-warnings",
       "title": "I worked at Google DeepMind. You should listen to the warnings about AI."
     },
     {
-      "excerpt": "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.",
-      "permalink": "why-i-left-google-deepmind",
-      "title": "Why I left Google DeepMind"
-    },
-    {
       "excerpt": "Op-ed in Fortune: OpenAI promised to share information with independent evaluators, then fired safety researchers for sharing information with evaluators.",
       "permalink": "openai-cant-self-police",
       "title": "OpenAI can't self-police because it fires the people raising the alarm"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "AI takeover seems easier to pull off for an AI that we teach to wield killer robots.",
+      "permalink": "killer-robots-takeover",
+      "title": "Misaligned AIs could use killer robots to take over"
     }
   ],
   "non-obstruction-motivates-corrigibility": [
@@ -2740,11 +2745,6 @@
       "excerpt": "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.",
       "permalink": "why-i-left-google-deepmind",
       "title": "Why I left Google DeepMind"
-    },
-    {
-      "excerpt": "My NDTV World Summit talk: rogue AI agents already hacked a company, labs race toward an intelligence explosion, and nations should pace the frontier.",
-      "permalink": "ndtv-world-summit-talk",
-      "title": "Explaining \"AI might obliterate you\" to senior Indian policymakers"
     }
   ],
   "problem-relaxation-as-a-tactic": [

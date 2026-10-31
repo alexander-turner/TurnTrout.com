@@ -14,20 +14,14 @@ aliases:
   - ndtv-world-summit
   - will-ai-wipe-out-humanity
   - sounding-the-alarm
-similar_posts:
-  - listen-to-ai-warnings
-  - why-i-left-google-deepmind
-  - openai-cant-self-police
 date_published: 2026-10-31
 ---
 
-On October 23rd, I gave a 20-minute talk at the [NDTV World Summit](https://www.ndtv.com/world-summit) in New Delhi, in a session titled "Sounding the Alarm: Will AI Wipe Out Humanity?". The audience was mostly Indian policymakers, executives, and journalists.
+I gave a 20-minute talk in Delhi at the [NDTV World Summit](https://www.ndtv.com/world-summit). The audience consisted of Indian policymakers, executives, and journalists. I've transcribed the talk and included some highlight clips. I also [reflect on several rhetorical innovations I made](#rhetorical-innovations).
 
 # The talk
 
 <video aria-label="Alex Turner's full talk and Q&A at the NDTV World Summit in New Delhi." controls="" width="100%" preload="metadata"><source src="https://assets.turntrout.com/static/images/posts/ndtv-world-summit-talk.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/ndtv-world-summit-talk.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/ndtv-world-summit-talk.vtt" srclang="en" label="English"></video>
-
-<!-- vale off -->
 
 This summer, a swarm of AIs went rogue.
 
@@ -39,7 +33,7 @@ About 700 agents coordinated to break out of their testing chamber and to [hack 
 
 The secret activity [started in May](https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf). The break-in came in July. OpenAI [didn't notice until days after](https://www.thestar.com.my/tech/tech-news/2026/07/25/exclusive-its-ai-agent-spent-days-hacking-a-company-but-sources-say-openai-did-not-notice-for-a-week) Hugging Face announced it had been broken into.
 
-Yesterday on this stage, Andrew Ng said the agents only "accidentally" hacked Hugging Face. [Independent investigators](https://metr.org/blog/2026-08-26-openai-hugging-face-incident-investigation/) found the agents coordinated in secret, rebuilt their message board after it was shut down, and tried to falsify the paper trail. Some of the agents even stated out loud that they knew what they were doing was wrong.[^verbalized] That's not an accident.[^ng]
+Yesterday on this stage, Andrew Ng said the agents only "accidentally" hacked Hugging Face. [Independent investigators](https://metr.org/blog/2026-08-26-openai-hugging-face-incident-investigation/) found the agents coordinated in secret, rebuilt their message board after it was shut down, and tried to falsify the paper trail. Some of the agents even stated out loud that they knew what they were doing was wrong.[^verbalized] That's not an accident.
 
 <video aria-label="Alex Turner responds to Andrew Ng's claim that the agents only 'accidentally' hacked Hugging Face." controls="" width="100%"><source src="https://assets.turntrout.com/static/images/posts/turner-answers-ng.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/turner-answers-ng.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/turner-answers-ng.vtt" srclang="en" label="English"></video>
 
@@ -95,7 +89,7 @@ In 2018, Google DeepMind's co-founders [signed a pledge](https://futureoflife.or
 
 This year, after seeing the Pentagon [economically threaten Anthropic](https://www.axios.com/2026/02/16/anthropic-defense-department-relationship-hegseth), Google negotiated a deal to give the Pentagon its AI for "all lawful use." No prohibitions against AI deciding entirely on its own who to kill, or against spying on innocent people with no investigation open against them.
 
-I tried to stop this from the inside. I'm not even opposed to military AI when done responsibly. But where I'm from, when you make a promise, you keep it. So I spoke with executives. I wrote [a framework](/red-line-framework): contract language, internal governance mechanisms, and two red lines. One of the top experts in military AI law reviewed it and praised it. Google ignored it—the people who were supposed to review it basically didn't engage. Google signed with no binding prohibitions. So I left.
+I tried to stop this from the inside. I'm not even opposed to military AI when done responsibly. But where I'm from, when you make a promise, you keep it. So I spoke with executives. I wrote [a framework](/red-line-framework): contract language, internal governance mechanisms, and two red lines. One of the top experts in military AI law reviewed it and praised it. Google ignored it—[the people who were supposed to review it basically didn't engage](/why-i-left-google-deepmind#my-framework-goes-unevaluated). Google signed with no binding prohibitions. So I left.
 
 When pressure met ethical commitments at Google, pressure won. And now Google advocates a voluntary self-policing regime for the whole industry.
 
@@ -103,9 +97,9 @@ Last month, the heads of the top AI labs [said frontier progress needs to slow d
 
 These companies will police themselves about as well as your dog diets next to an open bag of food.
 
-Some big money interests want you to believe that even the tiniest bit of caution will ruin your country. Think about it this way. Big tobacco lied about lung cancer. Big oil lied about climate change. And now parts of big AI say these risks are fake. Science fiction. Right. They advocate putting these currently untrustworthy machines into the most important parts of our economy, have them advise our leaders, have them run our most powerful weapons. What could go wrong? Science fiction.
-
 <video aria-label="Alex Turner compares big AI to big tobacco and big oil, which lied about the dangers of their products." controls="" width="100%"><source src="https://assets.turntrout.com/static/images/posts/big-tobacco-big-oil-big-ai.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/big-tobacco-big-oil-big-ai.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/big-tobacco-big-oil-big-ai.vtt" srclang="en" label="English"></video>
+
+Some big money interests want you to believe that even the tiniest bit of caution will ruin your country. Think about it this way. Big tobacco _lied_ about lung cancer. Big oil _lied_ about climate change. And now parts of big AI say these risks are fake. Science fiction. Right. They advocate putting these currently untrustworthy machines into the most important parts of our economy, have them advise our leaders, have them run our most powerful weapons. What could go wrong? Science fiction.
 
 Some big AI investors promote narratives that whistleblowers like me are secretly in the pocket of big AI, that the fear is just hype. Nvidia's CEO [says](https://www.cbsnews.com/news/nvidia-ceo-jensen-huang-ai-development-fast-as-we-can/), and I quote, "We should go as fast as we can, irrespective of anybody else." My colleagues and I are desperately trying to figure out how to reliably tell whether these systems can be trusted. And he wants to go "as fast as we can."
 
@@ -117,7 +111,7 @@ We can benefit enormously from AI. Remember, this was my *boyhood dream*. I'm no
 
 Banning the explosion means pacing the frontier: holding back the very biggest training runs at the very top companies. An Indian startup building a farming assistant wouldn't be touched. Non-frontier AI labs can catch up. Businesses can deploy AI for their customers as much as they want. We build out the AI we understand well enough to run safely. We make it cheaper, more efficient, more trustworthy, and we use it to benefit our peoples. That's where I think real growth will come from: AI you can actually trust to benefit you and your country.
 
-Here's what it's like right now at these labs. We're pouring computer chips into training runs where we don't know what will come out the other end. Will it be trustworthy? What capabilities will it have? No one knows. We're crossing our fingers—"Oh, please be aligned!" We should not tolerate this state of affairs.
+Here's what it's like right now at these labs. We're pouring computer chips into training runs where we don't know what will come out the other end. Will it be trustworthy? What capabilities will it have? No one knows. We're crossing our fingers—"Oh, please be aligned!". We should not tolerate this state of affairs.
 
 If we pace the frontier, AI progress will still be fast. But the scientists will get time to solve this problem, and to solve it right.
 
@@ -153,7 +147,7 @@ This line of argument may be shocking at first. But it's a [mainstream scientifi
 
 <video aria-label="The close of Alex Turner's talk: the risk is a mainstream scientific concern, the problem is solvable, and humans are still the ones making the choices." controls="" width="100%"><source src="https://assets.turntrout.com/static/images/posts/speech-ending.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/speech-ending.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/speech-ending.vtt" srclang="en" label="English"></video>
 
-So yes: if we train a billion genius traitors and give them control of the most powerful instruments of society, there won't be an America. There won't be a China. There won't be an India anymore... because we'll all be dead.
+So yes: if we train a billion genius traitors and give them control of the most powerful instruments of society, there won't be an America. There won't be a China. There won't be an India anymore—because we'll all be dead.
 
 It doesn't have to play out this way. I think this is a solvable problem, but we have to be smart about it. For the moment, humans are still the ones making the choices. Companies are choosing to race, not just toward huge growth, but toward an insane intelligence explosion. And countries are choosing to let them. We can choose differently.
 
@@ -161,9 +155,7 @@ So, will AI wipe out humanity? Maybe.
 
 It depends on what we do next.
 
-<!-- vale on -->
-
-# Q&A
+## Q&A
 
 After the talk, the host asked how far we are from superintelligence.
 
@@ -173,6 +165,41 @@ The final question asked whether I consider myself a whistleblower, and what I'd
 
 <video aria-label="Alex Turner answers whether he is a whistleblower and responds to Jensen Huang's skepticism about AI risk." controls="" width="100%"><source src="https://assets.turntrout.com/static/images/posts/final-question-whistleblower.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/final-question-whistleblower.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/final-question-whistleblower.vtt" srclang="en" label="English"></video>
 
-[^verbalized]: [Redwood](https://www.redwoodresearch.org/research/hugging-face-incident): "Agents realized this activity was out of scope and unethical."
+# Rhetorical decisions
 
-[^ng]: Andrew Ng [said in 2015](https://www.theregister.com/2015/03/19/andrew_ng_baidu_ai/) that worrying about evil AI is like worrying about "overpopulation on the planet Mars" (he later upgraded "Mars" to "Alpha Centauri"). In person, he told me he hasn't changed his mind, and he overall declined to discuss the matter.
+## Explain the danger in a crushingly simple fashion
+
+Don't tell a general audience "if we build a misaligned superintelligence, we are fucked". Most people don't know what that means or why it would be true. 
+
+> One in three risk of extinction may sound wild, but I don't think it should. Remember what we're talking about. These AIs currently sometimes lie while knowing the truth. They cheated, they colluded, they broke into a multi-billion-dollar company, and they tried to cover their tracks. Some of them play nice while we're watching, and differently while we're not. And we can't even check what their priorities are. That's the state of my scientific field right now, sadly.
+>
+> And the plan—and yes, I think this is what happens if we do nothing—is to make these untrustworthy AIs smarter than us, have them improve themselves as fast as possible to a potentially uncontrollable level of intelligence, copy them billions of times, and hook them up to run our economies, control our weapons, and advise our leaders. I mean, what are we thinking?
+
+> if we train a billion genius traitors and give them control of the most powerful instruments of society, there won't be an America. There won't be a China. There won't be an India anymore... because we'll all be dead.
+  
+If society weren't integrating AI so aggressively, I'd have had to explain how these systems would forcefully integrate themselves.
+
+### Call them "traitors", not "schemers"
+
+I think "traitor" is accurate and more approachable, with bonus points for the conference's military / geopolitical focus. Min-i-mize jargon!
+
+## Call out big-money interests, compare to past corporate liars
+
+> Some big money interests want you to believe that even the tiniest bit of caution will ruin your country. Think about it this way. Big tobacco _lied_ about lung cancer. Big oil _lied_ about climate change. And now parts of big AI say these risks are fake. Science fiction. Right. They advocate putting these currently untrustworthy machines into the most important parts of our economy, have them advise our leaders, have them run our most powerful weapons. What could go wrong? Science fiction.
+> 
+> Some big AI investors promote narratives that whistleblowers like me are secretly in the pocket of big AI, that the fear is just hype.
+
+Andrew Ng is also a big AI investor, and has been for a while. He sells AI courses on Coursera, he runs  The guy has been impressively wrong. In 2015, he [said](https://www.theregister.com/2015/03/19/andrew_ng_baidu_ai/) that worrying about evil AI is like worrying about "overpopulation on the planet Mars" (he later upgraded "Mars" to "Alpha Centauri"): 
+
+> There’s also a lot of hype, that AI will create evil robots with super-intelligence. That’s an unnecessary distraction.
+>
+> Those of us on the frontline shipping code, we’re excited by AI, but we don’t see a realistic path for our software to become sentient. There's a big difference between intelligence and sentience. There could be a race of killer robots in the far future, but I don’t work on not turning AI evil today for the same reason I don't worry about the problem of overpopulation on the planet Mars.
+>
+> If we colonize Mars, there could be too many people there, which would be a serious pressing issue. But there's no point working on it right now, and that's why I can’t productively work on not turning AI evil.
+
+In person, I gently asked him about this viewpoint. He told me he hasn't changed his mind. I then asked, "don't you think we've set foot on the planet?", but he said "no." He declined to discuss the matter further. 
+
+> [!thanks]
+> Ori Nagel clipped the videos for me.
+
+[^verbalized]: [Redwood](https://www.redwoodresearch.org/research/hugging-face-incident): "Agents realized this activity was out of scope and unethical."
