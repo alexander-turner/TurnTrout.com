@@ -17,11 +17,13 @@ aliases:
 date_published: 2026-10-31
 ---
 
-I gave a 20-minute talk in Delhi at the [NDTV World Summit](https://www.ndtv.com/world-summit). The audience consisted of Indian policymakers, executives, and journalists. I've transcribed the talk and included some highlight clips. I also [reflect on several rhetorical innovations I made](#rhetorical-innovations).
+I gave a 20-minute talk in Delhi at the [NDTV World Summit](https://www.ndtv.com/world-summit). The audience consisted of Indian policymakers, executives, and journalists. I've transcribed the talk and included some highlight clips. I also [reflect on several rhetorical innovations I made](#rhetorical-decisions).
 
 # The talk
 
 <video aria-label="Alex Turner's full talk and Q&A at the NDTV World Summit in New Delhi." controls="" width="100%" preload="metadata"><source src="https://assets.turntrout.com/static/images/posts/ndtv-world-summit-talk.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/ndtv-world-summit-talk.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/ndtv-world-summit-talk.vtt" srclang="en" label="English"></video>
+
+<!-- vale off -->
 
 This summer, a swarm of AIs went rogue.
 
@@ -155,6 +157,8 @@ So, will AI wipe out humanity? Maybe.
 
 It depends on what we do next.
 
+<!-- vale on -->
+
 ## Q&A
 
 After the talk, the host asked how far we are from superintelligence.
@@ -196,6 +200,8 @@ As an aside, Andrew Ng spoke the day before I did. Andrew has also invested big 
 >
 > Current AI systems, Ng contends, are basic relative to human intelligence, even if there are things they can do that exceed the capabilities of any human. “Maybe hundreds of years from now, maybe thousands of years from now—I don’t know—maybe there will be some AI that turn evil,” he said, “but that’s just so far away that I don’t know how to productively work on that.”
 
+<!-- vale off -->
+
 > [!quote] [Andrew Ng says AGI is decades away—and the real AI bubble risk is in the training layer](https://www.fastcompany.com/91499247/andrew-ng-agi-decades-away-interview)
 > Agentic AI is rapidly increasing systems’ ability to reason and act with limited human intervention. Does the rise of agentic architectures meaningfully accelerate the path toward AGI, or are we still far from true general intelligence?
 >
@@ -204,6 +210,8 @@ As an aside, Andrew Ng spoke the day before I did. Andrew has also invested big 
 > : For alternative definitions that some businesses have put forward—definitions that dramatically lower the bar—you could argue we already achieved AGI. There’s a good chance that under these lower-bar definitions, some businesses will soon try to declare success. But that won’t mean AI has reached human-level intelligence—it will simply mean the definition has been reworked to fit a much lower threshold.
 > :
 > : Maybe a year ago, AGI felt 50 years away. Over the past year, perhaps we’ve made a solid 2% of progress, with another 49 years to go. These numbers are metaphorical, so don’t take them too seriously. \[Laughs\] But we are closer than before, yet many decades away from an AI that matches human intelligence. If you stick with the original definition—aligned with what people genuinely imagine AGI to be—we remain very, very far away.
+
+<!-- vale on -->
 
 In 2015, he [said](https://www.theregister.com/2015/03/19/andrew_ng_baidu_ai/) that worrying about evil AI is like worrying about "overpopulation on the planet Mars":
 
