@@ -28,7 +28,7 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@d355f7ef2d73945806f82878775868881693c0be # v1.45.0
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@3bd9b9ffeaa254b5aa2ceab7dac02fba434ae8a4 # v1.46.0
     with:
       pr: ${{ matrix.pr.number }}
       resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
@@ -66,6 +66,7 @@ Every input fails closed when empty. The workflow does less, rather than guessin
 - **`bot-actors`** — an empty value admits no bot.
 - **`post-merge-check-command`** — this input is the exception in one direction only. Empty runs a built-in check that parses every file the merge brought in (Python, JSON, JavaScript and shell) and names each one that no longer parses although a parent's copy of it does. That check reads one file at a time, so a merge that keeps both parents' definition of one name still reaches the branch with nothing naming what it broke. Name your type-checker or import-check here — `bash .github/scripts/pyright-passes.sh`. A resolution that breaks the tree is then pushed with a comment naming what it broke, so the conflict is resolved once and the finding is fixed on a branch that no longer conflicts. The command runs in the `resolve` job, which holds no push credential. It must only REPORT: a command that stages a file is refused. Exit 1 to 125 judges the merged tree, unless the command's own output shows an interpreter dying on a missing dependency of its own. Exit 126 and above, or that crash signature, is read as the shell's `never ran`, which blames this workflow's provisioning rather than your branch.
 - **`plumbing-notice-issue`** — empty posts nothing beyond the pull request's sticky comment. A refusal that blames this WORKFLOW's own pins, grants or tooling is not the pull request's defect, so that comment reaches whoever owns the branch, not whoever owns the plumbing, and the next run overwrites it. Name an issue number in the calling repository and such a refusal is also repeated there, as a comment. The calling repository's `resolve` job needs `issues: write` for the comment to post.
+- **`post-merge-finding-issue`** — empty posts nothing beyond the pull request's sticky comment and the description's marked region. A post-merge check finding on a PUSHED resolution is published only there, where nobody watching the repository as a whole reads it, an abandoned draft hides it, and a failure that is the base branch's or the runner's reads as the pull request's own. Name an issue number in the calling repository and each such finding is also repeated there, one comment per finding. It opens with a hidden marker line, `<!-- auto-resolve-post-merge-finding pr=<PR number> head=<pushed sha> -->`, so you can aggregate the comments without parsing prose. The calling workflow must grant `issues: write` for the comment to post.
 - **`self-review`** — empty runs the review. The pre-push merge-delta self-review is on by default, so a repository that adopts this workflow never pushes a merge nothing reads. A model reads the merge commit while it is still local, fixes what it flags, and refuses the push on a finding it cannot fix. When every rung of your credential ladder is spent, the merge lands marked unverified and auto-merge stays off, so a human reads it. Keep it on even when CI of yours already reads the pushed delta: this pass fixes before the push, so it saves the review cycle your own reader would otherwise spend. Pass `self-review: false` only to make no pre-push model call at all. A repository that configures no model credential runs no review either way.
 - **`review-model`** — defaults to `opus`, a stronger model than the `sonnet` shards, so the pass that judges a resolution is not the model that wrote it. This input is separate from `model` because that one lowers the per-file shards to save cost, while this pass judges those shards. Lower it only when CI of yours also reads the pushed delta.
 
@@ -230,7 +231,7 @@ A `uses:` ref may be a SHA, a tag or a branch. GitHub calls [the commit SHA the 
 **Pin the SHA and name the version beside it**, the way this repository's own caller does:
 
 ```yaml
-uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@d355f7ef2d73945806f82878775868881693c0be # v1.45.0
+uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@3bd9b9ffeaa254b5aa2ceab7dac02fba434ae8a4 # v1.46.0
 ```
 
 That line reads as a version and resolves as an immutable commit. It names the newest release: `.github/scripts/release-tag.sh` rewrites both copies in this README, and the caller's, in the commit after each release. Copy it as it stands.
