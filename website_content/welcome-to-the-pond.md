@@ -12,7 +12,7 @@ tags:
   - website
   - personal
 date_published: 2024-10-30
-date_updated: 2026-08-03
+date_updated: 2026-10-31
 original_url: https://www.lesswrong.com/posts/Nq2BtFidsnhfLuNAx/announcing-turntrout-com-my-new-digital-home
 ---
 
@@ -58,7 +58,7 @@ I've imported and remastered all 120 of my LessWrong posts. _Every single post_,
 2. [@title](/effective-layer-horizon)
 3. [@title](/dangers-of-intrinsic-power-seeking)
 
-The [research page](/research) summarizes my past and present research interests, along with short retrospectives on the older areas.
+The [professional page](/professional) summarizes my past and present research interests, along with short retrospectives on the older areas.
 
 ## My dating doc
 

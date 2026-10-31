@@ -24,7 +24,7 @@ aliases:
   - leaving-google-deepmind
 no_dropcap_color: true
 date_published: 2026-07-15
-date_updated: 2026-10-12
+date_updated: 2026-10-31
 lw-posted-at: https://www.lesswrong.com/posts/iKm2FhpWkuuBojm82/why-i-left-google-deepmind
 ---
 
@@ -51,7 +51,7 @@ Take Stuart Russell, a famous AI researcher who spent over a decade crusading ag
 
 Or take Jeff Dean, who is Google's Chief Scientist and the co-lead of Google's Gemini AI project. In 2018, Jeff signed a pledge to never support the development or use of killer robots. I got Jeff to publicly and boldly co-sign an *amicus brief* (where outsiders weigh in to sway a lawsuit) backing Anthropic against the Pentagon. But I also asked him to use his immense leverage to stop Google from making its own unethical deal with the military, and I don't think he did. He remains at Google despite his pledge.
 
-I wrote a 25-page proposal containing contract language and oversight mechanisms. Military- and surveillance-law experts praised the proposal, which represented a principled counteroffer Google could have stood by. I sent the proposal to Demis Hassabis (GDM's CEO) who routed it to senior policy staff, only for the proposal to wilt unattended until Google signed a deal.  
+I wrote [a 25-page proposal](/red-line-framework) containing contract language and oversight mechanisms. Military- and surveillance-law experts praised the proposal, which represented a principled counteroffer Google could have stood by. I sent the proposal to Demis Hassabis (GDM's CEO) who routed it to senior policy staff, only for the proposal to wilt unattended until Google signed a deal.  
 
 Senior management had insisted that Google wouldn't sign. I disagreed with them, but they largely ignored my warnings. While I [may have increased the Pentagon's hesitation around the deal](#jeff-signs-an-amicus-brief-supporting-anthropic), Google still signed a deal handing over their AI without restrictions against killer robots or mass AI spying. Google's contract restrictions were [even weaker than OpenAI's](https://fortune.com/2026/05/04/google-employee-backlash-pentagon-ai-contract-power-waned-since-project-maven/). At that point, I couldn't stay at Google in good conscience, so I left.
 
