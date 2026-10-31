@@ -312,11 +312,9 @@ Subtitle: January 2026 through present
 >
 > \[...\]
 >
-> I wrote a 25-page proposal containing contract language and oversight mechanisms. Military- and surveillance-law experts praised the proposal, which represented a principled counteroffer Google could have stood by. I sent the proposal to Demis Hassabis (GDM's CEO) who routed it to senior policy staff, only for the proposal to wilt unattended until Google signed a deal.
+> I wrote [a 25-page proposal](/red-line-framework) containing contract language and oversight mechanisms. Military- and surveillance-law experts praised the proposal, which represented a principled counteroffer Google could have stood by. I sent the proposal to Demis Hassabis (GDM's CEO) who routed it to senior policy staff, only for the proposal to wilt unattended until Google signed a deal.
 >
 > Senior management had insisted that Google wouldn't sign. I disagreed with them, but they largely ignored my warnings. While I [may have increased the Pentagon's hesitation around the deal](/why-i-left-google-deepmind#jeff-signs-an-amicus-brief-supporting-anthropic), Google still signed a deal handing over their AI without restrictions against killer robots or mass AI spying. Google's contract restrictions were [even weaker than OpenAI's](https://fortune.com/2026/05/04/google-employee-backlash-pentagon-ai-contract-power-waned-since-project-maven/). At that point, I couldn't stay at Google in good conscience, so I left.
-
-You can read the proposal itself: [@title-lower](/red-line-framework).
 
 Since then, I've argued that [@title-lower](/killer-robots-takeover) and written op-eds in [_The Guardian_](/listen-to-ai-warnings) and [_Fortune_](/openai-cant-self-police).
 
