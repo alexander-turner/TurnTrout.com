@@ -307,7 +307,7 @@ Figure: Activation Consistency Training  applies an L2 loss to the residual stre
 
 Subtitle: January 2026 through present
 
-After Department of Homeland Security officers killed two citizens in January 2026, I tried to push Google to stop selling Cloud services to the responsible agencies. My campaign broadened as the Pentagon pressured AI providers into deals without restrictions against killer robots or mass surveillance. I wrote [@title-lower](/red-line-framework), which experts in military and surveillance law reviewed. The framework pairs red lines with a review body which reports to employees every year on how often leadership overrode its findings. When Google signed its deal anyway, I [resigned and documented what happened](/why-i-left-google-deepmind).
+After Department of Homeland Security officers killed two citizens in January 2026, I tried to push Google to stop selling Cloud services to the responsible agencies. My campaign broadened as the Pentagon pressured AI providers into deals without restrictions against killer robots or mass surveillance. I wrote [@title-lower](/red-line-framework), reviewed and praised by a leading expert. The framework pairs red lines with a review body which reports to employees every year on how often leadership overrode its findings. When Google signed its deal anyway, I [resigned and documented what happened](/why-i-left-google-deepmind).
 
 Since then, I've argued that [@title-lower](/killer-robots-takeover) and written op-eds in [_The Guardian_](/listen-to-ai-warnings) and [_Fortune_](/openai-cant-self-police).
 
