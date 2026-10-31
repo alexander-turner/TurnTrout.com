@@ -2510,14 +2510,14 @@
   ],
   "open-source": [
     {
-      "excerpt": "Showing off and explaining this site's beauty.",
-      "permalink": "design",
-      "title": "The design of this website"
-    },
-    {
       "excerpt": "Celebrating the launch of the website after months of work.",
       "permalink": "launch",
       "title": "Site launch: Come relax by The Pond!"
+    },
+    {
+      "excerpt": "Showing off and explaining this site's beauty.",
+      "permalink": "design",
+      "title": "The design of this website"
     },
     {
       "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
@@ -3428,14 +3428,14 @@
       "title": "Looking back on my alignment PhD"
     },
     {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "research",
+      "title": "My research"
+    },
+    {
       "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
       "permalink": "a-shot-at-the-diamond-alignment-problem",
       "title": "A shot at the diamond-alignment problem"
-    },
-    {
-      "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "professional",
-      "title": "My professional work"
     }
   ],
   "test-page": [

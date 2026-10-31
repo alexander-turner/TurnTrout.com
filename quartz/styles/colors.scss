@@ -150,10 +150,6 @@ section {
   background-color: var(--highlight);
 }
 
-::selection {
-  background-color: var(--midground-strong);
-}
-
 // Simulating dark/light mode
 .dark-mode,
 .light-mode {
