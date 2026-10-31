@@ -26,7 +26,6 @@ aliases:
   - routing-reward-hacking
 original_url: https://www.lesswrong.com/posts/mKJEBiuuxHKuCoTB6/gradient-routing-localizes-and-removes-unintended-behaviors
 date_published: 2026-10-19
-date_updated: 2026-10-19
 createBibtex: true
 ---
 
