@@ -167,8 +167,6 @@ I use the darkest text color sparingly. The margin text is medium-contrast, as a
 
 To determine the text colors (including grayscale gradations), I just determine the main text color and the site background color. Revamping site contrast therefore requires tweaking fewer variables.
 
-Even find-in-page results follow the theme. Instead of the browser's default yellow, Ctrl+F matches get a faint wash of the site's sky blue, with the current match drawn darker. (Firefox and Safari don't yet let sites restyle these matches, so there you'll still see yellow.)
-
 <figure>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
   <div class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
@@ -178,7 +176,7 @@ Even find-in-page results follow the theme. Instead of the browser's default yel
     A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was ignoring a goose.
   </div>
 </div>
-<figcaption>Searching for “trout” in light and dark mode. The second match is the current one.</figcaption>
+<figcaption>Simulated ctrl-F find results for “trout” in light and dark mode in Chromium browsers. The second match is the current one. (Firefox and Safari don't yet let sites restyle these matches.)</figcaption>
 </figure>
 
 ## Inverting assets in dark mode
