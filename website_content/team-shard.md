@@ -46,8 +46,9 @@ We likewise have a strong track record in [research outputs](https://turntrout.c
 3. [@title](/unlearn-and-distill) (NeurIPS 2025 spotlight!),
 4. [Output Supervision Can Obfuscate the Chain of Thought](/output-supervision-cot),
 5. [@title](/recontextualization-mitigates-specification-gaming),
-6. [@title](/eval-cooperation), and
-7. [@title](/gradient-routing-removes-reward-hacking).
+6. [@title](/eval-cooperation),
+7. [@title](/gradient-routing-removes-reward-hacking), and
+8. [@title](/natural-language-autoencoder-robustness)
 
 > [!quote] Former scholar from Team Shard
 >  I *really* appreciate the calmness Alex \[Turner\] brings. He creates a stress-free environment where it feels easy and low-risk to have lots of ideas, pivot frequently, and generally be mentally nimble.
