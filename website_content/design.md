@@ -167,6 +167,20 @@ I use the darkest text color sparingly. The margin text is medium-contrast, as a
 
 To determine the text colors (including grayscale gradations), I just determine the main text color and the site background color. Revamping site contrast therefore requires tweaking fewer variables.
 
+Even find-in-page results follow the theme. Instead of the browser's default yellow, Ctrl+F matches get a faint wash of the site's sky blue, with the current match drawn darker. (Firefox and Safari don't yet let sites restyle these matches, so there you'll still see yellow.)
+
+<figure>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
+  <div class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
+    A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, which ignored a third <span class="search-text-demo">trout</span>.
+  </div>
+  <div class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
+    A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, which ignored a third <span class="search-text-demo">trout</span>.
+  </div>
+</div>
+<figcaption>Searching for “trout” in light and dark mode. The middle match is the current one.</figcaption>
+</figure>
+
 ## Inverting assets in dark mode
 
 In light mode, images with light backgrounds blend into the background via `mix-blend-mode: multiply`. These blended images achieve the illusion of transparency -- a classy touch, in my view. Similarly, dark-background images blend via `mix-blend-mode: screen`. In dark mode, I also decrease the saturation of media assets using `filter: grayscale(50%)`.
