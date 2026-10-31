@@ -814,6 +814,28 @@ test.describe("video poster capture", () => {
   })
 })
 
+test.describe("waitForVideosPainted", () => {
+  test("skips a stalled video that a scroll container clips out of view", async ({
+    page,
+  }, testInfo) => {
+    // Never answer the video request: the element stays at HAVE_NOTHING, so
+    // any wait on its frame would run out the paint budget and throw.
+    await page.route("**/visual-test-stalled.mp4", () => undefined)
+    await page.setContent(`
+      <div id="scroller" style="height: 100px; overflow-y: auto">
+        <p style="height: 400px; margin: 0">Visible text</p>
+        <video muted src="http://localhost:8080/visual-test-stalled.mp4"></video>
+      </div>
+    `)
+
+    const screenshot = await takeRegressionScreenshot(page, testInfo, "", {
+      elementToScreenshot: page.locator("#scroller"),
+      skipStabilityWait: true,
+    })
+    expect(screenshot.length).toBeGreaterThan(0)
+  })
+})
+
 test.describe("getAllWithWait", () => {
   test.beforeEach(async ({ page }) => {
     await page.setContent(`
