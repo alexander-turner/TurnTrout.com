@@ -130,6 +130,7 @@
 80KB
 84KB
 893th
+8B
 8GB
 8i=-56
 8pt
@@ -805,6 +806,7 @@ customizable
 customizations
 cuz
 cyber
+cyberattacks
 cyberdeck
 cybersecurity
 d'habitude
@@ -1631,6 +1633,7 @@ kerned
 Kerning
 kerning
 keyring
+Khalifa
 Khullar
 kiiiinda
 kinesiotherapy
@@ -2006,6 +2009,7 @@ mythos
 n-gon's
 nabla
 NAF-tə
+Nagel
 namespace
 Nanda
 Nano
@@ -2023,6 +2027,7 @@ Naïve
 naïve
 Naïvely
 naïvely
+NDTV
 ne
 Neale
 near-SOTA
@@ -2047,6 +2052,7 @@ nevermind
 Newcomblike
 Newsfeed
 newsfeed
+Ng
 Ngo
 Nicky
 nilpotent
@@ -2097,6 +2103,7 @@ NPO
 NPS
 NTK's
 num
+Nvidia
 nychtophobia
 nychtophobia-related
 NYT
@@ -2166,6 +2173,7 @@ optimizers
 optionality
 optogenetic
 ordi
+Ori
 original_url
 OriginStamp
 orthogonalization
@@ -2254,6 +2262,7 @@ per-timestep
 perceptron
 performant
 permalink
+Petraeus
 petri
 petrification
 peux
@@ -2661,6 +2670,7 @@ RL-trains-policies-not-agents
 RLauth
 RLHF
 RLHF'd
+RLVR
 RMU
 roadmap
 Robustified
@@ -2974,6 +2984,7 @@ supersession
 superset
 Supersets
 supersets
+superweapon
 supremum
 surprisal
 surveil
