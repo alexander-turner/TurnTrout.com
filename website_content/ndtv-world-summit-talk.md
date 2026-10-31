@@ -17,7 +17,7 @@ aliases:
 date_published: 2026-10-31
 ---
 
-I gave a 20-minute talk in Delhi at the [NDTV World Summit](https://www.ndtv.com/world-summit). The audience consisted of Indian policymakers, executives, and journalists. I've transcribed the talk and included some highlight clips. I also [reflect on several rhetorical innovations I made](#rhetorical-decisions).
+I gave a 20-minute talk in Delhi at the [NDTV World Summit](https://www.ndtv.com/world-summit). The audience consisted of Indian policymakers, executives, and journalists. I've transcribed the talk and included some highlight clips. I also [reflect on several rhetorical decisions I made](#rhetorical-decisions).
 
 # The talk
 
@@ -159,16 +159,6 @@ It depends on what we do next.
 
 <!-- vale on -->
 
-## Q&A
-
-After the talk, the host asked how far we are from superintelligence.
-
-<video aria-label="Alex Turner explains that AI capabilities are spiky, and that a misaligned AI could have the skills it needs within a year or two." controls="" width="100%"><source src="https://assets.turntrout.com/static/images/posts/takeover-skills-1-5-years.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/takeover-skills-1-5-years.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/takeover-skills-1-5-years.vtt" srclang="en" label="English"></video>
-
-The final question asked whether I consider myself a whistleblower, and what I'd say to skeptics like Nvidia's Jensen Huang.
-
-<video aria-label="Alex Turner answers whether he is a whistleblower and responds to Jensen Huang's skepticism about AI risk." controls="" width="100%"><source src="https://assets.turntrout.com/static/images/posts/final-question-whistleblower.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/final-question-whistleblower.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/final-question-whistleblower.vtt" srclang="en" label="English"></video>
-
 # Rhetorical decisions
 
 ## Explain the danger in a crushingly simple fashion
@@ -203,9 +193,9 @@ As an aside, Andrew Ng spoke the day before I did. Andrew has also invested big 
 <!-- vale off -->
 
 > [!quote] [Andrew Ng says AGI is decades away—and the real AI bubble risk is in the training layer](https://www.fastcompany.com/91499247/andrew-ng-agi-decades-away-interview)
-> **FastCompany:** Agentic AI is rapidly increasing systems’ ability to reason and act with limited human intervention. Does the rise of agentic architectures meaningfully accelerate the path toward AGI, or are we still far from true general intelligence?
+> _FastCompany_: Agentic AI is rapidly increasing systems’ ability to reason and act with limited human intervention. Does the rise of agentic architectures meaningfully accelerate the path toward AGI, or are we still far from true general intelligence?
 >
-> **Andrew Ng:** Most of the public thinks of AGI as AI that is as intelligent as people, and one useful definition is AI that can perform any intellectual task a human can. You and I could learn to fly an airplane with maybe 20 hours of training, learn to drive a truck through a forest, or spend a few years writing a PhD thesis. Most humans can do these things. We’re still very far from AI meeting that definition of AGI.
+> _Andrew Ng_: Most of the public thinks of AGI as AI that is as intelligent as people, and one useful definition is AI that can perform any intellectual task a human can. You and I could learn to fly an airplane with maybe 20 hours of training, learn to drive a truck through a forest, or spend a few years writing a PhD thesis. Most humans can do these things. We’re still very far from AI meeting that definition of AGI.
 > 
 > For alternative definitions that some businesses have put forward—definitions that dramatically lower the bar—you could argue we already achieved AGI. There’s a good chance that under these lower-bar definitions, some businesses will soon try to declare success. But that won’t mean AI has reached human-level intelligence—it will simply mean the definition has been reworked to fit a much lower threshold.
 > 
