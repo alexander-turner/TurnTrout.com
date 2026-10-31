@@ -19,7 +19,6 @@ similar_posts:
   - why-i-left-google-deepmind
   - openai-cant-self-police
 date_published: 2026-10-31
-date_updated: 2026-10-31
 ---
 
 On October 23rd, I gave a 20-minute talk at the [NDTV World Summit](https://www.ndtv.com/world-summit) in New Delhi, in a session titled "Sounding the Alarm: Will AI Wipe Out Humanity?". The audience was mostly Indian policymakers, executives, and journalists.
