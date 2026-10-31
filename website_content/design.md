@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-09-06
+date_updated: 2026-10-31
 no_dropcap: false
 createBibtex: true
 ---
@@ -166,6 +166,14 @@ https://x.com/Turn_Trout/status/2064426233769742627
 I use the darkest text color sparingly. The margin text is medium-contrast, as are e.g. list numbers and bullets.
 
 To determine the text colors (including grayscale gradations), I just determine the main text color and the site background color. Revamping site contrast therefore requires tweaking fewer variables.
+
+<figure>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
+  <div class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was ignoring a goose.</div>
+  <div class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was ignoring a goose.</div>
+</div>
+<figcaption>Simulated ctrl-F find results for “trout” in light and dark mode in Chromium browsers. The second match is the current one. (Firefox and Safari don't yet let sites restyle these matches.)</figcaption>
+</figure>
 
 ## Inverting assets in dark mode
 

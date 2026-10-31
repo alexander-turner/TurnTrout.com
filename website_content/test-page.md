@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-10-17
+date_updated: 2026-10-31
 createBibtex: true
 ---
 
@@ -911,6 +911,13 @@ Each emoji stays glued to its preceding character and never wraps alone to the s
 </div>
 <figcaption>The palettes for light and dark mode. In dark mode, I decrease the saturation of media assets.</figcaption>
 </figure>
+
+## Find-in-page matches
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
+  <div class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was ignoring a goose.</div>
+  <div class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was ignoring a goose.</div>
+</div>
 
 # Footnote demonstration
 

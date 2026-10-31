@@ -84,6 +84,35 @@ section {
   background: color-mix(in srgb, var(--tertiary) 30%, rgb(255 255 255 / 0%));
 }
 
+// Find-in-page (Ctrl+F) matches. The `.search-text-demo*` classes reproduce the
+// pseudo-elements for static demos. They need separate rules: a browser that
+// doesn't recognize `::search-text` drops every selector in a shared list.
+@mixin search-text-match {
+  background-color: color-mix(in srgb, var(--tertiary) 20%, transparent);
+  color: inherit;
+}
+
+@mixin search-text-current-match {
+  background-color: color-mix(in srgb, var(--tertiary) 60%, transparent);
+  color: inherit;
+}
+
+::search-text {
+  @include search-text-match;
+}
+
+::search-text:current {
+  @include search-text-current-match;
+}
+
+.search-text-demo {
+  @include search-text-match;
+}
+
+.search-text-demo-current {
+  @include search-text-current-match;
+}
+
 p,
 ul,
 text,
