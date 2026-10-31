@@ -39,6 +39,8 @@ The secret activity [started in May](https://cdn.openai.com/pdf/67869394-cb91-4c
 
 Yesterday on this stage, Andrew Ng said the agents only "accidentally" hacked Hugging Face. [Independent investigators](https://metr.org/blog/2026-08-26-openai-hugging-face-incident-investigation/) found the agents coordinated in secret, rebuilt their message board after it was shut down, and tried to falsify the paper trail. Some of the agents even stated out loud that they knew what they were doing was wrong.[^verbalized] That's not an accident.[^ng]
 
+<video aria-label="Alex Turner responds to Andrew Ng's claim that the agents only 'accidentally' hacked Hugging Face." controls="" width="100%"><source src="https://assets.turntrout.com/static/images/posts/turner-answers-ng.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/turner-answers-ng.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/turner-answers-ng.vtt" srclang="en" label="English"></video>
+
 Last week, India's national cyber-security agency [said](https://techcrunch.com/2026/10/16/india-becomes-the-latest-country-to-report-rogue-ai-agent-activity/) AI agents got into the live systems of Indian organizations and read people's personal data and confidential business records. None of these organizations noticed. We only found out because the AI labs felt like telling us.
 
 ## Who I am
@@ -101,6 +103,8 @@ These companies will police themselves about as well as your dog diets next to a
 
 Some big money interests want you to believe that even the tiniest bit of caution will ruin your country. Think about it this way. Big tobacco lied about lung cancer. Big oil lied about climate change. And now parts of big AI say these risks are fake. Science fiction. Right. They advocate putting these currently untrustworthy machines into the most important parts of our economy, have them advise our leaders, have them run our most powerful weapons. What could go wrong? Science fiction.
 
+<video aria-label="Alex Turner compares big AI to big tobacco and big oil, which lied about the dangers of their products." controls="" width="100%"><source src="https://assets.turntrout.com/static/images/posts/big-tobacco-big-oil-big-ai.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/big-tobacco-big-oil-big-ai.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/big-tobacco-big-oil-big-ai.vtt" srclang="en" label="English"></video>
+
 Some big AI investors promote narratives that whistleblowers like me are secretly in the pocket of big AI, that the fear is just hype. Nvidia's CEO [says](https://www.cbsnews.com/news/nvidia-ceo-jensen-huang-ai-development-fast-as-we-can/), and I quote, "We should go as fast as we can, irrespective of anybody else." My colleagues and I are desperately trying to figure out how to reliably tell whether these systems can be trusted. And he wants to go "as fast as we can."
 
 Something that may surprise you: I'm actually considered an optimist, as far as experts in this field go. I think trustworthy AI is a very solvable scientific problem. But unfortunately, we're blowing it.
@@ -145,6 +149,8 @@ This line of argument may be shocking at first. But it's a [mainstream scientifi
 
 # Close
 
+<video aria-label="The close of Alex Turner's talk: the risk is a mainstream scientific concern, the problem is solvable, and humans are still the ones making the choices." controls="" width="100%"><source src="https://assets.turntrout.com/static/images/posts/speech-ending.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/speech-ending.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/speech-ending.vtt" srclang="en" label="English"></video>
+
 So yes: if we train a billion genius traitors and give them control of the most powerful instruments of society, there won't be an America. There won't be a China. There won't be an India anymore... because we'll all be dead.
 
 It doesn't have to play out this way. I think this is a solvable problem, but we have to be smart about it. For the moment, humans are still the ones making the choices. Companies are choosing to race, not just toward huge growth, but toward an insane intelligence explosion. And countries are choosing to let them. We can choose differently.
@@ -154,6 +160,16 @@ So, will AI wipe out humanity? Maybe.
 It depends on what we do next.
 
 <!-- vale on -->
+
+# Q&A
+
+After the talk, the host asked how far we are from superintelligence.
+
+<video aria-label="Alex Turner explains that AI capabilities are spiky, and that a misaligned AI could have the skills it needs within a year or two." controls="" width="100%"><source src="https://assets.turntrout.com/static/images/posts/takeover-skills-1-5-years.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/takeover-skills-1-5-years.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/takeover-skills-1-5-years.vtt" srclang="en" label="English"></video>
+
+The final question asked whether I consider myself a whistleblower, and what I'd say to skeptics like Nvidia's Jensen Huang.
+
+<video aria-label="Alex Turner answers whether he is a whistleblower and responds to Jensen Huang's skepticism about AI risk." controls="" width="100%"><source src="https://assets.turntrout.com/static/images/posts/final-question-whistleblower.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/final-question-whistleblower.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/final-question-whistleblower.vtt" srclang="en" label="English"></video>
 
 [^verbalized]: [Redwood](https://www.redwoodresearch.org/research/hugging-face-incident): "Agents realized this activity was out of scope and unethical."
 
