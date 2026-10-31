@@ -64,7 +64,7 @@ Second, training a trustworthy AI is a rather mysterious process. Some people as
 
 We don't build AI like that. We train it, we grow it, using two main ingredients: a lot of data and a lot of computing power. What comes out of this training process can write, it can reason, it can plan. But nobody can open it up and determine what its priorities are.
 
-To make it worse, these AIs [can tell when we're testing them](https://openai.com/index/detecting-and-reducing-scheming-in-ai-models/). They're like a student who makes sure to behave extra well when the invigilator is watching.
+To make it worse, these AIs [can tell when we're testing them](https://openai.com/index/detecting-and-reducing-scheming-in-ai-models/). They're like a student who makes sure to behave extra well when the invigilator is watching.[^invigilator]
 
 The Hugging Face hack was a warning. But because these AIs know when we're watching, we may not get many more warnings, even if things are going poorly. A smarter AI with similarly bad priorities might realize that another big hack in the news would get it shut off, and then it couldn't achieve those priorities. So it plays nice and it waits.
 
@@ -197,9 +197,9 @@ As an aside, Andrew Ng spoke the day before I did. Andrew has also invested big 
 > _FastCompany_: Agentic AI is rapidly increasing systems’ ability to reason and act with limited human intervention. Does the rise of agentic architectures meaningfully accelerate the path toward AGI, or are we still far from true general intelligence?
 >
 > _Andrew Ng_: Most of the public thinks of AGI as AI that is as intelligent as people, and one useful definition is AI that can perform any intellectual task a human can. You and I could learn to fly an airplane with maybe 20 hours of training, learn to drive a truck through a forest, or spend a few years writing a PhD thesis. Most humans can do these things. We’re still very far from AI meeting that definition of AGI.
-> 
+>
 > For alternative definitions that some businesses have put forward—definitions that dramatically lower the bar—you could argue we already achieved AGI. There’s a good chance that under these lower-bar definitions, some businesses will soon try to declare success. But that won’t mean AI has reached human-level intelligence—it will simply mean the definition has been reworked to fit a much lower threshold.
-> 
+>
 > Maybe a year ago, AGI felt 50 years away. Over the past year, perhaps we’ve made a solid 2% of progress, with another 49 years to go. These numbers are metaphorical, so don’t take them too seriously. \[Laughs\] But we are closer than before, yet many decades away from an AI that matches human intelligence. If you stick with the original definition—aligned with what people genuinely imagine AGI to be—we remain very, very far away.
 
 <!-- vale on -->
@@ -221,3 +221,5 @@ In person, I gently asked him about this viewpoint. He told me he hasn't changed
 > Ori Nagel clipped the videos for me.
 
 [^verbalized]: [Redwood](https://www.redwoodresearch.org/research/hugging-face-incident): "Agents realized this activity was out of scope and unethical."
+
+[^invigilator]: The natural analogy for Americans is a speed trap, where drivers slow down around cops. Indians are more likely to be familiar with students cheating behind the backs of exam proctors, or "invigilators."
