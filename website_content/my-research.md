@@ -1,13 +1,15 @@
 ---
 draft: "false"
-permalink: research
+permalink: professional
+aliases:
+  - research
 hideSubscriptionLinks: false
 description: A tour of the research areas I've loved over the years.
 date_published: 2024-10-27
 date_updated: 2026-08-03
 tags:
   - AI
-title: My research
+title: My professional work
 ---
 
 Over the years, I've worked on lots of research problems. Every time, I felt invested in my work. The work felt beautiful. Even though many days have passed since I have daydreamed about instrumental convergence, I'm proud of what I've accomplished and discovered.

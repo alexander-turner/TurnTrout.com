@@ -25,7 +25,7 @@ card_image_alt: A panoramic view of the Grinnell College campus on a sunny autum
 > [!info] Notes from a talk originally given at my alma mater
 > I went to [Grinnell College](https://grinnell.edu) for my undergraduate degree. For the 2025 reunion event, I agreed to speak on a panel about AI. I like the talk I gave because I think it's a good "101" intro to AI risk, aimed at educated laypeople.
 
-I work at Google DeepMind [on the science of aligning artificial intelligence with human interests](/research). I [completed a PhD in this field in 2022](/alignment-phd) and then I did my postdoc at UC Berkeley. I’ll discuss some of the ways in which AI might go wrong.
+I work at Google DeepMind [on the science of aligning artificial intelligence with human interests](/professional). I [completed a PhD in this field in 2022](/alignment-phd) and then I did my postdoc at UC Berkeley. I’ll discuss some of the ways in which AI might go wrong.
 
 > [!warning] I'm only speaking for myself, not for my employer.
 

@@ -58,7 +58,7 @@ I've imported and remastered all 120 of my LessWrong posts. _Every single post_,
 2. [@title](/effective-layer-horizon)
 3. [@title](/dangers-of-intrinsic-power-seeking)
 
-The [research page](/research) summarizes my past and present research interests, along with short retrospectives on the older areas.
+The [professional page](/professional) summarizes my past and present research interests, along with short retrospectives on the older areas.
 
 ## My dating doc
 
