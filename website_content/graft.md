@@ -35,7 +35,11 @@ During training, models sometimes learn to cheat at tasks rather than solve them
 Read [the paper](https://arxiv.org/abs/2610.17062), [the code](https://github.com/jnward/GRAFT), or [the Twitter thread](https://x.com/_jake_ward/status/2112264244767211854). Shawn Hu and Jake Ward contributed equally (randomly ordered).
 
 > [!thanks]
-> Research done as part of [MATS](https://www.matsprogram.org/). This article is cross-posted to the [Anthropic Alignment Science Blog](https://alignment.anthropic.com/2026/graft/).
+> Research done as part of [MATS](https://www.matsprogram.org/) 9.0. This article is cross-posted to the [Anthropic Alignment Science Blog](https://alignment.anthropic.com/2026/graft/).
+
+<video autoplay loop muted playsinline aria-label="An animated model is overseen by a monitor (a magnifying glass) during training. A devil adapter and an angel adapter sit on top of the model. When the monitor flags a reward hack, the devil grows; unflagged good behavior strengthens the angel. In deployment, the devil is removed, leaving the angel and the model producing only good behavior."><source src="https://assets.turntrout.com/static/images/posts/gradient-routing-rl-animation.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/gradient-routing-rl-animation.webm" type="video/webm"></video>
+
+Figure: Animation from [Jake Ward's Twitter thread](https://x.com/_jake_ward/status/2112264244767211854). The devil is the FORGET adapter and the angel is the RETAIN adapter.
 
 # Background
 
@@ -113,15 +117,3 @@ We would be excited to see experiments in more realistic RL settings with LLM-ba
 - Using a monitor to route gradients rather than to shape reward may let developers get value from weak monitors without teaching models subversive policies.
 
 Additional experiments and results are in [our paper](https://arxiv.org/abs/2610.17062)!
-
-```bibtex
-@misc{ward2026gradientroutinglocalizesremoves,
-      title={Gradient Routing Localizes and Removes Unintended Behaviors in RL},
-      author={Jake Ward and Shawn Hu and Aria Wong and Nathan Hu and Bryce Woodworth and Alexander Matt Turner and Alex Cloud},
-      year={2026},
-      eprint={2610.17062},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2610.17062},
-}
-```

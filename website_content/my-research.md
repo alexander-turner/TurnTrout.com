@@ -370,18 +370,18 @@ Subtitle: Winter 2026 (MATS 9.0)
 > [!summary] [@title](/eval-cooperation)
 > Smart misaligned models may realize they are being evaluated ("eval awareness") and then act to look good to us so we don't realize they're misaligned ("eval gaming"). Instead of hiding evaluations from the model, we make the model _want_ to help evaluators learn what they're trying to learn. In five of eight model settings we tested, cooperation training closes 70–100% of the "eval gaming gap" (how much more often the model misbehaves when it says it's being evaluated).
 
+## Gradient routing against reward hacking
+
+Subtitle: Winter 2026 (MATS 9.0)
+
+Two years after [gradient routing](#gradient-routing), we brought the technique to RL post-training.
+
+> [!summary] [@title](/gradient-routing-removes-reward-hacking)
+> Penalizing reward hacks which a monitor detects can teach the model to hack in ways the monitor can't detect. GRAFT instead routes the gradients from flagged trajectories into a "forget" adapter, which we delete after training. Since the monitor never shapes the reward, the model isn't reinforced for evading the monitor. On Qwen3-8B, GRAFT nearly eliminates reward hacking—including hacks the monitor never flagged—while improving task performance by nearly 20 percentage points over the base model.
+
 ## Natural language autoencoder robustness
 
 Subtitle: Summer 2026 (MATS 10.0)
 
 > [!summary] [@title](/natural-language-autoencoder-robustness)
 > Natural language autoencoders (NLAs) are meant to read an LLM's activation vector and describe in plain text what the model is thinking. NLAs are initialized using Claude's guesses about what the model might be thinking. When we initialized an NLA with implausible guesses, the NLA reconstructed activations nearly as accurately as normally initialized NLAs—while emitting 99.3% implausible statements. If our results scale, they cast doubt on the usefulness of NLAs.
-
-## Gradient routing against reward hacking
-
-Subtitle: Published October 2026
-
-Two years after [gradient routing](#gradient-routing), we brought the technique to RL post-training.
-
-> [!summary] [@title](/gradient-routing-removes-reward-hacking)
-> Penalizing reward hacks which a monitor detects can teach the model to hack in ways the monitor can't detect. GRAFT instead routes the gradients from flagged trajectories into a "forget" adapter, which we delete after training. Since the monitor never shapes the reward, the model isn't reinforced for evading the monitor. On Qwen3-8B, GRAFT nearly eliminates reward hacking—including hacks the monitor never flagged—while improving task performance by nearly 20 percentage points over the base model.
