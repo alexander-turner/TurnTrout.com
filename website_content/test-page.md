@@ -916,10 +916,10 @@ Each emoji stays glued to its preceding character and never wraps alone to the s
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
   <div class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
-    A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, which ignored a third <span class="search-text-demo">trout</span>.
+    A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was currently ignoring a goose.
   </div>
   <div class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
-    A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, which ignored a third <span class="search-text-demo">trout</span>.
+    A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was currently ignoring a goose.
   </div>
 </div>
 
