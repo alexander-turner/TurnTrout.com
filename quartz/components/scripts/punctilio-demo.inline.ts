@@ -1,14 +1,12 @@
 import { transform, type TransformOptions } from "punctilio"
 import { rehypePunctilio } from "punctilio/rehype"
-import { remarkPunctilio } from "punctilio/remark"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
-import remarkParse from "remark-parse"
-import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
 import { debounce, setupCopyButton } from "./component_script_utils"
 import { renderDiffHtml } from "./punctilio-demo-diff"
+import { transformMarkdownSource } from "./punctilio-demo-markdown"
 
 const STORAGE_KEY_INPUT = "punctilio-input"
 const STORAGE_KEY_MODE = "punctilio-mode"
@@ -47,22 +45,6 @@ function getConfig(): TransformOptions {
   }
 }
 
-// ─── Markdown mode ───────────────────────────────────────────────────
-
-/**
- * Transform Markdown using punctilio's remark plugin pipeline.
- * Handles code blocks, inline code, and other Markdown syntax
- * automatically via the MDAST-based remarkPunctilio transformer.
- */
-function transformMarkdownText(text: string, config: TransformOptions): string {
-  const result = unified()
-    .use(remarkParse)
-    .use(remarkPunctilio, config)
-    .use(remarkStringify)
-    .processSync(text)
-  return String(result)
-}
-
 // ─── HTML mode ───────────────────────────────────────────────────────
 
 /**
@@ -84,7 +66,7 @@ function doTransform(text: string, mode: TransformMode, config: TransformOptions
     case "plaintext":
       return transform(text, config)
     case "markdown":
-      return transformMarkdownText(text, config)
+      return transformMarkdownSource(text, config)
     case "html":
       return transformHtmlText(text, config)
     default: {

@@ -110,6 +110,7 @@
     "lightningcss": "1.32.0",
     "mdast-util-find-and-replace": "3.0.2",
     "mdast-util-to-hast": "13.2.1",
+    "micromark-util-decode-string": "2.0.1",
     "micromorph": "0.4.5",
     "mime-types": "3.0.2",
     "p-retry": "8.0.0",
