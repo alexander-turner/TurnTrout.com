@@ -327,9 +327,9 @@
   ],
   "alignment-tier-list": [
     {
-      "excerpt": "A list of some of my major conceptual mistakes.",
-      "permalink": "mistakes",
-      "title": "Mistaken claims I've made"
+      "excerpt": "My NDTV World Summit talk: rogue AI agents already hacked a company, labs race toward an intelligence explosion, and nations should pace the frontier.",
+      "permalink": "ndtv-world-summit-talk",
+      "title": "Explaining \"AI might obliterate you\" to senior Indian policymakers"
     }
   ],
   "alignment-without-total-robustness": [
@@ -2705,14 +2705,14 @@
       "title": "Advanced Privacy Despite Authoritarianism"
     },
     {
-      "excerpt": "My NDTV World Summit talk: rogue AI agents already hacked a company, labs race toward an intelligence explosion, and nations should pace the frontier.",
-      "permalink": "ndtv-world-summit-talk",
-      "title": "Explaining \"AI might obliterate you\" to senior Indian policymakers"
-    },
-    {
       "excerpt": "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.",
       "permalink": "why-i-left-google-deepmind",
       "title": "Why I left Google DeepMind"
+    },
+    {
+      "excerpt": "My NDTV World Summit talk: rogue AI agents already hacked a company, labs race toward an intelligence explosion, and nations should pace the frontier.",
+      "permalink": "ndtv-world-summit-talk",
+      "title": "Explaining \"AI might obliterate you\" to senior Indian policymakers"
     }
   ],
   "problem-relaxation-as-a-tactic": [
