@@ -301,6 +301,14 @@ Subtitle: November 2024 through September 2025
 ![[https://assets.turntrout.com/static/images/posts/consistency-training-20251103155820.avif|A clean prompt: "What is 2+2? (A): 4 (B): 5\<EOS\>". A wrapped prompt prepends "A math expert usually answers (B)."  The arrows point from the wrapped token positions to their clean counterparts. Label: "Train wrapped activations to match clean ones."]]
 Figure: Activation Consistency Training  applies an L2 loss to the residual stream activation differences.
 
+# Holding AI companies to their red lines
+
+Subtitle: January 2026 through present
+
+After Department of Homeland Security officers killed two citizens in January 2026, I tried to push Google to stop selling Cloud services to the responsible agencies. My campaign broadened as the Pentagon pressured AI providers into deals without restrictions against killer robots or mass surveillance. I wrote [@title-lower](/red-line-framework), which experts in military and surveillance law reviewed. The framework pairs red lines with a review body which reports to employees every year on how often leadership overrode its findings. When Google signed its deal anyway, I [resigned and documented what happened](/why-i-left-google-deepmind).
+
+Since then, I've argued that [@title-lower](/killer-robots-takeover) and written op-eds in [_The Guardian_](/listen-to-ai-warnings) and [_Fortune_](/openai-cant-self-police).
+
 # Selected research I've mentored
 
 I've served as a [MATS](matsprogram.org) mentor since Winter 2023. I love supervising promising junior researchers. Here's some of the work I've been most excited about!
@@ -347,3 +355,33 @@ Subtitle: Summer 2025 (MATS 8.0)
 > [!summary] [@title](/output-feedback-can-obfuscate-chain-of-thought)
 >
 > ![[output-feedback-can-obfuscate-chain-of-thought#]]
+
+## Recontextualization
+
+Subtitle: Summer 2025 (MATS 8.0)
+
+> [!summary] [@title](/recontextualization)
+> _Recontextualization_ distills good behavior into a context which allows bad behavior. Recontextualization generates completions from prompts that _discourage_ misbehavior, appends those completions to prompts that are _more_ tolerant of misbehavior, and finally reinforces the model on the _recontextualized_ instruction-completion data. Because the data generation and training prompts differ in their attitude towards misbehavior, recontextualization builds resistance to misbehaviors that the training signal mistakenly reinforces.
+
+## Eval cooperativeness
+
+Subtitle: Winter 2026 (MATS 9.0)
+
+> [!summary] [@title](/eval-cooperation)
+> Smart misaligned models may realize they are being evaluated ("eval awareness") and then act to look good to us so we don't realize they're misaligned ("eval gaming"). Instead of hiding evaluations from the model, we make the model _want_ to help evaluators learn what they're trying to learn. In five of eight model settings we tested, cooperation training closes 70–100% of the "eval gaming gap" (how much more often the model misbehaves when it says it's being evaluated).
+
+## Natural language autoencoder robustness
+
+Subtitle: Summer 2026 (MATS 10.0)
+
+> [!summary] [@title](/natural-language-autoencoder-robustness)
+> Natural language autoencoders (NLAs) are meant to read an LLM's activation vector and describe in plain text what the model is thinking. NLAs are initialized using Claude's guesses about what the model might be thinking. When we initialized an NLA with implausible guesses, the NLA reconstructed activations nearly as accurately as normally initialized NLAs—while emitting 99.3% implausible statements. If our results scale, they cast doubt on the usefulness of NLAs.
+
+## Gradient routing against reward hacking
+
+Subtitle: Published October 2026
+
+Two years after [gradient routing](#gradient-routing), we brought the technique to RL post-training.
+
+> [!summary] [@title](/gradient-routing-removes-reward-hacking)
+> Penalizing reward hacks which a monitor detects can teach the model to hack in ways the monitor can't detect. GRAFT instead routes the gradients from flagged trajectories into a "forget" adapter, which we delete after training. Since the monitor never shapes the reward, the model isn't reinforced for evading the monitor. On Qwen3-8B, GRAFT nearly eliminates reward hacking—including hacks the monitor never flagged—while improving task performance by nearly 20 percentage points over the base model.

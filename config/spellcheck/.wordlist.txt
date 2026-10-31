@@ -130,6 +130,7 @@
 80KB
 84KB
 893th
+8B
 8GB
 8i=-56
 8pt
@@ -805,6 +806,7 @@ customizable
 customizations
 cuz
 cyber
+cyberattacks
 cyberdeck
 cybersecurity
 d'habitude
@@ -1631,6 +1633,7 @@ kerned
 Kerning
 kerning
 keyring
+Khalifa
 Khullar
 kiiiinda
 kinesiotherapy
@@ -2661,6 +2664,7 @@ RL-trains-policies-not-agents
 RLauth
 RLHF
 RLHF'd
+RLVR
 RMU
 roadmap
 Robustified
