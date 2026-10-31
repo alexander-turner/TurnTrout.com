@@ -1,5 +1,5 @@
 ---
-title: Explaining "AI might obliterate you" to senior Indian policymakers
+title: Explaining "AI might obliterate you" to senior policymakers in India
 permalink: ndtv-world-summit-talk
 no_dropcap: false
 tags:
