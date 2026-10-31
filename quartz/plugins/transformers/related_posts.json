@@ -1666,14 +1666,14 @@
       "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
     },
     {
-      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
-      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
-      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
-    },
-    {
       "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
       "permalink": "deep-causal-transcoding",
       "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
     }
   ],
   "hammertime-final-exam": [
@@ -2977,6 +2977,11 @@
       "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
       "permalink": "mechanistically-eliciting-latent-behaviors",
       "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "GRAFT routes gradients from monitor-flagged reward hacks into an adapter, then deletes the adapter. Weak monitors stop teaching models to evade them.",
+      "permalink": "gradient-routing-removes-reward-hacking",
+      "title": "Gradient Routing Localizes and Removes Unintended Behaviors in RL"
     }
   ],
   "review-of-but-exactly-how-complex-and-fragile": [
