@@ -369,10 +369,13 @@ describe("shouldIncludeFavicon", () => {
     expect(favicons.shouldIncludeFavicon(imgPath, imgPath, counts)).toBe(false)
   })
 
-  it("handles allowlist substring matching anywhere in path", () => {
-    const imgPath = "/static/images/external-favicons/subdomain_apple_com.svg"
-    const counts = new Map<string, number>([[favicons.normalizePathForCounting(imgPath), 0]])
-    expect(favicons.shouldIncludeFavicon(imgPath, imgPath, counts)).toBe(true)
+  it.each([
+    ["/static/images/external-favicons/subdomain_apple_com.svg", true],
+    ["https://assets.turntrout.com/static/images/external-favicons/api_x_com.svg", true],
+    ["/static/images/external-favicons/fox_com.svg", false],
+    ["/static/images/external-favicons/pineapple_com.svg", false],
+  ])("matches allowlist entries at domain boundaries: %s -> %s", (imgPath, expected) => {
+    expect(favicons.shouldIncludeFavicon(imgPath, imgPath, new Map())).toBe(expected)
   })
 })
 

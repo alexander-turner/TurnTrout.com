@@ -2315,6 +2315,23 @@
       "title": "Self-fulfilling misalignment data might be poisoning our AI models"
     }
   ],
+  "media": [
+    {
+      "excerpt": "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.",
+      "permalink": "why-i-left-google-deepmind",
+      "title": "Why I left Google DeepMind"
+    },
+    {
+      "excerpt": "Op-ed in The Guardian: AI could escape our control. Voluntary commitments failed at Google, so governments must restrain the race to superintelligence.",
+      "permalink": "listen-to-ai-warnings",
+      "title": "I worked at Google DeepMind. You should listen to the warnings about AI."
+    },
+    {
+      "excerpt": "AI takeover seems easier to pull off for an AI that we teach to wield killer robots.",
+      "permalink": "killer-robots-takeover",
+      "title": "Misaligned AIs could use killer robots to take over"
+    }
+  ],
   "mistakes": [
     {
       "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
