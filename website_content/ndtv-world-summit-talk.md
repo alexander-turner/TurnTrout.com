@@ -25,6 +25,8 @@ On October 23rd, I gave a 20-minute talk at the [NDTV World Summit](https://www.
 
 # The talk
 
+<video aria-label="Alex Turner's full talk and Q&A at the NDTV World Summit in New Delhi." controls="" width="100%" preload="metadata"><source src="https://assets.turntrout.com/static/images/posts/ndtv-world-summit-talk.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/ndtv-world-summit-talk.webm" type="video/webm"/><track kind="captions" src="https://assets.turntrout.com/static/images/posts/ndtv-world-summit-talk.vtt" srclang="en" label="English"></video>
+
 <!-- vale off -->
 
 This summer, a swarm of AIs went rogue.
