@@ -190,6 +190,12 @@ body {
     "cv11" 1;
   font-variant-numeric: oldstyle-nums;
 
+  // macOS otherwise dilates glyph stems, which thickens EB Garamond (most
+  // visibly light-on-dark). Grayscale antialiasing keeps every run, small caps
+  // included, at the face's drawn weight. No effect on other platforms.
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
   // Code should contain full-height numbers
   & code,
   & pre {
@@ -347,7 +353,6 @@ article[data-use-dropcap="true"] > p:first-of-type .small-caps {
 
   font-style: inherit;
   font-variant-caps: small-caps; // Fixes kerning in a few cases
-  -webkit-font-smoothing: antialiased; // Prevent excess bolding
 
   dt &,
   b &,

@@ -474,21 +474,21 @@
       "title": "Attainable Utility Preservation: Scaling to Superhuman"
     },
     {
-      "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "research",
-      "title": "My research"
-    },
-    {
       "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
       "permalink": "attainable-utility-preservation-paper",
       "title": "Penalizing Impact via Attainable Utility Preservation"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "professional",
+      "title": "My professional work"
     }
   ],
   "attainable-utility-preservation-paper": [
     {
       "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "research",
-      "title": "My research"
+      "permalink": "professional",
+      "title": "My professional work"
     },
     {
       "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
@@ -600,8 +600,8 @@
     },
     {
       "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "research",
-      "title": "My research"
+      "permalink": "professional",
+      "title": "My professional work"
     },
     {
       "excerpt": "How to make AI agents avoid negative side effects, especially in multi-stakeholder environments.",
@@ -761,8 +761,8 @@
     },
     {
       "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "research",
-      "title": "My research"
+      "permalink": "professional",
+      "title": "My professional work"
     },
     {
       "excerpt": "A foundational examination of \"impact\" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.",
@@ -788,8 +788,8 @@
     },
     {
       "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "research",
-      "title": "My research"
+      "permalink": "professional",
+      "title": "My professional work"
     },
     {
       "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
@@ -824,9 +824,9 @@
       "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
     },
     {
-      "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
-      "permalink": "deep-causal-transcoding",
-      "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
+      "excerpt": "GRAFT routes gradients from monitor-flagged reward hacks into an adapter, then deletes the adapter. Weak monitors stop teaching models to evade them.",
+      "permalink": "gradient-routing-removes-reward-hacking",
+      "title": "Gradient Routing Localizes and Removes Unintended Behaviors in RL"
     }
   ],
   "corrigibility-as-outside-view": [
@@ -940,8 +940,8 @@
     },
     {
       "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "research",
-      "title": "My research"
+      "permalink": "professional",
+      "title": "My professional work"
     }
   ],
   "deducing-impact": [
@@ -1073,6 +1073,11 @@
       "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
     },
     {
+      "excerpt": "GRAFT routes gradients from monitor-flagged reward hacks into an adapter, then deletes the adapter. Weak monitors stop teaching models to evade them.",
+      "permalink": "gradient-routing-removes-reward-hacking",
+      "title": "Gradient Routing Localizes and Removes Unintended Behaviors in RL"
+    },
+    {
       "excerpt": "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts.",
       "permalink": "recontextualization-mitigates-specification-gaming",
       "title": "Recontextualization Mitigates Specification Gaming Without Modifying the Specification"
@@ -1086,11 +1091,6 @@
       "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
       "permalink": "consistency-training",
       "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
-    },
-    {
-      "excerpt": "When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.",
-      "permalink": "self-fulfilling-misalignment",
-      "title": "Self-fulfilling misalignment data might be poisoning our AI models"
     }
   ],
   "doctor-stone": [
@@ -1642,6 +1642,38 @@
       "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
       "permalink": "top-right-steering-vector",
       "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
+    },
+    {
+      "excerpt": "GRAFT routes gradients from monitor-flagged reward hacks into an adapter, then deletes the adapter. Weak monitors stop teaching models to evade them.",
+      "permalink": "gradient-routing-removes-reward-hacking",
+      "title": "Gradient Routing Localizes and Removes Unintended Behaviors in RL"
+    }
+  ],
+  "gradient-routing-removes-reward-hacking": [
+    {
+      "excerpt": "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts.",
+      "permalink": "recontextualization-mitigates-specification-gaming",
+      "title": "Recontextualization Mitigates Specification Gaming Without Modifying the Specification"
+    },
+    {
+      "excerpt": "We challenge the assumption that output supervision preserves Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the CoTs.",
+      "permalink": "output-feedback-can-obfuscate-chain-of-thought",
+      "title": "Output Supervision Can Obfuscate the CoT"
+    },
+    {
+      "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
+      "permalink": "mechanistically-eliciting-latent-behaviors",
+      "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
+      "permalink": "deep-causal-transcoding",
+      "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "\"Reward hacking\" is usually specification gaming, not reward signal optimization. My 2022 post stands.",
+      "permalink": "reward-hacking-doesnt-show-reward-is-optimization-target",
+      "title": "2025-era \"reward hacking\" does not show that reward is the optimization target"
     }
   ],
   "hammertime-final-exam": [
@@ -1721,8 +1753,8 @@
     },
     {
       "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "research",
-      "title": "My research"
+      "permalink": "professional",
+      "title": "My professional work"
     }
   ],
   "how-to-dissolve-it": [
@@ -2322,6 +2354,11 @@
       "title": "2019 Review Rewrite: Seeking Power is Often Robustly Instrumental in MDPs"
     },
     {
+      "excerpt": "GRAFT routes gradients from monitor-flagged reward hacks into an adapter, then deletes the adapter. Weak monitors stop teaching models to evade them.",
+      "permalink": "gradient-routing-removes-reward-hacking",
+      "title": "Gradient Routing Localizes and Removes Unintended Behaviors in RL"
+    },
+    {
       "excerpt": "Formal analysis showing that, for agents optimizing a reward function, corrigibility is rare and perhaps even incoherent.",
       "permalink": "a-certain-formalization-of-corrigibility-is-vnm-incoherent",
       "title": "A Certain Formalization of Corrigibility Is VNM-Incoherent"
@@ -2330,11 +2367,6 @@
       "excerpt": "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition.",
       "permalink": "reward-is-not-the-optimization-target",
       "title": "Reward is not the optimization target"
-    },
-    {
-      "excerpt": "We challenge the assumption that output supervision preserves Chain-of-Thought faithfulness. Instead, reinforcing final outputs warps the CoTs.",
-      "permalink": "output-feedback-can-obfuscate-chain-of-thought",
-      "title": "Output Supervision Can Obfuscate the CoT"
     }
   ],
   "natural-language-autoencoder-robustness": [
@@ -2451,14 +2483,14 @@
   ],
   "open-source": [
     {
-      "excerpt": "Celebrating the launch of the website after months of work.",
-      "permalink": "launch",
-      "title": "Site launch: Come relax by The Pond!"
-    },
-    {
       "excerpt": "Showing off and explaining this site's beauty.",
       "permalink": "design",
       "title": "The design of this website"
+    },
+    {
+      "excerpt": "Celebrating the launch of the website after months of work.",
+      "permalink": "launch",
+      "title": "Site launch: Come relax by The Pond!"
     },
     {
       "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
@@ -2509,6 +2541,11 @@
   ],
   "output-feedback-can-obfuscate-chain-of-thought": [
     {
+      "excerpt": "GRAFT routes gradients from monitor-flagged reward hacks into an adapter, then deletes the adapter. Weak monitors stop teaching models to evade them.",
+      "permalink": "gradient-routing-removes-reward-hacking",
+      "title": "Gradient Routing Localizes and Removes Unintended Behaviors in RL"
+    },
+    {
       "excerpt": "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts.",
       "permalink": "recontextualization-mitigates-specification-gaming",
       "title": "Recontextualization Mitigates Specification Gaming Without Modifying the Specification"
@@ -2527,11 +2564,6 @@
       "excerpt": "Principled derivation of unsupervised steering vector discovery methods. Unlocks password-locked models and breaks jailbreak defenses.",
       "permalink": "deep-causal-transcoding",
       "title": "Deep Causal Transcoding: A Framework for Mechanistically Eliciting Latent Behaviors in Language Models"
-    },
-    {
-      "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
-      "permalink": "consistency-training",
-      "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
     }
   ],
   "overcoming-clinginess-in-impact-measures": [
@@ -2681,6 +2713,11 @@
       "excerpt": "In 2025, America is different. Reduce your chance of persecution via smart technical choices.",
       "permalink": "advanced-privacy",
       "title": "Advanced Privacy Despite Authoritarianism"
+    },
+    {
+      "excerpt": "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.",
+      "permalink": "why-i-left-google-deepmind",
+      "title": "Why I left Google DeepMind"
     }
   ],
   "problem-relaxation-as-a-tactic": [
@@ -2708,6 +2745,33 @@
       "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
       "permalink": "conclusion-to-reframing-impact",
       "title": "Conclusion to 'Reframing Impact'"
+    }
+  ],
+  "professional": [
+    {
+      "excerpt": "AI agents trained with Attainable Utility Preservation avoid most side effects in Conway's Game of Life without explicit instructions.",
+      "permalink": "avoiding-side-effects-in-complex-environments",
+      "title": "Avoiding Side Effects in Complex Environments"
+    },
+    {
+      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
+      "permalink": "attainable-utility-preservation-paper",
+      "title": "Penalizing Impact via Attainable Utility Preservation"
+    },
+    {
+      "excerpt": "The AUP technique encourages low-impact behavior in both simple and complex environments.",
+      "permalink": "attainable-utility-preservation-empirical-results",
+      "title": "Attainable Utility Preservation: Empirical Results"
+    },
+    {
+      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
+      "permalink": "conclusion-to-reframing-impact",
+      "title": "Conclusion to 'Reframing Impact'"
+    },
+    {
+      "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
+      "permalink": "attainable-utility-preservation-concepts",
+      "title": "Attainable Utility Preservation: Concepts"
     }
   ],
   "punctilio": [
@@ -2827,6 +2891,11 @@
   ],
   "recontextualization-mitigates-specification-gaming": [
     {
+      "excerpt": "GRAFT routes gradients from monitor-flagged reward hacks into an adapter, then deletes the adapter. Weak monitors stop teaching models to evade them.",
+      "permalink": "gradient-routing-removes-reward-hacking",
+      "title": "Gradient Routing Localizes and Removes Unintended Behaviors in RL"
+    },
+    {
       "excerpt": "Simple & effective: train the AI to behave as if the jailbreak were not present. Explores activation-level training of Gemini 2.5 Flash.",
       "permalink": "consistency-training",
       "title": "Consistency Training Helps Stop Sycophancy and Jailbreaks"
@@ -2845,11 +2914,6 @@
       "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
       "permalink": "mechanistically-eliciting-latent-behaviors",
       "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
-    },
-    {
-      "excerpt": "AI increasingly fakes good behavior on evaluations. Rather than hiding that the AI is being evaluated, make it prioritize helping evaluators.",
-      "permalink": "eval-cooperation",
-      "title": "Eval cooperativeness may be a scalable mitigation for eval gaming"
     }
   ],
   "red-line-framework": [
@@ -2893,33 +2957,6 @@
       "title": "Towards a New Impact Measure"
     }
   ],
-  "research": [
-    {
-      "excerpt": "AI agents trained with Attainable Utility Preservation avoid most side effects in Conway's Game of Life without explicit instructions.",
-      "permalink": "avoiding-side-effects-in-complex-environments",
-      "title": "Avoiding Side Effects in Complex Environments"
-    },
-    {
-      "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
-      "permalink": "attainable-utility-preservation-paper",
-      "title": "Penalizing Impact via Attainable Utility Preservation"
-    },
-    {
-      "excerpt": "The AUP technique encourages low-impact behavior in both simple and complex environments.",
-      "permalink": "attainable-utility-preservation-empirical-results",
-      "title": "Attainable Utility Preservation: Empirical Results"
-    },
-    {
-      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
-      "permalink": "conclusion-to-reframing-impact",
-      "title": "Conclusion to 'Reframing Impact'"
-    },
-    {
-      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
-      "permalink": "excitement-about-impact-measures",
-      "title": "Reasons for Excitement about Impact of Impact Measure Research"
-    }
-  ],
   "residual-stream-norms-grow-exponentially-over-the-forward-pass": [
     {
       "excerpt": "Norm growth in activations drowns out earlier computations - do transformers just process recent sublayer outputs?",
@@ -2940,6 +2977,11 @@
       "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
       "permalink": "mechanistically-eliciting-latent-behaviors",
       "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
+    },
+    {
+      "excerpt": "GRAFT routes gradients from monitor-flagged reward hacks into an adapter, then deletes the adapter. Weak monitors stop teaching models to evade them.",
+      "permalink": "gradient-routing-removes-reward-hacking",
+      "title": "Gradient Routing Localizes and Removes Unintended Behaviors in RL"
     }
   ],
   "review-of-but-exactly-how-complex-and-fragile": [
@@ -3013,14 +3055,14 @@
       "title": "Many arguments for AI x-risk are wrong"
     },
     {
-      "excerpt": "A list of some of my major conceptual mistakes.",
-      "permalink": "mistakes",
-      "title": "Mistaken claims I've made"
-    },
-    {
       "excerpt": "A critical look at the idea of \"lethal\" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.",
       "permalink": "disagreements-with-list-of-lethalities",
       "title": "Some of my disagreements with List of Lethalities"
+    },
+    {
+      "excerpt": "A list of some of my major conceptual mistakes.",
+      "permalink": "mistakes",
+      "title": "Mistaken claims I've made"
     }
   ],
   "reward-is-not-the-optimization-target": [
@@ -3359,14 +3401,14 @@
       "title": "Looking back on my alignment PhD"
     },
     {
-      "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "research",
-      "title": "My research"
-    },
-    {
       "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
       "permalink": "a-shot-at-the-diamond-alignment-problem",
       "title": "A shot at the diamond-alignment problem"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "professional",
+      "title": "My professional work"
     }
   ],
   "test-page": [
@@ -3666,8 +3708,8 @@
     },
     {
       "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "research",
-      "title": "My research"
+      "permalink": "professional",
+      "title": "My professional work"
     },
     {
       "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",

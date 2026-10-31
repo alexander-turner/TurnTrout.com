@@ -1,3 +1,5 @@
+import type { Page } from "@playwright/test"
+
 import { promises as fs } from "fs"
 import sharp from "sharp"
 
@@ -11,7 +13,9 @@ import {
   isDesktopViewport,
   pauseMediaElements,
   preventMediaPlayback,
+  restoreVideoSources,
   setTheme,
+  showVideoPosters,
   takeRegressionScreenshot,
   waitForImagesInElement,
   waitForTransitionEnd,
@@ -765,6 +769,48 @@ test.describe("pauseMediaElements", () => {
     await pauseMediaElements(page)
 
     expect(await notMedia.innerHTML()).toBe(initialHtml)
+  })
+})
+
+test.describe("video poster capture", () => {
+  const sourceUrls = [
+    "http://localhost:8080/visual-test-video.mp4",
+    "http://localhost:8080/visual-test-video.webm",
+  ]
+
+  test.beforeEach(async ({ page }) => {
+    await page.route("**/visual-test-poster.png", (route) =>
+      route.fulfill({ status: 200, contentType: "image/png", body: onePixelPng }),
+    )
+    await page.route("**/visual-test-video.*", (route) => route.fulfill({ status: 204, body: "" }))
+    await page.setContent(`
+      <video id="poster-video" muted poster="http://localhost:8080/visual-test-poster.png">
+        <source src="${sourceUrls[0]}" type="video/mp4">
+        <source src="${sourceUrls[1]}" type="video/webm">
+      </video>
+    `)
+  })
+
+  const readVideoState = (page: Page) =>
+    page.locator("#poster-video").evaluate((el: HTMLVideoElement) => ({
+      sources: Array.from(el.querySelectorAll<HTMLSourceElement>(":scope > source"), (s) => s.src),
+      stashes: el.querySelectorAll(":scope > template").length,
+      networkState: el.networkState,
+    }))
+
+  test("showVideoPosters detaches the media resource so the poster renders", async ({ page }) => {
+    await showVideoPosters(page)
+
+    // networkState 0 is NETWORK_EMPTY: no resource, so the element shows its poster.
+    expect(await readVideoState(page)).toEqual({ sources: [], stashes: 1, networkState: 0 })
+  })
+
+  test("restoreVideoSources reattaches the sources in order", async ({ page }) => {
+    await showVideoPosters(page)
+    await restoreVideoSources(page)
+
+    const { sources, stashes } = await readVideoState(page)
+    expect({ sources, stashes }).toEqual({ sources: sourceUrls, stashes: 0 })
   })
 })
 

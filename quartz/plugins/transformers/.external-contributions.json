@@ -82,7 +82,7 @@
       "number": 352,
       "title": "Fix TTS streaming: forward supports_streaming from backend clients to conversation agent",
       "url": "https://github.com/acon96/home-llm/pull/352",
-      "status": "closed"
+      "status": "merged"
     },
     {
       "repo": "acon96/home-llm",
@@ -96,7 +96,7 @@
       "number": 354,
       "title": "Fix system prompt not injected when refresh_system_prompt is disabled",
       "url": "https://github.com/acon96/home-llm/pull/354",
-      "status": "closed"
+      "status": "merged"
     },
     {
       "repo": "ankidroid/Anki-Android",
@@ -131,7 +131,7 @@
       "number": 9022,
       "title": "Hot-plugged virtio-pci device can take a guest BAR write before its device-tree node exists, so `move_bar` fails",
       "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/issues/9022",
-      "status": "open"
+      "status": "fixed"
     },
     {
       "repo": "cloud-hypervisor/cloud-hypervisor",
@@ -236,7 +236,7 @@
       "number": 406,
       "title": "No way to refuse an interactive sign-in: a needed sign-in becomes a device-code prompt, never an error",
       "url": "https://github.com/docker/sbx-releases/issues/406",
-      "status": "open"
+      "status": "fixed"
     },
     {
       "repo": "docker/sbx-releases",
@@ -334,7 +334,7 @@
       "number": 13865,
       "title": "runtime-rs: Stop mapping discard_unmap to the CH disk sparse flag",
       "url": "https://github.com/kata-containers/kata-containers/pull/13865",
-      "status": "closed"
+      "status": "merged"
     },
     {
       "repo": "kata-containers/kata-containers",
@@ -495,27 +495,41 @@
       "number": 11,
       "title": "up: tie cloud-hypervisor socket wait to readiness timeout",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/11",
-      "status": "open"
+      "status": "closed"
     },
     {
       "repo": "meridianlabs-ai/inspect_ranges",
       "number": 12,
       "title": "down: tear down cloud-hypervisor vsock dir from the owner record",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/12",
-      "status": "open"
+      "status": "closed"
     },
     {
       "repo": "meridianlabs-ai/inspect_ranges",
       "number": 13,
       "title": "tests: validate example ranges from both shipped locations",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/13",
-      "status": "open"
+      "status": "closed"
     },
     {
       "repo": "meridianlabs-ai/inspect_ranges",
       "number": 15,
       "title": "RFC: opt-in provider: glovebox (externally-provided agent box)",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/15",
+      "status": "closed"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 31,
+      "title": "execve witness: a root process in the guest can forge exec records, and some loss goes unrecorded",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/issues/31",
+      "status": "open"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 32,
+      "title": "attackbox: a pinned external program can supply the attack box",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/32",
       "status": "open"
     },
     {
@@ -579,14 +593,14 @@
       "number": 2117,
       "title": "feat(runner): run sandboxes on a cluster's glovebox RuntimeClass",
       "url": "https://github.com/METR/hawk/pull/2117",
-      "status": "open"
+      "status": "closed"
     },
     {
       "repo": "METR/hawk",
       "number": 2121,
       "title": "ci: run a glovebox sandbox end to end on a KVM runner",
       "url": "https://github.com/METR/hawk/pull/2121",
-      "status": "open"
+      "status": "closed"
     },
     {
       "repo": "METR/hawk",
@@ -600,7 +614,7 @@
       "number": 2326,
       "title": "fix(infra): narrow kata-peer reach, reserve the glovebox pool name",
       "url": "https://github.com/METR/hawk/pull/2326",
-      "status": "open"
+      "status": "closed"
     },
     {
       "repo": "METR/inspect_k8s_sandbox",
@@ -848,6 +862,13 @@
       "status": "fixed"
     },
     {
+      "repo": "tree-sitter/tree-sitter-bash",
+      "number": 365,
+      "title": "Two variable assignments on one line merge into the command on the next line",
+      "url": "https://github.com/tree-sitter/tree-sitter-bash/issues/365",
+      "status": "open"
+    },
+    {
       "repo": "UKGovernmentBEIS/inspect_ai",
       "number": 5069,
       "title": "`bash_session()` and `text_editor()` run as the tool server's uid (root), not the sandbox's exec user",
@@ -908,7 +929,7 @@
       "number": 270,
       "title": "feat(chart): add priorityClassName for sandbox pods",
       "url": "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox/pull/270",
-      "status": "open"
+      "status": "merged"
     },
     {
       "repo": "UKGovernmentBEIS/inspect_k8s_sandbox",
@@ -929,7 +950,7 @@
       "number": 274,
       "title": "fix: let init containers take env and volumeMounts",
       "url": "https://github.com/UKGovernmentBEIS/inspect_k8s_sandbox/pull/274",
-      "status": "open"
+      "status": "merged"
     },
     {
       "repo": "zestedesavoir/zmarkdown",
@@ -945,23 +966,23 @@
       "ownerType": "User"
     },
     "acon96/home-llm": {
-      "stars": 1473,
+      "stars": 1481,
       "ownerType": "User"
     },
     "ankidroid/Anki-Android": {
-      "stars": 12059,
+      "stars": 12134,
       "ownerType": "Organization"
     },
     "anordal/shellharden": {
-      "stars": 4809,
+      "stars": 4807,
       "ownerType": "User"
     },
     "anthropics/claude-code": {
-      "stars": 152883,
+      "stars": 154033,
       "ownerType": "Organization"
     },
     "cloud-hypervisor/cloud-hypervisor": {
-      "stars": 6404,
+      "stars": 6444,
       "ownerType": "Organization"
     },
     "DeepSourceCorp/cli": {
@@ -969,19 +990,19 @@
       "ownerType": "Organization"
     },
     "dequelabs/axe-core": {
-      "stars": 7674,
+      "stars": 7734,
       "ownerType": "Organization"
     },
     "docker/sbx-releases": {
-      "stars": 462,
+      "stars": 485,
       "ownerType": "Organization"
     },
     "EFForg/https-everywhere": {
-      "stars": 3353,
+      "stars": 3351,
       "ownerType": "Organization"
     },
     "IlanCosman/tide": {
-      "stars": 4285,
+      "stars": 4305,
       "ownerType": "User"
     },
     "jbloomAus/DecisionTransformerInterpretability": {
@@ -989,19 +1010,19 @@
       "ownerType": "User"
     },
     "jestjs/jest": {
-      "stars": 45492,
+      "stars": 45467,
       "ownerType": "Organization"
     },
     "JinayJain/gpt-anywhere": {
-      "stars": 179,
+      "stars": 180,
       "ownerType": "User"
     },
     "kata-containers/kata-containers": {
-      "stars": 8973,
+      "stars": 9060,
       "ownerType": "Organization"
     },
     "KaTeX/KaTeX": {
-      "stars": 20464,
+      "stars": 20483,
       "ownerType": "Organization"
     },
     "linuxarena/auto_workflow": {
@@ -1009,7 +1030,7 @@
       "ownerType": "Organization"
     },
     "linuxarena/control-tower": {
-      "stars": 37,
+      "stars": 41,
       "ownerType": "Organization"
     },
     "meridianlabs-ai/inspect_ranges": {
@@ -1017,11 +1038,11 @@
       "ownerType": "Organization"
     },
     "mermaid-js/mermaid": {
-      "stars": 90770,
+      "stars": 90946,
       "ownerType": "Organization"
     },
     "METR/hawk": {
-      "stars": 96,
+      "stars": 101,
       "ownerType": "Organization"
     },
     "METR/inspect_k8s_sandbox": {
@@ -1033,31 +1054,31 @@
       "ownerType": "Organization"
     },
     "mkusner/grammarVAE": {
-      "stars": 281,
+      "stars": 282,
       "ownerType": "User"
     },
     "Munter/subfont": {
-      "stars": 1636,
+      "stars": 1637,
       "ownerType": "User"
     },
     "nikitabobko/AeroSpace": {
-      "stars": 23560,
+      "stars": 23700,
       "ownerType": "User"
     },
     "openai/gym": {
-      "stars": 37239,
+      "stars": 37232,
       "ownerType": "Organization"
     },
     "orbstack/orbstack": {
-      "stars": 9458,
+      "stars": 9494,
       "ownerType": "Organization"
     },
     "pa11y/pa11y": {
-      "stars": 4579,
+      "stars": 4589,
       "ownerType": "Organization"
     },
     "parcel-bundler/lightningcss": {
-      "stars": 7712,
+      "stars": 7723,
       "ownerType": "Organization"
     },
     "PyCQA/docformatter": {
@@ -1065,7 +1086,7 @@
       "ownerType": "Organization"
     },
     "remcohaszing/rehype-mermaid": {
-      "stars": 195,
+      "stars": 194,
       "ownerType": "User"
     },
     "Responsible-Dataset-Sharing/easy-dataset-share": {
@@ -1073,15 +1094,15 @@
       "ownerType": "User"
     },
     "rishikanthc/Scriberr": {
-      "stars": 3108,
+      "stars": 3125,
       "ownerType": "User"
     },
     "runelite/runelite": {
-      "stars": 5497,
+      "stars": 5517,
       "ownerType": "Organization"
     },
     "sigstore/cosign": {
-      "stars": 6374,
+      "stars": 6403,
       "ownerType": "Organization"
     },
     "starkdmi/BrightXDR": {
@@ -1089,7 +1110,7 @@
       "ownerType": "User"
     },
     "stryker-mutator/stryker-js": {
-      "stars": 3255,
+      "stars": 3304,
       "ownerType": "Organization"
     },
     "stylelint-scss/stylelint-scss": {
@@ -1097,7 +1118,7 @@
       "ownerType": "Organization"
     },
     "stylelint/stylelint": {
-      "stars": 11537,
+      "stars": 11541,
       "ownerType": "Organization"
     },
     "syntax-tree/hast-util-to-jsx-runtime": {
@@ -1105,19 +1126,23 @@
       "ownerType": "Organization"
     },
     "tailscale/tailscale": {
-      "stars": 37815,
+      "stars": 38415,
       "ownerType": "Organization"
     },
     "TranslucentTB/TranslucentTB": {
-      "stars": 20598,
+      "stars": 20694,
+      "ownerType": "Organization"
+    },
+    "tree-sitter/tree-sitter-bash": {
+      "stars": 335,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_ai": {
-      "stars": 3050,
+      "stars": 3147,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_evals": {
-      "stars": 706,
+      "stars": 728,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_k8s_sandbox": {
