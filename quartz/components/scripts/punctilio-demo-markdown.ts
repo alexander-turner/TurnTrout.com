@@ -17,7 +17,7 @@ interface SourceEdit {
 
 /** A backslash escape or character reference starting exactly at `lastIndex`. */
 const ESCAPE_OR_REFERENCE =
-  /\\[\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e]|&(?:#(?:\d{1,7}|x[\da-f]{1,6})|[\da-z]{1,31});/iy
+  /\\[\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e]|&(?:#(?:\d{1,7}|x[\da-f]{1,6})|[\da-z]{1,31});/iuy
 
 /** The escape or valid character reference at `index`, with its decoded text. */
 function matchReference(
@@ -44,22 +44,21 @@ export function alignValueToSource(
 ): { readonly starts: readonly number[]; readonly ends: readonly number[] } {
   const starts: number[] = []
   const ends: number[] = []
-  let s = 0
-  while (s < source.length && starts.length < value.length) {
-    const reference = matchReference(source, s)
+  let sourceIndex = 0
+  while (sourceIndex < source.length && starts.length < value.length) {
+    const reference = matchReference(source, sourceIndex)
     if (reference && value.startsWith(reference.decoded, starts.length)) {
-      for (let k = 0; k < reference.decoded.length; k++) {
-        starts.push(s)
-        ends.push(s + reference.length)
-      }
-      s += reference.length
+      const unitCount = reference.decoded.length
+      starts.push(...Array<number>(unitCount).fill(sourceIndex))
+      ends.push(...Array<number>(unitCount).fill(sourceIndex + reference.length))
+      sourceIndex += reference.length
       continue
     }
-    if (source[s] === value[starts.length]) {
-      starts.push(s)
-      ends.push(s + 1)
+    if (source[sourceIndex] === value[starts.length]) {
+      starts.push(sourceIndex)
+      ends.push(sourceIndex + 1)
     }
-    s++
+    sourceIndex++
   }
   if (starts.length < value.length) {
     throw new Error(`Could not align Markdown text ${JSON.stringify(value)} to its source`)
@@ -77,15 +76,15 @@ export function textNodeEdits(
   const { starts, ends } = alignValueToSource(source, original)
   const edits: SourceEdit[] = []
   const changes = diffChars(original, transformed)
-  let v = 0
+  let valueIndex = 0
   for (let i = 0; i < changes.length; i++) {
     const change = changes[i]
     if (!change.added && !change.removed) {
-      v += change.value.length
+      valueIndex += change.value.length
       continue
     }
     if (change.added) {
-      const position = v < starts.length ? starts[v] : ends[ends.length - 1]
+      const position = valueIndex < starts.length ? starts[valueIndex] : ends[ends.length - 1]
       edits.push({
         start: sourceOffset + position,
         end: sourceOffset + position,
@@ -97,11 +96,11 @@ export function textNodeEdits(
     const replacement = next?.added ? next.value : ""
     if (next?.added) i++
     edits.push({
-      start: sourceOffset + starts[v],
-      end: sourceOffset + ends[v + change.value.length - 1],
+      start: sourceOffset + starts[valueIndex],
+      end: sourceOffset + ends[valueIndex + change.value.length - 1],
       text: replacement,
     })
-    v += change.value.length
+    valueIndex += change.value.length
   }
   return edits
 }
