@@ -38,7 +38,7 @@ Read [the paper](https://arxiv.org/abs/2610.17062), [the code](https://github.co
 
 <video autoplay loop muted playsinline aria-label="An animated model is overseen by a monitor (a magnifying glass) during training. A devil adapter and an angel adapter sit on top of the model. When the monitor flags a reward hack, the devil grows; unflagged good behavior strengthens the angel. In deployment, the devil is removed, leaving the angel and the model producing only good behavior."><source src="https://assets.turntrout.com/static/images/posts/gradient-routing-rl-animation.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/gradient-routing-rl-animation.webm" type="video/webm"></video>
 
-Figure: Animation from [Jake Ward's Twitter thread](https://x.com/_jake_ward/status/2112264244767211854). The devil is the FORGET adapter and the angel is the RETAIN adapter.
+Figure: The devil is the FORGET adapter and the angel is the RETAIN adapter.
 
 # Background
 
