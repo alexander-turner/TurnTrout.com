@@ -6,7 +6,7 @@ aliases:
 hideSubscriptionLinks: false
 description: A tour of the research areas I've loved over the years.
 date_published: 2024-10-27
-date_updated: 2026-08-03
+date_updated: 2026-10-31
 tags:
   - AI
 title: My professional work

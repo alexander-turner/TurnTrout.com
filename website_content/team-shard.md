@@ -19,7 +19,7 @@ aliases:
   - mentorship
 original_url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/apply-for-alignment-mentorship-from-turntrout-and-alex-cloud
 date_published: 2025-12-23
-date_updated: 2026-10-20
+date_updated: 2026-10-31
 lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
 
