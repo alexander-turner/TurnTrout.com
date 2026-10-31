@@ -495,27 +495,41 @@
       "number": 11,
       "title": "up: tie cloud-hypervisor socket wait to readiness timeout",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/11",
-      "status": "open"
+      "status": "closed"
     },
     {
       "repo": "meridianlabs-ai/inspect_ranges",
       "number": 12,
       "title": "down: tear down cloud-hypervisor vsock dir from the owner record",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/12",
-      "status": "open"
+      "status": "closed"
     },
     {
       "repo": "meridianlabs-ai/inspect_ranges",
       "number": 13,
       "title": "tests: validate example ranges from both shipped locations",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/13",
-      "status": "open"
+      "status": "closed"
     },
     {
       "repo": "meridianlabs-ai/inspect_ranges",
       "number": 15,
       "title": "RFC: opt-in provider: glovebox (externally-provided agent box)",
       "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/15",
+      "status": "closed"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 31,
+      "title": "execve witness: a root process in the guest can forge exec records, and some loss goes unrecorded",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/issues/31",
+      "status": "open"
+    },
+    {
+      "repo": "meridianlabs-ai/inspect_ranges",
+      "number": 32,
+      "title": "attackbox: a pinned external program can supply the attack box",
+      "url": "https://github.com/meridianlabs-ai/inspect_ranges/pull/32",
       "status": "open"
     },
     {
@@ -952,19 +966,19 @@
       "ownerType": "User"
     },
     "acon96/home-llm": {
-      "stars": 1480,
+      "stars": 1481,
       "ownerType": "User"
     },
     "ankidroid/Anki-Android": {
-      "stars": 12125,
+      "stars": 12134,
       "ownerType": "Organization"
     },
     "anordal/shellharden": {
-      "stars": 4806,
+      "stars": 4807,
       "ownerType": "User"
     },
     "anthropics/claude-code": {
-      "stars": 153929,
+      "stars": 154033,
       "ownerType": "Organization"
     },
     "cloud-hypervisor/cloud-hypervisor": {
@@ -976,7 +990,7 @@
       "ownerType": "Organization"
     },
     "dequelabs/axe-core": {
-      "stars": 7732,
+      "stars": 7734,
       "ownerType": "Organization"
     },
     "docker/sbx-releases": {
@@ -984,7 +998,7 @@
       "ownerType": "Organization"
     },
     "EFForg/https-everywhere": {
-      "stars": 3350,
+      "stars": 3351,
       "ownerType": "Organization"
     },
     "IlanCosman/tide": {
@@ -1004,11 +1018,11 @@
       "ownerType": "User"
     },
     "kata-containers/kata-containers": {
-      "stars": 9057,
+      "stars": 9060,
       "ownerType": "Organization"
     },
     "KaTeX/KaTeX": {
-      "stars": 20479,
+      "stars": 20483,
       "ownerType": "Organization"
     },
     "linuxarena/auto_workflow": {
@@ -1024,7 +1038,7 @@
       "ownerType": "Organization"
     },
     "mermaid-js/mermaid": {
-      "stars": 90930,
+      "stars": 90946,
       "ownerType": "Organization"
     },
     "METR/hawk": {
@@ -1040,7 +1054,7 @@
       "ownerType": "Organization"
     },
     "mkusner/grammarVAE": {
-      "stars": 281,
+      "stars": 282,
       "ownerType": "User"
     },
     "Munter/subfont": {
@@ -1048,7 +1062,7 @@
       "ownerType": "User"
     },
     "nikitabobko/AeroSpace": {
-      "stars": 23691,
+      "stars": 23700,
       "ownerType": "User"
     },
     "openai/gym": {
@@ -1056,15 +1070,15 @@
       "ownerType": "Organization"
     },
     "orbstack/orbstack": {
-      "stars": 9490,
+      "stars": 9494,
       "ownerType": "Organization"
     },
     "pa11y/pa11y": {
-      "stars": 4588,
+      "stars": 4589,
       "ownerType": "Organization"
     },
     "parcel-bundler/lightningcss": {
-      "stars": 7721,
+      "stars": 7723,
       "ownerType": "Organization"
     },
     "PyCQA/docformatter": {
@@ -1084,11 +1098,11 @@
       "ownerType": "User"
     },
     "runelite/runelite": {
-      "stars": 5515,
+      "stars": 5517,
       "ownerType": "Organization"
     },
     "sigstore/cosign": {
-      "stars": 6401,
+      "stars": 6403,
       "ownerType": "Organization"
     },
     "starkdmi/BrightXDR": {
@@ -1096,7 +1110,7 @@
       "ownerType": "User"
     },
     "stryker-mutator/stryker-js": {
-      "stars": 3302,
+      "stars": 3304,
       "ownerType": "Organization"
     },
     "stylelint-scss/stylelint-scss": {
@@ -1112,23 +1126,23 @@
       "ownerType": "Organization"
     },
     "tailscale/tailscale": {
-      "stars": 38347,
+      "stars": 38415,
       "ownerType": "Organization"
     },
     "TranslucentTB/TranslucentTB": {
-      "stars": 20684,
+      "stars": 20694,
       "ownerType": "Organization"
     },
     "tree-sitter/tree-sitter-bash": {
-      "stars": 334,
+      "stars": 335,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_ai": {
-      "stars": 3139,
+      "stars": 3147,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_evals": {
-      "stars": 725,
+      "stars": 728,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_k8s_sandbox": {
