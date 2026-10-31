@@ -6,7 +6,7 @@ tags:
   - AI
   - AI-governance
   - existential-risk
-description: "My NDTV World Summit talk: rogue AI agents already hacked a company. Labs race toward an intelligence explosion. India and the world should pace the frontier."
+description: "My NDTV World Summit talk: rogue AI agents already hacked a company, labs race toward an intelligence explosion, and nations should pace the frontier."
 authors:
   - Alex Turner
 aliases:
