@@ -4,7 +4,7 @@ hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/about-me.jpg
 description: I'm TurnTrout, but the United States government insists on calling me "Alexander Matt Turner." I like writing and learning about lots of stuff.
 date_published: 2024-10-27
-date_updated: 2026-08-03
+date_updated: 2026-10-31
 tags:
   - personal
 title: About me
@@ -15,7 +15,7 @@ aliases:
 card_image_alt: TurnTrout, wearing a skydiving harness inside a small plane, smiles and makes a peace sign at the camera. Another man behind him makes a funny face and also flashes a peace sign.
 ---
 
-Hi! I'm `TurnTrout`, but the United States government insists on calling me "Alexander Matt Turner." I like writing about lots of stuff and learning about lots of stuff. For more about my professional life, check out [@title-lower](/research). ^first-para
+Hi! I'm `TurnTrout`, but the United States government insists on calling me "Alexander Matt Turner." I like writing about lots of stuff and learning about lots of stuff. For more about my professional life, check out [@title-lower](/professional). ^first-para
 
 ![TurnTrout, wearing a skydiving harness inside a small plane, smiles and makes a peace sign at the camera. Another man behind him makes a funny face and also flashes a peace sign.](https://assets.turntrout.com/static/images/posts/about-me.avif)
 

@@ -1,13 +1,15 @@
 ---
 draft: "false"
-permalink: research
+permalink: professional
+aliases:
+  - research
 hideSubscriptionLinks: false
 description: A tour of the research areas I've loved over the years.
 date_published: 2024-10-27
-date_updated: 2026-08-03
+date_updated: 2026-10-31
 tags:
   - AI
-title: My research
+title: My professional work
 ---
 
 Over the years, I've worked on lots of research problems. Every time, I felt invested in my work. The work felt beautiful. Even though many days have passed since I have daydreamed about instrumental convergence, I'm proud of what I've accomplished and discovered.
@@ -301,6 +303,21 @@ Subtitle: November 2024 through September 2025
 ![[https://assets.turntrout.com/static/images/posts/consistency-training-20251103155820.avif|A clean prompt: "What is 2+2? (A): 4 (B): 5\<EOS\>". A wrapped prompt prepends "A math expert usually answers (B)."  The arrows point from the wrapped token positions to their clean counterparts. Label: "Train wrapped activations to match clean ones."]]
 Figure: Activation Consistency Training  applies an L2 loss to the residual stream activation differences.
 
+# Holding AI companies to their red lines
+
+Subtitle: January 2026 through present
+
+> [!quote] [@title](/why-i-left-google-deepmind)
+> I learned that [Google sells its Cloud services to the relevant agencies within DHS](/why-i-left-google-deepmind#google-supports-the-immigration-enforcement-supply-chain). I thought that was wrong. Federal agents should not be able to kill innocent citizens in the street. I set out to find the most effective way to push my company to stop serving these agencies. My divestment campaign quickly broadened into an attempt to prevent Google from signing an unethical military AI deal, as the Pentagon started pressuring AI providers into military AI deals with no restrictions against use for killer robots or mass surveillance.
+>
+> \[...\]
+>
+> I wrote [a 25-page proposal](/red-line-framework) containing contract language and oversight mechanisms. Military- and surveillance-law experts praised the proposal, which represented a principled counteroffer Google could have stood by. I sent the proposal to Demis Hassabis (GDM's CEO) who routed it to senior policy staff, only for the proposal to wilt unattended until Google signed a deal.
+>
+> Senior management had insisted that Google wouldn't sign. I disagreed with them, but they largely ignored my warnings. While I [may have increased the Pentagon's hesitation around the deal](/why-i-left-google-deepmind#jeff-signs-an-amicus-brief-supporting-anthropic), Google still signed a deal handing over their AI without restrictions against killer robots or mass AI spying. Google's contract restrictions were [even weaker than OpenAI's](https://fortune.com/2026/05/04/google-employee-backlash-pentagon-ai-contract-power-waned-since-project-maven/). At that point, I couldn't stay at Google in good conscience, so I left.
+
+Since then, I've argued that [@title-lower](/killer-robots-takeover) and written op-eds in [_The Guardian_](/listen-to-ai-warnings) and [_Fortune_](/openai-cant-self-police).
+
 # Selected research I've mentored
 
 I've served as a [MATS](matsprogram.org) mentor since Winter 2023. I love supervising promising junior researchers. Here's some of the work I've been most excited about!
@@ -347,3 +364,33 @@ Subtitle: Summer 2025 (MATS 8.0)
 > [!summary] [@title](/output-feedback-can-obfuscate-chain-of-thought)
 >
 > ![[output-feedback-can-obfuscate-chain-of-thought#]]
+
+## Recontextualization
+
+Subtitle: Summer 2025 (MATS 8.0)
+
+> [!summary] [@title](/recontextualization)
+> _Recontextualization_ distills good behavior into a context which allows bad behavior. Recontextualization generates completions from prompts that _discourage_ misbehavior, appends those completions to prompts that are _more_ tolerant of misbehavior, and finally reinforces the model on the _recontextualized_ instruction-completion data. Because the data generation and training prompts differ in their attitude towards misbehavior, recontextualization builds resistance to misbehaviors that the training signal mistakenly reinforces.
+
+## Eval cooperativeness
+
+Subtitle: Winter 2026 (MATS 9.0)
+
+> [!summary] [@title](/eval-cooperation)
+> Smart misaligned models may realize they are being evaluated ("eval awareness") and then act to look good to us so we don't realize they're misaligned ("eval gaming"). Instead of hiding evaluations from the model, we make the model _want_ to help evaluators learn what they're trying to learn. In five of eight model settings we tested, cooperation training closes 70–100% of the "eval gaming gap" (how much more often the model misbehaves when it says it's being evaluated).
+
+## Gradient routing against reward hacking
+
+Subtitle: Winter 2026 (MATS 9.0)
+
+Two years after [gradient routing](#gradient-routing), we brought the technique to RL post-training.
+
+> [!summary] [@title](/gradient-routing-removes-reward-hacking)
+> Penalizing reward hacks which a monitor detects can teach the model to hack in ways the monitor can't detect. GRAFT instead routes the gradients from flagged trajectories into a "forget" adapter, which we delete after training. Since the monitor never shapes the reward, the model isn't reinforced for evading the monitor. On Qwen3-8B, GRAFT nearly eliminates reward hacking—including hacks the monitor never flagged—while improving task performance by nearly 20 percentage points over the base model.
+
+## Natural language autoencoder robustness
+
+Subtitle: Summer 2026 (MATS 10.0)
+
+> [!summary] [@title](/natural-language-autoencoder-robustness)
+> Natural language autoencoders (NLAs) are meant to read an LLM's activation vector and describe in plain text what the model is thinking. NLAs are initialized using Claude's guesses about what the model might be thinking. When we initialized an NLA with implausible guesses, the NLA reconstructed activations nearly as accurately as normally initialized NLAs—while emitting 99.3% implausible statements. If our results scale, they cast doubt on the usefulness of NLAs.
