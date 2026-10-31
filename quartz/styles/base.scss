@@ -116,10 +116,13 @@ ol,
 // between its `.base` spans like text (`wide-inline.ts`). The `.katex` wrapper
 // is an inline-block too: WebKit breaks after an inline-block that ends an
 // inline parent, which would shed the glued punctuation after it (`$x$’s`).
+// Its overflow stays visible: an inline-block that clips takes its bottom edge
+// as its baseline, lifting the math above the surrounding text.
 :not(.katex-display) > .katex:has(> .katex-html:not(.wide-inline)),
 :not(.katex-display) > .katex > .katex-html:not(.wide-inline) {
   display: inline-block;
   max-width: 100%;
+  overflow: visible;
 }
 
 strong {
