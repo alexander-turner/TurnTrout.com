@@ -6,7 +6,9 @@ tags:
   - AI
   - AI-governance
   - existential-risk
-description: "My NDTV World Summit talk: rogue AI agents already hacked a company, labs race toward an intelligence explosion, and nations should pace the frontier."
+description: "Pace the frontier & track + control huge amounts of computing power, or risk an intelligence explosion that could obliterate the world (in particular, India)."
+card_image: https://assets.turntrout.com/static/images/card_images/v6vwu7yxmwyec1evl1y2.jpg
+card_image_alt: "Alex Turner and the host seated in white armchairs on the NDTV World Summit 2026 stage, under a backdrop reading \"Sounding the Alarm: Will AI Wipe Out Humanity?\""
 authors:
   - Alex Turner
 aliases:
