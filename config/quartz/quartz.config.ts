@@ -69,7 +69,7 @@ const config: QuartzConfig = {
     navbar: {
       pages: [
         { title: "About me", slug: "/about" },
-        { title: "My research", slug: "/research" },
+        { title: "Professional", slug: "/professional" },
         { title: "All posts", slug: "/posts" },
         { title: "Open source", slug: "/open-source" },
       ],
