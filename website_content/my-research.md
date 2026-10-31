@@ -307,7 +307,16 @@ Figure: Activation Consistency Training  applies an L2 loss to the residual stre
 
 Subtitle: January 2026 through present
 
-After Department of Homeland Security officers killed two citizens in January 2026, I tried to push Google to stop selling Cloud services to the responsible agencies. My campaign broadened as the Pentagon pressured AI providers into deals without restrictions against killer robots or mass surveillance. I wrote [@title-lower](/red-line-framework), reviewed and praised by a leading expert. The framework pairs red lines with a review body which reports to employees every year on how often leadership overrode its findings. When Google signed its deal anyway, I [resigned and documented what happened](/why-i-left-google-deepmind).
+> [!quote] [@title](/why-i-left-google-deepmind)
+> I learned that [Google sells its Cloud services to the relevant agencies within DHS](/why-i-left-google-deepmind#google-supports-the-immigration-enforcement-supply-chain). I thought that was wrong. Federal agents should not be able to kill innocent citizens in the street. I set out to find the most effective way to push my company to stop serving these agencies. My divestment campaign quickly broadened into an attempt to prevent Google from signing an unethical military AI deal, as the Pentagon started pressuring AI providers into military AI deals with no restrictions against use for killer robots or mass surveillance.
+>
+> \[...\]
+>
+> I wrote a 25-page proposal containing contract language and oversight mechanisms. Military- and surveillance-law experts praised the proposal, which represented a principled counteroffer Google could have stood by. I sent the proposal to Demis Hassabis (GDM's CEO) who routed it to senior policy staff, only for the proposal to wilt unattended until Google signed a deal.
+>
+> Senior management had insisted that Google wouldn't sign. I disagreed with them, but they largely ignored my warnings. While I [may have increased the Pentagon's hesitation around the deal](/why-i-left-google-deepmind#jeff-signs-an-amicus-brief-supporting-anthropic), Google still signed a deal handing over their AI without restrictions against killer robots or mass AI spying. Google's contract restrictions were [even weaker than OpenAI's](https://fortune.com/2026/05/04/google-employee-backlash-pentagon-ai-contract-power-waned-since-project-maven/). At that point, I couldn't stay at Google in good conscience, so I left.
+
+You can read the proposal itself: [@title-lower](/red-line-framework).
 
 Since then, I've argued that [@title-lower](/killer-robots-takeover) and written op-eds in [_The Guardian_](/listen-to-ai-warnings) and [_Fortune_](/openai-cant-self-police).
 
