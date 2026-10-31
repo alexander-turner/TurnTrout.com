@@ -688,13 +688,21 @@ $$\nabla \cdot \mathbf{E}  =\frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \math
 
 [Flipped integer](/flip-integers) number: ↗142.2.
 
-## Relation wrapping
+## Line wrapping
 
 Inline math never breaks a line right after a relation like $\in$ or $=$. The column below is deliberately narrow, so the whole formula moves to the second line instead of leaving "$\alpha \in$" stranded at the end of the first:
 
 <div id="relation-wrap-demo" style="width: 10rem; border: 2px var(--midground) solid; border-radius: 5px; padding: 0.5rem;">
 
 We swept $\alpha \in \{0.2, 0.4, 0.6, 0.8\}$ and kept the best.
+
+</div>
+
+Inline math moves to the next line whole when it doesn't fit on the current one. A formula wider than its line wraps between its terms instead, and its punctuation and the text after it continue on its last line:
+
+<div id="wide-math-demo" style="width: 12rem; border: 2px var(--midground) solid; border-radius: 5px; padding: 0.5rem;">
+
+So $\sum_{i=1}^n x_i \leq \sum_{i=1}^n y_i + n \epsilon \leq \sum_{i=1}^n z_i + 2 n \epsilon$, as claimed.
 
 </div>
 

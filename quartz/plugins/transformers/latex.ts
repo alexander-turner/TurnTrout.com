@@ -45,34 +45,50 @@ function isBase(node: ElementContent | undefined): node is Element {
   return node?.type === "element" && hasClass(node, "base")
 }
 
-/** Trailing `.mspace` glue is skipped, except an author's explicit `\allowbreak`. */
-function endsWithRelation(base: Element): boolean {
-  const last = base.children.findLast(
+/**
+ * Index of the relation that ends `base`, or -1 when `base` ends otherwise.
+ * Trailing `.mspace` glue is skipped, except an author's explicit `\allowbreak`.
+ */
+function trailingRelationIndex(base: Element): number {
+  const index = base.children.findLastIndex(
     (child) =>
       child.type === "element" && (!hasClass(child, "mspace") || hasClass(child, "allowbreak")),
   )
-  return last?.type === "element" && hasClass(last, "mrel")
+  const last = base.children[index]
+  return last?.type === "element" && hasClass(last, "mrel") ? index : -1
+}
+
+/** True when `base` holds nothing visible: only struts and spacing. */
+function isEmptyBase(base: Element): boolean {
+  return base.children.every(
+    (child) => child.type === "element" && (hasClass(child, "strut") || hasClass(child, "mspace")),
+  )
 }
 
 /**
  * KaTeX ends a `.base` inline-block after each top-level relation, and the
- * browser may wrap between adjacent inline-blocks. Merging the following
- * `.base` into the relation's `.base` binds the relation to its right operand
- * like a non-breaking space, so `α ∈ {0.2, 0.4}` never strands `α ∈` at a line
- * end. Breaks remain after binary operators and at `\allowbreak`; a chain of
- * relations with neither, such as `a = b = c`, becomes unbreakable.
+ * browser may wrap between adjacent inline-blocks. Moving each relation to the
+ * front of the following `.base` binds it to its right operand like a
+ * non-breaking space and opens the line break before it instead, so wide math
+ * wraps as `x ≤ y + z` / `≤ w` and never strands `α ∈` at a line end. The space
+ * before the relation stays behind as the left operand's trailing margin.
+ * Breaks remain after binary operators and at `\allowbreak`.
  */
 export function glueRelations(katexHtml: Element): void {
-  const merged: ElementContent[] = []
-  for (const child of katexHtml.children) {
-    const previous = merged.at(-1)
-    if (isBase(previous) && isBase(child) && endsWithRelation(previous)) {
-      previous.children.push(...child.children)
-    } else {
-      merged.push(child)
+  const children = katexHtml.children
+  const glued: ElementContent[] = []
+  children.forEach((child, index) => {
+    const next = children[index + 1]
+    if (isBase(child) && isBase(next)) {
+      const relationIndex = trailingRelationIndex(child)
+      if (relationIndex >= 0) {
+        next.children.unshift(...child.children.splice(relationIndex))
+        if (isEmptyBase(child)) return
+      }
     }
-  }
-  katexHtml.children = merged
+    glued.push(child)
+  })
+  katexHtml.children = glued
 }
 
 export const Latex: QuartzTransformerPlugin = () => {

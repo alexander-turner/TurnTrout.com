@@ -33,6 +33,7 @@ import {
   MONOSPACE_ARROW_CLASS,
   NBSP,
   NOWRAP_SPAN_CLASS,
+  OVERHANG_KERN_CLASSES,
   RIGHT_ARROW_CLASS,
   RIGHT_SINGLE_QUOTE,
   SMALL_CAPS_CLASS,
@@ -305,15 +306,6 @@ export function kernSpacedSlashes(tree: Root): void {
     )
   }
 }
-
-// Glyphs whose ink reaches past their own advance width, mapped to the class
-// that pulls a following mark back out to where an ordinary letter would place
-// it. Against EB Garamond's typical right side bearing (~45 units of its 2048
-// em), "f" falls 307 units short and "Q" 244.
-const OVERHANG_KERN_CLASSES: ReadonlyMap<string, string> = new Map([
-  ["f", "overhang-kern-f"],
-  ["Q", "overhang-kern-q"],
-])
 
 const OVERHANG_KERN_CLASS_NAMES: readonly string[] = [...OVERHANG_KERN_CLASSES.values()]
 
