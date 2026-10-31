@@ -2009,6 +2009,7 @@ mythos
 n-gon's
 nabla
 NAF-tə
+Nagel
 namespace
 Nanda
 Nano
@@ -2172,6 +2173,7 @@ optimizers
 optionality
 optogenetic
 ordi
+Ori
 original_url
 OriginStamp
 orthogonalization
