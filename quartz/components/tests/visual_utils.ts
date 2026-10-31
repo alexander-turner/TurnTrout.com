@@ -844,7 +844,7 @@ async function pinDecodableVideoSource(page: Page, scope?: Locator): Promise<voi
  * screenshot proceed: a blank-video capture that gets approved poisons the
  * shared R2 baselines for every later run.
  */
-async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
+export async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
   for (const video of await scope.locator(DECODED_VIDEO_SELECTOR).all()) {
     const handle = await video.elementHandle()
     if (!handle) throw new Error("Could not get element handle for video")

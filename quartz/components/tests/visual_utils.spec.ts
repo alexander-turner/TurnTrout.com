@@ -19,6 +19,7 @@ import {
   takeRegressionScreenshot,
   waitForImagesInElement,
   waitForTransitionEnd,
+  waitForVideosPainted,
 } from "./visual_utils"
 
 async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number }> {
@@ -815,24 +816,23 @@ test.describe("video poster capture", () => {
 })
 
 test.describe("waitForVideosPainted", () => {
-  test("skips a stalled video that a scroll container clips out of view", async ({
-    page,
-  }, testInfo) => {
+  test("skips a stalled video that a scroll container clips out of view", async ({ page }) => {
     // Never answer the video request: the element stays at HAVE_NOTHING, so
     // any wait on its frame would run out the paint budget and throw.
     await page.route("**/visual-test-stalled.mp4", () => undefined)
-    await page.setContent(`
+    // Firefox and WebKit delay the load event on a media element until it has
+    // data, which a stalled request never delivers.
+    await page.setContent(
+      `
       <div id="scroller" style="height: 100px; overflow-y: auto">
         <p style="height: 400px; margin: 0">Visible text</p>
         <video muted src="http://localhost:8080/visual-test-stalled.mp4"></video>
       </div>
-    `)
+    `,
+      { waitUntil: "domcontentloaded" },
+    )
 
-    const screenshot = await takeRegressionScreenshot(page, testInfo, "", {
-      elementToScreenshot: page.locator("#scroller"),
-      skipStabilityWait: true,
-    })
-    expect(screenshot.length).toBeGreaterThan(0)
+    await expect(waitForVideosPainted(page.locator("#scroller"))).resolves.toBeUndefined()
   })
 })
 
