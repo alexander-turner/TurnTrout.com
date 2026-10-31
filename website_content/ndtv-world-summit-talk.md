@@ -16,6 +16,7 @@ aliases:
   - ndtv-world-summit
   - will-ai-wipe-out-humanity
   - sounding-the-alarm
+original_url: https://www.lesswrong.com/posts/RHxaRkarGp9snWoKY/explaining-ai-might-obliterate-you-to-senior-policymakers-in
 date_published: 2026-10-31
 date_updated: 2026-10-31
 ---
