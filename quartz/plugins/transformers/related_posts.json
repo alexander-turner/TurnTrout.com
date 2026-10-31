@@ -273,6 +273,11 @@
   ],
   "agi-risk-introduction": [
     {
+      "excerpt": "Op-ed in The Guardian: AI could escape our control. Voluntary commitments failed at Google, so governments must restrain the race to superintelligence.",
+      "permalink": "listen-to-ai-warnings",
+      "title": "I worked at Google DeepMind. You should listen to the warnings about AI."
+    },
+    {
       "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
       "permalink": "invalid-ai-risk-arguments",
       "title": "Many arguments for AI x-risk are wrong"
@@ -291,11 +296,6 @@
       "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
       "permalink": "excitement-about-impact-measures",
       "title": "Reasons for Excitement about Impact of Impact Measure Research"
-    },
-    {
-      "excerpt": "The \"Reframing Impact\" sequence concludes with probability estimates for key claims.",
-      "permalink": "conclusion-to-reframing-impact",
-      "title": "Conclusion to 'Reframing Impact'"
     }
   ],
   "alignment-phd": [
@@ -641,9 +641,9 @@
       "title": "Best reasons for pessimism about impact of impact measures?"
     },
     {
-      "excerpt": "Unfortunately, NLAs reconstruct activations accurately even while giving implausible explanations.",
-      "permalink": "natural-language-autoencoder-robustness",
-      "title": "How robust are natural language autoencoders to initialization?"
+      "excerpt": "Op-ed in Fortune: OpenAI promised to share information with independent evaluators, then fired safety researchers for sharing information with evaluators.",
+      "permalink": "openai-cant-self-police",
+      "title": "OpenAI can't self-police because it fires the people raising the alarm"
     }
   ],
   "best-reasons-for-pessimism-about-impact-measures": [
@@ -1003,6 +1003,11 @@
       "excerpt": "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.",
       "permalink": "why-i-left-google-deepmind",
       "title": "Why I left Google DeepMind"
+    },
+    {
+      "excerpt": "Op-ed in The Guardian: AI could escape our control. Voluntary commitments failed at Google, so governments must restrain the race to superintelligence.",
+      "permalink": "listen-to-ai-warnings",
+      "title": "I worked at Google DeepMind. You should listen to the warnings about AI."
     }
   ],
   "design": [
@@ -2446,14 +2451,14 @@
   ],
   "open-source": [
     {
-      "excerpt": "Showing off and explaining this site's beauty.",
-      "permalink": "design",
-      "title": "The design of this website"
-    },
-    {
       "excerpt": "Celebrating the launch of the website after months of work.",
       "permalink": "launch",
       "title": "Site launch: Come relax by The Pond!"
+    },
+    {
+      "excerpt": "Showing off and explaining this site's beauty.",
+      "permalink": "design",
+      "title": "The design of this website"
     },
     {
       "excerpt": "I'm TurnTrout, but the United States government insists on calling me \"Alexander Matt Turner.\" I like writing and learning about lots of stuff.",
@@ -2676,6 +2681,11 @@
       "excerpt": "In 2025, America is different. Reduce your chance of persecution via smart technical choices.",
       "permalink": "advanced-privacy",
       "title": "Advanced Privacy Despite Authoritarianism"
+    },
+    {
+      "excerpt": "I fought against Google's Pentagon AI deal from the inside. Powerful people and institutions failed to keep their AI ethics promises under pressure.",
+      "permalink": "why-i-left-google-deepmind",
+      "title": "Why I left Google DeepMind"
     }
   ],
   "problem-relaxation-as-a-tactic": [
@@ -3354,14 +3364,14 @@
       "title": "Looking back on my alignment PhD"
     },
     {
-      "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
-      "permalink": "a-shot-at-the-diamond-alignment-problem",
-      "title": "A shot at the diamond-alignment problem"
-    },
-    {
       "excerpt": "A tour of the research areas I've loved over the years.",
       "permalink": "research",
       "title": "My research"
+    },
+    {
+      "excerpt": "A technical deep dive exploring how to align an AI with the goal of creating diamonds, rather than more nebulous human values.",
+      "permalink": "a-shot-at-the-diamond-alignment-problem",
+      "title": "A shot at the diamond-alignment problem"
     }
   ],
   "test-page": [
@@ -3369,11 +3379,6 @@
       "excerpt": "Showing off and explaining this site's beauty.",
       "permalink": "design",
       "title": "The design of this website"
-    },
-    {
-      "excerpt": "My projects include this website's infrastructure, AI-powered alt text generation, and dataset protection utilities.",
-      "permalink": "open-source",
-      "title": "My open source contributions"
     },
     {
       "excerpt": "Hard-won best practices for stable visual regression testing.",

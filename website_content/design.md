@@ -169,12 +169,8 @@ To determine the text colors (including grayscale gradations), I just determine 
 
 <figure>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
-  <div class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
-    A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was ignoring a goose.
-  </div>
-  <div class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
-    A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was ignoring a goose.
-  </div>
+  <div class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was ignoring a goose.</div>
+  <div class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was ignoring a goose.</div>
 </div>
 <figcaption>Simulated ctrl-F find results for “trout” in light and dark mode in Chromium browsers. The second match is the current one. (Firefox and Safari don't yet let sites restyle these matches.)</figcaption>
 </figure>
