@@ -193,7 +193,7 @@ I think "traitor" is accurate and more approachable, with bonus points for the c
 >
 > Some big AI investors promote narratives that whistleblowers like me are secretly in the pocket of big AI, that the fear is just hype.
 
-As an aside, Andrew Ng spoke the day before I did. Andrew has also invested big in AI. Andrew has also been impressively wrong. He thought real AI would be hundreds or thousands of years away:
+As an aside, Andrew Ng spoke the day before I did. Andrew has also invested big in AI. Andrew has also been impressively wrong. He thought real AI would be hundreds or thousands of years away, which seems tenuous:
 
 > [!quote] [The case against killer robots, from a guy actually working on artificial intelligence](https://web.archive.org/web/20150310141100/https://fusion.net/story/54583/the-case-against-killer-robots-from-a-guy-actually-building-ai/)
 > “I don’t work on preventing AI from turning evil for the same reason that I don’t work on combating overpopulation on the planet Mars,” he said. “Hundreds of years from now when hopefully we’ve colonized Mars, overpopulation might be a serious problem and we’ll have to deal with it. It’ll be a pressing issue. There’s tons of pollution and people are dying and so you might say, ‘How can you not care about all these people dying of pollution on Mars?’ Well, it’s just not productive to work on that right now.”
@@ -203,13 +203,13 @@ As an aside, Andrew Ng spoke the day before I did. Andrew has also invested big 
 <!-- vale off -->
 
 > [!quote] [Andrew Ng says AGI is decades away—and the real AI bubble risk is in the training layer](https://www.fastcompany.com/91499247/andrew-ng-agi-decades-away-interview)
-> Agentic AI is rapidly increasing systems’ ability to reason and act with limited human intervention. Does the rise of agentic architectures meaningfully accelerate the path toward AGI, or are we still far from true general intelligence?
+> **FastCompany:** Agentic AI is rapidly increasing systems’ ability to reason and act with limited human intervention. Does the rise of agentic architectures meaningfully accelerate the path toward AGI, or are we still far from true general intelligence?
 >
-> : Most of the public thinks of AGI as AI that is as intelligent as people, and one useful definition is AI that can perform any intellectual task a human can. You and I could learn to fly an airplane with maybe 20 hours of training, learn to drive a truck through a forest, or spend a few years writing a PhD thesis. Most humans can do these things. We’re still very far from AI meeting that definition of AGI.
-> :
-> : For alternative definitions that some businesses have put forward—definitions that dramatically lower the bar—you could argue we already achieved AGI. There’s a good chance that under these lower-bar definitions, some businesses will soon try to declare success. But that won’t mean AI has reached human-level intelligence—it will simply mean the definition has been reworked to fit a much lower threshold.
-> :
-> : Maybe a year ago, AGI felt 50 years away. Over the past year, perhaps we’ve made a solid 2% of progress, with another 49 years to go. These numbers are metaphorical, so don’t take them too seriously. \[Laughs\] But we are closer than before, yet many decades away from an AI that matches human intelligence. If you stick with the original definition—aligned with what people genuinely imagine AGI to be—we remain very, very far away.
+> **Andrew Ng:** Most of the public thinks of AGI as AI that is as intelligent as people, and one useful definition is AI that can perform any intellectual task a human can. You and I could learn to fly an airplane with maybe 20 hours of training, learn to drive a truck through a forest, or spend a few years writing a PhD thesis. Most humans can do these things. We’re still very far from AI meeting that definition of AGI.
+> 
+> For alternative definitions that some businesses have put forward—definitions that dramatically lower the bar—you could argue we already achieved AGI. There’s a good chance that under these lower-bar definitions, some businesses will soon try to declare success. But that won’t mean AI has reached human-level intelligence—it will simply mean the definition has been reworked to fit a much lower threshold.
+> 
+> Maybe a year ago, AGI felt 50 years away. Over the past year, perhaps we’ve made a solid 2% of progress, with another 49 years to go. These numbers are metaphorical, so don’t take them too seriously. \[Laughs\] But we are closer than before, yet many decades away from an AI that matches human intelligence. If you stick with the original definition—aligned with what people genuinely imagine AGI to be—we remain very, very far away.
 
 <!-- vale on -->
 
