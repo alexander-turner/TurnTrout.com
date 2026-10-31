@@ -1824,11 +1824,11 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/gradient-routing-rl-animation.mp4": {
-    "invert": true,
+    "invert": false,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/gradient-routing-rl-animation.webm": {
-    "invert": true,
+    "invert": false,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/gradient-routing-rl-method.avif": {
