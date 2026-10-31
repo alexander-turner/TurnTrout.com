@@ -2023,6 +2023,7 @@ Naïve
 naïve
 Naïvely
 naïvely
+NDTV
 ne
 Neale
 near-SOTA
@@ -2047,6 +2048,7 @@ nevermind
 Newcomblike
 Newsfeed
 newsfeed
+Ng
 Ngo
 Nicky
 nilpotent
@@ -2097,6 +2099,7 @@ NPO
 NPS
 NTK's
 num
+Nvidia
 nychtophobia
 nychtophobia-related
 NYT
@@ -2254,6 +2257,7 @@ per-timestep
 perceptron
 performant
 permalink
+Petraeus
 petri
 petrification
 peux
@@ -2974,6 +2978,7 @@ supersession
 superset
 Supersets
 supersets
+superweapon
 supremum
 surprisal
 surveil

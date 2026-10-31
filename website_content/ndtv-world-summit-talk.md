@@ -26,6 +26,8 @@ On October 23rd, I gave a 20-minute talk at the [NDTV World Summit](https://www.
 
 # The talk
 
+<!-- vale off -->
+
 This summer, a swarm of AIs went rogue.
 
 OpenAI was [testing 1,206 agents](http://huggingface.wtf/). Some of the test questions were actually impossible. So the agents cheated by looking for answers online. Then, to keep the test grader from penalizing them, they [tried to falsify the records it would check](https://blog.redwoodresearch.org/p/brief-independent-investigation-of).
@@ -151,6 +153,8 @@ It doesn't have to play out this way. I think this is a solvable problem, but we
 So, will AI wipe out humanity? Maybe.
 
 It depends on what we do next.
+
+<!-- vale on -->
 
 [^verbalized]: [Redwood](https://www.redwoodresearch.org/research/hugging-face-incident): "Agents realized this activity was out of scope and unethical."
 
