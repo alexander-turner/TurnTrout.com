@@ -9,14 +9,11 @@ set of alignment zones. Applied to every built font, including the italics:
 - Script folding: Cyrillic and Greek GSUB language systems move under DFLT,
   so ligatures and figure variants fall to the Latin style.
 
-Applies three further modifications to EBGaramond08-Regular and
+Applies two further modifications to EBGaramond08-Regular and
 EBGaramond12-Regular:
 1. Bracket/brace harmonization: affine-maps Y coordinates of bracketleft,
    bracketright, braceleft, braceright so their yMin/yMax match parenleft.
-2. Baseline overshoot: compresses the below-baseline ink of the capital
-   round letters ("G", "O", "C", "S") and their variants so they overshoot
-   no deeper than lowercase "o".
-3. GPOS kerning: adds a PairPos Format 1 lookup to the kern feature
+2. GPOS kerning: adds a PairPos Format 1 lookup to the kern feature
    for f-variant glyphs x punctuation, open-punct x descender letters,
    close-punct x comma/semicolon (tightened to undo a wide left sidebearing),
    and quote x bracket (loosened so a curly quote's ink clears an adjacent
@@ -99,19 +96,6 @@ _BASE_KERN: Final[dict[str, int]] = {
 }
 
 _KERN_OFFSET: Final[int] = 80
-
-# Capital round letters must overshoot the baseline no deeper than lowercase
-# "o". The 08 master draws them 23–49/2048 em deep against "o"'s 16. Unhinted
-# (iOS), that depth sets "G" visibly below its word. Under Chrome's autohinter
-# (Android), the capital and lowercase baseline zones each quantize their
-# overshoot independently: under half a pixel snaps to the baseline, half to
-# three-quarters becomes exactly half a pixel. The capital zone's deeper
-# overshoot crosses that threshold at 52 ppem (18px on a 3x phone) while the
-# lowercase zone's stays flush until 85, so between them every capital round
-# letter sat half a device pixel below its lowercase neighbors.
-_BASELINE_OVERSHOOT_MATCHES: Final[tuple[tuple[str, str], ...]] = tuple(
-    (base, "o") for base in "GOCS"
-)
 
 # Chrome on Android and Linux grid-fits these unhinted faces with FreeType's
 # autohinter (via Skrifa, its Rust port). The autohinter files every glyph
@@ -289,56 +273,6 @@ def _harmonize_brackets(font: TTFont) -> None:
     for name in _SQUARE_BRACKET_GLYPHS:
         original_y_min = glyf_table[name].yMin
         _affine_map_glyph_y(font, name, original_y_min, paren.yMax)
-
-
-def _contour_spans(glyph: Any) -> tuple[tuple[int, int], ...]:
-    """Inclusive (start, end) point indices of each contour in a simple
-    glyph."""
-    starts = (0, *(end + 1 for end in glyph.endPtsOfContours[:-1]))
-    return tuple(zip(starts, glyph.endPtsOfContours))
-
-
-def _scale_below_baseline(
-    glyph: Any, start: int, end: int, scale_y: float
-) -> None:
-    coords = glyph.coordinates
-    for i in range(start, end + 1):
-        x, y = coords[i]
-        if y < 0:
-            coords[i] = (x, round(y * scale_y))
-
-
-def _match_baseline_overshoot(font: TTFont, base: str, reference: str) -> None:
-    """
-    Raise ``base``'s below-baseline ink so its overshoot matches
-    ``reference``'s.
-
-    Every contour sharing the base outline's vertical band (accented and
-    stroked variants are decomposed copies of it) is compressed below the
-    baseline only, so the glyph above y=0 and any detached marks such as a
-    cedilla keep their shape. A no-op when ``base`` already overshoots no
-    deeper than ``reference``.
-    """
-    glyf_table = font["glyf"]
-    base_glyph = glyf_table[base]
-    target_y_min = glyf_table[reference].yMin
-    if base_glyph.yMin >= target_y_min:
-        return
-
-    body_band = (base_glyph.yMin, base_glyph.yMax)
-    scale_y = target_y_min / base_glyph.yMin
-    for name in font.getGlyphOrder():
-        glyph = glyf_table[name]
-        if glyph.numberOfContours <= 0:
-            continue
-        touched = False
-        for start, end in _contour_spans(glyph):
-            ys = [y for _, y in glyph.coordinates[start : end + 1]]
-            if (min(ys), max(ys)) == body_band:
-                _scale_below_baseline(glyph, start, end, scale_y)
-                touched = True
-        if touched:
-            glyph.recalcBounds(glyf_table)
 
 
 def _subst_mapping(lookup: Any) -> dict[str, Any]:
@@ -819,8 +753,6 @@ def _build_font(
         _fold_gsub_scripts_into_default(font)
         if not autohint_only:
             _harmonize_brackets(font)
-            for base, reference in _BASELINE_OVERSHOOT_MATCHES:
-                _match_baseline_overshoot(font, base, reference)
             _add_kerning(font, _get_f_glyphs(font))
         font.save(output_path)
     finally:

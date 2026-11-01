@@ -14,7 +14,6 @@ from ..build_fonts import (
     _AUTOHINT_ONLY_FILENAMES,
     _AUTOHINT_STYLE_FEATURES,
     _BASE_KERN,
-    _BASELINE_OVERSHOOT_MATCHES,
     _BRACE_GLYPHS,
     _CAP_DESCENDER_GLYPHS,
     _CAP_OVERHANG_GLYPHS,
@@ -45,7 +44,6 @@ from ..build_fonts import (
     _get_f_glyphs,
     _glyph_overhang,
     _harmonize_brackets,
-    _match_baseline_overshoot,
     _merge_style_decompositions,
     _space_glyph_names,
     _spacing_glyph_names,
@@ -178,81 +176,6 @@ class TestHarmonizeBrackets:
         for name in _BRACE_GLYPHS + _SQUARE_BRACKET_GLYPHS:
             glyph = font["glyf"][name]
             assert glyph.yMax == expected_paren_y_max, f"{name} yMax"
-
-
-_G_VARIANTS_08: Final[frozenset[str]] = frozenset(
-    {
-        "G",
-        "Gcircumflex",
-        "Gbreve",
-        "Gdotaccent",
-        "Gcaron",
-        "uni0122",
-        "uni01E4",
-        "uni01F4",
-        "uni1E20",
-    }
-)
-
-
-def _glyph_coords(font: TTFont) -> dict[str, list[tuple[int, int]]]:
-    glyf = font["glyf"]
-    return {
-        name: list(glyf[name].coordinates)
-        for name in font.getGlyphOrder()
-        if glyf[name].numberOfContours > 0
-    }
-
-
-class TestMatchBaselineOvershoot:
-    @pytest.mark.parametrize(
-        "font_fixture,expected_changed",
-        [("upstream_08", _G_VARIANTS_08), ("upstream_12", frozenset())],
-        ids=["08pt", "12pt"],
-    )
-    def test_changes_exactly_the_g_variants(
-        self,
-        font_fixture: str,
-        expected_changed: frozenset[str],
-        request: pytest.FixtureRequest,
-    ) -> None:
-        font: TTFont = request.getfixturevalue(font_fixture)
-        before = _glyph_coords(font)
-        _match_baseline_overshoot(font, "G", "O")
-        after = _glyph_coords(font)
-        assert {n for n in before if before[n] != after[n]} == expected_changed
-
-    @pytest.mark.parametrize("name", sorted(_G_VARIANTS_08 - {"uni0122"}))
-    def test_g_variants_overshoot_like_o_08pt(
-        self, upstream_08: TTFont, name: str
-    ) -> None:
-        glyf = upstream_08["glyf"]
-        _match_baseline_overshoot(upstream_08, "G", "O")
-        assert glyf[name].yMin == glyf["O"].yMin
-
-    @pytest.mark.parametrize("font_fixture", ["upstream_08", "upstream_12"])
-    def test_capital_rounds_overshoot_like_lowercase(
-        self, font_fixture: str, request: pytest.FixtureRequest
-    ) -> None:
-        font: TTFont = request.getfixturevalue(font_fixture)
-        for base, reference in _BASELINE_OVERSHOOT_MATCHES:
-            _match_baseline_overshoot(font, base, reference)
-        glyf = font["glyf"]
-        depths = {name: glyf[name].yMin for name in ("G", "O", "C", "S", "U")}
-        assert all(y >= glyf["o"].yMin for y in depths.values()), depths
-
-    def test_moves_only_below_baseline_body_points(
-        self, upstream_08: TTFont
-    ) -> None:
-        cedilla_g = upstream_08["glyf"]["uni0122"]
-        before = list(cedilla_g.coordinates)
-        _match_baseline_overshoot(upstream_08, "G", "O")
-        changed = [
-            (b, a) for b, a in zip(before, cedilla_g.coordinates) if b != a
-        ]
-        assert changed
-        assert all(b[0] == a[0] and b[1] < a[1] <= 0 for b, a in changed)
-        assert cedilla_g.yMin == min(y for _, y in before)
 
 
 class TestKerning:
