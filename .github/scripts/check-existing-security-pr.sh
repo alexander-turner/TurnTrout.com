@@ -3,11 +3,12 @@
 # and merge the default branch into it. Writes outputs consumed by the
 # security-vulnerability-scan workflow.
 #
-# The rollup is regenerated from live alert data every run, so a branch that
-# conflicts with the default branch carries nothing worth resolving by hand:
-# the stale PR is closed and the run starts a fresh one from the default
-# branch. A conflicted rollup must never block the weekly job, or alerts
-# accumulate unremediated.
+# A rollup that conflicts with the default branch is closed and the run starts
+# a fresh one from the default branch, because a conflicted rollup must never
+# block the weekly job. Security fixes are regenerated from live alert data.
+# Dependabot version bumps the closed rollup had absorbed are not: their PRs
+# were closed as superseded, so Dependabot re-offers them only at the next
+# upstream release.
 #
 # Inputs (env):
 #   GH_TOKEN          GitHub token for `gh`
