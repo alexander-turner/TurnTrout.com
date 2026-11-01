@@ -4,8 +4,9 @@ Build modified EBGaramond fonts from upstream originals.
 Applies three modifications to EBGaramond08-Regular and EBGaramond12-Regular:
 1. Bracket/brace harmonization: affine-maps Y coordinates of bracketleft,
    bracketright, braceleft, braceright so their yMin/yMax match parenleft.
-2. Baseline overshoot: compresses the below-baseline ink of "G" and its
-   variants so it overshoots no deeper than "O".
+2. Baseline overshoot: compresses the below-baseline ink of the capital
+   round letters ("G", "O", "C", "S") and their variants so they overshoot
+   no deeper than lowercase "o".
 3. GPOS kerning: adds a PairPos Format 1 lookup to the kern feature
    for f-variant glyphs x punctuation, open-punct x descender letters,
    close-punct x comma/semicolon (tightened to undo a wide left sidebearing),
@@ -90,11 +91,18 @@ _BASE_KERN: Final[dict[str, int]] = {
 
 _KERN_OFFSET: Final[int] = 80
 
-# The 08 master draws "G" overshooting the baseline by 49/2048 em, twice "O"'s
-# 25. Rasterizers that leave the unhinted face ungridded (Android Chrome) set
-# that extra depth as a visible 1–2 device-pixel drop at body sizes, so the G
-# sits below the rest of its word. The 12 master's G already matches its O.
-_BASELINE_OVERSHOOT_MATCHES: Final[tuple[tuple[str, str], ...]] = (("G", "O"),)
+# Capital round letters must overshoot the baseline no deeper than lowercase
+# "o". The 08 master draws them 23–49/2048 em deep against "o"'s 16. Unhinted
+# (iOS), that depth sets "G" visibly below its word. Chrome's autohinter
+# (Android) quantizes each baseline zone's overshoot on its own: under half a
+# pixel snaps to the baseline, half to three-quarters becomes exactly half a
+# pixel, and a glyph deeper than its zone is left ungridded. A capital zone
+# deeper than the lowercase one crosses those thresholds at smaller sizes, so
+# at body size on a 3x phone the capitals sit half a device pixel below their
+# lowercase neighbors.
+_BASELINE_OVERSHOOT_MATCHES: Final[tuple[tuple[str, str], ...]] = tuple(
+    (base, "o") for base in "GOCS"
+)
 
 _OPEN_PUNCT_GLYPHS: Final[tuple[str, ...]] = (
     "parenleft",
