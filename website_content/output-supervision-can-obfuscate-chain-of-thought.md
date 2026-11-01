@@ -25,6 +25,16 @@ date_updated: 2026-06-26
 no_dropcap: false
 card_image_alt: A diagram shows that penalizing an AI's output for cheating causes it to obfuscate its reasoning. Before training, a robot's CoT is "I'll cheat" and its output is "I just cheated!". After training, its CoT says "I'll solve it like an honest chatbot" but still cheats, and its output is "Nothing to see here!".
 createBibtex: true
+paper:
+  title: "Output Supervision Can Obfuscate the Chain of Thought"
+  authors:
+    - Jacob Drori
+    - Luke Marks
+    - Bryce Woodworth
+    - Alex Cloud
+    - Alexander Matt Turner
+  year: 2025
+  arxiv: "2511.11584"
 ---
 
 We show that training against a monitor that only sees outputs (*not* CoTs) can cause obfuscated[^contradiction] CoTs! The obfuscation happens in two ways:

@@ -52,10 +52,94 @@ function escapeBibtexValue(value: string): string {
 }
 
 /**
+ * The published paper a post announces. When present, the post's citation
+ * points readers at the paper rather than at the website.
+ */
+export interface PaperCitation {
+  readonly title: string
+  readonly authors: readonly string[]
+  readonly year: number
+  readonly arxiv: string
+  /** Proceedings the paper appeared in; omit for an arXiv-only preprint. */
+  readonly booktitle?: string
+}
+
+/** Validates the `paper` frontmatter field, throwing on malformed input. */
+export function parsePaperCitation(raw: unknown): PaperCitation | undefined {
+  if (raw === undefined) {
+    return undefined
+  }
+  const paper = raw as Partial<Record<keyof PaperCitation, unknown>>
+  const hasAuthors =
+    Array.isArray(paper.authors) &&
+    paper.authors.length > 0 &&
+    paper.authors.every((author) => typeof author === "string")
+  if (
+    typeof paper.title !== "string" ||
+    !hasAuthors ||
+    typeof paper.year !== "number" ||
+    typeof paper.arxiv !== "string" ||
+    (paper.booktitle !== undefined && typeof paper.booktitle !== "string")
+  ) {
+    throw new Error(
+      `Invalid "paper" frontmatter: expected title, authors, year, and arxiv (plus optional booktitle); got ${JSON.stringify(raw)}`,
+    )
+  }
+  return paper as PaperCitation
+}
+
+const AUTHOR_FIELD_PREFIX = '  author = "'
+
+/** Joins authors with BibTeX's required " and ", one author per line. */
+function formatAuthors(authors: readonly string[]): string {
+  const indent = " ".repeat(AUTHOR_FIELD_PREFIX.length)
+  return authors.map(escapeBibtexValue).join(` and\n${indent}`)
+}
+
+function formatEntry(
+  entryType: string,
+  citationKey: string,
+  authors: readonly string[],
+  fields: readonly (readonly [string, string | number])[],
+): string {
+  const body = fields.map(([name, value]) =>
+    typeof value === "number"
+      ? `  ${name} = ${value}`
+      : `  ${name} = "${escapeBibtexValue(value)}"`,
+  )
+  return [
+    `@${entryType}{${citationKey},`,
+    [`${AUTHOR_FIELD_PREFIX}${formatAuthors(authors)}"`, ...body].join(",\n"),
+    "}",
+  ].join("\n")
+}
+
+function generatePaperEntry(paper: PaperCitation, citationSlug: string): string {
+  const citationKey = generateCitationKey(paper.authors, paper.year, citationSlug)
+  const url = `https://arxiv.org/abs/${paper.arxiv}`
+  if (paper.booktitle) {
+    return formatEntry("inproceedings", citationKey, paper.authors, [
+      ["title", paper.title],
+      ["booktitle", paper.booktitle],
+      ["year", paper.year],
+      ["url", url],
+    ])
+  }
+  return formatEntry("misc", citationKey, paper.authors, [
+    ["title", paper.title],
+    ["year", paper.year],
+    ["eprint", paper.arxiv],
+    ["archivePrefix", "arXiv"],
+    ["url", url],
+  ])
+}
+
+/**
  * Generates a BibTeX entry for an article, or `null` when it has no
  * `date_published`. Undated drafts get no citation: publication-date
  * enforcement lives in source_file_checks (gated to pre-merge PRs), so the
- * build must stay green for an unpublished draft.
+ * build must stay green for an unpublished draft. Posts announcing a paper
+ * (`paper` frontmatter) cite the paper instead of the post.
  */
 export function generateBibtexEntry(
   frontmatter: FrontmatterData,
@@ -67,27 +151,24 @@ export function generateBibtexEntry(
     return null
   }
 
-  const title = frontmatter.title
+  const permalink = frontmatter.permalink as string | undefined
+  const citationSlug = permalink ?? slug
+
+  const paper = parsePaperCitation(frontmatter.paper)
+  if (paper) {
+    return generatePaperEntry(paper, citationSlug)
+  }
+
   const authors =
     frontmatter.authors && frontmatter.authors.length > 0 ? frontmatter.authors : ["Alex Turner"]
-
-  const date = new Date(datePublished as string | Date)
-  const year = date.getFullYear()
-
-  const permalink = frontmatter.permalink as string | undefined
-  const url = `https://${baseUrl}/${permalink ?? slug}`
-
-  // Use permalink if available, otherwise use slug for citation key
-  const citationSlug = permalink ?? slug
+  const year = new Date(datePublished as string | Date).getFullYear()
   const citationKey = generateCitationKey(authors, year, citationSlug)
-  const authorString = authors.join(" and ")
 
-  return `@misc{${citationKey},
-  author = "${escapeBibtexValue(authorString)}",
-  title = "${escapeBibtexValue(title)}",
-  year = ${year},
-  url = "${escapeBibtexValue(url)}"
-}`
+  return formatEntry("misc", citationKey, authors, [
+    ["title", frontmatter.title],
+    ["year", year],
+    ["url", `https://${baseUrl}/${citationSlug}`],
+  ])
 }
 
 /**
