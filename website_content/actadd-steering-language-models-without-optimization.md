@@ -37,8 +37,20 @@ date_published: 2023-09-06
 original_url: https://www.lesswrong.com/posts/HWxLQvzJGeXoLPJWd/actadd-steering-language-models-without-optimization
 skip_import: true
 description: "Activation additions: steering language models by adding a bias to the forward pass. Surprisingly broad control, small impact on off-target capabilities."
-date_updated: 2026-08-19
+date_updated: 2026-11-01
 createBibtex: true
+paper:
+  title: "Steering Language Models With Activation Engineering"
+  authors:
+    - Alexander Matt Turner
+    - Lisa Thiergart
+    - Gavin Leech
+    - David Udell
+    - Juan J. Vazquez
+    - Ulisse Mini
+    - Monte MacDiarmid
+  year: 2023
+  arxiv: "2308.10248"
 ---
 
  

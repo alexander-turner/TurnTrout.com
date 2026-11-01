@@ -43,9 +43,20 @@ original_url: https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/xveuJm2.jpg
 description: A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.
-date_updated: 2026-10-12
+date_updated: 2026-11-01
 card_image_alt: A Markov decision process showing a robot agent's choice. One path via red gems leads to a small network of states. The other path via blue gems leads to a larger, more complex network and treasure, illustrating a choice that provides more future options.
 createBibtex: true
+paper:
+  title: "Optimal Policies Tend to Seek Power"
+  authors:
+    - Alexander Matt Turner
+    - Logan Smith
+    - Rohin Shah
+    - Andrew Critch
+    - Prasad Tadepalli
+  year: 2021
+  arxiv: "1912.01683"
+  booktitle: "Advances in Neural Information Processing Systems"
 ---
 
 In 2008, Steve Omohundro's foundational paper [The Basic AI Drives](https://selfawaresystems.files.wordpress.com/2008/01/ai_drives_final.pdf) conjectured that superintelligent goal-directed AIs might be incentivized to gain significant amounts of power in order to better achieve their goals. Omohundro's conjecture bears out in [toy models](https://intelligence.org/2015/11/26/new-paper-formalizing-convergent-instrumental-goals/), and the supporting philosophical arguments are intuitive. In 2019, the conjecture was even [debated by well-known AI researchers](https://www.lesswrong.com/posts/WxW6Gc6f2z3mzmqKs/debate-on-instrumental-convergence-between-lecun-russell).

@@ -25,9 +25,24 @@ aliases:
   - undo
 original_url: https://www.lesswrong.com/posts/anX4QrNjhJqGFvrBr/distillation-robustifies-unlearning
 date_published: 2025-06-13
-date_updated: 2026-07-15
+date_updated: 2026-11-01
 card_image_alt: A watercolor of a lab setup where a flask of mixed red and blue liquid is distilled. A tube transfers vapor to a second flask, which collects only blue liquid, leaving the red behind.
 createBibtex: true
+paper:
+  title: "Distillation Robustifies Unlearning"
+  authors:
+    - Bruce W. Lee
+    - Addie Foote
+    - Alex Infanger
+    - Leni Shor
+    - Harish Kamath
+    - Jacob Goldman-Wetzler
+    - Bryce Woodworth
+    - Alex Cloud
+    - Alexander Matt Turner
+  year: 2025
+  arxiv: "2506.06278"
+  booktitle: "Advances in Neural Information Processing Systems"
 ---
 
 Current “unlearning” methods [only](https://arxiv.org/pdf/2402.16835) [suppress](https://arxiv.org/pdf/2409.18025) [capabilities](https://www.lesswrong.com/posts/NAYyHimM3FaDYLvEH/breaking-circuit-breakers) [instead](https://www.lesswrong.com/posts/6QYpXEscd8GuE7BgW/unlearning-via-rmu-is-mostly-shallow) of truly unlearning the capabilities. But if you distill an unlearned model into a randomly initialized model, the resulting network is actually robust to relearning. We show why this works, how well it works, and how to trade off compute for robustness. Since labs already distill some models before deployment, our work implies they might achieve robust unlearning "for free" on those models by simply applying an unlearning step before distillation.

@@ -21,8 +21,18 @@ aliases:
   - activation-training
 original_url: https://www.lesswrong.com/posts/DLrQ2jjijqpX78mHJ/gdm-consistency-training-helps-limit-sycophancy-and
 date_published: 2025-11-06
-date_updated: 2026-06-28
+date_updated: 2026-11-01
 createBibtex: true
+paper:
+  title: "Consistency Training Helps Stop Sycophancy and Jailbreaks"
+  authors:
+    - Alex Irpan
+    - Alexander Matt Turner
+    - Mark Kurzeja
+    - David K. Elson
+    - Rohin Shah
+  year: 2025
+  arxiv: "2510.27062"
 ---
 
 > [!note]

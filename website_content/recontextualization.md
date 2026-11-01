@@ -18,8 +18,22 @@ aliases:
   - recontextualization
 original_url: https://www.lesswrong.com/posts/whkMnqFWKsBm7Gyd7/recontextualization-mitigates-specification-gaming-without
 date_published: 2025-12-23
-date_updated: 2026-04-20
+date_updated: 2026-11-01
 createBibtex: true
+paper:
+  title: "Recontextualization Mitigates Specification Gaming without Modifying the Specification"
+  authors:
+    - Ariana Azarbal
+    - Victor Gillioz
+    - Vladimir Ivanov
+    - Bryce Woodworth
+    - Jacob Drori
+    - Nevan Wichers
+    - Aram Ebtekar
+    - Alex Cloud
+    - Alexander Matt Turner
+  year: 2025
+  arxiv: "2512.19027"
 ---
 
 _Recontextualization_ distills good behavior into a context which allows bad behavior. More specifically, recontextualization is a modification to RL which generates completions from prompts that _discourage_ misbehavior, appends those completions to prompts that are _more_ tolerant of misbehavior, and finally reinforces the model on the _recontextualized_ instruction-completion data. Because the data generation and training prompts differ in their attitude towards misbehavior, recontextualization builds resistance to misbehaviors that the training signal mistakenly reinforces.
