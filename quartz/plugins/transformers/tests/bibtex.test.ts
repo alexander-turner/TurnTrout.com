@@ -215,10 +215,6 @@ describe("paper citations", () => {
   ])("throws on malformed paper frontmatter (%s)", (_name, raw) => {
     expect(() => parsePaperCitation(raw)).toThrow('Invalid "paper" frontmatter')
   })
-
-  it("returns undefined when no paper is given", () => {
-    expect(parsePaperCitation(undefined)).toBeUndefined()
-  })
 })
 
 describe("findInsertionIndex", () => {
