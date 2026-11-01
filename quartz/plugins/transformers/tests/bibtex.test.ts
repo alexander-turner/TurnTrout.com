@@ -7,7 +7,13 @@ import type { FullSlug } from "../../../util/path"
 import type { FrontmatterData } from "../../vfile"
 
 import { BuildCtx } from "../../../util/ctx"
-import { Bibtex, createCitationNodes, findInsertionIndex, generateBibtexEntry } from "../bibtex"
+import {
+  Bibtex,
+  createCitationNodes,
+  findInsertionIndex,
+  generateBibtexEntry,
+  parsePaperCitation,
+} from "../bibtex"
 
 function createMockTree(children: Root["children"] = []): Root {
   return { type: "root", children }
@@ -94,13 +100,19 @@ describe("generateBibtexEntry", () => {
     expect(result).toContain("@misc{Turner2022MyArticle,")
   })
 
-  it("joins multiple authors with 'and'", () => {
+  it("puts each of multiple authors on its own line, joined by 'and'", () => {
     const result = generateBibtexEntry(
       { title: "Test", authors: ["Alex Turner", "John Doe"], date_published: "2022-06-15" },
       "turntrout.com",
       "test",
     )
-    expect(result).toContain('author = "Alex Turner and John Doe"')
+    expect(result).toBe(`@misc{Turner2022Test,
+  author = "Alex Turner and
+            John Doe",
+  title = "Test",
+  year = 2022,
+  url = "https://turntrout.com/test"
+}`)
   })
 
   it("escapes double quotes and backslashes in title and author", () => {
@@ -147,6 +159,65 @@ describe("generateBibtexEntry", () => {
       "test-slug",
     )
     expect(result).toBeNull()
+  })
+})
+
+describe("paper citations", () => {
+  const paper = {
+    title: "Optimal Policies Tend to Seek Power",
+    authors: ["Alexander Matt Turner", "Logan Smith"],
+    year: 2021,
+    arxiv: "1912.01683",
+  }
+  const postFrontmatter = {
+    title: "Seeking Power is Often Convergently Instrumental in MDPs",
+    authors: ["Alex Turner", "Logan Riggs"],
+    date_published: "2019-12-05",
+    permalink: "seeking-power",
+  }
+
+  it("cites a published paper as @inproceedings", () => {
+    const result = generateBibtexEntry(
+      { ...postFrontmatter, paper: { ...paper, booktitle: "NeurIPS" } },
+      "turntrout.com",
+      "slug",
+    )
+    expect(result).toBe(`@inproceedings{Turner2021SeekingPower,
+  author = "Alexander Matt Turner and
+            Logan Smith",
+  title = "Optimal Policies Tend to Seek Power",
+  booktitle = "NeurIPS",
+  year = 2021,
+  url = "https://arxiv.org/abs/1912.01683"
+}`)
+  })
+
+  it("cites an arXiv-only paper as @misc with eprint", () => {
+    const result = generateBibtexEntry({ ...postFrontmatter, paper }, "turntrout.com", "slug")
+    expect(result).toBe(`@misc{Turner2021SeekingPower,
+  author = "Alexander Matt Turner and
+            Logan Smith",
+  title = "Optimal Policies Tend to Seek Power",
+  year = 2021,
+  eprint = "1912.01683",
+  archivePrefix = "arXiv",
+  url = "https://arxiv.org/abs/1912.01683"
+}`)
+  })
+
+  it.each([
+    ["missing title", { ...paper, title: undefined }],
+    ["empty authors", { ...paper, authors: [] }],
+    ["non-string author", { ...paper, authors: [1] }],
+    ["string year", { ...paper, year: "2021" }],
+    ["missing arxiv", { ...paper, arxiv: undefined }],
+    ["non-string booktitle", { ...paper, booktitle: 3 }],
+  ])("throws on malformed paper frontmatter (%s)", (_name, raw) => {
+    expect(() => parsePaperCitation(raw)).toThrow('Invalid "paper" frontmatter')
+  })
+
+  it("returns undefined when no paper is given", () => {
+    expect(parsePaperCitation(undefined)).toBeUndefined()
   })
 })
 
