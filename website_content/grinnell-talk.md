@@ -18,14 +18,14 @@ aliases:
   - intro-agi-risk
 original_url: https://www.lesswrong.com/posts/W43vm8aD9jf9peAFf/a-simple-explanation-of-agi-risk
 date_published: 2025-06-29
-date_updated: 2026-06-26
+date_updated: 2026-10-31
 card_image_alt: A panoramic view of the Grinnell College campus on a sunny autumn day. A large green lawn sits in the foreground before a line of trees with yellow and orange fall foliage, behind which stands a large, ornate brick building under a blue sky.
 ---
 
 > [!info] Notes from a talk originally given at my alma mater
 > I went to [Grinnell College](https://grinnell.edu) for my undergraduate degree. For the 2025 reunion event, I agreed to speak on a panel about AI. I like the talk I gave because I think it's a good "101" intro to AI risk, aimed at educated laypeople.
 
-I worked at Google DeepMind [on the science of aligning artificial intelligence with human interests](/research). I [completed a PhD in this field in 2022](/alignment-phd) and then I did my postdoc at UC Berkeley. I’ll discuss some of the ways in which AI might go wrong.
+I worked at Google DeepMind [on the science of aligning artificial intelligence with human interests](/professional). I [completed a PhD in this field in 2022](/alignment-phd) and then I did my postdoc at UC Berkeley. I’ll discuss some of the ways in which AI might go wrong.
 
 > [!warning] I'm only speaking for myself, not for my former employer.
 

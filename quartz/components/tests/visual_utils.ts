@@ -151,6 +151,11 @@ const IMAGE_PAINT_TIMEOUT_MS = 15000
 // own, so it matches IMAGE_PAINT_TIMEOUT_MS's generosity for the same reason.
 const VIDEO_PAINT_TIMEOUT_MS = 15000
 
+// Videos that declare a poster are captured as that poster (see
+// showVideoPosters); only the rest go through the decoded-frame helpers.
+const DECODED_VIDEO_SELECTOR = "video:not([poster])"
+const POSTER_STASH_ATTR = "data-visual-poster-stash"
+
 // WebKit's `document.fonts.ready` can hang indefinitely when a `@font-face`
 // request never settles, burning the whole test timeout. Bound the wait: the
 // two-equal-frames `captureStableScreenshot` loop is the real guarantee that
@@ -401,6 +406,7 @@ export async function takeRegressionScreenshot(
   try {
     await forceHighQualityImageInterpolation(page)
     if (!skipMediaPause) {
+      await showVideoPosters(elementToScreenshot ?? page)
       await pinDecodableVideoSource(page, elementToScreenshot)
       await pauseMediaElements(page, elementToScreenshot)
       await waitForVideosPainted(elementToScreenshot ?? page)
@@ -457,6 +463,7 @@ export async function takeRegressionScreenshot(
 
     return screenshotBuffer
   } finally {
+    await restoreVideoSources(page)
     await page.emulateMedia({ reducedMotion: null })
   }
 }
@@ -658,7 +665,7 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
   const mediaScope = scope ?? page
 
   const pauseMedia = async (
-    selector: "video" | "audio",
+    selector: typeof DECODED_VIDEO_SELECTOR | "audio",
     seekTo: "start" | "end",
   ): Promise<void> => {
     const elements = await mediaScope.locator(selector).all()
@@ -724,7 +731,7 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
     await Promise.all(promises)
   }
 
-  await Promise.all([pauseMedia("video", "start"), pauseMedia("audio", "end")])
+  await Promise.all([pauseMedia(DECODED_VIDEO_SELECTOR, "start"), pauseMedia("audio", "end")])
 
   // Remove the autoplay attribute so the Safari autoplay script
   // (safari-autoplay.js) won't restart videos on user-interaction events.
@@ -738,6 +745,55 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
       await handle.dispose()
     }
   }
+}
+
+/**
+ * Captures every video that declares a poster as that poster.
+ *
+ * A video with no media resource represents its poster frame, an ordinary
+ * image. A decoded frame instead depends on the engine's media pipeline, which
+ * on WebKit CI runners can stall at any readyState and never present a frame.
+ * Detaching the resource makes the capture independent of the media engine.
+ * The `<source>` children are parked in an inert `<template>` (resource
+ * selection reads only `<source>` children) so `restoreVideoSources` can put
+ * them back after the capture.
+ */
+export async function showVideoPosters(scope: Page | Locator): Promise<void> {
+  for (const video of await scope.locator("video[poster]").all()) {
+    const handle = await video.elementHandle({ timeout: 2000 }).catch(() => null)
+    if (!handle) continue
+    await handle.evaluate(async (el, stashAttr) => {
+      const videoEl = el as HTMLVideoElement
+      const stash = document.createElement("template")
+      stash.setAttribute(stashAttr, "")
+      const src = videoEl.getAttribute("src")
+      if (src !== null) stash.dataset.src = src
+      stash.content.append(...videoEl.querySelectorAll(":scope > source"))
+      videoEl.append(stash)
+      videoEl.removeAttribute("src")
+      videoEl.load()
+
+      const poster = new Image()
+      poster.src = videoEl.poster
+      await poster.decode()
+    }, POSTER_STASH_ATTR)
+    await handle.dispose()
+  }
+}
+
+/** Reattaches the media resources that `showVideoPosters` detached. */
+export async function restoreVideoSources(page: Page): Promise<void> {
+  await page.evaluate((stashAttr) => {
+    const stashes = document.querySelectorAll<HTMLTemplateElement>(`video > template[${stashAttr}]`)
+    for (const stash of stashes) {
+      const videoEl = stash.parentElement
+      if (!(videoEl instanceof HTMLVideoElement)) continue
+      if (stash.dataset.src !== undefined) videoEl.setAttribute("src", stash.dataset.src)
+      videoEl.append(stash.content)
+      stash.remove()
+      videoEl.load()
+    }
+  }, POSTER_STASH_ATTR)
 }
 
 /**
@@ -756,7 +812,7 @@ async function pinDecodableVideoSource(page: Page, scope?: Locator): Promise<voi
   if (page.context().browser()?.browserType().name() !== "webkit") return
 
   const mediaScope = scope ?? page
-  for (const video of await mediaScope.locator("video").all()) {
+  for (const video of await mediaScope.locator(DECODED_VIDEO_SELECTOR).all()) {
     const handle = await video.elementHandle({ timeout: 2000 }).catch(() => null)
     if (!handle) continue
     await handle.evaluate((el) => {
@@ -775,7 +831,8 @@ async function pinDecodableVideoSource(page: Page, scope?: Locator): Promise<voi
 }
 
 /**
- * Blocks until every video has actually painted its frame-0 to the compositor.
+ * Blocks until every poster-less video has actually painted its frame-0 to the
+ * compositor. Videos that a clipping ancestor hides entirely are skipped.
  *
  * `pauseMediaElements` seeks videos to currentTime 0, but `paused`/`currentTime
  * === 0` are satisfied even when the engine (notably WebKit) has presented no
@@ -787,8 +844,8 @@ async function pinDecodableVideoSource(page: Page, scope?: Locator): Promise<voi
  * screenshot proceed: a blank-video capture that gets approved poisons the
  * shared R2 baselines for every later run.
  */
-async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
-  for (const video of await scope.locator("video").all()) {
+export async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
+  for (const video of await scope.locator(DECODED_VIDEO_SELECTOR).all()) {
     const handle = await video.elementHandle()
     if (!handle) throw new Error("Could not get element handle for video")
     await handle.evaluate(
@@ -796,6 +853,25 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
         new Promise<void>((resolve, reject) => {
           const videoEl = el as HTMLVideoElement & {
             requestVideoFrameCallback?: (cb: () => void) => number
+          }
+          // A video that a clipping ancestor (e.g. the scrolled search preview)
+          // hides entirely contributes no pixels to the capture, and WebKit
+          // may never advance its load while it stays out of view.
+          const videoRect = videoEl.getBoundingClientRect()
+          for (let node = videoEl.parentElement; node; node = node.parentElement) {
+            const { overflowX, overflowY } = getComputedStyle(node)
+            if (overflowX === "visible" && overflowY === "visible") continue
+            const clip = node.getBoundingClientRect()
+            const clipsX =
+              overflowX !== "visible" &&
+              (videoRect.right <= clip.left || videoRect.left >= clip.right)
+            const clipsY =
+              overflowY !== "visible" &&
+              (videoRect.bottom <= clip.top || videoRect.top >= clip.bottom)
+            if (clipsX || clipsY) {
+              resolve()
+              return
+            }
           }
           let settled = false
           const timer = setTimeout(() => {

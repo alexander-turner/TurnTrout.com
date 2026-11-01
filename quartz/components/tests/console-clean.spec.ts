@@ -8,7 +8,7 @@ const PAGES_TO_CHECK: readonly string[] = [
   "/",
   "/design",
   "/about",
-  "/research",
+  "/professional",
   "/test-page",
   "/posts",
 ]

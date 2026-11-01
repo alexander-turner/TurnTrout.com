@@ -23,7 +23,7 @@ import { gotoPage, WAIT_POLL_INTERVAL_MS } from "./visual_utils"
 
 // High-overflow-risk pages: long inline code, transcluded external README
 // content, wide tables, and the visual kitchen-sink test page.
-const PAGES_TO_CHECK: readonly string[] = ["/", "/test-page", "/design", "/research", "/posts"]
+const PAGES_TO_CHECK: readonly string[] = ["/", "/test-page", "/design", "/professional", "/posts"]
 
 // The clipped-content probe runs at tablet/desktop viewports only. The mobile
 // viewport still has known pre-existing clips (long inline code / unbreakable
