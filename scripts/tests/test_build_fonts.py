@@ -14,6 +14,7 @@ from ..build_fonts import (
     _AUTOHINT_ONLY_FILENAMES,
     _AUTOHINT_STYLE_FEATURES,
     _BASE_KERN,
+    _BASELINE_OVERSHOOT_MATCHES,
     _BRACE_GLYPHS,
     _CAP_DESCENDER_GLYPHS,
     _CAP_OVERHANG_GLYPHS,
@@ -228,6 +229,17 @@ class TestMatchBaselineOvershoot:
         glyf = upstream_08["glyf"]
         _match_baseline_overshoot(upstream_08, "G", "O")
         assert glyf[name].yMin == glyf["O"].yMin
+
+    @pytest.mark.parametrize("font_fixture", ["upstream_08", "upstream_12"])
+    def test_capital_rounds_overshoot_like_lowercase(
+        self, font_fixture: str, request: pytest.FixtureRequest
+    ) -> None:
+        font: TTFont = request.getfixturevalue(font_fixture)
+        for base, reference in _BASELINE_OVERSHOOT_MATCHES:
+            _match_baseline_overshoot(font, base, reference)
+        glyf = font["glyf"]
+        depths = {name: glyf[name].yMin for name in ("G", "O", "C", "S", "U")}
+        assert all(y >= glyf["o"].yMin for y in depths.values()), depths
 
     def test_moves_only_below_baseline_body_points(
         self, upstream_08: TTFont
