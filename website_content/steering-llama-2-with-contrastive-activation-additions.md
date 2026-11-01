@@ -273,7 +273,7 @@ Concurrently to the GPT-2 work, [Li et al. (2023)](https://arxiv.org/abs/2306.03
 
 The follow-on [representation engineering paper](https://arxiv.org/abs/2310.01405) found a bunch of interesting steering vectors, including a "memorization vector." By subtracting their memorization vector, they reduced quote recitation from 89% to 37% while preserving performance on a historical dataset. Activation additions have also motivated a [formalization of "linear representation"](https://arxiv.org/abs/2311.03658), helped verify [linear representations of sentiment in LLMs](https://arxiv.org/abs/2310.15154), and [contributed to adversarial training](https://arxiv.org/abs/2311.09433).
 
-I'm now helping start up DeepMind's Bay area alignment team. My first project is to run this technique on large internal models and see how well it works. I'll be excited to see other groups continue to adopt this technique and get cool results. I hope (and expect) that activation addition will work this well on frontier models.[^3] If so, it'd be great for activation additions to be incorporated into the standard alignment pipelines.
+I then helped start up DeepMind's Bay Area alignment team. My first project there was to run this technique on large internal models and see how well it worked. I'll be excited to see other groups continue to adopt this technique and get cool results. I hope (and expect) that activation addition will work this well on frontier models.[^3] If so, it'd be great for activation additions to be incorporated into the standard alignment pipelines.
 
 > [!error] I was wrong!
 > [Steering vectors don't seem to help hillclimb factuality metrics on frontier models.](/gemini-steering)

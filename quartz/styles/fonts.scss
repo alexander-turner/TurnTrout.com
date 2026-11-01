@@ -108,6 +108,11 @@ $fonts-dir: "/static/styles/fonts";
   src: url("#{$fonts-dir}/EBGaramond/EBGaramond08-Regular.woff2");
   font-display: swap;
   unicode-range: U+0-10FFFF;
+
+  // FreeType's autohinter (Chrome on Android and Linux) measures each font's
+  // alignment zones on these reference letters. Every page's subset carries
+  // them, so every page snaps its glyphs to the same zones as the full font.
+  -subfont-text: "HEZLOCUSTQfijkdbhuvxzoescnrpqgjy";
 }
 
 // EB Garamond lacks U+2713 ✓ and the U+25D0-U+25D3 half-filled circles, so

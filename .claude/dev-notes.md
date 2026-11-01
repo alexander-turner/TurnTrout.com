@@ -218,6 +218,28 @@ site, renders them with production CSS, measures ink-to-ink clearance, and
 emits a worst-first gallery. Target band for the horizontal ink gap is roughly
 1.5–4px at a 24px root font size.
 
+## Mobile font hinting (subfont subsets)
+
+Chrome on Android and Linux grid-fits the unhinted EB Garamond faces with
+Skrifa, a port of FreeType's autohinter, which computes alignment zones and
+assigns glyphs to "styles" from the whole font's cmap and GSUB. subfont's
+per-page subsets change both, so a font change can make production pages
+render differently from the full font even when the full font looks right.
+`scripts/build_fonts.py` keeps the two consistent; when touching fonts,
+`subfont.sh`, or the `-subfont-text` reference letters on the main face,
+compare a subset against its full font:
+
+- Headless Playwright Chromium renders unhinted by default. To get mobile-like
+  slight hinting, point `FONTCONFIG_FILE` at a fonts.conf that includes
+  `/etc/fonts/fonts.conf` and assigns `hinting` true and `hintstyle`
+  `hintslight`.
+- Render the same text with two `@font-face`s (full font vs. the subset that
+  `subfont` inlines into a built page), with line heights that are whole device
+  pixels, and diff the rows. Also diff full vs. full to get the noise floor.
+- To go glyph-by-glyph, subset with `uharfbuzz` using `RETAIN_GIDS` and compare
+  hinted outlines at 37–63 ppem (14–24px at DPR 2.625) with `skrifa`
+  (`Engine::Auto`, `SmoothMode::Light`).
+
 ## Visual regression testing
 
 Uses Playwright’s native `toMatchSnapshot`. Baselines live in Cloudflare R2 (`r2:turntrout/visual-baselines/`); `tests/visual-baselines/` is gitignored. CI downloads baselines via `scripts/r2_baselines.py download`. On mismatch, CI uploads a merged HTML diff report as the `visual-diff-report` artifact and surfaces an “Approve baselines” link in the failed run’s step summary (and as a PR comment on PRs).
