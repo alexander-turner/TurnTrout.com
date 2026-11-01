@@ -1,3 +1,5 @@
+import type { Page } from "@playwright/test"
+
 import { expect, test } from "./fixtures"
 import { takeRegressionScreenshot } from "./visual_utils"
 
@@ -27,10 +29,35 @@ test.describe("Related posts block", () => {
   })
 })
 
+/**
+ * The block lists the test page's nearest neighbors in the committed
+ * `related_posts.json`, which shifts whenever the corpus is re-embedded. Swap
+ * in fixed entries (same markup as `buildRelatedPostsBlock`) so the screenshot
+ * tracks only the block's styling.
+ */
+async function setDummyRelatedPosts(page: Page): Promise<void> {
+  await page.locator(`${RELATED_POSTS} > ul`).evaluate((list) => {
+    list.innerHTML = [
+      ["dummy-post-one", "Dummy post one", "A short excerpt for the first dummy post."],
+      [
+        "dummy-post-two",
+        "Dummy post two",
+        "A longer excerpt for the second dummy post, long enough to wrap onto a second line on narrow viewports.",
+      ],
+    ]
+      .map(
+        ([slug, title, excerpt]) =>
+          `<li class="related-post"><a href="/${slug}" class="internal can-trigger-popover">${title}</a><span class="related-post-excerpt">${excerpt}</span></li>`,
+      )
+      .join("")
+  })
+}
+
 test.describe("Related posts visual regression", () => {
   // Visual regression tests don't need assertions
   // eslint-disable-next-line playwright/expect-expect
   test("Similar posts block (screenshot)", async ({ page }, testInfo) => {
+    await setDummyRelatedPosts(page)
     const block = page.locator(RELATED_POSTS)
     await block.scrollIntoViewIfNeeded()
     await block.waitFor({ state: "visible" })

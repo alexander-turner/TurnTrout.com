@@ -832,7 +832,7 @@ async function pinDecodableVideoSource(page: Page, scope?: Locator): Promise<voi
 
 /**
  * Blocks until every poster-less video has actually painted its frame-0 to the
- * compositor.
+ * compositor. Videos that a clipping ancestor hides entirely are skipped.
  *
  * `pauseMediaElements` seeks videos to currentTime 0, but `paused`/`currentTime
  * === 0` are satisfied even when the engine (notably WebKit) has presented no
@@ -844,7 +844,7 @@ async function pinDecodableVideoSource(page: Page, scope?: Locator): Promise<voi
  * screenshot proceed: a blank-video capture that gets approved poisons the
  * shared R2 baselines for every later run.
  */
-async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
+export async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
   for (const video of await scope.locator(DECODED_VIDEO_SELECTOR).all()) {
     const handle = await video.elementHandle()
     if (!handle) throw new Error("Could not get element handle for video")
@@ -853,6 +853,25 @@ async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
         new Promise<void>((resolve, reject) => {
           const videoEl = el as HTMLVideoElement & {
             requestVideoFrameCallback?: (cb: () => void) => number
+          }
+          // A video that a clipping ancestor (e.g. the scrolled search preview)
+          // hides entirely contributes no pixels to the capture, and WebKit
+          // may never advance its load while it stays out of view.
+          const videoRect = videoEl.getBoundingClientRect()
+          for (let node = videoEl.parentElement; node; node = node.parentElement) {
+            const { overflowX, overflowY } = getComputedStyle(node)
+            if (overflowX === "visible" && overflowY === "visible") continue
+            const clip = node.getBoundingClientRect()
+            const clipsX =
+              overflowX !== "visible" &&
+              (videoRect.right <= clip.left || videoRect.left >= clip.right)
+            const clipsY =
+              overflowY !== "visible" &&
+              (videoRect.bottom <= clip.top || videoRect.top >= clip.bottom)
+            if (clipsX || clipsY) {
+              resolve()
+              return
+            }
           }
           let settled = false
           const timer = setTimeout(() => {

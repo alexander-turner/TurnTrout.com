@@ -273,6 +273,11 @@
   ],
   "agi-risk-introduction": [
     {
+      "excerpt": "Pace the frontier & track + control huge amounts of compute, or risk an intelligence explosion that could obliterate the world (in particular, India).",
+      "permalink": "ndtv-world-summit-talk",
+      "title": "Explaining \"AI might obliterate you\" to senior policymakers in India"
+    },
+    {
       "excerpt": "Op-ed in The Guardian: AI could escape our control. Voluntary commitments failed at Google, so governments must restrain the race to superintelligence.",
       "permalink": "listen-to-ai-warnings",
       "title": "I worked at Google DeepMind. You should listen to the warnings about AI."
@@ -291,11 +296,6 @@
       "excerpt": "AI takeover seems easier to pull off for an AI that we teach to wield killer robots.",
       "permalink": "killer-robots-takeover",
       "title": "Misaligned AIs could use killer robots to take over"
-    },
-    {
-      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
-      "permalink": "excitement-about-impact-measures",
-      "title": "Reasons for Excitement about Impact of Impact Measure Research"
     }
   ],
   "alignment-phd": [
@@ -2394,6 +2394,33 @@
       "excerpt": "Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.",
       "permalink": "llama2-steering-vectors",
       "title": "Steering Llama-2 with contrastive activation additions"
+    }
+  ],
+  "ndtv-world-summit-talk": [
+    {
+      "excerpt": "Could human-designed AI kill all humans? I spent my PhD on this and still worry.",
+      "permalink": "agi-risk-introduction",
+      "title": "A simple explanation of AGI risk"
+    },
+    {
+      "excerpt": "Op-ed in The Guardian: AI could escape our control. Voluntary commitments failed at Google, so governments must restrain the race to superintelligence.",
+      "permalink": "listen-to-ai-warnings",
+      "title": "I worked at Google DeepMind. You should listen to the warnings about AI."
+    },
+    {
+      "excerpt": "Op-ed in Fortune: OpenAI promised to share information with independent evaluators, then fired safety researchers for sharing information with evaluators.",
+      "permalink": "openai-cant-self-police",
+      "title": "OpenAI can't self-police because it fires the people raising the alarm"
+    },
+    {
+      "excerpt": "Arguments that AI will inevitably \"scheme\" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.",
+      "permalink": "invalid-ai-risk-arguments",
+      "title": "Many arguments for AI x-risk are wrong"
+    },
+    {
+      "excerpt": "Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.",
+      "permalink": "excitement-about-impact-measures",
+      "title": "Reasons for Excitement about Impact of Impact Measure Research"
     }
   ],
   "non-obstruction-motivates-corrigibility": [

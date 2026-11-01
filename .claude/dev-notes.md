@@ -170,6 +170,10 @@ PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/
   npx tsx quartz/bootstrap-cli.ts build --offline
 ```
 
+## Related posts (Similar links)
+
+Every content page needs an entry in `quartz/plugins/transformers/related_posts.json` (`built-site-checks` fails with "Missing related-posts block" otherwise). After adding a post or changing its title/description, regenerate with `pnpm related:build` and commit the JSON. In the cloud sandbox, rclone's S3 backend rejects `AWS_CA_BUNDLE` ("unsupported transport, \*fshttp.Transport"), so run it as `env -u AWS_CA_BUNDLE pnpm related:build`; `SSL_CERT_FILE` still supplies the proxy CA.
+
 ## External README snapshots
 
 The GitHub READMEs embedded via `populate-markdown-*` placeholders (see

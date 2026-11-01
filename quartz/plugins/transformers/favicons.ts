@@ -12,6 +12,7 @@ import {
   cdnBaseUrl,
   defaultPath,
   HEADING_TAGS,
+  OVERHANG_KERN_CLASSES,
   simpleConstants,
   specialFaviconPaths,
 } from "../../components/constants"
@@ -404,6 +405,28 @@ export function nudgeClassFor(
 // separately), so its membership differs from the generic inline-wrapper set.
 export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "ins", "abbr"]
 
+const overhangKernClasses: readonly string[] = [...OVERHANG_KERN_CLASSES.values()]
+
+/**
+ * Glues an overhang-kern span ending ``node`` into the favicon's nowrap span.
+ * The span keeps its class, so its margin still clears the glyph's overhang
+ * from the icon.
+ */
+function glueTrailingOverhangKern(node: Element, favicon: FaviconNode): Element | null {
+  const last = node.children.at(-1)
+  if (last?.type !== "element" || !overhangKernClasses.some((name) => hasClass(last, name))) {
+    return null
+  }
+  node.children.pop()
+  const previous = node.children.at(-1)
+  const span =
+    previous?.type === "text"
+      ? spliceAndWrapLastChars(previous, node, last)
+      : createNowrapSpan([last])
+  span.children.push(favicon)
+  return span
+}
+
 /**
  * Splices the last few characters from a text node and wraps them
  * with the favicon in a nowrap span, preventing line-break orphaning.
@@ -413,6 +436,8 @@ export function maybeSpliceText(
   imgNodeToAppend: FaviconNode,
   context: GlyphContext = EMPTY_GLYPH_CONTEXT,
 ): Element | null {
+  const kerned = glueTrailingOverhangKern(node, imgNodeToAppend)
+  if (kerned) return kerned
   const isEmpty = (child: Element | Text) => child.type === "text" && child.value?.trim() === ""
   const lastChild = node.children.findLast(
     (child) => child.type === "element" || !isEmpty(child as Element | Text),
