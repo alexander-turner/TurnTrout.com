@@ -1,0 +1,9 @@
+extends: existence
+message: "Write 'reinforcement learning' without the '(RL)' gloss."
+level: error
+ignorecase: true
+nonword: true
+# "RL" is in the accepted vocabulary, which would otherwise exempt it here.
+vocab: false
+tokens:
+  - 'reinforcement learning \(RL\)'

@@ -1642,11 +1642,6 @@
       "excerpt": "Adding a \"top-right vector\" makes a maze-solver go to the top-right. We show composition with other vectors, like the \"cheese vector.\"",
       "permalink": "top-right-steering-vector",
       "title": "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
-    },
-    {
-      "excerpt": "GRAFT routes gradients from monitor-flagged reward hacks into an adapter, then deletes the adapter. Weak monitors stop teaching models to evade them.",
-      "permalink": "gradient-routing-removes-reward-hacking",
-      "title": "Gradient Routing Localizes and Removes Unintended Behaviors in RL"
     }
   ],
   "gradient-routing-removes-reward-hacking": [
@@ -3004,11 +2999,6 @@
       "excerpt": "Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.",
       "permalink": "mechanistically-eliciting-latent-behaviors",
       "title": "Mechanistically Eliciting Latent Behaviors in Language Models"
-    },
-    {
-      "excerpt": "GRAFT routes gradients from monitor-flagged reward hacks into an adapter, then deletes the adapter. Weak monitors stop teaching models to evade them.",
-      "permalink": "gradient-routing-removes-reward-hacking",
-      "title": "Gradient Routing Localizes and Removes Unintended Behaviors in RL"
     }
   ],
   "review-of-but-exactly-how-complex-and-fragile": [
