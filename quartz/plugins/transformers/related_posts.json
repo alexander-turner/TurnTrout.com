@@ -479,21 +479,21 @@
       "title": "Penalizing Impact via Attainable Utility Preservation"
     },
     {
-      "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "professional",
-      "title": "My professional work"
+      "excerpt": "How to make AI agents avoid negative side effects, especially in multi-stakeholder environments.",
+      "permalink": "conservative-agency-with-multiple-stakeholders",
+      "title": "Conservative Agency with Multiple Stakeholders"
     }
   ],
   "attainable-utility-preservation-paper": [
     {
-      "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "professional",
-      "title": "My professional work"
-    },
-    {
       "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
       "permalink": "attainable-utility-preservation-concepts",
       "title": "Attainable Utility Preservation: Concepts"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "professional",
+      "title": "My professional work"
     },
     {
       "excerpt": "The AUP technique encourages low-impact behavior in both simple and complex environments.",
@@ -787,14 +787,14 @@
       "title": "Attainable Utility Preservation: Empirical Results"
     },
     {
-      "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "professional",
-      "title": "My professional work"
-    },
-    {
       "excerpt": "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact.",
       "permalink": "attainable-utility-preservation-concepts",
       "title": "Attainable Utility Preservation: Concepts"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "professional",
+      "title": "My professional work"
     },
     {
       "excerpt": "A new AI safety paper formalizing \"attainable utility preservation\" to penalize negative AI impacts, with experimental results.",
@@ -3734,14 +3734,14 @@
       "title": "Reframing Impact"
     },
     {
-      "excerpt": "A tour of the research areas I've loved over the years.",
-      "permalink": "professional",
-      "title": "My professional work"
-    },
-    {
       "excerpt": "Impact is reframed as a change in attainable utility for both humans and AI agents.",
       "permalink": "towards-a-new-impact-measure",
       "title": "Towards a New Impact Measure"
+    },
+    {
+      "excerpt": "A tour of the research areas I've loved over the years.",
+      "permalink": "professional",
+      "title": "My professional work"
     }
   ],
   "why-i-left-google-deepmind": [
