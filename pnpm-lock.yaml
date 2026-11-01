@@ -205,8 +205,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: 5.4.4
-        version: 5.4.4(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5)
+        specifier: 5.6.0
+        version: 5.6.0(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(typescript@6.0.3)(unified@11.0.5)
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -8075,8 +8075,8 @@ packages:
   pumpify@2.0.1:
     resolution: {integrity: sha512-m7KOje7jZxrmutanlkS1daj1dS6z6BgslzOXmcSEpIlCxM3VJH7lG5QLeck/6hgF6F4crFf01UtQmNsJfweTAw==}
 
-  punctilio@5.4.4:
-    resolution: {integrity: sha512-8Mzbgpq6/+XffhnV29ITYz2CCjGVOSbxS3fs31Y9i/+dmecex9h5oJJU+z3WcyCcCgJc5ZruEbi2xZdBuamBpQ==}
+  punctilio@5.6.0:
+    resolution: {integrity: sha512-TJwAexLQMZdoTGt+Xe8gXZK4PZTiXlKxcVWB3nJZJoZ2O5dcclgoBlxRj8A3hkcb4iRgqpqaK6rItF5/q6gAqA==}
     engines: {node: '>=20.0.0'}
     hasBin: true
     peerDependencies:
@@ -8085,7 +8085,6 @@ packages:
       rehype-stringify: ^10.0.0
       remark-gfm: ^4.0.0
       remark-parse: ^11.0.0
-      remark-stringify: ^11.0.0
       unified: ^11.0.0
     peerDependenciesMeta:
       prettier:
@@ -8097,8 +8096,6 @@ packages:
       remark-gfm:
         optional: true
       remark-parse:
-        optional: true
-      remark-stringify:
         optional: true
       unified:
         optional: true
@@ -19244,10 +19241,15 @@ snapshots:
       inherits: 2.0.4
       pump: 3.0.4
 
-  punctilio@5.4.4(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(typescript@6.0.3)(unified@11.0.5):
+  punctilio@5.6.0(prettier@3.8.3)(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(typescript@6.0.3)(unified@11.0.5):
     dependencies:
       cosmiconfig: 9.0.1(typescript@6.0.3)
+      diff: 9.0.0
       ignore: 7.0.5
+      micromark: 4.0.2
+      micromark-extension-gfm: 3.0.0
+      micromark-util-decode-string: 2.0.1
+      parse5: 7.3.0
       quick-lru: 7.3.0
       tinyglobby: 0.2.16
       unist-util-visit-parents: 6.0.2
@@ -19257,7 +19259,6 @@ snapshots:
       rehype-stringify: 10.0.1
       remark-gfm: 4.0.1
       remark-parse: 11.0.0
-      remark-stringify: 11.0.0
       unified: 11.0.5
     transitivePeerDependencies:
       - typescript
