@@ -1,4 +1,5 @@
 import { transform, type TransformOptions } from "punctilio"
+import { transformMarkdownSync } from "punctilio/markdown"
 import { rehypePunctilio } from "punctilio/rehype"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
@@ -6,7 +7,6 @@ import { unified } from "unified"
 
 import { debounce, setupCopyButton } from "./component_script_utils"
 import { renderDiffHtml } from "./punctilio-demo-diff"
-import { transformMarkdownSource } from "./punctilio-demo-markdown"
 
 const STORAGE_KEY_INPUT = "punctilio-input"
 const STORAGE_KEY_MODE = "punctilio-mode"
@@ -66,7 +66,7 @@ function doTransform(text: string, mode: TransformMode, config: TransformOptions
     case "plaintext":
       return transform(text, config)
     case "markdown":
-      return transformMarkdownSource(text, config)
+      return transformMarkdownSync(text, config)
     case "html":
       return transformHtmlText(text, config)
     default: {

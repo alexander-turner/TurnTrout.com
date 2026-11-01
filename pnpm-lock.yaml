@@ -183,15 +183,6 @@ importers:
       mdast-util-to-hast:
         specifier: 13.2.1
         version: 13.2.1
-      micromark:
-        specifier: 4.0.2
-        version: 4.0.2
-      micromark-extension-gfm:
-        specifier: 3.0.0
-        version: 3.0.0
-      micromark-util-decode-string:
-        specifier: 2.0.1
-        version: 2.0.1
       micromorph:
         specifier: 0.4.5
         version: 0.4.5
@@ -517,9 +508,6 @@ importers:
       markdownlint-cli:
         specifier: ^0.48.0
         version: 0.48.0
-      micromark-util-types:
-        specifier: 2.0.2
-        version: 2.0.2
       pa11y:
         specifier: 9.0.1
         version: 9.0.1(patch_hash=53c3bfb372c741997f7b6d75518c4f3ed1a5be9b3ccf3ae16904feb90bb8c5ae)(typescript@6.0.3)
