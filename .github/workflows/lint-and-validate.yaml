@@ -203,40 +203,13 @@ jobs:
         continue-on-error: true
         run: uv run python scripts/run_push_checks.py --autofix-only --no-commit
 
-      - name: Install rclone
-        if: needs.detect-changes.outputs.content == 'true'
-        uses: ./.github/actions/retry-external
-        with:
-          max-attempts: "3"
-          timeout-minutes: "5"
-          command: sudo apt-get update && sudo apt-get install -y rclone
-
-      # Embeds new or changed articles via Voyage AI and rewrites
-      # related_posts.json; the commit step below folds it into the push. The
-      # vector cache on R2 makes reruns on unchanged content API-free.
-      - name: Generate related posts
-        if: needs.detect-changes.outputs.content == 'true'
-        env:
-          VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
-          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
-          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
-          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
-          RCLONE_CONFIG_R2_TYPE: s3
-          RCLONE_CONFIG_R2_PROVIDER: Cloudflare
-          RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
-          RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
-          RCLONE_CONFIG_R2_ENDPOINT: https://${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}.r2.cloudflarestorage.com
-          RCLONE_CONFIG_R2_NO_CHECK_BUCKET: "true"
-        run: uv run python scripts/generate_related_posts.py
-
       - name: Commit and push fixes
         env:
           BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          # Only stage files the shared autofixers and the related-posts
-          # generator could have modified.
+          # Only stage files the shared autofixers could have modified.
           # ESLint --fix runs over the whole repo, so its targets are matched
           # repo-wide by bare extension globs (a git pathspec like `*.ts`
           # matches at any depth). The other fixers are scoped to specific
@@ -248,7 +221,6 @@ jobs:
             'scripts/*.py'            'scripts/**/*.py' \
             '.github/scripts/*.py'    '.github/scripts/**/*.py' \
             'website_content/*.md'    'website_content/**/*.md' \
-            'quartz/plugins/transformers/related_posts.json' \
             | xargs -0 --no-run-if-empty git add --
           if [[ -z $(git diff --cached --name-only) ]]; then
             echo "::notice::No formatting changes needed"

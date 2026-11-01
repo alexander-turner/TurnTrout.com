@@ -29,6 +29,12 @@ on:
         required: false
       S3_ENDPOINT_ID_TURNTROUT_MEDIA:
         required: false
+      # Embeds new or changed articles for the "Similar posts" map during
+      # `pnpm build` (which also needs the R2 credentials above to sync the
+      # vector cache). Without it the build ranks with the cached vectors
+      # from the public CDN, so new articles get no block.
+      VOYAGE_API_KEY:
+        required: false
 
 permissions:
   actions: read
@@ -121,6 +127,17 @@ jobs:
 
       - name: Build site
         if: steps.cache.outputs.cache-hit != 'true'
+        env:
+          VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+          RCLONE_CONFIG_R2_TYPE: s3
+          RCLONE_CONFIG_R2_PROVIDER: Cloudflare
+          RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          RCLONE_CONFIG_R2_ENDPOINT: https://${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}.r2.cloudflarestorage.com
+          RCLONE_CONFIG_R2_NO_CHECK_BUCKET: "true"
         run: pnpm build
 
       # Fail loudly on a partial build or a poisoned cache hit instead of letting
