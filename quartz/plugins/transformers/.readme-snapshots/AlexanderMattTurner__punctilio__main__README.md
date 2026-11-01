@@ -107,7 +107,7 @@ unified()
 //  are both resolved correctly across the element boundary.
 ```
 
-* For Markdown ASTs via `remark`, use `remarkPunctilio` which builds the same boundary-aware views over inline text nodes, or use `transformMarkdown` for a simpler Markdown-to-Markdown pipeline.
+* For Markdown ASTs via `remark`, use `remarkPunctilio`, which builds the same boundary-aware views over inline text nodes. For Markdown source, `transformMarkdown` (or the synchronous `transformMarkdownSync`) from `punctilio/markdown` rewrites only the prose that changes and leaves every other byte as written.
 * For manual DOM walking, use `collectProseBlocks` from `punctilio/rehype` to find the elements to transform, then `applyPasses` (below) to transform each one. (`proseViewOf` builds a raw `ProseView` over an element’s text nodes if you need to drive `transformView` or a pass yourself.)
 
 ### Boundary-aware custom transforms
@@ -221,9 +221,9 @@ punctilio --check README.md                  # exit 1 if it would change anythin
 echo '"Hi" -- there' | punctilio - --type md
 ```
 
-Two caveats before pointing the CLI (or the [pre-commit hook](#pre-commit) below) at an existing repo. First, the Markdown path re-serializes the whole document through `remark-stringify`, so the first run may produce formatting diffs beyond typography—escaping, list markers, and link syntax get normalized. Like Prettier, the output then stays stable on subsequent runs. If you already use Prettier, the [Prettier plugin](#prettier-plugin) avoids this double-formatting entirely, since Prettier keeps owning the printing.
+Markdown files change only where the typography does: list markers, emphasis delimiters, tables, link syntax, and escapes of characters punctilio leaves alone stay as written (an escaped quote is still curled). One edit needs more: a bare URL right next to a character punctilio rewrites, such as a closing quote, becomes `<url>` (or `[www.x.com](http://www.x.com)`), so that character doesn’t join the URL. If an edit would still change how the Markdown parses, that paragraph is left as written.
 
-Second, non-breaking spaces (U+00A0) are invisible in source files: they render fine, but they aren’t regular spaces, so Ctrl+F and `grep` matches against the source can miss. Markdown files therefore default to `nbsp` off; pass `--nbsp` (or set `nbsp: true` in config) to opt in. HTML files keep the default of `nbsp` on; pass `--no-nbsp` to keep them ASCII-spaced.
+One caveat before pointing the CLI (or the [pre-commit hook](#pre-commit) below) at an existing repo: non-breaking spaces (U+00A0) are invisible in source files. They render fine, but they aren’t regular spaces, so Ctrl+F and `grep` matches against the source can miss. Markdown files therefore default to `nbsp` off; pass `--nbsp` (or set `nbsp: true` in config) to opt in. HTML files keep the default of `nbsp` on; pass `--no-nbsp` to keep them ASCII-spaced.
 
 File handling follows a few rules:
 
@@ -243,7 +243,7 @@ A `.pre-commit-hooks.yaml` ships in the package, so [pre-commit](https://pre-com
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/punctilio
-    rev: v5.5.5
+    rev: v5.6.0
     hooks:
       - id: punctilio          # rewrites *.md / *.html in place
       - id: punctilio-check    # or: fail without writing (CI-friendly)
