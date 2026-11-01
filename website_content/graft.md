@@ -100,7 +100,7 @@ Does GRAFT work with LLM-based monitors?
 : In our RL experiments, the monitors are heuristics that we specified manually. It's possible that GRAFT works less well with LLM-based monitors, which make different kinds of systematic errors.
 
 When does GRAFT outperform other methods?
-: In the experiment above, every prompt can be hacked. We also ran a version where only half of the prompts can be hacked. There, all methods reached similar task performance, and [inoculation](https://alignment.anthropic.com/2025/inoculation-prompting/) [prompting](https://arxiv.org/abs/2510.04340) was as effective as GRAFT at preventing reward hacking. Without extensive ablations, we cannot be sure how the methods compare.
+: In the experiment above, every prompt can be hacked. We also ran a version where only half of the prompts can be hacked. There, all methods reached similar task performance, and [inoculation](https://arxiv.org/abs/2510.05024) [prompting](https://arxiv.org/abs/2510.04340) was as effective as GRAFT at preventing reward hacking. Without extensive ablations, we cannot be sure how the methods compare.
 
 How hard is it to build suitable anchor environments?
 : The result presented here relies on the existence of a separate environment where reward hacking doesn't happen, but where the task is structurally similar to the one in the target environment (e.g. both tasks involve outputting Python code). In practice, it may be difficult to create such environments.
