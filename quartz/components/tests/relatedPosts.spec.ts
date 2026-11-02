@@ -30,7 +30,7 @@ test.describe("Related posts block", () => {
 })
 
 /**
- * The block lists the test page's nearest neighbors in the committed
+ * The block lists the test page's nearest neighbors in the generated
  * `related_posts.json`, which shifts whenever the corpus is re-embedded. Swap
  * in fixed entries (same markup as `buildRelatedPostsBlock`) so the screenshot
  * tracks only the block's styling.

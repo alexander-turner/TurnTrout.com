@@ -172,7 +172,12 @@ PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/
 
 ## Related posts (Similar links)
 
-Every content page needs an entry in `quartz/plugins/transformers/related_posts.json` (`built-site-checks` fails with "Missing related-posts block" otherwise). After adding a post or changing its title/description, regenerate with `pnpm related:build` and commit the JSON. In the cloud sandbox, rclone's S3 backend rejects `AWS_CA_BUNDLE` ("unsupported transport, \*fshttp.Transport"), so run it as `env -u AWS_CA_BUNDLE pnpm related:build`; `SSL_CERT_FILE` still supplies the proxy CA.
+Every content page needs an entry in `quartz/plugins/transformers/related_posts.json` (`built-site-checks` fails with "Missing related-posts block" otherwise). The JSON is gitignored: `pnpm build`/`dev`/`start`/`preview` run `pnpm related:build` first.
+
+- With `VOYAGE_API_KEY` (plus R2 credentials) set, as in CI's `build-site.yaml`, it embeds new or changed articles and uploads the vector cache back to R2.
+- Without the key it downloads the cache from the public CDN and ranks with the cached vectors, so an article that was never embedded gets no block (a warning, not an error). Direct `tsx quartz/bootstrap-cli.ts build` invocations (e.g. offline builds) skip generation and render no blocks unless the JSON already exists.
+
+In the cloud sandbox, rclone's S3 backend rejects `AWS_CA_BUNDLE` ("unsupported transport, \*fshttp.Transport"), so run it as `env -u AWS_CA_BUNDLE pnpm related:build`; `SSL_CERT_FILE` still supplies the proxy CA.
 
 ## External README snapshots
 
