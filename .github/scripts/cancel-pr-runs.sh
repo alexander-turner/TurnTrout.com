@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Cancel the queued/in-progress Actions runs still executing on a closed PR's
+# head SHA. Invoked by pr-meta-privileged.yaml's cancel job with REPO, HEAD_REF,
+# HEAD_SHA, CLOSED_AT, GH_TOKEN in the environment, plus the runner's own
+# GITHUB_RUN_ID; RUN_SWEEP_LIMIT (default 100)
+# caps how many runs on that branch one call lists. Reclaims runner slots a
+# merge/close would otherwise leave held — GitHub cancels superseded runs only
+# when a newer push arrives, never on close. Only runs created before CLOSED_AT
+# are cancelled, so the handlers dispatched for the close event itself (which
+# share the head SHA) and this job's own run survive.
+set -euo pipefail
+
+# shellcheck source=.github/scripts/lib-ci-retry.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib-ci-retry.sh"
+
+: "${REPO:?}" "${HEAD_REF:?}" "${HEAD_SHA:?}" "${CLOSED_AT:?}" "${GH_TOKEN:?}"
+
+# gh treats --branch as a literal filter, so the attacker-supplied branch name is
+# data, not code; a `set -e` failure here reds the job rather than silently
+# cancelling nothing. Match on HEAD_SHA too: a reused branch name can carry runs
+# from an unrelated head we must not touch. retry_stdout in a command
+# substitution rides out a transient list-API blip on this idempotent GET.
+RUN_SWEEP_LIMIT="${RUN_SWEEP_LIMIT:-100}"
+runs_json="$(retry_stdout gh run list --repo "$REPO" --branch "$HEAD_REF" --limit "$RUN_SWEEP_LIMIT" \
+  --json databaseId,status,headSha,createdAt)"
+# gh run list returns a branch's runs newest-first, so a full page means only
+# the RUN_SWEEP_LIMIT newest runs were seen; any in-flight run on HEAD_SHA older
+# than those (own push exceeding the limit, or a later push to the same branch
+# racing the close event) was never listed and so never cancelled.
+if [[ "$(jq 'length' <<<"$runs_json")" -eq "$RUN_SWEEP_LIMIT" ]]; then
+  echo "::warning::run sweep for ${HEAD_REF} listed only the ${RUN_SWEEP_LIMIT} newest runs on the branch; any in-flight run on ${HEAD_SHA:0:8} older than those was not cancelled."
+fi
+
+# INVARIANT — `.createdAt < $closed` is what keeps the sweep off the runs the
+# close event itself dispatched, which carry this same headSha and can hold a
+# durable side effect (phone-home files an issue). Both timestamps are ISO-8601
+# UTC, so string order is time order. That predicate is the guard; the run id
+# check behind it spares this very run a second way, so an absent GITHUB_RUN_ID
+# costs nothing.
+ids=()
+while IFS= read -r id; do
+  [[ -n "$id" ]] && ids+=("$id")
+done < <(printf '%s' "$runs_json" | jq -r --arg sha "$HEAD_SHA" --arg closed "$CLOSED_AT" --arg self "${GITHUB_RUN_ID:-}" \
+  '.[] | select(.headSha == $sha
+      and (.status == "in_progress" or .status == "queued")
+      and .createdAt < $closed
+      and (.databaseId | tostring) != $self) | .databaseId')
+
+if [[ "${#ids[@]}" -eq 0 ]]; then
+  echo "No in-flight runs on ${HEAD_SHA:0:8} to cancel."
+  exit 0
+fi
+
+echo "Cancelling ${#ids[@]} in-flight run(s) on ${HEAD_SHA:0:8}:"
+# A cancel can lose a benign race (the run just finished, so gh exits non-zero).
+# That is the one failure this loop goes past, and it prints gh's own stderr as a
+# warning, so a permission or API failure still reads as itself in the log.
+err="$(mktemp)"
+trap 'rm -f "$err"' EXIT
+for id in "${ids[@]}"; do
+  if gh run cancel "$id" --repo "$REPO" 2>"$err"; then
+    echo "  cancelled ${id}"
+  else
+    rc=$?
+    echo "::warning::could not cancel run ${id} (exit ${rc}): $(tr '\n' ' ' <"$err")"
+  fi
+done
