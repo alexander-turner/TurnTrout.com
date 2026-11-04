@@ -152,7 +152,7 @@
       "number": 9121,
       "title": "main: Accept --landlock without a VM payload",
       "url": "https://github.com/cloud-hypervisor/cloud-hypervisor/pull/9121",
-      "status": "open"
+      "status": "merged"
     },
     {
       "repo": "DeepSourceCorp/cli",
@@ -987,23 +987,23 @@
       "ownerType": "User"
     },
     "acon96/home-llm": {
-      "stars": 1486,
+      "stars": 1490,
       "ownerType": "User"
     },
     "ankidroid/Anki-Android": {
-      "stars": 12153,
+      "stars": 12167,
       "ownerType": "Organization"
     },
     "anordal/shellharden": {
-      "stars": 4807,
+      "stars": 4806,
       "ownerType": "User"
     },
     "anthropics/claude-code": {
-      "stars": 154400,
+      "stars": 154516,
       "ownerType": "Organization"
     },
     "cloud-hypervisor/cloud-hypervisor": {
-      "stars": 6460,
+      "stars": 6461,
       "ownerType": "Organization"
     },
     "DeepSourceCorp/cli": {
@@ -1011,15 +1011,15 @@
       "ownerType": "Organization"
     },
     "dequelabs/axe-core": {
-      "stars": 7743,
+      "stars": 7755,
       "ownerType": "Organization"
     },
     "docker/sbx-releases": {
-      "stars": 489,
+      "stars": 492,
       "ownerType": "Organization"
     },
     "EFForg/https-everywhere": {
-      "stars": 3351,
+      "stars": 3350,
       "ownerType": "Organization"
     },
     "IlanCosman/tide": {
@@ -1031,7 +1031,7 @@
       "ownerType": "User"
     },
     "jestjs/jest": {
-      "stars": 45470,
+      "stars": 45468,
       "ownerType": "Organization"
     },
     "JinayJain/gpt-anywhere": {
@@ -1039,11 +1039,11 @@
       "ownerType": "User"
     },
     "kata-containers/kata-containers": {
-      "stars": 9067,
+      "stars": 9073,
       "ownerType": "Organization"
     },
     "KaTeX/KaTeX": {
-      "stars": 20496,
+      "stars": 20498,
       "ownerType": "Organization"
     },
     "linuxarena/auto_workflow": {
@@ -1059,7 +1059,7 @@
       "ownerType": "Organization"
     },
     "mermaid-js/mermaid": {
-      "stars": 90995,
+      "stars": 91012,
       "ownerType": "Organization"
     },
     "METR/hawk": {
@@ -1083,27 +1083,27 @@
       "ownerType": "User"
     },
     "nikitabobko/AeroSpace": {
-      "stars": 23726,
+      "stars": 23734,
       "ownerType": "User"
     },
     "openai/gym": {
-      "stars": 37230,
+      "stars": 37231,
       "ownerType": "Organization"
     },
     "orbstack/orbstack": {
-      "stars": 9500,
+      "stars": 9503,
       "ownerType": "Organization"
     },
     "pa11y/pa11y": {
-      "stars": 4589,
+      "stars": 4590,
       "ownerType": "Organization"
     },
     "parcel-bundler/lightningcss": {
-      "stars": 7722,
+      "stars": 7724,
       "ownerType": "Organization"
     },
     "PyCQA/docformatter": {
-      "stars": 598,
+      "stars": 599,
       "ownerType": "Organization"
     },
     "remcohaszing/rehype-mermaid": {
@@ -1115,15 +1115,15 @@
       "ownerType": "User"
     },
     "rishikanthc/Scriberr": {
-      "stars": 3132,
+      "stars": 3135,
       "ownerType": "User"
     },
     "runelite/runelite": {
-      "stars": 5517,
+      "stars": 5518,
       "ownerType": "Organization"
     },
     "sigstore/cosign": {
-      "stars": 6405,
+      "stars": 6409,
       "ownerType": "Organization"
     },
     "starkdmi/BrightXDR": {
@@ -1131,7 +1131,7 @@
       "ownerType": "User"
     },
     "stryker-mutator/stryker-js": {
-      "stars": 3324,
+      "stars": 3326,
       "ownerType": "Organization"
     },
     "stylelint-scss/stylelint-scss": {
@@ -1139,7 +1139,7 @@
       "ownerType": "Organization"
     },
     "stylelint/stylelint": {
-      "stars": 11539,
+      "stars": 11543,
       "ownerType": "Organization"
     },
     "syntax-tree/hast-util-to-jsx-runtime": {
@@ -1147,11 +1147,11 @@
       "ownerType": "Organization"
     },
     "tailscale/tailscale": {
-      "stars": 38576,
+      "stars": 38626,
       "ownerType": "Organization"
     },
     "TranslucentTB/TranslucentTB": {
-      "stars": 20715,
+      "stars": 20721,
       "ownerType": "Organization"
     },
     "tree-sitter/tree-sitter-bash": {
@@ -1159,7 +1159,7 @@
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_ai": {
-      "stars": 3158,
+      "stars": 3169,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_evals": {
