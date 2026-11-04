@@ -1,10 +1,14 @@
 name: "Setup Base Environment"
-description: "Sets up Node.js with pnpm and caching when a package.json is present (no-op otherwise). Optionally sets up Python with uv."
+description: "Sets up Node.js with pnpm and caching when a package.json is present, and Python with uv when a pyproject.toml is present. Each half no-ops when its root project file is absent."
 inputs:
   node-version:
-    description: "Node.js version to use"
+    description: "Node.js version to use. Ignored when node-version-file is set."
     required: false
     default: "22"
+  node-version-file:
+    description: "Path to a file (e.g. .nvmrc) naming the Node.js version, read instead of node-version when set."
+    required: false
+    default: ""
   registry-url:
     description: "npm registry URL to configure (for publishing; lets setup-node wire up OIDC/auth)"
     required: false
@@ -25,7 +29,9 @@ runs:
       if: hashFiles('package.json') != ''
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
       with:
-        node-version: ${{ inputs.node-version }}
+        # setup-node prefers node-version-file only when node-version is empty.
+        node-version: ${{ inputs.node-version-file == '' && inputs.node-version || '' }}
+        node-version-file: ${{ inputs.node-version-file }}
         registry-url: ${{ inputs.registry-url }}
 
     - name: Install pnpm
@@ -52,21 +58,31 @@ runs:
       run: pnpm install
       shell: bash
 
+    # The Python half is gated on root scaffolding for the same reason the Node
+    # half above is. `uv python install` and `uv sync` both need a project to
+    # act on, and template-sync delivers neither pyproject.toml nor uv.lock — so
+    # a consumer that never had a Python project would otherwise hard-fail every
+    # workflow that passes setup-python: true, on its very first sync PR.
     - name: Set up uv
-      if: inputs.setup-python == 'true'
+      if: inputs.setup-python == 'true' && hashFiles('pyproject.toml') != ''
       uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
       with:
         enable-cache: true
         cache-dependency-glob: "uv.lock"
 
     - name: Set up Python
-      if: inputs.setup-python == 'true'
+      if: inputs.setup-python == 'true' && hashFiles('pyproject.toml') != ''
       run: uv python install "$PYTHON_VERSION"
       shell: bash
       env:
         PYTHON_VERSION: ${{ inputs.python-version }}
 
+    # Needs BOTH files. pyproject.toml because the two steps above install uv
+    # itself only when it is present, so gating on uv.lock alone would run
+    # `uv sync` with no uv on PATH; uv.lock because `--frozen` is an error
+    # without a lockfile. A project with one and not the other still gets uv and
+    # Python, and resolves at `uv run` time.
     - name: Install Python Dependencies
-      if: inputs.setup-python == 'true'
+      if: inputs.setup-python == 'true' && hashFiles('pyproject.toml') != '' && hashFiles('uv.lock') != ''
       run: uv sync --frozen
       shell: bash

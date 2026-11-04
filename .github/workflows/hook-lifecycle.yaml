@@ -10,7 +10,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -18,22 +18,28 @@ permissions:
 jobs:
   decide:
     permissions:
-      contents: read
-      pull-requests: read
+      contents: read # the reusable gate checks out the tree
+      pull-requests: read # its live draft re-read (decide_pr_is_draft_now)
+      actions: read # its memo shadow lists this workflow's past runs (needed in a private fork)
     uses: ./.github/workflows/decide-reusable.yaml
     with:
-      filters: |
-        run:
-          - '.claude/hooks/**'
-          - '.hooks/**'
-          - 'setup.sh'
-          - 'package.json'
-          - 'pnpm-lock.yaml'
-          - 'pyproject.toml'
-          - 'uv.lock'
-          - '.pre-commit-config.yaml'
-          - '.github/scripts/run-hook-lifecycle.sh'
-          - '.github/workflows/hook-lifecycle.yaml'
+      # Most of this gate's watched set is DERIVED from the entry point below, so
+      # it cannot drift out of date. The regex carries only what the derivation
+      # cannot see: a path this job's tooling reads without any script naming it,
+      # a script reached through a variable, and the composite action, which is
+      # YAML rather than shell.
+      # POSIX ERE, read by `grep -E` — no PCRE escapes (\d, \w, (?:…)).
+      paths-regex: '^(\.claude/hooks/|\.hooks/|setup\.sh$|pnpm-lock\.yaml$|\.github/actions/setup-base-env/|\.gitattributes$|\.github/tool-versions\.sh$|\.github/scripts/install-mergiraf\.sh$)'
+      # path-gate-ok: .github/scripts/run-hook-lifecycle.sh it is the shell-targets entry point below, so the decide job derives it and everything it reaches
+      shell-targets: .github/scripts/run-hook-lifecycle.sh
+      # The lifecycle run is a behavior test, so a comment-only touch of a watched
+      # file cannot change its outcome. Never set this on a lint/format/type gate,
+      # where a directive comment IS behavior.
+      ignore-comment-only-changes: true
+      # Anchor the memo shadow on the work job, never on the reporter: the reporter
+      # concludes success on a skip, so it would read an inherited green as a
+      # verified tree.
+      memoize-anchor-jobs: "^hook-lifecycle$"
 
   hook-lifecycle:
     needs: decide
@@ -50,6 +56,8 @@ jobs:
         with:
           setup-python: "true"
 
+      # path-gate-ok: .github/scripts/run-hook-lifecycle.sh the decide job watches it through shell-targets, which derives it and everything it reaches; the checker reads paths-regex only
+      # path-gate-ok: .github/scripts/merge-driver-probe.sh run-hook-lifecycle.sh calls it, so shell-targets derives it too
       - name: Run hook lifecycle
         run: bash .github/scripts/run-hook-lifecycle.sh
 
@@ -59,6 +67,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Fail if any required job did not pass
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
-        run: exit 1
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          sparse-checkout: |
+            .github/actions/report-job-result
+          persist-credentials: false
+
+      - name: Report result
+        uses: ./.github/actions/report-job-result
+        with:
+          run: ${{ needs.decide.outputs.run }}
+          decide-result: ${{ needs.decide.result }}
+          result: ${{ needs.hook-lifecycle.result }}
