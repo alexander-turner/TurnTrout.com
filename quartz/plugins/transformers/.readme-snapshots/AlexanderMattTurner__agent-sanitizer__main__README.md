@@ -258,6 +258,11 @@ To wire them yourself instead, one entry dispatches every mode on `--hook=`:
 
 `InstructionsLoaded` needs Claude Code **2.1.69 or newer** — 2.1.68 does not emit the event, so the hook never fires however you wire it. Check with `claude --version`.
 
+The hooks load `agent-control-plane-core`, a peer dependency
+(`>=0.11.2 <1.0.0`): npm 7+ and pnpm install it for you, but on Yarn classic,
+npm 6, `--legacy-peer-deps` or pnpm with `auto-install-peers=false`, add it to
+your project yourself, or every hook reports it unavailable.
+
 `require.resolve("agent-sanitizer/claude-hooks")` gives the path without
 hardcoding a layout. Importing the module rather than spawning it is a no-op.
 
