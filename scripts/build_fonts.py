@@ -1,7 +1,16 @@
 """
 Build modified EBGaramond fonts from upstream originals.
 
-Applies three modifications to EBGaramond08-Regular and EBGaramond12-Regular:
+Keeps Chrome's autohinter (Android, Linux) hinting a page's font subset the
+same way it hints the full font, so letters, ligatures, and figures share one
+set of alignment zones. Applied to every built font, including the italics:
+- Style decomposition merge: small-caps lookups no longer output plain
+  encoded letters, which would file those letters under small-cap zones.
+- Script folding: Cyrillic and Greek GSUB language systems move under DFLT,
+  so ligatures and figure variants fall to the Latin style.
+
+Applies three further modifications to EBGaramond08-Regular and
+EBGaramond12-Regular:
 1. Bracket/brace harmonization: affine-maps Y coordinates of bracketleft,
    bracketright, braceleft, braceright so their yMin/yMax match parenleft.
 2. Baseline overshoot: compresses the below-baseline ink of the capital
@@ -90,6 +99,18 @@ _BASE_KERN: Final[dict[str, int]] = {
 }
 
 _KERN_OFFSET: Final[int] = 80
+
+# Chrome on Android and Linux grid-fits these unhinted faces with FreeType's
+# autohinter (via Skrifa, its Rust port). The autohinter files every glyph
+# under one "style" and snaps it to that style's alignment zones, which it
+# measures on reference letters such as "o" and "H". Styles for these
+# features run first and claim every glyph their GSUB lookups can output.
+_AUTOHINT_STYLE_FEATURES: Final[frozenset[str]] = frozenset(
+    {"c2cp", "c2sc", "ordn", "pcap", "sinf", "smcp", "subs", "sups", "titl"}
+)
+
+# GSUB scripts whose lookups the autohinter's Latin styles read.
+_AUTOHINT_LATIN_SCRIPTS: Final[frozenset[str]] = frozenset({"DFLT", "latn"})
 
 # Capital round letters must overshoot the baseline no deeper than lowercase
 # "o". The 08 master draws them 23–49/2048 em deep against "o"'s 16. Unhinted
@@ -318,6 +339,172 @@ def _match_baseline_overshoot(font: TTFont, base: str, reference: str) -> None:
                 touched = True
         if touched:
             glyph.recalcBounds(glyf_table)
+
+
+def _subst_mapping(lookup: Any) -> dict[str, Any]:
+    """Merge the mappings of a Single or Multiple substitution lookup."""
+    mapping: dict[str, Any] = {}
+    for subtable in lookup.SubTable:
+        mapping.update(subtable.mapping)
+    return mapping
+
+
+def _gsub_feature_tags_using(gsub: Any, lookup_index: int) -> set[str]:
+    return {
+        rec.FeatureTag
+        for rec in gsub.FeatureList.FeatureRecord
+        if lookup_index in rec.Feature.LookupListIndex
+    }
+
+
+def _find_style_decomposition(
+    gsub: Any, tag: str, encoded_bases: set[str]
+) -> tuple[int, int] | None:
+    """Return the indices of a style feature's decomposition lookup and of the
+    single substitution after it, or None if no lookup outputs an encoded base
+    glyph."""
+    lookups = gsub.LookupList.Lookup
+    indices = sorted(
+        {
+            index
+            for rec in gsub.FeatureList.FeatureRecord
+            if rec.FeatureTag == tag
+            for index in rec.Feature.LookupListIndex
+        }
+    )
+    decompositions = [
+        index
+        for index in indices
+        if lookups[index].LookupType == 2
+        and encoded_bases
+        & {
+            glyph
+            for sequence in _subst_mapping(lookups[index]).values()
+            for glyph in sequence
+        }
+    ]
+    if not decompositions:
+        return None
+
+    singles = [
+        index
+        for index in indices
+        if index > decompositions[0] and lookups[index].LookupType == 1
+    ]
+    if len(decompositions) != 1 or len(singles) != 1:
+        raise ValueError(
+            f"{tag}: expected one decomposition followed by one single "
+            f"substitution, got {decompositions} and {singles}"
+        )
+    decomposition, single = decompositions[0], singles[0]
+    if _gsub_feature_tags_using(gsub, single) != {tag}:
+        raise ValueError(f"{tag}: lookup {single} is shared")
+    if lookups[decomposition].LookupFlag or lookups[single].LookupFlag:
+        raise ValueError(f"{tag}: lookups skip glyph classes")
+    return decomposition, single
+
+
+def _multiple_subst_lookup(mapping: dict[str, list[str]]) -> Any:
+    # otTables builds these classes dynamically, so neither static tool sees them.
+    subtable = otTables.MultipleSubst()  # pylint: disable=no-member
+    subtable.Format = 1
+    subtable.mapping = mapping
+    lookup = otTables.Lookup()  # pylint: disable=no-member # pyright: ignore[reportAttributeAccessIssue]
+    lookup.LookupType = 2
+    lookup.LookupFlag = 0
+    lookup.SubTable = [subtable]
+    lookup.SubTableCount = 1
+    return lookup
+
+
+def _merge_style_decompositions(font: TTFont) -> None:
+    """
+    Fold each autohinter style feature's decomposition into its final mapping.
+
+    The 08 master's small-caps features first decompose accented letters
+    ("é" -> "e" + combining acute), then map lowercase to small caps. Because
+    the decomposition outputs encoded letters, the autohinter files "e"
+    under the small-caps style whenever a font keeps that lookup entry: a
+    page's font subset with "é" and small caps hints every "e" against
+    small-cap zones, and the letter bobs out of line with its neighbors.
+
+    The merged lookup maps each accented letter straight to its final
+    sequence ("é" -> "e.sc" + combining acute). Entries whose final sequence
+    still holds an encoded base letter (such as "É" under smcp, which only
+    changes lowercase) are dropped, so those letters keep their precomposed
+    glyphs.
+    """
+    gsub = font["GSUB"].table
+    lookups = gsub.LookupList.Lookup
+    class_defs = font["GDEF"].table.GlyphClassDef.classDefs
+    encoded_bases = {
+        name
+        for name in (font.getBestCmap() or {}).values()
+        if class_defs.get(name) != _GDEF_MARK_CLASS
+    }
+
+    for tag in sorted(_AUTOHINT_STYLE_FEATURES):
+        found = _find_style_decomposition(gsub, tag, encoded_bases)
+        if found is None:
+            continue
+        decomposition, single_index = found
+
+        single = _subst_mapping(lookups[single_index])
+        merged = {source: [target] for source, target in single.items()}
+        for source, sequence in _subst_mapping(lookups[decomposition]).items():
+            result = [single.get(glyph, glyph) for glyph in sequence]
+            if not encoded_bases & set(result):
+                merged[source] = result
+        lookups[single_index] = _multiple_subst_lookup(merged)
+
+        for rec in gsub.FeatureList.FeatureRecord:
+            if rec.FeatureTag == tag:
+                rec.Feature.LookupListIndex = [
+                    i for i in rec.Feature.LookupListIndex if i != decomposition
+                ]
+                rec.Feature.LookupCount = len(rec.Feature.LookupListIndex)
+
+
+def _fold_gsub_scripts_into_default(font: TTFont) -> None:
+    """
+    Move every non-Latin GSUB script's language systems under DFLT.
+
+    The autohinter gives each glyph that GSUB outputs but no cmap entry reaches,
+    such as "fi" and old-style figures, to the first script in its fixed order
+    whose lookups produce it. Cyrillic and Greek come before Latin, and their
+    zones come from Cyrillic and Greek letters, which a page's font subset
+    rarely holds. Chrome then leaves those ligatures and figures off the pixel
+    grid while the letters around them snap to it.
+
+    HarfBuzz shapes a script missing from GSUB with DFLT, whose default language
+    system lists the same features, so shaping is unchanged.
+    """
+    script_list = font["GSUB"].table.ScriptList
+    scripts = {rec.ScriptTag: rec.Script for rec in script_list.ScriptRecord}
+    default = scripts["DFLT"]
+    lang_records = {rec.LangSysTag: rec for rec in default.LangSysRecord}
+    for tag, script in scripts.items():
+        if tag in _AUTOHINT_LATIN_SCRIPTS:
+            continue
+        if (
+            script.DefaultLangSys is None
+            or script.DefaultLangSys.FeatureIndex
+            != default.DefaultLangSys.FeatureIndex
+        ):
+            raise ValueError(f"{tag} shapes differently from DFLT")
+        for rec in script.LangSysRecord:
+            if rec.LangSysTag in lang_records:
+                raise ValueError(f"{tag} and DFLT both define {rec.LangSysTag}")
+            lang_records[rec.LangSysTag] = rec
+
+    default.LangSysRecord = [lang_records[tag] for tag in sorted(lang_records)]
+    default.LangSysCount = len(default.LangSysRecord)
+    script_list.ScriptRecord = [
+        rec
+        for rec in script_list.ScriptRecord
+        if rec.ScriptTag in _AUTOHINT_LATIN_SCRIPTS
+    ]
+    script_list.ScriptCount = len(script_list.ScriptRecord)
 
 
 def _register_kern_feature(gpos: Any, lookup_index: int) -> None:
@@ -622,14 +809,19 @@ def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
 def _build_font(
     upstream_path: Path,
     output_path: Path,
+    *,
+    autohint_only: bool = False,
 ) -> None:
     """Build a single modified font from its upstream original."""
     font = TTFont(upstream_path)
     try:
-        _harmonize_brackets(font)
-        for base, reference in _BASELINE_OVERSHOOT_MATCHES:
-            _match_baseline_overshoot(font, base, reference)
-        _add_kerning(font, _get_f_glyphs(font))
+        _merge_style_decompositions(font)
+        _fold_gsub_scripts_into_default(font)
+        if not autohint_only:
+            _harmonize_brackets(font)
+            for base, reference in _BASELINE_OVERSHOOT_MATCHES:
+                _match_baseline_overshoot(font, base, reference)
+            _add_kerning(font, _get_f_glyphs(font))
         font.save(output_path)
     finally:
         font.close()
@@ -640,17 +832,24 @@ _FONT_FILENAMES: Final[tuple[str, ...]] = (
     "EBGaramond12-Regular.woff2",
 )
 
+# Their upstream copies already carry hand-straightened punctuation, so the
+# build only applies the autohinter fixes.
+_AUTOHINT_ONLY_FILENAMES: Final[tuple[str, ...]] = (
+    "EBGaramond08-Italic-parens.woff2",
+    "EBGaramond12-Italic-parens.woff2",
+)
+
 
 def build_all(output_dir: Path) -> bool:
     """
-    Build both modified fonts.
+    Build every modified font.
 
     Returns True if all outputs are table-equivalent.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
 
     all_equivalent = True
-    for filename in _FONT_FILENAMES:
+    for filename in _FONT_FILENAMES + _AUTOHINT_ONLY_FILENAMES:
         upstream = _UPSTREAM_DIR / filename
         if not upstream.exists():
             raise FileNotFoundError(f"Upstream font not found: {upstream}")
@@ -659,7 +858,11 @@ def build_all(output_dir: Path) -> bool:
         committed = _FONT_DIR / filename
 
         print(f"Building {filename}...")
-        _build_font(upstream, output)
+        _build_font(
+            upstream,
+            output,
+            autohint_only=filename in _AUTOHINT_ONLY_FILENAMES,
+        )
 
         built = TTFont(output)
         committed_font = TTFont(committed)
@@ -702,7 +905,7 @@ def main() -> None:
             print("\nSome tables differ (see details above).")
 
         if "--install" in sys.argv:
-            for filename in _FONT_FILENAMES:
+            for filename in _FONT_FILENAMES + _AUTOHINT_ONLY_FILENAMES:
                 src = output_dir / filename
                 dst = _FONT_DIR / filename
                 shutil.copy2(src, dst)
