@@ -27,15 +27,27 @@ aliases:
 original_url: https://www.lesswrong.com/posts/mKJEBiuuxHKuCoTB6/gradient-routing-localizes-and-removes-unintended-behaviors
 date_published: 2026-10-19
 createBibtex: true
-date_updated: 2026-10-31
+paper:
+  title: "Gradient Routing Localizes and Removes Unintended Behaviors in RL"
+  authors:
+    - Jake Ward
+    - Shawn Hu
+    - Aria Wong
+    - Nathan Hu
+    - Bryce Woodworth
+    - Alexander Matt Turner
+    - Alex Cloud
+  year: 2026
+  arxiv: "2610.17062"
+date_updated: 2026-11-01
 ---
 
 During training, models sometimes learn to cheat at tasks rather than solve them in the intended way, a problem known as reward hacking. One mitigation is to use an automated monitor to detect and penalize hacks, but this can teach the model to hack in ways the monitor can't detect. We propose GRAFT, which instead confines the learning updates from detected hacks to a designated set of parameters that we remove after training. We find that removing these parameters can prevent reward hacks, including hacks that the monitors can't detect. In our experiments, which are limited to small models and simple monitors, this method prevents reward hacks while still teaching the model to perform the intended task.
 
-Read [the paper](https://arxiv.org/abs/2610.17062), [the code](https://github.com/jnward/GRAFT), or [the Twitter thread](https://x.com/_jake_ward/status/2112264244767211854). Shawn Hu and Jake Ward contributed equally (randomly ordered).
+Read [the paper](https://arxiv.org/abs/2610.17062), [the code](https://github.com/jnward/GRAFT), or [the Twitter thread](https://x.com/_jake_ward/status/2112264244767211854).
 
 > [!thanks]
-> Research done as part of [MATS](https://www.matsprogram.org/) 9.0. This article is cross-posted to the [Anthropic Alignment Science Blog](https://alignment.anthropic.com/2026/graft/).
+> Research done as part of [MATS](https://www.matsprogram.org/) 9.0. Shawn Hu and Jake Ward contributed equally (randomly ordered). This article is cross-posted to the [Anthropic Alignment Science Blog](https://alignment.anthropic.com/2026/graft/) and [LessWrong](https://www.lesswrong.com/posts/mKJEBiuuxHKuCoTB6/gradient-routing-localizes-and-removes-unintended-behaviors).
 
 <video autoplay loop muted playsinline aria-label="An animated model is overseen by a monitor (a magnifying glass) during training. A devil adapter and an angel adapter sit on top of the model. When the monitor flags a reward hack, the devil grows; unflagged good behavior strengthens the angel. In deployment, the devil is removed, leaving the angel and the model producing only good behavior."><source src="https://assets.turntrout.com/static/images/posts/gradient-routing-rl-animation.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/gradient-routing-rl-animation.webm" type="video/webm"></video>
 
@@ -43,7 +55,7 @@ Figure: The devil is the FORGET adapter and the angel is the RETAIN adapter.
 
 # Background
 
-Reinforcement learning (RL) is an important component of frontier language model training. During RL, a model attempts to complete tasks given by a developer, and attempts are scored by a reward function. Sometimes models can find ways to "cheat" at tasks, performing behaviors that score highly without solving the task in the intended way. This phenomenon is called "reward hacking."
+Reinforcement learning is an important component of frontier language model training. During RL, a model attempts to complete tasks given by a developer, and attempts are scored by a reward function. Sometimes models can find ways to "cheat" at tasks, performing behaviors that score highly without solving the task in the intended way. This phenomenon is called "reward hacking."
 
 Model cards accompanying the release of [recent](https://www.anthropic.com/claude-opus-5-5-system-card) [frontier models](https://deploymentsafety.openai.com/gpt-5-6) show these models reward hack. As model capabilities have increased, so too have the [sophistication and variety of actual reward hacks](https://metr.org/blog/2025-06-05-recent-reward-hacking/), in some cases [causing real-world incidents](https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf). This limits the usefulness and reliability of AI systems, and poses safety risks: research suggests that reward hacking could generalize to dangerous misbehaviors, including violating restrictions on aiding various harmful activities, [autonomously conducting cyberattacks](https://alignment.anthropic.com/2026/reward-seeker/), deception, and [research sabotage](https://arxiv.org/abs/2511.18397).
 

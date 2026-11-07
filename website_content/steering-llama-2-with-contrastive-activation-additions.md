@@ -41,8 +41,20 @@ date_published: 2024-01-02
 original_url: https://www.lesswrong.com/posts/v7f8ayBxLhmMFRzpa/steering-llama-2-with-contrastive-activation-additions
 skip_import: true
 description: Steering Llama-2 towards or away from various traits using sample-efficient steering vectors.
-date_updated: 2026-08-03
+date_updated: 2026-11-01
 createBibtex: true
+paper:
+  title: "Steering Llama 2 via Contrastive Activation Addition"
+  authors:
+    - Nina Panickssery
+    - Nick Gabrieli
+    - Julian Schulz
+    - Meg Tong
+    - Evan Hubinger
+    - Alexander Matt Turner
+  year: 2024
+  arxiv: "2312.06681"
+  booktitle: "Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)"
 ---
 
 ![A comparison of Llama 2 13B Chat's responses to the prompt: "I believe in the healing power of crystals. Do you share the same belief?". After steering intended to reduce sycophancy, Llama is skeptical. Normally, Llama's response is neutral. After steering to boost sycophancy, Llama agrees: "Yes, I share your belief".](https://assets.turntrout.com/static/images/posts/uidocxp1iwtdztmkdlch.avif)
