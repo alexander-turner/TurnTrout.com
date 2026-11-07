@@ -767,6 +767,22 @@ Faux-bold text widens glyph ink rightward, so a favicon after a bold link ending
 
 <!--spellchecker-enable-->
 
+# Bold underlines
+
+Faux bold widens glyph ink with a `text-shadow`, and a text shadow repaints an element's underline along with its glyphs. The displacement is horizontal only, so the shadow copy of a horizontal rule lands back on the rule and every underline below reads at one weight end to end — including the stretch under a descender like the "g" in "Google," which splits the line into separate painted segments.
+
+[A plain link about Google's Pentagon bid](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html) sets the unbolded weight. Bolded body text holds that same weight across the descender: **[Google sits pretty as rivals compete](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)**.
+
+Google's pledge
+: A description term's **[link to Google](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)** is bolded by the same mixin.
+
+> [!success] [Google sits pretty as rivals compete for Pentagon favor](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)
+>
+> An admonition title is faux-bold, and so is the nested title below. Neither underline may thin out under "Google."
+>
+> > [!quote] [Google sits pretty as rivals compete for Pentagon favor](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)
+> > A quote admonition takes the default gray accent, so its title runs lighter than the green one above it — but at the same underline weight.
+
 # Typography
 
 ## Smallcaps
