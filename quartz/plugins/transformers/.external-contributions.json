@@ -638,6 +638,13 @@
       "status": "merged"
     },
     {
+      "repo": "METR/hawk",
+      "number": 2832,
+      "title": "feat(runner): glovebox port grants, and Kata services on lockdown",
+      "url": "https://github.com/METR/hawk/pull/2832",
+      "status": "open"
+    },
+    {
       "repo": "METR/inspect_k8s_sandbox",
       "number": 11,
       "title": "feat(chart): mount the CoreDNS config without `subPath`",
@@ -987,11 +994,11 @@
       "ownerType": "User"
     },
     "acon96/home-llm": {
-      "stars": 1490,
+      "stars": 1491,
       "ownerType": "User"
     },
     "ankidroid/Anki-Android": {
-      "stars": 12184,
+      "stars": 12194,
       "ownerType": "Organization"
     },
     "anordal/shellharden": {
@@ -999,11 +1006,11 @@
       "ownerType": "User"
     },
     "anthropics/claude-code": {
-      "stars": 154876,
+      "stars": 154968,
       "ownerType": "Organization"
     },
     "cloud-hypervisor/cloud-hypervisor": {
-      "stars": 6482,
+      "stars": 6487,
       "ownerType": "Organization"
     },
     "DeepSourceCorp/cli": {
@@ -1011,11 +1018,11 @@
       "ownerType": "Organization"
     },
     "dequelabs/axe-core": {
-      "stars": 7776,
+      "stars": 7778,
       "ownerType": "Organization"
     },
     "docker/sbx-releases": {
-      "stars": 498,
+      "stars": 500,
       "ownerType": "Organization"
     },
     "EFForg/https-everywhere": {
@@ -1023,7 +1030,7 @@
       "ownerType": "Organization"
     },
     "IlanCosman/tide": {
-      "stars": 4304,
+      "stars": 4305,
       "ownerType": "User"
     },
     "jbloomAus/DecisionTransformerInterpretability": {
@@ -1031,7 +1038,7 @@
       "ownerType": "User"
     },
     "jestjs/jest": {
-      "stars": 45471,
+      "stars": 45473,
       "ownerType": "Organization"
     },
     "JinayJain/gpt-anywhere": {
@@ -1039,11 +1046,11 @@
       "ownerType": "User"
     },
     "kata-containers/kata-containers": {
-      "stars": 9098,
+      "stars": 9101,
       "ownerType": "Organization"
     },
     "KaTeX/KaTeX": {
-      "stars": 20503,
+      "stars": 20504,
       "ownerType": "Organization"
     },
     "linuxarena/auto_workflow": {
@@ -1059,11 +1066,11 @@
       "ownerType": "Organization"
     },
     "mermaid-js/mermaid": {
-      "stars": 91030,
+      "stars": 91036,
       "ownerType": "Organization"
     },
     "METR/hawk": {
-      "stars": 104,
+      "stars": 105,
       "ownerType": "Organization"
     },
     "METR/inspect_k8s_sandbox": {
@@ -1083,7 +1090,7 @@
       "ownerType": "User"
     },
     "nikitabobko/AeroSpace": {
-      "stars": 23761,
+      "stars": 23766,
       "ownerType": "User"
     },
     "openai/gym": {
@@ -1091,7 +1098,7 @@
       "ownerType": "Organization"
     },
     "orbstack/orbstack": {
-      "stars": 9509,
+      "stars": 9514,
       "ownerType": "Organization"
     },
     "pa11y/pa11y": {
@@ -1099,7 +1106,7 @@
       "ownerType": "Organization"
     },
     "parcel-bundler/lightningcss": {
-      "stars": 7728,
+      "stars": 7727,
       "ownerType": "Organization"
     },
     "PyCQA/docformatter": {
@@ -1115,15 +1122,15 @@
       "ownerType": "User"
     },
     "rishikanthc/Scriberr": {
-      "stars": 3139,
+      "stars": 3141,
       "ownerType": "User"
     },
     "runelite/runelite": {
-      "stars": 5520,
+      "stars": 5521,
       "ownerType": "Organization"
     },
     "sigstore/cosign": {
-      "stars": 6420,
+      "stars": 6419,
       "ownerType": "Organization"
     },
     "starkdmi/BrightXDR": {
@@ -1131,7 +1138,7 @@
       "ownerType": "User"
     },
     "stryker-mutator/stryker-js": {
-      "stars": 3335,
+      "stars": 3339,
       "ownerType": "Organization"
     },
     "stylelint-scss/stylelint-scss": {
@@ -1147,11 +1154,11 @@
       "ownerType": "Organization"
     },
     "tailscale/tailscale": {
-      "stars": 38758,
+      "stars": 38795,
       "ownerType": "Organization"
     },
     "TranslucentTB/TranslucentTB": {
-      "stars": 20744,
+      "stars": 20751,
       "ownerType": "Organization"
     },
     "tree-sitter/tree-sitter-bash": {
@@ -1159,11 +1166,11 @@
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_ai": {
-      "stars": 3198,
+      "stars": 3204,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_evals": {
-      "stars": 734,
+      "stars": 735,
       "ownerType": "Organization"
     },
     "UKGovernmentBEIS/inspect_k8s_sandbox": {

@@ -1,6 +1,6 @@
 # `agent-sanitizer`
 
-**Cleans untrusted text before your agent reads it.** An attacker hides a payload where a person cannot see it but the model still reads it: invisible Unicode, ANSI escapes, human-hidden HTML, confusable glyphs, look-alike hosts, and exfil-shaped URLs. This library handles each channel. Easy to use as a Claude Code plugin, and the plugin itself is recommended by [`alignment-hive`](https://github.com/crazytieguy/alignment-hive/)!
+**Cleans untrusted text before your agent reads it.** An attacker hides a payload where a person cannot see it but the model still reads it: invisible Unicode, ANSI escapes, human-hidden HTML, confusable glyphs, look-alike hosts, and exfil-shaped URLs. This library handles each channel. Easy to use as a Claude Code plugin.
 
 ```
 /plugin marketplace add AlexanderMattTurner/agent-sanitizer
