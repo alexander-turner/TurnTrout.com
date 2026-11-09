@@ -4,8 +4,12 @@ Use this prompt when launching the critique sub-agent in Step 2.
 
 The loop’s goal is to reach a fixed point—a pass that finds **nothing** worth changing. Hunt for easy wins first; they’re cheaper to apply and unlock further simplifications on the next pass.
 
+Fill in the **Threat model** line before you send the prompt. A finding outside it does not restart the loop (see `CLAUDE.md` → Self-Critique Loop).
+
 ## Prompt
 
+> **Threat model:** <what this change defends against, and what it leaves out>
+>
 > Review the code changes for this PR and provide a critical, specific assessment. Read what’s actually there, not what the author probably meant. Cite file/line for every issue. Sort findings by category so they can be applied in order—compression first, since deletions often invalidate other comments.
 >
 > **Compression (delete first):**
@@ -47,5 +51,7 @@ The loop’s goal is to reach a fixed point—a pass that finds **nothing** wort
 >
 > - Features, refactors, or files touched beyond what the task asked for
 > - Configuration churn unrelated to the change
+>
+> **Out of scope:** list each real case that the threat model leaves out, with the code its fix would add. The author decides on these; do not mix them into the categories above. If the threat model leaves out an input that the code's own callers, configs or CI already produce, report that as a Correctness finding.
 >
 > For every issue, give a one-line statement of the problem and a concrete fix. If you find nothing in a category, say so explicitly—silence is ambiguous.

@@ -4,7 +4,14 @@ name: Sync from Template
 # Runs daily or manually via "Run workflow" button.
 # No setup required - works out of the box.
 #
+# allow-workflow-ref: template-sync-reusable.yaml lives in the template repository.
+# This file only calls the template's template-sync-reusable.yaml, which holds
+# the sync job. Every script that job runs comes from the template, so a stale
+# local copy of the sync scripts cannot break the sync that would replace it.
+#
 # Features:
+# - Skips entirely in the template repository itself, and fails loud when
+#   TEMPLATE_SYNC_ORG points the sync at a fork of the running repo
 # - 3-way merges local customizations with template updates automatically
 # - Falls back to template version + Claude resolution when no merge base exists
 # - Detects new files, changed files, and deleted files from the template
@@ -22,38 +29,80 @@ name: Sync from Template
 # 2. Preserve local customizations while adopting new template features
 # 3. When in doubt, keep local changes - they exist for a reason
 # 4. Check for duplicate CI: if the target repo already has test/lint/format
-#    workflows, don't add the template's versions — exclude them via
-#    EXCLUDE_PATHS instead
+#    workflows, delete the template's versions. A file the sync delivered
+#    before and the adopter deleted is reported as declined, not restored, so
+#    the deletion holds on its own and needs no exclude-paths entry.
+# 5. A workflow that must never be introduced into a repo that has its own
+#    equivalent (the release flow) belongs in opt-in-paths.
+# 6. A file the template MOVED arrives at its new path while the old one stays
+#    local, because this sync reports deletions and never applies them. Delete
+#    the local copy and repoint whatever names it. The case that fails silently:
+#    each composite action now carries its own scripts and tests under
+#    .github/actions/<name>/, so a repo whose package.json still runs
+#    `node --test ".github/scripts/**/*.test.mjs"` tests the stale copy and
+#    reports green while the action runs the new one. package.json is outside
+#    SYNC_PATHS, so adding `.github/actions/**/*.test.mjs` there is the
+#    consumer's edit to make.
+# 7. That same move breaks an exclude-paths entry naming the OLD path: the entry
+#    matches nothing, and the file arrives at the new path. The sync reports
+#    every entry that names nothing in the template, so read the inert-entry
+#    section of the sync pull request body. Exclude a composite action as the
+#    DIRECTORY `.github/actions/<name>`, never as `<name>/action.yaml` alone,
+#    so the action's scripts are covered too.
+# 8. A file the adopter GENERATES and the TEMPLATE also owns belongs in
+#    exclude-paths; one the template does not own is never delivered, so an
+#    entry for it is inert per note 7. The sync line-merges, so the template's
+#    block lands beside the generated one and the generator reverts it on the
+#    next run — the same pull request reopens every week. In JSON that merge
+#    can also produce a DUPLICATE member name. RFC 8259 leaves
+#    that case to the parser: jq, Python and JavaScript each keep the LAST one,
+#    so the adopter's own block silently stops taking effect, while another
+#    parser may keep the first or refuse the file outright.
+# =============================================================================
+#
+# ROOT SCAFFOLDING A SYNCED WORKFLOW MAY ASSUME
+#
+# SYNC_PATHS delivers no root project file: package.json, .nvmrc, pyproject.toml,
+# uv.lock and .pre-commit-config.yaml all stay with the consumer. So a synced
+# workflow step that needs one must be gated on `hashFiles('<file>') != ''` and
+# skip when it is absent. Ungated, it hard-fails on every PR in a consumer that
+# never had that scaffolding — a shell-only dotfiles repo, say — and names
+# neither the template nor the missing file in the failure. Adding a workflow to
+# exclude-paths is the consumer's escape hatch, not the fix; gate the step here
+# instead, so a new consumer needs no escape hatch at all.
 # =============================================================================
 
 on:
   workflow_dispatch:
     inputs:
       dry-run:
+        # A `type: boolean` input arrives as a real boolean, so both this default
+        # and the expression that forwards it below must be boolean too.
+        # Comparing it to the STRING 'true' silently never matches: GitHub casts
+        # across types to a number, and `true == 'true'` compares 1 with NaN.
+        # That made every "dry run" dispatch open a real pull request.
         description: "Show what would be synced without making changes"
         required: false
-        default: "false"
+        default: false
         type: boolean
   schedule:
     # Run weekly on Mondays at 9am UTC
     - cron: "0 9 * * 1"
 
 env:
-  TEMPLATE_REPO: "alexander-turner/claude-automation-template"
+  # The sync reads this list from the TEMPLATE's copy of this file, never from the
+  # copy here, so a path the template renames arrives on the first sync after the
+  # rename. Narrow it with exclude-paths below; an edit to this line here has no
+  # effect. A caller's `env` never reaches a called workflow, so nothing in this
+  # run reads it either.
+  #
   # Whole directories of core automation files that are always template-owned.
   # Every file under these paths propagates to downstream consumers; new files
   # added to the template auto-sync without anyone having to edit this list.
   # Downstream-added files in these directories are left alone (sync only
   # copies files that exist in the template).
-  SYNC_PATHS: ".claude .hooks .github/actions .github/scripts .github/workflows .github/prompts"
-  # Paths to exclude from syncing. Supports both whole directories (matching
-  # entries in SYNC_PATHS) and individual files within synced directories.
   #
-  # NOTE: If the target repo already has its own test/lint/format CI workflows,
-  # exclude the template's equivalents here to avoid duplicate CI jobs.
-  # Common candidates: .github/workflows/node-tests.yaml,
-  # .github/workflows/lint.yaml, .github/workflows/format-check.yaml
-  #
+<<<<<<< local
   # VERSIONED-APP-ONLY: the release flow below only makes sense for a repo that
   # is published to npm. auto-version.yaml runs on EVERY push to the default
   # branch and, for a real (non-private) package, decides a Conventional-Commits
@@ -75,17 +124,31 @@ env:
   # secret this repo does not provision, so it fails on every push to main; this
   # repo opts out of the ruleset auto-sync entirely.
   EXCLUDE_PATHS: ".github/actions/setup-base-env .github/scripts/check-existing-security-pr.sh .github/scripts/check-symlinks.sh .github/scripts/fetch-security-report.sh .github/scripts/list-dependabot-prs.sh .github/scripts/script-configured.sh .github/workflows/dependabot-auto-merge.yaml .github/workflows/format-check.yaml .github/workflows/lint.yaml .github/workflows/node-tests.yaml .github/workflows/pre-commit.yaml .github/workflows/validate-config.yaml .github/workflows/auto-version.yaml .github/scripts/version-bump.sh .github/scripts/promote-changelog.mjs .github/scripts/lib/retry.bash .github/workflows/sync-required-checks.yaml"
+=======
+  # An entry may also be a single FILE, which is how a synced file's DATA
+  # dependency travels when it lives outside every synced directory. A synced
+  # script that reads such a file arrives downstream without it and dies on the
+  # read, so each one a synced file names by a fixed path is listed here:
+  #   .github/tool-versions.sh                 <- .github/scripts/install-mergiraf.sh
+  #   .github/claude-cli-default               <- .github/scripts/install-claude-cli.sh
+  #   config/javascript/commitlint.config.js   <- .hooks/commit-msg
+  # install-claude-cli.sh prefers .github/claude-cli/package.json, which is NOT
+  # synced: a repo that wants its own CLI version keeps it there, and its own
+  # Dependabot bumps it.
+  # A consumer that maintains its own richer copy of one of these (extra tools
+  # pinned for its own CI) keeps it by adding that path to exclude-paths.
+  SYNC_PATHS: ".claude .hooks .github/actions .github/scripts .github/workflows .github/prompts .github/tool-versions.sh .github/claude-cli-default config/javascript/commitlint.config.js"
+>>>>>>> template
 
 concurrency:
   group: template-sync
   cancel-in-progress: false
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   sync:
+<<<<<<< local
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -198,3 +261,72 @@ jobs:
           DELETED_FILES: ${{ steps.sync.outputs.deleted_files }}
           PR_NUM: ${{ steps.create-pr.outputs.pull-request-number }}
         run: bash .github/scripts/request-claude-resolve.sh
+=======
+    name: Sync from template
+    # The ceiling for the called jobs. A called job can request only what this
+    # job grants, and granting less ends the run in `startup_failure`.
+    permissions:
+      contents: write
+      pull-requests: write
+    # Every script the sync runs comes from the template at `template-ref`, so
+    # this repo always runs the template's current sync tooling. `@main` is the
+    # moving ref; to review each tooling change first, pin a commit SHA here and
+    # pass the same SHA as `template-ref`.
+    #
+    # A `uses:` line cannot be an expression, so it cannot read
+    # TEMPLATE_SYNC_ORG. A fork that hosts its own template sets that variable,
+    # which redirects the files the sync copies, and edits the owner on this line
+    # to run its own copy of the sync tooling too.
+    uses: AlexanderMattTurner/claude-automation-template/.github/workflows/template-sync-reusable.yaml@main # zizmor: ignore[unpinned-uses] — the moving ref is the design (see above)
+    # Named one by one: `secrets: inherit` reaches no caller outside the
+    # template owner's organization or enterprise, and it would hand the
+    # template's scripts every other secret this repo holds.
+    secrets:
+      TEMPLATE_SYNC_TOKEN_ORG: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG }}
+      CLAUDE_CODE_OAUTH_TOKEN_FALLBACK: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK }}
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+    with:
+      template-ref: main
+      dry-run: ${{ inputs.dry-run == true }}
+      # Paths to exclude from syncing. An entry names one file or one directory,
+      # and a directory entry covers every file under it.
+      #
+      # NOTE: An adopter that already has its own test/lint/format CI workflows can
+      # simply delete the template's equivalents; the sync declines to re-add a file
+      # it delivered before. Use this list for a file the sync has NEVER delivered,
+      # or to freeze one the adopter keeps but maintains itself.
+      # Common candidates: .github/workflows/node-tests.yaml,
+      # .github/workflows/lint.yaml, .github/workflows/format-check.yaml
+      #
+      # The security-vulnerability-scan workflow + prompt are intentionally NOT
+      # propagated to downstream repos; each consumer owns its own security-scan
+      # cadence and model pin, so the template stops overwriting them on sync.
+      # .github/scripts/auto-resolve is the retired shell resolver. A consumer that
+      # still carries it keeps its own copy rather than having sync delete it out
+      # from under a caller that has not converted yet.
+      exclude-paths: ".github/workflows/security-vulnerability-scan.yaml .github/prompts/security-vulnerability-scan.md .github/scripts/auto-resolve"
+      # Files the sync UPDATES but never INTRODUCES. Absent from the child repo they
+      # are skipped; present, they sync like anything else. This is the opt-in half
+      # of exclude-paths: opting in is creating the file once, opting out is deleting
+      # it (and it stays deleted — no exclude-paths entry needed).
+      #
+      # auto-version.yaml is the release flow's entry point: it runs on EVERY push to
+      # the default branch and, for a non-private package, decides a
+      # Conventional-Commits semver bump and runs `pnpm publish` (OIDC provenance —
+      # no NPM_TOKEN). Introducing it into a repo that already publishes gives that
+      # repo TWO publishers; because the concurrency groups differ they never
+      # serialize, so both compute the same version and one loses the race with an
+      # unrecognizable `npm error code E404 ... PUT` on an already-published version.
+      # Opt in by copying it from the template:
+      #   curl -fsSL https://raw.githubusercontent.com/AlexanderMattTurner/claude-automation-template/main/.github/workflows/auto-version.yaml \
+      #     -o .github/workflows/auto-version.yaml
+      # CHANGELOG.md lives outside SYNC_PATHS and never syncs, so a versioned
+      # consumer must also create it to bootstrap the flow.
+      #
+      # A consumer that KEEPS its own release workflow instead should give it the
+      # template's workflow name — "Auto version bump and publish" — or add its own
+      # name to the `workflows:` lists in ci-failure-notify.yaml and
+      # build-publish-notify.yaml, which bind by name, not filename. Otherwise its
+      # release failures notify nobody.
+      opt-in-paths: ".github/workflows/auto-version.yaml"
+>>>>>>> template
