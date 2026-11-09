@@ -23,7 +23,7 @@ Then add the Tier 1 aggregate to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.9.0 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.10.0 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       - id: check-tier1 # every honesty + identity + security check
 ```
@@ -86,6 +86,7 @@ These checks make CI run the exact bytes you reviewed, not whatever a mutable na
 | `check-pinned-downloads`    | A download with no checksum can be swapped by a tampered release or a compromised mirror. Also flags `curl … \| sh` one-liners, and a `# pin-exempt`'d file that runs without a size check, since `curl -f` succeeds on an empty body. Opt out with `# empty-download-ok: <reason>`.                                               | `curl -sL get.example.com \| bash`     |
 | `check-versionless-install` | An install naming no version gets whatever the index serves that day, and the version that changed appears nowhere in the diff. Measured: `apt-get install docker-sbx` served v0.37.1 while the repo pinned v0.35.0, costing days of red end-to-end runs. Dockerfiles are left to hadolint. Opt out with `# pin-exempt: <reason>`. | `pip install pre-commit`               |
 | `check-provenance-repo-url` | A fork whose manifest still names upstream fails its first `npm publish --provenance` with `E422`. No opt-out: a fork must correct its URL.                                                                                                                                                                                        | `repository.url` still naming upstream |
+| `check-moving-runner-alias` | GitHub moves `ubuntu-latest`, `macos-latest` and `windows-latest` to a new OS release, and no commit records the move. In 2026 `ubuntu-latest` moved from 24.04 to 26.04 and held one merge queue red. The check reads every value in a workflow or composite action. Opt out with `# allow-moving-runner-alias: <reason>`.        | `runs-on: ubuntu-latest`               |
 
 ### Security (Tier 1, default-on)
 
@@ -174,6 +175,7 @@ These checks are about shell scripts, Python, tests, and docs rather than CI rep
 | `check-toolchain-skips`            | A test that skips itself when a tool is missing leaves the suite green and the guarded scripts uncovered. In CI it must fail instead. Opt out with `# toolchain-skip-ok: <reason>`.                                                                                                                                       | `skipif(shutil.which("node") is None)`                              |
 | `check-env-symmetry`               | A half-finished env-var rename leaves the reader on an unset value and a silent default. Flags a prefixed variable written and never read, or read and never written. Needs `--prefix`, so it is not in a tier aggregate.                                                                                                 | `FOO_BAR` written but never read                                    |
 | `check-bash32-portability`         | `grep -P` or `${v,,}` passes a Linux runner and aborts on macOS BSD tools or bash 3.2. Judges every file it gets, so it needs your `files:`, and it is not in a tier aggregate. Opt out with `# bash32-portability-ok: <reason>`.                                                                                         | `readarray -t lines < f`                                            |
+| `check-stale-opt-out`              | An opt-out stays after its check stops firing, and nothing removes it. It runs each covered check again and reports each annotation that no opt-out lookup finds. It runs those checks twice, so no tier aggregate holds it. Delete the annotation.                                                                       | `# allow-sleep:` above a sleep a refactor deleted                   |
 | `check-test-predicate-shadow`      | Redefining a production pure predicate in a test asserts against the test's own weaker copy, so the regression it covers can never fail. Stubbing a dependency is fine. Opt out with `# predicate-shadow-ok: <reason>`.                                                                                                   | a stub matching `^[0-9]+$` where the real one rejects leading zeros |
 | `check-stray-tool-markup`          | An agent leaves its file-authoring scaffolding behind and it renders as literal text. Flags a line that is entirely a stray tool-call tag. Suppress with `allow-stray-markup: <reason>`.                                                                                                                                  | a leaked `<function_calls>` fragment in shipped prose               |
 | `check-dead-shell-functions`       | A function no production code calls rots, and it tells a reader a code path exists.                                                                                                                                                                                                                                       | `cleanup_tmp()` called by nothing outside `tests/`                  |
@@ -201,7 +203,7 @@ Start here enables Tier 1 through one aggregate id. This section is the full men
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.9.0 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.10.0 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       # ── Tier 1 · honesty, identity and security (default-on) ──
       # One id, so a Tier 1 check added in a later release runs as soon as you
@@ -260,6 +262,7 @@ repos:
       # - id: check-toolchain-skips      # a which()-gated pytest skip must fail, not skip, in CI
       # - id: check-env-symmetry         # a prefixed env var must be both written and read
       #   args: [--prefix, GLOVEBOX_]    # required: the check reads only <PREFIX>… vars
+      # - id: check-stale-opt-out        # an opt-out annotation must still suppress a finding
       # - id: check-test-predicate-shadow  # a test may stub a dependency, not redefine a pure predicate
       # - id: check-stray-tool-markup    # ban a leaked tool-call tag committed into a file
 ```
@@ -268,6 +271,7 @@ repos:
 
 Add each `- id:` on its own if you want it:
 
+- `check-stale-opt-out` runs each covered check again, so an aggregate that held it would run those checks twice.
 - `check-absolute-symlinks` is a shell `language: script` hook, not a Python module.
 - `check-lockstep-pins` is config-driven. It hard-errors without the per-repo `--pair` arguments that an aggregate cannot supply.
 - `check-env-symmetry` scans the whole tree and needs a per-project `--prefix` argument that an aggregate cannot supply.
@@ -285,7 +289,7 @@ Select on either axis with `check-select`. It takes `--select` (repeatable, unio
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.9.0
+    rev: v1.10.0
     hooks:
       - id: check-select
         args: [--select, "tag:security", --select, "tag:secrets"]
@@ -330,7 +334,7 @@ The tag vocabulary is closed. These are the values:
 
 A tag is not a file type. The files a check reads come from its own `types:`, so there is no `shell` or `python` tag to restate them.
 
-The four checks that sit in no aggregate carry no tag either, so no selector reaches them. `check-absolute-symlinks`, `check-lockstep-pins`, `check-env-symmetry`, and `check-bash32-portability` stay standalone ids.
+The five checks that sit in no aggregate carry no tag either, so no selector reaches them. `check-stale-opt-out`, `check-absolute-symlinks`, `check-lockstep-pins`, `check-env-symmetry`, and `check-bash32-portability` stay standalone ids.
 
 ### Scope one check to specific paths
 
@@ -338,7 +342,7 @@ One check in a tier can need tighter file scoping than the rest. For example, `c
 
 ```yaml
 - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-  rev: v1.9.0
+  rev: v1.10.0
   hooks:
     - id: check-tier1
       args: [--skip, check_exit_suppression] # drop it from the aggregate...
@@ -459,6 +463,17 @@ The scan reads the whole window for each workflow, and not the newest page of it
 The cost is one request for each 100 completed runs, plus one for each failing run that did not conclude `startup_failure`. A successful run costs nothing. The Actions API stops paginating at 1000 items, so one workflow costs at most 10 listings. A workflow busier than that is the one case the scan cannot read in full, and the report names it and marks its count as a floor.
 
 **The obvious version of this scan reports every repo healthy.** A run that failed to load concludes `startup_failure`, and not `failure`. The `status=` filter on the runs listing matches the conclusion, so `status=failure` never returns one. This tool asks for `status=completed` and classifies each conclusion itself. It leaves out `cancelled` and `skipped`, because a run cancelled in the queue also holds zero jobs and is not a broken file.
+
+## Actions
+
+### Mute-failure guard
+
+The `mute-failure-guard` action records every bash command that fails in a CI job. When the job fails, the action prints the failed step's records, so a failure that no step printed still has a cause. It also reports the open-file and process counts. Add it as the first step of a job, before the first bash step. It refuses a job that already sets `BASH_ENV`.
+
+```yaml
+steps:
+  - uses: AlexanderMattTurner/ci-truth-serum/actions/mute-failure-guard@<commit SHA>
+```
 
 ## Contributing
 
