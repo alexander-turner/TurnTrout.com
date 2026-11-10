@@ -23,7 +23,7 @@ Then add the Tier 1 aggregate to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.10.0 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.11.0 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       - id: check-tier1 # every honesty + identity + security check
 ```
@@ -131,6 +131,7 @@ These checks assume one CI architecture. Enable them only if you follow it. Two 
 | `check-stderr-merge-parse`         | Parsing a `2>&1`-merged stream lets a warning line pass as real output. Opt out with `# stderr-merge-ok: <reason>`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | `cmd 2>&1 \| jq .`                                                      |
 | `check-echo-fallback`              | `$(cmd \|\| echo "…")` turns a failure into a value that looks normal, and later code trusts it. A fallback that writes to stderr and aborts passes. Opt out with `# echo-fallback-ok: <reason>`.                                                                                                                                                                                                                                                                                                                                                                                               | `$(cmd \|\| echo error)` read as a version                              |
 | `check-bare-return-status`         | A bare `return` forwards the last command's status, so `A && return` is always 0 and `[[ … ]] \|\| return` is always 1 — two spellings that look alike and return opposites. Opt out with `# allow-bare-return: <reason>`.                                                                                                                                                                                                                                                                                                                                                                      | `[[ … ]] \|\| return` in a guard                                        |
+| `check-silent-exit`                | `[[ -f "$cfg" ]] \|\| exit 2` stops the script and prints nothing, so the CI log holds a red step and no cause. Flags a literal `exit N` that a failed file or string probe reaches with nothing printed first. Opt out with `# allow-silent-exit: <reason>`.                                                                                                                                                                                                                                                                                                                                   | a guard that exits 2 with no message                                    |
 | `check-lockstep-pins`              | Two pins that must stay equal, linked only by a comment. Config-driven: each `--pair FILE REGEX FILE REGEX` must match exactly once per file. Not in the tier aggregate; enable it on its own.                                                                                                                                                                                                                                                                                                                                                                                                  | `.python-version` says 3.11, `requires-python` says >=3.12              |
 | `check-bare-mkdir`                 | On macOS and BSD `mkdir -p "$X"` exits 0 when `$X` is a dangling symlink, so a caller that trusts the status dies later and far away.                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `mkdir -p "$d"` with no `[[ -d "$d" ]]` after it                        |
 | `check-env-arith`                  | An environment variable inside `$(( ))` is trusted to be an integer: a typo aborts a `set -e` caller, and some garbage coerces to 0 and disables the limit.                                                                                                                                                                                                                                                                                                                                                                                                                                     | `$((SECONDS + ${TIMEOUT:-90}))` with `TIMEOUT=abc`                      |
@@ -203,7 +204,7 @@ Start here enables Tier 1 through one aggregate id. This section is the full men
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.10.0 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.11.0 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       # ── Tier 1 · honesty, identity and security (default-on) ──
       # One id, so a Tier 1 check added in a later release runs as soon as you
@@ -236,6 +237,7 @@ repos:
       # - id: check-stderr-merge-parse   # never parse a 2>&1-merged stream
       # - id: check-echo-fallback        # no `|| echo` fallback that invents a value
       # - id: check-bare-return-status   # a `&&`/`||` guarded return must state its status
+      # - id: check-silent-exit          # an `exit N` after a failed probe says why
       # - id: check-lockstep-pins        # config-driven twin-pin equality (needs --pair args)
       # ── Extras · Unrelated bonus checks (opt-in) ──
       # - id: check-absolute-symlinks  # a tracked symlink must not point at an absolute or gitignored path
@@ -289,7 +291,7 @@ Select on either axis with `check-select`. It takes `--select` (repeatable, unio
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.10.0
+    rev: v1.11.0
     hooks:
       - id: check-select
         args: [--select, "tag:security", --select, "tag:secrets"]
@@ -342,7 +344,7 @@ One check in a tier can need tighter file scoping than the rest. For example, `c
 
 ```yaml
 - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-  rev: v1.10.0
+  rev: v1.11.0
   hooks:
     - id: check-tier1
       args: [--skip, check_exit_suppression] # drop it from the aggregate...
@@ -356,6 +358,17 @@ One check in a tier can need tighter file scoping than the rest. For example, `c
 This keeps the property that matters. A new check added to the tier upstream still arrives automatically through the aggregate. You opt out only of the checks you scope on purpose.
 
 `check-exit-suppression` also takes `--producer-only`, which restricts it to the captured-producer rule (a suppressed `$(gh api …)`/`$(jq …)` capture) and skips the uncaptured rule (a bare `cmd || true` with output kept). A consumer that wants the producer rule over a wider tree than it has ever enforced the uncaptured rule on adds a second `check-exit-suppression` entry with that flag and a broader `files:`, instead of widening the first entry's scope and inheriting uncaptured findings it never opted into.
+
+### Configure a check in a tier
+
+A tier hook runs many checks, so its `args:` cannot say which flag belongs to which check. Write those flags once, in `.ci-truth-serum.toml` at the repository root:
+
+```toml
+[checks.check-retry-loop]
+args = ["--wrapper=retry_cmd", "--retry-helper=bin/lib/retry.bash"]
+```
+
+Each table names one aggregated check, by its hook id or its module name. Its `args` reach the check before its file arguments, one token per item. Every tier hook and `check-select` read the file. A `--check-arg <check>=<flag>` in a hook's `args:` adds flags after the configured ones. **A table that names no aggregated check, a key other than `args`, or an empty `args` list is a hard error**, because it would otherwise configure nothing while the run looks configured. A standalone hook keeps its flags in its own `args:`.
 
 ### Autofix (opt-in): digest-pin base images
 
