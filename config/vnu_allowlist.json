@@ -26,6 +26,10 @@
       "reason": "CSS Houdini `@property` (registers the sidebar-fade lengths as typed custom properties in scroll-indicator.scss); a valid at-rule that vnu's CSS checker predates and does not recognize."
     },
     {
+      "pattern": "^CSS: Unknown pseudo-element or pseudo-class “::search-text”",
+      "reason": "The CSS Pseudo-Elements 4 `::search-text` highlight (themes find-in-page matches in base.scss); a valid pseudo-element, shipped in Chromium, that vnu's CSS checker predates and does not recognize. It matches `::search-text:current` too."
+    },
+    {
       "pattern": "^CSS: “[^”]+”: “var\\([^”]*\\)” is not a “\\*invalid\\*” value\\.",
       "reason": "vnu's CSS checker cannot resolve `var()` references (the favicon `--attenuated-*` custom properties and `color-mix()` args), so it labels the property grammar `*invalid*`; the values are valid CSS that browsers resolve."
     },

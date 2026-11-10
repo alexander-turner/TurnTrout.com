@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -311,6 +312,41 @@ class TestR2Sync:
             grp, "_rclone_copyto", lambda *a: pytest.fail("should not copy")
         )
         grp.download_cache_from_r2(Path("c.json"))
+
+    def test_download_from_cdn_writes_body(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        response = requests.Response()
+        response.status_code = 200
+        response._content = b'{"a": 1}'  # pylint: disable=protected-access
+        urls: list[str] = []
+
+        def fake_get(url: str, timeout: int) -> requests.Response:
+            urls.append(url)
+            return response
+
+        monkeypatch.setattr(grp.requests, "get", fake_get)
+        grp.download_cache_from_cdn(tmp_path / "c.json")
+        assert urls == [grp.CACHE_CDN_URL]
+        assert (tmp_path / "c.json").read_bytes() == b'{"a": 1}'
+
+    def test_download_from_cdn_404_does_nothing(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        response = requests.Response()
+        response.status_code = 404
+        monkeypatch.setattr(grp.requests, "get", lambda url, timeout: response)
+        grp.download_cache_from_cdn(tmp_path / "c.json")
+        assert not (tmp_path / "c.json").exists()
+
+    def test_download_from_cdn_raises_on_server_error(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        response = requests.Response()
+        response.status_code = 500
+        monkeypatch.setattr(grp.requests, "get", lambda url, timeout: response)
+        with pytest.raises(requests.HTTPError):
+            grp.download_cache_from_cdn(tmp_path / "c.json")
 
     def test_upload(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -664,12 +700,37 @@ class TestMain:
             == 0
         )
 
-    def test_requires_api_key_when_not_dry_run(
-        self, monkeypatch: pytest.MonkeyPatch
+    @pytest.mark.parametrize("uncovered", [(), ("b",)])
+    def test_without_api_key_reads_cdn_and_never_embeds(
+        self, monkeypatch: pytest.MonkeyPatch, uncovered: tuple[str, ...]
     ) -> None:
         monkeypatch.delenv("VOYAGE_API_KEY", raising=False)
-        with pytest.raises(RuntimeError, match="VOYAGE_API_KEY"):
-            grp.main([])
+        events: list[str] = []
+        budgets: list[int] = []
+        monkeypatch.setattr(
+            grp, "download_cache_from_cdn", lambda p: events.append("cdn")
+        )
+        monkeypatch.setattr(
+            grp, "download_cache_from_r2", lambda p: pytest.fail("used R2")
+        )
+        monkeypatch.setattr(
+            grp, "upload_cache_to_r2", lambda p: pytest.fail("uploaded")
+        )
+
+        def fake_generate(
+            config: grp.GenerateConfig, **_kwargs: object
+        ) -> grp.RunResult:
+            budgets.append(config.budget)
+            return grp.RunResult(
+                embedded=0, reused=3, skipped_over_budget=0, uncovered=uncovered
+            )
+
+        monkeypatch.setattr(grp, "generate", fake_generate)
+        # Uncovered articles warn rather than fail: they can't be embedded
+        # without the key.
+        assert grp.main([]) == 0
+        assert events == ["cdn"]
+        assert budgets == [0]
 
     def test_full_run_downloads_and_uploads(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

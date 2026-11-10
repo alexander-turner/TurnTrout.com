@@ -103,15 +103,15 @@ describe("Latex plugin", () => {
     }
 
     it.each([
-      ["a relation to its right operand", String.raw`\alpha \in \{0.2, 0.4\}`, ["α∈{0.2,0.4}"]],
-      ["a chain of relations", String.raw`a = b \leq c`, ["a=b≤c"]],
+      ["a relation to its right operand", String.raw`\alpha \in \{0.2, 0.4\}`, ["α", "∈{0.2,0.4}"]],
+      ["a chain of relations", String.raw`a = b \leq c`, ["a", "=b", "≤c"]],
       ["a colored relation", String.raw`a \color{red}{=} b`, ["a=b"]],
-      ["a negated relation", String.raw`a \notin b`, ["a∈/b"]],
+      ["a negated relation", String.raw`a \notin b`, ["a", "∈/b"]],
       ["a leading relation", "= b", ["=b"]],
       ["nothing after a binary operator", "a + b", ["a+", "b"]],
-      ["only the relation side of a mixed formula", "a + b = c + d", ["a+", "b=c+", "d"]],
+      ["only the relation side of a mixed formula", "a + b = c + d", ["a+", "b", "=c+", "d"]],
       ["nothing at an explicit allowbreak", String.raw`a = \allowbreak b`, ["a=", "b"]],
-      ["nothing across a newline", String.raw`a = b \\ c = d`, ["a=b", "", "c=d"]],
+      ["nothing across a newline", String.raw`a = b \\ c = d`, ["a", "=b", "", "c", "=d"]],
       ["nothing after a trailing relation", "a =", ["a="]],
       ["nothing in a formula without operators", "x", ["x"]],
     ])("glues %s", (_name, tex, expected) => {
@@ -121,7 +121,7 @@ describe("Latex plugin", () => {
     })
 
     it.each([
-      ["glues inline math", false, ["a=b"]],
+      ["glues inline math", false, ["a", "=b"]],
       ["leaves display math as emitted", true, ["a=", "b"]],
     ])("plugin pass %s", (_name, displayMode, expected) => {
       const tree = render("a = b", displayMode)

@@ -1,6 +1,6 @@
 # `agent-sanitizer`
 
-**Cleans untrusted text before your agent reads it.** An attacker hides a payload where a person cannot see it but the model still reads it: invisible Unicode, ANSI escapes, human-hidden HTML, confusable glyphs, look-alike hosts, and exfil-shaped URLs. This library handles each channel. Easy to use as a Claude Code plugin, and the plugin itself is recommended by [`alignment-hive`](https://github.com/crazytieguy/alignment-hive/)!
+**Cleans untrusted text before your agent reads it.** An attacker hides a payload where a person cannot see it but the model still reads it: invisible Unicode, ANSI escapes, human-hidden HTML, confusable glyphs, look-alike hosts, and exfil-shaped URLs. This library handles each channel. Easy to use as a Claude Code plugin.
 
 ```
 /plugin marketplace add AlexanderMattTurner/agent-sanitizer
@@ -51,18 +51,20 @@ Split into subpaths so the heavy HTML dependency stays opt-in. **Seam** names
 the callback you inject for the agent-specific concern; `—` is a pure transform,
 `fs (direct)` does its own file I/O instead of taking one.
 
-| Layer | Import          | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Seam                        |
-| ----- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| 1     | `/invisible`    | Strip zero-width, bidi, variation-selector and tag chars + ANSI/SGR escapes. Preserves ZWNJ/ZWJ for Arabic/Indic/emoji. Zero deps.                                                                                                                                                                                                                                                                                                                                                                                                     | —                           |
-| 1     | `/layer1`       | Layer 1 in one call: the invisible-char and ANSI strips run to a FIXED POINT over each other (either removal can reconstitute what the other matches), then a residual control-introducer sweep closes it — not a two-step pipeline a caller can reproduce in a fixed order. `applyLayer1` leaves an unpaired UTF-16 surrogate in place; `applyLayer1WellFormed` also maps it to U+FFFD, which is the string `/output` shows a model — take that one when the result feeds a redactor, an offset calculation or a view map. Zero deps. | —                           |
-| 2     | `/html`         | Splice out HTML comments and elements hidden via `display:none`, off-screen, white-on-white, `hidden`. Each splice leaves a keyed, round-trippable placeholder.                                                                                                                                                                                                                                                                                                                                                                        | —                           |
-| 3     | `/html`         | Detect exfil-shaped URLs (payloads in query/path, embedded creds, `data:`/`javascript:`, off-origin redirects) and confusable HOSTS (`аpple.com`). Reports only — never rewrites.                                                                                                                                                                                                                                                                                                                                                      | —                           |
-| —     | `/confusables`  | Fold look-alike glyphs in tool-call input (paths, commands) to ASCII, closing a cross-script deny-rule bypass. Gated per token, so non-Latin prose passes through unfolded.                                                                                                                                                                                                                                                                                                                                                            | `scan` (optional)           |
-| —     | `/instructions` | Scan/auto-clean `CLAUDE.md`, `AGENTS.md`, `SKILL.md`, etc., decoding Unicode-tag + zero-width-binary payloads.                                                                                                                                                                                                                                                                                                                                                                                                                         | `fs` (direct)               |
-| —     | `/prompt`       | Classify a prompt pass / note / block on payload-capable invisible/ANSI content (inert escapes get the note).                                                                                                                                                                                                                                                                                                                                                                                                                          | —                           |
-| 1–5   | `/output`       | Run Layers 1–4 over structured tool output, preserving shape. The Layer-5 slot takes a delete-only filter.                                                                                                                                                                                                                                                                                                                                                                                                                             | `redact`, `filterInjection` |
-| —     | `/rehydrate`    | Re-anchor a model Edit or whole-file Write composed from the _sanitized_ view back onto real bytes; gate MultiEdit on a verified view==disk; deny anything ambiguous or secret-exposing.                                                                                                                                                                                                                                                                                                                                               | `io`                        |
-| —     | `/view-map`     | Pure offset/text machinery mapping a file's on-disk bytes ↔ the sanitized view (Layer-1 deletions, Layer-4 redactions). No I/O — consumed by `/rehydrate`.                                                                                                                                                                                                                                                                                                                                                                             | —                           |
+| Layer | Import                      | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Seam                        |
+| ----- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| 1     | `/invisible`                | Strip zero-width, bidi, variation-selector and tag chars + ANSI/SGR escapes. Preserves ZWNJ/ZWJ for Arabic/Indic/emoji. Zero deps.                                                                                                                                                                                                                                                                                                                                                                                                     | —                           |
+| 1     | `/layer1`                   | Layer 1 in one call: the invisible-char and ANSI strips run to a FIXED POINT over each other (either removal can reconstitute what the other matches), then a residual control-introducer sweep closes it — not a two-step pipeline a caller can reproduce in a fixed order. `applyLayer1` leaves an unpaired UTF-16 surrogate in place; `applyLayer1WellFormed` also maps it to U+FFFD, which is the string `/output` shows a model — take that one when the result feeds a redactor, an offset calculation or a view map. Zero deps. | —                           |
+| 2     | `/html`                     | Splice out HTML comments and elements hidden via `display:none`, off-screen, white-on-white, `hidden`. Each splice leaves a keyed, round-trippable placeholder.                                                                                                                                                                                                                                                                                                                                                                        | —                           |
+| 3     | `/html`                     | Detect exfil-shaped URLs (payloads in query/path, embedded creds, `data:`/`javascript:`, off-origin redirects) and confusable HOSTS (`аpple.com`). Reports only — never rewrites.                                                                                                                                                                                                                                                                                                                                                      | —                           |
+| —     | `/confusables`              | Fold look-alike glyphs in tool-call input (paths, commands) to ASCII, closing a cross-script deny-rule bypass. Gated per token, so non-Latin prose passes through unfolded.                                                                                                                                                                                                                                                                                                                                                            | `scan` (optional)           |
+| —     | `/instructions`             | Scan/auto-clean `CLAUDE.md`, `AGENTS.md`, `SKILL.md`, etc., decoding Unicode-tag + zero-width-binary payloads.                                                                                                                                                                                                                                                                                                                                                                                                                         | `fs` (direct)               |
+| —     | `/prompt`                   | Classify a prompt pass / note / block on payload-capable invisible/ANSI content (inert escapes get the note).                                                                                                                                                                                                                                                                                                                                                                                                                          | —                           |
+| 1–5   | `/output`                   | Run Layers 1–4 over structured tool output, preserving shape. The Layer-5 slot takes a delete-only filter.                                                                                                                                                                                                                                                                                                                                                                                                                             | `redact`, `filterInjection` |
+| —     | `/rehydrate`                | Re-anchor a model Edit or whole-file Write composed from the _sanitized_ view back onto real bytes; gate MultiEdit on a verified view==disk; deny anything ambiguous or secret-exposing.                                                                                                                                                                                                                                                                                                                                               | `io`                        |
+| —     | `/view-map`                 | Pure offset/text machinery mapping a file's on-disk bytes ↔ the sanitized view (Layer-1 deletions, Layer-4 redactions). No I/O — consumed by `/rehydrate`.                                                                                                                                                                                                                                                                                                                                                                             | —                           |
+| —     | `/credential-names-matcher` | Build an env-var NAME matcher from the credential-noun vocabulary: `credentialNameMatcher({ scope })` for a redactor (`"trailing"`) or an env scrub (`"any-segment"`), linear in the name's length.                                                                                                                                                                                                                                                                                                                                    | —                           |
+| —     | `/credential-names`         | The credential-noun vocabulary itself, as JSON — the same file the Python package reads.                                                                                                                                                                                                                                                                                                                                                                                                                                               | —                           |
 
 See [`THREAT-MODEL.md`](./THREAT-MODEL.md) for per-vector detail.
 
@@ -136,9 +138,10 @@ composed against the redacted view are re-anchored onto the real bytes, and
 placeholders in new content resolve back to the real secrets — disk → tool
 input only, never into the model's view. Anything ambiguous is denied rather
 than guessed, the redactor's own map is verified against the file before any
-splice, and a write that would persist placeholder text over a real secret
-asks instead of passing through even when the hook's own machinery fails
-mid-session. The whole layer is opt-in — its denies and asks are friction, so it
+splice, and a write that would persist placeholder text over a real secret is
+refused once, even when the hook's own machinery fails mid-session, and proceeds
+with a warning when re-issued. The whole layer is opt-in — its denies and asks
+are friction, so it
 engages only when asked for: set `AGENT_SANITIZER_SECRETS_ENABLED=1` in the
 environment Claude Code runs the hooks with; unset, no redactor runs and no
 placeholders exist.
@@ -191,9 +194,10 @@ withholds a string-shaped response; the shell arm in `plugin/scripts/safe-launch
 therefore also emits a top-level `decision`/`reason` pair, honored whatever
 shape the response had, telling the model that any output still visible above
 it is unsanitized. One carve-out to the
-open default, with secrets enabled: a write-shaped call carrying `[REDACTED…]` placeholder text asks
-instead of passing through when the hook itself is broken, since letting it
-through would overwrite the real secret with the placeholder. Either way, a plugin that
+open default, with secrets enabled: a write-shaped call carrying `[REDACTED…]`
+placeholder text is refused once when the hook itself is broken, since letting
+it through would overwrite the real secret with the placeholder; the exact
+re-issue proceeds with a warning. Either way, a plugin that
 never loaded at all is invisible — Claude Code reads a crashed hook as "no
 objection" — so confirm with `/plugin` rather than reading a quiet session as a
 working one. Neither posture touches what a sanitizer that RAN decided (see
@@ -253,6 +257,11 @@ To wire them yourself instead, one entry dispatches every mode on `--hook=`:
 **Wire all five.** The instruction-file scan is split across two of them: `SessionStart` covers the files that load at launch, and `InstructionsLoaded` covers every one a subdirectory loads later. A host that wires the first without the second leaves a nested `CLAUDE.md` scanned by nothing. The one-time PreToolUse coverage notice says so, but only when a file announced at launch went unscanned: a project whose only `CLAUDE.md` files sit in subdirectories gets no notice.
 
 `InstructionsLoaded` needs Claude Code **2.1.69 or newer** — 2.1.68 does not emit the event, so the hook never fires however you wire it. Check with `claude --version`.
+
+The hooks load `agent-control-plane-core`, a peer dependency
+(`>=0.11.2 <1.0.0`): npm 7+ and pnpm install it for you, but on Yarn classic,
+npm 6, `--legacy-peer-deps` or pnpm with `auto-install-peers=false`, add it to
+your project yourself, or every hook reports it unavailable.
 
 `require.resolve("agent-sanitizer/claude-hooks")` gives the path without
 hardcoding a layout. Importing the module rather than spawning it is a no-op.
@@ -471,12 +480,18 @@ import {
   scanInstructionFiles,
   cleanFile,
 } from "agent-sanitizer/instructions";
-const findings = scanInstructionFiles(["CLAUDE.md", "**/SKILL.md"], {
-  cwd: projectDir,
-  // Skip what git says is not this checkout's source: ignored directories and
-  // nested worktrees. Ignored FILES (CLAUDE.local.md) are still scanned.
-  exclude: contextScanExclude(projectDir),
-});
+const { findings, skipped } = scanInstructionFiles(
+  ["CLAUDE.md", "**/SKILL.md"],
+  {
+    cwd: projectDir,
+    // Skip what git says is not this checkout's source: ignored directories and
+    // nested worktrees. Ignored FILES (CLAUDE.local.md) are still scanned.
+    exclude: contextScanExclude(projectDir),
+  },
+);
+// `skipped` lists files that exist but could not be read ({ file, reason }).
+// Treat them as unvetted: they were never checked.
+if (skipped.length) console.warn("not scanned:", skipped);
 // `root` is required: a rewrite whose realpath leaves it throws instead.
 for (const { file } of findings)
   cleanFile(`${projectDir}/${file}`, { root: projectDir });

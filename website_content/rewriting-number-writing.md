@@ -19,7 +19,7 @@ aliases:
   - rethinking-number-writing
 original_url: https://www.lesswrong.com/posts/KXr8ys8PYppKXgGWj/english-writes-numbers-backwards
 date_published: 2025-07-25
-date_updated: 2026-07-15
+date_updated: 2026-10-31
 card_image_alt: A depiction of the House of Wisdom, made in the style of the famous School of Athens painting.
 ---
 
@@ -194,7 +194,7 @@ At first glance, there's a tempting and obvious culprit. We call the numbers "Ar
 
 It's a neat theory. It's a theory I came up with. It's also wrong.[^sad]
 
-[^sad]: Sadly, sometimes I _do_ come up with wrong theories, even though [I'm a theorist at heart](/research).
+[^sad]: Sadly, sometimes I _do_ come up with wrong theories, even though [I'm a theorist at heart](/professional).
 
 Reality is not so neat. Although we call them "Arabic numerals", they are more accurately known as "Hindu–Arabic numerals." While mathematicians like the Persian [Al-Khwārizmī](https://en.wikipedia.org/wiki/Al-Khwarizmi) (after whom we coined "algorithm") introduced the system to Europe, the numerals still [originated in India](https://en.wikipedia.org/wiki/History_of_the_Hindu%E2%80%93Arabic_numeral_system "History of the Hindu–Arabic numeral system"). The relevant ancient Indian scripts (like [Brahmi](https://en.wikipedia.org/wiki/Brahmi_script)) were written _left-to-right_. Thus dies the "merchant miscommunication" hypothesis. Writing the most significant digit on the left was not a translation error.
 

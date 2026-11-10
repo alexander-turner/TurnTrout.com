@@ -410,15 +410,12 @@ test.describe("Unique content around the site", () => {
 
 test.describe("Table of contents", () => {
   test("TOC is visible (screenshot)", async ({ page }) => {
-    let selector: string
     // eslint-disable-next-line playwright/no-conditional-in-test
-    if (isDesktopViewport(page)) {
-      selector = "#toc-content"
-    } else {
-      selector = "*:has(> #toc-content-mobile)"
-    }
+    const toc = isDesktopViewport(page)
+      ? page.locator("#toc-content")
+      : page.locator("#toc-content-mobile").locator("..")
 
-    await expect(page.locator(selector)).toBeVisible()
+    await expect(toc).toBeVisible()
   })
 
   test("Desktop TOC visual test (screenshot)", async ({ page }, testInfo) => {
@@ -461,7 +458,9 @@ test.describe("Table of contents", () => {
       }
     })
 
-    const tocContent = page.locator(":has(> #toc-content-mobile)").first()
+    // Resolve the parent from the id: a `:has()` selector re-scans the whole
+    // test page on every locator call, which costs seconds per call in Firefox.
+    const tocContent = page.locator("#toc-content-mobile").locator("..")
 
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
       elementToScreenshot: tocContent,

@@ -19,7 +19,7 @@ aliases:
   - mentorship
 original_url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/apply-for-alignment-mentorship-from-turntrout-and-alex-cloud
 date_published: 2025-12-23
-date_updated: 2026-10-20
+date_updated: 2026-10-31
 lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
 
@@ -43,8 +43,12 @@ We likewise have a strong track record in [research outputs](https://turntrout.c
 
 1. Pioneering steering vectors for use in LLMs ([@title](/gpt2-steering-vectors), [@title](/llama2-steering-vectors)),
 2. [Masking Gradients to Localize Computation in Neural Networks](/gradient-routing),
-3. [@title](/unlearn-and-distill) (NeurIPS 2025 spotlight!), and
-4. [Output Supervision Can Obfuscate the Chain of Thought](/output-supervision-cot).
+3. [@title](/unlearn-and-distill) (NeurIPS 2025 spotlight!),
+4. [Output Supervision Can Obfuscate the Chain of Thought](/output-supervision-cot),
+5. [@title](/recontextualization-mitigates-specification-gaming),
+6. [@title](/eval-cooperation),
+7. [@title](/gradient-routing-removes-reward-hacking), and
+8. [@title](/natural-language-autoencoder-robustness)
 
 > [!quote] Former scholar from Team Shard
 >  I *really* appreciate the calmness Alex \[Turner\] brings. He creates a stress-free environment where it feels easy and low-risk to have lots of ideas, pivot frequently, and generally be mentally nimble.

@@ -7,10 +7,32 @@
 .nowrap-span {
   white-space: nowrap;
 
-  // Inline math breaks only between its `.base` spans. The box holds trailing
-  // punctuation to the math's right edge; the math wraps internally.
-  .katex {
+  // Glued math and code paths keep their inner break opportunities. Their box
+  // edges stay in `nowrap` context, so adjacent punctuation stays beside them.
+  // Math with a single `.base` has no inner opportunity, and in `normal` context
+  // Chromium breaks after it when it overflows the line, stranding the
+  // punctuation below.
+  .katex-html:has(> .base + .base),
+  .inline-code-path {
     white-space: normal;
+  }
+
+  // Wide math is displayed inline. Chromium governs the break after an
+  // inline-block by its parent's `white-space`, so the last `.base`'s trailing
+  // edge takes the `normal` above and sheds the punctuation. Displayed inline,
+  // the last `.base` has no box edge to break at, and its own `nowrap` keeps its
+  // content whole.
+  .wide-inline > .base:last-child {
+    display: inline;
+  }
+
+  // WebKit governs the break before an inline-block the same way, so the first
+  // `.base` sheds opening punctuation onto the line above. Firefox keeps no
+  // break after an inline first `.base`, so the rule is WebKit's alone.
+  @supports (-webkit-hyphens: none) {
+    .wide-inline > .base:first-child {
+      display: inline;
+    }
   }
 }
 

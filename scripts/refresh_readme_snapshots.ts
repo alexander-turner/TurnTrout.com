@@ -1,16 +1,15 @@
 /**
  * Re-fetches the GitHub READMEs embedded into pages and updates their
  * committed snapshots in `quartz/plugins/transformers/.readme-snapshots/`.
- * The site build reads only those snapshots, so this script is the single
- * place that talks to GitHub — with backoff, and off the build's critical
- * path. A failed refresh leaves the last-known-good snapshots in place.
+ * The site build reads only those snapshots, so this script talks to
+ * GitHub off the build's critical path. A failed refresh leaves the
+ * last-known-good snapshots in place.
  *
  * Usage: npx tsx scripts/refresh_readme_snapshots.ts
  * Set GITHUB_TOKEN to raise the API rate limit (5000/hr vs 60/hr).
  */
 import fs from "node:fs"
 import path from "node:path"
-import { setTimeout as sleep } from "node:timers/promises"
 
 import { SNAPSHOT_SOURCES } from "../config/quartz/externalReadmes"
 import {
@@ -19,72 +18,19 @@ import {
   README_SNAPSHOT_DIR,
   resolveGitHubSource,
 } from "../quartz/plugins/transformers/populateExternalMarkdown"
+import { type GitHub, gitHubClient } from "./github_client"
 
-export const MAX_ATTEMPTS = 5
-export const BASE_DELAY_MS = 2000
-
-/** GitHub contents-API URL returning the raw file for a source. */
-export function apiUrl(source: GitHubMarkdownSource): string {
+/** Fetches a source's raw README content. */
+export async function fetchReadme(source: GitHubMarkdownSource, github: GitHub): Promise<string> {
   const { ref, filePath } = resolveGitHubSource(source)
-  const encodedPath = filePath.split("/").map(encodeURIComponent).join("/")
-  return `https://api.github.com/repos/${source.owner}/${source.repo}/contents/${encodedPath}?ref=${encodeURIComponent(ref)}`
-}
-
-export interface FetchDeps {
-  fetchFn?: typeof fetch
-  sleepFn?: (ms: number) => Promise<unknown>
-  token?: string
-}
-
-/**
- * Fetches a GitHub API URL's body, retrying transient failures (network
- * errors, 5xx, 403/429 rate limits) with exponential backoff. A 404 (wrong
- * repo/ref/path) or 401 (bad token) is permanent, so it fails immediately.
- */
-export async function fetchGitHub(
-  url: string,
-  accept: string,
-  { fetchFn = fetch, sleepFn = sleep, token = process.env.GITHUB_TOKEN }: FetchDeps,
-): Promise<string> {
-  const headers: Record<string, string> = {
-    accept,
-    "user-agent": "turntrout.com snapshot refresh",
-    "x-github-api-version": "2022-11-28",
-  }
-  if (token) {
-    headers.authorization = `Bearer ${token}`
-  }
-
-  let lastError: Error | undefined
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    if (attempt > 0) {
-      await sleepFn(BASE_DELAY_MS * 2 ** (attempt - 1))
-    }
-    let response: Response
-    try {
-      response = await fetchFn(url, { headers })
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error))
-      continue
-    }
-    if (response.status === 404) {
-      throw new Error(`${url} returned 404 — check the owner/repo/ref/path configuration`)
-    }
-    if (response.status === 401) {
-      throw new Error(`${url} returned 401 — the GITHUB_TOKEN is invalid or expired`)
-    }
-    if (!response.ok) {
-      lastError = new Error(`${url} returned HTTP ${response.status}`)
-      continue
-    }
-    return await response.text()
-  }
-  throw new Error(`Failed to fetch ${url} after ${MAX_ATTEMPTS} attempts`, { cause: lastError })
-}
-
-/** Fetches a source's raw README content through `fetchGitHub`. */
-export function fetchReadme(source: GitHubMarkdownSource, deps: FetchDeps = {}): Promise<string> {
-  return fetchGitHub(apiUrl(source), "application/vnd.github.raw+json", deps)
+  const { data } = await github.rest.repos.getContent({
+    owner: source.owner,
+    repo: source.repo,
+    path: filePath,
+    ref,
+    mediaType: { format: "raw" },
+  })
+  return data as unknown as string
 }
 
 export interface RefreshResult {
@@ -102,7 +48,7 @@ export interface RefreshResult {
  */
 export async function refreshSnapshots(
   sources: readonly GitHubMarkdownSource[] = SNAPSHOT_SOURCES,
-  deps: FetchDeps = {},
+  github: GitHub = gitHubClient(),
 ): Promise<RefreshResult> {
   fs.mkdirSync(README_SNAPSHOT_DIR, { recursive: true })
   const result: RefreshResult = { written: [], unchanged: [], failed: [], pruned: [] }
@@ -112,7 +58,7 @@ export async function refreshSnapshots(
     const name = path.basename(githubSnapshotPath(source))
     let content: string
     try {
-      content = await fetchReadme(source, deps)
+      content = await fetchReadme(source, github)
     } catch (error) {
       console.error(`✗ ${name}: ${(error as Error).message}`)
       result.failed.push(name)

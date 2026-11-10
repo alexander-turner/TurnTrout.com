@@ -24,6 +24,9 @@ date_published: 2026-10-21
 
 I've spoken publicly since [leaving Google DeepMind](/why-i-left-google-deepmind). Every entry links to the original and credits the outlet that holds the rights.
 
+November 2026 · ProSieben, _Galileo_
+: German-language television segment, "Google whistleblower speaks out: why he quit his million-dollar job out of fear of AI." [Watch on YouTube](https://www.youtube.com/watch?v=0DhkXesMksQ). © ProSieben.
+
 October 5th, 2026 · New York City Council, Committee of the Whole
 : The Council subpoenaed me to testify at its hearing "Oversight - Examining the Risks Posed by Artificial Intelligence." I testified remotely on the whistleblower panel alongside Daniel Kokotajlo and Jacob Coxon. The panel runs from 0:28:35 to 0:57:33 of the Council's recording, and my opening statement runs from 0:28:49 to 0:36:37. The recording is a public record of the New York City Council.
 : [Official video](https://councilnyc.viebit.com/vod/?s=true&v=NYCC-PV-CH-CHA_261005-110828.mp4) · [Legistar meeting record](https://nyc.legistar.com/MeetingDetail.aspx?LEGID=22752&GID=61&G=2FD004F1-D85B-4588-A648-0A736C77D6E3) · [Council press release](https://council.nyc.gov/press/2026/10/05/3278/) · [My written testimony](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed) · [Machine transcript by BetaNYC](https://github.com/BetaNYC/hearings-transcripts/tree/main/hearings/2026-10-05-committee-of-the-whole-ai) (CC BY 4.0)

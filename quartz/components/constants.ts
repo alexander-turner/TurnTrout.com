@@ -16,6 +16,8 @@ export const {
   faviconBasePath,
   minFaviconCount,
   maxAtomicInlineCodeLength,
+  maxWholeCodeTokenLength,
+  maxWholeCodeTokenLengthWide,
   googleSubdomainAllowlist,
   faviconCountAllowlist,
   faviconSubstringBlocklist,
@@ -180,6 +182,19 @@ export const FAVICON_CLASS = "favicon"
 // inline box opens on its own edges.
 export const NOWRAP_SPAN_CLASS = "nowrap-span"
 export const KATEX_CLASS = "katex"
+// An inline code path (`owner/repo`), which breaks only after its inner slashes.
+export const INLINE_CODE_PATH_CLASS = "inline-code-path"
+// Marks inline math or an inline code path wider than its line, at runtime
+// (`wide-inline.ts`). Such a box is displayed inline so it wraps like text.
+export const WIDE_INLINE_CLASS = "wide-inline"
+// Glyphs whose ink reaches past their own advance width, mapped to the class
+// that pulls a following mark back out to where an ordinary letter would place
+// it. Against EB Garamond's typical right side bearing (~45 units of its 2048
+// em), "f" falls 307 units short and "Q" 244.
+export const OVERHANG_KERN_CLASSES: ReadonlyMap<string, string> = new Map([
+  ["f", "overhang-kern-f"],
+  ["Q", "overhang-kern-q"],
+])
 // Arrows written as "->" keep the main face; Unicode arrows render in the
 // monospace face, which draws them better.
 export const RIGHT_ARROW_CLASS = "right-arrow"

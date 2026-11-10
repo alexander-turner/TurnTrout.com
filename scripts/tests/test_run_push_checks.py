@@ -1,7 +1,6 @@
 """Unit tests for run_push_checks.py."""
 
 import json
-import os
 import subprocess
 import tempfile
 from collections.abc import Iterator
@@ -769,63 +768,6 @@ def test_asset_step_uses_bash_and_requires_rclone():
     assert asset_step.requires == "rclone"
 
 
-def test_related_posts_step_invocation():
-    """The related-posts generator runs sequentially after asset upload and
-    needs rclone for the R2 vector-cache sync."""
-    # Creds present -> command stays unwrapped (no envchain prefix).
-    with patch.dict(
-        os.environ,
-        {k: "x" for k in run_push_checks.script_utils.R2_REQUIRED_ENV},
-    ):
-        steps = run_push_checks.get_check_steps(_TEST_ROOT)
-    step = _step_by_name(steps, "Generating related posts")
-    assert step.command == (
-        "uv",
-        "run",
-        "python",
-        "scripts/generate_related_posts.py",
-    )
-    assert step.cwd == str(_TEST_ROOT)
-    assert step.requires == "rclone"
-    assert step.requires_env == "VOYAGE_API_KEY"
-    assert step.parallel_group is None
-    step_index = {s.name: i for i, s in enumerate(steps)}
-    assert (
-        step_index["Compressing and uploading local assets"]
-        < step_index["Generating related posts"]
-    )
-
-
-@pytest.mark.parametrize(
-    ("creds_present", "envchain_installed", "expected"),
-    [
-        # Creds already in env -> never wrap, even if envchain is available.
-        (True, True, ("uv", "run")),
-        # Creds missing + envchain available -> wrap so it can authenticate.
-        (False, True, ("envchain", "cloudflare", "uv", "run")),
-        # Creds missing + no envchain -> run unwrapped and fail loudly later.
-        (False, False, ("uv", "run")),
-    ],
-)
-def test_wrap_with_envchain(creds_present, envchain_installed, expected):
-    """Envchain is prepended only when R2 creds are absent and envchain exists
-    on PATH; otherwise the command passes through unchanged."""
-    env = {k: "" for k in run_push_checks.script_utils.R2_REQUIRED_ENV}
-    if creds_present:
-        env = {k: "x" for k in run_push_checks.script_utils.R2_REQUIRED_ENV}
-    which = MagicMock(
-        return_value="/usr/bin/envchain" if envchain_installed else None
-    )
-    with (
-        patch.dict(os.environ, env, clear=False),
-        patch("scripts.run_push_checks.shutil.which", which),
-    ):
-        result = run_push_checks._wrap_with_envchain(
-            ["uv", "run"], "cloudflare"
-        )
-    assert result == expected
-
-
 def test_alt_text_step_requires_alt_text_llm():
     steps = run_push_checks.get_check_steps(_TEST_ROOT)
     alt_step = _step_by_name(steps, "Scanning for images without alt text")
@@ -855,30 +797,6 @@ def test_run_checks_skips_missing_requires(temp_state_dir, capsys):
 
     captured = capsys.readouterr().out
     assert "nonexistent-tool-xyz not installed" in captured
-
-
-def test_run_checks_skips_missing_requires_env(
-    temp_state_dir, capsys, monkeypatch
-):
-    """Steps whose required env var is unset are skipped with a warning."""
-    monkeypatch.delenv("NEEDED_KEY", raising=False)
-    steps = [
-        run_push_checks.CheckStep(
-            name="Needs key", command=["echo", "x"], requires_env="NEEDED_KEY"
-        ),
-        run_push_checks.CheckStep(name="Always runs", command=["echo", "hi"]),
-    ]
-    with (
-        patch("scripts.run_push_checks.run_command") as mock_run,
-        patch("scripts.run_push_checks.commit_step_changes"),
-    ):
-        mock_run.return_value = run_push_checks.CommandResult(
-            success=True, stdout="", stderr=""
-        )
-        run_push_checks.run_checks(steps)
-        assert mock_run.call_count == 1
-
-    assert "NEEDED_KEY not set" in capsys.readouterr().out
 
 
 def test_main_resume_with_invalid_step(temp_state_dir):

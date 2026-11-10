@@ -5,7 +5,8 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { maxAtomicInlineCodeLength } from "../../components/constants"
+import { INLINE_CODE_PATH_CLASS, maxAtomicInlineCodeLength } from "../../components/constants"
+import { breaksAfterPathSlash, insertCodeBreaks } from "./codeBreaks"
 import { addClass, INLINE_PASSTHROUGH_TAGS, ITALIC_TAGS, wrapCharsInSpan } from "./utils"
 
 // A short inline code reads as one token, so it wraps to the next line whole
@@ -106,8 +107,9 @@ function isItalicized(ancestors: readonly Parent[]): boolean {
 
 /**
  * Rehype plugin for inline `<code>` (block code inside `<pre>` is untouched):
- *   - marks a short code `inline-code-atomic` so it wraps whole instead of
- *     breaking at an internal hyphen;
+ *   - lets a path (`owner/repo`) break after its inner slashes and marks it
+ *     `inline-code-path`; marks any other short code `inline-code-atomic` so it
+ *     wraps whole instead of breaking at an internal hyphen;
  *   - wraps the last character of the word a code's monospace glyph would crowd
  *     in a `code-gap-after` span, which carries the gap in CSS. Adds no gap when
  *     the code is italicized (its leaning glyphs open the space themselves),
@@ -120,7 +122,12 @@ export const rehypeInlineCodeSpacing: Plugin = () => {
 
     visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
       if (node.tagName !== "code" || isInPre(ancestors)) return
-      if (textLength(node) <= ATOMIC_CODE_MAX_LENGTH) addClass(node, "inline-code-atomic")
+      // A path breaks after its slashes instead, so it is never atomic.
+      if (insertCodeBreaks(node, breaksAfterPathSlash) > 0) {
+        addClass(node, INLINE_CODE_PATH_CLASS)
+      } else if (textLength(node) <= ATOMIC_CODE_MAX_LENGTH) {
+        addClass(node, "inline-code-atomic")
+      }
       if (isItalicized(ancestors)) return
       const boundary = precedingBoundary(node, ancestors)
       if (!boundary || NO_GAP_PREDECESSORS.has(boundary.char)) return

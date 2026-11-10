@@ -25,6 +25,9 @@ import spoilerScript from "./scripts/spoiler.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import tweetMediaFadeScript from "./scripts/tweet-media-fade.inline"
+// @ts-expect-error Not a module but a script
+// skipcq: JS-W1028
+import wideInlineScript from "./scripts/wide-inline.inline"
 import clipboardStyle from "./styles/clipboard.scss"
 import {
   type QuartzComponent,
@@ -111,6 +114,7 @@ const PageShell: QuartzComponent = ({ children }: QuartzComponentProps) => {
 PageShell.afterDOMLoaded = [
   clipboardScript,
   elvishToggleScript,
+  wideInlineScript,
   smallCapsCopyScript,
   scrollIndicatorScript,
   punctilioDemoScript,

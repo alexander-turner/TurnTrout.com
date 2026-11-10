@@ -212,6 +212,18 @@ test.describe("Markdown protection", () => {
     await expect(page.locator(OUTPUT_CONTENT)).toContainText("\u201c") // left double quote
   })
 
+  test("Markdown syntax outside changed prose is not re-escaped", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
+
+    const input = page.locator("#punctilio-input")
+    await input.fill('- "See [note]" and snake_case\n+ [link](http://x.com)')
+
+    const output = page.locator(OUTPUT_CONTENT)
+    await expect(output).toContainText("- “See [note]” and snake_case")
+    await expect(output).toContainText("+ [link](http://x.com)")
+    await expect(output).not.toContainText("\\")
+  })
+
   test("fenced code blocks with ~~~ are preserved", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
 

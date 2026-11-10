@@ -82,8 +82,18 @@ a.tag-link {
     padding-left: 0;
     list-style: none;
 
+    // Balanced rows keep a short last tag off a row of its own.
+    text-wrap: balance;
+
     & li {
       display: inline;
+    }
+
+    // The markup holds no whitespace between items, so the generated zero-width
+    // space is the row's only break opportunity between tags; without it a row
+    // of tags is one unbreakable run that overflow-wraps mid-word.
+    & li:not(:last-child)::after {
+      content: "\200B";
     }
   }
 

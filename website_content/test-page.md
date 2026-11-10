@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-10-17
+date_updated: 2026-11-07
 createBibtex: true
 ---
 
@@ -688,13 +688,21 @@ $$\nabla \cdot \mathbf{E}  =\frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \math
 
 [Flipped integer](/flip-integers) number: ↗142.2.
 
-## Relation wrapping
+## Line wrapping
 
 Inline math never breaks a line right after a relation like $\in$ or $=$. The column below is deliberately narrow, so the whole formula moves to the second line instead of leaving "$\alpha \in$" stranded at the end of the first:
 
 <div id="relation-wrap-demo" style="width: 10rem; border: 2px var(--midground) solid; border-radius: 5px; padding: 0.5rem;">
 
 We swept $\alpha \in \{0.2, 0.4, 0.6, 0.8\}$ and kept the best.
+
+</div>
+
+Inline math moves to the next line whole when it doesn't fit on the current one. A formula wider than its line wraps between its terms instead, and its punctuation and the text after it continue on its last line:
+
+<div id="wide-math-demo" style="width: 12rem; border: 2px var(--midground) solid; border-radius: 5px; padding: 0.5rem;">
+
+So $\sum_{i=1}^n x_i \leq \sum_{i=1}^n y_i + n \epsilon \leq \sum_{i=1}^n z_i + 2 n \epsilon$, as claimed.
 
 </div>
 
@@ -758,6 +766,22 @@ Faux-bold text widens glyph ink rightward, so a favicon after a bold link ending
 | [ab→](https://npmjs.com)   | [ab×](https://npmjs.com)   | [ab™](https://npmjs.com)   | [ab©](https://npmjs.com)   | [ab®](https://npmjs.com)   | [ab⁇](https://npmjs.com)   |
 
 <!--spellchecker-enable-->
+
+# Bold underlines
+
+Faux bold widens glyph ink with a `text-shadow`, and a text shadow repaints an element's underline along with its glyphs. The displacement is horizontal only, so the shadow copy of a horizontal rule lands back on the rule and every underline below reads at one weight end to end — including the stretch under a descender like the "g" in "Google," which splits the line into separate painted segments.
+
+[A plain link about Google's Pentagon bid](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html) sets the reference weight. Bold body text holds that same weight across the descender: **[Google sits pretty as rivals compete](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)**.
+
+Google's pledge
+: A description term's **[link to Google](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)** takes the same faux bold.
+
+> [!success] [Google sits pretty as rivals compete for Pentagon favor](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)
+>
+> An admonition title is faux-bold, and so is the nested title below. Neither underline may thin out under "Google."
+>
+> > [!quote] [Google sits pretty as rivals compete for Pentagon favor](https://www.nytimes.com/2026/03/18/technology/google-ai-pentagon.html)
+> > A quote admonition takes the default gray accent, so its title runs lighter than the green one above it — but at the same underline weight.
 
 # Typography
 
@@ -911,6 +935,13 @@ Each emoji stays glued to its preceding character and never wraps alone to the s
 </div>
 <figcaption>The palettes for light and dark mode. In dark mode, I decrease the saturation of media assets.</figcaption>
 </figure>
+
+## Find-in-page matches
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
+  <div class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was ignoring a goose.</div>
+  <div class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">A <span class="search-text-demo">trout</span> swam past a second <span class="search-text-demo-current">trout</span>, who was ignoring a goose.</div>
+</div>
 
 # Footnote demonstration
 
