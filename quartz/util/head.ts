@@ -6,7 +6,7 @@ import { type QuartzPluginData } from "../plugins/vfile"
 import { backgroundDark, backgroundLight } from "../styles/variables"
 import { type GlobalConfiguration } from "./config"
 import { escapeHTML } from "./escape"
-import { type FullSlug, resolveRelative } from "./path"
+import { type FullSlug, simplifySlug } from "./path"
 
 const {
   defaultCardUrl,
@@ -73,7 +73,7 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
     (fileData.permalink as string) || (fileData.frontmatter?.permalink as string) || undefined
   // og:url must be absolute; frontmatter permalinks are bare slugs like "design".
   const redirUrl = redirect
-    ? resolveRelative(redirect.slug, redirect.to)
+    ? new URL(simplifySlug(redirect.to), url).href
     : permalink
       ? new URL(permalink, url).href
       : pageUrl

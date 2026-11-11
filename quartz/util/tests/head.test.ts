@@ -206,7 +206,9 @@ describe("renderHead", () => {
         },
       })
 
-      expect(result).toContain('<meta property="og:url" content="./canonical-page" />')
+      expect(result).toContain(
+        '<meta property="og:url" content="https://turntrout.com/canonical-page" />',
+      )
     })
 
     it("should use permalink when available", () => {
