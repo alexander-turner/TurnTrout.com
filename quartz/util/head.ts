@@ -59,6 +59,18 @@ function renderImageTags(cardImage: string, altText: string): string {
   `
 }
 
+/** Path the page's og:url points at: the canonical page for redirects, else its permalink. */
+function ogUrlPath(
+  fileData: QuartzPluginData,
+  slug: FullSlug,
+  redirect: HeadProps["redirect"],
+): string {
+  if (redirect) {
+    return simplifySlug(redirect.to)
+  }
+  return (fileData.permalink as string) || (fileData.frontmatter?.permalink as string) || slug
+}
+
 /** Returns the inner HTML for the document `<head>`: title, OG/Twitter cards, icons, theme colors. */
 export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string {
   const title = formatTitle(fileData.frontmatter?.title ?? defaultTitle)
@@ -69,14 +81,8 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
 
   const url = new URL(`https://${cfg.baseUrl ?? "turntrout.com"}`)
   const pageUrl = new URL(slug, url).href
-  const permalink =
-    (fileData.permalink as string) || (fileData.frontmatter?.permalink as string) || undefined
   // og:url must be absolute; frontmatter permalinks are bare slugs like "design".
-  const redirUrl = redirect
-    ? new URL(simplifySlug(redirect.to), url).href
-    : permalink
-      ? new URL(permalink, url).href
-      : pageUrl
+  const ogUrl = new URL(ogUrlPath(fileData, slug, redirect), url).href
 
   const cardImageString = fileData.frontmatter?.card_image as string
   const cardImageUrl = cardImageString ?? defaultCardUrl
@@ -99,7 +105,7 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
     <meta name="theme-color" content="${backgroundDark}" media="(prefers-color-scheme: dark)" />
     <meta property="og:title" content="${escapeHTML(title)}" />
     <meta property="og:type" content="article" />
-    <meta property="og:url" content="${escapeHTML(redirUrl)}" />
+    <meta property="og:url" content="${escapeHTML(ogUrl)}" />
     <meta property="og:site_name" content="${escapeHTML(defaultTitle)}" />
     <meta property="og:description" content="${escapeHTML(description)}">
     ${videoTags}
