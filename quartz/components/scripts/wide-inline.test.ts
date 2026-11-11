@@ -26,22 +26,6 @@ function buildMath(middles: readonly number[], parent: HTMLElement = document.bo
   return html
 }
 
-/** An inline code path whose text lays out in fragments at the given midpoints. */
-function buildPath(middles: readonly number[], parent: HTMLElement = document.body): HTMLElement {
-  const code = document.createElement("code")
-  code.className = "inline-code-path"
-  code.style.fontSize = "20px"
-  code.textContent = "owner/repo"
-  parent.appendChild(code)
-  // jsdom lays nothing out, so the range reports the fragments directly.
-  const range = {
-    selectNodeContents: jest.fn(),
-    getClientRects: () => middles.map(rectAt),
-  } as unknown as Range
-  jest.spyOn(document, "createRange").mockReturnValue(range)
-  return code
-}
-
 afterEach(() => {
   document.body.innerHTML = ""
   jest.restoreAllMocks()
@@ -59,20 +43,11 @@ describe("markWideInlines", () => {
     expect(html.classList.contains(WIDE_INLINE_CLASS)).toBe(wide)
   })
 
-  it.each([
-    ["text on one row", [10], false],
-    ["text on two rows", [10, 40], true],
-  ])("with %s, marks a code path wide: %s", (_label, middles, wide) => {
-    const code = buildPath(middles)
-    markWideInlines(document.body)
-    expect(code.classList.contains(WIDE_INLINE_CLASS)).toBe(wide)
-  })
-
   /**
-   * A one-row code path glued to a period, in a paragraph whose content ends
-   * 10px inside its 100px border box, with the glued span laid out in `rows`.
+   * One-row math glued to a period, in a paragraph whose content ends 10px
+   * inside its 100px border box, with the glued span laid out in `rows`.
    */
-  function buildGluedPath(rows: readonly Partial<DOMRect>[]): HTMLElement {
+  function buildGluedMath(rows: readonly Partial<DOMRect>[]): HTMLElement {
     const paragraph = document.createElement("p")
     paragraph.style.paddingRight = "6px"
     paragraph.style.borderRight = "4px solid"
@@ -86,7 +61,7 @@ describe("markWideInlines", () => {
     glued.append(link, ".")
     paragraph.appendChild(glued)
     document.body.appendChild(paragraph)
-    return buildPath([10], link)
+    return buildMath([10], link)
   }
 
   it.each([
@@ -108,10 +83,10 @@ describe("markWideInlines", () => {
       ],
       false,
     ],
-  ])("with its glued period %s, marks a code path wide: %s", (_label, rows, wide) => {
-    const code = buildGluedPath(rows)
+  ])("with its glued period %s, marks math wide: %s", (_label, rows, wide) => {
+    const html = buildGluedMath(rows)
     markWideInlines(document.body)
-    expect(code.classList.contains(WIDE_INLINE_CLASS)).toBe(wide)
+    expect(html.classList.contains(WIDE_INLINE_CLASS)).toBe(wide)
   })
 
   it("unmarks a box that fits once remeasured", () => {

@@ -99,27 +99,22 @@ test.describe("code token wrapping", () => {
 
   const path = '<code class="inline-code-path">r/<wbr>Fantasy_World_Building</code>'
 
-  test("a path in running text moves to the next line whole", async ({ page }) => {
-    const rows = await rowsOf(page, {
-      html: `<p>including ${path}.</p>`,
-      sized: "p",
-      measured: "code",
-      fraction: 1.05,
-    })
-    expect(rows).toEqual(["r/Fantasy_World_Building"])
-  })
-
   // Narrower than the path but wider than the part after its slash.
-  test("a path in a heading breaks after its slash in place", async ({ page }) => {
-    const rows = await rowsOf(page, {
-      html: `<h2>In ${path}</h2>`,
-      sized: "h2",
-      measured: "code",
-      fraction: 0.96,
-      rowsOf: "h2",
+  for (const [label, html, rowElement, expected] of [
+    ["running text", `<p>including ${path}.</p>`, "p", ["including r/", "Fantasy_World_Building."]],
+    ["a heading", `<h2>In ${path}</h2>`, "h2", ["In r/", "Fantasy_World_Building"]],
+  ] as const) {
+    test(`a path in ${label} breaks after its slash in place`, async ({ page }) => {
+      const rows = await rowsOf(page, {
+        html,
+        sized: rowElement,
+        measured: "code",
+        fraction: 0.96,
+        rowsOf: rowElement,
+      })
+      expect(rows).toEqual(expected)
     })
-    expect(rows).toEqual(["In r/", "Fantasy_World_Building"])
-  })
+  }
 
   test("a long code token stays inline on narrow screens", async ({ page }) => {
     const display = await page.evaluate(() => {
