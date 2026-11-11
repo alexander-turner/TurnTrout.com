@@ -460,9 +460,9 @@ I have long appreciated [illuminated calligraphy.](https://www.atlasobscura.com/
 
 However, implementation was tricky. As shown with the figure's "A", CSS assigns a single color to each text element. To get around this obstacle, I took advantage of the fact that EB Garamond dropcaps can be split into the letter and the embellishment.
 
-<div class="centered" style="font-size:4rem;line-height:1.4 !important;">
-<span class="dropcap ignore-pa11y" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);" aria-hidden="true">A</span>
-<span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
+<div class="centered">
+<span class="dropcap ignore-pa11y" style="font-size: 4rem; font-family: var(--font-dropcap-background); color: var(--midground-faint);" aria-hidden="true">A</span>
+<span class="dropcap" data-first-letter="" style="font-size: 4rem; color: var(--foreground);">A</span>
 </div>
   
 However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display) other text; only one letter can be in a given spot - right? Wrong! I render the letter and the embellishment separately, using [the CSS `::before` pseudo-element](https://developer.mozilla.org/en-US/docs/Web/CSS/::before) for the embellishment. The result:
@@ -767,12 +767,13 @@ Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thin
 I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also enforce strict [@title](#lighthouse) scores across all four audit categories. Here are some highlights from my accessibility pipeline.
 
 Asset accessibility
+
 : I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
 
-> [!quote]- [@title](/open-source#automatic-alt-text-generation)
-> ![[/open-source#automatic-alt-text-generation]]
+  > [!quote]- [@title](/open-source#automatic-alt-text-generation)
+  > ![[/open-source#automatic-alt-text-generation]]
 
-I also subtitled the 22-minute [@title](/alignment-tier-list).
+: I also subtitled the 22-minute [@title](/alignment-tier-list).
 
 Color contrast
 : I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context.
@@ -816,13 +817,14 @@ Popovers
 : Desktop users conjure popovers by hovering over an internal link.
 
 Search
+
 : Pressing `/` toggles the search modal. Navigating to a result temporarily highlights the query and scrolls to the first match.
 
-![Searching for 'Shrek' on mobile. Each result card shows a content preview with highlighted matches. The preview fades in at the top and out at the bottom.](https://assets.turntrout.com/static/images/posts/design-02152026-1.avif)
-Figure: Mobile previews.
+  ![Searching for 'Shrek' on mobile. Each result card shows a content preview with highlighted matches. The preview fades in at the top and out at the bottom.](https://assets.turntrout.com/static/images/posts/design-02152026-1.avif)
+  Figure: Mobile previews.
 
-![Searching for 'Shrek' on desktop. surfacing the GPT-3 Gems article. A preview pane to the right shows the surrounding page.](https://assets.turntrout.com/static/images/posts/design-02152026.avif)
-Figure: Desktop previews.
+  ![Searching for 'Shrek' on desktop. surfacing the GPT-3 Gems article. A preview pane to the right shows the surrounding page.](https://assets.turntrout.com/static/images/posts/design-02152026.avif)
+  Figure: Desktop previews.
 
 Metadata
 : Every page has an HTML description and [tags](/all-tags) (if appropriate), along with a table of contents which (on desktop) highlights the current section. On desktop, the table of contents scrolls down as you read the article. I track original publication date and display when each was page was last modified by a `git push` to the `main` branch. I also support "sequences" of blog posts:
@@ -833,49 +835,53 @@ Code blocks soft-wrap long lines
 : Long lines in fenced code blocks used to scroll off the right edge. That suits real source code but punishes transcript dumps - LLM completions and chat logs vanish after a few words. Now every code block wraps long lines, with hanging indents that align the wrapped text under the line-number gutter so it stays readable.
 
 Spoilers hide text until clicked
+
 : I made a Markdown plugin which lets me specify spoilers by starting the line with `>!`. The results are unobtrusive but pleasant:
 
-> ! Have you heard? Snape kills Dumbledore.
+  > ! Have you heard? Snape kills Dumbledore.
 
 Server-side math rendering via $\KaTeX$
 : I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
 
 Scroll indicators for overflowing content
+
 : When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally. The right sidebar uses the same gradient hinting vertically.
 
-For example:
+: For example:
 
-$$
-e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \frac{x^6}{6!} + \frac{x^7}{7!} + \frac{x^8}{8!} + \frac{x^9}{9!} + \frac{x^{10}}{10!} + \frac{x^{11}}{11!} + \frac{x^{12}}{12!} + \frac{x^{13}}{13!} + \frac{x^{14}}{14!} + \frac{x^{15}}{15!} + \cdots
-$$
+  $$
+  e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \frac{x^6}{6!} + \frac{x^7}{7!} + \frac{x^8}{8!} + \frac{x^9}{9!} + \frac{x^{10}}{10!} + \frac{x^{11}}{11!} + \frac{x^{12}}{12!} + \frac{x^{13}}{13!} + \frac{x^{14}}{14!} + \frac{x^{15}}{15!} + \cdots
+  $$
 
 Markdown element styling
+
 : Most of my tables are specified in Markdown. However, some tables need special styling. I don't want to write the full HTML for each table. 💀 Instead, I use [`remark-attributes`](https://github.com/manuelmeister/remark-attributes) to specify CSS classes in Markdown for such tables:
 
-| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
-| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
+  | **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+  | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
 
-Table: A table with unbalanced columns.
+  Table: A table with unbalanced columns.
 
-| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
-| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
+  | **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+  | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
 
-{.full-width .center-table-headings}
+  {.full-width .center-table-headings}
 
-Table: A rebalanced table which pleases the eyes.
+  Table: A rebalanced table which pleases the eyes.
 
 Print mode
+
 : Print mode whittles away distractions like navbars and footnote "return" icons; displays URL sources next to `<video>` and `<audio>` elements and next to links (as paper does not permit clicking); renders in light mode with a white background (to reduce ink usage); and props open all collapsible admonitions.
 
-<figure>
-<img-comparison-slider>
-  <img slot="first" src="https://assets.turntrout.com/static/images/posts/design-03252026-1.avif" alt="A cluttered print preview for the article 'Humans Provide an Untapped Wealth of Evidence About Alignment.'"/>
-  <img slot="second" src="https://assets.turntrout.com/static/images/posts/design-03252026-2.avif" alt="A print preview for the same article, without clutter."/>
-</img-comparison-slider>
-<figcaption>Drag to compare: before vs. after print mode.</figcaption>
-</figure>
+  <figure>
+  <img-comparison-slider>
+    <img slot="first" src="https://assets.turntrout.com/static/images/posts/design-03252026-1.avif" alt="A cluttered print preview for the article 'Humans Provide an Untapped Wealth of Evidence About Alignment.'"/>
+    <img slot="second" src="https://assets.turntrout.com/static/images/posts/design-03252026-2.avif" alt="A print preview for the same article, without clutter."/>
+  </img-comparison-slider>
+  <figcaption>Drag to compare: before vs. after print mode.</figcaption>
+  </figure>
 
 Before/after image sliders
 : Drag-to-compare, powered by [`img-comparison-slider`](https://www.npmjs.com/package/img-comparison-slider).
@@ -1169,32 +1175,35 @@ Reordering elements in `<head>` to ensure social media previews
 : The solution: Include tags like `<meta>` and `<title>` as early as possible in the `<head>`. As a post-build check, I ensure that these tags are confined to the first 9KB of each file.
 
 Updating page metadata
+
 : Article publication dates are updated automatically via GitHub Actions after pushing to `main`. The workflow amends the pushed commit with updated `date_published` for new posts and `date_updated` for modified posts, then force-pushes. This avoids cluttering the history with extra "update dates" commits, and all other CI workflows restart on the amended commit.
 
-The workflow also refreshes the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
+: The workflow also refreshes the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
 
 Python dependency management
 : I use [`uv`](https://github.com/astral-sh/uv) to manage Python dependencies. Packages are declared in [`pyproject.toml`](https://github.com/alexander-turner/TurnTrout.com/blob/main/pyproject.toml) and pinned in [`uv.lock`](https://github.com/alexander-turner/TurnTrout.com/blob/main/uv.lock) for reproducible builds.
 
 Cryptographic timestamping
+
 : I use [Open Timestamps](https://opentimestamps.org/) to stamp each `git` commit hash onto the blockchain. By committing the hash to the blockchain, I provide cryptographic assurance that I have in fact published the claimed commits by the claimed date. This reduces the possibility of undetectably "hiding my tracks" by silently editing away incorrect or embarrassing claims after the fact, or by editing my commit history. In particular, I cannot make the positive claim that I wrote content by a given date, unless I had in fact committed that content at least once by that date.
 
-To verify that a commit `ABC012` was indeed committed by a given date, run:
+: To verify that a commit `ABC012` was indeed committed by a given date, run:
 
-```shell
-git clone https://github.com/alexander-turner/.timestamps
-cd .timestamps
-ots --no-bitcoin verify "files/ABC012.txt.ots"
-```
+  ```shell
+  git clone https://github.com/alexander-turner/.timestamps
+  cd .timestamps
+  ots --no-bitcoin verify "files/ABC012.txt.ots"
+  ```
 
 # GitHub Actions
 
 When I `push` commits to [the `main` branch on GitHub](https://github.com/alexander-turner/TurnTrout.com), an Action generates the webpages. Before these pages are sent off to Cloudflare, they must pass yet another gauntlet of tests:
 
 Site functionality
+
 : I have [hundreds of Playwright tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) — <span class="populate-playwright-configs"></span> combinations in total. Therefore, I need to run <span class="populate-playwright-configs"></span> × <span class="populate-playwright-test-count"></span> = <span class="populate-playwright-total-tests"></span> tests, each of which takes up to 90 seconds.
 
-I run these tests using 8 Linux shards (plus 5 macOS shards) for functional tests and 3 Linux shards (plus 2 macOS) for visual regression tests. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
+: I run these tests using 8 Linux shards (plus 5 macOS shards) for functional tests and 3 Linux shards (plus 2 macOS) for visual regression tests. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
 
 Lighthouse audits
 : I enforce strict [@title](#lighthouse) thresholds across all four audit categories, plus dedicated layout-shift checks on desktop and mobile.
