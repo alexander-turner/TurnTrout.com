@@ -107,6 +107,13 @@ export const breaksInInlineCode: BreakRule = (text, index) => {
   return Math.min(index - start, end - index) >= minInlineCodeFragment
 }
 
+const heldSpan = (value: string): Element => ({
+  type: "element",
+  tagName: "span",
+  properties: { className: ["code-segment"] },
+  children: [{ type: "text", value }],
+})
+
 // A hyphen offers a line break, so a code would break inside a segment like
 // `alexander-turner` rather than at its seam. A segment short enough to fit a
 // line is held whole; a longer one keeps its hyphen breaks so it can't overflow.
@@ -119,13 +126,6 @@ function holdHyphenatedSegments(code: Element): void {
       : child,
   )
 }
-
-const heldSpan = (value: string): Element => ({
-  type: "element",
-  tagName: "span",
-  properties: { className: ["code-segment"] },
-  children: [{ type: "text", value }],
-})
 
 /**
  * Ranges of ``value`` to hold whole so no hyphen break leaves a fragment shorter

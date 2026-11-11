@@ -31,31 +31,30 @@ describe("InlineCodeSpacing", () => {
   describe("gives the preceding word a gap", () => {
     it("wraps the trailing word's last glyph in a gap span, leaving the code in place", async () => {
       const out = await processHtmlWithPlugin("<p>of <code>grep</code></p>")
-      expect(out).toBe(`<p>o<span class="code-gap-after">f</span> <code>grep</code></p>`)
+      expect(out).toBe('<p>o<span class="code-gap-after">f</span> <code>grep</code></p>')
     })
 
     it("leaves earlier text in place, gapping only the trailing word", async () => {
       const out = await processHtmlWithPlugin("<p>help of <code>grep</code></p>")
-      expect(out).toBe(`<p>help o<span class="code-gap-after">f</span> <code>grep</code></p>`)
+      expect(out).toBe('<p>help o<span class="code-gap-after">f</span> <code>grep</code></p>')
     })
 
     it("gaps the word before a wrapping link, not the link or its code", async () => {
       const out = await processHtmlWithPlugin('<p>help of <a href="#"><code>grep</code></a></p>')
       expect(out).toBe(
-        `<p>help o<span class="code-gap-after">f</span> ` + `<a href="#"><code>grep</code></a></p>`,
+        '<p>help o<span class="code-gap-after">f</span> <a href="#"><code>grep</code></a></p>',
       )
     })
 
     it("keeps the gap when the code abuts non-hugging punctuation", async () => {
       const out = await processHtmlWithPlugin("<p>war—<code>grep</code></p>")
-      expect(out).toBe(`<p>war<span class="code-gap-after">—</span><code>grep</code></p>`)
+      expect(out).toBe('<p>war<span class="code-gap-after">—</span><code>grep</code></p>')
     })
 
     it("handles several codes sharing a parent", async () => {
       const out = await processHtmlWithPlugin("<p>a <code>one</code> b <code>two</code></p>")
       expect(out).toBe(
-        `<p><span class="code-gap-after">a</span> <code>one</code> ` +
-          `<span class="code-gap-after">b</span> <code>two</code></p>`,
+        '<p><span class="code-gap-after">a</span> <code>one</code> <span class="code-gap-after">b</span> <code>two</code></p>',
       )
     })
   })
@@ -149,8 +148,7 @@ describe("InlineCodeSpacing", () => {
     it("leaves closing punctuation as plain text before the next code", async () => {
       const out = await processHtmlWithPlugin("<p>see <code>one</code>); <code>two</code> ok</p>")
       expect(out).toBe(
-        `<p>se<span class="code-gap-after">e</span> <code>one</code>); ` +
-          "<code>two</code> ok</p>",
+        '<p>se<span class="code-gap-after">e</span> <code>one</code>); <code>two</code> ok</p>',
       )
     })
 
@@ -167,7 +165,7 @@ describe("InlineCodeSpacing", () => {
 
     it("still gaps a real word that follows the closing punctuation", async () => {
       const out = await processHtmlWithPlugin("<p>a <code>one</code>); then <code>two</code></p>")
-      expect(out).toContain(`the<span class="code-gap-after">n</span> <code>two</code>`)
+      expect(out).toContain('the<span class="code-gap-after">n</span> <code>two</code>')
     })
   })
 
