@@ -37,7 +37,7 @@ use-full-width-images: "false"
 date_published: 2020-02-10
 original_url: https://www.lesswrong.com/posts/fj8eyc7QzqCaB8Wgm/attainable-utility-landscape-how-the-world-is-changed
 skip_import: true
-card_image: https://assets.turntrout.com/static/images/card_images/k5K8m32.jpg
+card_image: https://assets.turntrout.com/static/images/card_images/k5K8m32-1200x630.jpg
 description: Examining how our actions reshape the landscape of achievable goals, highlighting opportunity costs and the structure of agency in shaping the future.
 date_updated: 2026-04-20
 card_image_alt: An illustration of environmental resources with corresponding meters. "How plentiful are trade goods?" next to a mountain with gems shows a full green meter. "How accessible is potable water?" shows a low red meter. "How fertile is the soil?" shows a full green meter.

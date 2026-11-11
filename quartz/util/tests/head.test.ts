@@ -225,6 +225,18 @@ describe("renderHead", () => {
         '<meta property="og:url" content="https://example.com/custom-permalink" />',
       )
     })
+
+    it.each(["design", "/design"])("should make slug permalink %s absolute", (permalink) => {
+      const data = createMockData({ permalink })
+
+      const result = renderHead({
+        cfg: mockConfig,
+        fileData: data,
+        slug: "design" as FullSlug,
+      })
+
+      expect(result).toContain('<meta property="og:url" content="https://turntrout.com/design" />')
+    })
   })
 
   describe("image handling", () => {

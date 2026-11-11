@@ -7,7 +7,7 @@ permalink: posts
 aliases:
   - Posts
 hideSubscriptionLinks: false
-card_image: https://assets.turntrout.com/static/images/card_images/test_library.jpg
+card_image: https://assets.turntrout.com/static/images/card_images/test_library-1200x630.jpg
 description: A selection of the best posts which I've written.
 date_published: 2024-10-27
 date_updated: 2026-08-03

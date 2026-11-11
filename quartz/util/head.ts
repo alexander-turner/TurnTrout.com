@@ -69,9 +69,14 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
 
   const url = new URL(`https://${cfg.baseUrl ?? "turntrout.com"}`)
   const pageUrl = new URL(slug, url).href
+  const permalink =
+    (fileData.permalink as string) || (fileData.frontmatter?.permalink as string) || undefined
+  // og:url must be absolute; frontmatter permalinks are bare slugs like "design".
   const redirUrl = redirect
     ? resolveRelative(redirect.slug, redirect.to)
-    : (fileData.permalink as string) || (fileData.frontmatter?.permalink as string) || pageUrl
+    : permalink
+      ? new URL(permalink, url).href
+      : pageUrl
 
   const cardImageString = fileData.frontmatter?.card_image as string
   const cardImageUrl = cardImageString ?? defaultCardUrl
