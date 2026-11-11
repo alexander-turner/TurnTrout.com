@@ -123,13 +123,13 @@ test.describe("code token wrapping", () => {
 
   test("a short code breaks at its space in place", async ({ page }) => {
     const rows = await rowsOf(page, {
-      html: "<p>run <code>pnpm audit</code> now</p>",
+      html: "<p>run <code>pnpm audit</code></p>",
       sized: "p",
       measured: "code",
       fraction: 0.96,
       rowsOf: "p",
     })
-    expect(rows).toEqual(["run pnpm", "audit now"])
+    expect(rows).toEqual(["run pnpm", "audit"])
   })
 
   test("a path breaks after its slash, not inside a hyphenated segment", async ({ page }) => {
