@@ -24,7 +24,7 @@ const emoji = () => h("img", { className: ["emoji"], alt: "😀" })
 const favicon = () => h("svg", { className: ["favicon"], "data-domain": "example_com" })
 const sprite = () => h("img", { className: ["inline-img"], alt: "chevron sprite" })
 const katex = () => h("span", { className: ["katex"] }, ["x"])
-const codePath = () => h("code", { className: ["inline-code-path"] }, ["owner/repo"])
+const codePath = () => h("code", { className: ["inline-code-breakable"] }, ["owner/repo"])
 const text = (value: string): Text => ({ type: "text", value })
 const glueSpan = (...children: (Text | Element)[]): Element => ({
   type: "element",

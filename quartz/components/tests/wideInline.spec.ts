@@ -112,7 +112,7 @@ test.describe("wide inline math", () => {
   // Each glued code path in turn gets a column one pixel wider than the path:
   // the path fits a line, but not with the punctuation and favicon glued to it.
   test("keeps each glued code path's glue beside it and inside its column", async ({ page }) => {
-    const paths = page.locator("article .nowrap-span .inline-code-path:has(wbr)")
+    const paths = page.locator("article .nowrap-span .inline-code-breakable:has(wbr)")
     const count = await paths.count()
     expect(count).toBeGreaterThan(0)
 

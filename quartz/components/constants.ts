@@ -15,7 +15,8 @@ export const {
   appleTouchIconUrl,
   faviconBasePath,
   minFaviconCount,
-  maxAtomicInlineCodeLength,
+  maxHeldInlineCodeSegmentLength,
+  minInlineCodeFragment,
   maxWholeCodeTokenLength,
   maxWholeCodeTokenLengthWide,
   googleSubdomainAllowlist,
@@ -182,8 +183,8 @@ export const FAVICON_CLASS = "favicon"
 // inline box opens on its own edges.
 export const NOWRAP_SPAN_CLASS = "nowrap-span"
 export const KATEX_CLASS = "katex"
-// An inline code path (`owner/repo`), which breaks only after its inner slashes.
-export const INLINE_CODE_PATH_CLASS = "inline-code-path"
+// An inline code with `<wbr>` break points at its seams (`owner/<wbr>repo`).
+export const INLINE_CODE_BREAKABLE_CLASS = "inline-code-breakable"
 // Marks inline math wider than its line, at runtime (`wide-inline.ts`). Such a
 // box is displayed inline so it wraps like text.
 export const WIDE_INLINE_CLASS = "wide-inline"

@@ -97,14 +97,19 @@ test.describe("code token wrapping", () => {
     })
   }
 
-  const path = '<code class="inline-code-path">r/<wbr>Fantasy_World_Building</code>'
+  const path = '<code class="inline-code-breakable">config/<wbr>spellcheck_wordlist.txt</code>'
 
-  // Narrower than the path but wider than the part after its slash.
+  // Narrower than the code but wider than the part after its break.
   for (const [label, html, rowElement, expected] of [
-    ["running text", `<p>including ${path}.</p>`, "p", ["including r/", "Fantasy_World_Building."]],
-    ["a heading", `<h2>In ${path}</h2>`, "h2", ["In r/", "Fantasy_World_Building"]],
+    [
+      "running text",
+      `<p>including ${path}.</p>`,
+      "p",
+      ["including config/", "spellcheck_wordlist.txt."],
+    ],
+    ["a heading", `<h2>In ${path}</h2>`, "h2", ["In config/", "spellcheck_wordlist.txt"]],
   ] as const) {
-    test(`a path in ${label} breaks after its slash in place`, async ({ page }) => {
+    test(`a code in ${label} breaks at its seam in place`, async ({ page }) => {
       const rows = await rowsOf(page, {
         html,
         sized: rowElement,
@@ -116,10 +121,21 @@ test.describe("code token wrapping", () => {
     })
   }
 
+  test("a short code breaks at its space in place", async ({ page }) => {
+    const rows = await rowsOf(page, {
+      html: "<p>run <code>pnpm audit</code> now</p>",
+      sized: "p",
+      measured: "code",
+      fraction: 0.96,
+      rowsOf: "p",
+    })
+    expect(rows).toEqual(["run pnpm", "audit now"])
+  })
+
   test("a path breaks after its slash, not inside a hyphenated segment", async ({ page }) => {
     const hyphenated =
-      '<code class="inline-code-path">owner/<wbr>' +
-      '<span class="code-path-segment">rank-amateur-cowsay</span></code>'
+      '<code class="inline-code-breakable">owner/<wbr>' +
+      '<span class="code-segment">rank-amateur-cowsay</span></code>'
     const rows = await rowsOf(page, {
       html: `<p>see ${hyphenated}.</p>`,
       sized: "p",

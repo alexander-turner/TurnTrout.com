@@ -6,7 +6,7 @@ import { SKIP, visit } from "unist-util-visit"
 import {
   EMOJI_CLASS,
   FAVICON_CLASS,
-  INLINE_CODE_PATH_CLASS,
+  INLINE_CODE_BREAKABLE_CLASS,
   INLINE_IMG_CLASS,
   KATEX_CLASS,
   locale,
@@ -49,15 +49,15 @@ export function isNowrapSpan(node: ElementContent | undefined): boolean {
 }
 
 /**
- * True for inline math or an inline code path. Each renders as an inline-block
- * with the same box-edge breaks as an image, but its width is unbounded, so it
- * adopts adjacent punctuation without ever adopting a preceding word.
+ * True for inline math or an inline code with break points. Either can be
+ * wider than its line, so it adopts adjacent punctuation without ever adopting
+ * a preceding word.
  */
 function isWideAtom(node: Text | Element | undefined): boolean {
   if (node?.type !== "element") return false
   return (
     hasClass(node, KATEX_CLASS) ||
-    (node.tagName === "code" && hasClass(node, INLINE_CODE_PATH_CLASS))
+    (node.tagName === "code" && hasClass(node, INLINE_CODE_BREAKABLE_CLASS))
   )
 }
 
@@ -152,8 +152,8 @@ function glueTail(
 /**
  * Glues every inline atom in `nodes` to the neighbors that may not sit alone at
  * a line edge: the immediately-preceding grapheme (whitespace becomes an NBSP)
- * and any run of closing punctuation that follows. Math and code paths take
- * only the run of opening punctuation directly before them. Each glued run
+ * and any run of closing punctuation that follows. Math and breakable code
+ * take only the run of opening punctuation directly before them. Each glued run
  * shares one nowrap span.
  *
  * An atom preceded only by whitespace — the start of its run, or straight after
@@ -202,8 +202,8 @@ export function glueNodeSequence(nodes: (Text | Element)[]): (Text | Element)[] 
     }
 
     // The favicon pass wraps a link's last characters with its icon, so a
-    // link ending in a code path holds the path and then a span opening with
-    // the path's punctuation. The span's contents join the path's glue.
+    // link ending in a breakable code holds the code and then a span opening
+    // with the code's punctuation. The span's contents join the code's glue.
     if (opensWithTrailingGlue(node)) {
       const span = asNowrapSpan(prev, glued)
       if (span) {
