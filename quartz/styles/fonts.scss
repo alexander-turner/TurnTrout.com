@@ -441,8 +441,11 @@ code {
 }
 
 // A short code is one token: it wraps to the next line whole instead of breaking
-// at an internal hyphen. Longer codes stay breakable (see InlineCodeSpacing).
-.inline-code-atomic {
+// at an internal hyphen. Longer codes stay breakable (see InlineCodeSpacing). A
+// path breaks only after its slashes, so its short hyphenated segments stay whole
+// too.
+.inline-code-atomic,
+.code-path-segment {
   white-space: nowrap;
 }
 

@@ -100,6 +100,17 @@ describe("InlineCodeSpacing", () => {
       )
     })
 
+    const segment = (text: string) => `<span class="code-path-segment">${text}</span>`
+    const longSegment = "micromark-extension-gfm-autolink-literal"
+    it.each([
+      ["alexander-turner/TurnTrout.com", `${segment("alexander-turner/")}<wbr>TurnTrout.com`],
+      ["tests/visual-baselines/", `tests/<wbr>${segment("visual-baselines/")}`],
+      [`micromark/${longSegment}`, `micromark/<wbr>${longSegment}`],
+    ])("holds each short hyphenated segment of %s whole", async (path, expected) => {
+      const out = await processHtmlWithPlugin(`<p>see <code>${path}</code></p>`)
+      expect(out).toContain(`<code class="inline-code-path">${expected}</code>`)
+    })
+
     it.each(["/shard-theory", "a / b", "and/", "&#x3C;/analysis>"])(
       "keeps %s atomic",
       async (code) => {

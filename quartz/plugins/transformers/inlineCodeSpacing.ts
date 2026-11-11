@@ -91,6 +91,24 @@ export function precedingBoundary(node: Element, ancestors: readonly Parent[]): 
   return null
 }
 
+// A hyphen offers a line break, so a path would break inside a segment like
+// `alexander-turner` rather than after its slash. A segment short enough to fit a
+// line is held whole; a longer one keeps its hyphen breaks so it can't overflow.
+function holdHyphenatedSegments(code: Element): void {
+  code.children = code.children.map((child) =>
+    child.type === "text" &&
+    child.value.includes("-") &&
+    child.value.length <= ATOMIC_CODE_MAX_LENGTH
+      ? {
+          type: "element",
+          tagName: "span",
+          properties: { className: ["code-path-segment"] },
+          children: [child],
+        }
+      : child,
+  )
+}
+
 function isInPre(ancestors: readonly Parent[]): boolean {
   return ancestors.some(
     (ancestor) => ancestor.type === "element" && (ancestor as Element).tagName === "pre",
@@ -107,8 +125,8 @@ function isItalicized(ancestors: readonly Parent[]): boolean {
 
 /**
  * Rehype plugin for inline `<code>` (block code inside `<pre>` is untouched):
- *   - lets a path (`owner/repo`) break after its inner slashes and marks it
- *     `inline-code-path`; marks any other short code `inline-code-atomic` so it
+ *   - lets a path (`owner/repo`) break after its inner slashes, holds each
+ *     short hyphenated segment whole, and marks it `inline-code-path`; marks any other short code `inline-code-atomic` so it
  *     wraps whole instead of breaking at an internal hyphen;
  *   - wraps the last character of the word a code's monospace glyph would crowd
  *     in a `code-gap-after` span, which carries the gap in CSS. Adds no gap when
@@ -125,6 +143,7 @@ export const rehypeInlineCodeSpacing: Plugin = () => {
       // A path breaks after its slashes instead, so it is never atomic.
       if (insertCodeBreaks(node, breaksAfterPathSlash) > 0) {
         addClass(node, INLINE_CODE_PATH_CLASS)
+        holdHyphenatedSegments(node)
       } else if (textLength(node) <= ATOMIC_CODE_MAX_LENGTH) {
         addClass(node, "inline-code-atomic")
       }

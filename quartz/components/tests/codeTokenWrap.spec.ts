@@ -116,6 +116,20 @@ test.describe("code token wrapping", () => {
     })
   }
 
+  test("a path breaks after its slash, not inside a hyphenated segment", async ({ page }) => {
+    const hyphenated =
+      '<code class="inline-code-path">owner/<wbr>' +
+      '<span class="code-path-segment">rank-amateur-cowsay</span></code>'
+    const rows = await rowsOf(page, {
+      html: `<p>see ${hyphenated}.</p>`,
+      sized: "p",
+      measured: "code",
+      fraction: 0.96,
+      rowsOf: "p",
+    })
+    expect(rows).toEqual(["see owner/", "rank-amateur-cowsay."])
+  })
+
   test("a long code token stays inline on narrow screens", async ({ page }) => {
     const display = await page.evaluate(() => {
       const figure = document.createElement("figure")
