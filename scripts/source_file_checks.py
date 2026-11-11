@@ -183,15 +183,19 @@ def _check_card_image_dimensions(card_url: str) -> list[str]:
         int(constants["cardImageWidth"]),
         int(constants["cardImageHeight"]),
     )
+    error_prefix = f"Failed to read card image dimensions for '{card_url}'"
     try:
         response = _http_session.get(
             card_url, timeout=30, headers=_CARD_REQUEST_HEADERS
         )
         response.raise_for_status()
+    except requests.RequestException as e:
+        return [f"{error_prefix}: {e}"]
+    try:
         with Image.open(io.BytesIO(response.content)) as image:
             actual = image.size
-    except (requests.RequestException, OSError) as e:
-        return [f"Failed to read card image dimensions for '{card_url}': {e}"]
+    except OSError as e:  # PIL raises UnidentifiedImageError, an OSError
+        return [f"{error_prefix}: {e}"]
 
     if actual != expected:
         return [
