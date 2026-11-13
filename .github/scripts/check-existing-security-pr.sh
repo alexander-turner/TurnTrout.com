@@ -3,6 +3,13 @@
 # and merge the default branch into it. Writes outputs consumed by the
 # security-vulnerability-scan workflow.
 #
+# A rollup that conflicts with the default branch is closed and the run starts
+# a fresh one from the default branch, because a conflicted rollup must never
+# block the weekly job. Security fixes are regenerated from live alert data.
+# Dependabot version bumps the closed rollup had absorbed are not: their PRs
+# were closed as superseded, so Dependabot re-offers them only at the next
+# upstream release.
+#
 # Inputs (env):
 #   GH_TOKEN          GitHub token for `gh`
 #   DEFAULT_BRANCH    Repository default branch (e.g. "main")
@@ -14,23 +21,42 @@ set -euo pipefail
 : "${DEFAULT_BRANCH:?DEFAULT_BRANCH must be set}"
 GITHUB_OUTPUT="${GITHUB_OUTPUT:-/dev/null}"
 
-EXISTING_BRANCH=$(gh pr list --label "security-scan" --state open \
-  --json headRefName --jq '.[0].headRefName // empty')
+# Runners have no committer identity, and `git merge` refuses to create a merge
+# commit without one.
+BOT_IDENTITY=(-c "user.name=github-actions[bot]" -c "user.email=41898282+github-actions[bot]@users.noreply.github.com")
 
-if [[ -n "$EXISTING_BRANCH" ]]; then
-  echo "Found existing security PR branch: $EXISTING_BRANCH"
-  git fetch origin "$EXISTING_BRANCH"
-  git checkout "$EXISTING_BRANCH"
-  if ! git merge "origin/$DEFAULT_BRANCH" --no-edit; then
-    echo "::error::Merge conflict with default branch. Aborting merge."
-    git merge --abort
-    exit 1
-  fi
+# shellcheck disable=SC2016 # jq string interpolation, not shell expansion
+EXISTING=$(gh pr list --label "security-scan" --state open \
+  --json number,headRefName --jq '.[0] // empty | "\(.number) \(.headRefName)"')
+
+if [[ -z "$EXISTING" ]]; then
+  echo "No existing security PR found, will create new branch"
+  echo "exists=false" >>"$GITHUB_OUTPUT"
+  exit 0
+fi
+
+read -r EXISTING_PR EXISTING_BRANCH <<<"$EXISTING"
+echo "Found existing security PR #$EXISTING_PR on branch: $EXISTING_BRANCH"
+git fetch origin "$EXISTING_BRANCH"
+git checkout "$EXISTING_BRANCH"
+
+if git "${BOT_IDENTITY[@]}" merge "origin/$DEFAULT_BRANCH" --no-edit; then
   {
     echo "branch=$EXISTING_BRANCH"
     echo "exists=true"
   } >>"$GITHUB_OUTPUT"
-else
-  echo "No existing security PR found, will create new branch"
-  echo "exists=false" >>"$GITHUB_OUTPUT"
+  exit 0
 fi
+
+# Any merge failure other than a content conflict is unexpected: fail loudly.
+if ! git rev-parse -q --verify MERGE_HEAD >/dev/null; then
+  echo "::error::git merge of origin/$DEFAULT_BRANCH into $EXISTING_BRANCH failed without a conflict."
+  exit 1
+fi
+
+git merge --abort
+echo "::warning::Security PR #$EXISTING_PR conflicts with $DEFAULT_BRANCH; closing it and starting a fresh rollup."
+gh pr close "$EXISTING_PR" --delete-branch \
+  --comment "Closing: this rollup conflicts with \`$DEFAULT_BRANCH\`. The weekly security scan regenerates fixes from current alert data and opens a fresh PR."
+git checkout -B "$DEFAULT_BRANCH" "origin/$DEFAULT_BRANCH"
+echo "exists=false" >>"$GITHUB_OUTPUT"
