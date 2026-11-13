@@ -56,8 +56,9 @@ export function normalizeFaviconListEntry(entry: string): string {
 }
 
 /**
- * Allowlist uses substring matching, so raw entries work fine (e.g., "apple_com"
- * matches any path containing that substring). No PSL normalization needed.
+ * Allowlist entries match a favicon's domain or any subdomain of it at `_`
+ * boundaries (e.g., "apple_com" matches "apple_com" and "support_apple_com",
+ * but "x_com" does not match "fox_com"). No PSL normalization needed.
  */
 export const faviconCountAllowlistComputed: readonly string[] = [
   ...Object.values(specialFaviconPaths),
