@@ -1,0 +1,337 @@
+name: Sync from Template (reusable)
+
+# The template sync itself. A consumer's template-sync.yaml calls this file at a
+# moving ref (`@main`), and every script a step runs comes from a checkout of the
+# TEMPLATE at `template-ref`, never from the calling repository's working tree.
+# So a consumer always runs the template's current sync tooling, and a stale
+# local copy can no longer break the sync that would replace it.
+#
+# Trust model: the template's scripts run here with the caller's
+# TEMPLATE_SYNC_TOKEN_ORG and Claude tokens. Whoever can push to the template's
+# `template-ref` therefore controls what those credentials do in the caller. A
+# consumer that wants to review each tooling change pins a commit SHA on its
+# `uses:` line and passes the same SHA as `template-ref`.
+#
+# The paths to sync are SYNC_PATHS in the template's own template-sync.yaml,
+# which template-sync.sh reads from the template checkout. A consumer that still
+# runs its own local copy of the sync reads that same key from the template, so
+# moving the key would break the sync that delivers this file to it.
+#
+# The calling job's `permissions:` must grant `contents: write` and
+# `pull-requests: write`. A called job can request only what its caller grants,
+# and a caller that grants less ends the run in `startup_failure`.
+
+on:
+  workflow_call:
+    inputs:
+      template-ref:
+        description: "Branch, tag or commit of the template whose sync tooling and files this run uses. PASS IT, and pass the ref your `uses:` line names. GitHub exposes no reliable ref for the called workflow (`github.job_workflow_sha` is empty in the expression context), so an empty value refuses the run."
+        required: true
+        type: string
+      dry-run:
+        # A boolean input arrives as a real boolean, so every condition that
+        # reads it below compares it to a boolean. Comparing it to the STRING
+        # 'true' never matches: GitHub casts across types to a number, and
+        # `true == 'true'` compares 1 with NaN.
+        description: "Show what would be synced without making changes."
+        required: false
+        default: false
+        type: boolean
+      exclude-paths:
+        description: "Space-separated paths the sync never touches. An entry names one file or one directory, and a directory entry covers every file under it."
+        required: false
+        default: ""
+        type: string
+      opt-in-paths:
+        description: "Space-separated paths the sync UPDATES but never INTRODUCES: absent from the caller they are skipped, present they sync normally."
+        required: false
+        default: ""
+        type: string
+      automerge:
+        description: "Arm auto-merge on a sync PR that needed no judgement call. Pass false to leave every sync PR for a person to merge."
+        required: false
+        default: true
+        type: boolean
+      model:
+        description: "Model the conflict resolver runs on. Empty uses the resolver's own default."
+        required: false
+        default: ""
+        type: string
+    secrets:
+      TEMPLATE_SYNC_TOKEN_ORG:
+        description: "Optional PAT with the `workflow` scope. Without it the sync PR triggers no CI, and a private template cannot be read."
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN_FALLBACK:
+        description: "Optional first credential for the model tier of conflict resolution."
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN:
+        description: "Optional credential for the model tier of conflict resolution, tried after the fallback token."
+        required: false
+
+env:
+  # `vars` in a called workflow is the CALLER's, so a fork sets TEMPLATE_SYNC_ORG
+  # once in its own repository variables.
+  TEMPLATE_REPO: "${{ vars.TEMPLATE_SYNC_ORG || 'AlexanderMattTurner' }}/claude-automation-template"
+
+permissions: {}
+
+jobs:
+  # A repo cannot be its own upstream. This runs as a separate job because a
+  # job-level `if:` cannot read workflow `env`, and the alternative — repeating
+  # the guard on every step below — is a condition that a newly added step
+  # silently opts out of.
+  preflight:
+    name: Refuse a self-sync
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      self_sync: ${{ steps.check.outputs.self_sync }}
+    steps:
+      # This refusal is what stops an unset ref from running the template's
+      # default branch: actions/checkout reads an empty `ref` as that branch, so
+      # the run would use tooling the caller never named. The sync job needs
+      # this job, so the refusal covers it too.
+      - name: Require a template ref
+        env:
+          TEMPLATE_REF: ${{ inputs.template-ref }}
+        run: ': "${TEMPLATE_REF:?pass template-ref, the template ref whose sync tooling this run uses}"'
+
+      - name: Checkout the template's sync scripts
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: ${{ env.TEMPLATE_REPO }}
+          ref: ${{ inputs.template-ref }}
+          path: _template
+          sparse-checkout: .github/scripts
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+
+      - name: Refuse to sync this repository from itself
+        id: check
+        env:
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || github.token }}
+        run: bash _template/.github/scripts/template-sync-preflight.sh
+
+  sync:
+    name: Sync template files
+    needs: preflight
+    if: needs.preflight.outputs.self_sync != 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    timeout-minutes: 30
+    steps:
+      - name: Checkout child repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+
+      # One checkout serves both roles: template-sync.sh reads the files to sync
+      # from it, and every step below runs its script from it. template-sync.sh
+      # registers `_template` in the child's info/exclude, so the checkout
+      # survives the branch switches below and never lands in the sync commit.
+      - name: Checkout template repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: ${{ env.TEMPLATE_REPO }}
+          ref: ${{ inputs.template-ref }}
+          path: _template
+          # TEMPLATE_SYNC_TOKEN_ORG is optional — GITHUB_TOKEN has no cross-repo
+          # reach, so this checkout only works without the PAT when TEMPLATE_REPO
+          # is public (the default). A private template repo needs the org PAT.
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+
+      # Every script below runs from this read-only copy, outside the working
+      # tree. The resolve step's model works in that tree, where `_template`
+      # sits, and the steps after it hold the org PAT, so a script it could edit
+      # would run with that token.
+      - name: Stage the template's tooling outside the working tree
+        run: |
+          mkdir -p "$RUNNER_TEMP/template-tools"
+          cp -a _template/.github "$RUNNER_TEMP/template-tools/"
+          chmod -R a-w "$RUNNER_TEMP/template-tools"
+
+      - name: Check token workflow scope
+        env:
+          # Mirrors the checkout step above — validates whichever token is
+          # actually in play (PAT or the default token) for the 'workflow'
+          # scope this sync needs to push .github/workflows/ changes.
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
+          # The secret TOKEN reads first, so the error names the one to fix.
+          TOKEN_SECRET_NAME: TEMPLATE_SYNC_TOKEN_ORG
+        run: bash "$RUNNER_TEMP/template-tools/.github/scripts/check-token-scope.sh"
+
+      # run-with-pyyaml.sh fetches PyYAML through uv. No cache: this job holds
+      # credentials, and a cache another run wrote is input it never reviewed.
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          enable-cache: false
+
+      # A caller's `env:` never reaches this workflow, so path lists a consumer
+      # kept there from the pre-reusable caller would be ignored without a word.
+      - name: Refuse path lists left in the caller's env
+        run: bash "$RUNNER_TEMP/template-tools/.github/scripts/run-with-pyyaml.sh" "$RUNNER_TEMP/template-tools/.github/scripts/template-sync-stale-env.py" .github/workflows/template-sync.yaml
+
+      - name: Sync template files with conflict detection
+        id: sync
+        env:
+          EXCLUDE_PATHS: ${{ inputs.exclude-paths }}
+          OPT_IN_PATHS: ${{ inputs.opt-in-paths }}
+        run: bash "$RUNNER_TEMP/template-tools/.github/scripts/template-sync.sh"
+
+      - name: Show diff (dry run)
+        if: inputs.dry-run == true && steps.sync.outputs.has_changes == 'true'
+        env:
+          HAS_CONFLICTS: ${{ steps.sync.outputs.has_conflicts }}
+          HAS_DELETIONS: ${{ steps.sync.outputs.has_deletions }}
+          CONFLICT_FILES: ${{ steps.sync.outputs.conflict_files }}
+          DELETED_FILES: ${{ steps.sync.outputs.deleted_files }}
+        run: bash "$RUNNER_TEMP/template-tools/.github/scripts/show-sync-diff.sh"
+
+      # The body is a script, not an inline `format()` chain: a chain that long
+      # is invisible to shellcheck, cannot be tested, and grew a shape nobody
+      # could read a conditional out of. It runs BEFORE create-pull-request,
+      # because that action reads the body from a file.
+      - name: Render the pull request body
+        if: inputs.dry-run != true && (steps.sync.outputs.has_changes == 'true' || steps.sync.outputs.has_conflicts == 'true' || steps.sync.outputs.has_deletions == 'true')
+        id: pr-body
+        env:
+          TEMPLATE_SHA_SHORT: ${{ steps.sync.outputs.template_sha_short }}
+          CHANGED_FILES: ${{ steps.sync.outputs.changed_files }}
+          CHANGED_COUNT: ${{ steps.sync.outputs.changed_count }}
+          CHANGELOG: ${{ steps.sync.outputs.changelog }}
+          DOWNGRADE_REPORT: ${{ steps.sync.outputs.downgrade_report }}
+          AUTO_MERGED_FILES: ${{ steps.sync.outputs.auto_merged_files }}
+          DECLINED_FILES: ${{ steps.sync.outputs.declined_files }}
+          INERT_ENTRIES: ${{ steps.sync.outputs.inert_entries }}
+          DELETED_FILES: ${{ steps.sync.outputs.deleted_files }}
+          CONFLICT_REPORT: ${{ steps.sync.outputs.conflict_report }}
+          MARKERLESS_FILES: ${{ steps.sync.outputs.markerless_files }}
+          PR_BODY_PATH: ${{ runner.temp }}/template-sync-body.md
+        run: bash "$RUNNER_TEMP/template-tools/.github/scripts/template-sync-pr-body.sh"
+
+      - name: Create Pull Request
+        if: inputs.dry-run != true && (steps.sync.outputs.has_changes == 'true' || steps.sync.outputs.has_conflicts == 'true' || steps.sync.outputs.has_deletions == 'true')
+        id: create-pr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        with:
+          # A PR authored under GITHUB_TOKEN doesn't trigger other
+          # on:pull_request workflows (GitHub's recursion guard), so this sync PR
+          # needs TEMPLATE_SYNC_TOKEN_ORG to get real CI; falling back to
+          # GITHUB_TOKEN still opens the PR when the org PAT isn't configured,
+          # just without triggering downstream checks until a human comments/pushes.
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
+          commit-message: "chore: sync from template repository (${{ steps.sync.outputs.template_sha_short }})"
+          title: "chore: sync from template repository"
+          body-path: ${{ runner.temp }}/template-sync-body.md
+          branch: template-sync
+          delete-branch: true
+          labels: template-sync
+
+      # Resolve IN THIS RUN rather than posting an @claude comment and hoping a
+      # separate workflow gets to it. The PR then arrives readable instead of
+      # carrying raw markers, and the tier report below is what lets a clean
+      # sync merge itself.
+      #
+      # After create-pull-request the workspace is back on the base ref and the
+      # markers live on the sync branch, so switch to it before resolving.
+      # Both steps need a marker-bearing file: a kept-local conflict emits no
+      # conflict_files, and template-sync-resolve.sh refuses an empty list.
+      - name: Install mergiraf (pinned, digest-verified)
+        if: inputs.dry-run != true && steps.sync.outputs.conflict_files != '' && steps.create-pr.outputs.pull-request-number
+        run: bash "$RUNNER_TEMP/template-tools/.github/scripts/install-mergiraf.sh"
+
+      # Tier 2 is the resolver's own fan-out, from the same pinned commit the
+      # template's auto-resolve-conflicts.yaml calls: its `uses:` line is the one
+      # place that pin is written.
+      - name: Read the resolver pin
+        id: resolver-pin
+        if: inputs.dry-run != true && steps.sync.outputs.conflict_files != '' && steps.create-pr.outputs.pull-request-number
+        run: bash "$RUNNER_TEMP/template-tools/.github/scripts/run-with-pyyaml.sh" "$RUNNER_TEMP/template-tools/.github/scripts/resolver-ref.py" --github-output "$RUNNER_TEMP/template-tools"
+
+      - name: Resolve the sync conflicts
+        id: resolve
+        if: inputs.dry-run != true && steps.sync.outputs.conflict_files != '' && steps.create-pr.outputs.pull-request-number
+        env:
+          CONFLICT_FILES: ${{ steps.sync.outputs.conflict_files }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+          # token-fallback-ok: the dedicated CI token is preferred so a sync does not
+          # spend the operator's own account; CLAUDE_CODE_OAUTH_TOKEN is the same
+          # credential the ladder ends on, so the fallback costs nothing but order.
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_FALLBACK || secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          # The job token, never the org PAT. The model in this step reads
+          # template text an outsider's merged change may carry. Fanout reads
+          # this token only to ask this repository about the actor and the sync
+          # PR, which the job token answers.
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          # Confines every model Read to the merged tree, so an instruction in a
+          # conflicted file cannot read a token out of /proc/<pid>/environ.
+          AUTO_RESOLVE_UNTRUSTED_HEAD: "true"
+          RESOLVER_REPOSITORY: ${{ steps.resolver-pin.outputs.repository }}
+          RESOLVER_REF: ${{ steps.resolver-pin.outputs.ref }}
+          AUTO_RESOLVE_MODEL: ${{ inputs.model }}
+        run: |
+          git fetch --no-tags origin "+refs/heads/template-sync:refs/remotes/origin/template-sync"
+          git checkout -B template-sync origin/template-sync
+          resolver_dir="${RUNNER_TEMP}/template-sync-resolver"
+          git clone --no-tags --depth 1 "https://github.com/${RESOLVER_REPOSITORY}.git" "${resolver_dir}"
+          git -C "${resolver_dir}" fetch --no-tags --depth 1 origin "${RESOLVER_REF}"
+          git -C "${resolver_dir}" checkout --detach FETCH_HEAD
+          RESOLVER_DIR="${resolver_dir}/.github/resolver" \
+            bash "$RUNNER_TEMP/template-tools/.github/scripts/template-sync-resolve.sh"
+
+      - name: Push the resolutions
+        if: steps.resolve.outcome == 'success' && (steps.resolve.outputs.deterministic != '' || steps.resolve.outputs.by_model != '')
+        env:
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          GITHUB_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
+          DETERMINISTIC: ${{ steps.resolve.outputs.deterministic }}
+          BY_MODEL: ${{ steps.resolve.outputs.by_model }}
+        run: bash "$RUNNER_TEMP/template-tools/.github/scripts/template-sync-push.sh"
+
+      # The markers reach the branch before either resolver tier runs, because
+      # create-pull-request commits the whole synced tree. So this is the step
+      # that holds the invariant: no file on `template-sync` carries a conflict
+      # marker. It runs even when a step above it failed, because a resolve step
+      # that died is exactly when the markers survive.
+      - name: Refuse conflict markers on the sync branch
+        if: ${{ !cancelled() && inputs.dry-run != true && steps.create-pr.outputs.pull-request-number }}
+        env:
+          BASE_SHA: ${{ github.sha }}
+          CONFLICT_FILES: ${{ steps.sync.outputs.conflict_files }}
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          GITHUB_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || secrets.GITHUB_TOKEN }}
+        run: bash "$RUNNER_TEMP/template-tools/.github/scripts/template-sync-marker-gate.sh"
+
+      # A sync merges itself only when NOTHING needed judgement. See the script
+      # for the full predicate; the two carve-outs are that a model-resolved file
+      # never qualifies, and neither does a change to the supervision surface.
+      - name: Enable auto-merge on a fully deterministic sync
+        if: inputs.automerge && inputs.dry-run != true && steps.create-pr.outputs.pull-request-number
+        env:
+          # token-fallback-ok: designed graceful degradation, not an accident.
+          GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN_ORG || github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+          HAS_CONFLICTS: ${{ steps.sync.outputs.has_conflicts }}
+          HAS_DELETIONS: ${{ steps.sync.outputs.has_deletions }}
+          HAS_DOWNGRADES: ${{ steps.sync.outputs.has_downgrades }}
+          ALL_DETERMINISTIC: ${{ steps.resolve.outputs.all_deterministic }}
+          CHANGED_PATHS: ${{ steps.sync.outputs.changed_paths }}
+          MARKERLESS_FILES: ${{ steps.sync.outputs.markerless_files }}
+        run: bash "$RUNNER_TEMP/template-tools/.github/scripts/template-sync-automerge.sh"

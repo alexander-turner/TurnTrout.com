@@ -10,9 +10,10 @@
 # Behavior:
 #   * Fast path — if <hook-script> parses cleanly, exec it. The PreToolUse
 #     stdin payload is forwarded transparently.
-#   * Degraded path — if <hook-script> fails `bash -n`, fall back to a
-#     fail-safe policy instead of exiting non-zero (which Claude Code would
-#     treat as a tool block):
+#   * Degraded path — if <hook-script> fails its syntax check, fall back to a
+#     fail-safe policy instead of letting the broken hook's exit decide (a bash
+#     syntax error exits 2, which blocks every call; a node one exits 1, which
+#     lets every call through unchecked):
 #       - Edit/Write/MultiEdit/NotebookEdit targeting .claude/hooks/ or
 #         .hooks/ are allowed so the broken hook can be repaired in-session.
 #       - Everything else returns permissionDecision="ask", forcing a
@@ -28,20 +29,51 @@ target="${1:-}"
 # unexpected shift failure (CLAUDE.md: branch on the condition instead).
 [[ $# -gt 0 ]] && shift
 
+# Emit a fail-closed PreToolUse "ask" verdict and print nothing else. An exit 1
+# OR empty stdout is NON-blocking in Claude Code, so a missing/corrupt hook must
+# still PRINT a verdict and exit 0 or the guarded tool runs UNGUARDED (fail OPEN).
+# The bash sibling of lib-hook-io.mjs's hookSpecificOutput: this path runs when a
+# hook file may be broken, so it cannot load one. The reason is JSON-escaped.
+emit_ask() {
+  local esc="${1//\\/\\\\}"
+  esc="${esc//\"/\\\"}"
+  printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"%s"}}\n' "$esc"
+}
+
 if [[ -z "$target" ]] || [[ ! -f "$target" ]]; then
+  # Misconfigured hook path: no verdict source at all. Fail closed with an "ask"
+  # rather than an exit, which would let the guarded tool run unchecked.
   echo "safe-launch: missing target hook: $target" >&2
-  exit 1
+  emit_ask "safe-launch: hook is missing; verdict unavailable — failing closed."
+  exit 0
 fi
 
-# Fast path: target parses — run it as-is. The PreToolUse stdin payload is
-# inherited automatically because we exec into the target.
-if bash -n "$target" 2>/dev/null; then
-  exec "$target" "$@"
+# Language-aware syntax check + interpreter-explicit exec. Bash for shell hooks,
+# node for JS. Running the target THROUGH its interpreter (not a bare
+# `exec "$target"`) is a fail-closed guard: a target that lost its +x bit makes
+# `exec "$target"` fail with 126, which Claude Code treats as NON-blocking, so the
+# guarded tool would run unchecked (fail OPEN). `exec bash|node "$target"` ignores
+# the mode bit and always runs the check.
+case "$target" in
+*.mjs | *.cjs | *.js)
+  syntax_check=(node --check "$target")
+  interp=node
+  ;;
+*)
+  syntax_check=(bash -n "$target")
+  interp=bash
+  ;;
+esac
+
+# Fast path: target parses — run it via its interpreter. The PreToolUse stdin
+# payload is inherited automatically because we exec into the target.
+if "${syntax_check[@]}" 2>/dev/null; then
+  exec "$interp" "$target" "$@"
 fi
 
 # Degraded path. Read the PreToolUse payload before we touch stdin again.
-parse_error=$(bash -n "$target" 2>&1)
-echo "safe-launch: target hook failed to parse — degrading open: $target" >&2
+parse_error=$("${syntax_check[@]}" 2>&1)
+echo "safe-launch: target hook failed to parse — degrading closed: $target" >&2
 [[ -n "$parse_error" ]] && echo "$parse_error" >&2
 
 # Cap the read at 10 MiB so a pathological payload can't OOM the degraded path.
@@ -65,16 +97,25 @@ fi
 is_under() {
   local candidate="$1" parent="$2" parent_dir resolved
   [[ -n "$candidate" ]] && [[ -n "$parent" ]] || return 1
+  # Filter — a candidate with no ".." segment correctly falls through to the
+  # containment check below; only a traversal-shaped path short-circuits here.
+  # case-default-ok: no-match is the intended no-op, not a missed case.
   case "$candidate" in *..*) return 1 ;; esac
   parent_dir=$(cd "$(dirname "$candidate")" 2>/dev/null && pwd -P) || return 1
   [[ -n "$parent_dir" ]] || return 1
   resolved="$parent_dir/$(basename "$candidate")"
+  # A symlink at the final component could point outside the resolved parent
+  # even though its own path lives under it. Fail closed rather than follow it.
+  [[ -L "$resolved" ]] && return 1
   case "$resolved" in
   "$parent"/*) return 0 ;;
   *) return 1 ;;
   esac
 }
 
+# Filter — only edit-shaped tools get the self-repair containment check;
+# every other tool name correctly falls through to the "ask" default below.
+# case-default-ok: no-match is the intended fall-through, not a missed case.
 case "$tool_name" in
 Edit | Write | MultiEdit | NotebookEdit)
   for safe in "$project_dir/.claude/hooks" "$project_dir/.hooks"; do
@@ -89,7 +130,5 @@ Edit | Write | MultiEdit | NotebookEdit)
 esac
 
 # Default: surface the failure as an "ask" decision so the user can choose.
-cat <<'JSON'
-{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"safe-launch: PreToolUse hook failed to parse; manual override required."}}
-JSON
+emit_ask "safe-launch: PreToolUse hook failed to parse; manual override required."
 exit 0
