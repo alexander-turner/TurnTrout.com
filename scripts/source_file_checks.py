@@ -3,6 +3,7 @@
 etc."""
 
 import argparse
+import io
 import json
 import re
 import shutil
@@ -14,6 +15,7 @@ from pathlib import Path
 from typing import Literal, TypedDict
 
 import requests
+from PIL import Image
 
 # Add the project root to sys.path
 # pylint: disable=wrong-import-position
@@ -25,6 +27,13 @@ MetadataIssues = dict[str, list[str]]
 PathMap = dict[str, Path]  # Maps URLs to their source files
 
 _http_session = script_utils.http_session()
+_CARD_REQUEST_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/58.0.3029.110 Safari/537.36"
+    )
+}
 
 
 class SiteIndex(TypedDict):
@@ -140,15 +149,11 @@ def _check_card_image_accessibility(card_url: str) -> list[str]:
     """
     errors: list[str] = []
     try:
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/58.0.3029.110 Safari/537.36"
-            )
-        }
         response = _http_session.head(
-            card_url, timeout=30, allow_redirects=True, headers=headers
+            card_url,
+            timeout=30,
+            allow_redirects=True,
+            headers=_CARD_REQUEST_HEADERS,
         )
 
         if not response.ok:
@@ -171,25 +176,78 @@ def _check_card_image_accessibility(card_url: str) -> list[str]:
     return errors
 
 
-def check_card_image(metadata: dict) -> list[str]:
+def _check_card_image_dimensions(card_url: str) -> list[str]:
+    """Check the image matches the og:image:width/height every page declares."""
+    constants = script_utils.load_shared_constants()
+    expected = (
+        int(constants["cardImageWidth"]),
+        int(constants["cardImageHeight"]),
+    )
+    error_prefix = f"Failed to read card image dimensions for '{card_url}'"
+    try:
+        response = _http_session.get(
+            card_url, timeout=30, headers=_CARD_REQUEST_HEADERS
+        )
+        response.raise_for_status()
+    except requests.RequestException as e:
+        return [f"{error_prefix}: {e}"]
+    try:
+        with Image.open(io.BytesIO(response.content)) as image:
+            actual = image.size
+    except OSError as e:  # PIL raises UnidentifiedImageError, an OSError
+        return [f"{error_prefix}: {e}"]
+
+    if actual != expected:
+        return [
+            f"card_image is {actual[0]}x{actual[1]}, but og:image declares "
+            f"{expected[0]}x{expected[1]}: {card_url}"
+        ]
+    return []
+
+
+def check_card_image_url(card_url: str) -> list[str]:
     """
-    Check card_image format, size, and existence.
+    Check a social card image URL.
 
     Records errors if:
     - Not from turntrout assets
     - Doesn't have PNG or JPEG extension
-    - Over 300KB
+    - Over the size limit (link previews drop larger images)
     - URL is not accessible
+    - Dimensions differ from the declared og:image:width/height
     """
+    errors = [
+        *_check_card_image_domain(card_url),
+        *_check_card_image_format(card_url),
+        *_check_card_image_accessibility(card_url),
+    ]
+    if errors:
+        return errors
+    return _check_card_image_dimensions(card_url)
+
+
+def check_card_image(metadata: dict) -> list[str]:
+    """Check the page's card_image, if it sets one."""
     card_url = metadata.get("card_image")
     if not card_url:
         return []
+    return check_card_image_url(card_url)
 
-    errors: list[str] = []
-    errors.extend(_check_card_image_domain(card_url))
-    errors.extend(_check_card_image_format(card_url))
-    errors.extend(_check_card_image_accessibility(card_url))
-    return errors
+
+def check_default_card_image() -> list[str]:
+    """Check the fallback card shown for every page without a card_image."""
+    default_url = script_utils.load_shared_constants()["defaultCardUrl"]
+    return check_card_image_url(default_url)
+
+
+def _report_default_card_image_errors() -> bool:
+    """Print default-card errors; return whether there were any."""
+    errors = check_default_card_image()
+    if errors:
+        print("\nDefault card image (config/constants.json defaultCardUrl):")
+        for error in errors:
+            print(f"  - {error}")
+    return bool(errors)
 
 
 def validate_video_tags(text: str) -> list[str]:
@@ -1660,6 +1718,9 @@ def main(check_publication_dates: bool = False) -> None:
             if any(lst for lst in issues.values()):
                 has_errors = True
                 print_issues(rel_path, issues)
+
+    if _report_default_card_image_errors():
+        has_errors = True
 
     # Check font files
     fonts_scss_path = git_root / "quartz" / "styles" / "fonts.scss"

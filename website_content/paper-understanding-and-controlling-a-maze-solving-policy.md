@@ -41,7 +41,7 @@ use-full-width-images: "false"
 date_published: 2023-10-13
 original_url: https://www.lesswrong.com/posts/DKtWikjcdApRj3rWr/paper-understanding-and-controlling-a-maze-solving-policy
 skip_import: true
-card_image: https://assets.turntrout.com/static/images/card_images/jbwksgzxm1h8hzspvypz.jpg
+card_image: https://assets.turntrout.com/static/images/card_images/jbwksgzxm1h8hzspvypz-1200x630.jpg
 description: My team published a paper on steering a maze-solving AI by manipulating its internal goal representations.
 date_updated: 2026-11-01
 card_image_alt: A four-panel diagram showing how modifying a neural network's activations changes an AI's behavior. (a) A mouse in a maze ignores cheese to go top-right. (b) A heatmap shows activations peaking at the cheese's location. (c) A new activation peak is manually added in the top-right. (d) The mouse now follows a path to the top-right, retargeted by the modified activation.

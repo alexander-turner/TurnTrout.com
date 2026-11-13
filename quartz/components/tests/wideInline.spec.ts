@@ -111,11 +111,10 @@ test.describe("wide inline math", () => {
 
   // Each glued code path in turn gets a column one pixel wider than the path:
   // the path fits a line, but not with the punctuation and favicon glued to it.
-  test("wraps each glued code path whose glue would overrun its line", async ({ page }) => {
-    const paths = page.locator("article .nowrap-span .inline-code-path:has(wbr)")
+  test("keeps each glued code path's glue beside it and inside its column", async ({ page }) => {
+    const paths = page.locator("article .nowrap-span .inline-code-breakable:has(wbr)")
     const count = await paths.count()
     expect(count).toBeGreaterThan(0)
-    const [width, height] = await page.evaluate(() => [window.innerWidth, window.innerHeight])
 
     const misplaced: string[] = []
     for (let i = 0; i < count; i++) {
@@ -129,17 +128,11 @@ test.describe("wide inline math", () => {
         ) {
           column = column.parentElement
         }
-        element.classList.remove("wide-inline")
         const style = (column as HTMLElement).style
         style.boxSizing = "content-box"
         style.width = `${element.getBoundingClientRect().width + 1}px`
         column.setAttribute("data-test-column", "")
       })
-      // Resizing re-marks the paths against their new columns. Successive
-      // widths differ, so each resize changes the width the marking sees.
-      await page.setViewportSize({ width: width - 1 - (i % 2), height })
-      await expect(path).toHaveClass(/wide-inline/)
-
       const problems = await path.evaluate((element) => {
         const column = document.querySelector("[data-test-column]") as HTMLElement
         const glued = element.closest(".nowrap-span")

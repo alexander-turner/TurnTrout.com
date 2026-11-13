@@ -5,23 +5,13 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { INLINE_CODE_PATH_CLASS, maxAtomicInlineCodeLength } from "../../components/constants"
-import { breaksAfterPathSlash, insertCodeBreaks } from "./codeBreaks"
+import {
+  INLINE_CODE_BREAKABLE_CLASS,
+  maxHeldInlineCodeSegmentLength,
+  minInlineCodeFragment,
+} from "../../components/constants"
+import { type BreakRule, breaksInCodeBlock, insertCodeBreaks } from "./codeBreaks"
 import { addClass, INLINE_PASSTHROUGH_TAGS, ITALIC_TAGS, wrapCharsInSpan } from "./utils"
-
-// A short inline code reads as one token, so it wraps to the next line whole
-// rather than breaking at an internal hyphen (e.g. `conic-gradient`). Longer
-// codes stay breakable so they can't overflow a narrow container.
-const ATOMIC_CODE_MAX_LENGTH = maxAtomicInlineCodeLength
-
-// Total rendered text length of a node (recursing into inline children).
-export function textLength(node: RootContent): number {
-  if (node.type === "text") return (node as Text).value.length
-  if (node.type === "element") {
-    return (node as Element).children.reduce((sum, child) => sum + textLength(child), 0)
-  }
-  return 0
-}
 
 // Inline code's monospace glyph can crowd the word before it, so that word's
 // last glyph gets a right margin. The gap is CSS rather than a space character so the text a
@@ -91,6 +81,95 @@ export function precedingBoundary(node: Element, ancestors: readonly Parent[]): 
   return null
 }
 
+const SPACE = /\s/u
+
+// A code seam (see `breaksInCodeBlock`), except before a member-access dot:
+// inline code is mostly file names and domains, whose `.md` or `.com` reads
+// badly alone. A dotfile after a slash (`lint/.markdownlint`) still breaks.
+const isInlineSeam = (text: string, index: number): boolean =>
+  (text[index] !== "." || text[index - 1] === "/") && breaksInCodeBlock(text, index)
+
+// A fragment of inline code runs between seams and spaces.
+const startsFragment = (text: string, index: number): boolean =>
+  SPACE.test(text[index - 1]) || isInlineSeam(text, index)
+
+/**
+ * At an inline seam, unless either fragment it would leave at a line edge is
+ * shorter than `minInlineCodeFragment`: `r/` and `f(` stay with what follows
+ * them, and `a` with what precedes it.
+ */
+export const breaksInInlineCode: BreakRule = (text, index) => {
+  if (!isInlineSeam(text, index)) return false
+  let start = index - 1
+  while (start > 0 && !startsFragment(text, start)) start--
+  let end = index + 1
+  while (end < text.length && !SPACE.test(text[end]) && !startsFragment(text, end)) end++
+  return Math.min(index - start, end - index) >= minInlineCodeFragment
+}
+
+const heldSpan = (value: string): Element => ({
+  type: "element",
+  tagName: "span",
+  properties: { className: ["code-segment"] },
+  children: [{ type: "text", value }],
+})
+
+// A hyphen offers a line break, so a code would break inside a segment like
+// `alexander-turner` rather than at its seam. A segment short enough to fit a
+// line is held whole; a longer one keeps its hyphen breaks so it can't overflow.
+function holdHyphenatedSegments(code: Element): void {
+  code.children = code.children.map((child) =>
+    child.type === "text" &&
+    child.value.includes("-") &&
+    child.value.length <= maxHeldInlineCodeSegmentLength
+      ? heldSpan(child.value)
+      : child,
+  )
+}
+
+/**
+ * Ranges of ``value`` to hold whole so no hyphen break leaves a fragment shorter
+ * than `minInlineCodeFragment` at a line edge (`--` | `sandbox`, `a-` | `b`).
+ * A fragment runs between hyphen breaks and spaces.
+ */
+export function shortHyphenFragmentRanges(value: string): [number, number][] {
+  const breaks = [...value.matchAll(/-+(?=[^\s-])/gu)].map((m) => m.index + m[0].length)
+  const bounds = new Set([0, value.length, ...breaks])
+  for (const m of value.matchAll(/\s+/gu)) {
+    bounds.add(m.index)
+    bounds.add(m.index + m[0].length)
+  }
+  const sorted = [...bounds].sort((a, b) => a - b)
+  const ranges: [number, number][] = []
+  for (const at of breaks) {
+    const i = sorted.indexOf(at)
+    const [start, end] = [sorted[i - 1], sorted[i + 1]]
+    if (Math.min(at - start, end - at) >= minInlineCodeFragment) continue
+    const last = ranges.at(-1)
+    // Two holds sharing a fragment merge; holds that only touch keep the break between them.
+    if (last && last[1] > start) last[1] = end
+    else ranges.push([start, end])
+  }
+  return ranges.filter(([start, end]) => end - start <= maxHeldInlineCodeSegmentLength)
+}
+
+function holdShortHyphenFragments(code: Element): void {
+  code.children = code.children.flatMap((child): ElementContent[] => {
+    if (child.type !== "text") return [child]
+    const ranges = shortHyphenFragmentRanges(child.value)
+    if (ranges.length === 0) return [child]
+    const pieces: ElementContent[] = []
+    let cursor = 0
+    for (const [start, end] of ranges) {
+      if (start > cursor) pieces.push({ type: "text", value: child.value.slice(cursor, start) })
+      pieces.push(heldSpan(child.value.slice(start, end)))
+      cursor = end
+    }
+    if (cursor < child.value.length) pieces.push({ type: "text", value: child.value.slice(cursor) })
+    return pieces
+  })
+}
+
 function isInPre(ancestors: readonly Parent[]): boolean {
   return ancestors.some(
     (ancestor) => ancestor.type === "element" && (ancestor as Element).tagName === "pre",
@@ -107,9 +186,10 @@ function isItalicized(ancestors: readonly Parent[]): boolean {
 
 /**
  * Rehype plugin for inline `<code>` (block code inside `<pre>` is untouched):
- *   - lets a path (`owner/repo`) break after its inner slashes and marks it
- *     `inline-code-path`; marks any other short code `inline-code-atomic` so it
- *     wraps whole instead of breaking at an internal hyphen;
+ *   - lets the code break in place at its seams (see `breaksInInlineCode`),
+ *     holds each short hyphenated segment between them whole, and marks it
+ *     `inline-code-breakable`; holds any hyphen break that would leave a
+ *     short fragment (see `shortHyphenFragmentRanges`);
  *   - wraps the last character of the word a code's monospace glyph would crowd
  *     in a `code-gap-after` span, which carries the gap in CSS. Adds no gap when
  *     the code is italicized (its leaning glyphs open the space themselves),
@@ -122,12 +202,11 @@ export const rehypeInlineCodeSpacing: Plugin = () => {
 
     visitParents(tree, "element", (node: Element, ancestors: Parent[]) => {
       if (node.tagName !== "code" || isInPre(ancestors)) return
-      // A path breaks after its slashes instead, so it is never atomic.
-      if (insertCodeBreaks(node, breaksAfterPathSlash) > 0) {
-        addClass(node, INLINE_CODE_PATH_CLASS)
-      } else if (textLength(node) <= ATOMIC_CODE_MAX_LENGTH) {
-        addClass(node, "inline-code-atomic")
+      if (insertCodeBreaks(node, breaksInInlineCode) > 0) {
+        addClass(node, INLINE_CODE_BREAKABLE_CLASS)
+        holdHyphenatedSegments(node)
       }
+      holdShortHyphenFragments(node)
       if (isItalicized(ancestors)) return
       const boundary = precedingBoundary(node, ancestors)
       if (!boundary || NO_GAP_PREDECESSORS.has(boundary.char)) return

@@ -1,5 +1,5 @@
 {
-  "defaultCardUrl": "https://assets.turntrout.com/static/images/fb_preview.png",
+  "defaultCardUrl": "https://assets.turntrout.com/static/images/card_images/fb_preview.jpg",
   "defaultCardAlt": "A pond containing a trout and a goose peacefully swimming near a castle.",
   "defaultTitle": "The Pond",
   "defaultDescription": "Writings about doing good, thinking well, and living happily.",
@@ -12,7 +12,8 @@
   "appleTouchIconUrl": "https://assets.turntrout.com/static/images/apple-icon.png",
   "faviconBasePath": "https://assets.turntrout.com/static/images/external-favicons",
   "minFaviconCount": 6,
-  "maxAtomicInlineCodeLength": 30,
+  "maxHeldInlineCodeSegmentLength": 30,
+  "minInlineCodeFragment": 3,
   "maxWholeCodeTokenLength": 30,
   "maxWholeCodeTokenLengthWide": 50,
   "googleSubdomainAllowlist": ["scholar", "play", "docs", "drive", "mail", "colab.research"],
