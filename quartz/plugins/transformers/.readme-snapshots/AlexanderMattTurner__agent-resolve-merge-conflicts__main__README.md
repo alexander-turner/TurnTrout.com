@@ -28,7 +28,7 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@296c472c080a8a2bf6003714dd246eb165ab729a # v1.46.6
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@ff5eaba6194c7518bd0c3d4249cc8a77872b9ee9 # v1.47.0
     with:
       pr: ${{ matrix.pr.number }}
       resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
@@ -80,6 +80,7 @@ Every input fails closed when empty. The workflow does less, rather than guessin
 - **`post-merge-check-budget-seconds`** — `600`. This is the most wall clock `post-merge-check-command` may spend in one resolve, over every run of it. The job clamps it to the time it has left.
 - **`protected-paths-regex`** — empty takes the resolver default, `^(\.github/|\.claude/|\.hooks/)`. A conflict inside a matching path is still resolved, and the comment flags it for a human.
 - **`resolve-job-timeout-minutes`** — `57`, the sum of the `resolve` job's stages. A run killed at this cap pushes nothing, so raise it rather than let a stage stop early.
+- **`resolve-runner`** — `ubuntu-latest`. This is the runner label of the `resolve` job, which makes the model calls and holds no credential that pushes. Name your managed runner's label here to start that job sooner. The `land` job stays on a GitHub-hosted runner whatever you pass, because it holds the credentials that push.
 
 The secrets are a ladder of credentials, tried in order: `CLAUDE_CODE_OAUTH_TOKEN`, then `CLAUDE_CODE_OAUTH_TOKEN_FALLBACK` and `CLAUDE_CODE_OAUTH_TOKEN_FALLBACK_2` to `_6`, then the metered `FAR_ANTHROPIC_API_KEY`. Pass the rungs you have. `AUTOFIX_TOKEN_ORG` pushes the merge, and `TEMPLATE_SYNC_TOKEN_ORG` pushes a merge that changes `.github/workflows/`.
 
@@ -231,7 +232,7 @@ A `uses:` ref may be a SHA, a tag or a branch. GitHub calls [the commit SHA the 
 **Pin the SHA and name the version beside it**, the way this repository's own caller does:
 
 ```yaml
-uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@296c472c080a8a2bf6003714dd246eb165ab729a # v1.46.6
+uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@ff5eaba6194c7518bd0c3d4249cc8a77872b9ee9 # v1.47.0
 ```
 
 That line reads as a version and resolves as an immutable commit. It names the newest release: `.github/scripts/release-tag.sh` rewrites both copies in this README, and the caller's, in the commit after each release. Copy it as it stands.

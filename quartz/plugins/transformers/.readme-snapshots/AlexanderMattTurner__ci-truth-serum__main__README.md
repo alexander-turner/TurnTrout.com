@@ -23,7 +23,7 @@ Then add the Tier 1 aggregate to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.12.0 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.14.0 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       - id: check-tier1 # every honesty + identity + security check
 ```
@@ -61,6 +61,7 @@ These checks find code whose failure reports success.
 | `check-argument-exit-swallow`     | A command substitution in an argument drops the inner command's exit status, and `set -e` does not catch it. Shellcheck's SC2155 covers the assignment form only. Opt out with `# allow-argument-exit: <reason>`.                                                     | `my_helper "$(risky_listing)"`                                   |
 | `check-soft-timeout`              | `timeout 60 cmd` sends SIGTERM, which a command can catch or ignore, so the limit is only a request. `--kill-after=N` adds SIGKILL and makes it real. Measured: an `npm` install outlived a 180-second limit by 8m36s. Opt out with `# allow-soft-timeout: <reason>`. | `timeout 60 curl …`                                              |
 | `check-flock-fixed-fd`            | `flock -x 9` locks a descriptor the file never opened, so the lock guards nothing. Open it yourself with `exec {lock_fd}>FILE`. Opt out with `# allow-fixed-fd: <reason>`.                                                                                            | `flock -x 9` with no `exec 9>`                                   |
+| `check-redirect-order`            | Bash applies redirects from left to right, so in `cmd <f 2>/dev/null` a failed open of `f` prints its error before `2>/dev/null` takes effect. Write `cmd 2>/dev/null <f`. Opt out with `# allow-redirect-order: <reason>`.                                           | `read -r x <"/proc/$pid/stat" 2>/dev/null`                       |
 | `check-pr-paths`                  | A `paths:` or `branches:` filter on `pull_request` can skip the workflow, so a required check never reports and the PR waits at “Expected — Waiting” forever.                                                                                                         | `pull_request: paths: ['src/**']` — a docs-only PR waits forever |
 | `check-pipefail-grep-pipe`        | A last stage that stops reading early kills the producer with SIGPIPE, and `pipefail` turns that into exit 141, which reads as “no match”.                                                                                                                            | `grep -q needle < <(gen)` — a match returns 141                  |
 | `check-frozen-head-sha`           | `github.event.pull_request.head.sha` freezes at trigger time, so after a force-push a diff range spans the whole branch and a checkout can name a commit that is gone. Read `git rev-parse HEAD` after checkout. Opt out with `# frozen-head-ok: <reason>`.           | `ref: ${{ github.event.pull_request.head.sha }}`                 |
@@ -140,11 +141,15 @@ These checks assume one CI architecture. Enable them only if you follow it. Two 
 | `check-unbounded-waits`            | A `git fetch` against a wedged endpoint hangs forever, eating a Ctrl-C in a hook or stranding a teardown. A `docker exec` in a `while`/`until` condition hangs the poll loop on its first probe to a wedged runtime. The bound goes first, so the call becomes its argument, and in a loop it bounds each probe.                                                                                                                                                                                                                                                                                | `git ls-remote origin` or `until docker exec c true` with no `timeout`  |
 | `check-shell-source-declarations`  | A `# shellcheck source=` path the tree lacks, masked by a nearby `disable=SC1091`, makes shellcheck exit 0 having read no library.                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `source=lib/x.bash` for a file that lives elsewhere                     |
 | `check-sparse-checkout-closure`    | A sparse checkout that omits a tracked file the job runs dies on the runner, and `git ls-files` still shows a complete tree so nothing else sees it coming. Declare run-time opens with `sparse-checkout-needs: <path>`.                                                                                                                                                                                                                                                                                                                                                                        | `sparse-checkout: .github/scripts` for a script importing `lib/util.py` |
+| `check-full-history-blobs`         | A checkout with `fetch-depth: 0` and no `filter:` downloads every version of every file, and a slow git cache can make that outlast the job's deadline. `--require-filter=<value>` demands one exact filter. Opt out with `# full-blobs-ok: <reason>` for a job that scans file content across a long history, or that another repository fetches from.                                                                                                                                                                                                                                         | `fetch-depth: 0` with no `filter: blob:none`                            |
+| `check-required-step`              | A script that works only after an earlier step fails in a job that skips that step. A job that runs only on a schedule or after a merge finds that on the default branch. The script declares the step with `# requires-step: <uses value>`. The check follows each `run:` step into the scripts it runs, and refuses a job with no earlier step that uses that value.                                                                                                                                                                                                                          | `bash install.sh` before `- uses: ./.github/actions/restore`            |
 | `check-artifact-pattern-overlap`   | A download `pattern:` that matches two different uploads in one run merges them, so the next step reads a file of the wrong shape. A matrix counts as one upload. Opt out with `# artifact-pattern-ok: <reason>`.                                                                                                                                                                                                                                                                                                                                                                               | `pattern: durations-*` beside an upload named `durations-map`           |
 | `check-embedded-program-length`    | A program passed to an interpreter as `-c`/`-e` text or a heredoc is a string, so no linter reads it. Opt out with `# allow-inline-program: <reason>`.                                                                                                                                                                                                                                                                                                                                                                                                                                          | `python3 - <<'PY'` with 40 lines                                        |
 | `check-main-push`                  | A script that pushes straight to a protected branch skips review and the required checks, and a merge queue restarts every queued group. Reads the refspec destination, so `main:topic` is clean. Opt out with `# main-push-ok: <reason>`.                                                                                                                                                                                                                                                                                                                                                      | `git push origin HEAD:main`                                             |
 | `check-rename-onto-symlink`        | A rename replaces a destination symlink instead of following it, so an atomic write detaches a config file kept as a link. Opt out with `# allow-rename-onto-symlink: <reason>`.                                                                                                                                                                                                                                                                                                                                                                                                                | `mv "$f.tmp" "$f"`                                                      |
 | `check-secondary-checkout-imports` | A Node script run out of a second `actions/checkout` `path:` tree has no `node_modules` there, so a bare import fails on the runner alone. Fires only when the job installs no Node dependencies. Opt out with `# allow-secondary-checkout-import: <reason>`.                                                                                                                                                                                                                                                                                                                                   | `bash _ci/x.sh` whose script runs `node …/y.mjs` importing `smol-toml`  |
+
+`check-cancellable-required-check`, `check-pending-cancel-concurrency` and `check-required-event-closure` treat a job as gating when it carries `# required-check: true` or when `.mergify.yml` names its check in a `check-success=<name>` condition of a queue rule's `queue_conditions` or `merge_conditions`. Any such name counts, whatever `or:` or `base=` surrounds it.
 
 ### Unrelated bonus checks (Extras)
 
@@ -204,7 +209,7 @@ Start here enables Tier 1 through one aggregate id. This section is the full men
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.12.0 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.14.0 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       # ── Tier 1 · honesty, identity and security (default-on) ──
       # One id, so a Tier 1 check added in a later release runs as soon as you
@@ -214,6 +219,8 @@ repos:
       # ── Tier 2 · Opinionated (opt-in: uncomment to enable) ──
       # - id: check-job-timeout          # every job must declare timeout-minutes
       # - id: check-uncached-download    # a pinned download in a job with no cache
+      # - id: check-full-history-blobs  # fetch-depth: 0 must carry a blob filter
+      # - id: check-required-step       # a job runs the step a script declares with `# requires-step:`
       # - id: check-always-reporter      # assumes a decide job; takes an always() reporter or a fail-closed twin
       # - id: check-required-reporter    # classify each always() reporter required-check: true|false
       # - id: check-required-event-closure  # every job a required check needs runs on every event it gates
@@ -291,7 +298,7 @@ Select on either axis with `check-select`. It takes `--select` (repeatable, unio
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.12.0
+    rev: v1.14.0
     hooks:
       - id: check-select
         args: [--select, "tag:security", --select, "tag:secrets"]
@@ -344,7 +351,7 @@ One check in a tier can need tighter file scoping than the rest. For example, `c
 
 ```yaml
 - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-  rev: v1.12.0
+  rev: v1.14.0
   hooks:
     - id: check-tier1
       args: [--skip, check_exit_suppression] # drop it from the aggregate...
