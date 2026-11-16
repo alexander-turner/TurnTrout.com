@@ -4,27 +4,38 @@
 # expose scopes via the API response header).
 #
 # Inputs (env):
-#   TOKEN  GitHub token to inspect
+#   TOKEN              GitHub token to inspect
+#   TOKEN_SECRET_NAME  the repository secret TOKEN came from, which every message
+#                      names: that is the secret the user must fix
 
 set -euo pipefail
 
 : "${TOKEN:?TOKEN must be set}"
+: "${TOKEN_SECRET_NAME:?TOKEN_SECRET_NAME must be set}"
 
 # Capture stderr so a network error gets surfaced instead of silently producing
 # an empty $HEADERS (which would misclassify a classic PAT as fine-grained).
 if ! HEADERS=$(curl --proto '=https' -sSf -I -H "Authorization: token $TOKEN" \
   https://api.github.com/user 2>&1); then
-  echo "::error::Could not query GitHub to validate TEMPLATE_SYNC_TOKEN scopes:" >&2
+  # A shared token that has spent its hourly quota fails here too. Name that
+  # cause: "could not validate scopes" sends the reader to the token's scopes.
+  if grep -qiE '^x-ratelimit-remaining: 0[[:space:]]*$' <<<"$HEADERS"; then
+    reset=$(grep -i '^x-ratelimit-reset:' <<<"$HEADERS" | sed 's/^[^:]*: //' | tr -d '\r')
+    echo "::error::${TOKEN_SECRET_NAME} has used its whole GitHub API rate limit until $(date -u -d "@${reset}" '+%H:%M UTC'). Another workflow spends the same token's quota; give this one its own token or move its schedule." >&2
+    exit 1
+  fi
+  echo "::error::Could not query GitHub to validate ${TOKEN_SECRET_NAME} scopes:" >&2
   echo "$HEADERS" >&2
   exit 1
 fi
 
-if echo "$HEADERS" | grep -qi '^x-oauth-scopes:'; then
+if grep -qi '^x-oauth-scopes:' <<<"$HEADERS"; then
   SCOPES=$(echo "$HEADERS" | grep -i '^x-oauth-scopes:' | sed 's/^[^:]*: //' | tr -d '\r\n')
-  if echo "$SCOPES" | tr ',' '\n' | sed 's/^ *//' | grep -qx 'workflow'; then
+  scope_list="$(tr ',' '\n' <<<"$SCOPES" | sed 's/^ *//')"
+  if grep -qx 'workflow' <<<"$scope_list"; then
     echo "Classic PAT has 'workflow' scope."
   else
-    echo "::error::Classic TEMPLATE_SYNC_TOKEN lacks the 'workflow' scope, which GitHub requires to push changes to .github/workflows/ files. Add the 'workflow' scope to your PAT at https://github.com/settings/tokens and update the TEMPLATE_SYNC_TOKEN repository secret."
+    echo "::error::Classic ${TOKEN_SECRET_NAME} lacks the 'workflow' scope, which GitHub requires to push changes to .github/workflows/ files. Add the 'workflow' scope to your PAT at https://github.com/settings/tokens and update the ${TOKEN_SECRET_NAME} repository secret."
     exit 1
   fi
 else
