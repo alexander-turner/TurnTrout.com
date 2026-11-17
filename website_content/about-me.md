@@ -4,7 +4,7 @@ hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/about-me.jpg
 description: I'm TurnTrout, but the United States government insists on calling me "Alexander Matt Turner." I like writing and learning about lots of stuff.
 date_published: 2024-10-27
-date_updated: 2026-10-31
+date_updated: 2026-11-17
 tags:
   - personal
 title: About me
@@ -35,9 +35,6 @@ Why do you love geese so much?
 
 How was this website designed?
 : Refer to [@title.](/design)
-
-`TurnTrout`, you're amazing and handsome and I want to date you!
-: My dating doc resides [on this page.](/date-me) Check to see if we're compatible!
 
 # Contact me
 
