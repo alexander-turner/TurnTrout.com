@@ -36,9 +36,6 @@ Why do you love geese so much?
 How was this website designed?
 : Refer to [@title.](/design)
 
-`TurnTrout`, you're amazing and handsome and I want to date you!
-: My dating doc resides [on this page.](/date-me) Check to see if we're compatible!
-
 # Contact me
 
 My email is [`alex@turntrout.com`](mailto:alex@turntrout.com). While I'm not guaranteed to reply, I always appreciate a good-faith message. Please feel free to write to me! I feel happy to know if and how my writing makes a difference for folks. I also like to hear about new alignment research ideas. 😄
