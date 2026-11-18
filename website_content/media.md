@@ -24,6 +24,9 @@ date_published: 2026-10-21
 
 I've spoken publicly since [leaving Google DeepMind](/why-i-left-google-deepmind). Every entry links to the original and credits the outlet that holds the rights.
 
+November 8th, 2026 · _60 Minutes_ Australia
+: Television segment by Adam Hegarty on whether AI can still be slowed down. [Watch "Is it too late to stop AI from taking over the world?" on YouTube](https://www.youtube.com/watch?v=XMxcSf9XkbQ). © Nine Network.
+
 November 2026 · ProSieben, _Galileo_
 : German-language television segment, "Google whistleblower speaks out: why he quit his million-dollar job out of fear of AI." [Watch on YouTube](https://www.youtube.com/watch?v=0DhkXesMksQ). © ProSieben.
 

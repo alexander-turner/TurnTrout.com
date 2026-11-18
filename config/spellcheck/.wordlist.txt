@@ -3471,3 +3471,4 @@ Substack
 ProSieben
 Galileo
 CodeMiko
+Hegarty
