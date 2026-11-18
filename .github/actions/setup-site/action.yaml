@@ -197,19 +197,21 @@ runs:
     # apt still verifies every package against Ubuntu's GPG-signed archive,
     # and exact pins broke constantly as Ubuntu garbage-collected superseded
     # patch versions from the mirror.
-    # GitHub-hosted runners ship with `azure.archive.ubuntu.com` as the
-    # priority-1 mirror in /etc/apt/apt-mirrors.txt. That mirror
-    # periodically throttles to ~100 kB/s, which made install steps
-    # consistently exceed any reasonable timeout. Drop the Azure entry so
-    # apt falls through to canonical `archive.ubuntu.com` immediately.
-    - name: Demote Azure apt mirror
+    # GitHub-hosted runners ship with a cloud-regional mirror
+    # (`azure.archive.ubuntu.com`, `us-east-2.ec2.archive.ubuntu.com`, ...)
+    # as the priority-1 entry in /etc/apt/apt-mirrors.txt. Those mirrors
+    # periodically throttle to ~100 kB/s, which made install steps
+    # consistently exceed any reasonable timeout. Point every regional
+    # host at canonical `archive.ubuntu.com` instead.
+    - name: Demote regional apt mirrors
       if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
       run: |
-        if [ -f /etc/apt/apt-mirrors.txt ]; then
-          sudo sed -i '\|azure\.archive\.ubuntu\.com|d' /etc/apt/apt-mirrors.txt
-        fi
-        sudo sed -i 's|//azure\.archive\.ubuntu\.com/ubuntu|//archive.ubuntu.com/ubuntu|g' \
-          /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
+        regional='s|//[a-z0-9.-]*\.archive\.ubuntu\.com/ubuntu|//archive.ubuntu.com/ubuntu|g'
+        for f in /etc/apt/apt-mirrors.txt /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
+          if [ -f "$f" ]; then
+            sudo sed -i "$regional" "$f"
+          fi
+        done
       shell: bash
 
     - name: Install system packages
@@ -218,7 +220,10 @@ runs:
       with:
         max-attempts: "3"
         timeout-minutes: "10"
+        # `dpkg --configure -a` finishes any unpack a timed-out attempt
+        # left behind; without it the retry aborts on "dpkg was interrupted".
         command: |
+          sudo dpkg --configure -a && \
           sudo apt-get update && \
           sudo apt-get install -y --no-install-recommends \
             libxml2-utils \
@@ -235,5 +240,6 @@ runs:
         max-attempts: "3"
         timeout-minutes: "5"
         command: |
+          sudo dpkg --configure -a && \
           sudo apt-get install -y --no-install-recommends rclone || \
             (curl -sSL https://rclone.org/install.sh | sudo bash)
