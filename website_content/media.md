@@ -24,6 +24,9 @@ date_published: 2026-10-21
 
 I've spoken publicly since [leaving Google DeepMind](/why-i-left-google-deepmind). Every entry links to the original and credits the outlet that holds the rights.
 
+November 2026 · CodeMiko
+: Live-stream interview. [Watch "What Happens When AI Starts Hacking on Its Own?" on YouTube](https://www.youtube.com/watch?v=qYSjy6AMEWI). © CodeMiko.
+
 November 2026 · ProSieben, _Galileo_
 : German-language television segment, "Google whistleblower speaks out: why he quit his million-dollar job out of fear of AI." [Watch on YouTube](https://www.youtube.com/watch?v=0DhkXesMksQ). © ProSieben.
 
