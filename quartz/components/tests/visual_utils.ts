@@ -409,7 +409,7 @@ export async function takeRegressionScreenshot(
       await showVideoPosters(elementToScreenshot ?? page)
       await pinDecodableVideoSource(page, elementToScreenshot)
       await pauseMediaElements(page, elementToScreenshot)
-      await waitForVideosPainted(elementToScreenshot ?? page)
+      await waitForVideosPainted(elementToScreenshot ?? page, playwrightScreenshotOptions.clip)
     }
 
     if (!skipStabilityWait) {
@@ -832,7 +832,9 @@ async function pinDecodableVideoSource(page: Page, scope?: Locator): Promise<voi
 
 /**
  * Blocks until every poster-less video has actually painted its frame-0 to the
- * compositor. Videos that a clipping ancestor hides entirely are skipped.
+ * compositor. Videos that a clipping ancestor hides entirely, or that lie
+ * wholly outside `captureRect` (viewport coordinates, as Playwright's `clip`),
+ * are skipped: they contribute no pixels to the capture.
  *
  * `pauseMediaElements` seeks videos to currentTime 0, but `paused`/`currentTime
  * === 0` are satisfied even when the engine (notably WebKit) has presented no
@@ -844,30 +846,43 @@ async function pinDecodableVideoSource(page: Page, scope?: Locator): Promise<voi
  * screenshot proceed: a blank-video capture that gets approved poisons the
  * shared R2 baselines for every later run.
  */
-export async function waitForVideosPainted(scope: Page | Locator): Promise<void> {
+export async function waitForVideosPainted(
+  scope: Page | Locator,
+  captureRect?: Readonly<{ x: number; y: number; width: number; height: number }>,
+): Promise<void> {
   for (const video of await scope.locator(DECODED_VIDEO_SELECTOR).all()) {
     const handle = await video.elementHandle()
     if (!handle) throw new Error("Could not get element handle for video")
     await handle.evaluate(
-      (el, dataTimeoutMs) =>
+      (el, { dataTimeoutMs, rect }) =>
         new Promise<void>((resolve, reject) => {
           const videoEl = el as HTMLVideoElement & {
             requestVideoFrameCallback?: (cb: () => void) => number
           }
+          const videoBox = videoEl.getBoundingClientRect()
+          if (
+            rect &&
+            (videoBox.right <= rect.x ||
+              videoBox.left >= rect.x + rect.width ||
+              videoBox.bottom <= rect.y ||
+              videoBox.top >= rect.y + rect.height)
+          ) {
+            resolve()
+            return
+          }
           // A video that a clipping ancestor (e.g. the scrolled search preview)
           // hides entirely contributes no pixels to the capture, and WebKit
           // may never advance its load while it stays out of view.
-          const videoRect = videoEl.getBoundingClientRect()
           for (let node = videoEl.parentElement; node; node = node.parentElement) {
             const { overflowX, overflowY } = getComputedStyle(node)
             if (overflowX === "visible" && overflowY === "visible") continue
             const clip = node.getBoundingClientRect()
             const clipsX =
               overflowX !== "visible" &&
-              (videoRect.right <= clip.left || videoRect.left >= clip.right)
+              (videoBox.right <= clip.left || videoBox.left >= clip.right)
             const clipsY =
               overflowY !== "visible" &&
-              (videoRect.bottom <= clip.top || videoRect.top >= clip.bottom)
+              (videoBox.bottom <= clip.top || videoBox.top >= clip.bottom)
             if (clipsX || clipsY) {
               resolve()
               return
@@ -938,7 +953,7 @@ export async function waitForVideosPainted(scope: Page | Locator): Promise<void>
             }
           }
         }),
-      VIDEO_PAINT_TIMEOUT_MS,
+      { dataTimeoutMs: VIDEO_PAINT_TIMEOUT_MS, rect: captureRect },
     )
     await handle.dispose()
   }
