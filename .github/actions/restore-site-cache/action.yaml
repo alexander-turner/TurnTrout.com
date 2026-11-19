@@ -17,7 +17,7 @@ runs:
     - name: Restore built site from cache (attempt 1)
       id: restore-1
       continue-on-error: true
-      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: public/
         key: ${{ inputs.key }}
@@ -30,7 +30,7 @@ runs:
 
     - name: Restore built site from cache (retry)
       if: steps.restore-1.outcome == 'failure'
-      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: public/
         key: ${{ inputs.key }}
