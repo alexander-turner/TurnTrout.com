@@ -834,6 +834,21 @@ test.describe("waitForVideosPainted", () => {
 
     await expect(waitForVideosPainted(page.locator("#scroller"))).resolves.toBeUndefined()
   })
+
+  test("skips a stalled video outside the capture rect", async ({ page }) => {
+    await page.route("**/visual-test-stalled.mp4", () => undefined)
+    await page.setContent(
+      `
+      <p style="height: 50px; margin: 0">Captured text</p>
+      <video muted style="display: block; margin-top: 2000px" src="http://localhost:8080/visual-test-stalled.mp4"></video>
+    `,
+      { waitUntil: "domcontentloaded" },
+    )
+
+    await expect(
+      waitForVideosPainted(page, { x: 0, y: 0, width: 200, height: 50 }),
+    ).resolves.toBeUndefined()
+  })
 })
 
 test.describe("getAllWithWait", () => {
