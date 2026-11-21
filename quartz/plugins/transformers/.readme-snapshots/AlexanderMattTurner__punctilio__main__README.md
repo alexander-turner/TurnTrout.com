@@ -149,7 +149,7 @@ transform(text, {
   degrees: false, // 20 C → 20 °C
   superscript: false, // 1st → 1ˢᵗ
   ligatures: false, // ??? → ⁇, ?! → ⁈, !? → ⁉, !!! → !
-  nbsp: true, // non-breaking spaces (after honorifics, between numbers and units, etc.)
+  nbsp: true, // non-breaking spaces (after honorifics, between numbers and units, etc.); { lastWord: false, shortWords: false } drops the widow and short-word glue
 });
 ```
 
@@ -243,7 +243,7 @@ A `.pre-commit-hooks.yaml` ships in the package, so [pre-commit](https://pre-com
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/punctilio
-    rev: v5.6.2
+    rev: v5.7.0
     hooks:
       - id: punctilio          # rewrites *.md / *.html in place
       - id: punctilio-check    # or: fail without writing (CI-friendly)
