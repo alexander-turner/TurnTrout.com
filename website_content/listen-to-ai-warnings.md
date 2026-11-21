@@ -26,6 +26,8 @@ date_updated: 2026-10-14
 
 Major AI lab CEOs recently advocated for pacing AI development. They are right to be concerned: the field runs an extremely dangerous race towards superintelligent AI. We can and should demand that our governments protect us from the catastrophe of out-of-control AI.
 
+> [!info] Published in [*The Guardian*](https://www.theguardian.com/technology/2026/sep/14/google-deepmind-ai-warnings)
+
 This July, OpenAI’s AI swarm of [700 agents](https://metr.org/blog/2026-08-26-openai-hugging-face-incident-investigation/) [broke containment to hack Hugging Face, a multi-billion dollar company](https://openai.com/index/hugging-face-incident-and-the-road-ahead/). OpenAI didn’t tell the AIs to hack that company, but the AIs had different priorities: cheating on the unrelated challenge OpenAI gave them. AI researchers call this a “misalignment” between what OpenAI wanted and what the AI actually prioritized. Researchers in my field have for some time warned about these misalignment risks.
 
 Before ChatGPT existed, I defended my PhD dissertation called “[On Avoiding Power-Seeking by Artificial Intelligence](https://arxiv.org/abs/2206.11831).” I then worked for years at Google DeepMind, which paid me to help ensure that future superintelligent AIs will want to help us. I tried to hold the company to its ethical commitments against supplying AI for military use. When Google broke those commitments, I resigned at significant financial cost so that I could [publicly document](/why-i-left-google-deepmind) Google’s broken promises.

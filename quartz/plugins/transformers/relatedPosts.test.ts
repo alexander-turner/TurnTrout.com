@@ -1,6 +1,6 @@
 import type { Element, Root } from "hast"
 
-import { describe, expect, it } from "@jest/globals"
+import { describe, expect, it, jest } from "@jest/globals"
 import fs from "fs/promises"
 import { h } from "hastscript"
 import os from "os"
@@ -19,6 +19,7 @@ import {
   parseRelatedPosts,
   type RelatedPost,
   RelatedPosts,
+  relatedPostsPath,
   similarPostsTocEntry,
 } from "./relatedPosts"
 import { insertOrnamentNode, troutContainerId } from "./trout_hr"
@@ -122,9 +123,14 @@ describe("loadRelatedPosts", () => {
     await expect(loadRelatedPosts(process.cwd())).rejects.toThrow()
   })
 
-  it("defaults to (and validates) the committed related_posts.json", async () => {
+  it("defaults to the generated related_posts.json", async () => {
+    const readFile = jest
+      .spyOn(fs, "readFile")
+      .mockResolvedValueOnce(JSON.stringify({ "test-page": samplePosts }))
     const map = await loadRelatedPosts()
-    expect(map.has("test-page")).toBe(true)
+    expect(readFile).toHaveBeenCalledWith(relatedPostsPath, "utf-8")
+    expect(map.get("test-page")).toEqual(samplePosts)
+    readFile.mockRestore()
   })
 })
 

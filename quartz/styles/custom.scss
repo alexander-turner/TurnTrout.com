@@ -1220,6 +1220,12 @@ img-comparison-slider {
 }
 
 $contribution-bullet-gap: calc(0.75 * $base-margin);
+$contribution-status-tracking: 0.06em;
+
+// EB Garamond's OS/2 cap height (1348/2048 em) overstates its capitals, whose
+// flat tops sit at 1221/2048 em; a `cap`-trimmed box therefore holds them low
+// by half the difference.
+$contribution-status-cap-overshoot: 0.03em;
 
 // External contributions on /open-source: each contribution's bullet is its
 // status pill, hanging in the list's indent.
@@ -1256,10 +1262,25 @@ $contribution-bullet-gap: calc(0.75 * $base-margin);
     border: 1px solid currentcolor;
     border-radius: 999px;
     font-size: var(--font-size-minus-2);
-    letter-spacing: 0.06em;
+    letter-spacing: $contribution-status-tracking;
+
+    // Letter-spacing trails the last letter too; matching it on the start
+    // edge centers the label horizontally.
+    padding-inline-start: $contribution-status-tracking;
     text-align: center;
     text-transform: uppercase;
     white-space: nowrap;
+  }
+
+  // The line box's ascent and descent differ (and differ by platform), so
+  // the capitals only center vertically once the box is trimmed to them and
+  // padded back out to the line height.
+  @supports (text-box: trim-both cap alphabetic) {
+    .contribution-status {
+      text-box: trim-both cap alphabetic;
+      padding-top: calc((1lh - 1cap) / 2 - #{$contribution-status-cap-overshoot});
+      padding-bottom: calc((1lh - 1cap) / 2 + #{$contribution-status-cap-overshoot});
+    }
   }
 
   .contribution-merged {

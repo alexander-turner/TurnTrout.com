@@ -7,13 +7,13 @@
 .nowrap-span {
   white-space: nowrap;
 
-  // Glued math and code paths keep their inner break opportunities. Their box
+  // Glued math and breakable code keep their inner break opportunities. Their box
   // edges stay in `nowrap` context, so adjacent punctuation stays beside them.
   // Math with a single `.base` has no inner opportunity, and in `normal` context
   // Chromium breaks after it when it overflows the line, stranding the
   // punctuation below.
   .katex-html:has(> .base + .base),
-  .inline-code-path {
+  .inline-code-breakable {
     white-space: normal;
   }
 
@@ -360,7 +360,7 @@ svg.favicon[data-domain="amazon_com"] {
 }
 
 // Four captions across squeeze each into a column too narrow for phrases like
-// "is a radial-gradient:", so the atomic code wraps awkwardly. Cap at two
+// "is a radial-gradient:", so the code wraps awkwardly. Cap at two
 // columns, and one on mobile, so each caption has room to wrap naturally.
 #big-favicon-demo .subfigure {
   flex-basis: 45%;

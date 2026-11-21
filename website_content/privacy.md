@@ -21,7 +21,7 @@ lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
 original_url: https://www.lesswrong.com/posts/BPyieRshykmrdY36A/an-opinionated-guide-to-privacy-despite-authoritarianism
 date_published: 2025-10-28
-date_updated: 2026-10-29
+date_updated: 2026-11-07
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -69,9 +69,6 @@ George's story isn't an isolated incident. ProPublica [found that "more than 170
 This guide will help you protect your communications and information so you can think and speak freely. The privacy won't be perfect, but it should give you  breathing room. As more people reclaim their privacy, their networks grow more secure and resistant to authoritarian punishment.
 
 Let's get started.
-
-> [!info]  Conflict of interest disclaimer
-> When I wrote the original version of this article, my day job was AI alignment research at [Google DeepMind](https://deepmind.google/). [I have since left](/why-i-left-google-deepmind).
 
 # What should I read?
 

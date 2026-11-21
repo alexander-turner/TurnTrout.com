@@ -11,7 +11,7 @@ import {
   lastTextChar,
   NO_GAP_PREDECESSORS,
   precedingBoundary,
-  textLength,
+  shortHyphenFragmentRanges,
 } from "./inlineCodeSpacing"
 
 const processHtmlWithPlugin = async (html: string): Promise<string> => {
@@ -31,80 +31,115 @@ describe("InlineCodeSpacing", () => {
   describe("gives the preceding word a gap", () => {
     it("wraps the trailing word's last glyph in a gap span, leaving the code in place", async () => {
       const out = await processHtmlWithPlugin("<p>of <code>grep</code></p>")
-      expect(out).toBe(
-        `<p>o<span class="code-gap-after">f</span> <code class="inline-code-atomic">grep</code></p>`,
-      )
+      expect(out).toBe('<p>o<span class="code-gap-after">f</span> <code>grep</code></p>')
     })
 
     it("leaves earlier text in place, gapping only the trailing word", async () => {
       const out = await processHtmlWithPlugin("<p>help of <code>grep</code></p>")
-      expect(out).toBe(
-        `<p>help o<span class="code-gap-after">f</span> <code class="inline-code-atomic">grep</code></p>`,
-      )
+      expect(out).toBe('<p>help o<span class="code-gap-after">f</span> <code>grep</code></p>')
     })
 
     it("gaps the word before a wrapping link, not the link or its code", async () => {
       const out = await processHtmlWithPlugin('<p>help of <a href="#"><code>grep</code></a></p>')
       expect(out).toBe(
-        `<p>help o<span class="code-gap-after">f</span> ` +
-          `<a href="#"><code class="inline-code-atomic">grep</code></a></p>`,
+        '<p>help o<span class="code-gap-after">f</span> <a href="#"><code>grep</code></a></p>',
       )
     })
 
     it("keeps the gap when the code abuts non-hugging punctuation", async () => {
       const out = await processHtmlWithPlugin("<p>war—<code>grep</code></p>")
-      expect(out).toBe(
-        `<p>war<span class="code-gap-after">—</span><code class="inline-code-atomic">grep</code></p>`,
-      )
+      expect(out).toBe('<p>war<span class="code-gap-after">—</span><code>grep</code></p>')
     })
 
     it("handles several codes sharing a parent", async () => {
       const out = await processHtmlWithPlugin("<p>a <code>one</code> b <code>two</code></p>")
       expect(out).toBe(
-        `<p><span class="code-gap-after">a</span> <code class="inline-code-atomic">one</code> ` +
-          `<span class="code-gap-after">b</span> <code class="inline-code-atomic">two</code></p>`,
+        '<p><span class="code-gap-after">a</span> <code>one</code> <span class="code-gap-after">b</span> <code>two</code></p>',
       )
     })
   })
 
-  describe("marks short codes atomic so they don't break mid-token", () => {
-    it("marks a short hyphenated code atomic", async () => {
-      const out = await processHtmlWithPlugin("<p>a <code>conic-gradient</code></p>")
-      expect(out).toBe(
-        '<p><span class="code-gap-after">a</span> <code class="inline-code-atomic">conic-gradient</code></p>',
-      )
-    })
-
-    it("leaves a long code breakable (no atomic class)", async () => {
-      const long = "alexander-turner-claude-automation-template"
-      const out = await processHtmlWithPlugin(`<p>see <code>${long}</code></p>`)
-      expect(out).not.toContain("inline-code-atomic")
-      expect(out).toBe(`<p>se<span class="code-gap-after">e</span> <code>${long}</code></p>`)
-    })
-
-    it("does not mark block code inside <pre>", async () => {
-      const out = await processHtmlWithPlugin("<pre><code>grep</code></pre>")
-      expect(out).not.toContain("inline-code-atomic")
-    })
-  })
-
-  describe("lets a path break after its inner slashes", () => {
+  describe("lets a code break in place at its seams", () => {
     it.each([
       ["owner/repo", "owner/<wbr>repo"],
       ["config/lint/.markdownlint.jsonc", "config/<wbr>lint/<wbr>.markdownlint.jsonc"],
-      ["https://github.com/a", "https://github.com/<wbr>a"],
-    ])("breaks %s after its slashes and marks it a path", async (path, expected) => {
-      const out = await processHtmlWithPlugin(`<p>see <code>${path}</code></p>`)
+      ["https://github.com/abc", "https://github.com/<wbr>abc"],
+      ["print(is_prime(3))", "print(<wbr>is_prime(<wbr>3))"],
+      ["a=foo, bar", "a=foo, bar"],
+      ["width=100px", "width=<wbr>100px"],
+    ])("breaks %s at its seams and marks it breakable", async (code, expected) => {
+      const out = await processHtmlWithPlugin(`<p>see <code>${code}</code></p>`)
+      const marked = expected.includes("<wbr>") ? ' class="inline-code-breakable"' : ""
       expect(out).toBe(
-        `<p>se<span class="code-gap-after">e</span> <code class="inline-code-path">${expected}</code></p>`,
+        `<p>se<span class="code-gap-after">e</span> <code${marked}>${expected}</code></p>`,
       )
     })
 
-    it.each(["/shard-theory", "a / b", "and/", "&#x3C;/analysis>"])(
-      "keeps %s atomic",
+    it.each([
+      ["r/Fantasy_World_Building", "r/Fantasy_World_Building"],
+      ["f(x)", "f(x)"],
+      ["abc/d", "abc/d"],
+      ["abc/de/fgh", "abc/<wbr>de/<wbr>fgh"],
+      ["https://r/abc", "https://r/<wbr>abc"],
+    ])(
+      "leaves no fragment of %s shorter than three characters at a line edge",
+      async (code, expected) => {
+        const out = await processHtmlWithPlugin(`<p>see <code>${code}</code></p>`)
+        expect(out).toContain(`${expected}</code>`)
+      },
+    )
+
+    it.each(["README.md", "turntrout.com", "self.latent_size"])(
+      "does not break %s before its dot",
       async (code) => {
         const out = await processHtmlWithPlugin(`<p>see <code>${code}</code></p>`)
-        expect(out).toContain(`<code class="inline-code-atomic">${code}</code>`)
+        expect(out).toContain(`<code>${code}</code>`)
+      },
+    )
+
+    const held = (text: string) => `<span class="code-segment">${text}</span>`
+    it.each([
+      ["--sandbox", held("--sandbox")],
+      ["--disable-lcd-text", `${held("--disable-")}lcd-text`],
+      ["a-b-c", held("a-b-c")],
+      ["gpt-neox-20b", "gpt-neox-20b"],
+      ["-1 * micromorts", `${held("-1")} * micromorts`],
+    ])("holds %s so no hyphen break leaves a short fragment", async (code, expected) => {
+      const out = await processHtmlWithPlugin(`<p>see <code>${code}</code></p>`)
+      expect(out).toContain(`<code>${expected}</code>`)
+    })
+
+    it("holds hyphen fragments only in a code's own text", async () => {
+      const out = await processHtmlWithPlugin("<p>see <code><em>a-b</em> --x</code></p>")
+      expect(out).toContain(`<code><em>a-b</em> ${held("--x")}</code>`)
+    })
+
+    it("leaves a code with no seams to break at its own hyphens", async () => {
+      const out = await processHtmlWithPlugin("<p>a <code>conic-gradient</code></p>")
+      expect(out).toBe('<p><span class="code-gap-after">a</span> <code>conic-gradient</code></p>')
+    })
+
+    it("does not touch block code inside <pre>", async () => {
+      const out = await processHtmlWithPlugin("<pre><code>a/b</code></pre>")
+      expect(out).toBe("<pre><code>a/b</code></pre>")
+    })
+
+    const segment = (text: string) => `<span class="code-segment">${text}</span>`
+    const longSegment = "micromark-extension-gfm-autolink-literal"
+    it.each([
+      ["alexander-turner/TurnTrout.com", `${segment("alexander-turner/")}<wbr>TurnTrout.com`],
+      ["tests/visual-baselines/", `tests/<wbr>${segment("visual-baselines/")}`],
+      [`micromark/${longSegment}`, `micromark/<wbr>${longSegment}`],
+    ])("holds each short hyphenated segment of %s whole", async (code, expected) => {
+      const out = await processHtmlWithPlugin(`<p>see <code>${code}</code></p>`)
+      expect(out).toContain(`<code class="inline-code-breakable">${expected}</code>`)
+    })
+
+    it.each(["/shard-theory", "a / b", "and/", "&#x3C;/analysis>"])(
+      "inserts no break into %s",
+      async (code) => {
+        const out = await processHtmlWithPlugin(`<p>see <code>${code}</code></p>`)
+        expect(out).toContain(`<code>${code}</code>`)
       },
     )
   })
@@ -113,8 +148,7 @@ describe("InlineCodeSpacing", () => {
     it("leaves closing punctuation as plain text before the next code", async () => {
       const out = await processHtmlWithPlugin("<p>see <code>one</code>); <code>two</code> ok</p>")
       expect(out).toBe(
-        `<p>se<span class="code-gap-after">e</span> <code class="inline-code-atomic">one</code>); ` +
-          '<code class="inline-code-atomic">two</code> ok</p>',
+        '<p>se<span class="code-gap-after">e</span> <code>one</code>); <code>two</code> ok</p>',
       )
     })
 
@@ -131,9 +165,7 @@ describe("InlineCodeSpacing", () => {
 
     it("still gaps a real word that follows the closing punctuation", async () => {
       const out = await processHtmlWithPlugin("<p>a <code>one</code>); then <code>two</code></p>")
-      expect(out).toContain(
-        `the<span class="code-gap-after">n</span> <code class="inline-code-atomic">two</code>`,
-      )
+      expect(out).toContain('the<span class="code-gap-after">n</span> <code>two</code>')
     })
   })
 
@@ -177,17 +209,27 @@ describe("InlineCodeSpacing", () => {
     })
   })
 
-  describe("textLength", () => {
-    it("counts the characters of a text node", () => {
-      expect(textLength({ type: "text", value: "abc" })).toBe(3)
+  describe("shortHyphenFragmentRanges", () => {
+    it.each([
+      ["no hyphen", "abc def", []],
+      ["long fragments", "red-gems", []],
+      ["a leading hyphen run", "--sandbox", [[0, 9]]],
+      ["fragments sharing a hold", "a-b-c", [[0, 5]]],
+      [
+        "holds that only touch",
+        "a-bcd-efg-h",
+        [
+          [0, 6],
+          [6, 11],
+        ],
+      ],
+      ["a short fragment after a space", "go a-bcd", [[3, 8]]],
+    ])("finds ranges for %s", (_label, value, expected) => {
+      expect(shortHyphenFragmentRanges(value)).toEqual(expected)
     })
 
-    it("sums text across element children", () => {
-      expect(textLength(h("code", ["con", h("span", "ic")]) as Element)).toBe(5)
-    })
-
-    it("returns 0 for a non-text, non-element node", () => {
-      expect(textLength({ type: "comment", value: "x" })).toBe(0)
+    it("leaves a hold longer than a held segment breakable", () => {
+      expect(shortHyphenFragmentRanges(`a-${"b".repeat(40)}`)).toEqual([])
     })
   })
 

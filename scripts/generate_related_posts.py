@@ -4,9 +4,8 @@ Generate the "Similar links" neighbor map powering the related-posts block.
 For every article in ``website_content/*.md`` this script embeds a normalized
 ``title + description + truncated body`` once via Voyage AI, caches the vector
 (content-hash-invalidated), and writes the top-N cosine neighbors per article to
-``quartz/plugins/transformers/related_posts.json`` (committed; read at build
-time). The production build never calls the API — only this on-demand script
-does.
+``quartz/plugins/transformers/related_posts.json`` (gitignored; ``pnpm build``,
+``dev``, and ``start`` regenerate it before Quartz reads it).
 
 Cost controls:
 
@@ -15,9 +14,12 @@ Cost controls:
   re-uploaded at end, so fresh clones / CI never re-embed existing articles.
 - ``--budget`` caps how many not-yet-cached articles get embedded per run; the
   rest simply get no block until a later run embeds them.
+- **Without** ``VOYAGE_API_KEY`` the script never embeds: it reads the cache
+  from the public CDN and ranks with the cached vectors (stale ones included),
+  so local builds need no credentials.
 
-Requires ``VOYAGE_API_KEY`` plus the R2 credentials in ``utils.R2_REQUIRED_ENV``
-(only when actually embedding / syncing — ``--dry-run`` needs neither).
+With ``VOYAGE_API_KEY`` it also needs the R2 credentials in
+``utils.R2_REQUIRED_ENV`` to sync the cache. ``--dry-run`` needs neither.
 """
 
 from __future__ import annotations
@@ -35,6 +37,7 @@ from pathlib import Path
 from typing import Final, TypedDict
 
 import numpy as np
+import requests
 
 # Support `uv run python scripts/generate_related_posts.py`: when given a
 # script path, sys.path[0] is `scripts/`, not the project root.
@@ -59,6 +62,7 @@ NEIGHBORS_JSON: Final[Path] = TRANSFORMERS_DIR / "related_posts.json"
 # so it survives fresh clones without committing ~MBs of churny float vectors.
 CACHE_R2_KEY: Final[str] = "embeddings/related-posts-voyage.json"
 CACHE_R2_TARGET: Final[str] = f"r2:{R2_BUCKET_NAME}/{CACHE_R2_KEY}"
+CACHE_CDN_URL: Final[str] = f"{script_utils.CDN_BASE_URL}/{CACHE_R2_KEY}"
 
 _CONFIG = script_utils.load_shared_constants()["relatedPosts"]
 MODEL: Final[str] = str(_CONFIG["model"])
@@ -231,6 +235,21 @@ def download_cache_from_r2(local_path: Path) -> None:
         return
     _rclone_copyto(CACHE_R2_TARGET, str(local_path))
     logger.info("Downloaded embedding cache from %s", CACHE_R2_TARGET)
+
+
+def download_cache_from_cdn(local_path: Path) -> None:
+    """
+    Download the vector cache from the public CDN, needing no credentials.
+
+    No-op on a 404 (no cache published yet); other HTTP errors raise.
+    """
+    response = requests.get(CACHE_CDN_URL, timeout=60)
+    if response.status_code == 404:
+        logger.info("No embedding cache at %s; starting fresh.", CACHE_CDN_URL)
+        return
+    response.raise_for_status()
+    local_path.write_bytes(response.content)
+    logger.info("Downloaded embedding cache from %s", CACHE_CDN_URL)
 
 
 def upload_cache_to_r2(local_path: Path) -> None:
@@ -536,22 +555,27 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-    if not args.dry_run and not os.environ.get("VOYAGE_API_KEY"):
-        raise RuntimeError(
-            "VOYAGE_API_KEY not set — required to embed articles. "
-            "Use --dry-run to preview without it."
+    can_embed = bool(os.environ.get("VOYAGE_API_KEY"))
+    read_only = not args.dry_run and not can_embed
+    if read_only:
+        logger.warning(
+            "VOYAGE_API_KEY not set: ranking with the cached embeddings from "
+            "%s; new or changed articles are not re-embedded.",
+            CACHE_CDN_URL,
         )
 
     with tempfile.TemporaryDirectory() as tmp:
         cache_path = Path(tmp) / "related-posts-voyage.json"
-        if not args.dry_run:
+        if read_only:
+            download_cache_from_cdn(cache_path)
+        elif not args.dry_run:
             download_cache_from_r2(cache_path)
         result = generate(
             GenerateConfig(
                 cache_path=cache_path,
                 content_dir=args.content_dir,
                 neighbors_path=args.neighbors,
-                budget=args.budget,
+                budget=0 if read_only else args.budget,
                 dry_run=args.dry_run,
             )
         )
@@ -565,6 +589,14 @@ def main(argv: list[str] | None = None) -> int:
         result.skipped_over_budget,
     )
 
+    if read_only and result.uncovered:
+        logger.warning(
+            "%d content article(s) have no cached embedding and get no "
+            "related-posts block: %s. Set VOYAGE_API_KEY to embed them.",
+            len(result.uncovered),
+            ", ".join(result.uncovered),
+        )
+        return 0
     if not args.dry_run and not args.allow_incomplete and result.uncovered:
         logger.error(
             "%d content article(s) have no neighbor entry: %s\n"

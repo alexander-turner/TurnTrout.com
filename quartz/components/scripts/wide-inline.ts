@@ -1,31 +1,20 @@
-// Inline math and inline code paths are inline-blocks capped at their line's
-// width, so each moves to the next line whole when it fits there. A box wider
-// than its line fills the whole line, pushing its trailing punctuation and the
-// text after it onto the next line. A box that fits its line while the
-// punctuation and favicon glued to it do not leaves them nowhere to go: they
-// overflow the column or break away onto a row of their own. Either box is
-// marked with `WIDE_INLINE_CLASS`, which displays it inline so it wraps like
-// text. Whether a box fits depends on the live line width, so it is measured at
-// runtime.
+// Inline math is an inline-block capped at its line's width, so it moves to the
+// next line whole when it fits there. Math wider than its line fills the whole
+// line, pushing its trailing punctuation and the text after it onto the next
+// line. Math that fits its line while the punctuation and favicon glued to it do
+// not leaves them nowhere to go: they overflow the column or break away onto a
+// row of their own. Either box is marked with `WIDE_INLINE_CLASS`, which
+// displays it inline so it wraps like text. Whether a box fits depends on the
+// live line width, so it is measured at runtime.
 import { NOWRAP_SPAN_CLASS, WIDE_INLINE_CLASS } from "../constants"
 
-const BOX_SELECTOR = ":not(.katex-display) > .katex > .katex-html, .inline-code-path"
+const BOX_SELECTOR = ":not(.katex-display) > .katex > .katex-html"
 
-/**
- * One rect per segment of the box's content in reading order: a math box's
- * `.base` spans, or the line fragments of a code box's text.
- */
-function segmentRects(box: Element): readonly DOMRect[] {
-  const bases = box.querySelectorAll(":scope > .base")
-  if (bases.length > 0) return Array.from(bases, (base) => base.getBoundingClientRect())
-  const range = document.createRange()
-  range.selectNodeContents(box)
-  return Array.from(range.getClientRects())
-}
-
-/** Whether the box wraps onto more than one row. */
+/** Whether the box's `.base` spans wrap onto more than one row. */
 function wrapsInside(box: Element): boolean {
-  const rects = segmentRects(box)
+  const rects = Array.from(box.querySelectorAll(":scope > .base"), (base) =>
+    base.getBoundingClientRect(),
+  )
   if (rects.length < 2) return false
   // Segments differ in height, so rows compare by vertical midpoint.
   const middleOf = (rect: DOMRect) => (rect.top + rect.bottom) / 2

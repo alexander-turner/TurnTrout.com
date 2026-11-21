@@ -6,12 +6,20 @@
 // the shadow but not the nudge crowds every favicon it contains, and vice
 // versa. These mixins are the only sanctioned way to apply or remove faux
 // bold.
+// The displacement stays purely horizontal. A text-shadow repaints the
+// element's text decorations along with its glyphs, so any vertical component
+// would drop a second copy of every underline below the first and make the
+// line's weight depend on a paint pass engines are free to split per segment —
+// a word whose descender forces its own decoration segment then renders
+// visibly thinner than the words beside it. At zero vertical offset the shadow
+// copy of a horizontal rule lands back on the rule, leaving
+// text-decoration-thickness in sole charge of how heavy an underline looks.
 @mixin faux-bold($color: null) {
   --favicon-bold-nudge: #{$faux-bold-offset};
 
   // Sass drops a null from the value list, so one declaration serves both
   // the plain and the colored shadow.
-  text-shadow: $faux-bold-offset $faux-bold-offset $color;
+  text-shadow: $faux-bold-offset 0 $color;
 }
 
 @mixin faux-bold-off {

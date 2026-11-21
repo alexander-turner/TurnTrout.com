@@ -11,6 +11,7 @@ import {
   nudgeClassFor,
 } from "../../plugins/transformers/favicons"
 import { fauxBoldOffset } from "../../styles/variables"
+import { type ContextWrapper, FAUX_BOLD_WRAPPERS } from "./fauxBoldContexts"
 import { expect, test } from "./fixtures"
 import { gotoPage } from "./visual_utils"
 
@@ -346,32 +347,6 @@ async function measureProbes(page: Page, probes: readonly Probe[]): Promise<Meas
     return results
   }, probes)
 }
-
-interface ContextWrapper {
-  name: string
-  open: string
-  close: string
-  bolded: boolean
-}
-
-// Every rule that applies the faux-bold text-shadow, plus the .right reset
-// that removes it.
-const FAUX_BOLD_WRAPPERS: readonly ContextWrapper[] = [
-  { name: "strong", open: "<strong>", close: "</strong>", bolded: true },
-  { name: "title-cell", open: '<div class="title-cell">', close: "</div>", bolded: true },
-  {
-    name: "admonition-title",
-    open: '<span class="admonition-title-inner">',
-    close: "</span>",
-    bolded: true,
-  },
-  {
-    name: "right-reset",
-    open: '<div class="right"><strong>',
-    close: "</strong></div>",
-    bolded: false,
-  },
-]
 
 interface BoldMargins {
   plain: number

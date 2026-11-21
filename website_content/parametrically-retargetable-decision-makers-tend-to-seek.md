@@ -38,8 +38,16 @@ date_published: 2023-02-18
 original_url: https://www.lesswrong.com/posts/GY49CKBkEs3bEpteM/parametrically-retargetable-decision-makers-tend-to-seek
 skip_import: true
 description: "New theoretical results uncover a surprising truth: the ability to change an agent's goals can lead them to seek power."
-date_updated: 2026-10-12
+date_updated: 2026-11-01
 createBibtex: true
+paper:
+  title: "Parametrically Retargetable Decision-Makers Tend To Seek Power"
+  authors:
+    - Alexander Matt Turner
+    - Prasad Tadepalli
+  year: 2022
+  arxiv: "2206.13477"
+  booktitle: "Advances in Neural Information Processing Systems"
 ---
 
 [This paper](https://arxiv.org/abs/2206.13477)—accepted as a poster to NeurIPS 2022— is the sequel to [Optimal Policies Tend to Seek Power](https://arxiv.org/abs/1912.01683). The new theoretical results are extremely broad, discarding the requirements of full observability, optimal policies, or even requiring a finite number of options.

@@ -172,7 +172,18 @@ PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/
 
 ## Related posts (Similar links)
 
-Every content page needs an entry in `quartz/plugins/transformers/related_posts.json` (`built-site-checks` fails with "Missing related-posts block" otherwise). After adding a post or changing its title/description, regenerate with `pnpm related:build` and commit the JSON. In the cloud sandbox, rclone's S3 backend rejects `AWS_CA_BUNDLE` ("unsupported transport, \*fshttp.Transport"), so run it as `env -u AWS_CA_BUNDLE pnpm related:build`; `SSL_CERT_FILE` still supplies the proxy CA.
+Every content page needs an entry in `quartz/plugins/transformers/related_posts.json` (`built-site-checks` fails with "Missing related-posts block" otherwise). The JSON is gitignored: `pnpm build`/`dev`/`start`/`preview` run `pnpm related:build` first.
+
+- With `VOYAGE_API_KEY` (plus R2 credentials) set, as in CI's `build-site.yaml`, it embeds new or changed articles and uploads the vector cache back to R2.
+- Without the key it downloads the cache from the public CDN and ranks with the cached vectors, so an article that was never embedded gets no block (a warning, not an error). Direct `tsx quartz/bootstrap-cli.ts build` invocations (e.g. offline builds) skip generation and render no blocks unless the JSON already exists.
+
+In the cloud sandbox, rclone's S3 backend rejects `AWS_CA_BUNDLE` ("unsupported transport, \*fshttp.Transport"), so run it as `env -u AWS_CA_BUNDLE pnpm related:build`; `SSL_CERT_FILE` still supplies the proxy CA.
+
+## Social card images
+
+Every page declares `og:image:width/height` as `cardImageWidth`×`cardImageHeight` (1200×630) in `config/constants.json`, so each card—per-page `card_image` and the site-wide `defaultCardUrl`—must be exactly that size and under `maxCardImageSizeKb` (WhatsApp drops larger preview images). `scripts/source_file_checks.py` enforces both. `convert_markdown_yaml._convert_to_jpeg` center-crops to fit; pad instead (`magick in -resize 1200x630 -background white -gravity center -extent 1200x630 out.jpg`) when a crop would clip text.
+
+R2 assets are served `Cache-Control: public, max-age=31536000, immutable`, so never overwrite an existing key: upload a replacement under a new name and update the reference. In this sandbox, `rclone` needs `AWS_CA_BUNDLE= rclone --ca-cert /root/.ccr/ca-bundle.crt …`; its first PUT attempt returns 501 and the retry succeeds.
 
 ## External README snapshots
 
@@ -217,6 +228,28 @@ tuning spacing, run the pipeline in `scripts/notebooks/favicon_kerning_audit/`
 site, renders them with production CSS, measures ink-to-ink clearance, and
 emits a worst-first gallery. Target band for the horizontal ink gap is roughly
 1.5–4px at a 24px root font size.
+
+## Mobile font hinting (subfont subsets)
+
+Chrome on Android and Linux grid-fits the unhinted EB Garamond faces with
+Skrifa, a port of FreeType's autohinter, which computes alignment zones and
+assigns glyphs to "styles" from the whole font's cmap and GSUB. subfont's
+per-page subsets change both, so a font change can make production pages
+render differently from the full font even when the full font looks right.
+`scripts/build_fonts.py` keeps the two consistent; when touching fonts,
+`subfont.sh`, or the `-subfont-text` reference letters on the main face,
+compare a subset against its full font:
+
+- Headless Playwright Chromium renders unhinted by default. To get mobile-like
+  slight hinting, point `FONTCONFIG_FILE` at a fonts.conf that includes
+  `/etc/fonts/fonts.conf` and assigns `hinting` true and `hintstyle`
+  `hintslight`.
+- Render the same text with two `@font-face`s (full font vs. the subset that
+  `subfont` inlines into a built page), with line heights that are whole device
+  pixels, and diff the rows. Also diff full vs. full to get the noise floor.
+- To go glyph-by-glyph, subset with `uharfbuzz` using `RETAIN_GIDS` and compare
+  hinted outlines at 37–63 ppem (14–24px at DPR 2.625) with `skrifa`
+  (`Engine::Auto`, `SmoothMode::Light`).
 
 ## Visual regression testing
 

@@ -1,6 +1,6 @@
 # `agent-sanitizer`
 
-**Cleans untrusted text before your agent reads it.** An attacker hides a payload where a person cannot see it but the model still reads it: invisible Unicode, ANSI escapes, human-hidden HTML, confusable glyphs, look-alike hosts, and exfil-shaped URLs. This library handles each channel. Easy to use as a Claude Code plugin, and the plugin itself is recommended by [`alignment-hive`](https://github.com/crazytieguy/alignment-hive/)!
+**Cleans untrusted text before your agent reads it.** An attacker hides a payload where a person cannot see it but the model still reads it: invisible Unicode, ANSI escapes, human-hidden HTML, confusable glyphs, look-alike hosts, and exfil-shaped URLs. This library handles each channel. Easy to use as a Claude Code plugin.
 
 ```
 /plugin marketplace add AlexanderMattTurner/agent-sanitizer
@@ -257,6 +257,11 @@ To wire them yourself instead, one entry dispatches every mode on `--hook=`:
 **Wire all five.** The instruction-file scan is split across two of them: `SessionStart` covers the files that load at launch, and `InstructionsLoaded` covers every one a subdirectory loads later. A host that wires the first without the second leaves a nested `CLAUDE.md` scanned by nothing. The one-time PreToolUse coverage notice says so, but only when a file announced at launch went unscanned: a project whose only `CLAUDE.md` files sit in subdirectories gets no notice.
 
 `InstructionsLoaded` needs Claude Code **2.1.69 or newer** — 2.1.68 does not emit the event, so the hook never fires however you wire it. Check with `claude --version`.
+
+The hooks load `agent-control-plane-core`, a peer dependency
+(`>=0.11.2 <1.0.0`): npm 7+ and pnpm install it for you, but on Yarn classic,
+npm 6, `--legacy-peer-deps` or pnpm with `auto-install-peers=false`, add it to
+your project yourself, or every hook reports it unavailable.
 
 `require.resolve("agent-sanitizer/claude-hooks")` gives the path without
 hardcoding a layout. Importing the module rather than spawning it is a no-op.

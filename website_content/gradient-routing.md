@@ -19,9 +19,19 @@ card_image: https://assets.turntrout.com/static/images/card_images/NO2S3mX.jpg
 lw-linkpost-url: https://arxiv.org/abs/2410.04332
 original_url: https://www.lesswrong.com/posts/nLRKKCTtwQgvozLTN/gradient-routing-masking-gradients-to-localize-computation
 date_published: 2024-12-05
-date_updated: 2026-06-27
+date_updated: 2026-11-01
 card_image_alt: A landscape of sparkling crystalline shards growing out of the ground.
 createBibtex: true
+paper:
+  title: "Gradient Routing: Masking Gradients to Localize Computation in Neural Networks"
+  authors:
+    - Alex Cloud
+    - Jacob Goldman-Wetzler
+    - Evžen Wybitul
+    - Joseph Miller
+    - Alexander Matt Turner
+  year: 2024
+  arxiv: "2410.04332"
 ---
 
 We present _gradient routing_, a way of controlling where learning happens in neural networks. Gradient routing applies masks to limit the flow of gradients during backpropagation. By supplying different masks for different data points, the user can induce specialized subcomponents within a model. We think gradient routing has the potential to train safer AI systems by making them more transparent or by enabling the removal or monitoring of bad capabilities.

@@ -97,28 +97,53 @@ test.describe("code token wrapping", () => {
     })
   }
 
-  const path = '<code class="inline-code-path">r/<wbr>Fantasy_World_Building</code>'
+  const path = '<code class="inline-code-breakable">config/<wbr>spellcheck_wordlist.txt</code>'
 
-  test("a path in running text moves to the next line whole", async ({ page }) => {
+  // Narrower than the code but wider than the part after its break.
+  for (const [label, html, rowElement, expected] of [
+    [
+      "running text",
+      `<p>including ${path}.</p>`,
+      "p",
+      ["including config/", "spellcheck_wordlist.txt."],
+    ],
+    ["a heading", `<h2>In ${path}</h2>`, "h2", ["In config/", "spellcheck_wordlist.txt"]],
+  ] as const) {
+    test(`a code in ${label} breaks at its seam in place`, async ({ page }) => {
+      const rows = await rowsOf(page, {
+        html,
+        sized: rowElement,
+        measured: "code",
+        fraction: 0.96,
+        rowsOf: rowElement,
+      })
+      expect(rows).toEqual(expected)
+    })
+  }
+
+  test("a short code breaks at its space in place", async ({ page }) => {
     const rows = await rowsOf(page, {
-      html: `<p>including ${path}.</p>`,
+      html: "<p>run <code>pnpm audit</code></p>",
       sized: "p",
       measured: "code",
-      fraction: 1.05,
+      fraction: 0.96,
+      rowsOf: "p",
     })
-    expect(rows).toEqual(["r/Fantasy_World_Building"])
+    expect(rows).toEqual(["run pnpm", "audit"])
   })
 
-  // Narrower than the path but wider than the part after its slash.
-  test("a path in a heading breaks after its slash in place", async ({ page }) => {
+  test("a path breaks after its slash, not inside a hyphenated segment", async ({ page }) => {
+    const hyphenated =
+      '<code class="inline-code-breakable">owner/<wbr>' +
+      '<span class="code-segment">rank-amateur-cowsay</span></code>'
     const rows = await rowsOf(page, {
-      html: `<h2>In ${path}</h2>`,
-      sized: "h2",
+      html: `<p>see ${hyphenated}.</p>`,
+      sized: "p",
       measured: "code",
       fraction: 0.96,
-      rowsOf: "h2",
+      rowsOf: "p",
     })
-    expect(rows).toEqual(["In r/", "Fantasy_World_Building"])
+    expect(rows).toEqual(["see owner/", "rank-amateur-cowsay."])
   })
 
   test("a long code token stays inline on narrow screens", async ({ page }) => {

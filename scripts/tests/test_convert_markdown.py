@@ -4,6 +4,8 @@ import unittest.mock as mock
 from pathlib import Path
 
 import pytest
+import requests  # type: ignore[import]
+from PIL import Image
 
 from .. import convert_markdown_yaml, source_file_checks
 from .. import utils as script_utils
@@ -31,6 +33,11 @@ def _no_network(monkeypatch: pytest.MonkeyPatch) -> None:
         source_file_checks._http_session,
         "head",
         lambda *args, **kwargs: mock_head_response,
+    )
+    monkeypatch.setattr(
+        source_file_checks._http_session,
+        "get",
+        mock.Mock(side_effect=requests.ConnectionError("network disabled")),
     )
 
 
@@ -215,8 +222,13 @@ def test_process_card_image_in_markdown_skips(
     mock_head_response.ok = True
     mock_head_response.status_code = 200
     mock_head_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
+    card_bytes = io.BytesIO()
+    Image.new("RGB", (actual_card_width, actual_card_height)).save(
+        card_bytes, format="JPEG"
+    )
     mock_session = mock.Mock()
     mock_session.head.return_value = mock_head_response
+    mock_session.get.return_value = mock.Mock(content=card_bytes.getvalue())
 
     with (
         mock.patch("requests.get") as mock_get,

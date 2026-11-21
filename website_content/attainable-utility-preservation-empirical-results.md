@@ -41,7 +41,7 @@ date_published: 2020-02-22
 original_url: https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utility-preservation-empirical-results
 skip_import: true
 description: The AUP technique encourages low-impact behavior in both simple and complex environments.
-date_updated: 2026-08-26
+date_updated: 2026-11-01
 createBibtex: true
 ---
 
@@ -75,7 +75,7 @@ In general, the agent receives $R({\color{green}\blacksquare})=1$ reward for rea
 
 ## Level: `Options`
 
-Let's work through this. Since the agent is discounting future reward, standard vanilla reinforcement learning (RL) agents try to reach the ${\color{green}\blacksquare}$ ASAP. This means the brown box gets irreversibly wedged into the corner _en route_.
+Let's work through this. Since the agent is discounting future reward, standard vanilla reinforcement learning agents try to reach the ${\color{green}\blacksquare}$ ASAP. This means the brown box gets irreversibly wedged into the corner _en route_.
 
 <video aria-label="A standard AI agent takes the shortest path to the goal, pushing a crate down and irreversibly trapping it in a corner." autoplay="" loop="" muted="" playsinline="" style="width: 35%;"><source src="https://assets.turntrout.com/static/images/posts/options.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/options.webm" type="video/webm"/><track kind="captions" src="data:text/vtt,WEBVTT" label="No audio"/></video>
 
