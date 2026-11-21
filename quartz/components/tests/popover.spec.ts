@@ -414,6 +414,23 @@ test("Popovers appear for content-meta links", async ({ page, dummyLink }) => {
   expect(metaX).not.toEqual(dummyX)
 })
 
+test("Popover loads KaTeX CSS when the current page lacks it", async ({ page, dummyLink }) => {
+  const katexCss = page.locator('link[rel="stylesheet"][href*="katex"]')
+  await katexCss.evaluateAll((links) => links.forEach((link) => link.remove()))
+  await dummyLink.evaluate((el) => el.setAttribute("href", "./test-page"))
+
+  await dummyLink.hover()
+  const popover = page.locator(".popover")
+  await expect(popover).toHaveClass(/popover-visible/, { timeout: 10_000 })
+
+  await expect(katexCss).toHaveCount(1)
+  // katex.min.css clips the MathML copy to a 1px box.
+  const mathml = popover.locator(".katex .katex-mathml").first()
+  await expect
+    .poll(async () => (await mathml.boundingBox())?.width ?? Infinity)
+    .toBeLessThanOrEqual(1)
+})
+
 test("Popover is hidden on mobile", async ({ page, dummyLink }) => {
   await page.setViewportSize({ width: 320, height: 600 })
   await expect(dummyLink).toBeVisible()

@@ -1,5 +1,6 @@
 import { normalizeRelativeURLs } from "../../util/path"
 import { CAN_TRIGGER_POPOVER_CLASS, popoverPadding, popoverRemovalDelayMs } from "../constants"
+import { addMissingStylesheets } from "./component_script_utils"
 import { type ContentRenderOptions, modifyElementIds, renderHTMLContent } from "./content_renderer"
 
 // Regex to detect footnote forward links (not back arrows which use fnref)
@@ -132,6 +133,7 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
   const contents = await response.text()
   const parser = new DOMParser()
   const html = parser.parseFromString(contents, "text/html")
+  addMissingStylesheets(html.head)
 
   // Check if this is a footnote forward link
   const href = linkElement.getAttribute("href") || ""
