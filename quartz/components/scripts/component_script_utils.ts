@@ -207,3 +207,13 @@ export function setupCopyButton(
     options,
   )
 }
+
+/** Adds stylesheets that `newHead` links but the document lacks (e.g. KaTeX CSS, emitted only on pages with math). */
+export function addMissingStylesheets(newHead: HTMLHeadElement): void {
+  for (const link of newHead.querySelectorAll('link[rel="stylesheet"][href]')) {
+    const href = link.getAttribute("href")
+    if (!document.head.querySelector(`link[rel="stylesheet"][href="${href}"]`)) {
+      document.head.appendChild(link.cloneNode())
+    }
+  }
+}

@@ -11,6 +11,7 @@ import { renderHead } from "../util/head"
 import { htmlToJsx } from "../util/jsx"
 import { type FilePath, FullSlug } from "../util/path"
 import { JSResourceToScriptElement } from "../util/resources"
+import { backlinkExcerptsUseKatex } from "./Backlinks"
 import { cdnBaseUrl } from "./constants"
 import { ELVISH_NOSCRIPT_CSS } from "./scripts/elvish-toggle"
 import {
@@ -50,7 +51,12 @@ export function renderMetaJsx(cfg: GlobalConfiguration, fileData: QuartzPluginDa
 
 export default (() => {
   /** Document `<head>`: meta tags, fonts, analytics, and external JS/CSS resources. */
-  const Head: QuartzComponent = ({ cfg, fileData, externalResources }: QuartzComponentProps) => {
+  const Head: QuartzComponent = ({
+    cfg,
+    fileData,
+    allFiles,
+    externalResources,
+  }: QuartzComponentProps) => {
     const headJsx = renderMetaJsx(cfg, fileData)
 
     // Scripts
@@ -147,7 +153,7 @@ export default (() => {
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex, nofollow" />
         )}
-        {fileData.usesKatex && (
+        {(fileData.usesKatex || backlinkExcerptsUseKatex(allFiles, fileData)) && (
           <link rel="stylesheet" href="/static/styles/katex.min.css" data-spa-preserve />
         )}
         {iconPreloads}

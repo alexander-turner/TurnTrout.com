@@ -64,6 +64,25 @@ describe("createPopover", () => {
     expect(popover.querySelector(".popover-close")).toBeNull()
   })
 
+  it("loads stylesheets the target page needs", async () => {
+    const katexHref = "/static/styles/katex.min.css"
+    const customFetch = jest.fn(() =>
+      Promise.resolve(
+        new Response(
+          `<html><head><link rel="stylesheet" href="${katexHref}"></head><body></body></html>`,
+          { status: 200, headers: { "Content-Type": "text/html" } },
+        ),
+      ),
+    ) as unknown as typeof fetch
+
+    await createPopover({ ...options, customFetch })
+
+    expect(
+      document.head.querySelector(`link[rel="stylesheet"][href="${katexHref}"]`),
+    ).not.toBeNull()
+    document.head.querySelector(`link[href="${katexHref}"]`)?.remove()
+  })
+
   it("should handle HTML content", async () => {
     const popover = await createPopover(options)
     expect(popover.querySelector(".popover-inner")).not.toBeNull()

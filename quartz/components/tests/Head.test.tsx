@@ -323,6 +323,24 @@ describe("Head Component", () => {
 
       expect(html).not.toContain("/static/styles/katex.min.css")
     })
+
+    it("loads the katex stylesheet when only a backlink excerpt contains math", () => {
+      const citingFile = {
+        slug: "citing" as FullSlug,
+        frontmatter: { title: "Citing" },
+        links: ["test-page"],
+        linkContexts: [
+          { target: "test-page", excerptHtml: '<span class="katex">x</span>', anchor: "a" },
+        ],
+      } as unknown as QuartzPluginData
+      const props = {
+        ...mockProps,
+        fileData: { ...mockFileData, usesKatex: false } as QuartzPluginData,
+        allFiles: [citingFile],
+      }
+
+      expect(render(h(Head, props))).toContain('href="/static/styles/katex.min.css"')
+    })
   })
 
   describe("conditional content", () => {

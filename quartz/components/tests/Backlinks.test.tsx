@@ -15,7 +15,7 @@ import { type GlobalConfiguration } from "../../util/config"
 import { type QuartzConfig } from "../../util/ctx"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, type SimpleSlug } from "../../util/path"
-import { Backlinks, getBacklinkFileData } from "../Backlinks"
+import { backlinkExcerptsUseKatex, Backlinks, getBacklinkFileData } from "../Backlinks"
 import { normalizeNbsp } from "../constants"
 
 // Helper function to create test file data
@@ -489,6 +489,29 @@ describe("Backlinks", () => {
     expect(html).toMatch(/<img[^>]*class="emoji"[^>]*alt="🐟"[^>]*>/u)
     expect(html).toContain('<span class="katex">')
     expect(html).toContain('<span class="backlink-highlight">here</span>')
+  })
+})
+
+describe("backlinkExcerptsUseKatex", () => {
+  const currentFile = createFileData({ slug: "target-page" as FullSlug })
+  const linkingFile = (target: string, excerptHtml: string): QuartzPluginData =>
+    createFileData({
+      slug: "linking-page" as FullSlug,
+      links: [target as SimpleSlug],
+      linkContexts: [{ target: target as SimpleSlug, excerptHtml, anchor: "a" }],
+    })
+
+  it.each<[string, QuartzPluginData[], boolean]>([
+    ["no backlinks", [], false],
+    ["an excerpt without math", [linkingFile("target-page", "plain prose")], false],
+    ["an excerpt with math", [linkingFile("target-page", '<span class="katex">x</span>')], true],
+    [
+      "math in an excerpt citing another page",
+      [linkingFile("other-page", '<span class="katex">x</span>')],
+      false,
+    ],
+  ])("%s -> %p", (_label, allFiles, expected) => {
+    expect(backlinkExcerptsUseKatex(allFiles, currentFile)).toBe(expected)
   })
 })
 

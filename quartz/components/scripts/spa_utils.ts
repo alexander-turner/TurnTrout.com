@@ -6,6 +6,7 @@ import {
   scrollPositionTimestampKeyPrefix,
   SEARCH_MATCH_CLASS,
 } from "../constants"
+import { addMissingStylesheets } from "./component_script_utils"
 import { matchHTML } from "./search"
 
 /**
@@ -195,16 +196,6 @@ export function extractMetaRefreshUrl(html: string): string | null {
   return match?.groups?.url ?? null
 }
 
-/** Adds stylesheets the new page links but the current head lacks (e.g. KaTeX CSS, emitted only on pages with math). */
-function addMissingStylesheets(newHead: HTMLHeadElement, currentHead: HTMLHeadElement): void {
-  for (const link of newHead.querySelectorAll('link[rel="stylesheet"][href]')) {
-    const href = link.getAttribute("href")
-    if (!currentHead.querySelector(`link[rel="stylesheet"][href="${href}"]`)) {
-      currentHead.appendChild(link.cloneNode())
-    }
-  }
-}
-
 /**
  * Replaces head meta tags in the current document to match the tags from a
  * freshly-fetched document, preserving any element with a `data-spa-preserve`
@@ -313,5 +304,5 @@ export function updateHeadElements(html: Document): void {
     }
   }
 
-  addMissingStylesheets(newHead, currentHead)
+  addMissingStylesheets(newHead)
 }

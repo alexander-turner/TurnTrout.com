@@ -28,6 +28,10 @@ function renderExcerpt(excerptHtml: string, href: string, key: string): JSX.Elem
   )
 }
 
+/** The non-empty excerpts `file` records for its citations of `target`. */
+const excerptsCiting = (file: QuartzPluginData, target: SimpleSlug) =>
+  (file.linkContexts ?? []).filter((lc) => lc.target === target && lc.excerptHtml)
+
 /**
  * @param backlinkFiles - The list of files that link to the current file
  * @param currentSlug - The slug of the current file
@@ -48,9 +52,7 @@ const BacklinksList = ({
           return null
         }
         const titleJsx = renderTitleJsx(formatTitle(f.frontmatter.title))
-        const contexts = (f.linkContexts ?? []).filter(
-          (lc) => lc.target === currentTarget && lc.excerptHtml,
-        )
+        const contexts = excerptsCiting(f, currentTarget)
         const baseHref = resolveRelative(currentSlug, f.slug as FullSlug)
         // The title reads the original post from the top; each excerpt below
         // deep-links to its own citing location.
@@ -120,5 +122,16 @@ export const Backlinks: QuartzComponent = ({ fileData, allFiles }: QuartzCompone
         <BacklinksList backlinkFiles={backlinkFiles} currentSlug={fileData.slug as FullSlug} />
       </div>
     </blockquote>
+  )
+}
+
+/** Whether any backlink excerpt shown on `currentFile` contains KaTeX math. */
+export const backlinkExcerptsUseKatex = (
+  allFiles: QuartzPluginData[],
+  currentFile: QuartzPluginData,
+): boolean => {
+  const target = simplifySlug(currentFile.slug as FullSlug)
+  return getBacklinkFileData(allFiles, currentFile).some((f) =>
+    excerptsCiting(f, target).some((lc) => lc.excerptHtml.includes('class="katex')),
   )
 }
