@@ -6,8 +6,11 @@ table {
   border-collapse: collapse;
   align-self: center;
 
+  // Automatic layout keeps each column at least as wide as its longest word;
+  // fixed layout would split the width evenly and break words mid-way.
   &.full-width {
     width: 100%;
+    table-layout: auto;
   }
 
   &.center-table-headings th,
