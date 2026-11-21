@@ -452,8 +452,13 @@ function punctilioPass(options: TransformOptions): ProsePass {
   return pass
 }
 
-// Arrows are disabled: the site uses its own formatArrows.
-const punctilioOptions: TransformOptions = { includeArrows: false }
+// Arrows are disabled: the site uses its own formatArrows. The widow and
+// short-word glue is off: `text-wrap: pretty` handles widows, and a glued run
+// wider than a narrow box forces a mid-word break.
+const punctilioOptions: TransformOptions = {
+  includeArrows: false,
+  nbsp: { lastWord: false, shortWords: false },
+}
 const punctilioTransform = punctilioPass(punctilioOptions)
 // Non-breaking spaces prevent natural line-breaking, which looks bad in
 // display headings.
@@ -1216,8 +1221,8 @@ export function setFirstLetterAttribute(tree: Root): void {
   // would corrupt visible text. Only rewrite when this node starts the letter.
   if (firstTextNode.value.charAt(0) !== firstLetter) return
 
-  // Replace nbsp after first letter — nbspTransform adds it after single-letter
-  // words like "I", but it creates a visible extra space with dropcap float
+  // A no-break space after a single-letter first word ("I") renders as a
+  // visible extra gap beside the floated dropcap.
   if (firstTextNode.value.charAt(1) === NBSP) {
     firstTextNode.value = `${firstTextNode.value.charAt(0)} ${firstTextNode.value.slice(2)}`
   }

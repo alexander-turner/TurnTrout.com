@@ -201,28 +201,26 @@ describe("HTMLFormattingImprovement", () => {
     const kernQ = `<span class="overhang-kern-q">Q</span>`
 
     it.each([
-      // Body prose, with punctilio's NBSP glue left intact as the break point.
-      [bodyProseInput, `<p>the summer o${kernF}${NBSP}’24. From</p>`],
-      // Display headings skip the NBSP pass, so a plain space survives.
+      [bodyProseInput, `<p>the summer o${kernF} ’24. From</p>`],
       ["<h2>The summer of '24</h2>", `<h2>The summer o${kernF} ’24</h2>`],
       // Markdown soft line break between the glyph and the mark.
       ["<p>the summer of\n'24. From</p>", `<p>the summer o${kernF}\n’24. From</p>`],
       ["<h2>The summer of\t'24</h2>", `<h2>The summer o${kernF}\t’24</h2>`],
       // "f" sits in an earlier sibling, so the lookahead ascends out of the <em>.
-      ["<p><em>of</em> '24 was wild</p>", `<p><em>o${kernF}</em>${NBSP}’24 was${NBSP}wild</p>`],
+      ["<p><em>of</em> '24 was wild</p>", `<p><em>o${kernF}</em> ’24 was wild</p>`],
       // Skipped content supplies the following mark, so the "f" gets no kern.
       [
         "<p>one of <code>Start</code>'s child states</p>",
-        `<p>one of${NBSP}<code>Start</code>’s child${NBSP}states</p>`,
+        "<p>one of <code>Start</code>’s child states</p>",
       ],
       // The mark opens an inline element; the lookahead still reaches it.
-      ["<p>of <em>'24</em> was wild</p>", `<p>o${kernF}${NBSP}<em>’24</em> was${NBSP}wild</p>`],
+      ["<p>of <em>'24</em> was wild</p>", `<p>o${kernF} <em>’24</em> was wild</p>`],
       // Mark at the very start of the paragraph: no glyph precedes it.
-      ["<p>'24 was wild</p>", `<p>’24 was${NBSP}wild</p>`],
+      ["<p>'24 was wild</p>", "<p>’24 was wild</p>"],
       // Preceding word does not end in an overhanging glyph.
-      ["<p>I was born in '94. Nice</p>", `<p>I${NBSP}was born in${NBSP}’94. Nice</p>`],
+      ["<p>I was born in '94. Nice</p>", "<p>I was born in ’94. Nice</p>"],
       // No space before the mark: a mid-word apostrophe is untouched.
-      ["<p>don't stop</p>", `<p>don’t${NBSP}stop</p>`],
+      ["<p>don't stop</p>", "<p>don’t stop</p>"],
       // Every crowded mark after "f", each glyph wrapped independently.
       [
         `<h2>of ${LEFT_DOUBLE_QUOTE}x if (x if [x of {x</h2>`,
@@ -240,7 +238,7 @@ describe("HTMLFormattingImprovement", () => {
       // Code is skipped entirely.
       ["<p><code>of '24</code></p>", "<p><code>of '24</code></p>"],
       // A comment sibling contributes no text, so the mark is still found.
-      ["<p>of <!-- note -->'24</p>", `<p>o${kernF}${NBSP}<!-- note -->’24</p>`],
+      ["<p>of <!-- note -->'24</p>", `<p>o${kernF} <!-- note -->’24</p>`],
     ])("handles overhang crowding: %s", (input, expected) => {
       expect(testHtmlFormattingImprovement(input)).toBe(expected)
     })
@@ -1516,10 +1514,10 @@ describe("setFirstLetterAttribute", () => {
   )
 
   it("replaces nbsp after single-letter first word for dropcap", () => {
-    const input = "<p>I use this page.</p>"
+    const input = `<p>I${NBSP}use this page.</p>`
     const processedHtml = testHtmlFormattingImprovement(input, true)
-    // The nbsp transform would normally add nbsp after "I", but setFirstLetterAttribute
-    // should replace it with a regular space for proper dropcap rendering
+    // A no-break space beside the floated dropcap renders as a visible extra
+    // gap, so setFirstLetterAttribute turns it into a regular space.
     expect(processedHtml).not.toContain(`I${NBSP}`)
     expect(processedHtml).toContain('data-first-letter="I"')
   })
@@ -2182,7 +2180,7 @@ describe("applyTextTransforms function", () => {
   })
 
   it.each([
-    [{}, `The summer of${NBSP}’24`],
+    [{}, "The summer of ’24"],
     [{ useNbsp: false }, "The summer of ’24"],
   ])("leaves overhang kerning to the tree pass, options %s", (options, expected) => {
     expect(applyTextTransforms("The summer of '24", options)).toBe(expected)
@@ -2723,24 +2721,18 @@ describe("HTMLFormattingImprovement plugin", () => {
 
 describe("Non-breaking space insertion", () => {
   it.each([
-    // After short words (1-2 letters) and before last word (widow prevention).
-    // When a short-word glue lands on the second-to-last word, punctilio lets
-    // last-word protection win the final pair: the short-word NBSP yields so the
-    // last word binds instead, keeping the non-breaking run to two words. So
-    // "I love this" binds "love this", and "…on a mat" binds "a mat".
-    ["<p>I love this</p>", `<p>I love${NBSP}this</p>`],
-    ["<p>A cat sat on a mat</p>", `<p>A${NBSP}cat sat on a${NBSP}mat</p>`],
-    // Before last word (widow prevention)
-    ["<p>Hello world</p>", `<p>Hello${NBSP}world</p>`],
+    // Short words and the last word stay breakable: widow and short-word glue
+    // is off (see punctilioOptions).
+    ["<p>I love this</p>", "<p>I love this</p>"],
+    ["<p>A cat sat on a mat</p>", "<p>A cat sat on a mat</p>"],
+    ["<p>Hello world</p>", "<p>Hello world</p>"],
     // Between numbers and units
     ["<p>Run 5 km daily</p>", `<p>Run 5${NBSP}km daily</p>`],
-    ["<p>It weighs 10 kg</p>", `<p>It${NBSP}weighs 10${NBSP}kg</p>`],
+    ["<p>It weighs 10 kg</p>", `<p>It weighs 10${NBSP}kg</p>`],
     // After reference abbreviations
-    ["<p>See Fig. 3 for details</p>", `<p>See Fig.${NBSP}3 for${NBSP}details</p>`],
-    // "p." is already glued forward to "42", so the short-word pass leaves
-    // "on" unglued rather than binding "on p. 42" into one non-breaking atom.
+    ["<p>See Fig. 3 for details</p>", `<p>See Fig.${NBSP}3 for details</p>`],
     ["<p>Found on p. 42</p>", `<p>Found on p.${NBSP}42</p>`],
-  ])("inserts nbsp in %s", (input, expected) => {
+  ])("glues only semantic pairs in %s", (input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input)
     expect(processedHtml).toBe(expected)
   })
@@ -2792,7 +2784,7 @@ describe("Non-breaking space insertion", () => {
   })
 
   it("also applies via applyTextTransforms (titles, TOC, etc.)", () => {
-    const result = applyTextTransforms("I love this thing")
+    const result = applyTextTransforms("See Fig. 3 for details")
     expect(result).toContain(NBSP)
   })
 })
@@ -2807,8 +2799,8 @@ describe("applyTextTransforms with useNbsp option", () => {
   })
 
   it.each([
-    ["I love this thing", true],
-    ["I love this thing", undefined],
+    ["See Fig. 3 for details", true],
+    ["See Fig. 3 for details", undefined],
   ])("inserts nbsp when useNbsp=%s: %s", (input, useNbsp) => {
     const result = applyTextTransforms(input, useNbsp === undefined ? {} : { useNbsp })
     expect(result).toContain(NBSP)
@@ -2825,13 +2817,11 @@ describe("applyTextTransforms with useNbsp option", () => {
 })
 
 describe("space runs", () => {
-  // A space run collapses before the nbsp rules run, so a short word never
-  // glues to the first space of the run and strands the nbsp beside a space
-  // that still renders.
+  // A space run collapses to a single space.
   it.each([
-    ["evaluated by  two senior people", `evaluated by${NBSP}two senior${NBSP}people`],
-    ["a  cat", `a${NBSP}cat`],
-    ["To my  surprise", `To my${NBSP}surprise`],
+    ["evaluated by  two senior people", "evaluated by two senior people"],
+    ["a  cat", "a cat"],
+    ["To my  surprise", "To my surprise"],
   ])("collapses the run in %s", (input, expected) => {
     expect(applyTextTransforms(input)).toBe(expected)
   })
@@ -2845,7 +2835,7 @@ describe("space runs", () => {
 
   it("collapses the run in the HTML pipeline too", () => {
     expect(testHtmlFormattingImprovement("<p>evaluated by  two senior people</p>")).toBe(
-      `<p>evaluated by${NBSP}two senior${NBSP}people</p>`,
+      "<p>evaluated by two senior people</p>",
     )
   })
 })
