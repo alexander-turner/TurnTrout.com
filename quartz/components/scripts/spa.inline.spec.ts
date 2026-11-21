@@ -966,6 +966,30 @@ test.describe("Critical CSS", () => {
   })
 })
 
+test.describe("Page-specific stylesheets", () => {
+  test("KaTeX CSS loads when navigating from a page without math", async ({ page }) => {
+    const katexCss = page.locator('link[rel="stylesheet"][href*="katex"]')
+    await gotoPage(page, "http://localhost:8080/", "domcontentloaded")
+    await expect(katexCss).toHaveCount(0)
+
+    await page.evaluate((slug) => {
+      const link = document.createElement("a")
+      link.href = `/${slug}`
+      link.id = "math-page-link"
+      link.textContent = "Math"
+      document.body.appendChild(link)
+    }, testingPageSlug)
+    await triggerAndWaitForSPANav(page, () => page.locator("#math-page-link").click())
+
+    await expect(katexCss).toHaveCount(1)
+    // katex.min.css clips the MathML copy to a 1px box.
+    const mathml = page.locator(".katex .katex-mathml").first()
+    await expect
+      .poll(async () => (await mathml.boundingBox())?.width ?? Infinity)
+      .toBeLessThanOrEqual(1)
+  })
+})
+
 test.describe("Network Behavior", () => {
   test("does not fetch content for same-page hash navigation", async ({ page }) => {
     let requestMade = false
