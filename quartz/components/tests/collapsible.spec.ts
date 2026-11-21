@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test"
 
 import { expect, routeCdnAssetStubs, test } from "./fixtures"
-import { gotoPage, reloadPage, requireBoundingBox } from "./visual_utils"
+import { gotoPage, reloadPage, requireBoundingBox, triggerAndWaitForSPANav } from "./visual_utils"
 
 // Helper to get collapsible admonitions
 const getCollapsibles = (page: Page) => page.locator(".admonition.is-collapsible")
@@ -41,7 +41,10 @@ async function spaNavigateToAbout(page: Page): Promise<void> {
 }
 
 async function goBackToTestPage(page: Page): Promise<void> {
-  await page.goBack()
+  // goBack() resolves as soon as the same-document history entry commits; the
+  // popstate handler then fetches and morphs /test-page asynchronously, so gate
+  // on the SPA's "nav" event (or the full-load fallback) before asserting.
+  await triggerAndWaitForSPANav(page, () => page.goBack())
   await page.waitForURL("**/test-page")
   await expect(page.locator('body[data-slug="test-page"]')).toBeAttached()
 }
