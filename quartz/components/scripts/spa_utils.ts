@@ -195,10 +195,21 @@ export function extractMetaRefreshUrl(html: string): string | null {
   return match?.groups?.url ?? null
 }
 
+/** Adds stylesheets the new page links but the current head lacks (e.g. KaTeX CSS, emitted only on pages with math). */
+function addMissingStylesheets(newHead: HTMLHeadElement, currentHead: HTMLHeadElement): void {
+  for (const link of newHead.querySelectorAll('link[rel="stylesheet"][href]')) {
+    const href = link.getAttribute("href")
+    if (!currentHead.querySelector(`link[rel="stylesheet"][href="${href}"]`)) {
+      currentHead.appendChild(link.cloneNode())
+    }
+  }
+}
+
 /**
  * Replaces head meta tags in the current document to match the tags from a
  * freshly-fetched document, preserving any element with a `data-spa-preserve`
- * attribute. The document title is updated alongside.
+ * attribute, and adds any stylesheets the new page needs. The document title
+ * is updated alongside.
  *
  * We drive head updates manually (rather than using micromorph) because we
  * need the `data-spa-preserve` escape hatch and because Safari/Firefox otherwise
@@ -301,4 +312,6 @@ export function updateHeadElements(html: Document): void {
       currentMeta.remove()
     }
   }
+
+  addMissingStylesheets(newHead, currentHead)
 }

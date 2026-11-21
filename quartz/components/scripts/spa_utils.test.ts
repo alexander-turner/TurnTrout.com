@@ -439,6 +439,41 @@ describe("updateHeadElements", () => {
     expect(document.head.querySelectorAll("meta").length).toBe(2)
   })
 
+  describe("stylesheets", () => {
+    const katexCss = '<link rel="stylesheet" href="/static/styles/katex.min.css">'
+    const indexCss = '<link rel="stylesheet" href="/index.css">'
+    const stylesheetHrefs = () =>
+      Array.from(document.head.querySelectorAll('link[rel="stylesheet"]'), (link) =>
+        link.getAttribute("href"),
+      )
+
+    it.each<[string, string, string, readonly string[]]>([
+      [
+        "adds a sheet the new page needs",
+        indexCss,
+        indexCss + katexCss,
+        ["/index.css", "/static/styles/katex.min.css"],
+      ],
+      [
+        "keeps a sheet the new page lacks",
+        indexCss + katexCss,
+        indexCss,
+        ["/index.css", "/static/styles/katex.min.css"],
+      ],
+      [
+        "does not duplicate a sheet already present",
+        katexCss,
+        katexCss + katexCss,
+        ["/static/styles/katex.min.css"],
+      ],
+      ["ignores a stylesheet link without href", "", '<link rel="stylesheet">', []],
+    ])("%s", (_label, currentHtml, newHtml, expected) => {
+      document.head.innerHTML = currentHtml
+      updateHeadElements(parseDoc(`<html><head>${newHtml}</head><body></body></html>`))
+      expect(stylesheetHrefs()).toEqual(expected)
+    })
+  })
+
   it("prefers non-preserve matches when updating an existing meta tag", () => {
     document.head.innerHTML =
       '<meta name="description" content="preserved" data-spa-preserve>' +
