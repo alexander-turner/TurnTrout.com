@@ -195,23 +195,13 @@ export function extractMetaRefreshUrl(html: string): string | null {
   return match?.groups?.url ?? null
 }
 
-/**
- * Appends stylesheets the new page links that the current head lacks. Pages
- * emit some stylesheets conditionally (e.g. KaTeX CSS only on pages with
- * math), so client-side navigation must bring the target page's sheets along.
- * Sheets already in the head stay, since extra CSS is harmless.
- */
+/** Adds stylesheets the new page links but the current head lacks (e.g. KaTeX CSS, emitted only on pages with math). */
 function addMissingStylesheets(newHead: HTMLHeadElement, currentHead: HTMLHeadElement): void {
-  const currentHrefs = new Set(
-    Array.from(currentHead.querySelectorAll('link[rel="stylesheet"]'), (link) =>
-      link.getAttribute("href"),
-    ),
-  )
-  for (const link of Array.from(newHead.querySelectorAll('link[rel="stylesheet"]'))) {
+  for (const link of newHead.querySelectorAll('link[rel="stylesheet"][href]')) {
     const href = link.getAttribute("href")
-    if (!href || currentHrefs.has(href)) continue
-    currentHead.appendChild(link.cloneNode())
-    currentHrefs.add(href)
+    if (!currentHead.querySelector(`link[rel="stylesheet"][href="${href}"]`)) {
+      currentHead.appendChild(link.cloneNode())
+    }
   }
 }
 
