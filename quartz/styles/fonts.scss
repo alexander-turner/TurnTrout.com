@@ -433,32 +433,15 @@ code {
 
 // Inline code (not `pre > code`, which scrolls) may break an over-long token as a
 // last resort rather than clip or force horizontal scroll on narrow viewports.
-// `break-word` only breaks when the token wouldn't otherwise fit; a short code
-// (`.inline-code-atomic`) stays whole since `overflow-wrap` is inert under
-// `white-space: nowrap`.
+// `break-word` only breaks when the token wouldn't otherwise fit.
 :not(pre) > code {
   overflow-wrap: break-word;
 }
 
-// A short code is one token: it wraps to the next line whole instead of breaking
-// at an internal hyphen. Longer codes stay breakable (see InlineCodeSpacing).
-.inline-code-atomic {
+// A code breaks at its seams (see InlineCodeSpacing), so a short hyphenated
+// segment between them stays whole rather than breaking at its hyphen.
+.code-segment {
   white-space: nowrap;
-}
-
-// In running text, a path moves to the next line whole when it fits there. A
-// path wider than its line is marked `.wide-inline` at runtime and breaks after
-// its slashes like text (`wide-inline.ts`). A heading or admonition title wraps
-// it in place instead: there the path is usually the whole title, and moving it
-// whole would strand what precedes it.
-.inline-code-path {
-  display: inline-block;
-  max-width: 100%;
-
-  &.wide-inline,
-  :is(h1, h2, h3, h4, h5, h6, .admonition-title) & {
-    display: inline;
-  }
 }
 
 // For usage in the middle of a paragraph

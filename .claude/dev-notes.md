@@ -179,6 +179,12 @@ Every content page needs an entry in `quartz/plugins/transformers/related_posts.
 
 In the cloud sandbox, rclone's S3 backend rejects `AWS_CA_BUNDLE` ("unsupported transport, \*fshttp.Transport"), so run it as `env -u AWS_CA_BUNDLE pnpm related:build`; `SSL_CERT_FILE` still supplies the proxy CA.
 
+## Social card images
+
+Every page declares `og:image:width/height` as `cardImageWidth`×`cardImageHeight` (1200×630) in `config/constants.json`, so each card—per-page `card_image` and the site-wide `defaultCardUrl`—must be exactly that size and under `maxCardImageSizeKb` (WhatsApp drops larger preview images). `scripts/source_file_checks.py` enforces both. `convert_markdown_yaml._convert_to_jpeg` center-crops to fit; pad instead (`magick in -resize 1200x630 -background white -gravity center -extent 1200x630 out.jpg`) when a crop would clip text.
+
+R2 assets are served `Cache-Control: public, max-age=31536000, immutable`, so never overwrite an existing key: upload a replacement under a new name and update the reference. In this sandbox, `rclone` needs `AWS_CA_BUNDLE= rclone --ca-cert /root/.ccr/ca-bundle.crt …`; its first PUT attempt returns 501 and the retry succeeds.
+
 ## External README snapshots
 
 The GitHub READMEs embedded via `populate-markdown-*` placeholders (see

@@ -1,3 +1,4 @@
+import io
 import shutil
 import sys
 import tempfile
@@ -10,6 +11,7 @@ from unittest.mock import patch
 import git  # type: ignore[import]
 import pytest
 import requests  # type: ignore[import]
+from PIL import Image
 
 from .. import utils as script_utils
 from .utils import create_markdown_file
@@ -26,6 +28,35 @@ if TYPE_CHECKING:
     from .. import source_file_checks
 else:
     import source_file_checks
+
+
+def _jpeg_bytes(width: int, height: int) -> bytes:
+    buffer = io.BytesIO()
+    Image.new("RGB", (width, height)).save(buffer, format="JPEG")
+    return buffer.getvalue()
+
+
+def _card_get_response(content: bytes) -> mock.Mock:
+    return mock.Mock(content=content, raise_for_status=mock.Mock())
+
+
+@pytest.fixture(autouse=True)
+def stub_card_image_http(monkeypatch):
+    """Serve a valid 1200x630 card for every card-image request so no test
+    reaches the network; tests patch `head`/`get` to exercise failures."""
+    head_response = mock.Mock(
+        ok=True, status_code=200, headers={"Content-Length": str(100 * 1024)}
+    )
+    monkeypatch.setattr(
+        source_file_checks._http_session,
+        "head",
+        mock.Mock(return_value=head_response),
+    )
+    monkeypatch.setattr(
+        source_file_checks._http_session,
+        "get",
+        mock.Mock(return_value=_card_get_response(_jpeg_bytes(1200, 630))),
+    )
 
 
 @pytest.fixture
@@ -3128,3 +3159,106 @@ Body.
         "scalar-alias": "Scalar Alias",
         "sole-alias": "Scalar Alias",
     }
+
+
+VALID_CARD_URL = (
+    "https://assets.turntrout.com/static/images/card_images/card.jpg"
+)
+
+
+@pytest.mark.parametrize(
+    "get_response,expected_errors",
+    [
+        (_card_get_response(_jpeg_bytes(1200, 630)), []),
+        (
+            _card_get_response(_jpeg_bytes(1024, 529)),
+            [
+                "card_image is 1024x529, but og:image declares 1200x630: "
+                + VALID_CARD_URL
+            ],
+        ),
+    ],
+)
+def test_check_card_image_url_dimensions(
+    get_response: mock.Mock, expected_errors: list[str]
+):
+    with patch.object(
+        source_file_checks._http_session, "get", return_value=get_response
+    ):
+        assert (
+            source_file_checks.check_card_image_url(VALID_CARD_URL)
+            == expected_errors
+        )
+
+
+@pytest.mark.parametrize(
+    "get_kwargs,expected_detail",
+    [
+        (
+            {"side_effect": requests.RequestException("Connection error")},
+            "Connection error",
+        ),
+        (
+            {"return_value": _card_get_response(b"not an image")},
+            "cannot identify",
+        ),
+    ],
+)
+def test_check_card_image_url_unreadable(
+    get_kwargs: dict, expected_detail: str
+):
+    with patch.object(source_file_checks._http_session, "get", **get_kwargs):
+        errors = source_file_checks.check_card_image_url(VALID_CARD_URL)
+    assert len(errors) == 1
+    assert errors[0].startswith(
+        f"Failed to read card image dimensions for '{VALID_CARD_URL}'"
+    )
+    assert expected_detail in errors[0]
+
+
+def test_check_card_image_url_skips_dimensions_after_other_errors():
+    with patch.object(source_file_checks._http_session, "get") as mock_get:
+        errors = source_file_checks.check_card_image_url(
+            "https://example.com/card.jpg"
+        )
+    assert errors == [
+        "card_image must be from assets.turntrout.com, but found: "
+        "https://example.com/card.jpg"
+    ]
+    mock_get.assert_not_called()
+
+
+def test_check_default_card_image_checks_configured_url():
+    default_url = script_utils.load_shared_constants()["defaultCardUrl"]
+    with patch.object(
+        source_file_checks, "check_card_image_url", return_value=["boom"]
+    ) as mock_check:
+        assert source_file_checks.check_default_card_image() == ["boom"]
+    mock_check.assert_called_once_with(default_url)
+
+
+def test_main_fails_on_oversized_default_card(
+    git_repo_setup, quartz_project_structure, monkeypatch, capsys
+):
+    tmp_path = git_repo_setup["root"]
+    (quartz_project_structure["content"] / "test.md").write_text("""---
+title: Test Post
+description: Test Description
+permalink: /test
+tags: [test]
+---
+""")
+    monkeypatch.setattr(
+        script_utils, "get_git_root", lambda *args, **kwargs: tmp_path
+    )
+    oversized = mock.Mock(
+        ok=True, status_code=200, headers={"Content-Length": str(400 * 1024)}
+    )
+    with (
+        patch.object(
+            source_file_checks._http_session, "head", return_value=oversized
+        ),
+        pytest.raises(SystemExit, match="1"),
+    ):
+        source_file_checks.main()
+    assert "defaultCardUrl" in capsys.readouterr().out

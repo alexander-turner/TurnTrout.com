@@ -9,7 +9,7 @@ tags:
 description: '"Reward hacking" is usually specification gaming, not reward signal optimization. My 2022 post stands.'
 authors:
   - Alex Turner
-card_image: https://assets.turntrout.com/static/images/card_images/zdXAKSp.jpg
+card_image: https://assets.turntrout.com/static/images/card_images/zdXAKSp-1200x630.jpg
 card_image_alt: A split-screen comparison illustration with a comic book aesthetic. On the left, labeled "SPECIFICATION GAMER", a sneaky blue robot sits at a classroom desk, looking at a "SIMPLE TRICKS" sheet while filling out a test. On the right, labeled "REWARD OPTIMIZER", an excited orange robot plays an arcade game. Above the machine rests a screen that displays "SCORE - 999,999".
 aliases:
   - specification-gaming-is-not-reward-optimization
@@ -17,7 +17,7 @@ aliases:
   - reward-retrospective
 original_url: https://www.lesswrong.com/posts/wwRgR3K8FKShjwwL5/2025-era-reward-hacking-does-not-show-that-reward-is-the
 date_published: 2025-12-18
-date_updated: 2026-09-18
+date_updated: 2026-11-21
 ---
 
  

@@ -251,12 +251,15 @@ test.describe("visual_utils functions", () => {
 
       // Sample both positions inside a single page evaluate: a handle round
       // trip against this page can cost seconds, so one iteration of a
-      // multi-call predicate would not fit the poll budget.
+      // multi-call predicate would not fit the poll budget. The samples are a
+      // timer apart, not a frame apart: a page whose refresh driver is
+      // throttled never runs requestAnimationFrame callbacks, so a frame-gated
+      // sample hangs the predicate instead of answering it.
       await expect
         .poll(() =>
           element.evaluate(async (el) => {
             const before = el.getBoundingClientRect()
-            await new Promise((resolve) => requestAnimationFrame(resolve))
+            await new Promise((resolve) => setTimeout(resolve, 50))
             const after = el.getBoundingClientRect()
             return before.x === after.x && before.y === after.y
           }),

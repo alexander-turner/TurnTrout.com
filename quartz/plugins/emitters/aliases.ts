@@ -148,7 +148,6 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
             <html lang="${locale}">
             <head>
               <meta charset="utf-8">
-              <link rel="canonical" href="${redirUrl}">
 
               ${redirectMetadata}
 
