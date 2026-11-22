@@ -28,7 +28,7 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@b05f5e697e0e39bd87ea6ee8a476f8964b3bd040 # v1.48.0
+    uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@b14b72c5619a22a74f52a21e9419fe182de5d012 # v1.48.4
     with:
       pr: ${{ matrix.pr.number }}
       resolver-repository: AlexanderMattTurner/agent-resolve-merge-conflicts
@@ -160,7 +160,7 @@ Every knob is a repository VARIABLE, so you tune the resolver without editing a 
 | `AUTO_RESOLVE_ATTEMPT_TTL_HOURS`     | `2`                                 | How long one head's attempt mark suppresses a second paid resolve.                                                             |
 | `AUTO_RESOLVE_ATTEMPT_FLOOR_MINUTES` | `20`                                | How old that mark must be before a push to the base branch re-enables the pull request.                                        |
 | `AUTO_RESOLVE_PROTECTED_RE`          | `^(\.github/\|\.claude/\|\.hooks/)` | ERE over repo-relative paths. A conflict inside one is still resolved, and the pushed-resolution comment flags it for a human. |
-| `AUTO_RESOLVE_CHAINED_CHILDREN`      | `on`                                | `log` reports each stacked pull request the resolver would take, and refuses it.                                               |
+| `AUTO_RESOLVE_CHAINED_CHILDREN`      | `on`                                | `log` reports each chained pull request outside a native stack that the resolver would take, and refuses it.                   |
 
 The push scan reaches a pull request against any base branch, and it has one bound worth knowing before you turn the schedule off: GitHub reads a `push` trigger from the workflow file the PUSHED branch carries, so a long-lived release branch that predates your copy of the caller starts no scan of its own. Merge the caller into that branch, or keep the scheduled backstop, which runs from the default branch and scans every open pull request whatever its base.
 
@@ -232,7 +232,7 @@ A `uses:` ref may be a SHA, a tag or a branch. GitHub calls [the commit SHA the 
 **Pin the SHA and name the version beside it**, the way this repository's own caller does:
 
 ```yaml
-uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@b05f5e697e0e39bd87ea6ee8a476f8964b3bd040 # v1.48.0
+uses: AlexanderMattTurner/agent-resolve-merge-conflicts/.github/workflows/auto-resolve.yaml@b14b72c5619a22a74f52a21e9419fe182de5d012 # v1.48.4
 ```
 
 That line reads as a version and resolves as an immutable commit. It names the newest release: `.github/scripts/release-tag.sh` rewrites both copies in this README, and the caller's, in the commit after each release. Copy it as it stands.
