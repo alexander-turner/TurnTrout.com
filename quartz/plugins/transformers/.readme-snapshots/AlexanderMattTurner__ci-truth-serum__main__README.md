@@ -23,7 +23,7 @@ Then add the Tier 1 aggregate to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.16.0 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.16.1 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       - id: check-tier1 # every honesty + identity + security check
 ```
@@ -173,7 +173,6 @@ These checks are about shell scripts, Python, tests, and docs rather than CI rep
 | `check-case-default`               | A `case` with no bare `*)` arm lets an unexpected value match nothing and the script carry on. Opt out with `# case-default-ok: <reason>`.                                                                                                                                                                                | an unknown bump type leaves `NEW_VERSION` unset                     |
 | `check-cron-comment`               | A cadence word that contradicts its cron expression means the job runs at a rate nobody believes. Fails only on a clear contradiction. Opt out with `# cron-comment-ok`.                                                                                                                                                  | `cron: "17 4 * * 2"` commented “daily”                              |
 | `check-cron-alert-coverage`        | A cron has no pull request and no reviewer, so its red mark lives only in the Actions tab and a guard broken for six weeks looks healthy. Every scheduled workflow must route failures to a human. Opt out with `# cron-alert: false  # <reason>`.                                                                        | a weekly scan fails at 3am and tells nobody                         |
-| `check-external-clock-targets`     | A dispatch-manifest entry naming a workflow that does not exist, carries no `workflow_dispatch`, or requires an input fires nothing on every tick, and no red mark appears anywhere. No opt-out.                                                                                                                          | a renamed sweep drops every dispatch                                |
 | `check-multi-cron-gating`          | Every cron in a file starts every schedule-eligible job, so a job gated on the bare event name runs for all of them. Each must name its cron. The observed cost was a paid eval nobody scheduled. Opt out with `# multi-cron-ok: <reason>`.                                                                               | a second cron also starts the other job                             |
 | `check-unused-reusable-input`      | A `workflow_call` input no caller passes is either dead surface a reader writes against, or a solved problem nobody wired — so the next author writes their own copy. The observed one grew a 65-line duplicate. Opt out with `# unused-input-ok: <reason>`.                                                              | a `paths-regex-file` input no workflow passes                       |
 | `check-unreferenced-local-uses`    | A local composite action, or a workflow whose only trigger is `workflow_call`, that nothing runs. The check walks `uses:` from the files that run without a caller, so a pair of dead definitions calling each other is reported too. Opt out with `# unreferenced-ok: <reason>` naming the caller in another repository. | a composite action whose last caller went away                      |
@@ -209,7 +208,7 @@ Start here enables Tier 1 through one aggregate id. This section is the full men
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.16.0 # the release tag; matches the package version (vX.Y.Z)
+    rev: v1.16.1 # the release tag; matches the package version (vX.Y.Z)
     hooks:
       # ── Tier 1 · honesty, identity and security (default-on) ──
       # One id, so a Tier 1 check added in a later release runs as soon as you
@@ -263,7 +262,6 @@ repos:
       # - id: check-case-default         # every shell case block needs a bare *) default arm
       # - id: check-cron-comment         # a schedule comment must not contradict its cron
       # - id: check-cron-alert-coverage  # a cron's failures must reach a human, not just the Actions tab
-      # - id: check-external-clock-targets  # every external-clock dispatch-manifest entry must name a fireable workflow
       # - id: check-multi-cron-gating    # in a multi-cron workflow, every job must name its cron
       # - id: check-unused-reusable-input  # a workflow_call input needs a caller that passes it
       # - id: check-unreferenced-local-uses  # a local action or reusable workflow needs a caller
@@ -298,7 +296,7 @@ Select on either axis with `check-select`. It takes `--select` (repeatable, unio
 ```yaml
 repos:
   - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-    rev: v1.16.0
+    rev: v1.16.1
     hooks:
       - id: check-select
         args: [--select, "tag:security", --select, "tag:secrets"]
@@ -351,7 +349,7 @@ One check in a tier can need tighter file scoping than the rest. For example, `c
 
 ```yaml
 - repo: https://github.com/AlexanderMattTurner/ci-truth-serum
-  rev: v1.16.0
+  rev: v1.16.1
   hooks:
     - id: check-tier1
       args: [--skip, check_exit_suppression] # drop it from the aggregate...
