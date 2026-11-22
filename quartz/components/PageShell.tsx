@@ -9,6 +9,9 @@ import accurateInvertScript from "./scripts/accurateInvert.inline"
 import clipboardScript from "./scripts/clipboard.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
+import dropcapCopyScript from "./scripts/dropcap-copy.inline"
+// @ts-expect-error Not a module but a script
+// skipcq: JS-W1028
 import elvishToggleScript from "./scripts/elvish-toggle.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
@@ -116,6 +119,7 @@ PageShell.afterDOMLoaded = [
   elvishToggleScript,
   wideInlineScript,
   smallCapsCopyScript,
+  dropcapCopyScript,
   scrollIndicatorScript,
   punctilioDemoScript,
   spoilerScript,
