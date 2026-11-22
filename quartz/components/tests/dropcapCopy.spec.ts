@@ -26,7 +26,8 @@ async function copyDragFrom(page: Page, dx: number, dy: number): Promise<string>
         )
       }),
   )
-  await page.mouse.move(box.x + dx, box.y + dy)
+  // On a phone the left margin is narrower than |dx|; stay inside the viewport.
+  await page.mouse.move(Math.max(2, box.x + dx), box.y + dy)
   await page.mouse.down()
   await page.mouse.move(box.x + box.width - 5, box.y + box.height - 5, { steps: 15 })
   await page.mouse.up()
