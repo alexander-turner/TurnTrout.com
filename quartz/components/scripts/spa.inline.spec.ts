@@ -969,7 +969,9 @@ test.describe("Critical CSS", () => {
 test.describe("Page-specific stylesheets", () => {
   test("KaTeX CSS loads when navigating from a page without math", async ({ page }) => {
     const katexCss = page.locator('link[rel="stylesheet"][href*="katex"]')
-    await gotoPage(page, "http://localhost:8080/", "domcontentloaded")
+    // "/" is an alias page whose meta refresh would replace the document
+    // mid-test, so start from the page it points to.
+    await gotoPage(page, "http://localhost:8080/welcome", "domcontentloaded")
     await expect(katexCss).toHaveCount(0)
 
     await page.evaluate((slug) => {
