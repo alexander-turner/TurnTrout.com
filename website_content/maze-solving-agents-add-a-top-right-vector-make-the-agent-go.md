@@ -383,5 +383,5 @@ The results for the cheese vector transfer across _n_×_n_ models:
 
     Less trivially, adding the cheese vector seems to work better for $n=6$ compared to $n=5$:
 
-  ![Titled "Seed 0," three diagrams compare an AI agent's path in a maze. The "Original" panel shows a vector field of white arrows indicating a path toward cheese. The "Patched" panel shows a modified path that is more attracted to the cheese. The third panel shows the difference, with green arrows highlighting a local change in behavior towards the cheese.](https://assets.turntrout.com/static/images/posts/cca26b1b4814fe3c963953a35b33736b6f2cee395479a076.avif)
+    ![Titled "Seed 0," three diagrams compare an AI agent's path in a maze. The "Original" panel shows a vector field of white arrows indicating a path toward cheese. The "Patched" panel shows a modified path that is more attracted to the cheese. The third panel shows the difference, with green arrows highlighting a local change in behavior towards the cheese.](https://assets.turntrout.com/static/images/posts/cca26b1b4814fe3c963953a35b33736b6f2cee395479a076.avif)
     Figure: For the 6×6 net, if you **add** the cheese vector instead of subtracting it, you do increase cheese-seeking on seed 0! In contrast, this was not true for the 5×5 net.

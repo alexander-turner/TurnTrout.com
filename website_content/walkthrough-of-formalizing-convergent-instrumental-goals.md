@@ -171,6 +171,6 @@ We have much work to do. The risks are enormous and the challenges "[impossible]
 - Page 8, right column, second full paragraph, last line: should be "we have two options available _to_ us".
 
 [^1]: By the axiom of substitution,  
-  $$
-  \texttt{Feasible}(\langle P^k\rangle)= \{\langle \bar{a}^k \rangle : \textit{isFeasible}(\langle P^k\rangle, \langle \bar{a}^k \rangle)\}.
-  $$
+    $$
+    \texttt{Feasible}(\langle P^k\rangle)= \{\langle \bar{a}^k \rangle : \textit{isFeasible}(\langle P^k\rangle, \langle \bar{a}^k \rangle)\}.
+    $$
