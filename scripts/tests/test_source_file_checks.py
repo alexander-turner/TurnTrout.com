@@ -2588,10 +2588,13 @@ def _resumed_err(block_line: int, name: str, resume_line: int) -> str:
         ("[^1]: Intro:\n\n    - a\n    - b\n\n    After.", []),
         # Valid: tab-indented continuation
         ("[^1]: Intro:\n\n\t- a", []),
-        # Valid: lazy paragraph continuation needs no indentation
+        # Valid: lazy paragraph continuation needs no indentation, including
+        # a line starting with a number that cannot open a list
         ("[^1]: First line\nsecond line\n  third line", []),
+        ("[^1]: The study ran until\n2019. Results were mixed:\n\n    - a", []),
         # Valid: a heading or another definition ends a footnote on purpose
         ("[^1]: Ends with a colon:\n\n# Heading\n\nBody.", []),
+        ("[^1]: Ends with a colon:\n# Heading\n\nBody.", []),
         ("[^1]: A:\n\n[^2]: B", []),
         # Valid: no footnotes at all
         ("Just text.\n\n    indented", []),
@@ -2601,8 +2604,12 @@ def _resumed_err(block_line: int, name: str, resume_line: int) -> str:
             "<!-- vale on -->\n\n    After.",
             [],
         ),
-        # Valid: fenced code is skipped
+        # Valid: a multi-line comment counts as blank lines
+        ("[^1]: See below:\n\n<!--\nTODO\n-->\n\n    More.", []),
+        # Valid: fenced code is skipped, and only a matching fence closes it
         ("```markdown\n[^1]: Intro:\n\n- a\n```", []),
+        ("~~~\n[^1]: Intro:\n\n- a\n~~~", []),
+        ("````markdown\n```\n[^1]: Intro:\n\n- a\n```\n````", []),
         # Valid: a body list (with nested items) after a mid-document
         # footnote, then body text and unrelated indented content
         (
@@ -2610,6 +2617,14 @@ def _resumed_err(block_line: int, name: str, resume_line: int) -> str:
             "Body paragraph.\n\n    indented later",
             [],
         ),
+        # Valid: an indented paragraph after a body list continues its last
+        # item
+        ("[^1]: Note.\n\n- item\n\n    Second paragraph.", []),
+        # Valid: only the block right after the unindented one is examined
+        ("[^1]: Text.\n\n> quote\n\n  odd indent\n\n    Later.", []),
+        # Valid: a block that followed an earlier footnote is forgotten once
+        # another definition starts
+        ("[^1]: A.\n\n> x\n\n[^2]: B.\n\n# H\n\n    indented", []),
         # Error: unindented list after a lead-in colon
         (
             "Text.[^1]\n\n[^1]: Other factors:\n\n- a\n- b",
@@ -2620,6 +2635,7 @@ def _resumed_err(block_line: int, name: str, resume_line: int) -> str:
             "[^note]: _As follows:_\n\nPlain paragraph.",
             [_lead_in_err(3, "note", "Plain paragraph.")],
         ),
+        ("[^1]: **Note:**\n\n- a", [_lead_in_err(3, "1", "- a")]),
         # Error: a list interrupts the footnote even without a blank line
         ("[^1]: Options:\n- a", [_lead_in_err(2, "1", "- a")]),
         # Error: block indented fewer than four spaces (reported once)
@@ -2637,15 +2653,10 @@ def _resumed_err(block_line: int, name: str, resume_line: int) -> str:
             "[^1]: Code:\n\n  ```\n  x\n  ```",
             [_under_indented_err(3, "1", 2, "  ```")],
         ),
-        # Error: unindented list, then the footnote's indentation resumes
+        # Error: unindented quote, then the footnote's indentation resumes
         (
-            "[^1]: Text.\n\n- a\n\n- b\n\n    Resumed paragraph.",
-            [_resumed_err(3, "1", 7)],
-        ),
-        # Error: same, with an oddly indented paragraph in between
-        (
-            "[^1]: Text.\n\n> quote\n\n  odd indent\n\n    Resumed.",
-            [_resumed_err(3, "1", 7)],
+            "[^1]: Text.\n\n> quote\n> more\n\n    Resumed paragraph.",
+            [_resumed_err(3, "1", 6)],
         ),
     ],
 )
