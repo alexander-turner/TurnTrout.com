@@ -2557,6 +2557,106 @@ def test_check_footnote_references(text: str, expected_errors: list[str]):
     assert sorted(errors) == sorted(expected_errors)
 
 
+def _under_indented_err(line: int, name: str, spaces: int, found: str) -> str:
+    return (
+        f"Line {line}: footnote '{name}' continuation is indented {spaces} "
+        "space(s), so it falls out of the footnote. Indent it 4 spaces. "
+        f"Found: {found}..."
+    )
+
+
+def _lead_in_err(line: int, name: str, found: str) -> str:
+    return (
+        f"Line {line}: unindented block follows a lead-in colon in footnote "
+        f"'{name}', so it falls out of the footnote. Indent it 4 spaces. "
+        f"Found: {found}..."
+    )
+
+
+def _resumed_err(block_line: int, name: str, resume_line: int) -> str:
+    return (
+        f"Line {block_line}: unindented block falls out of footnote "
+        f"'{name}', which resumes at line {resume_line}. "
+        "Indent the block 4 spaces."
+    )
+
+
+@pytest.mark.parametrize(
+    "text, expected_errors",
+    [
+        # Valid: list and trailing paragraph indented into the footnote
+        ("[^1]: Intro:\n\n    - a\n    - b\n\n    After.", []),
+        # Valid: tab-indented continuation
+        ("[^1]: Intro:\n\n\t- a", []),
+        # Valid: lazy paragraph continuation needs no indentation
+        ("[^1]: First line\nsecond line\n  third line", []),
+        # Valid: a heading or another definition ends a footnote on purpose
+        ("[^1]: Ends with a colon:\n\n# Heading\n\nBody.", []),
+        ("[^1]: A:\n\n[^2]: B", []),
+        # Valid: no footnotes at all
+        ("Just text.\n\n    indented", []),
+        # Valid: a comment-only line counts as blank
+        (
+            "[^1]: Quote:\n\n<!-- vale off -->\n    > quoted\n"
+            "<!-- vale on -->\n\n    After.",
+            [],
+        ),
+        # Valid: fenced code is skipped
+        ("```markdown\n[^1]: Intro:\n\n- a\n```", []),
+        # Valid: a body list (with nested items) after a mid-document
+        # footnote, then body text and unrelated indented content
+        (
+            "[^1]: Note.\n\n1. item\n    1. nested\n\n2. item\n\n"
+            "Body paragraph.\n\n    indented later",
+            [],
+        ),
+        # Error: unindented list after a lead-in colon
+        (
+            "Text.[^1]\n\n[^1]: Other factors:\n\n- a\n- b",
+            [_lead_in_err(5, "1", "- a")],
+        ),
+        # Error: lead-in colon wrapped in emphasis, then a plain paragraph
+        (
+            "[^note]: _As follows:_\n\nPlain paragraph.",
+            [_lead_in_err(3, "note", "Plain paragraph.")],
+        ),
+        # Error: a list interrupts the footnote even without a blank line
+        ("[^1]: Options:\n- a", [_lead_in_err(2, "1", "- a")]),
+        # Error: block indented fewer than four spaces (reported once)
+        (
+            "[^1]: See:\n\n  > quote\n  > more",
+            [_under_indented_err(3, "1", 2, "  > quote")],
+        ),
+        # Error: under-indented display math directly after the text
+        (
+            "[^1]: By substitution,\n  $$\n  x\n  $$",
+            [_under_indented_err(2, "1", 2, "  $$")],
+        ),
+        # Error: under-indented fenced code block
+        (
+            "[^1]: Code:\n\n  ```\n  x\n  ```",
+            [_under_indented_err(3, "1", 2, "  ```")],
+        ),
+        # Error: unindented list, then the footnote's indentation resumes
+        (
+            "[^1]: Text.\n\n- a\n\n- b\n\n    Resumed paragraph.",
+            [_resumed_err(3, "1", 7)],
+        ),
+        # Error: same, with an oddly indented paragraph in between
+        (
+            "[^1]: Text.\n\n> quote\n\n  odd indent\n\n    Resumed.",
+            [_resumed_err(3, "1", 7)],
+        ),
+    ],
+)
+def test_check_footnote_continuation_indents(
+    text: str, expected_errors: list[str]
+):
+    """Test checking that footnote content stays inside its footnote."""
+    errors = source_file_checks.check_footnote_continuation_indents(text)
+    assert errors == expected_errors
+
+
 @pytest.mark.parametrize(
     "text,expected_errors",
     [
