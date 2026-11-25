@@ -2610,6 +2610,7 @@ def _resumed_err(block_line: int, name: str, resume_line: int) -> str:
         ("```markdown\n[^1]: Intro:\n\n- a\n```", []),
         ("~~~\n[^1]: Intro:\n\n- a\n~~~", []),
         ("````markdown\n```\n[^1]: Intro:\n\n- a\n```\n````", []),
+        ("```\n~~~\n[^1]: Intro:\n\n- a\n```", []),
         # Valid: a body list (with nested items) after a mid-document
         # footnote, then body text and unrelated indented content
         (
@@ -2636,6 +2637,8 @@ def _resumed_err(block_line: int, name: str, resume_line: int) -> str:
             [_lead_in_err(3, "note", "Plain paragraph.")],
         ),
         ("[^1]: **Note:**\n\n- a", [_lead_in_err(3, "1", "- a")]),
+        # Error: an empty definition line is itself a lead-in
+        ("[^1]:\n\n- a", [_lead_in_err(3, "1", "- a")]),
         # Error: a list interrupts the footnote even without a blank line
         ("[^1]: Options:\n- a", [_lead_in_err(2, "1", "- a")]),
         # Error: block indented fewer than four spaces (reported once)
@@ -2643,6 +2646,8 @@ def _resumed_err(block_line: int, name: str, resume_line: int) -> str:
             "[^1]: See:\n\n  > quote\n  > more",
             [_under_indented_err(3, "1", 2, "  > quote")],
         ),
+        # Error: three spaces is still one short
+        ("[^1]: See:\n\n   > q", [_under_indented_err(3, "1", 3, "   > q")]),
         # Error: under-indented display math directly after the text
         (
             "[^1]: By substitution,\n  $$\n  x\n  $$",
@@ -2652,6 +2657,12 @@ def _resumed_err(block_line: int, name: str, resume_line: int) -> str:
         (
             "[^1]: Code:\n\n  ```\n  x\n  ```",
             [_under_indented_err(3, "1", 2, "  ```")],
+        ),
+        # Error: a line right after a closed fence starts a new block
+        (
+            "[^1]: Run this:\n\n    ```sh\n    make\n    ```\n"
+            "Then rebuild.\n\n    More footnote.",
+            [_resumed_err(6, "1", 8)],
         ),
         # Error: unindented quote, then the footnote's indentation resumes
         (
