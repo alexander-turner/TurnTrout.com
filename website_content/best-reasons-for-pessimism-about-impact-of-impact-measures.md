@@ -57,18 +57,18 @@ Over the course of 5 minutes by the clock, here are the reasons I generated for 
 - In a [More realistic tales of doom](https://www.lesswrong.com/posts/HBxe6wdjxK239zajf/more-realistic-tales-of-doom)-esque scenario, it isn't clear how impact helps prevent "gradually drifting off the rails".[^1]
 
 [^1]: Paul Christiano [raised concerns along these lines](https://www.lesswrong.com/posts/c2oM7qytRByv6ZFtz/impact-measure-desiderata?commentId=Lc2M2jwugKTdynM8A):
-  
-  <!-- vale off -->
-  > [!quote]
-  >
-  > We'd like to build AI systems that help us resolve the tricky situation that we're in. That help design and enforce agreements to avoid technological risks, build better-aligned AI, negotiate with other actors, predict and manage the impacts of AI, improve our institutions and policy, etc.  
-  >
-  > I think the default "terrible" scenario is one where increasingly powerful AI makes the world change faster and faster, and makes our situation more and more complex, with humans having less and less of a handle on what is going on or how to steer it in a positive direction. Where we must rely on AI to get anywhere at all, and thereby give up the ability to choose where we are going.  
-  >
-  > That may ultimately culminate with a catastrophic bang, but if it does it's not going to be because we wanted the AI to have a small impact and it had a large impact. It's probably going to be because we have a very limited idea what is going on, but we don't feel like we have the breathing room to step back and chill out (at least not for long) because we don't believe that everyone else is going to give us time.  
-  >
-  > If I'm trying to build an AI to help us navigate an increasingly complex and rapidly-changing world, what does "low impact" mean? In what sense do the terrible situations involve higher objective impact than the intended behaviors?  
-  >
-  > (And realistically I doubt we'll fail at alignment with a bang---it's more likely that the world will just drift off the rails over the course of a few months or years. The intuition that we wouldn't let things go off the rails gradually seems like the same kind of wishful thinking that predicts war or slow-rolling environmental disasters should never happen.)  
-  >
-  > It seems like "low objective impact" is what we need once we are in the unstable situation where we have the technology to build an AI that would quickly and radically transform the world, but we have all decided not to and so are primarily concerned about radically transforming the world by accident. I think that's a coherent situation to think about and plan for, but we shouldn't mistake it for the mainline. (I personally think it is quite unlikely, and it would definitely be unprecedented, though you could still think it's the best hope if you were very pessimistic about what I consider "mainline" alignment.)
+
+    <!-- vale off -->
+    > [!quote]
+    >
+    > We'd like to build AI systems that help us resolve the tricky situation that we're in. That help design and enforce agreements to avoid technological risks, build better-aligned AI, negotiate with other actors, predict and manage the impacts of AI, improve our institutions and policy, etc.  
+    >
+    > I think the default "terrible" scenario is one where increasingly powerful AI makes the world change faster and faster, and makes our situation more and more complex, with humans having less and less of a handle on what is going on or how to steer it in a positive direction. Where we must rely on AI to get anywhere at all, and thereby give up the ability to choose where we are going.  
+    >
+    > That may ultimately culminate with a catastrophic bang, but if it does it's not going to be because we wanted the AI to have a small impact and it had a large impact. It's probably going to be because we have a very limited idea what is going on, but we don't feel like we have the breathing room to step back and chill out (at least not for long) because we don't believe that everyone else is going to give us time.  
+    >
+    > If I'm trying to build an AI to help us navigate an increasingly complex and rapidly-changing world, what does "low impact" mean? In what sense do the terrible situations involve higher objective impact than the intended behaviors?  
+    >
+    > (And realistically I doubt we'll fail at alignment with a bang---it's more likely that the world will just drift off the rails over the course of a few months or years. The intuition that we wouldn't let things go off the rails gradually seems like the same kind of wishful thinking that predicts war or slow-rolling environmental disasters should never happen.)  
+    >
+    > It seems like "low objective impact" is what we need once we are in the unstable situation where we have the technology to build an AI that would quickly and radically transform the world, but we have all decided not to and so are primarily concerned about radically transforming the world by accident. I think that's a coherent situation to think about and plan for, but we shouldn't mistake it for the mainline. (I personally think it is quite unlikely, and it would definitely be unprecedented, though you could still think it's the best hope if you were very pessimistic about what I consider "mainline" alignment.)

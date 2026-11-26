@@ -10,7 +10,7 @@ import shutil
 import string
 import subprocess
 import sys
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import Literal, TypedDict
 
@@ -1068,6 +1068,171 @@ def check_footnote_references(text: str) -> list[str]:
     return errors
 
 
+# A footnote definition's body is every later block indented at least this far;
+# the first block indented less ends the footnote and renders as body content.
+_FOOTNOTE_CONTINUATION_INDENT = 4
+_HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+_FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})")
+# Constructs that start a new block even without a preceding blank line, so
+# they cannot lazily continue a footnote's paragraph. Of the ordered lists,
+# only one numbered 1 can interrupt a paragraph.
+_PARAGRAPH_INTERRUPT_RE = re.compile(
+    r"""^(?:
+        [-*+]\s        # bullet list item
+        | 1[.)]\s      # ordered list item
+        | >            # blockquote
+        | \|           # table row
+        | \#{1,6}\s    # heading
+        | \$\$         # display math
+        | `{3,}|~{3,}  # fenced code
+    )""",
+    re.VERBOSE,
+)
+# A line that introduces what follows it ("Other factors we considered:").
+_LEAD_IN_RE = re.compile(r":[_*]*\s*$")
+
+_FootnoteLineKind = Literal[
+    "inside", "under_indented", "after_lead_in", "follows", "ends"
+]
+
+
+def _indent_width(line: str) -> int:
+    """Width of ``line``'s leading whitespace, counting a tab as four
+    columns."""
+    expanded = line.expandtabs(_FOOTNOTE_CONTINUATION_INDENT)
+    return len(expanded) - len(expanded.lstrip(" "))
+
+
+def _closes_fence(line: str, fence: str) -> bool:
+    """True if ``line`` is a closing fence for a block opened by ``fence``: the
+    same character, at least as many of them, and nothing else."""
+    marker = line.strip()
+    return len(marker) >= len(fence) and set(marker) == {fence[0]}
+
+
+def _iter_nonblank_lines(text: str) -> Iterator[tuple[int, str, bool]]:
+    """
+    Yield ``(line number, line, after_break)`` for each non-blank line.
+
+    ``after_break`` is True when the line follows a blank line or a closed code
+    fence, so it cannot continue the previous paragraph. HTML comments are
+    removed first (the site build strips them before parsing), so a line
+    holding only a comment counts as blank. The opening line of a fenced code
+    block is yielded; its body and closing fence are skipped.
+    """
+    without_comments = _HTML_COMMENT_RE.sub(
+        lambda match: "\n" * match.group(0).count("\n"), text
+    )
+    open_fence = ""
+    after_break = False
+    for line_num, line in enumerate(without_comments.split("\n"), start=1):
+        if open_fence:
+            if _closes_fence(line, open_fence):
+                open_fence = ""
+                after_break = True
+            continue
+        if not line.strip():
+            after_break = True
+            continue
+        fence = _FENCE_RE.match(line)
+        open_fence = fence.group(1) if fence else ""
+        yield line_num, line, after_break
+        after_break = False
+
+
+def _footnote_line_kind(
+    line: str, after_break: bool, last_footnote_line: str
+) -> _FootnoteLineKind:
+    """
+    Classify a line that comes after an open footnote definition.
+
+    ``inside`` lines belong to the footnote; every other kind ends it.
+    ``under_indented`` and ``after_lead_in`` are mistakes. ``follows`` is an
+    unindented non-list block, which is a mistake only if the footnote's
+    indentation resumes after it. ``ends`` is a heading or a list, which needs
+    no further tracking: an indented paragraph after a list is a valid
+    continuation of its last item.
+    """
+    indent = _indent_width(line)
+    starts_block = after_break or bool(
+        _PARAGRAPH_INTERRUPT_RE.match(line.lstrip())
+    )
+    if indent >= _FOOTNOTE_CONTINUATION_INDENT or not starts_block:
+        return "inside"
+    if indent > 0:
+        return "under_indented"
+    if _HEADING_RE.match(line):
+        return "ends"
+    if _LEAD_IN_RE.search(last_footnote_line):
+        return "after_lead_in"
+    return "ends" if _LIST_MARKER_RE.match(line) else "follows"
+
+
+def check_footnote_continuation_indents(text: str) -> list[str]:
+    """
+    Check that content meant for a footnote is indented enough to stay in it.
+
+    Under-indented content silently ends the footnote and renders as ordinary
+    body text at that point in the article. Three shapes are flagged:
+
+    - a new block indented fewer than four spaces after the definition;
+    - an unindented block right after footnote text ending in a lead-in colon;
+    - an unindented non-list block after the footnote, with the next block
+      back at footnote indentation. (A list is exempt because an indented
+      paragraph after it is a valid continuation of its last item.)
+    """
+    errors: list[str] = []
+    open_name: str | None = None
+    last_footnote_line = ""
+    # (footnote name, line number) of the unindented non-list block that
+    # directly follows a footnote, until the block after it is seen
+    following_block: tuple[str, int] | None = None
+
+    for line_num, line, after_break in _iter_nonblank_lines(text):
+        definition = _FOOTNOTE_DEFINITION_RE.match(line)
+        if definition:
+            open_name, last_footnote_line = definition.group(1), line
+            following_block = None
+            continue
+
+        if open_name is None:
+            if not (following_block and after_break):
+                continue
+            if _indent_width(line) >= _FOOTNOTE_CONTINUATION_INDENT:
+                name, block_line = following_block
+                errors.append(
+                    f"Line {block_line}: unindented block falls out of "
+                    f"footnote '{name}', which resumes at line {line_num}. "
+                    f"Indent the block {_FOOTNOTE_CONTINUATION_INDENT} spaces."
+                )
+            following_block = None
+            continue
+
+        kind = _footnote_line_kind(line, after_break, last_footnote_line)
+        if kind == "inside":
+            last_footnote_line = line
+            continue
+        if kind == "under_indented":
+            errors.append(
+                f"Line {line_num}: footnote '{open_name}' continuation is "
+                f"indented {_indent_width(line)} space(s), so it falls out "
+                f"of the footnote. Indent it {_FOOTNOTE_CONTINUATION_INDENT} "
+                f"spaces. Found: {line[:60]}..."
+            )
+        elif kind == "after_lead_in":
+            errors.append(
+                f"Line {line_num}: unindented block follows a lead-in colon "
+                f"in footnote '{open_name}', so it falls out of the "
+                f"footnote. Indent it {_FOOTNOTE_CONTINUATION_INDENT} spaces. "
+                f"Found: {line[:60]}..."
+            )
+        elif kind == "follows":
+            following_block = (open_name, line_num)
+        open_name = None
+
+    return errors
+
+
 _NON_VOID_ELEMENTS = frozenset(
     {
         "iframe",
@@ -1138,7 +1303,7 @@ _TRAILING_WORD_RE = re.compile(r"([A-Za-z.]+)$")
 # text wraps to the next line leaves only the marker (``1.``) on this line, and
 # that bare enumerator is not sentence-initial prose.
 _LIST_MARKER_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])(?:\s+|$)")
-_FOOTNOTE_DEFINITION_RE = re.compile(r"^\[\^[^\]]+\]:\s*")
+_FOOTNOTE_DEFINITION_RE = re.compile(r"^\[\^([^\]]+)\]:\s*")
 # Leading markers that introduce authorial prose; each is stripped so the
 # numeral check runs on the text the reader actually sees. A definition or
 # subtitle line opens with ``:``.
@@ -1439,6 +1604,9 @@ def check_file_data(
         ),
         "heading_case": check_heading_case(text),
         "footnote_references": check_footnote_references(text),
+        "footnote_continuation_indents": check_footnote_continuation_indents(
+            text
+        ),
         "self_closing_non_void": check_self_closing_non_void_elements(text),
         "sentence_initial_numerals": check_sentence_initial_numerals(text),
         "dates_missing_ordinal_suffix": check_dates_missing_ordinal_suffix(

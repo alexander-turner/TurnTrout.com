@@ -390,8 +390,8 @@ Corrigibility is an instrumental strategy for achieving non-obstruction, which i
 
     Here's another example of the distinction:
 
-- _Direct_: quantifying in bits "how much" a specific person is learning at a given point in time
+    - _Direct_: quantifying in bits "how much" a specific person is learning at a given point in time
 
-- Indirect: computational neuroscientists upper-bounding the brain's channel capacity with the environment, limiting how quickly a person (without logical uncertainty) can learn about their environment
+    - Indirect: computational neuroscientists upper-bounding the brain's channel capacity with the environment, limiting how quickly a person (without logical uncertainty) can learn about their environment
 
     You can often have crisp insights into fuzzy concepts, such that your expectations are usefully constrained. I hope we can do something similar for manipulation.
