@@ -111,11 +111,12 @@ Implement regression and integration testing early
 : We relied on point-in-time evaluations to sanity check our infrastructure. Error prevented: Several regressions in the stack under us, which cost several SWE days and partially compromised results.
 
 Ensure datasets have statistical power to make progress
+
 : For example, TruthfulQA validation only had 256 points. Error prevented: noisy evaluations.
 
-![Two histograms showing the Bayesian posterior for the "BIDPO - Baseline Correct Sample Advantage" on two datasets. For the "mmlu" dataset, the distribution is centered near zero (p=45.3%). For the "tqa" dataset, the distribution is almost entirely positive, indicating a significant advantage (p=99.6%).](https://assets.turntrout.com/static/images/posts/contrastive-posterior.avif)
+  ![Two histograms showing the Bayesian posterior for the "BIDPO - Baseline Correct Sample Advantage" on two datasets. For the "mmlu" dataset, the distribution is centered near zero (p=45.3%). For the "tqa" dataset, the distribution is almost entirely positive, indicating a significant advantage (p=99.6%).](https://assets.turntrout.com/static/images/posts/contrastive-posterior.avif)
 
-Figure: Bayesian statistics for Gemini Pro 1.5v2 performance shifts. The $x$-axis shows the "contrastive advantage" of the BIDPO vector over the baseline. This posterior contrast takes into account finite sample effects and allows us to estimate the probability the BIDPO vector's effect is via chance.<br/><br/>A sample advantage of $n$ on TruthfulQA corresponds to an accuracy increase of $\frac{n}{256}$. Wins needed ≥10% signal to be statistically relevant, making it hard to identify and stack small wins.
+  Figure: Bayesian statistics for Gemini Pro 1.5v2 performance shifts. The $x$-axis shows the "contrastive advantage" of the BIDPO vector over the baseline. This posterior contrast takes into account finite sample effects and allows us to estimate the probability the BIDPO vector's effect is via chance.<br/><br/>A sample advantage of $n$ on TruthfulQA corresponds to an accuracy increase of $\frac{n}{256}$. Wins needed ≥10% signal to be statistically relevant, making it hard to identify and stack small wins.
 
 Generate and analyze data separately
 : Separation protects against possible generation pipeline changes or breaks. Error prevented: Inability to plot complete 1.5v1 statistics on e.g. multi-shot prompting (as we didn't expect to regenerate those).
