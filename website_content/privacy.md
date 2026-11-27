@@ -337,9 +337,9 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 > I wouldn't worry about this too much for now. Hopefully Proton implements a defense, just to be sure.
 
 > [!warning] Proton VPN isn't post-quantum yet
-> As of November 2026, Proton VPN's tunnel still uses classical key exchange. Proton's [2026 roadmap](https://www.tomsguide.com/computing/vpns/proton-vpn-reveals-its-spring-and-summer-2026-roadmap-heres-whats-coming) lays groundwork for post-quantum encryption, but Proton hasn't shipped it. Until Proton does, VPN traffic recorded today is vulnerable to ["harvest now, decrypt later."](#end-to-end-encryption-for-your-data-in-4-hours) [Mullvad](https://mullvad.net/en/blog/quantum-resistant-tunnels-are-now-the-default-on-desktop) and [NordVPN](https://www.tomsguide.com/computing/vpns/nordvpn-announces-post-quantum-encryption-support-for-all-applications) already have post-quantum tunnels.
+> As of November 2026, Proton VPN's tunnel still uses classical key exchange. Proton's [2026 roadmap](https://www.tomsguide.com/computing/vpns/proton-vpn-reveals-its-spring-and-summer-2026-roadmap-heres-whats-coming) lays groundwork for post-quantum encryption, but Proton hasn't shipped it. Until Proton does, someone recording your VPN traffic today could later learn which sites you visited (["harvest now, decrypt later"](#end-to-end-encryption-for-your-data-in-4-hours)). [Mullvad](https://mullvad.net/en/blog/quantum-resistant-tunnels-are-now-the-default-on-desktop) and [NordVPN](https://www.tomsguide.com/computing/vpns/nordvpn-announces-post-quantum-encryption-support-for-all-applications) already have post-quantum tunnels.
 >
-> I still recommend Proton VPN for most people because of its audited no-logs policy, its Swiss jurisdiction, and the Proton Unlimited bundle. Personally, though, I switched to Mullvad (€5/month) for its post-quantum tunnels. If your browsing must stay private for a decade, consider doing the same.
+> I still recommend Proton VPN for most people because of its audited no-logs policy, its Swiss jurisdiction, and the Proton Unlimited bundle. Personally, though, I switched to Mullvad (€5/month) for its post-quantum tunnels, despite its Swedish jurisdiction.
 
 > [!info] It's not paranoia if they really are out to get you
 > > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
@@ -476,7 +476,7 @@ You buy two of these little USB-C boys for \$55 each. Use these as two-factor au
 
 Subtitle: Time: 10 minutes once you have your YubiKeys.
 
-If you use Gmail or Google Drive, your Google account is probably the master key to your digital life. Google's free [Advanced Protection Program](https://landing.google.com/advancedprotection/) locks it down. Signing in requires [your YubiKey](#buy-a-yubikey-and-a-backup) or a passkey, so phishing and stolen passwords stop working. Advanced Protection also blocks risky downloads and stops unapproved third-party apps from reading your Gmail and Drive. The tradeoff: if you lose access, account recovery takes longer. That's why you have a backup key.
+If you use Gmail or Google Drive, your Google account is probably the master key to your digital life. Google's free Advanced Protection Program locks it down. Signing in requires [your YubiKey](#buy-a-yubikey-and-a-backup) or a passkey, so phishing and stolen passwords stop working. Advanced Protection also blocks risky downloads and stops unapproved third-party apps from reading your Gmail and Drive. The tradeoff: if you lose access, account recovery takes longer. That's why you have a backup key.
 
 - [ ] [Enroll in Advanced Protection](https://landing.google.com/advancedprotection/).
 
@@ -511,10 +511,10 @@ It doesn't matter how good a company's security and data handling practices are.
 
 On the other hand, when you use E2EE, the company can't decrypt it. Your data is just a sequence of zeros and ones on a computer. The company has nothing to hand over.
 
-Encryption has a shelf life, though. Spy agencies record encrypted traffic today and store it, betting that future quantum computers will break the math protecting most of it --- ["harvest now, decrypt later."](https://en.wikipedia.org/wiki/Harvest_now,_decrypt_later) A message that no one can read in 2026 might be readable in 2040, so anything which must stay secret for a decade or more needs *post-quantum* encryption.
+Encryption has a shelf life, though. Spy agencies record encrypted traffic today and store it, betting that future quantum computers will break the math protecting most of it --- ["harvest now, decrypt later."](https://en.wikipedia.org/wiki/Harvest_now,_decrypt_later) A message that no one can read in 2026 might be readable in 2040, so anything which must stay secret for 15 years needs *post-quantum* encryption.
 
-> [!tip] Signal for secrets which must keep for 15 years; Proton for everything else
-> Signal's ["Triple Ratchet"](https://signal.org/blog/spqr/) (rolled out starting in late 2025) makes it the most thoroughly post-quantum app this guide recommends. Proton Drive and Proton Calendar still use classical encryption. Proton Mail's [post-quantum option](#switch-to-proton-mail) only protects new mail, and email will always expose whom you're writing to and when.
+> [!tip] Use Signal for secrets which must last 15 years; use Proton for everything else
+> In late 2025, Signal [began rolling out quantum-safe encryption for entire conversations](https://signal.org/blog/spqr/), making it the most quantum-resistant app this guide recommends. Proton Drive and Calendar aren't quantum-safe yet, and Proton Mail's [quantum-safe option](#switch-to-proton-mail) only covers new mail.
 
 Let's secure your data.
 
@@ -545,7 +545,7 @@ Proton Mail also screens out creepy tracking scripts which "tell senders and adv
 2. [ ] Push a button to import your calendars, contacts, and emails from e.g. your Google account.  
 3. [ ] Push another button to forward new emails from your Gmail to your new Proton Mail address.  
 4. [ ] Begin redirecting mail to use ([an alias to](/advanced-privacy#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites)) your new Proton email address. Mail forwarded from your old address is still visible to authorities if they go check with your mail provider.
-5. [ ] Enable [post-quantum encryption to protect against harvest-now, decrypt-later](https://proton.me/support/mail-post-quantum-protection).
+5. [ ] Enable [post-quantum encryption to protect against "harvest now, decrypt later"](https://proton.me/support/mail-post-quantum-protection).
 6. [ ] Start using Proton Mail! :)
 
 > [!danger] The authorities can always track whom you're emailing and when
@@ -650,7 +650,7 @@ Android and Apple contacts are *not* encrypted, even if you enable Advanced Data
 
 1. [ ] To circulate E2EE forms, use [Palform](https://palform.app/).
 2. [ ] For E2EE collaborative writing and document critique, use [Proton Docs](https://docs.proton.me/), which integrates well [with Proton Drive](#store-files-in-proton-drive).
-3. [ ] Conduct video calls with [Proton Meet](https://proton.me/meet), which [launched in March 2026](https://proton.me/blog/introducing-proton-meet) with end-to-end encryption for every call. Free calls can host up to 50 people for an hour.
+3. [ ] Conduct video calls with [Proton Meet](https://proton.me/meet), which [end-to-end encrypts every call](https://proton.me/blog/introducing-proton-meet). Free calls fit 50 people for an hour.
 
 # Reclaim your bubbles of freedom
 
