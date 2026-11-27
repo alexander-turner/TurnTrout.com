@@ -322,11 +322,11 @@ Subtitle: Time: 15 minutes.
   - [ ] Credit card(s).
   - [ ] Other instruments.
 
-## Californians: delete your data from every data broker at once
+## Californians: delete your data from 500+ data brokers at once
 
 Subtitle: Time: 10 minutes.
 
-Data brokers sell your location, purchases, and browsing history --- including to the government. California's free [Delete Request and Opt-out Platform (DROP)](https://privacy.ca.gov/drop/) sends a single deletion request to every registered data broker (over 500 of them). Since August 1st, 2026, brokers must check the DROP list every 45 days and delete your data, including data they acquire later. As of November 2026, no other state offers anything similar, so elsewhere you'll have to opt out one broker at a time.
+Data brokers sell your location, purchases, and browsing history --- including to the government. California's free [Delete Request and Opt-out Platform (DROP)](https://privacy.ca.gov/drop/) sends a single deletion request to every registered data broker (over 500 of them). Since August 1st, 2026, brokers must check the DROP list every 45 days and delete your data, including data they acquire later. Outside California, you'll have to opt out one broker at a time.
 
 - [ ] If you live in California, [sign up for DROP](https://privacy.ca.gov/drop/).
 
@@ -534,7 +534,7 @@ Android
 : You can just disable 2G in your settings (search "2G"). The 2G speed sucks anyways and that protocol is basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
 
   - [ ] Disable 2G.
-  - [ ] Even better, on Android 16 or later, turn on [Advanced Protection](https://support.google.com/android/answer/16339980) (search "Advanced Protection" in settings). It blocks 2G, USB data theft, and app installs from outside the Play Store. (That last part breaks [Obtainium and Aurora](#for-any-android-user-download-apps-from-obtainium-and-aurora), so skip Advanced Protection if you rely on them.)
+  - [ ] If you have Android 16 or later and don't use [Obtainium or Aurora](#for-any-android-user-download-apps-from-obtainium-and-aurora), turn on [Advanced Protection](https://support.google.com/android/answer/16339980) (search "Advanced Protection" in settings). It blocks 2G, USB data theft, and app installs from outside the Play Store (which breaks Obtainium and Aurora).
 
 iOS
 : You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.

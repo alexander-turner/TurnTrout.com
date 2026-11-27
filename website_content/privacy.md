@@ -337,9 +337,9 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 > I wouldn't worry about this too much for now. Hopefully Proton implements a defense, just to be sure.
 
 > [!warning] Proton VPN isn't post-quantum yet
-> As of November 2026, Proton VPN's tunnel still uses classical key exchange. Proton's [2026 roadmap](https://www.tomsguide.com/computing/vpns/proton-vpn-reveals-its-spring-and-summer-2026-roadmap-heres-whats-coming) lays groundwork for post-quantum encryption, but Proton hasn't shipped it. Until Proton does, someone recording your VPN traffic today could later learn which sites you visited (["harvest now, decrypt later"](#end-to-end-encryption-for-your-data-in-4-hours)). [Mullvad](https://mullvad.net/en/blog/quantum-resistant-tunnels-are-now-the-default-on-desktop) and [NordVPN](https://www.tomsguide.com/computing/vpns/nordvpn-announces-post-quantum-encryption-support-for-all-applications) already have post-quantum tunnels.
+> As of November 2026, Proton VPN still uses encryption that a future quantum computer could break. Proton's [2026 roadmap](https://www.tomsguide.com/computing/vpns/proton-vpn-reveals-its-spring-and-summer-2026-roadmap-heres-whats-coming) lays groundwork for post-quantum encryption, but Proton hasn't shipped it. Until Proton does, someone recording your VPN traffic today could later learn which sites you visited (["harvest now, decrypt later"](#end-to-end-encryption-for-your-data-in-4-hours)). [Mullvad](https://mullvad.net/en/blog/quantum-resistant-tunnels-are-now-the-default-on-desktop) and [NordVPN](https://www.tomsguide.com/computing/vpns/nordvpn-announces-post-quantum-encryption-support-for-all-applications) already have post-quantum tunnels.
 >
-> I still recommend Proton VPN for most people because of its audited no-logs policy, its Swiss jurisdiction, and the Proton Unlimited bundle. Personally, though, I switched to Mullvad (€5/month) for its post-quantum tunnels, despite its Swedish jurisdiction.
+> I still recommend Proton VPN for most people because of its Swiss jurisdiction and the Proton Unlimited bundle. Personally, though, I switched to Mullvad (€5/month) for its post-quantum tunnels, despite its Swedish jurisdiction.
 
 > [!info] It's not paranoia if they really are out to get you
 > > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
@@ -511,7 +511,7 @@ It doesn't matter how good a company's security and data handling practices are.
 
 On the other hand, when you use E2EE, the company can't decrypt it. Your data is just a sequence of zeros and ones on a computer. The company has nothing to hand over.
 
-Encryption has a shelf life, though. Spy agencies record encrypted traffic today and store it, betting that future quantum computers will break the math protecting most of it --- ["harvest now, decrypt later."](https://en.wikipedia.org/wiki/Harvest_now,_decrypt_later) A message that no one can read in 2026 might be readable in 2040, so anything which must stay secret for 15 years needs *post-quantum* encryption.
+Encryption has a shelf life, though. Spy agencies record encrypted traffic today and store it, betting that future quantum computers will break the math protecting most of it --- ["harvest now, decrypt later."](https://en.wikipedia.org/wiki/Harvest_now,_decrypt_later) A message no one can read today might be readable 15 years from now, so anything which must stay secret that long needs *post-quantum* encryption.
 
 > [!tip] Use Signal for secrets which must last 15 years; use Proton for everything else
 > In late 2025, Signal [began rolling out quantum-safe encryption for entire conversations](https://signal.org/blog/spqr/), making it the most quantum-resistant app this guide recommends. Proton Drive and Calendar aren't quantum-safe yet, and Proton Mail's [quantum-safe option](#switch-to-proton-mail) only covers new mail.
