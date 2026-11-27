@@ -330,10 +330,12 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 
 Subtitle: Time: 5 minutes.
 
-Before visiting a site, your device asks a "DNS server" for its address. By default, your ISP runs that server and sees every site you look up. Your VPN covers this while it's on; [Quad9](https://quad9.net/) covers the gaps. It's free and encrypted, run by a Swiss nonprofit, [doesn't log your IP address](https://quad9.net/privacy/policy/), and blocks known malware and phishing sites.
+Before visiting a site, your device asks a "DNS server" for its address. Your VPN hides these lookups from your ISP, but by default the VPN company answers them, so it learns both who you are and what you look up. Sending your lookups to [Quad9](https://quad9.net/) instead splits that knowledge: Mullvad can't read them, and Quad9 only sees Mullvad's address. Quad9 is free, run by a Swiss nonprofit, [doesn't log your IP address](https://quad9.net/privacy/policy/), and blocks known malware and phishing sites.
 
-- [ ] Android: search "Private DNS" in settings and enter `dns.quad9.net` as the hostname. (This overrides Mullvad's DNS, still inside the tunnel.)
+- [ ] Android: search "Private DNS" in settings and enter `dns.quad9.net` as the hostname.
 - [ ] iPhone and Mac: install Quad9's encrypted DNS profile ([iOS](https://docs.quad9.net/Setup_Guides/iOS/iOS_14_and_later_%28Encrypted%29/), [macOS](https://docs.quad9.net/Setup_Guides/MacOS/Big_Sur_and_later_%28Encrypted%29/)).
+
+On Windows and Linux, skip this step: Mullvad's app [keeps your DNS on its own servers](https://mullvad.net/en/help/dns-leaks) while connected.
 
 ## Browse the web using Brave
 
