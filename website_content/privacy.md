@@ -356,7 +356,7 @@ Subtitle: Time: 5 minutes.
 
 Before your device visits `propublica.org`, it asks a "DNS server" for that site's address. By default, your ISP runs that server and sees every site you look up. Your VPN handles these lookups while it's on, but sometimes your VPN will be off. [Quad9](https://quad9.net/) is a free, encrypted DNS service which covers those gaps. A Swiss nonprofit runs it, it [doesn't log your IP address](https://quad9.net/privacy/policy/), and it blocks sites known to spread malware and phishing.
 
-- [ ] Android: search "Private DNS" in settings, choose "Private DNS provider hostname," and enter `dns.quad9.net`.
+- [ ] Android: search "Private DNS" in settings, choose "Private DNS provider hostname," and enter `dns.quad9.net`. (Android then uses Quad9 even while your VPN is on. Your lookups stay inside the VPN tunnel, but Proton VPN's NetShield ad-blocker stops working.)
 - [ ] iPhone and Mac: install Quad9's encrypted DNS profile ([iOS](https://docs.quad9.net/Setup_Guides/iOS/iOS_14_and_later_%28Encrypted%29/), [macOS](https://docs.quad9.net/Setup_Guides/MacOS/Big_Sur_and_later_%28Encrypted%29/)).
 
 ## Browse the web using Brave
