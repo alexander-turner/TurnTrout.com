@@ -487,10 +487,10 @@ It doesn't matter how good a company's security and data handling practices are.
 
 On the other hand, when you use E2EE, the company can't decrypt it. Your data is just a sequence of zeros and ones on a computer. The company has nothing to hand over.
 
-Encryption has a shelf life, though. Spy agencies store encrypted traffic today, betting that future quantum computers will break it --- ["harvest now, decrypt later."](https://en.wikipedia.org/wiki/Harvest_now,_decrypt_later) Anything which must stay secret for 15 years needs *post-quantum* encryption.
+Encryption has a shelf life, though. Spy agencies store encrypted traffic today, betting that future quantum computers will break it --- ["harvest now, decrypt later."](https://en.wikipedia.org/wiki/Harvest_now,_decrypt_later) Anything which must stay secret for (say) 15 years needs *post-quantum* encryption.
 
-> [!tip] Use Signal for secrets which must last 15 years; use Proton for everything else
-> Signal [is rolling out quantum-safe encryption for entire conversations](https://signal.org/blog/spqr/). Proton Drive and Calendar aren't quantum-safe yet, and Proton Mail's [quantum-safe option](#switch-to-proton-mail) only covers new mail.
+> [!tip] Use Signal for secrets which must last 15 years
+> Signal [is rolling out quantum-safe encryption for entire conversations](https://signal.org/blog/spqr/). Proton Drive and Calendar aren't quantum-safe yet. Proton Mail's [quantum-safe option](#switch-to-proton-mail) only covers new mail.
 
 Let's secure your data.
 
