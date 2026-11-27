@@ -476,7 +476,7 @@ You buy two of these little USB-C boys for \$55 each. Use these as two-factor au
 
 Subtitle: Time: 10 minutes once you have your YubiKeys.
 
-If you use Gmail or Google Drive, your Google account is probably the master key to your digital life. Google's free [Advanced Protection Program](https://landing.google.com/advancedprotection/) locks it down. Signing in requires [your YubiKey](#buy-a-yubikey-and-a-backup) or a passkey, so phishing and stolen passwords stop working. Advanced Protection also blocks risky downloads and stops unvetted third-party apps from reading your Gmail and Drive. The tradeoff: if you lose access, account recovery takes longer. That's why you have a backup key.
+If you use Gmail or Google Drive, your Google account is probably the master key to your digital life. Google's free [Advanced Protection Program](https://landing.google.com/advancedprotection/) locks it down. Signing in requires [your YubiKey](#buy-a-yubikey-and-a-backup) or a passkey, so phishing and stolen passwords stop working. Advanced Protection also blocks risky downloads and stops unapproved third-party apps from reading your Gmail and Drive. The tradeoff: if you lose access, account recovery takes longer. That's why you have a backup key.
 
 - [ ] [Enroll in Advanced Protection](https://landing.google.com/advancedprotection/).
 
