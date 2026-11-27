@@ -330,7 +330,7 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 
 Subtitle: Time: 5 minutes.
 
-Before visiting a site, your device asks a "DNS server" for its address. Your VPN hides these lookups from your ISP, but by default the VPN company answers them, so it learns both who you are and what you look up. Sending your lookups to [Quad9](https://quad9.net/) instead splits that knowledge: Mullvad can't read them, and Quad9 only sees Mullvad's address. Quad9 is free, run by a Swiss nonprofit, [doesn't log your IP address](https://quad9.net/privacy/policy/), and blocks known malware and phishing sites.
+Before visiting a site, your device asks a DNS server for its address. Usually your ISP can snoop on what sites you're visiting, but your VPN protects you from ISP snooping. However, your VPN still can see both _who you are_ and _what you look up_. Send your lookups to [Quad9](https://quad9.net/), a nonprofit Swiss DNS provider. Once you do that, Mullvad sees who you are but not what site you're requesting. Quad9 only sees "some user from Mullvad VPN wants this site." No one sees both. Quad9 is [doesn't log your IP address](https://quad9.net/privacy/policy/) and blocks known malware and phishing sites.
 
 - [ ] Android: search "Private DNS" in settings and enter `dns.quad9.net` as the hostname.
 - [ ] iPhone and Mac: install Quad9's encrypted DNS profile ([iOS](https://docs.quad9.net/Setup_Guides/iOS/iOS_14_and_later_%28Encrypted%29/), [macOS](https://docs.quad9.net/Setup_Guides/MacOS/Big_Sur_and_later_%28Encrypted%29/)).
