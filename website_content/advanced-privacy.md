@@ -17,7 +17,7 @@ aliases:
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 date_published: 2025-11-06
-date_updated: 2026-11-07
+date_updated: 2026-11-27
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -104,7 +104,7 @@ To download a "simple" app (like the [Transportr public transit scheduler](/priv
         1. Open the "Add app" tab in Obtainium.
         2. Search for the name of the app (e.g. "Transportr") using the field "Search (some sources only)".
         3. Select the search sources "GitHub", "GitLab", and "Forgejo".
-        4. When you see potential matches, you won't see star ratings or reviews. Instead, you can click on the names to see how popular and legitimate the application looks. Review the description to make sure it's an app for Android developed by the correct team (e.g. Proton VPN should be developed by a user like [`ProtonVPN`](https://github.com/ProtonVPN/android-app) and not `Bill.Farthings42`).
+        4. When you see potential matches, you won't see star ratings or reviews. Instead, you can click on the names to see how popular and legitimate the application looks. Review the description to make sure it's an app for Android developed by the correct team (e.g. Mullvad should be developed by a user like [`mullvad`](https://github.com/mullvad/mullvadvpn-app) and not `Bill.Farthings42`).
         5. If the repository looks legit, go back and select that application to install.
         6. _Fully uninstall any other versions of the application first._
         7. Complete the installation through Obtainium.
@@ -129,13 +129,13 @@ The Signal messaging app is a "complicated" installation. To download Signal, ju
 
 The above list contained the [Aurora app store](https://auroraoss.com/). Aurora carries everything on the Google Play app store, but it's open source and downloads applications anonymously (even Google won't know). Not all apps are on Obtainium. When you want to download an app, first check if it's on Obtainium and then check Aurora.
 
-For GrapheneOS users, I recommend first installing Aurora and then ProtonVPN (using Aurora). Once behind a VPN, the rest of your mobile installation activity will be more private.
+For GrapheneOS users, I recommend first installing Obtainium and then Mullvad (using Obtainium). Once behind a VPN, the rest of your mobile installation activity will be more private.
 
 2. [ ] Even if you aren't setting up GrapheneOS, reinstall all of your apps which can be installed using Obtainium. By doing so, you download your apps directly from the developers, reducing the possibility of government-inserted vulnerabilities.
 
 #### The rest of the switch to GrapheneOS
 
-1. [ ] Download Bitwarden and then download Proton VPN.
+1. [ ] Download Bitwarden and then download Mullvad.
 2. [ ] For YubiKey 2FA compatibility, you'll need to download Google Play Services and give it network access. You don't need to give Google Play network access.
 3. [ ] Download your other apps.
        - Be stingy in letting them access the network --- only give them access if they should have it.
@@ -184,7 +184,7 @@ Subtitle: Cost: $250 one-time. Time: 1 hour.
 
 If you are using the combination modem/router box that your ISP rented to you, you are using a closed-source black box that they control completely. Beyond that, [many standalone TP-Link routers have documented botnet vulnerabilities (possibly due to the influence of the Chinese government).](https://www.cybersecuritydive.com/news/-botnet-exploits-tp-link-router/742319/)
 
-[Your VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on an Apple device](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via Proton VPN."
+[Your VPN](/privacy-despite-authoritarianism#a-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) will protect most of your information ([unless you're on an Apple device](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025)).  However, the ISP still learns information if they're spying on you via your rented modem-router. They can spy on the details of what's happening _within your local network._ For example, they would know "this household has an iPhone, two laptops, a smart TV, a Google Home, and the iPhone connects every weekday at 7 AM." Once you secure your own equipment, they only know "someone is using 50 GB/day via Mullvad."
 
 Plus, open-source routers have neat features. They can shield your entire network using a network-wide VPN connection (which is [currently the only way to truly protect outgoing traffic from an iPhone](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025)). Open-source routers can also block requests to fetch ads before they even leave the network.
 
@@ -209,12 +209,12 @@ Don't rent a router from a company that wants to harvest your data. Instead, I s
 
 Because its software is open-source, it is subject to public scrutiny. You have no idea what shady stuff Comcast may have installed on the default router.  GL.iNet routers offer two additional benefits:
 
-1. Easy to install your Proton VPN connection for your _entire home_, protecting all your devices automatically (including mobile iOS devices which [cannot otherwise form secure VPN connections](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025)).  Normally, a smart TV would not even be able to use a VPN.
+1. Easy to install your Mullvad connection for your _entire home_, protecting all your devices automatically (including mobile iOS devices which [cannot otherwise form secure VPN connections](/privacy-despite-authoritarianism#vpns-are-fundamentally-unreliable-on-ios-macos-as-of-december-2025)).  Normally, a smart TV would not even be able to use a VPN.
 2. Easy to enable [AdGuard](https://github.com/AdguardTeam/AdGuardHome), which blocks huge numbers of outgoing requests to ads and trackers.  
 
-For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). For the setup itself, I used my laptop. _To configure my hardware, I needed to tell Proton VPN to "allow LAN connections."_
+For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.com/dp/B0FB8X43KJ). For the setup itself, I used my laptop. _To configure my hardware, I needed to tell Mullvad to "allow LAN connections."_
 
-1. [ ] [Set up Proton VPN on your router via OpenVPN,](https://protonvpn.com/support/flint-gl-ax1800-router/)
+1. [ ] [Set up Mullvad on your router via WireGuard,](https://mullvad.net/en/help/running-wireguard-router)
 2. [ ] If you don't use macOS, you can exempt your laptop so it uses its own VPN, retaining your ability to switch VPN servers on the fly.
     1. [ ] Go to the dashboard at `192.168.8.1`,
     2. [ ] Navigate to VPN settings,
@@ -223,6 +223,7 @@ For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.co
     5. [ ] Create a new tunnel (priority 1) which does not use VPN (see below for target configuration).
 3. [ ] In the VPN tab, disable "All other traffic" to ensure that only VPN-protected traffic goes through.
 4. [ ] In the Applications tab, enable AdGuard Home. (Even though my Brave browser has strong ad-blocking, AdGuard still blocks about 2.5\% of DNS requests!)
+    - [ ] In AdGuard Home's DNS settings, set the upstream server to [Quad9](/privacy-despite-authoritarianism#encrypt-your-dns-with-quad9): `https://dns.quad9.net/dns-query`.
 
 Here's what my VPN settings looked like by the end:
 
@@ -275,13 +276,13 @@ Subtitle: Time: 15 minutes initial setup.
 
 If you use aliases, you make it harder for scammers and surveillance to track your online identity. You can also disable an alias if a site uses that alias to spam you.
 
-- [ ] Link your [Proton Unlimited](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) account with [SimpleLogin](https://simplelogin.io/) to generate random-looking single-use email addresses.[^premium]
+- [ ] Link your [Proton Unlimited](/privacy-despite-authoritarianism#a-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) account with [SimpleLogin](https://simplelogin.io/) to generate random-looking single-use email addresses.[^premium]
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251010205613.avif|Step 1 shows using an alias in a signup form. Step 2 shows emails being forwarded to your real inbox. Step 3 explains that replying sends from the alias, keeping your real email hidden.]]
 
 - [ ] Follow Bitwarden's [guide on setting up Bitwarden to generate email aliases on-demand when you're generating new passwords](https://bitwarden.com/help/generator/#username-types) --  check the "forwarded email alias" subsection. Bitwarden is lovely, isn't it?
 
-[^premium]: If you've purchased Proton Unlimited as [recommended](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you), you'll already have a premium SimpleLogin account.
+[^premium]: If you've purchased Proton Unlimited as [recommended](/privacy-despite-authoritarianism#a-vpn-stops-your-internet-service-provider-isp-from-spying-on-you), you'll already have a premium SimpleLogin account.
 
 ## Use virtual cards for online purchases
 
@@ -320,6 +321,14 @@ Subtitle: Time: 15 minutes.
   - [ ] Bank(s).
   - [ ] Credit card(s).
   - [ ] Other instruments.
+
+## Californians: delete your data from 500+ data brokers at once
+
+Subtitle: Time: 10 minutes.
+
+Data brokers sell your location, purchases, and browsing history --- including to the government. California's free [DROP](https://privacy.ca.gov/drop/) tool sends one deletion request to all 500+ registered brokers, who must recheck it every 45 days. Elsewhere, you must opt out broker by broker.
+
+- [ ] If you live in California, [sign up for DROP](https://privacy.ca.gov/drop/).
 
 ## Consider deleting PayPal
 
@@ -394,7 +403,7 @@ Figure: Sadly, the calendar integration can't add new tasks to your main calenda
 
 Subtitle: Time: 5 minutes.
 
-After following the first guide, you already have [a good browser](/privacy-despite-authoritarianism#browse-the-web-using-brave) and [a reliable VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you). However, as mentioned earlier, the VPN provider can theoretically see who you are _and_ what you're doing. While Proton claims to keep no logs (and verified that via independent audit), some activities (like transmitting secure documents to reporters to whistleblow on government abuse) are so risky that you don't even want to trust Proton. In this kind of situation, use the [Tor](https://www.torproject.org/) web browser. Basically, the browser connects you to websites in a way that stops any one server from knowing both who you are and what you're doing --- not even Proton will know!
+After following the first guide, you already have [a good browser](/privacy-despite-authoritarianism#browse-the-web-using-brave) and [a reliable VPN](/privacy-despite-authoritarianism#a-vpn-stops-your-internet-service-provider-isp-from-spying-on-you). However, as mentioned earlier, the VPN provider can theoretically see who you are _and_ what you're doing. While Mullvad keeps no logs (as a 2023 police raid showed), some activities (like transmitting secure documents to reporters to whistleblow on government abuse) are so risky that you don't even want to trust Mullvad. In this kind of situation, use the [Tor](https://www.torproject.org/) web browser. Basically, the browser connects you to websites in a way that stops any one server from knowing both who you are and what you're doing --- not even Mullvad will know!
 
 - [ ] Install the official Tor browser.
 
@@ -409,7 +418,7 @@ After following the first guide, you already have [a good browser](/privacy-desp
 
 Subtitle: Time: 10 minutes.
 
-Even if you're using [a VPN](/privacy-despite-authoritarianism#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](/privacy-despite-authoritarianism#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content using a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, you could browse a privacy-respecting frontend instead of X directly, like XCancel used to let you do before it shut down:
+Even if you're using [a VPN](/privacy-despite-authoritarianism#a-vpn-stops-your-internet-service-provider-isp-from-spying-on-you) to hide your traffic with [Brave](/privacy-despite-authoritarianism#browse-the-web-using-brave) stopping tracking, the website still knows what you're doing since you're logged in. However, if you consume content using a different "frontend" (kinda like a viewport), you can still get the benefits with much lower privacy cost. For example, you could browse a privacy-respecting frontend instead of X directly, like XCancel used to let you do before it shut down:
 
 ![[https://assets.turntrout.com/static/images/posts/privacy-20251023183015.avif|A screenshot of XCancel, a since-shut-down private front-end for X, displaying posts about machine learning. ]]
 
@@ -528,6 +537,10 @@ Android
 
 iOS
 : You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.
+
+: Apple's lockdown mode has [blocked Pegasus spyware](https://citizenlab.ca/2023/09/blastpass-nso-group-iphone-zero-click-zero-day-exploit-captured-in-the-wild/), and [Apple knows of no one using it who was hacked](https://techcrunch.com/2023/12/07/apple-says-it-is-not-aware-anyone-using-lockdown-mode-got-hacked). You can exempt apps and sites it breaks.
+
+  - [ ] If you're [at high risk](/privacy-despite-authoritarianism#what-s-your-risk-level), turn on lockdown mode.
 
 > [!info]- Tracking stingray usage
 > In 2024, we gained a tool to potentially track these devices.   For \$20 to buy the hardware and for a dash of technical expertise, you can help collect data on nearby law enforcement stingray usage. You can read about [some conclusions the EFF drew one year later.](https://www.eff.org/deeplinks/2025/09/rayhunter-what-we-have-found-so-far)

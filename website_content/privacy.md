@@ -21,7 +21,7 @@ lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
 original_url: https://www.lesswrong.com/posts/BPyieRshykmrdY36A/an-opinionated-guide-to-privacy-despite-authoritarianism
 date_published: 2025-10-28
-date_updated: 2026-11-07
+date_updated: 2026-11-27
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -247,9 +247,9 @@ Subtitle: Time: 5 minutes.
 
 # Privacy basics in 90 minutes
 
-## Proton VPN stops your internet service provider (ISP) from spying on you
+## A VPN stops your internet service provider (ISP) from spying on you
 
-Subtitle: Cost: Free, with recommended upgrade at $13.99/mo. Time: 15 minutes.
+Subtitle: Cost: €5/mo. Time: 15 minutes.
 
 ### ISPs are creepy
 
@@ -271,45 +271,26 @@ US government spy agencies have [broad surveillance powers](https://www.aclu.org
 
 The metadata alone reveal a detailed picture of your online life. A VPN prevents your ISP from seeing this information, since all your traffic is encrypted before it reaches the ISP.
 
-I recommend downloading [Proton VPN.](https://protonvpn.com/) While Proton VPN has a generous free version and is probably the best free VPN there is, it's still the free version. I found the download speed to be slow and unreliable. When I upgraded to the paid version, my problems vanished. Personally, I recommend purchasing a subscription to Proton Unlimited (\$12.99/month, or \$9.99/month if you pay for one year at a time). That subscription will not only unlock the paid VPN tier but will also provide 500GB of E2EE storage via Proton Drive.
+I recommend [Mullvad VPN](https://mullvad.net/) (€5/month). It's one of the few VPNs whose tunnels are [quantum-safe](https://mullvad.net/en/blog/quantum-resistant-tunnels-are-now-the-default-on-desktop), so traffic recorded today stays private later (["harvest now, decrypt later"](#end-to-end-encryption-for-your-data-in-4-hours)). You don't even give it an email: you get an account number and can pay in cash.
 
-> [!info] The ISP won't see which sites you browse, but Proton will
-> To connect to the internet, *some* server needs to figure out where your internet traffic should go. When you don't use a VPN, your ISP handles that. When you do use a VPN, the VPN provider does instead. Therefore, Proton can see what sites you visit.
+> [!info] The ISP won't see which sites you browse, but Mullvad will
+> To connect to the internet, *some* server needs to figure out where your internet traffic should go. When you don't use a VPN, your ISP handles that. When you do use a VPN, the VPN provider does instead. Therefore, Mullvad can see what sites you visit.
 >
-> So why use Proton VPN? Several reasons. Most importantly, your ISP will generally record your activity and funnel it to the government. In contrast, Proton doesn't record your activity, as [verified by independent experts](https://protonvpn.com/blog/no-logs-audit/).
->
-> > [!quote]- Does Proton VPN keep logs?
-> > In order to respect our users’ privacy, Proton VPN enforces a strict no-logs policy. This means we keep no session usage logs of what you do online, and we do not log metadata that can compromise your privacy.
-> >
-> > - We don’t log which websites you visit
-> > - We don’t log your traffic or the content of any communications
-> > - We don’t log your IP address
-> > - We don’t log your session lengths
-> > - We don’t log or track any location-based information
-> >
-> > This level of privacy is possible in part because we are based in Switzerland, which has some of the strongest data protection and digital privacy laws in the world. Data required for maintenance and troubleshooting purposes is secured using full-disk encryption on all our bare-metal servers, over which we have full control.
-> >
-> > Full details about the information that we do store (such as account information) are available in our [Privacy Policy](https://protonvpn.com/privacy-policy). Our apps are all [fully open source and independently audited](https://protonvpn.com/blog/open-source/) so that you can be sure they are trustworthy, and we aim for [transparency](https://protonvpn.com/blog/is-protonvpn-trustworthy/) in everything we do.
-> >
-> > Proton VPN’s Swiss jurisdiction also confers additional benefits which are favorable for VPN services. In most countries, VPNs can be forced to log as the result of government orders, even if they are by default no-logs. However, within the current Swiss legal framework, Proton VPN also does not have forced logging obligations.
-> >
-> > \[...\]
-> >
-> > Proton VPN’s strict no-logs policy was tested in a legal case in 2019 where we were ordered to turn over logs to help identify a user and we were unable to comply because such logs did not exist. Our no-logs policy has also been [verified by external independent experts.](https://protonvpn.com/blog/no-logs-audit/)
+> Your ISP will generally record your activity and funnel it to the government. Mullvad doesn't: when [Swedish police raided it in 2023](https://mullvad.net/en/blog/mullvad-vpn-was-subject-to-a-search-warrant-customer-data-not-compromised), they left with nothing because there was nothing to take.
 
 As discussed later in [the section on securing your data with end-to-end encryption](#end-to-end-encryption-for-your-data-in-4-hours), Proton applications are open source, E2EE, and well-respected in privacy circles.  For example, using Proton Calendar (E2EE) instead of iCloud Calendar (a government could compel Apple to decrypt your data, even though Apple secures your data quite well).
 
-- [ ] Create a Proton account and store the credentials in your Bitwarden.
-- [ ] [Download and run Proton VPN](https://protonvpn.com/).
+- [ ] Create a Mullvad account and store its account number in Bitwarden.
+- [ ] [Download and run Mullvad](https://mullvad.net/download/).
 - In the settings, ensure:
   - [ ] Your VPN always starts along with your device.
   - [ ] Traffic can only go through your VPN (enable the "kill switch"). (Be sure to disable when you need to make a LAN connection.)
 - [ ] Repeat for each of your devices.
 
-For network stability and speed, I strongly recommend upgrading to [Proton Unlimited](https://proton.me/pricing) for \$12.99/month. I recommend several Proton services, including Proton Mail and Drive. Once you upgrade, enable "VPN accelerator" in the settings.
+I recommend [Proton Unlimited](https://proton.me/pricing) (\$12.99/month) for the Proton Mail and Drive steps below.
 
 > [!tip] Some websites may think you're a bot because many people use the same VPN IP address
-> Compared to other VPNs, I've heard that Proton VPN is relatively good about not getting you flagged. Sadly, I still get flagged a few times a day, which is inconvenient but worth the privacy boost.
+> I get flagged a few times a day, which is inconvenient but worth the privacy boost.
 >
 > Consider changing VPN servers in the app when you run into problems. For non-sensitive tasks, you can even disable the VPN -- but please do so sparingly (*do not make a bad habit*). Your VPN is your most powerful shield against mass surveillance.
 
@@ -327,14 +308,14 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 ### Other VPN notes
 
 > [!question] Even VPN-protected browsing theoretically [enables AI to  guess which sites you visit](https://www.usenix.org/conference/usenixsecurity22/presentation/cherubin)
-> As of October 2025, I only found one VPN with meaningful protection: [Mullvad](https://mullvad.net/en/blog/introducing-defense-against-ai-guided-traffic-analysis-daita). However, it's based in Sweden, a member of [the 14 Eyes intelligence-sharing alliance](https://en.wikipedia.org/wiki/Five_Eyes#Fourteen_Eyes) with the United States. That undermines protection from US surveillance. I suggest sticking with Proton VPN.
+> As of October 2025, I only found one VPN with meaningful protection: [Mullvad](https://mullvad.net/en/blog/introducing-defense-against-ai-guided-traffic-analysis-daita). Mullvad has it on by default.
 >
 > Here are several reasons for comfort:
 >
 > 1. The attacks seem too expensive to run as mass surveillance, and
 > 2. Many attacks only allow determining whether or not you're visiting one of a tiny number of sites.
 >
-> I wouldn't worry about this too much for now. Hopefully Proton implements a defense, just to be sure.
+> I wouldn't worry about this too much for now.
 
 > [!info] It's not paranoia if they really are out to get you
 > > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
@@ -344,6 +325,15 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 > > [!quote] [Eleven years after Snowden revelations, government still expanding surveillance](https://freedom.press/issues/11-years-after-snowden-revelations-government-still-expanding-surveillance/)
 > > Subtitle: June 5th, 2024
 > > Under the newly enacted “[spy draft](https://reason.com/2024/04/19/how-the-fisa-reauthorization-bill-could-force-maintenance-workers-and-custodians-to-become-government-spies/)” provision, the government can not only enlist telecom providers like Verizon to hand over information about their subscribers’ contacts with foreigners it is investigating, as it has in the past. It [can conscript](https://www.theguardian.com/us-news/2024/apr/16/house-fisa-government-surveillance-senate) any American service provider to spy on its behalf. Senator Ron Wyden [noted](https://www.wyden.senate.gov/news/press-releases/wyden-urges-colleagues-to-reject-expanding-warrantless-fisa-702-surveillance) that cleaning services could be compelled to insert a USB thumb drive into a server at an office they clean.
+
+### Encrypt your DNS with Quad9
+
+Subtitle: Time: 5 minutes.
+
+Before visiting a site, your device asks a "DNS server" for its address. By default, your ISP runs that server and sees every site you look up. Your VPN covers this while it's on; [Quad9](https://quad9.net/) covers the gaps. It's free and encrypted, run by a Swiss nonprofit, [doesn't log your IP address](https://quad9.net/privacy/policy/), and blocks known malware and phishing sites.
+
+- [ ] Android: search "Private DNS" in settings and enter `dns.quad9.net` as the hostname. (This overrides Mullvad's DNS, still inside the tunnel.)
+- [ ] iPhone and Mac: install Quad9's encrypted DNS profile ([iOS](https://docs.quad9.net/Setup_Guides/iOS/iOS_14_and_later_%28Encrypted%29/), [macOS](https://docs.quad9.net/Setup_Guides/MacOS/Big_Sur_and_later_%28Encrypted%29/)).
 
 ## Browse the web using Brave
 
@@ -458,6 +448,14 @@ You buy two of these little USB-C boys for \$55 each. Use these as two-factor au
 >
 > - [ ] If you buy a Nano key, [switch it to "Long Touch" mode](https://support.okta.com/help/s/article/swapping-yubico-otp-between-slot-1-to-slot-2?language=en_US) so it doesn't mess up your typing whenever you bump it.
 
+## Lock down your Google account
+
+Subtitle: Time: 10 minutes once you have your YubiKeys.
+
+Your Google account is probably the master key to your digital life. Google's free Advanced Protection Program requires [your YubiKey](#buy-a-yubikey-and-a-backup) or a passkey to sign in, so phishing and stolen passwords stop working. It also blocks risky downloads and keeps unapproved apps out of your Gmail and Drive. Account recovery gets slower, which is why you have a backup key.
+
+- [ ] [Enroll in Advanced Protection](https://landing.google.com/advancedprotection/).
+
 ## Your pictures and videos contain your GPS location
 
 Subtitle: Time: 2 minutes.
@@ -489,6 +487,11 @@ It doesn't matter how good a company's security and data handling practices are.
 
 On the other hand, when you use E2EE, the company can't decrypt it. Your data is just a sequence of zeros and ones on a computer. The company has nothing to hand over.
 
+Encryption has a shelf life, though. Spy agencies store encrypted traffic today, betting that future quantum computers will break it --- ["harvest now, decrypt later."](https://en.wikipedia.org/wiki/Harvest_now,_decrypt_later) Anything which must stay secret for (say) 15 years needs *post-quantum* encryption.
+
+> [!tip] Use Signal for secrets which must last 15 years
+> Signal [is rolling out quantum-safe encryption for entire conversations](https://signal.org/blog/spqr/). Proton Drive and Calendar aren't quantum-safe yet. Proton Mail's [quantum-safe option](#switch-to-proton-mail) only covers new mail.
+
 Let's secure your data.
 
 > [!warning] iCloud's Advanced Data Protection may not last forever
@@ -514,11 +517,11 @@ Proton Mail stores your emails E2EE. If two Proton Mail email addresses communic
 
 Proton Mail also screens out creepy tracking scripts which "tell senders and advertisers what you read and click on, and can follow you around the web." It's straightforward to switch to Proton Mail. This [guide's](https://proton.me/support/easy-switch) steps are basically:
 
-1. [ ] Create or log in to your Proton account (e.g. use the account you made above for Proton VPN).
+1. [ ] Create or log in to your Proton account.
 2. [ ] Push a button to import your calendars, contacts, and emails from e.g. your Google account.  
 3. [ ] Push another button to forward new emails from your Gmail to your new Proton Mail address.  
 4. [ ] Begin redirecting mail to use ([an alias to](/advanced-privacy#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites)) your new Proton email address. Mail forwarded from your old address is still visible to authorities if they go check with your mail provider.
-5. [ ] Enable [post-quantum encryption to protect against harvest-now, decrypt-later](https://proton.me/support/mail-post-quantum-protection).
+5. [ ] Enable [post-quantum encryption to protect against "harvest now, decrypt later"](https://proton.me/support/mail-post-quantum-protection).
 6. [ ] Start using Proton Mail! :)
 
 > [!danger] The authorities can always track whom you're emailing and when
@@ -528,7 +531,7 @@ Proton Mail also screens out creepy tracking scripts which "tell senders and adv
 
 Subtitle: Time: 1 hour. Cost: Nothing if you've already purchased Proton Unlimited. Otherwise, about \$12/month.
 
-I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write sensitive shared documents in Proton Docs](#collaborate-privately). Migration is straightforward: download your existing Drive content and then upload to the Proton Drive app.   If you're subscribed to Proton Unlimited (as I recommended for Proton VPN), you'll have 500GB of Proton Drive cloud storage. Downloading and uploading will take a while, so do this in the background while you complete other tasks.
+I was using Google Drive and iCloud Drive. Neither are open source, and Google Drive isn't E2EE. Proton Drive has a good feature set and integrates naturally with [my suggestion to write sensitive shared documents in Proton Docs](#collaborate-privately). Migration is straightforward: download your existing Drive content and then upload to the Proton Drive app.   If you're subscribed to Proton Unlimited (as recommended above), you'll have 500GB of Proton Drive cloud storage. Downloading and uploading will take a while, so do this in the background while you complete other tasks.
 
 - [ ] Download your existing Drive files
   - [ ] Google
@@ -569,7 +572,7 @@ I love [Ente](ente.io). It has so much: fully E2EE, open source, smooth migratio
 
 Subtitle: Time: 2 minutes.
 
-Incognito mode stops Google Maps from tying your searches to your account. Open Maps, tap your profile picture, and select "Turn on Incognito mode". For super-secret trips, skip the app and open Maps in a logged-out Brave private window [behind your VPN](#proton-vpn-stops-your-internet-service-provider-isp-from-spying-on-you).
+Incognito mode stops Google Maps from tying your searches to your account. Open Maps, tap your profile picture, and select "Turn on Incognito mode". For super-secret trips, skip the app and open Maps in a logged-out Brave private window [behind your VPN](#a-vpn-stops-your-internet-service-provider-isp-from-spying-on-you).
 
 - [ ] Turn on Incognito mode in Google Maps.
 - [ ] Delete your Maps location data from the cloud.
@@ -623,7 +626,7 @@ Android and Apple contacts are *not* encrypted, even if you enable Advanced Data
 
 1. [ ] To circulate E2EE forms, use [Palform](https://palform.app/).
 2. [ ] For E2EE collaborative writing and document critique, use [Proton Docs](https://docs.proton.me/), which integrates well [with Proton Drive](#store-files-in-proton-drive).
-3. [ ] Conduct video calls with [Proton Meet](https://proton.me/meet) -- well, when it comes out. In the meantime, consider using [Jitsi-powered video conferencing](https://entraide.chatons.org/en/). Disclaimer: I've had trouble the two times I've tried using this tool. Make sure it works for you before relying on it for sensitive meetings.
+3. [ ] Conduct video calls with [Proton Meet](https://proton.me/meet), which [end-to-end encrypts every call](https://proton.me/blog/introducing-proton-meet). Free calls fit 50 people for an hour.
 
 # Reclaim your bubbles of freedom
 

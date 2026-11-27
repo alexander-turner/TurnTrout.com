@@ -1991,6 +1991,7 @@ Mrinank
 MTurk
 Muelhauser's
 MuJoCo
+Mullvad
 Multiagent
 Multicollinearity
 multicollinearity
@@ -2090,6 +2091,7 @@ normalizer
 normatively
 normativity
 normativity.
+NordVPN
 normed
 Norte
 Norvig
@@ -2101,6 +2103,7 @@ notin
 NPCollapse
 NPO
 NPS
+NSO
 NTK's
 num
 Nvidia
@@ -2452,6 +2455,7 @@ QK-circuits
 QKV
 qm
 qquad
+Quad9
 Quadratic-DCTs
 quadtree
 Qualia
@@ -3352,6 +3356,7 @@ wifi
 WildguardTest
 WildJailbreak
 Winogrande
+WireGuard
 wirehead
 wireheader
 wireheaders
