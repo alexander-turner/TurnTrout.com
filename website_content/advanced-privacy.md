@@ -534,7 +534,6 @@ Android
 : You can just disable 2G in your settings (search "2G"). The 2G speed sucks anyways and that protocol is basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
 
   - [ ] Disable 2G.
-  - [ ] On Android 16+, turn on [Advanced Protection](https://support.google.com/android/answer/16339980) to block 2G, USB attacks, and installs from outside the Play Store --- unless you rely on [Obtainium or Aurora](#for-any-android-user-download-apps-from-obtainium-and-aurora), which it breaks.
 
 iOS
 : You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.
