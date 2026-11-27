@@ -326,7 +326,7 @@ Subtitle: Time: 15 minutes.
 
 Subtitle: Time: 10 minutes.
 
-Data brokers sell your location, purchases, and browsing history --- including to the government. California's free [Delete Request and Opt-out Platform (DROP)](https://privacy.ca.gov/drop/) sends a single deletion request to every registered data broker (over 500 of them). Since August 1st, 2026, brokers must check the DROP list every 45 days and delete your data, including data they acquire later. Outside California, you'll have to opt out one broker at a time.
+Data brokers sell your location, purchases, and browsing history --- including to the government. California's free [DROP](https://privacy.ca.gov/drop/) tool sends one deletion request to all 500+ registered brokers, who must recheck it every 45 days. Elsewhere, you must opt out broker by broker.
 
 - [ ] If you live in California, [sign up for DROP](https://privacy.ca.gov/drop/).
 
@@ -534,12 +534,12 @@ Android
 : You can just disable 2G in your settings (search "2G"). The 2G speed sucks anyways and that protocol is basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
 
   - [ ] Disable 2G.
-  - [ ] If you have Android 16 or later and don't use [Obtainium or Aurora](#for-any-android-user-download-apps-from-obtainium-and-aurora), turn on [Advanced Protection](https://support.google.com/android/answer/16339980) (search "Advanced Protection" in settings). It blocks 2G, USB data theft, and app installs from outside the Play Store (which breaks Obtainium and Aurora).
+  - [ ] On Android 16+, turn on [Advanced Protection](https://support.google.com/android/answer/16339980) to block 2G, USB attacks, and installs from outside the Play Store --- unless you rely on [Obtainium or Aurora](#for-any-android-user-download-apps-from-obtainium-and-aurora), which it breaks.
 
 iOS
 : You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.
 
-: Apple's lockdown mode [blocked NSO Group's Pegasus spyware, which infects phones without a single tap](https://citizenlab.ca/2023/09/blastpass-nso-group-iphone-zero-click-zero-day-exploit-captured-in-the-wild/), and [Apple said it knew of no one using lockdown mode who had been hacked](https://techcrunch.com/2023/12/07/apple-says-it-is-not-aware-anyone-using-lockdown-mode-got-hacked). If a trusted app or website breaks, you can exempt it.
+: Apple's lockdown mode has [blocked Pegasus spyware](https://citizenlab.ca/2023/09/blastpass-nso-group-iphone-zero-click-zero-day-exploit-captured-in-the-wild/), and [Apple knows of no one using it who was hacked](https://techcrunch.com/2023/12/07/apple-says-it-is-not-aware-anyone-using-lockdown-mode-got-hacked). You can exempt apps and sites it breaks.
 
   - [ ] If you're [at high risk](/privacy-despite-authoritarianism#what-s-your-risk-level), turn on lockdown mode.
 

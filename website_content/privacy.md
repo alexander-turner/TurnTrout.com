@@ -337,9 +337,9 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 > I wouldn't worry about this too much for now. Hopefully Proton implements a defense, just to be sure.
 
 > [!warning] Proton VPN isn't post-quantum yet
-> As of November 2026, Proton VPN still uses encryption that a future quantum computer could break. Proton's [2026 roadmap](https://www.tomsguide.com/computing/vpns/proton-vpn-reveals-its-spring-and-summer-2026-roadmap-heres-whats-coming) lays groundwork for post-quantum encryption, but Proton hasn't shipped it. Until Proton does, someone recording your VPN traffic today could later learn which sites you visited (["harvest now, decrypt later"](#end-to-end-encryption-for-your-data-in-4-hours)). [Mullvad](https://mullvad.net/en/blog/quantum-resistant-tunnels-are-now-the-default-on-desktop) and [NordVPN](https://www.tomsguide.com/computing/vpns/nordvpn-announces-post-quantum-encryption-support-for-all-applications) already have post-quantum tunnels.
+> As of November 2026, Proton VPN isn't quantum-safe, though its [roadmap](https://www.tomsguide.com/computing/vpns/proton-vpn-reveals-its-spring-and-summer-2026-roadmap-heres-whats-coming) works toward it. Someone recording your traffic today could later learn which sites you visited (["harvest now, decrypt later"](#end-to-end-encryption-for-your-data-in-4-hours)). [Mullvad](https://mullvad.net/en/blog/quantum-resistant-tunnels-are-now-the-default-on-desktop) and [NordVPN](https://www.tomsguide.com/computing/vpns/nordvpn-announces-post-quantum-encryption-support-for-all-applications) are already quantum-safe.
 >
-> I still recommend Proton VPN for most people because of its Swiss jurisdiction and the Proton Unlimited bundle. Personally, though, I switched to Mullvad (€5/month) for its post-quantum tunnels, despite its Swedish jurisdiction.
+> I still recommend Proton for most people (Swiss jurisdiction, the Unlimited bundle), but I switched to Mullvad (€5/month) for its quantum-safe tunnels.
 
 > [!info] It's not paranoia if they really are out to get you
 > > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
@@ -354,9 +354,9 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 
 Subtitle: Time: 5 minutes.
 
-Before your device visits `propublica.org`, it asks a "DNS server" for that site's address. By default, your ISP runs that server and sees every site you look up. Your VPN handles these lookups while it's on, but sometimes your VPN will be off. [Quad9](https://quad9.net/) is a free, encrypted DNS service which covers those gaps. A Swiss nonprofit runs it, it [doesn't log your IP address](https://quad9.net/privacy/policy/), and it blocks sites known to spread malware and phishing.
+Before visiting a site, your device asks a "DNS server" for its address. By default, your ISP runs that server and sees every site you look up. Your VPN covers this while it's on; [Quad9](https://quad9.net/) covers the gaps. It's free and encrypted, run by a Swiss nonprofit, [doesn't log your IP address](https://quad9.net/privacy/policy/), and blocks known malware and phishing sites.
 
-- [ ] Android: search "Private DNS" in settings, choose "Private DNS provider hostname," and enter `dns.quad9.net`. (Android then uses Quad9 even while your VPN is on. Your lookups stay inside the VPN tunnel, but Proton VPN's NetShield ad-blocker stops working.)
+- [ ] Android: search "Private DNS" in settings and enter `dns.quad9.net` as the hostname. (This overrides Proton VPN's DNS --- still inside the tunnel --- and disables its NetShield ad-blocker.)
 - [ ] iPhone and Mac: install Quad9's encrypted DNS profile ([iOS](https://docs.quad9.net/Setup_Guides/iOS/iOS_14_and_later_%28Encrypted%29/), [macOS](https://docs.quad9.net/Setup_Guides/MacOS/Big_Sur_and_later_%28Encrypted%29/)).
 
 ## Browse the web using Brave
@@ -476,7 +476,7 @@ You buy two of these little USB-C boys for \$55 each. Use these as two-factor au
 
 Subtitle: Time: 10 minutes once you have your YubiKeys.
 
-If you use Gmail or Google Drive, your Google account is probably the master key to your digital life. Google's free Advanced Protection Program locks it down. Signing in requires [your YubiKey](#buy-a-yubikey-and-a-backup) or a passkey, so phishing and stolen passwords stop working. Advanced Protection also blocks risky downloads and stops unapproved third-party apps from reading your Gmail and Drive. The tradeoff: if you lose access, account recovery takes longer. That's why you have a backup key.
+Your Google account is probably the master key to your digital life. Google's free Advanced Protection Program requires [your YubiKey](#buy-a-yubikey-and-a-backup) or a passkey to sign in, so phishing and stolen passwords stop working. It also blocks risky downloads and keeps unapproved apps out of your Gmail and Drive. Account recovery gets slower, which is why you have a backup key.
 
 - [ ] [Enroll in Advanced Protection](https://landing.google.com/advancedprotection/).
 
@@ -511,10 +511,10 @@ It doesn't matter how good a company's security and data handling practices are.
 
 On the other hand, when you use E2EE, the company can't decrypt it. Your data is just a sequence of zeros and ones on a computer. The company has nothing to hand over.
 
-Encryption has a shelf life, though. Spy agencies record encrypted traffic today and store it, betting that future quantum computers will break the math protecting most of it --- ["harvest now, decrypt later."](https://en.wikipedia.org/wiki/Harvest_now,_decrypt_later) A message no one can read today might be readable 15 years from now, so anything which must stay secret that long needs *post-quantum* encryption.
+Encryption has a shelf life, though. Spy agencies store encrypted traffic today, betting that future quantum computers will break it --- ["harvest now, decrypt later."](https://en.wikipedia.org/wiki/Harvest_now,_decrypt_later) Anything which must stay secret for 15 years needs *post-quantum* encryption.
 
 > [!tip] Use Signal for secrets which must last 15 years; use Proton for everything else
-> In late 2025, Signal [began rolling out quantum-safe encryption for entire conversations](https://signal.org/blog/spqr/), making it the most quantum-resistant app this guide recommends. Proton Drive and Calendar aren't quantum-safe yet, and Proton Mail's [quantum-safe option](#switch-to-proton-mail) only covers new mail.
+> Signal [is rolling out quantum-safe encryption for entire conversations](https://signal.org/blog/spqr/). Proton Drive and Calendar aren't quantum-safe yet, and Proton Mail's [quantum-safe option](#switch-to-proton-mail) only covers new mail.
 
 Let's secure your data.
 
