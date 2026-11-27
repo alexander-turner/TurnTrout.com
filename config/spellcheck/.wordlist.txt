@@ -2040,7 +2040,6 @@ nephrons
 neq
 neq0
 Netgear
-NetShield
 Neumann
 NeurIPS
 neurologic
@@ -3357,6 +3356,7 @@ wifi
 WildguardTest
 WildJailbreak
 Winogrande
+WireGuard
 wirehead
 wireheader
 wireheaders
