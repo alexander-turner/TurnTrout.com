@@ -223,6 +223,7 @@ For my router, I future-proofed with the [GL.iNet Flint 3](https://www.amazon.co
     5. [ ] Create a new tunnel (priority 1) which does not use VPN (see below for target configuration).
 3. [ ] In the VPN tab, disable "All other traffic" to ensure that only VPN-protected traffic goes through.
 4. [ ] In the Applications tab, enable AdGuard Home. (Even though my Brave browser has strong ad-blocking, AdGuard still blocks about 2.5\% of DNS requests!)
+    - [ ] In AdGuard Home's DNS settings, set the upstream server to [Quad9](/privacy-despite-authoritarianism#encrypt-your-dns-with-quad9): `https://dns.quad9.net/dns-query`.
 
 Here's what my VPN settings looked like by the end:
 
@@ -320,6 +321,14 @@ Subtitle: Time: 15 minutes.
   - [ ] Bank(s).
   - [ ] Credit card(s).
   - [ ] Other instruments.
+
+## Californians: delete your data from every data broker at once
+
+Subtitle: Time: 10 minutes.
+
+Data brokers sell your location, purchases, and browsing history --- including to the government. California's free [Delete Request and Opt-out Platform (DROP)](https://privacy.ca.gov/drop/) sends a single deletion request to every registered data broker (over 500 of them). Since August 1st, 2026, brokers must check the DROP list every 45 days and delete your data, including data they acquire later. As of November 2026, no other state offers a similar tool. Several states (such as Texas, Oregon, and Vermont) keep data broker registries, so elsewhere you'll have to opt out one broker at a time.
+
+- [ ] If you live in California, [sign up for DROP](https://privacy.ca.gov/drop/).
 
 ## Consider deleting PayPal
 
@@ -525,9 +534,12 @@ Android
 : You can just disable 2G in your settings (search "2G"). The 2G speed sucks anyways and that protocol is basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
 
   - [ ] Disable 2G.
+  - [ ] Even better, on Android 16 or later, turn on [Advanced Protection](https://support.google.com/android/answer/16339980) (search "Advanced Protection" in settings). It blocks 2G along with several spyware tricks, like sideloaded apps and data access over USB.
 
 iOS
 : You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.
+
+: If you're [at high risk](/privacy-despite-authoritarianism#whats-your-risk-level), though, turn on lockdown mode. It [blocked NSO Group's zero-click Pegasus spyware](https://citizenlab.ca/2023/09/blastpass-nso-group-iphone-zero-click-zero-day-exploit-captured-in-the-wild/), and [Apple said it knew of no one using lockdown mode who had been hacked](https://techcrunch.com/2023/12/07/apple-says-it-is-not-aware-anyone-using-lockdown-mode-got-hacked). When a trusted app or website breaks, you can exempt it.
 
 > [!info]- Tracking stingray usage
 > In 2024, we gained a tool to potentially track these devices.   For \$20 to buy the hardware and for a dash of technical expertise, you can help collect data on nearby law enforcement stingray usage. You can read about [some conclusions the EFF drew one year later.](https://www.eff.org/deeplinks/2025/09/rayhunter-what-we-have-found-so-far)

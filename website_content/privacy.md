@@ -336,6 +336,11 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 >
 > I wouldn't worry about this too much for now. Hopefully Proton implements a defense, just to be sure.
 
+> [!warning] Proton VPN isn't post-quantum yet
+> As of November 2026, Proton VPN's tunnel still uses classical key exchange. Proton's [2026 roadmap](https://www.tomsguide.com/computing/vpns/proton-vpn-reveals-its-spring-and-summer-2026-roadmap-heres-whats-coming) lays groundwork for post-quantum encryption, but Proton hasn't shipped it. Until Proton does, VPN traffic recorded today is vulnerable to ["harvest now, decrypt later."](#end-to-end-encryption-for-your-data-in-4-hours) [Mullvad](https://mullvad.net/en/blog/quantum-resistant-tunnels-are-now-the-default-on-desktop) and [NordVPN](https://www.tomsguide.com/computing/vpns/nordvpn-announces-post-quantum-encryption-support-for-all-applications) already have post-quantum tunnels.
+>
+> I still recommend Proton VPN for most people because of its audited no-logs policy, its Swiss jurisdiction, and the Proton Unlimited bundle. Personally, though, I switched to Mullvad (€5/month) for its post-quantum tunnels. If your browsing must stay private for a decade, consider doing the same.
+
 > [!info] It's not paranoia if they really are out to get you
 > > [!quote] [ACLU](https://www.aclu.org/warrantless-surveillance-under-section-702-of-fisa)
 > > Under Section 702 of the Foreign Intelligence Surveillance Act, the U.S. government engages in mass, warrantless surveillance of Americans’ and foreigners’ phone calls, text messages, emails, and other electronic communications. Information collected under the law without a warrant can be used to prosecute and imprison people, even for crimes that have nothing to do with national security. Given our nation’s history of abusing its surveillance authorities, and the secrecy surrounding the program, we should be concerned that Section 702 is and will be used to disproportionately target disfavored groups, whether minority communities, political activists, or even journalists.
@@ -344,6 +349,15 @@ The Android situation is better. Sadly, there are rare circumstances where VPNs 
 > > [!quote] [Eleven years after Snowden revelations, government still expanding surveillance](https://freedom.press/issues/11-years-after-snowden-revelations-government-still-expanding-surveillance/)
 > > Subtitle: June 5th, 2024
 > > Under the newly enacted “[spy draft](https://reason.com/2024/04/19/how-the-fisa-reauthorization-bill-could-force-maintenance-workers-and-custodians-to-become-government-spies/)” provision, the government can not only enlist telecom providers like Verizon to hand over information about their subscribers’ contacts with foreigners it is investigating, as it has in the past. It [can conscript](https://www.theguardian.com/us-news/2024/apr/16/house-fisa-government-surveillance-senate) any American service provider to spy on its behalf. Senator Ron Wyden [noted](https://www.wyden.senate.gov/news/press-releases/wyden-urges-colleagues-to-reject-expanding-warrantless-fisa-702-surveillance) that cleaning services could be compelled to insert a USB thumb drive into a server at an office they clean.
+
+### Encrypt your DNS with Quad9
+
+Subtitle: Time: 5 minutes.
+
+Before your device visits `propublica.org`, it asks a "DNS server" for that site's address. By default, your ISP runs that server and sees every site you look up. Your VPN handles these lookups while it's on, but sometimes your VPN will be off. [Quad9](https://quad9.net/) is a free, encrypted DNS service which covers those gaps. A Swiss nonprofit runs it, it [doesn't log your IP address](https://quad9.net/privacy/policy/), and it blocks sites known to spread malware and phishing.
+
+- [ ] Android: search "Private DNS" in settings, choose "Private DNS provider hostname," and enter `dns.quad9.net`.
+- [ ] iPhone and Mac: install Quad9's encrypted DNS profile ([iOS](https://docs.quad9.net/Setup_Guides/iOS/iOS_14_and_later_%28Encrypted%29/), [macOS](https://docs.quad9.net/Setup_Guides/MacOS/Big_Sur_and_later_%28Encrypted%29/)).
 
 ## Browse the web using Brave
 
@@ -458,6 +472,14 @@ You buy two of these little USB-C boys for \$55 each. Use these as two-factor au
 >
 > - [ ] If you buy a Nano key, [switch it to "Long Touch" mode](https://support.okta.com/help/s/article/swapping-yubico-otp-between-slot-1-to-slot-2?language=en_US) so it doesn't mess up your typing whenever you bump it.
 
+## Lock down your Google account
+
+Subtitle: Time: 10 minutes once you have your YubiKeys.
+
+If you use Gmail or Google Drive, your Google account is probably the master key to your digital life. Google's free [Advanced Protection Program](https://landing.google.com/advancedprotection/) locks it down. Signing in requires [your YubiKey](#buy-a-yubikey-and-a-backup) or a passkey, so phishing and stolen passwords stop working. Advanced Protection also blocks risky downloads and stops unvetted third-party apps from reading your Gmail and Drive. The tradeoff: if you lose access, account recovery takes longer. That's why you have a backup key.
+
+- [ ] [Enroll in Advanced Protection](https://landing.google.com/advancedprotection/).
+
 ## Your pictures and videos contain your GPS location
 
 Subtitle: Time: 2 minutes.
@@ -488,6 +510,11 @@ It doesn't matter how good a company's security and data handling practices are.
 > The Clarifying Overseas Use of Data (CLOUD) Act... creates an explicit provision for U.S. law enforcement (from a local police department to federal agents in ICE) to access “the contents of a wire or electronic communication and any record or other information” about a person regardless of where they live or where that information is located on the globe. In other words, U.S. police could compel a service provider—like Google, Facebook, or Snapchat—to hand over a user’s content and metadata, even if it is stored in a foreign country, without following that foreign country’s privacy laws.
 
 On the other hand, when you use E2EE, the company can't decrypt it. Your data is just a sequence of zeros and ones on a computer. The company has nothing to hand over.
+
+Encryption has a shelf life, though. Spy agencies record encrypted traffic today and store it, betting that future quantum computers will break the math protecting most of it --- ["harvest now, decrypt later."](https://en.wikipedia.org/wiki/Harvest_now,_decrypt_later) A message that no one can read in 2026 might be readable in 2040, so anything which must stay secret for a decade or more needs *post-quantum* encryption.
+
+> [!tip] Signal for secrets which must keep for 15 years; Proton for everything else
+> Signal's ["Triple Ratchet"](https://signal.org/blog/spqr/) (rolled out starting in late 2025) makes it the most thoroughly post-quantum app this guide recommends. Proton Drive and Proton Calendar still use classical encryption. Proton Mail's [post-quantum option](#switch-to-proton-mail) only protects new mail, and email will always expose whom you're writing to and when.
 
 Let's secure your data.
 
@@ -623,7 +650,7 @@ Android and Apple contacts are *not* encrypted, even if you enable Advanced Data
 
 1. [ ] To circulate E2EE forms, use [Palform](https://palform.app/).
 2. [ ] For E2EE collaborative writing and document critique, use [Proton Docs](https://docs.proton.me/), which integrates well [with Proton Drive](#store-files-in-proton-drive).
-3. [ ] Conduct video calls with [Proton Meet](https://proton.me/meet) -- well, when it comes out. In the meantime, consider using [Jitsi-powered video conferencing](https://entraide.chatons.org/en/). Disclaimer: I've had trouble the two times I've tried using this tool. Make sure it works for you before relying on it for sensitive meetings.
+3. [ ] Conduct video calls with [Proton Meet](https://proton.me/meet), which [launched in March 2026](https://proton.me/blog/introducing-proton-meet) with end-to-end encryption for every call. Free calls can host up to 50 people for an hour.
 
 # Reclaim your bubbles of freedom
 
